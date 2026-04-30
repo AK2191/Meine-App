@@ -1,5 +1,5 @@
 // Change App · Firebase-Konfiguration
-// Firebase-Projekt: meine-app-4ea9e
+// Diese Datei muss im GitHub-Repo direkt neben index.html liegen.
 self.FIREBASE_CONFIG = window.FIREBASE_CONFIG = {
   apiKey: "AIzaSyC3lpaM1z2YwgaevCxE1bMM1hUnW96PwOo",
   authDomain: "meine-app-4ea9e.firebaseapp.com",
@@ -10,6 +10,5 @@ self.FIREBASE_CONFIG = window.FIREBASE_CONFIG = {
   measurementId: "G-RQJ500HHN5"
 };
 
-// Wichtig: Diesen Key noch in Firebase erzeugen und hier ersetzen:
-// Firebase Console → Projekteinstellungen → Cloud Messaging → Web Push certificates → Key pair erzeugen
+// Firebase Console → Projekteinstellungen → Cloud Messaging → Web Push certificates
 self.FIREBASE_VAPID_KEY = window.FIREBASE_VAPID_KEY = "BIQdYqHQAHiNzvmptyTCaYgHIjDV_LCnjdwApSV6T3jLF_SEQG66VkF-LD055p5eIBM9zdFh_tpLsIQzLmesA9Q";

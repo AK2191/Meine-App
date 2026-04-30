@@ -621,16 +621,6 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 .toast.err{border-color:rgba(248,113,113,.35);color:var(--red)}
 @keyframes tin{from{opacity:0;transform:translateY(8px) scale(.95)}to{opacity:1;transform:none}}
 
-/* ── DRIVE STATUS ── */
-#drive-status{
-  position:fixed;top:66px;right:14px;z-index:500;
-  background:var(--s1);border:1px solid var(--b2);border-radius:var(--r);
-  padding:8px 14px;font-size:12px;color:var(--t3);font-weight:600;
-  display:none;align-items:center;gap:7px;box-shadow:var(--sh);
-}
-#drive-status svg{width:13px;height:13px;stroke:var(--acc);stroke-width:2;animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-
 @media(max-width:480px){
   .day-cell{padding:3px 3px 2px}
   .day-num-wrap{width:22px;height:22px}
@@ -688,10 +678,10 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
   <div class="modal-box">
     <div class="modal-badge">⚙ Einmalige Einrichtung</div>
     <div class="modal-h">Google API konfigurieren</div>
-    <div class="modal-sub">Für Google-Login, Kalender &amp; Drive-Speicher bitte einmalig eine OAuth Client-ID eintragen.</div>
+    <div class="modal-sub">Für Google-Login und Kalender-Synchronisation bitte einmalig eine OAuth Client-ID eintragen. Challenges, Mitspieler und Punkte laufen über Firebase.</div>
     <div class="setup-steps">
       <div class="step"><div class="step-n">1</div><div class="step-t">Öffne <strong>console.cloud.google.com</strong> → Projekt erstellen</div></div>
-      <div class="step"><div class="step-n">2</div><div class="step-t">APIs aktivieren: <strong>Google Calendar API</strong> + <strong>Google Drive API</strong></div></div>
+      <div class="step"><div class="step-n">2</div><div class="step-t">API aktivieren: <strong>Google Calendar API</strong></div></div>
       <div class="step"><div class="step-n">3</div><div class="step-t">Anmeldedaten → OAuth 2.0 → <strong>Web-Anwendung</strong> → Ihre Domain eintragen</div></div>
       <div class="step"><div class="step-n">4</div><div class="step-t">Client-ID kopieren (endet auf <code>.apps.googleusercontent.com</code>)</div></div>
     </div>
@@ -706,11 +696,6 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
   </div>
 </div>
 
-<!-- Drive Status -->
-<div id="drive-status">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-  Google Drive wird gespeichert…
-</div>
 
 <!-- Panel overlay -->
 <div id="panel-overlay" onclick="closePanel()"></div>
@@ -749,7 +734,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
         Mit Google anmelden
       </button>
       <button class="demo-btn" onclick="startDemo()">Demo ohne Anmeldung starten</button>
-      <div class="login-note">Kalender &amp; Challenges werden in Ihrem Google Drive gespeichert. Keine externe Serverspeicherung.</div>
+      <div class="login-note">Kalender synchronisiert mit Google. Challenges, Mitspieler, Punkte und Push laufen über Firebase.</div>
     </div>
   </div>
 
@@ -871,7 +856,6 @@ const VER = '2.0';
 const LSK = 'change_v1';
 const GCAL_SCOPE = [
   'https://www.googleapis.com/auth/calendar',
-  'https://www.googleapis.com/auth/drive.file',
   'https://www.googleapis.com/auth/userinfo.profile',
   'https://www.googleapis.com/auth/userinfo.email'
 ].join(' ');
@@ -896,8 +880,6 @@ let challengeCompletions = [];
 let challengePlayers = [];
 let notifications = [];
 
-// Drive file IDs
-let driveFileId = null;
 
 // Filter state
 let invFilter = 'alle';
@@ -909,6 +891,15 @@ const ls = (k,v) => {
   try{localStorage.setItem(LSK+'_'+k,JSON.stringify(v));}catch{}
 };
 const lsDel = k => {try{localStorage.removeItem(LSK+'_'+k);}catch{}};
+async function persistChangeState(){
+  try{
+    ls('events', events);
+    ls('challenges', challenges);
+    ls('challenge_completions', challengeCompletions);
+    ls('challenge_players', challengePlayers);
+    if(typeof registerLivePlayer==='function') registerLivePlayer();
+  }catch(e){console.warn('Persist local:',e);}
+}
 
 /* ── DATE HELPERS ── */
 const pad = n => String(n).padStart(2,'0');
@@ -933,7 +924,6 @@ window.addEventListener('load', async () => {
   challenges = ls('challenges') || [];
   challengeCompletions = ls('challenge_completions') || [];
   challengePlayers = ls('challenge_players') || [];
-  driveFileId = ls('drive_file_id') || null;
 
   if(ls('demo_mode')){
     startDemoInternal();
@@ -1472,7 +1462,8 @@ function openDayPanel(dt,dayEvs){
 ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 async function loadGoogleData(){
   if(!accessToken)return;
-  await Promise.all([loadGoogleEvents(),loadFromDrive()]);
+  await loadGoogleEvents();
+  if(typeof initFirebaseLive==='function') initFirebaseLive();
 }
 
 async function loadGoogleEvents(){
@@ -1519,74 +1510,22 @@ async function saveToGoogleCal(existingId){
   }catch(e){toast('Fehler: '+e.message,'err');}
 }
 
-/* ── GOOGLE DRIVE STORAGE ── */
+/* ── FIREBASE / LOCAL STORAGE BRIDGE ── */
 async function loadFromDrive(){
-  if(!accessToken||isDemoMode)return;
-  try{
-    // Search for procal data file
-    const q=encodeURIComponent("name='change_workspace_data.json' and trashed=false");
-    const r=await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)`,{
-      headers:{'Authorization':'Bearer '+accessToken}
-    });
-    if(!r.ok)return;
-    const data=await r.json();
-    if(data.files&&data.files.length>0){
-      driveFileId=data.files[0].id;
-      ls('drive_file_id',driveFileId);
-      // Load content
-      const fr=await fetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`,{
-        headers:{'Authorization':'Bearer '+accessToken}
-      });
-      if(fr.ok){
-        const content=await fr.json();
-        if(content.events){events=content.events;ls('events',events);}
-        if(currentMainView==='dashboard')buildDashboard();
-        if(currentMainView==='calendar'){renderCalendar();renderUpcoming();}
-        toast('Daten aus Google Drive geladen ✓','ok');
-      }
-    }
-  }catch(e){console.warn('Drive load:',e);}
+  // Daten werden lokal und – sobald Firebase verbunden ist – in Firestore synchronisiert.
+  if(typeof initFirebaseLive==='function') await initFirebaseLive();
 }
 
 async function saveToDrive(){
-  if(!accessToken||isDemoMode)return;
-  showDriveStatus(true);
-  try{
-    const content=JSON.stringify({events,version:VER,savedAt:new Date().toISOString()});
-    const blob=new Blob([content],{type:'application/json'});
-
-    if(driveFileId){
-      // Update existing
-      const meta=JSON.stringify({name:'change_workspace_data.json'});
-      const form=new FormData();
-      form.append('metadata',new Blob([meta],{type:'application/json'}));
-      form.append('file',blob);
-      const r=await fetch(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=multipart`,{
-        method:'PATCH',headers:{'Authorization':'Bearer '+accessToken},body:form
-      });
-      if(!r.ok)throw new Error('Update failed '+r.status);
-    }else{
-      // Create new
-      const meta=JSON.stringify({name:'change_workspace_data.json',mimeType:'application/json'});
-      const form=new FormData();
-      form.append('metadata',new Blob([meta],{type:'application/json'}));
-      form.append('file',blob);
-      const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{
-        method:'POST',headers:{'Authorization':'Bearer '+accessToken},body:form
-      });
-      if(!r.ok)throw new Error('Create failed '+r.status);
-      const d=await r.json();
-      driveFileId=d.id;
-      ls('drive_file_id',driveFileId);
-    }
-  }catch(e){console.warn('Drive save:',e);toast('Drive-Speicherung fehlgeschlagen','err');}
-  finally{showDriveStatus(false);}
+  // Kompatibilitätsfunktion: alte Aufrufe bleiben gültig, speichern aber nicht mehr in Firebase.
+  ls('events', events);
+  ls('challenges', challenges);
+  ls('challenge_completions', challengeCompletions);
+  ls('challenge_players', challengePlayers);
+  if(typeof registerLivePlayer==='function') registerLivePlayer();
 }
 
-function showDriveStatus(show){
-  const el=document.getElementById('drive-status');
-  if(el)el.style.display=show?'flex':'none';
-}
+function showDriveStatus(){ /* nicht mehr benötigt */ }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━
    NOTIFICATIONS
@@ -1698,8 +1637,8 @@ function confirmLogout(){
   logout();
 }
 function logout(){
-  accessToken='';userInfo={};isDemoMode=false;gEvents=[];notifications=[];driveFileId=null;
-  lsDel('access_token');lsDel('user_info');lsDel('demo_mode');lsDel('drive_file_id');
+  accessToken='';userInfo={};isDemoMode=false;gEvents=[];notifications=[];
+  lsDel('access_token');lsDel('user_info');lsDel('demo_mode');
   document.getElementById('main-app').style.display='none';
   if(CLIENT_ID)showLogin();
   else document.getElementById('setup-modal').classList.add('show');
@@ -1739,8 +1678,6 @@ document.addEventListener('touchend',e=>{
   const originalSetMainView = setMainView;
   const originalFabAction = fabAction;
   const originalBuildKPIs = buildKPIs;
-  const originalLoadFromDrive = loadFromDrive;
-  const originalSaveToDrive = saveToDrive;
   const originalSaveEvent = saveEvent;
   const originalDeleteEvent = deleteEvent;
 
@@ -1754,6 +1691,15 @@ document.addEventListener('touchend',e=>{
     challengePlayers = ls('challenge_players') || challengePlayers || [];
     if(!challenges.length){challenges = buildDefaultChallenges(); ls('challenges',challenges);}
     ensureCurrentChallengePlayer();
+  }
+
+
+  async function persistChangeState(){
+    ls('events',events);
+    ls('challenges',challenges);
+    ls('challenge_completions',challengeCompletions);
+    ls('challenge_players',challengePlayers);
+    if(typeof registerLivePlayer==='function') registerLivePlayer();
   }
 
   window.buildDefaultChallenges = function(){
@@ -1862,19 +1808,21 @@ document.addEventListener('touchend',e=>{
     const players=[...challengePlayers].sort((a,b)=>(stats[b.id]?.points||0)-(stats[a.id]?.points||0));
     board.innerHTML=players.length?players.map((p,idx)=>{
       const st=stats[p.id]||{points:0,count:0}; const me=p.id===getCurrentPlayerId();
-      return '<div class="leader-row"><div class="leader-rank">'+(idx+1)+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(me?' · Du':'')+'</div><div class="leader-detail">'+st.count+' Challenges erledigt'+(p.email?' · '+esc(p.email):'')+'</div></div><div class="leader-score">'+st.points+'</div></div>';
+      const medal=idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':(idx+1);
+      const live=p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>';
+      return '<div class="leader-row"><div class="leader-rank">'+medal+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(me?' · Du':'')+live+'</div><div class="leader-detail">'+st.count+' Challenges erledigt · Platz '+(idx+1)+(p.email?' · '+esc(p.email):'')+'</div></div><div class="leader-score">'+st.points+'</div></div>';
     }).join(''):'<div class="dash-empty">Noch keine Mitspieler</div>';
   };
   window.completeChallenge = function(id){
     const ch=challenges.find(c=>c.id===id); if(!ch)return;
     if(isChallengeDoneToday(id)){toast('Diese Challenge ist heute schon erledigt','');return;}
     challengeCompletions.push({id:'cc_'+uid(),challengeId:id,playerId:getCurrentPlayerId(),playerName:userInfo.name||userInfo.email||'Ich',date:todayKey(),points:parseInt(ch.points)||0,createdAt:new Date().toISOString()});
-    ls('challenge_completions',challengeCompletions); saveToDrive(); renderChallenges(); buildDashboard(); toast('+'+(ch.points||0)+' Punkte ✓','ok');
+    ls('challenge_completions',challengeCompletions); persistChangeState(); renderChallenges(); buildDashboard(); toast('+'+(ch.points||0)+' Punkte ✓','ok');
   };
   window.resetTodayChallenges = function(){
     const me=getCurrentPlayerId(),td=todayKey(); if(!confirm('Deine heutigen Challenge-Erledigungen zurücksetzen?'))return;
     challengeCompletions=challengeCompletions.filter(c=>!(c.playerId===me&&c.date===td));
-    ls('challenge_completions',challengeCompletions); saveToDrive(); renderChallenges(); buildDashboard(); toast('Heute zurückgesetzt','');
+    ls('challenge_completions',challengeCompletions); persistChangeState(); renderChallenges(); buildDashboard(); toast('Heute zurückgesetzt','');
   };
   window.openChallengePanel = function(id){
     const ch=id?challenges.find(c=>c.id===id):null;
@@ -1885,12 +1833,12 @@ document.addEventListener('touchend',e=>{
     const title=document.getElementById('ch-title')?.value.trim(); if(!title){toast('Bitte Titel eingeben','err');return;}
     const ch={id:existingId||'ch_'+uid(),title:title,points:parseInt(document.getElementById('ch-points')?.value)||10,icon:document.getElementById('ch-icon')?.value.trim()||'🏆',desc:document.getElementById('ch-desc')?.value.trim()||'',active:true,createdAt:existingId?(challenges.find(c=>c.id===existingId)?.createdAt||new Date().toISOString()):new Date().toISOString(),updatedAt:new Date().toISOString()};
     if(existingId){const i=challenges.findIndex(c=>c.id===existingId); if(i>=0)challenges[i]=ch; else challenges.push(ch);} else challenges.push(ch);
-    ls('challenges',challenges); saveToDrive(); closePanel(); renderChallenges(); buildDashboard(); toast('Challenge gespeichert ✓','ok');
+    ls('challenges',challenges); persistChangeState(); closePanel(); renderChallenges(); buildDashboard(); toast('Challenge gespeichert ✓','ok');
   };
   window.deleteChallenge = function(id){
     if(!confirm('Challenge wirklich löschen?'))return;
     challenges=challenges.filter(c=>c.id!==id); challengeCompletions=challengeCompletions.filter(c=>c.challengeId!==id);
-    ls('challenges',challenges); ls('challenge_completions',challengeCompletions); saveToDrive(); closePanel(); renderChallenges(); buildDashboard(); toast('Challenge gelöscht','');
+    ls('challenges',challenges); ls('challenge_completions',challengeCompletions); persistChangeState(); closePanel(); renderChallenges(); buildDashboard(); toast('Challenge gelöscht','');
   };
   window.openParticipantPanel = function(){
     const html='<div class="fg"><label class="flabel">Name des Mitspielers</label><input class="finput" id="pl-name" placeholder="z.B. Anna"></div><div class="fg"><label class="flabel">E-Mail optional</label><input class="finput" id="pl-email" placeholder="anna@example.com"></div><button class="btn btn-primary btn-full" onclick="addParticipant()">Mitspieler hinzufügen</button><div class="divider"></div><div class="section-label">Bestehende Mitspieler</div>'+challengePlayers.map(p=>'<div class="leader-row"><div class="leader-rank">👤</div><div><div class="leader-name">'+esc(p.name)+'</div><div class="leader-detail">'+esc(p.email||p.id)+'</div></div></div>').join('');
@@ -1901,7 +1849,7 @@ document.addEventListener('touchend',e=>{
     if(!name){toast('Bitte Namen eingeben','err');return;}
     const id=(email||('player_'+uid())).toLowerCase();
     if(!challengePlayers.some(p=>p.id===id)) challengePlayers.push({id:id,name:name,email:email,createdAt:new Date().toISOString()});
-    ls('challenge_players',challengePlayers); saveToDrive(); closePanel(); renderChallenges(); toast('Mitspieler hinzugefügt ✓','ok');
+    ls('challenge_players',challengePlayers); persistChangeState(); closePanel(); renderChallenges(); toast('Mitspieler hinzugefügt ✓','ok');
   };
 
   window.syncLocalEventToGoogle = async function(ev){
@@ -1913,7 +1861,7 @@ document.addEventListener('touchend',e=>{
       const r=await fetch(url,{method:ev.googleEventId?'PATCH':'POST',headers:{'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify(body)});
       if(!r.ok)throw new Error('Google Kalender '+r.status);
       const saved=await r.json(); const i=events.findIndex(e=>e.id===ev.id);
-      if(i>=0&&!events[i].googleEventId){events[i].googleEventId=saved.id; ls('events',events); saveToDrive();}
+      if(i>=0&&!events[i].googleEventId){events[i].googleEventId=saved.id; ls('events',events); persistChangeState();}
       loadGoogleEvents();
     }catch(e){console.warn('Auto Google Sync:',e);toast('Google Kalender-Sync fehlgeschlagen','err');}
   };
@@ -1921,30 +1869,9 @@ document.addEventListener('touchend',e=>{
     originalSaveEvent(existingId);
     const ev=events[events.length-1];
     if(accessToken&&!isDemoMode&&ev) syncLocalEventToGoogle(ev);
-    saveToDrive();
+    persistChangeState();
   };
-  window.deleteEvent = function(id){originalDeleteEvent(id); saveToDrive();};
-  window.loadFromDrive = async function(){
-    await originalLoadFromDrive();
-    readChallengeState();
-    if(currentMainView==='challenges') renderChallenges();
-  };
-  window.saveToDrive = async function(){
-    if(!accessToken||isDemoMode) return originalSaveToDrive();
-    showDriveStatus(true);
-    try{
-      const content=JSON.stringify({events,challenges,challengeCompletions,challengePlayers,version:VER,savedAt:new Date().toISOString()});
-      const blob=new Blob([content],{type:'application/json'});
-      const meta=JSON.stringify({name:'change_workspace_data.json',mimeType:'application/json'});
-      const form=new FormData();form.append('metadata',new Blob([meta],{type:'application/json'}));form.append('file',blob);
-      let r;
-      if(driveFileId){r=await fetch('https://www.googleapis.com/upload/drive/v3/files/'+driveFileId+'?uploadType=multipart',{method:'PATCH',headers:{'Authorization':'Bearer '+accessToken},body:form});}
-      else{r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{'Authorization':'Bearer '+accessToken},body:form});}
-      if(!r.ok)throw new Error('Drive '+r.status);
-      if(!driveFileId){const d=await r.json(); driveFileId=d.id; ls('drive_file_id',driveFileId);}
-    }catch(e){console.warn('Drive save:',e);toast('Drive-Speicherung fehlgeschlagen','err');}
-    finally{showDriveStatus(false);}
-  };
+  window.deleteEvent = function(id){originalDeleteEvent(id); persistChangeState();};
 
   document.addEventListener('keydown',e=>{if(e.key==='5'&&!document.getElementById('side-panel').classList.contains('open'))setMainView('challenges');});
 })();
@@ -2118,7 +2045,7 @@ document.addEventListener('touchend',e=>{
     const old=existingId?challenges.find(c=>c.id===existingId):null;
     const ch={id:existingId||'ch_'+uid(),title,points:parseInt(document.getElementById('ch-points')?.value)||10,icon:document.getElementById('ch-icon')?.value.trim()||'🏆',desc:document.getElementById('ch-desc')?.value.trim()||'',date:document.getElementById('ch-date')?.value||dateKey(new Date()),recurrence:document.getElementById('ch-recurrence')?.value||'once',active:true,createdAt:old?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
     const i=challenges.findIndex(c=>c.id===ch.id); if(i>=0)challenges[i]=ch; else challenges.push(ch);
-    ls('challenges',challenges); saveToDrive(); closePanel(); renderChallenges(); buildDashboard(); renderCalendar(); toast('Challenge gespeichert ✓','ok');
+    ls('challenges',challenges); persistChangeState(); closePanel(); renderChallenges(); buildDashboard(); renderCalendar(); toast('Challenge gespeichert ✓','ok');
   };
   const originalCompleteChallenge=window.completeChallenge;
   window.completeChallenge=function(id){
@@ -2126,7 +2053,7 @@ document.addEventListener('touchend',e=>{
     const dk=dateKey(new Date()), me=getCurrentPlayerId();
     if((challengeCompletions||[]).some(c=>c.challengeId===id&&c.playerId===me&&c.date===dk)){toast('Diese Challenge ist heute schon erledigt','');return;}
     challengeCompletions.push({id:'cc_'+uid(),challengeId:id,playerId:me,playerName:userInfo.name||userInfo.email||'Ich',date:dk,points:parseInt(ch.points)||0,createdAt:new Date().toISOString()});
-    ls('challenge_completions',challengeCompletions); saveToDrive(); renderChallenges(); buildDashboard(); renderCalendar(); toast('+'+(ch.points||0)+' Punkte ✓','ok');
+    ls('challenge_completions',challengeCompletions); persistChangeState(); renderChallenges(); buildDashboard(); renderCalendar(); toast('+'+(ch.points||0)+' Punkte ✓','ok');
   };
   const originalRenderUpcoming=window.renderUpcoming;
   window.renderUpcoming=function(){
@@ -2318,7 +2245,7 @@ document.addEventListener('touchend',e=>{
         <div class="push-status">Push-Token: <strong>${token?'vorhanden':'noch nicht erstellt'}</strong></div>
         <div class="push-status">Live-Mitspieler erkannt: <strong>${online}</strong></div>
       </div>
-      <button class="btn btn-primary btn-full" onclick="enablePushNotifications()">Echte Push-Benachrichtigungen aktivieren</button>
+      <button class="btn btn-primary btn-full" onclick="enablePushNotifications()">Echte Push-Benachrichtigungen aktivieren</button><button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="installChangeApp()">Change als App installieren</button>
       <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="initFirebaseLive().then(ok=>toast(ok?'Live-Sync aktiv ✓':'Firebase-Konfiguration fehlt',ok?'ok':'err'))">Live-Mitspieler neu verbinden</button>
       <div class="settings-hint">Damit Push auch im Hintergrund funktioniert, müssen zusätzlich die Firebase-Dateien im GitHub-Repo liegen und die Cloud Function aus dem Ordner <strong>functions</strong> deployed sein.</div>`;
     openPanel('Push & Live-Sync',html);
