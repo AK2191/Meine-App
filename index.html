@@ -3113,5 +3113,355 @@ document.addEventListener('touchend',e=>{
 })();
 </script>
 
+
+<script>
+/* CHANGE MASTER FINAL PATCH - full-file safe patch, no code removal
+   Fixes: no demo button, stable daily challenge stats, max 7 open tasks/day,
+   reset today, dashboard open tasks, points calendar, persisted settings. */
+(function(){
+  'use strict';
+  const PATCH_KEY = 'change_master_final_patch_v3';
+
+  function byId(id){ return document.getElementById(id); }
+  function q(sel, root){ return (root||document).querySelector(sel); }
+  function qa(sel, root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function todayKey(){
+    try{ if(typeof dateKey === 'function') return dateKey(new Date()); }catch(e){}
+    const d = new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  }
+  function escX(v){
+    if(typeof esc === 'function') { try { return esc(v); } catch(e){} }
+    return String(v==null?'':v).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+  function toastX(msg,type){ try{ if(typeof toast==='function') toast(msg,type||'ok'); }catch(e){} }
+  function lget(k,d){
+    try { if(typeof ls === 'function'){ const v = ls(k); return v==null?d:v; } } catch(e){}
+    try { const raw = localStorage.getItem('change_v2_'+k) || localStorage.getItem('change_v1_'+k) || localStorage.getItem(k); return raw==null?d:JSON.parse(raw); } catch(e){ return d; }
+  }
+  function lset(k,v){
+    try { if(typeof ls === 'function'){ ls(k,v); return; } } catch(e){}
+    try { localStorage.setItem('change_v2_'+k, JSON.stringify(v)); } catch(e){}
+  }
+  function saveAll(){
+    try{ lset('challenges', window.challenges || []); }catch(e){}
+    try{ lset('challenge_completions', window.challengeCompletions || []); }catch(e){}
+    try{ lset('challenge_players', window.challengePlayers || []); }catch(e){}
+    try{ if(typeof persistChangeState === 'function') persistChangeState(); }catch(e){}
+    try{ if(typeof saveChallengesToFirebase === 'function') saveChallengesToFirebase(); }catch(e){}
+    try{ if(typeof saveChallengeState === 'function') saveChallengeState(); }catch(e){}
+  }
+  function refreshAll(){
+    try{ if(typeof renderChallenges === 'function') renderChallenges(); }catch(e){ console.warn(PATCH_KEY, 'renderChallenges', e); }
+    try{ if(typeof renderCalendar === 'function') renderCalendar(); }catch(e){ console.warn(PATCH_KEY, 'renderCalendar', e); }
+    try{ if(typeof buildDashboard === 'function') buildDashboard(); }catch(e){ console.warn(PATCH_KEY, 'buildDashboard', e); }
+    try{ if(typeof renderDashboard === 'function') renderDashboard(); }catch(e){ console.warn(PATCH_KEY, 'renderDashboard', e); }
+    try{ setTimeout(addPointBadgesToCalendar, 0); }catch(e){}
+    try{ setTimeout(updateChallengeKpis, 0); }catch(e){}
+    try{ setTimeout(hideUpcomingStrip, 0); }catch(e){}
+  }
+  function normalizeId(v){ return String(v||'').trim().toLowerCase(); }
+  function currentIds(){
+    const ids = new Set(['me','ich']);
+    try{ if(window.userInfo){ if(userInfo.email) ids.add(normalizeId(userInfo.email)); if(userInfo.name) ids.add(normalizeId(userInfo.name)); } }catch(e){}
+    try{ const u = firebase && firebase.auth && firebase.auth().currentUser; if(u){ if(u.email) ids.add(normalizeId(u.email)); if(u.uid) ids.add(normalizeId(u.uid)); if(u.displayName) ids.add(normalizeId(u.displayName)); } }catch(e){}
+    return ids;
+  }
+  function completionOwner(c){ return normalizeId(c && (c.playerId || c.userEmail || c.email || c.uid || c.userId || c.owner || c.player)); }
+  function isMine(c){
+    const owner = completionOwner(c);
+    if(!owner) return true;
+    return currentIds().has(owner);
+  }
+  function challengeIdOf(c){ return String(c && (c.challengeId || c.id || c.taskId || c.title || c.name) || ''); }
+  function completionDate(c){ return String(c && (c.date || c.dateKey || c.day || c.completedDate) || '').slice(0,10); }
+  function getPoints(ch){ return parseInt(ch && (ch.points || ch.point || ch.score || 0), 10) || 0; }
+  function getChallengeById(id){
+    id = String(id||'');
+    return (window.challenges||[]).find(ch => String(ch.id||ch.challengeId||ch.title||ch.name) === id) || null;
+  }
+  function isDoneToday(id){
+    const t = todayKey(); id = String(id||'');
+    return (window.challengeCompletions||[]).some(c => completionDate(c)===t && isMine(c) && String(challengeIdOf(c))===id);
+  }
+  function todayCompletions(){
+    const t = todayKey();
+    return (window.challengeCompletions||[]).filter(c => completionDate(c)===t && isMine(c));
+  }
+  function totalCompletionsMine(){ return (window.challengeCompletions||[]).filter(c => isMine(c)); }
+  function pointsForCompletion(c){
+    const own = parseInt(c && c.points, 10);
+    if(!isNaN(own) && own > 0) return own;
+    const ch = getChallengeById(challengeIdOf(c));
+    return getPoints(ch);
+  }
+  function todayPoints(){ return todayCompletions().reduce((a,c)=>a+pointsForCompletion(c),0); }
+  function totalPoints(){ return totalCompletionsMine().reduce((a,c)=>a+pointsForCompletion(c),0); }
+
+  /* Hide/remove demo without deleting old code. */
+  function removeDemoButton(){
+    qa('.demo-btn').forEach(btn => { btn.remove(); });
+    qa('button').forEach(btn => { if(/Demo ohne Anmeldung/i.test(btn.textContent||'')) btn.remove(); });
+  }
+  window.startDemo = function(){ toastX('Demo-Modus wurde deaktiviert. Bitte mit Google anmelden.','err'); };
+
+  /* Calendar settings persist immediately. */
+  const defaultCalSettings = { showWeekNumbers:false, showChallengeDots:true, showHolidays:true };
+  function getCalSettings(){ return Object.assign({}, defaultCalSettings, lget('calendar_settings',{}), window.changeCalendarSettings||{}); }
+  function persistCalSettingsFromUi(){
+    const s = getCalSettings();
+    const map = [
+      ['toggle-kw','showWeekNumbers'], ['toggle-weeknumbers','showWeekNumbers'], ['setting-weeknumbers','showWeekNumbers'],
+      ['toggle-dots','showChallengeDots'], ['toggle-challenge-dots','showChallengeDots'], ['setting-dots','showChallengeDots'],
+      ['toggle-holidays','showHolidays'], ['setting-holidays','showHolidays']
+    ];
+    map.forEach(([id,key]) => { const x=byId(id); if(x) s[key] = !!x.checked; });
+    window.changeCalendarSettings = s; lset('calendar_settings', s); refreshAll(); return s;
+  }
+  function applyCalSettingsToUi(){
+    const s = getCalSettings(); window.changeCalendarSettings = s;
+    const map = [
+      ['toggle-kw','showWeekNumbers'], ['toggle-weeknumbers','showWeekNumbers'], ['setting-weeknumbers','showWeekNumbers'],
+      ['toggle-dots','showChallengeDots'], ['toggle-challenge-dots','showChallengeDots'], ['setting-dots','showChallengeDots'],
+      ['toggle-holidays','showHolidays'], ['setting-holidays','showHolidays']
+    ];
+    map.forEach(([id,key]) => { const x=byId(id); if(x){ x.checked = !!s[key]; if(!x.dataset.changeAutoSave){ x.dataset.changeAutoSave='1'; x.addEventListener('change', persistCalSettingsFromUi); } } });
+    qa('button').forEach(btn => { if(/Einstellungen speichern|Speichern/.test(btn.textContent||'') && btn.closest('#side-panel')) btn.style.display='none'; });
+  }
+  window.saveCalSettings = function(){ persistCalSettingsFromUi(); toastX('Kalender-Einstellungen gespeichert ✓','ok'); };
+  const previousOpenCalendarSettings = window.openCalendarSettings;
+  window.openCalendarSettings = function(){
+    if(typeof previousOpenCalendarSettings === 'function') previousOpenCalendarSettings.apply(this, arguments);
+    setTimeout(applyCalSettingsToUi, 50);
+  };
+
+  function hideCalendarSettingsOutsideCalendar(){
+    const isCal = (window.currentMainView === 'calendar') || (byId('cal-body') && byId('cal-body').style.display !== 'none');
+    qa('[title="Kalender-Einstellungen"]').forEach(btn => { btn.style.display = isCal ? '' : 'none'; });
+  }
+
+  function hideUpcomingStrip(){ const u = byId('upcoming-strip'); if(u) u.style.display = 'none'; }
+
+  /* Normalize default sport set: max 7 open, fitness optional, walking 10 min. */
+  function normalizeChallengeList(){
+    if(!Array.isArray(window.challenges)) window.challenges = [];
+    window.challenges.forEach(ch => {
+      const title = String(ch.title || ch.name || '').toLowerCase();
+      if(title.includes('spazier') || title.includes('spazieren')){
+        ch.title = ch.title || ch.name || '10 Minuten spazieren';
+        ch.name = ch.name || ch.title;
+        ch.points = 10;
+        ch.url = '';
+        ch.video = '';
+        ch.desc = ch.desc || '10 Minuten spazieren gehen.';
+        ch.optional = false;
+      }
+      if(title.includes('fitness')){
+        ch.optional = true;
+        ch.url = '';
+        ch.video = '';
+      }
+    });
+    const hasWalk = window.challenges.some(ch => String(ch.title||ch.name||'').toLowerCase().includes('spazier'));
+    if(!hasWalk){
+      window.challenges.unshift({ id:'walk-10-min', title:'10 Minuten spazieren', name:'10 Minuten spazieren', desc:'10 Minuten spazieren gehen.', points:10, icon:'🚶', level:'leicht', optional:false, url:'' });
+    }
+  }
+  function openChallengesForToday(){
+    normalizeChallengeList();
+    const all = (window.challenges||[]).filter(ch => !isDoneToday(ch.id||ch.challengeId||ch.title||ch.name));
+    const required = all.filter(ch => !ch.optional);
+    const optional = all.filter(ch => ch.optional);
+    return required.concat(optional).slice(0,7);
+  }
+
+  function renderChallengeKpisHtml(){
+    const done = todayCompletions().length;
+    const open = openChallengesForToday().length;
+    const todayPts = todayPoints();
+    const totalPts = totalPoints();
+    return '<div id="challenge-today-kpis">' +
+      '<div class="challenge-today-card"><div class="ct-num">'+done+'</div><div class="ct-label">Heute erledigt</div></div>' +
+      '<div class="challenge-today-card"><div class="ct-num">'+open+'</div><div class="ct-label">Heute offen</div></div>' +
+      '<div class="challenge-today-card"><div class="ct-num">'+todayPts+'</div><div class="ct-label">Punkte heute</div></div>' +
+      '<div class="challenge-today-card"><div class="ct-num">'+totalPts+'</div><div class="ct-label">Gesamtpunkte</div></div>' +
+    '</div>';
+  }
+  function updateChallengeKpis(){
+    const existing = byId('challenge-today-kpis');
+    if(existing){ existing.outerHTML = renderChallengeKpisHtml(); return; }
+    const layout = q('.challenge-layout') || byId('challenge-layout');
+    if(layout && layout.parentNode) layout.parentNode.insertBefore(htmlToNode(renderChallengeKpisHtml()), layout);
+  }
+  function htmlToNode(html){ const t=document.createElement('template'); t.innerHTML=html.trim(); return t.content.firstChild; }
+
+  function markDoneVisual(id){
+    qa('[data-challenge-id="'+String(id).replace(/"/g,'\\"')+'"]').forEach(row => {
+      row.classList.add('challenge-done');
+      const btn = q('button', row);
+      if(btn){ btn.textContent='Erledigt'; btn.classList.remove('btn-primary'); btn.classList.add('btn-success'); }
+      const meta = q('.challenge-meta', row);
+      if(meta && !/heute erledigt/i.test(meta.textContent)) meta.innerHTML += ' · ✅ heute erledigt';
+    });
+  }
+
+  window.completeChallenge = function(id){
+    normalizeChallengeList();
+    const ch = getChallengeById(id);
+    if(!ch){ toastX('Challenge nicht gefunden','err'); return; }
+    if(isDoneToday(id)){ toastX('Diese Challenge ist heute schon erledigt',''); markDoneVisual(id); return; }
+    const info = window.userInfo || {};
+    const u = (function(){ try { return firebase.auth().currentUser || null; } catch(e){ return null; } })();
+    const entry = {
+      id: 'done_'+String(id)+'_'+todayKey()+'_'+Date.now(),
+      challengeId: String(id),
+      date: todayKey(),
+      points: getPoints(ch),
+      playerId: normalizeId((u && (u.email || u.uid)) || info.email || info.name || 'me'),
+      userEmail: (u && u.email) || info.email || '',
+      done: true,
+      timestamp: new Date().toISOString()
+    };
+    if(!Array.isArray(window.challengeCompletions)) window.challengeCompletions = [];
+    window.challengeCompletions.push(entry);
+    saveAll();
+    markDoneVisual(id);
+    refreshAll();
+    toastX('+'+entry.points+' Punkte ✓','ok');
+  };
+
+  window.resetTodayChallenges = function(){
+    const t = todayKey();
+    const before = (window.challengeCompletions||[]).length;
+    window.challengeCompletions = (window.challengeCompletions||[]).filter(c => !(completionDate(c)===t && isMine(c)));
+    const removed = before - window.challengeCompletions.length;
+    saveAll(); refreshAll();
+    toastX(removed ? 'Heute zurückgesetzt: '+removed+' erledigte Challenge(s) entfernt' : 'Heute war nichts erledigt','ok');
+  };
+
+  window.renderChallenges = function(){
+    normalizeChallengeList();
+    let div = byId('challenges-view'); if(!div) return;
+    if(!q('.challenge-layout', div)){
+      div.innerHTML = '<div class="list-header"><div class="list-title">Challenges</div></div><div class="challenge-layout"><div class="challenge-card"><div class="challenge-card-head"><div><div class="challenge-title">Heute erledigen</div><div class="challenge-sub">Maximal 7 offene Aufgaben pro Tag</div></div><button class="btn btn-ghost btn-sm" onclick="resetTodayChallenges()">Heute zurücksetzen</button></div><div id="challenges-list"></div></div><div class="leader-card"><div class="leader-card-head"><div><div class="challenge-title">Kontest</div><div class="challenge-sub">Punkte &amp; erledigte Challenges</div></div><button class="btn btn-secondary btn-sm" onclick="openParticipantPanel && openParticipantPanel()">Mitspieler</button></div><div id="leaderboard-list"></div></div></div>';
+    }
+    updateChallengeKpis();
+    const list = byId('challenges-list');
+    const open = openChallengesForToday();
+    if(list){
+      list.innerHTML = open.length ? open.map(ch => {
+        const id = String(ch.id || ch.challengeId || ch.title || ch.name);
+        const link = ch.url ? '<a href="'+escX(ch.url)+'" target="_blank" rel="noopener" class="challenge-meta" onclick="event.stopPropagation()">So geht die Übung</a>' : '';
+        return '<div class="challenge-item" data-challenge-id="'+escX(id)+'"><div class="challenge-icon">'+escX(ch.icon||'🏃')+'</div><div class="challenge-body"><div class="challenge-name">'+escX(ch.title||ch.name||'Challenge')+(ch.optional?' <span class="badge-gray" style="font-size:10px;padding:2px 6px;border-radius:99px">optional</span>':'')+'</div><div class="challenge-meta">'+escX(ch.desc||'')+' · '+escX(ch.level||'leicht')+' · '+getPoints(ch)+' Punkte</div>'+link+'</div><span class="points-pill">+'+getPoints(ch)+'</span><button class="btn btn-primary btn-sm" onclick="completeChallenge(\''+escX(id)+'\')">Erledigen</button></div>';
+      }).join('') : '<div class="dash-empty">Heute sind alle Aufgaben erledigt ✓</div>';
+    }
+    const board = byId('leaderboard-list');
+    if(board){
+      const info = window.userInfo || {};
+      const name = info.name || info.email || 'Du';
+      const rows = [{ name: name + ' · Du', todayPoints: todayPoints(), totalPoints: totalPoints(), count: totalCompletionsMine().length }];
+      board.innerHTML = rows.map((p,i)=>'<div class="leader-row"><div class="leader-rank">'+(i+1)+'</div><div><div class="leader-name">'+escX(p.name)+'</div><div class="leader-detail">Heute: '+p.todayPoints+' P · Gesamt: '+p.totalPoints+' P · '+p.count+' erledigt</div></div><div class="leader-score">'+p.totalPoints+'</div></div>').join('');
+    }
+  };
+
+  /* Dashboard: keep original cards if present, add open tasks overview. */
+  function dashboardTaskCardHtml(){
+    const open = openChallengesForToday();
+    const done = todayCompletions().length;
+    return '<div class="dash-card"><div class="dash-card-head"><div><div class="dash-card-title">✅ Aufgaben heute</div><div class="dash-card-sub">Maximal 7 offene Aufgaben pro Tag</div></div><button class="btn btn-ghost btn-sm" onclick="setMainView(\'challenges\')">Öffnen →</button></div><div class="dash-card-body">' +
+      '<div class="dash-row"><div class="dash-row-icon" style="background:var(--amb-d)">⏳</div><div class="dash-row-body"><div class="dash-row-title">Heute offen</div><div class="dash-row-sub">Noch zu erledigende Aufgaben</div></div><span class="dash-row-badge badge-amber">'+open.length+'</span></div>' +
+      '<div class="dash-row"><div class="dash-row-icon" style="background:var(--grn-d)">✓</div><div class="dash-row-body"><div class="dash-row-title">Heute erledigt</div><div class="dash-row-sub">Punkte heute: '+todayPoints()+'</div></div><span class="dash-row-badge badge-green">'+done+'</span></div>' +
+      '</div></div>';
+  }
+  function addDashboardTaskCard(){
+    const grid = byId('dash-grid'); if(!grid) return;
+    const old = byId('dashboard-open-tasks-card'); if(old) old.remove();
+    const node = htmlToNode('<div id="dashboard-open-tasks-card">'+dashboardTaskCardHtml()+'</div>');
+    grid.insertBefore(node.firstChild || node, grid.firstChild);
+  }
+  const prevBuildDashboard = window.buildDashboard;
+  window.buildDashboard = function(){
+    if(typeof prevBuildDashboard === 'function') prevBuildDashboard.apply(this, arguments);
+    setTimeout(addDashboardTaskCard, 0);
+  };
+
+  function pointSumsByDate(){
+    const sums = {};
+    (window.challengeCompletions||[]).filter(isMine).forEach(c => { const d = completionDate(c); if(d) sums[d] = (sums[d]||0) + pointsForCompletion(c); });
+    return sums;
+  }
+  function addPointBadgesToCalendar(){
+    const settings = getCalSettings();
+    const sums = pointSumsByDate();
+    qa('.challenge-points-badge').forEach(x=>x.remove());
+    qa('.day-cell').forEach(cell => {
+      let dk = cell.getAttribute('data-date') || cell.getAttribute('data-day') || '';
+      if(!dk){
+        const numEl = q('.day-num', cell); const mon = byId('month-label');
+        if(numEl && mon){
+          const m = String(mon.textContent||'').match(/([A-Za-zÄÖÜäöü]+)\s+(\d{4})/);
+          const months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+          if(m){ const mi = months.indexOf(m[1]); if(mi>=0) dk = m[2]+'-'+pad(mi+1)+'-'+pad(parseInt(numEl.textContent,10)); }
+        }
+      }
+      if(dk && sums[dk]){ const b=document.createElement('div'); b.className='challenge-points-badge'; b.textContent='+'+sums[dk]+'P'; cell.appendChild(b); }
+      if(!settings.showChallengeDots){ qa('.challenge-day-dot', cell).forEach(d=>d.style.display='none'); }
+    });
+    if(!settings.showHolidays){ qa('.holiday-line,.holiday-badge').forEach(h=>h.style.display='none'); }
+  }
+  const prevRenderCalendar = window.renderCalendar;
+  window.renderCalendar = function(){
+    if(typeof prevRenderCalendar === 'function') prevRenderCalendar.apply(this, arguments);
+    hideUpcomingStrip(); setTimeout(addPointBadgesToCalendar, 0);
+  };
+
+  /* Header settings button only in calendar. */
+  const prevSetMainView = window.setMainView;
+  window.setMainView = function(v){
+    if(typeof prevSetMainView === 'function') prevSetMainView.apply(this, arguments);
+    window.currentMainView = v;
+    hideCalendarSettingsOutsideCalendar();
+    if(v==='challenges') setTimeout(updateChallengeKpis,0);
+    if(v==='dashboard') setTimeout(addDashboardTaskCard,0);
+  };
+
+  /* Remove stay-logged-in button in logout panel. */
+  const prevConfirmLogout = window.confirmLogout;
+  window.confirmLogout = function(){
+    if(typeof prevConfirmLogout === 'function') prevConfirmLogout.apply(this, arguments);
+    setTimeout(()=>{ qa('button').forEach(btn => { if(/Angemeldet bleiben/i.test(btn.textContent||'')) btn.remove(); }); }, 50);
+  };
+
+  /* Robust push status persistence: reflect Notification permission. */
+  const prevReqPush = window.requestPushPermission;
+  window.requestPushPermission = async function(){
+    let res;
+    try{ if(typeof prevReqPush === 'function') res = await prevReqPush.apply(this, arguments); }catch(e){ console.warn(PATCH_KEY, e); }
+    try{ lset('push_enabled', Notification && Notification.permission === 'granted'); }catch(e){}
+    setTimeout(updatePushStatus, 100);
+    return res;
+  };
+  function updatePushStatus(){
+    let granted=false; try{ granted = Notification && Notification.permission === 'granted'; }catch(e){}
+    const enabled = granted || !!lget('push_enabled', false);
+    qa('#push-status-pill,.status-pill').forEach(p => { if(/Push|Aktiv|Inaktiv/i.test(p.textContent||'')){ p.textContent = enabled?'AKTIV':'INAKTIV'; p.classList.toggle('status-on', enabled); p.classList.toggle('status-off', !enabled); } });
+    const cb = byId('push-toggle') || byId('toggle-push') || byId('setting-push'); if(cb) cb.checked = enabled;
+  }
+
+  if(!byId('change-master-final-style')){
+    const st = document.createElement('style'); st.id='change-master-final-style';
+    st.textContent = '.demo-btn{display:none!important}#upcoming-strip{display:none!important}#challenge-today-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:12px 18px;border-bottom:1px solid var(--b1)}.challenge-today-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:12px 14px}.ct-num{font-family:var(--mono);font-size:28px;font-weight:900;color:var(--grn);line-height:1}.ct-label{font-size:11px;color:var(--t4);font-weight:800;text-transform:uppercase;letter-spacing:.4px;margin-top:5px}.challenge-item.challenge-done{border-color:rgba(52,211,153,.45)!important;background:rgba(52,211,153,.07)!important}.challenge-item.challenge-done .challenge-name{color:var(--grn)!important}.challenge-points-badge{position:absolute;right:5px;bottom:4px;font-size:9px;font-weight:800;color:var(--grn);background:rgba(52,211,153,.14);border:1px solid rgba(52,211,153,.25);border-radius:999px;padding:1px 5px;pointer-events:none}#dashboard-open-tasks-card{display:contents}@media(max-width:700px){#challenge-today-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}';
+    document.head.appendChild(st);
+  }
+
+  window.addEventListener('load', function(){
+    setTimeout(function(){
+      removeDemoButton(); normalizeChallengeList(); hideUpcomingStrip(); applyCalSettingsToUi(); hideCalendarSettingsOutsideCalendar(); updatePushStatus(); refreshAll();
+    }, 650);
+  });
+  document.addEventListener('DOMContentLoaded', removeDemoButton);
+})();
+</script>
+
 </body>
 </html>
