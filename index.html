@@ -2,132 +2,2487 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Change App</title>
-
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover">
+<meta name="theme-color" content="#080c18">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Change">
+<title>Change · Workspace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async></script>
+<link rel="manifest" href="./manifest.json">
+<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging-compat.js"></script>
 <script src="./firebase-config.js"></script>
-
 <style>
-body {
-  margin:0;
-  font-family: Arial, sans-serif;
-  background:#0d1222;
-  color:#fff;
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   CHANGE v3 · DESIGN SYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+:root {
+  --bg:#080c18; --bg2:#0d1222; --bg3:#111827;
+  --s1:#151d2e; --s2:#1c2640; --s3:#243050;
+  --b1:rgba(255,255,255,.07); --b2:rgba(255,255,255,.13); --b3:rgba(255,255,255,.22);
+  --acc:#4f7dff; --acc-h:#6994ff; --acc-d:rgba(79,125,255,.15); --acc-d2:rgba(79,125,255,.07);
+  --grn:#34d399; --grn-d:rgba(52,211,153,.13);
+  --amb:#f59e0b; --amb-d:rgba(245,158,11,.13);
+  --red:#f87171; --red-d:rgba(248,113,113,.13);
+  --pur:#a78bfa; --pur-d:rgba(167,139,250,.13);
+  --t1:#f1f5f9; --t2:#94a3b8; --t3:#64748b; --t4:#475569; --t5:#334155;
+  --font:'DM Sans',system-ui,sans-serif;
+  --mono:'DM Mono',monospace;
+  --r:10px; --rsm:6px; --rlg:16px; --rxl:22px;
+  --sh:0 4px 24px rgba(0,0,0,.45);
+  --sh-lg:0 20px 64px rgba(0,0,0,.65);
+  /* FIX: nav height includes safe area */
+  --nav-h:58px;
+  --safe-bottom:env(safe-area-inset-bottom, 0px);
+  --total-nav:calc(var(--nav-h) + var(--safe-bottom));
 }
-.screen { display:none; padding:20px; }
-.active { display:block; }
 
-.nav {
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent }
+html { height:100%; height:-webkit-fill-available }
+body {
+  font-family:var(--font); background:var(--bg); color:var(--t1);
+  height:100%; min-height:100vh; min-height:-webkit-fill-available;
+  overflow:hidden; -webkit-font-smoothing:antialiased; line-height:1.5;
+}
+::-webkit-scrollbar { width:4px; height:4px }
+::-webkit-scrollbar-track { background:transparent }
+::-webkit-scrollbar-thumb { background:var(--s3); border-radius:10px }
+
+/* ── APP SHELL ── */
+#app { display:flex; flex-direction:column; height:100vh; height:-webkit-fill-available }
+
+/* ── LOADING ── */
+#loading {
+  position:fixed; inset:0; background:var(--bg); z-index:9999;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px;
+  transition:opacity .4s;
+}
+.ld-icon {
+  width:64px; height:64px; border-radius:20px;
+  background:linear-gradient(135deg,var(--acc),var(--pur));
+  display:flex; align-items:center; justify-content:center;
+  animation:ld-pulse 2s ease-in-out infinite;
+}
+.ld-icon svg { width:32px; height:32px; stroke:white; stroke-width:1.8 }
+@keyframes ld-pulse { 0%,100%{box-shadow:0 0 0 0 rgba(79,125,255,.4)} 50%{box-shadow:0 0 0 16px rgba(79,125,255,0)} }
+.ld-text { font-size:13px; color:var(--t3); font-weight:500; letter-spacing:.3px }
+
+/* ── SETUP MODAL ── */
+#setup-modal {
+  display:none; position:fixed; inset:0; z-index:800;
+  background:rgba(0,0,0,.8); backdrop-filter:blur(8px);
+  align-items:center; justify-content:center; padding:20px;
+}
+#setup-modal.show { display:flex }
+.modal-box {
+  background:var(--s1); border:1px solid var(--b2);
+  border-radius:var(--rxl); padding:36px 32px;
+  width:min(520px,100%); box-shadow:var(--sh-lg);
+}
+.modal-badge {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:4px 12px; border-radius:20px;
+  background:var(--acc-d); border:1px solid rgba(79,125,255,.25);
+  font-size:11px; font-weight:700; color:var(--acc);
+  text-transform:uppercase; letter-spacing:.7px; margin-bottom:16px;
+}
+.modal-h { font-size:22px; font-weight:800; color:var(--t1); margin-bottom:8px; letter-spacing:-.4px }
+.modal-sub { font-size:14px; color:var(--t3); line-height:1.6; margin-bottom:24px }
+.setup-steps { display:flex; flex-direction:column; gap:12px; margin-bottom:22px }
+.step { display:flex; gap:12px; align-items:flex-start }
+.step-n {
+  width:26px; height:26px; border-radius:50%; flex-shrink:0;
+  background:var(--acc-d); border:1px solid rgba(79,125,255,.25);
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:800; color:var(--acc); margin-top:2px;
+}
+.step-t { font-size:13px; color:var(--t2); line-height:1.55 }
+.step-t strong { color:var(--t1) }
+.step-t code { font-family:var(--mono); font-size:11px; background:var(--s2); padding:1px 6px; border-radius:4px; color:var(--acc) }
+.fl-group { margin-bottom:14px }
+.fl-label { font-size:11px; font-weight:700; color:var(--t3); text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; display:block }
+.fl-input {
+  width:100%; background:var(--s2); border:1px solid var(--b2);
+  border-radius:var(--r); padding:13px 14px;
+  font-family:var(--font); font-size:15px; color:var(--t1);
+  outline:none; transition:border-color .15s;
+}
+.fl-input:focus { border-color:var(--acc); background:var(--s3) }
+.fl-input::placeholder { color:var(--t4) }
+.btn-row { display:flex; gap:8px; margin-top:4px }
+
+/* ── BUTTONS ── */
+.btn {
+  display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  padding:12px 20px; border-radius:var(--r); border:none;
+  font-family:var(--font); font-size:14px; font-weight:600;
+  cursor:pointer; transition:all .15s; white-space:nowrap; line-height:1;
+  min-height:44px; /* FIX: touch target */
+}
+.btn-primary { background:var(--acc); color:#fff }
+.btn-primary:hover { background:var(--acc-h); transform:translateY(-1px); box-shadow:0 6px 20px rgba(79,125,255,.4) }
+.btn-primary:active { transform:translateY(0) }
+.btn-secondary { background:var(--s2); color:var(--t2); border:1px solid var(--b2) }
+.btn-secondary:hover { background:var(--s3); color:var(--t1) }
+.btn-ghost { background:transparent; color:var(--t3); border:1px solid var(--b1) }
+.btn-ghost:hover { border-color:var(--b2); color:var(--t2) }
+.btn-danger { background:var(--red-d); color:var(--red) }
+.btn-success { background:var(--grn-d); color:var(--grn) }
+.btn-full { width:100% }
+.btn svg { width:16px; height:16px; stroke-width:2; flex-shrink:0 }
+.btn-sm { padding:8px 14px; font-size:12px; min-height:36px }
+
+/* ── LOGIN ── */
+#login-screen {
+  display:none; flex-direction:column; align-items:center;
+  justify-content:center; height:100%; padding:24px;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 40%,rgba(79,125,255,.12) 0%,transparent 70%),
+    radial-gradient(ellipse 50% 40% at 80% 70%,rgba(167,139,250,.08) 0%,transparent 60%),
+    var(--bg);
+}
+.login-card {
+  width:min(420px,100%); background:var(--s1); border:1px solid var(--b2);
+  border-radius:28px; padding:48px 40px; box-shadow:var(--sh-lg); text-align:center;
+}
+@media(max-width:480px) { .login-card { padding:36px 24px; border-radius:24px } }
+.login-logo {
+  width:72px; height:72px; border-radius:22px;
+  background:linear-gradient(135deg,var(--acc),var(--pur));
+  display:flex; align-items:center; justify-content:center;
+  margin:0 auto 24px; box-shadow:0 12px 36px rgba(79,125,255,.35);
+}
+.login-logo svg { width:36px; height:36px; stroke:white; stroke-width:1.8 }
+.login-h { font-size:32px; font-weight:800; letter-spacing:-.6px; color:var(--t1); margin-bottom:8px }
+.login-sub { font-size:15px; color:var(--t3); line-height:1.65; margin-bottom:36px }
+.google-btn {
+  display:flex; align-items:center; justify-content:center; gap:12px;
+  width:100%; padding:15px 20px;
+  background:var(--s2); border:1px solid var(--b2); border-radius:var(--r);
+  font-family:var(--font); font-size:15px; font-weight:600; color:var(--t1);
+  cursor:pointer; transition:all .2s; margin-bottom:10px; min-height:52px;
+}
+.google-btn:hover { background:var(--s3); border-color:var(--b3); transform:translateY(-1px); box-shadow:var(--sh) }
+.google-btn:active { transform:none }
+.google-btn svg { width:22px; height:22px; flex-shrink:0 }
+.demo-btn {
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  width:100%; padding:14px 20px; min-height:48px;
+  background:transparent; border:1px solid var(--b1); border-radius:var(--r);
+  font-family:var(--font); font-size:14px; color:var(--t4); cursor:pointer; transition:all .15s;
+}
+.demo-btn:hover { border-color:var(--b2); color:var(--t3) }
+.login-note { margin-top:22px; font-size:12px; color:var(--t5); line-height:1.6 }
+
+/* ── MAIN APP ── */
+#main-app { display:none; flex-direction:column; height:100%; overflow:hidden }
+
+/* ── HEADER ── */
+#header {
+  display:flex; align-items:center; gap:10px; padding:0 14px;
+  height:58px; flex-shrink:0;
+  background:rgba(8,12,24,.92); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--b1); z-index:100; position:relative;
+}
+.h-logo { display:flex; align-items:center; gap:9px; flex-shrink:0 }
+.h-logo-icon {
+  width:34px; height:34px; border-radius:10px;
+  background:linear-gradient(135deg,var(--acc),var(--pur));
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.h-logo-icon svg { width:17px; height:17px; stroke:white; stroke-width:2 }
+.h-logo-name { font-size:17px; font-weight:800; color:var(--t1); letter-spacing:-.3px }
+.h-sep { width:1px; height:22px; background:var(--b2); flex-shrink:0 }
+
+/* Desktop Tabs */
+.h-tabs { display:flex; align-items:center; gap:2px; flex:1 }
+.h-tab {
+  display:flex; align-items:center; gap:6px;
+  padding:8px 14px; border-radius:var(--rsm); border:none;
+  font-family:var(--font); font-size:13px; font-weight:600;
+  color:var(--t4); background:transparent; cursor:pointer; transition:all .15s;
+  min-height:36px;
+}
+.h-tab:hover { background:var(--s1); color:var(--t2) }
+.h-tab.active { background:var(--acc-d); color:var(--acc) }
+.h-tab svg { width:14px; height:14px; stroke-width:2; flex-shrink:0 }
+
+/* Cal title strip - ALWAYS visible on mobile */
+#cal-title-bar {
+  display:none; align-items:center; gap:4px; flex:1;
+}
+/* FIX: on mobile, show cal-title-bar instead of h-tabs when in calendar */
+.cal-active #cal-title-bar { display:flex }
+.cal-active .h-tabs, .cal-active .h-sep { display:none !important }
+
+.h-nav-btn {
+  width:40px; height:40px; display:flex; align-items:center; justify-content:center;
+  border:none; background:var(--s1); border-radius:var(--rsm);
+  cursor:pointer; color:var(--t3); transition:all .15s; flex-shrink:0;
+  /* FIX: proper touch target */
+}
+.h-nav-btn:hover { background:var(--s2); color:var(--t1) }
+.h-nav-btn svg { width:16px; height:16px; stroke-width:2.2 }
+.h-month {
+  font-size:15px; font-weight:800; color:var(--t1);
+  flex:1; text-align:center; white-space:nowrap; letter-spacing:-.3px; cursor:pointer;
+}
+.h-right { display:flex; align-items:center; gap:4px; flex-shrink:0 }
+
+/* FIX: min touch target 44px for all icon buttons */
+.icon-btn {
+  width:44px; height:44px; display:flex; align-items:center; justify-content:center;
+  border:none; background:transparent; border-radius:var(--rsm);
+  cursor:pointer; color:var(--t3); transition:all .15s; position:relative;
+}
+.icon-btn:hover { background:var(--s1); color:var(--t1) }
+.icon-btn svg { width:19px; height:19px; stroke-width:1.8 }
+.notif-dot {
+  position:absolute; top:7px; right:7px; width:7px; height:7px;
+  background:var(--red); border-radius:50%; border:1.5px solid var(--bg);
+  display:none; animation:ndot 2s ease-in-out infinite;
+}
+@keyframes ndot { 0%,100%{opacity:1} 50%{opacity:.5} }
+.avatar {
+  width:36px; height:36px; border-radius:50%;
+  background:linear-gradient(135deg,var(--acc),var(--pur));
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:800; color:white; cursor:pointer;
+  overflow:hidden; flex-shrink:0; border:2px solid var(--b2);
+  transition:border-color .15s; margin-left:2px;
+}
+.avatar:hover { border-color:var(--b3) }
+.avatar img { width:100%; height:100%; object-fit:cover }
+
+/* Mobile: hide desktop-only elements */
+@media(max-width:700px) {
+  .h-sep, .h-logo-name, .h-tabs, .desktop-only { display:none !important }
+  #header { padding:0 8px; gap:6px }
+  #cal-title-bar { display:none } /* hidden by default, shown via JS class */
+}
+
+/* ── CONTENT AREA ── */
+#content { flex:1; display:flex; flex-direction:column; overflow:hidden; min-height:0 }
+
+/* ── CALENDAR VIEW CONTROLS BAR ── */
+/* FIX: this replaces the broken header-based controls on mobile */
+#cal-controls-bar {
+  display:none; /* shown only in calendar view */
+  align-items:center; gap:6px; padding:8px 12px;
+  background:var(--bg2); border-bottom:1px solid var(--b1);
+  flex-shrink:0; overflow-x:auto; scrollbar-width:none;
+}
+#cal-controls-bar::-webkit-scrollbar { display:none }
+#cal-controls-bar.show { display:flex }
+
+.view-toggle-bar {
+  display:flex; background:var(--s1); border-radius:var(--rsm);
+  padding:2px; gap:2px; flex-shrink:0;
+}
+.vbtn {
+  padding:7px 12px; border:none; border-radius:4px;
+  font-family:var(--font); font-size:12px; font-weight:600;
+  color:var(--t4); cursor:pointer; transition:all .15s; white-space:nowrap;
+  min-height:36px;
+}
+.vbtn.active { background:var(--acc); color:#fff }
+.h-today-btn {
+  padding:8px 14px; border:1px solid var(--b2); border-radius:var(--rsm);
+  background:transparent; font-family:var(--font); font-size:12px;
+  font-weight:600; color:var(--t3); cursor:pointer; transition:all .15s;
+  white-space:nowrap; min-height:36px; flex-shrink:0;
+}
+.h-today-btn:hover { background:var(--s1); color:var(--t1) }
+
+/* ── CALENDAR ── */
+#cal-body { flex:1; display:flex; flex-direction:column; overflow:hidden; min-height:0 }
+.wday-row {
+  display:grid; grid-template-columns:repeat(7,1fr);
+  background:var(--bg2); border-bottom:1px solid var(--b1); flex-shrink:0;
+}
+.wday-cell {
+  padding:9px 6px; text-align:center;
+  font-size:11px; font-weight:700; color:var(--t5);
+  letter-spacing:.5px; text-transform:uppercase;
+}
+#month-grid { flex:1; display:grid; grid-template-rows:repeat(6,1fr); overflow:hidden }
+.week-row { display:grid; grid-template-columns:repeat(7,1fr); border-bottom:1px solid var(--b1) }
+.week-row:last-child { border-bottom:none }
+.day-cell {
+  border-right:1px solid var(--b1); padding:5px 4px 3px;
+  display:flex; flex-direction:column; gap:2px;
+  overflow:hidden; cursor:pointer; transition:background .1s;
+  min-height:0; position:relative;
+}
+.day-cell:last-child { border-right:none }
+.day-cell:hover { background:var(--s1) }
+.day-cell.other { opacity:.3 }
+.day-cell.today .day-num-wrap { background:var(--acc); border-radius:50%; box-shadow:0 4px 12px rgba(79,125,255,.45) }
+.day-num-wrap { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0 }
+.day-num { font-size:12px; font-weight:700; color:var(--t3); font-family:var(--mono); line-height:1 }
+.day-cell.today .day-num { color:white }
+.day-cell.weekend .day-num { color:var(--t4) }
+.ev-chip {
+  font-size:10px; font-weight:600; padding:2px 5px; border-radius:4px;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  cursor:pointer; transition:opacity .1s; flex-shrink:0;
+}
+.ev-chip:hover { opacity:.8 }
+.ev-chip.blue { background:rgba(79,125,255,.22); color:#7fa8ff }
+.ev-chip.green { background:rgba(52,211,153,.18); color:#6ee7b7 }
+.ev-chip.amber { background:rgba(245,158,11,.18); color:#fcd34d }
+.ev-chip.red { background:rgba(248,113,113,.18); color:#fca5a5 }
+.ev-chip.purple { background:rgba(167,139,250,.18); color:#c4b5fd }
+.more-chip { font-size:9px; color:var(--t5); padding:1px 3px }
+.challenge-day-dot {
+  position:absolute; top:5px; right:5px; width:7px; height:7px;
+  border-radius:50%; background:var(--amb); box-shadow:0 0 0 2px rgba(8,12,24,.8); z-index:2
+}
+.challenge-day-dot.done { background:var(--grn) }
+.holiday-line { font-size:9px; color:var(--amb); padding:1px 4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+
+/* ── AGENDA VIEW ── */
+#agenda-view { display:none; flex:1; overflow-y:auto; padding:16px }
+.ag-group { margin-bottom:24px }
+.ag-header { display:flex; align-items:center; gap:14px; margin-bottom:10px }
+.ag-day-num { font-size:36px; font-weight:900; color:var(--t1); line-height:1; font-family:var(--mono); letter-spacing:-2px }
+.ag-day-num.today { color:var(--acc) }
+.ag-day-info { display:flex; flex-direction:column }
+.ag-weekday { font-size:14px; font-weight:700; color:var(--t1) }
+.ag-month-yr { font-size:12px; color:var(--t4) }
+.ag-events { display:flex; flex-direction:column; gap:7px; padding-left:50px }
+.ag-card {
+  background:var(--s1); border:1px solid var(--b1); border-radius:var(--r);
+  padding:12px 14px; display:flex; gap:12px; align-items:flex-start;
+  cursor:pointer; transition:all .15s; position:relative; overflow:hidden;
+}
+.ag-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; border-radius:2px 0 0 2px }
+.ag-card.blue::before { background:var(--acc) }
+.ag-card.green::before { background:var(--grn) }
+.ag-card.amber::before { background:var(--amb) }
+.ag-card.red::before { background:var(--red) }
+.ag-card.purple::before { background:var(--pur) }
+.ag-card:hover { border-color:var(--b2); transform:translateX(3px) }
+.ag-time { font-size:12px; color:var(--t4); font-family:var(--mono); white-space:nowrap; min-width:68px; padding-top:1px }
+.ag-body { flex:1; min-width:0 }
+.ag-title { font-size:14px; font-weight:700; color:var(--t1); margin-bottom:2px }
+.ag-desc { font-size:12px; color:var(--t4); line-height:1.4 }
+
+/* ── UPCOMING STRIP ── */
+#upcoming-strip {
+  height:48px; background:var(--bg2); border-top:1px solid var(--b1);
+  display:flex; align-items:center; gap:10px; padding:0 14px; flex-shrink:0; overflow:hidden;
+}
+.us-label { font-size:10px; font-weight:700; color:var(--t5); text-transform:uppercase; letter-spacing:.6px; flex-shrink:0 }
+.us-items { display:flex; gap:7px; overflow-x:auto; flex:1; scrollbar-width:none; -webkit-overflow-scrolling:touch }
+.us-items::-webkit-scrollbar { display:none }
+.us-chip {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:5px 12px; border-radius:20px; white-space:nowrap;
+  font-size:12px; font-weight:600; flex-shrink:0; cursor:pointer;
+}
+.us-chip.blue { background:var(--acc-d); color:#7fa8ff }
+.us-chip.green { background:var(--grn-d); color:#6ee7b7 }
+.us-chip.amber { background:var(--amb-d); color:#fcd34d }
+.us-chip.red { background:var(--red-d); color:#fca5a5 }
+
+/* Year/Workweek views */
+#year-view, #workweek-view, #today-view { display:none; flex:1; overflow-y:auto }
+.year-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; padding:14px }
+.year-month-card { background:var(--s1); border:1px solid var(--b1); border-radius:var(--r); padding:10px; cursor:pointer }
+.year-month-title { font-size:13px; font-weight:800; color:var(--t1); margin-bottom:8px }
+.year-mini-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px }
+.year-mini-day { font-size:10px; text-align:center; color:var(--t4); padding:2px; border-radius:3px; min-height:18px }
+.year-mini-day.today { background:var(--acc); color:#fff }
+.year-mini-day.holiday { color:var(--amb) }
+@media(max-width:600px) { .year-grid { grid-template-columns:1fr } }
+
+.workweek-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; padding:14px }
+.workday-card { background:var(--s1); border:1px solid var(--b1); border-radius:var(--r); padding:12px; min-height:200px }
+.workday-head { font-size:13px; font-weight:800; color:var(--t1); margin-bottom:4px }
+.workday-date { font-size:12px; color:var(--t4); margin-bottom:10px }
+@media(max-width:700px) { .workweek-grid { grid-template-columns:1fr } }
+
+/* ── DASHBOARD ── */
+#dashboard-view { display:none; flex:1; overflow-y:auto; padding:18px 16px 24px }
+.dash-hello { margin-bottom:20px }
+.dash-hello h1 { font-size:24px; font-weight:800; color:var(--t1); letter-spacing:-.5px; margin-bottom:4px }
+.dash-hello p { font-size:14px; color:var(--t3) }
+.kpi-grid {
+  display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:20px;
+}
+@media(min-width:700px) { .kpi-grid { grid-template-columns:repeat(4,1fr) } }
+@media(min-width:1100px) { .kpi-grid { grid-template-columns:repeat(5,1fr) } }
+.kpi-card {
+  background:var(--s1); border:1px solid var(--b1); border-radius:var(--rlg);
+  padding:16px 14px 12px; cursor:pointer; transition:all .15s;
+}
+.kpi-card:hover { border-color:var(--b2); transform:translateY(-2px); box-shadow:var(--sh) }
+.kpi-card.warn { border-color:rgba(245,158,11,.3); background:rgba(245,158,11,.04) }
+.kpi-card.danger { border-color:rgba(248,113,113,.3); background:rgba(248,113,113,.04) }
+.kpi-card.good { border-color:rgba(52,211,153,.3); background:rgba(52,211,153,.04) }
+.kpi-icon-wrap {
+  width:36px; height:36px; border-radius:9px;
+  display:flex; align-items:center; justify-content:center; margin-bottom:12px;
+}
+.kpi-icon-wrap.blue { background:var(--acc-d) } .kpi-icon-wrap.green { background:var(--grn-d) }
+.kpi-icon-wrap.amber { background:var(--amb-d) } .kpi-icon-wrap.red { background:var(--red-d) }
+.kpi-icon-wrap.purple { background:var(--pur-d) }
+.kpi-icon-wrap svg { width:18px; height:18px; stroke-width:1.8 }
+.kpi-icon-wrap.blue svg { stroke:var(--acc) } .kpi-icon-wrap.green svg { stroke:var(--grn) }
+.kpi-icon-wrap.amber svg { stroke:var(--amb) } .kpi-icon-wrap.red svg { stroke:var(--red) }
+.kpi-icon-wrap.purple svg { stroke:var(--pur) }
+.kpi-num { font-size:30px; font-weight:900; color:var(--t1); line-height:1; letter-spacing:-1px; margin-bottom:3px; font-family:var(--mono) }
+.kpi-num.warn-color { color:var(--amb) } .kpi-num.danger-color { color:var(--red) } .kpi-num.good-color { color:var(--grn) }
+.kpi-label { font-size:11px; color:var(--t4); font-weight:600; text-transform:uppercase; letter-spacing:.4px }
+.dash-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px }
+@media(max-width:700px) { .dash-grid { grid-template-columns:1fr } }
+.dash-card { background:var(--s1); border:1px solid var(--b1); border-radius:var(--rlg); overflow:hidden }
+.dash-card-head {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:13px 15px; border-bottom:1px solid var(--b1);
+}
+.dash-card-title { font-size:14px; font-weight:700; color:var(--t1) }
+.dash-card-sub { font-size:12px; color:var(--t4) }
+.dash-card-body { max-height:280px; overflow-y:auto }
+.dash-row {
+  display:flex; align-items:center; gap:10px; padding:11px 15px;
+  border-bottom:1px solid var(--b1); cursor:pointer; transition:background .1s;
+  /* FIX: touch target */
+  min-height:48px;
+}
+.dash-row:last-child { border-bottom:none }
+.dash-row:hover { background:var(--s2) }
+.dash-row-icon { width:32px; height:32px; border-radius:var(--rsm); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:15px }
+.dash-row-body { flex:1; min-width:0 }
+.dash-row-title { font-size:13px; font-weight:600; color:var(--t1); overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+.dash-row-sub { font-size:11.5px; color:var(--t4) }
+.dash-row-badge { font-size:10px; font-weight:700; padding:3px 8px; border-radius:20px; white-space:nowrap; flex-shrink:0 }
+.badge-red { background:var(--red-d); color:var(--red) }
+.badge-amber { background:var(--amb-d); color:var(--amb) }
+.badge-green { background:var(--grn-d); color:var(--grn) }
+.badge-blue { background:var(--acc-d); color:var(--acc) }
+.badge-gray { background:var(--s2); color:var(--t4) }
+.dash-empty { padding:24px 16px; font-size:13px; color:var(--t5); text-align:center }
+
+/* ── CHALLENGES VIEW ── */
+/* FIX: this view was completely unreachable on mobile! */
+#challenges-view { display:none; flex:1; overflow:hidden; flex-direction:column }
+.list-header {
+  display:flex; align-items:center; gap:10px;
+  padding:13px 16px; border-bottom:1px solid var(--b1); flex-shrink:0;
+}
+.list-title { font-size:17px; font-weight:800; color:var(--t1); letter-spacing:-.3px; flex:1 }
+.filter-row {
+  display:flex; gap:6px; padding:10px 16px; border-bottom:1px solid var(--b1);
+  overflow-x:auto; flex-shrink:0; scrollbar-width:none;
+}
+.filter-row::-webkit-scrollbar { display:none }
+.filter-pill {
+  padding:7px 14px; border-radius:20px; border:1px solid var(--b1);
+  font-family:var(--font); font-size:12px; font-weight:600; color:var(--t4);
+  background:transparent; cursor:pointer; transition:all .15s; white-space:nowrap;
+  /* FIX: touch target */
+  min-height:36px;
+}
+.filter-pill.active { background:var(--acc-d); border-color:rgba(79,125,255,.3); color:var(--acc) }
+.list-body { flex:1; overflow-y:auto; padding:12px 16px }
+.list-item {
+  background:var(--s1); border:1px solid var(--b1); border-radius:var(--r);
+  padding:14px 16px; margin-bottom:8px; cursor:pointer; transition:all .15s;
+  display:flex; align-items:flex-start; gap:12px; position:relative;
+  min-height:64px; /* FIX: touch target */
+}
+.list-item::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; border-radius:3px 0 0 3px }
+.list-item.status-offen::before { background:var(--amb) }
+.list-item.status-aktiv::before { background:var(--grn) }
+.list-item.status-abgelaufen::before { background:var(--red) }
+.list-item:hover { border-color:var(--b2); transform:translateX(2px) }
+.list-item-icon { width:40px; height:40px; border-radius:var(--rsm); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:18px }
+.list-item-body { flex:1; min-width:0 }
+.list-item-title { font-size:14px; font-weight:700; color:var(--t1); margin-bottom:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+.list-item-meta { display:flex; align-items:center; gap:8px; flex-wrap:wrap }
+.list-item-sub { font-size:12px; color:var(--t4) }
+.list-item-amount { font-size:15px; font-weight:800; color:var(--t1); font-family:var(--mono); flex-shrink:0 }
+
+/* Challenge layout */
+.challenge-layout { display:grid; grid-template-columns:1.2fr .8fr; gap:14px; padding:14px 16px; overflow-y:auto }
+@media(max-width:700px) { .challenge-layout { grid-template-columns:1fr; padding:12px 14px } }
+.challenge-card, .leader-card { background:var(--s1); border:1px solid var(--b1); border-radius:var(--rlg); overflow:hidden }
+.challenge-card-head, .leader-card-head { display:flex; align-items:center; justify-content:space-between; padding:13px 15px; border-bottom:1px solid var(--b1) }
+.challenge-title { font-size:14px; font-weight:800; color:var(--t1) }
+.challenge-sub { font-size:12px; color:var(--t4); margin-top:2px }
+.challenge-item { display:flex; gap:12px; align-items:center; padding:13px 15px; border-bottom:1px solid var(--b1); min-height:56px }
+.challenge-item:last-child { border-bottom:none }
+.challenge-icon { width:38px; height:38px; border-radius:var(--rsm); display:flex; align-items:center; justify-content:center; background:var(--pur-d); font-size:18px; flex-shrink:0 }
+.challenge-body { flex:1; min-width:0 }
+.challenge-name { font-size:13px; font-weight:700; color:var(--t1); overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+.challenge-meta { font-size:11.5px; color:var(--t4) }
+.challenge-done { opacity:.55 }
+.points-pill { font-size:11px; font-weight:800; padding:4px 9px; border-radius:20px; background:var(--acc-d); color:var(--acc); white-space:nowrap }
+.leader-row { display:flex; align-items:center; gap:10px; padding:12px 15px; border-bottom:1px solid var(--b1); min-height:52px }
+.leader-row:last-child { border-bottom:none }
+.leader-row.clickable { cursor:pointer; transition:background .15s }
+.leader-row.clickable:hover { background:var(--s2) }
+.leader-rank { width:28px; height:28px; border-radius:50%; background:var(--s2); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; color:var(--t3); flex-shrink:0 }
+.leader-row:first-child .leader-rank { background:var(--amb-d); color:var(--amb) }
+.leader-name { font-size:13px; font-weight:700; color:var(--t1) }
+.leader-detail { font-size:11.5px; color:var(--t4) }
+.leader-score { margin-left:auto; font-family:var(--mono); font-size:18px; font-weight:900; color:var(--grn) }
+
+/* ── SETTINGS VIEW ── */
+/* FIX: Settings was also unreachable on mobile */
+#settings-view { display:none; flex:1; overflow-y:auto; padding:16px }
+.settings-section { margin-bottom:20px }
+.settings-section-title { font-size:11px; font-weight:700; color:var(--t4); text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; padding:0 2px }
+.toggle-row {
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  background:var(--s1); border:1px solid var(--b1); border-radius:var(--r);
+  padding:14px 15px; margin-bottom:8px;
+}
+.toggle-copy { min-width:0 }
+.toggle-title { font-size:13px; font-weight:700; color:var(--t1) }
+.toggle-sub { font-size:11.5px; color:var(--t4); line-height:1.45; margin-top:2px }
+.switch { position:relative; display:inline-block; width:48px; height:28px; flex-shrink:0 }
+.switch input { opacity:0; width:0; height:0 }
+.slider { position:absolute; cursor:pointer; inset:0; background:var(--s3); transition:.2s; border-radius:999px; border:1px solid var(--b2) }
+.slider:before { position:absolute; content:""; height:20px; width:20px; left:3px; top:3px; background:var(--t3); transition:.2s; border-radius:50% }
+.switch input:checked + .slider { background:var(--grn-d); border-color:rgba(52,211,153,.35) }
+.switch input:checked + .slider:before { transform:translateX(20px); background:var(--grn) }
+.logout-profile {
+  display:flex; gap:12px; align-items:center;
+  background:var(--s1); border:1px solid var(--b1); border-radius:var(--r);
+  padding:16px; margin-bottom:12px;
+}
+.logout-avatar {
+  width:52px; height:52px; border-radius:50%;
+  background:linear-gradient(135deg,var(--acc),var(--pur));
+  display:flex; align-items:center; justify-content:center;
+  font-weight:900; color:#fff; overflow:hidden; flex-shrink:0; font-size:18px;
+}
+.logout-avatar img { width:100%; height:100%; object-fit:cover }
+.logout-name { font-size:15px; font-weight:800; color:var(--t1) }
+.logout-mail { font-size:12px; color:var(--t4); margin-top:2px }
+.settings-action-btn {
+  display:flex; align-items:center; gap:12px;
+  background:var(--s1); border:1px solid var(--b1); border-radius:var(--r);
+  padding:14px 15px; margin-bottom:8px; cursor:pointer; transition:all .15s;
+  width:100%; text-align:left; font-family:var(--font); min-height:52px;
+}
+.settings-action-btn:hover { background:var(--s2); border-color:var(--b2) }
+.settings-action-btn svg { width:18px; height:18px; stroke-width:1.8; flex-shrink:0 }
+.sab-text { flex:1; min-width:0 }
+.sab-title { font-size:13px; font-weight:700; color:var(--t1) }
+.sab-sub { font-size:11.5px; color:var(--t4); margin-top:1px }
+.sab-arrow { color:var(--t4) }
+.sab-arrow svg { width:14px; height:14px }
+.sab-danger .sab-title { color:var(--red) }
+.sab-danger svg { stroke:var(--red) }
+
+/* Push notification box */
+.push-box { background:var(--s2); border:1px solid var(--b2); border-radius:var(--r); padding:14px; margin-bottom:12px }
+.push-status { font-size:12px; color:var(--t3); line-height:1.5; margin-top:8px }
+.push-ok { color:var(--grn) } .push-warn { color:var(--amb) } .push-err { color:var(--red) }
+
+/* ── PANEL / SIDE ── */
+#panel-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.55);
+  z-index:300; opacity:0; pointer-events:none; transition:opacity .3s;
+}
+#panel-overlay.show { opacity:1; pointer-events:all }
+#side-panel {
+  position:fixed; right:0; top:0; bottom:0; width:min(440px,100vw);
+  background:var(--s1); border-left:1px solid var(--b2);
+  z-index:301; display:flex; flex-direction:column;
+  transform:translateX(100%); transition:transform .3s cubic-bezier(.25,.8,.25,1);
+  box-shadow:var(--sh-lg);
+}
+#side-panel.open { transform:translateX(0) }
+.panel-hd {
+  display:flex; align-items:center; gap:10px;
+  padding:14px 16px; border-bottom:1px solid var(--b1); flex-shrink:0;
+}
+.panel-title { font-size:16px; font-weight:800; color:var(--t1); flex:1; letter-spacing:-.2px }
+.panel-close-btn {
+  width:40px; height:40px; display:flex; align-items:center; justify-content:center;
+  border:none; background:var(--s2); border-radius:var(--rsm);
+  cursor:pointer; color:var(--t3); transition:all .15s;
+}
+.panel-close-btn:hover { background:var(--s3); color:var(--t1) }
+.panel-close-btn svg { width:16px; height:16px; stroke-width:2.2 }
+.panel-body { flex:1; overflow-y:auto; padding:16px }
+
+/* Panel form elements */
+.fg { margin-bottom:14px }
+.flabel { display:block; font-size:11px; font-weight:700; color:var(--t4); text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px }
+.finput {
+  width:100%; background:var(--s2); border:1px solid var(--b2);
+  border-radius:var(--rsm); padding:11px 12px;
+  font-family:var(--font); font-size:15px; color:var(--t1);
+  outline:none; transition:border-color .15s;
+  appearance:none; -webkit-appearance:none;
+  /* FIX: touch target */
+  min-height:44px;
+}
+.finput:focus { border-color:var(--acc); background:var(--s3) }
+.finput::placeholder { color:var(--t5) }
+.finput[type=date] { cursor:pointer; color-scheme:dark }
+select.finput {
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2364748b'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 12px center; padding-right:32px;
+}
+textarea.finput { resize:vertical; min-height:80px; line-height:1.5 }
+.fr { display:flex; gap:8px } .fr .fg { flex:1 }
+.color-row { display:flex; gap:7px; flex-wrap:wrap }
+.col-dot { width:30px; height:30px; border-radius:50%; cursor:pointer; border:2.5px solid transparent; transition:all .15s }
+.col-dot:hover,.col-dot.sel { border-color:var(--t1); transform:scale(1.12) }
+.fa { display:flex; gap:8px; padding-top:14px; border-top:1px solid var(--b1); margin-top:4px }
+.note-box { background:var(--s2); border:1px solid var(--b2); border-radius:var(--r); padding:12px 14px; margin-bottom:12px }
+.note-box-label { font-size:11px; font-weight:700; color:var(--acc); text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; display:flex; align-items:center; gap:6px }
+.note-box-label svg { width:13px; height:13px; stroke:var(--acc); stroke-width:2 }
+.note-display { font-size:13px; color:var(--t2); line-height:1.6; white-space:pre-wrap; word-break:break-word }
+.divider { height:1px; background:var(--b1); margin:14px 0 }
+.section-label { font-size:11px; font-weight:700; color:var(--t4); text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px }
+
+/* ── EMPTY STATE ── */
+.empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:56px 20px; text-align:center }
+.empty-icon { width:56px; height:56px; border-radius:16px; background:var(--s2); display:flex; align-items:center; justify-content:center; margin-bottom:14px }
+.empty-icon svg { width:28px; height:28px; stroke:var(--t4); stroke-width:1.5 }
+.empty-title { font-size:16px; font-weight:700; color:var(--t3); margin-bottom:4px }
+.empty-sub { font-size:13px; color:var(--t5); line-height:1.6 }
+
+/* ── BOTTOM NAV ── */
+/* FIX: Now has 4 tabs so all sections are reachable on mobile */
+#bottom-nav {
+  display:none;
+  background:rgba(8,12,24,.95);
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+  border-top:1px solid var(--b1); flex-shrink:0;
+  padding-bottom:var(--safe-bottom);
+}
+@media(max-width:700px) { #bottom-nav { display:block } }
+.bnav-inner { display:flex; align-items:stretch; height:var(--nav-h) }
+.bnav-item {
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:3px; cursor:pointer; color:var(--t5); transition:color .15s;
+  border:none; background:transparent; font-family:var(--font); padding:6px 4px;
+  /* FIX: touch target */
+  min-height:var(--nav-h);
+}
+.bnav-item.active { color:var(--acc) }
+.bnav-item svg { width:20px; height:20px; stroke-width:1.7 }
+.bnav-label { font-size:10px; font-weight:600 }
+
+/* ── FAB ── */
+/* FIX: proper positioning above bottom nav with safe area */
+#fab {
   position:fixed;
-  bottom:0;
-  width:100%;
-  display:flex;
-  background:#111827;
+  bottom:calc(var(--total-nav) + 12px);
+  right:16px;
+  width:52px; height:52px; border-radius:50%;
+  background:linear-gradient(135deg,var(--acc),#6366f1);
+  display:none; align-items:center; justify-content:center;
+  cursor:pointer; border:none; z-index:200;
+  box-shadow:0 6px 24px rgba(79,125,255,.55);
+  transition:transform .2s,box-shadow .2s;
 }
-.nav button {
-  flex:1;
-  padding:15px;
-  background:none;
-  border:none;
-  color:#aaa;
+#fab:hover,#fab:active { transform:scale(1.08) }
+#fab svg { width:22px; height:22px; stroke:white; stroke-width:2.2 }
+@media(max-width:700px) { #fab { display:flex } }
+
+/* ── TOAST ── */
+#toast-wrap {
+  position:fixed;
+  bottom:calc(var(--total-nav) + 12px);
+  left:50%; transform:translateX(-50%);
+  z-index:900; display:flex; flex-direction:column; gap:6px; pointer-events:none; align-items:center;
 }
-.nav button.active {
-  color:#4f7dff;
+@media(min-width:701px) { #toast-wrap { bottom:24px } }
+.toast {
+  background:var(--s3); border:1px solid var(--b2); border-radius:10px;
+  padding:10px 18px; font-size:13px; font-weight:600; color:var(--t1);
+  box-shadow:var(--sh); white-space:nowrap;
+  animation:tin .25s ease; pointer-events:none;
 }
+.toast.ok { border-color:rgba(52,211,153,.35); color:var(--grn) }
+.toast.err { border-color:rgba(248,113,113,.35); color:var(--red) }
+@keyframes tin { from{opacity:0;transform:translateY(8px) scale(.95)} to{opacity:1;transform:none} }
+
+/* ── LIVE DOT ── */
+.live-dot { width:8px; height:8px; border-radius:50%; background:var(--grn); display:inline-block; margin-left:6px; box-shadow:0 0 0 3px rgba(52,211,153,.12) }
+.live-dot.off { background:var(--t5); box-shadow:none }
+.status-pill { display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:4px 9px; font-size:11px; font-weight:800 }
+.status-on { background:var(--grn-d); color:var(--grn) }
+.status-off { background:var(--s2); color:var(--t4) }
+.status-warn { background:var(--amb-d); color:var(--amb) }
+
+/* ── STAT STRIP ── */
+.stat-strip { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:10px 0 14px }
+.stat-box { background:var(--s2); border:1px solid var(--b1); border-radius:var(--r); padding:12px }
+.stat-num { font-family:var(--mono); font-size:24px; font-weight:900; color:var(--grn); line-height:1 }
+.stat-label { font-size:11px; color:var(--t4); font-weight:700; text-transform:uppercase; letter-spacing:.4px; margin-top:4px }
+
+/* ── MOBILE CALENDAR SMALL SCREEN ── */
+@media(max-width:380px) {
+  .day-cell { padding:2px 2px 1px }
+  .day-num-wrap { width:20px; height:20px }
+  .day-num { font-size:10px }
+  .ev-chip { font-size:8.5px; padding:1px 3px }
+  .kpi-num { font-size:24px }
+  #dashboard-view { padding:14px 12px 20px }
+}
+
+/* ── NOTIF PANEL ── */
+.panel-notif-section { background:var(--s2); border:1px solid var(--b1); border-radius:var(--r); padding:12px 14px; margin-bottom:12px }
+.pns-title { font-size:11px; font-weight:700; color:var(--t4); text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px }
+.nitem { display:flex; gap:12px; padding:10px 0; border-bottom:1px solid var(--b1); cursor:pointer; transition:opacity .1s; min-height:52px }
+.nitem:last-child { border-bottom:none }
+.nitem:hover { opacity:.8 }
+.nitem-icon { width:38px; height:38px; border-radius:var(--rsm); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:18px }
+.nitem-body { flex:1; min-width:0 }
+.nitem-title { font-size:13px; font-weight:700; color:var(--t1); margin-bottom:2px }
+.nitem-sub { font-size:11.5px; color:var(--t4); line-height:1.4 }
+.nitem-badge { font-size:11px; font-weight:700; padding:2px 7px; border-radius:20px; flex-shrink:0; margin-top:1px }
+.notif-pill { display:flex; align-items:center; gap:10px; background:var(--acc-d); border:1px solid rgba(79,125,255,.2); border-radius:var(--r); padding:12px 14px; margin-top:12px }
+.np-body { flex:1 }
+.np-title { font-size:12px; font-weight:700; color:var(--acc); margin-bottom:2px }
+.np-sub { font-size:11.5px; color:var(--t4) }
 </style>
 </head>
-
 <body>
 
-<!-- LOGIN -->
-<div id="login" class="screen active">
-  <h2>Login</h2>
-  <button onclick="login()">Mit Google anmelden</button>
+<!-- Loading Screen -->
+<div id="loading">
+  <div class="ld-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <rect x="3" y="4" width="18" height="18" rx="3"/>
+      <line x1="16" y1="2" x2="16" y2="6"/>
+      <line x1="8" y1="2" x2="8" y2="6"/>
+      <line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+  </div>
+  <div class="ld-text">Change wird geladen…</div>
 </div>
 
-<!-- APP -->
-<div id="app" class="screen">
-  <h2 id="welcome"></h2>
-
-  <div id="dashboard" class="screen active">
-    <h3>Dashboard</h3>
-  </div>
-
-  <div id="calendar" class="screen">
-    <h3>Kalender</h3>
-  </div>
-
-  <div id="challenges" class="screen">
-    <h3>Challenges</h3>
+<!-- Setup Modal -->
+<div id="setup-modal">
+  <div class="modal-box">
+    <div class="modal-badge">⚙ Einmalige Einrichtung</div>
+    <div class="modal-h">Google API konfigurieren</div>
+    <div class="modal-sub">Für Google-Login und Kalender-Synchronisation bitte einmalig eine OAuth Client-ID eintragen. Challenges und Punkte laufen über Firebase.</div>
+    <div class="setup-steps">
+      <div class="step"><div class="step-n">1</div><div class="step-t">Öffne <strong>console.cloud.google.com</strong> → Projekt erstellen</div></div>
+      <div class="step"><div class="step-n">2</div><div class="step-t">API aktivieren: <strong>Google Calendar API</strong></div></div>
+      <div class="step"><div class="step-n">3</div><div class="step-t">Anmeldedaten → OAuth 2.0 → <strong>Web-Anwendung</strong> → Ihre Domain eintragen</div></div>
+      <div class="step"><div class="step-n">4</div><div class="step-t">Client-ID kopieren (endet auf <code>.apps.googleusercontent.com</code>)</div></div>
+    </div>
+    <div class="fl-group">
+      <label class="fl-label">Google OAuth Client-ID</label>
+      <input type="text" class="fl-input" id="client-id-input" placeholder="1234567890-xxxx.apps.googleusercontent.com">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" style="flex:1" onclick="saveClientId()">Speichern &amp; Starten</button>
+      <button class="btn btn-ghost" onclick="startDemo()">Demo-Modus</button>
+    </div>
   </div>
 </div>
 
-<!-- NAV -->
-<div class="nav" id="nav" style="display:none;">
-  <button onclick="setView('dashboard')" id="btn-dashboard">Dashboard</button>
-  <button onclick="setView('calendar')" id="btn-calendar">Kalender</button>
-  <button onclick="setView('challenges')" id="btn-challenges">Challenges</button>
+<!-- Panel Overlay -->
+<div id="panel-overlay" onclick="closePanel()"></div>
+
+<!-- Side Panel -->
+<div id="side-panel">
+  <div class="panel-hd">
+    <div class="panel-title" id="panel-title">Panel</div>
+    <button class="panel-close-btn" onclick="closePanel()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="panel-body" id="panel-body"></div>
 </div>
+
+<!-- Toast Notifications -->
+<div id="toast-wrap"></div>
+
+<!-- ═══ MAIN APP ═══ -->
+<div id="app">
+
+  <!-- Login Screen -->
+  <div id="login-screen">
+    <div class="login-card">
+      <div class="login-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <rect x="3" y="4" width="18" height="18" rx="3"/>
+          <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+      </div>
+      <div class="login-h">Change</div>
+      <div class="login-sub">Ihr Workspace für Kalender &amp; Challenges – mit Google-Synchronisation.</div>
+      <button class="google-btn" onclick="handleGoogleLogin()">
+        <svg viewBox="0 0 24 24">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        Mit Google anmelden
+      </button>
+      <button class="demo-btn" onclick="startDemo()">Demo ohne Anmeldung starten</button>
+      <div class="login-note">Kalender synchronisiert mit Google. Challenges, Mitspieler und Punkte laufen über Firebase.</div>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div id="main-app">
+
+    <!-- Header -->
+    <div id="header">
+      <div class="h-logo">
+        <div class="h-logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <rect x="3" y="4" width="18" height="18" rx="3"/>
+            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </div>
+        <span class="h-logo-name">Change</span>
+      </div>
+      <div class="h-sep"></div>
+
+      <!-- Desktop Tabs (hidden on mobile) -->
+      <div class="h-tabs">
+        <button class="h-tab active" id="htab-dashboard" onclick="setMainView('dashboard')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </button>
+        <button class="h-tab" id="htab-calendar" onclick="setMainView('calendar')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Kalender
+        </button>
+        <button class="h-tab" id="htab-challenges" onclick="setMainView('challenges')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 21h8"/><path d="M12 21V9"/><path d="M5 9h14"/><path d="M9 3l3 6 3-6"/></svg>
+          Challenges
+        </button>
+        <button class="h-tab" id="htab-settings" onclick="setMainView('settings')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.33 1.82V22a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1.82-.33H2a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-.6 1.65 1.65 0 0 0 .33-1.82V2a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.12.69.31 1 .6.31.29.51.64.6 1H22a2 2 0 0 1 0 4h-.09c-.37.09-.72.29-1 .6-.29.31-.48.64-.51 1z"/></svg>
+          Einstellungen
+        </button>
+      </div>
+
+      <!-- Mobile Calendar Title Bar (FIX: was hidden before!) -->
+      <div id="cal-title-bar">
+        <button class="h-nav-btn" onclick="navigate(-1)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <span class="h-month" id="month-label" onclick="goToday()">Mai 2025</span>
+        <button class="h-nav-btn" onclick="navigate(1)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <div class="h-right">
+        <button class="icon-btn" onclick="openNotifPanel()" title="Benachrichtigungen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <div class="notif-dot" id="notif-dot"></div>
+        </button>
+        <div class="avatar" id="user-avatar" onclick="setMainView('settings')" title="Einstellungen">
+          <span id="avatar-initials">?</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calendar Controls Bar (FIX: now properly visible on mobile) -->
+    <div id="cal-controls-bar">
+      <div class="view-toggle-bar">
+        <button class="vbtn" id="vbtn-year" onclick="setCalView('year')">Jahr</button>
+        <button class="vbtn active" id="vbtn-month" onclick="setCalView('month')">Monat</button>
+        <button class="vbtn" id="vbtn-workweek" onclick="setCalView('workweek')">Woche</button>
+        <button class="vbtn" id="vbtn-today" onclick="setCalView('today')">Heute</button>
+      </div>
+      <button class="h-today-btn" onclick="goToday()">Heute</button>
+    </div>
+
+    <!-- Content -->
+    <div id="content">
+
+      <!-- DASHBOARD -->
+      <div id="dashboard-view">
+        <div class="dash-hello">
+          <h1 id="dash-greeting">Guten Tag</h1>
+          <p id="dash-sub">Ihr persönlicher Überblick</p>
+        </div>
+        <div class="kpi-grid" id="kpi-grid"></div>
+        <div class="dash-grid" id="dash-grid"></div>
+      </div>
+
+      <!-- CALENDAR -->
+      <div id="cal-body" style="display:none">
+        <div class="wday-row" id="wday-row">
+          <div class="wday-cell">Mo</div><div class="wday-cell">Di</div>
+          <div class="wday-cell">Mi</div><div class="wday-cell">Do</div>
+          <div class="wday-cell">Fr</div>
+          <div class="wday-cell">Sa</div><div class="wday-cell">So</div>
+        </div>
+        <div id="month-grid"></div>
+        <div id="agenda-view"></div>
+        <div id="year-view"><div class="year-grid" id="year-grid"></div></div>
+        <div id="workweek-view"><div class="workweek-grid" id="workweek-grid"></div></div>
+        <div id="today-view" style="padding:16px"></div>
+        <div id="upcoming-strip">
+          <span class="us-label">Demnächst</span>
+          <div class="us-items" id="upcoming-items">
+            <span style="font-size:12px;color:var(--t5)">Keine anstehenden Termine</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHALLENGES (FIX: now reachable via bottom nav!) -->
+      <div id="challenges-view">
+        <div class="list-header">
+          <span class="list-title">Challenges</span>
+          <button class="btn btn-primary btn-sm" onclick="fabAction()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Neu
+          </button>
+        </div>
+        <div class="filter-row" id="challenge-filters">
+          <button class="filter-pill active" onclick="setChallengeFilter('alle',this)">Alle</button>
+          <button class="filter-pill" onclick="setChallengeFilter('aktiv',this)">Aktiv</button>
+          <button class="filter-pill" onclick="setChallengeFilter('offen',this)">Offen</button>
+          <button class="filter-pill" onclick="setChallengeFilter('abgelaufen',this)">Abgelaufen</button>
+        </div>
+        <div style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+          <div class="challenge-layout" id="challenge-layout" style="flex:1;overflow-y:auto"></div>
+        </div>
+      </div>
+
+      <!-- SETTINGS (FIX: now reachable via bottom nav!) -->
+      <div id="settings-view">
+        <div class="settings-section">
+          <div class="settings-section-title">Profil</div>
+          <div class="logout-profile" id="settings-profile">
+            <div class="logout-avatar" id="settings-avatar">?</div>
+            <div>
+              <div class="logout-name" id="settings-name">Gast</div>
+              <div class="logout-mail" id="settings-mail">Nicht angemeldet</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">Benachrichtigungen</div>
+          <div class="push-box">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="font-size:13px;font-weight:700;color:var(--t1)">Push-Benachrichtigungen</div>
+              <span class="status-pill status-off" id="push-status-pill">Inaktiv</span>
+            </div>
+            <div class="push-status push-warn" id="push-status-text">Push-Benachrichtigungen noch nicht aktiviert.</div>
+          </div>
+          <button class="btn btn-primary btn-full" onclick="requestPushPermission()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            Push aktivieren
+          </button>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">App</div>
+          <button class="settings-action-btn" onclick="installChangeApp()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="stroke:var(--acc)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <div class="sab-text">
+              <div class="sab-title">Als App installieren</div>
+              <div class="sab-sub">Change auf dem Homescreen hinzufügen</div>
+            </div>
+            <div class="sab-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 18 15 12 9 6"/></svg></div>
+          </button>
+          <button class="settings-action-btn" onclick="openCalendarSettings()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="stroke:var(--t3)"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <div class="sab-text">
+              <div class="sab-title">Kalender-Einstellungen</div>
+              <div class="sab-sub">Sichtbarkeit, Farben, Feiertage</div>
+            </div>
+            <div class="sab-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 18 15 12 9 6"/></svg></div>
+          </button>
+          <button class="settings-action-btn" onclick="openPushSettingsPanel()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="stroke:var(--t3)"><path d="M12 2v4"/><path d="M12 18v4"/><path d="m4.93 4.93 2.83 2.83"/><path d="m16.24 16.24 2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="m4.93 19.07 2.83-2.83"/><path d="m16.24 7.76 2.83-2.83"/></svg>
+            <div class="sab-text">
+              <div class="sab-title">Push &amp; Live-Sync</div>
+              <div class="sab-sub">Firebase-Verbindung verwalten</div>
+            </div>
+            <div class="sab-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 18 15 12 9 6"/></svg></div>
+          </button>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">Konto</div>
+          <button class="settings-action-btn sab-danger" onclick="confirmLogout()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <div class="sab-text">
+              <div class="sab-title">Abmelden</div>
+              <div class="sab-sub">Google-Konto trennen und abmelden</div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+
+    <!-- Bottom Nav (FIX: 4 tabs — Dashboard, Kalender, Challenges, Einstellungen) -->
+    <div id="bottom-nav">
+      <div class="bnav-inner">
+        <button class="bnav-item active" id="bnav-dashboard" onclick="setMainView('dashboard')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          <span class="bnav-label">Dashboard</span>
+        </button>
+        <button class="bnav-item" id="bnav-calendar" onclick="setMainView('calendar')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span class="bnav-label">Kalender</span>
+        </button>
+        <button class="bnav-item" id="bnav-challenges" onclick="setMainView('challenges')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 21h8"/><path d="M12 21V9"/><path d="M5 9h14"/><path d="M9 3l3 6 3-6"/></svg>
+          <span class="bnav-label">Challenges</span>
+        </button>
+        <button class="bnav-item" id="bnav-settings" onclick="setMainView('settings')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.33 1.82V22a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1.82-.33H2a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-.6 1.65 1.65 0 0 0 .33-1.82V2a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.12.69.31 1 .6.31.29.51.64.6 1H22a2 2 0 0 1 0 4h-.09c-.37.09-.72.29-1 .6-.29.31-.48.64-.51 1z"/></svg>
+          <span class="bnav-label">Einstellungen</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- FAB (context-sensitive) -->
+    <button id="fab" onclick="fabAction()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+
+  </div><!-- /main-app -->
+</div><!-- /app -->
 
 <script>
-let db;
+'use strict';
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   CONSTANTS & STATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const VER = '3.0';
+const LSK = 'change_v1';
+const GCAL_SCOPE = [
+  'https://www.googleapis.com/auth/calendar',
+  'https://www.googleapis.com/auth/userinfo.profile',
+  'https://www.googleapis.com/auth/userinfo.email'
+].join(' ');
+const DE_MONTHS = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const DE_MONTHS_S = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+const DE_DAYS_F = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
 
-function show(id) {
-  document.querySelectorAll(".screen").forEach(e => e.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
+let CLIENT_ID = '';
+let accessToken = '';
+let userInfo = {};
+let isDemoMode = false;
+let currentMainView = 'dashboard';
+let currentCalView = 'month';
+let curDate = new Date();
+
+// Data
+let events = [];
+let gEvents = [];
+let challenges = [];
+let challengeCompletions = [];
+let challengePlayers = [];
+let notifications = [];
+let challengeFilter = 'alle';
+
+/* ── LOCAL STORAGE ── */
+const ls = (k,v) => {
+  if(v===undefined){try{return JSON.parse(localStorage.getItem(LSK+'_'+k));}catch{return null;}}
+  try{localStorage.setItem(LSK+'_'+k,JSON.stringify(v));}catch{}
+};
+const lsDel = k => {try{localStorage.removeItem(LSK+'_'+k);}catch{}};
+
+async function persistChangeState(){
+  try {
+    ls('events', events);
+    ls('challenges', challenges);
+    ls('challenge_completions', challengeCompletions);
+    ls('challenge_players', challengePlayers);
+    if(typeof registerLivePlayer==='function') registerLivePlayer();
+  } catch(e) { console.warn('Persist local:',e); }
 }
 
-function setView(v) {
-  ["dashboard","calendar","challenges"].forEach(x=>{
-    document.getElementById(x).classList.remove("active");
-    document.getElementById("btn-"+x).classList.remove("active");
-  });
-  document.getElementById(v).classList.add("active");
-  document.getElementById("btn-"+v).classList.add("active");
+/* ── DATE HELPERS ── */
+const pad = n => String(n).padStart(2,'0');
+const dateKey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const isToday = d => {
+  const t=new Date();
+  return d.getFullYear()===t.getFullYear()&&d.getMonth()===t.getMonth()&&d.getDate()===t.getDate();
+};
+const daysUntil = dk => {
+  if(!dk) return 999;
+  const d=new Date(dk+'T12:00:00'),t=new Date();
+  t.setHours(0,0,0,0); d.setHours(0,0,0,0);
+  return Math.round((d-t)/86400000);
+};
+const fmtDate = dk => {
+  if(!dk) return '—';
+  const d=new Date(dk+'T12:00:00');
+  return `${d.getDate()}. ${DE_MONTHS_S[d.getMonth()]} ${d.getFullYear()}`;
+};
+const fmtMoney = v => {
+  if(!v&&v!==0) return '—';
+  return Number(v).toLocaleString('de-DE',{style:'currency',currency:'EUR'});
+};
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const uid = () => Math.random().toString(36).substring(2,10)+Date.now().toString(36);
+
+/* ── GREETING ── */
+function getGreeting(name) {
+  const h = new Date().getHours();
+  const salut = h<12 ? 'Guten Morgen' : h<17 ? 'Guten Tag' : 'Guten Abend';
+  return name ? `${salut}, ${name.split(' ')[0]}` : salut;
 }
 
-async function login() {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  const res = await firebase.auth().signInWithPopup(provider);
-  startApp(res.user);
-}
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   INIT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+window.addEventListener('load', async () => {
+  await new Promise(r => setTimeout(r, 700));
+  CLIENT_ID = ls('client_id') || '';
+  accessToken = ls('access_token') || '';
+  userInfo = ls('user_info') || {};
+  events = ls('events') || [];
+  challenges = ls('challenges') || [];
+  challengeCompletions = ls('challenge_completions') || [];
+  challengePlayers = ls('challenge_players') || [];
 
-function startApp(user) {
-  document.getElementById("login").style.display="none";
-  document.getElementById("app").style.display="block";
-  document.getElementById("nav").style.display="flex";
+  try { await handleFirebaseRedirectLogin(); } catch(e) {}
 
-  document.getElementById("welcome").innerText =
-    "Hallo " + user.displayName;
-
-  loadData(user.uid);
-}
-
-async function loadData(uid) {
-  const doc = await db.collection("users").doc(uid).get();
-
-  if (!doc.exists) {
-    console.log("Neuer User – keine Demo Daten");
-    return;
+  if(document.getElementById('main-app').style.display==='flex') {
+    initPWA(); scheduleNotifCheck(); return;
   }
-
-  const data = doc.data();
-
-  console.log("User Daten:", data);
-
-  // HIER kannst du später rendern
-}
-
-firebase.auth().onAuthStateChanged(user=>{
-  if (user) startApp(user);
+  if(ls('demo_mode')) {
+    startDemoInternal();
+  } else if(accessToken && userInfo.email) {
+    bootMainApp();
+    loadGoogleData();
+  } else if(CLIENT_ID) {
+    showLogin();
+  } else {
+    hideLd();
+    document.getElementById('setup-modal').classList.add('show');
+  }
+  initPWA();
+  scheduleNotifCheck();
 });
 
-window.onload = () => {
-  db = firebase.firestore();
-};
+function hideLd() {
+  const el = document.getElementById('loading');
+  el.style.opacity = '0';
+  setTimeout(()=> el.style.display='none', 400);
+}
+
+/* ── PWA ── */
+function initPWA() {
+  if(!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.register('./firebase-messaging-sw.js', {scope:'./'})
+    .catch(err => console.warn('SW Fehler:', err));
+}
+
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  ls('pwa_install_available', true);
+});
+window.addEventListener('appinstalled', () => {
+  deferredInstallPrompt = null;
+  ls('pwa_installed', true);
+  toast('Change wurde installiert ✓', 'ok');
+});
+
+function isStandaloneApp() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+function isIOSDevice() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+}
+function installChangeApp() {
+  if(isStandaloneApp()) { toast('Change ist bereits als App geöffnet ✓','ok'); return; }
+  if(deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(c => {
+      toast(c.outcome==='accepted'?'Installation gestartet ✓':'Installation abgebrochen', c.outcome==='accepted'?'ok':'');
+      deferredInstallPrompt = null;
+    });
+    return;
+  }
+  if(isIOSDevice()) {
+    openPanel('App installieren (iOS)', `
+      <p style="font-size:14px;color:var(--t2);line-height:1.6;margin-bottom:16px">
+        Auf iPhone/iPad: Tippe unten auf <strong>Teilen</strong> (Quadrat mit Pfeil), 
+        dann wähle <strong>„Zum Home-Bildschirm"</strong>.
+      </p>
+      <div style="background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:14px">
+        <ol style="padding-left:18px;color:var(--t3);font-size:13px;line-height:1.8">
+          <li>Safari-Browser verwenden</li>
+          <li>Teilen-Button antippen (unten in der Leiste)</li>
+          <li>Nach unten scrollen → „Zum Home-Bildschirm"</li>
+          <li>„Hinzufügen" bestätigen</li>
+        </ol>
+      </div>
+    `);
+    return;
+  }
+  toast('Installation nicht verfügbar – bitte Chrome oder Edge verwenden','err');
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SETUP & LOGIN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function saveClientId() {
+  const val = document.getElementById('client-id-input').value.trim();
+  if(!val) { toast('Bitte Client-ID eingeben','err'); return; }
+  ls('client_id', val);
+  CLIENT_ID = val;
+  document.getElementById('setup-modal').classList.remove('show');
+  showLogin();
+}
+
+function showLogin() {
+  hideLd();
+  document.getElementById('main-app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+function handleGoogleLogin() {
+  if(!CLIENT_ID) { toast('Bitte zuerst Client-ID konfigurieren','err'); return; }
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.addScope('https://www.googleapis.com/auth/calendar');
+    firebase.auth().signInWithRedirect(provider);
+  } catch(e) {
+    toast('Google-Login fehlgeschlagen: '+e.message,'err');
+  }
+}
+
+async function handleFirebaseRedirectLogin() {
+  try {
+    if(typeof firebase === 'undefined' || !firebase.auth) return;
+    const result = await firebase.auth().getRedirectResult();
+    const user = (result && result.user) || firebase.auth().currentUser;
+    if(user) {
+      const credential = result && result.credential;
+      if(credential && credential.accessToken) {
+        accessToken = credential.accessToken;
+        ls('access_token', accessToken);
+      }
+      userInfo = {
+        name: user.displayName || '',
+        email: user.email || '',
+        photo: user.photoURL || ''
+      };
+      ls('user_info', userInfo);
+      ls('demo_mode', false);
+      bootMainApp();
+      loadGoogleData();
+    }
+  } catch(e) {
+    console.warn('Firebase Redirect Fehler:', e);
+  }
+}
+
+function startDemo() {
+  document.getElementById('setup-modal').classList.remove('show');
+  startDemoInternal();
+}
+
+function startDemoInternal() {
+  isDemoMode = true;
+  ls('demo_mode', true);
+  userInfo = { name: 'Demo Nutzer', email: 'demo@change-app.de', photo:'' };
+  if(!events.length) loadDemoData();
+  bootMainApp();
+}
+
+function bootMainApp() {
+  hideLd();
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('main-app').style.display = 'flex';
+  updateAvatarUI();
+  setMainView('dashboard');
+  renderDashboard();
+  renderCalendar();
+  renderChallenges();
+  updateSettingsProfile();
+}
+
+function updateAvatarUI() {
+  const av = document.getElementById('user-avatar');
+  const init = document.getElementById('avatar-initials');
+  if(userInfo.photo) {
+    av.innerHTML = `<img src="${esc(userInfo.photo)}" alt="">`;
+  } else {
+    const n = (userInfo.name||'').trim();
+    init.textContent = n ? n.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase() : '?';
+  }
+}
+
+function updateSettingsProfile() {
+  const n = userInfo.name||'Gast';
+  const m = userInfo.email||'Nicht angemeldet';
+  document.getElementById('settings-name').textContent = n;
+  document.getElementById('settings-mail').textContent = m;
+  const av = document.getElementById('settings-avatar');
+  if(userInfo.photo) {
+    av.innerHTML = `<img src="${esc(userInfo.photo)}" alt="" style="width:100%;height:100%;object-fit:cover">`;
+  } else {
+    av.textContent = n.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase() || '?';
+  }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   NAVIGATION (FIX: all 4 views now work on mobile)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const ALL_VIEWS = ['dashboard','calendar','challenges','settings'];
+
+function setMainView(v) {
+  currentMainView = v;
+
+  // Hide all views
+  document.getElementById('dashboard-view').style.display = 'none';
+  document.getElementById('cal-body').style.display = 'none';
+  document.getElementById('challenges-view').style.display = 'none';
+  document.getElementById('settings-view').style.display = 'none';
+
+  // Calendar controls bar: show only in calendar
+  const calBar = document.getElementById('cal-controls-bar');
+  calBar.classList.toggle('show', v==='calendar');
+
+  // Mobile header: toggle cal-title-bar
+  const header = document.getElementById('header');
+  if(v==='calendar') {
+    header.classList.add('cal-active');
+  } else {
+    header.classList.remove('cal-active');
+  }
+
+  // Show active view
+  if(v==='dashboard') {
+    document.getElementById('dashboard-view').style.display = 'flex';
+    document.getElementById('dashboard-view').style.flexDirection = 'column';
+    renderDashboard();
+  } else if(v==='calendar') {
+    document.getElementById('cal-body').style.display = 'flex';
+    document.getElementById('cal-body').style.flexDirection = 'column';
+    renderCalendar();
+  } else if(v==='challenges') {
+    document.getElementById('challenges-view').style.display = 'flex';
+    document.getElementById('challenges-view').style.flexDirection = 'column';
+    renderChallenges();
+  } else if(v==='settings') {
+    document.getElementById('settings-view').style.display = 'block';
+  }
+
+  // Update desktop tabs
+  ALL_VIEWS.forEach(n => {
+    const el = document.getElementById('htab-'+n);
+    if(el) el.classList.toggle('active', n===v);
+  });
+
+  // Update bottom nav
+  ['dashboard','calendar','challenges','settings'].forEach(n => {
+    const el = document.getElementById('bnav-'+n);
+    if(el) el.classList.toggle('active', n===v);
+  });
+
+  // FAB visibility
+  document.getElementById('fab').style.display =
+    (v==='calendar'||v==='challenges') ? 'flex' : 'none';
+}
+
+function fabAction() {
+  if(currentMainView==='calendar') openNewEventPanel();
+  else if(currentMainView==='challenges') openNewChallengePanel();
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   CALENDAR NAVIGATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function navigate(dir) {
+  if(currentCalView==='year') {
+    curDate = new Date(curDate.getFullYear()+dir, curDate.getMonth(), 1);
+  } else if(currentCalView==='workweek') {
+    curDate = new Date(curDate.getFullYear(), curDate.getMonth(), curDate.getDate()+dir*7);
+  } else {
+    curDate = new Date(curDate.getFullYear(), curDate.getMonth()+dir, 1);
+  }
+  renderCalendar();
+}
+
+function goToday() {
+  curDate = new Date();
+  renderCalendar();
+}
+
+function setCalView(v) {
+  currentCalView = v;
+  ['year','month','workweek','today'].forEach(n => {
+    document.getElementById('vbtn-'+n).classList.toggle('active', n===v);
+  });
+  renderCalendar();
+}
+
+/* ── SWIPE SUPPORT for mobile calendar ── */
+let swipeStartX = 0;
+document.addEventListener('touchstart', e => {
+  if(currentMainView!=='calendar') return;
+  swipeStartX = e.touches[0].clientX;
+}, {passive:true});
+document.addEventListener('touchend', e => {
+  if(currentMainView!=='calendar') return;
+  const dx = e.changedTouches[0].clientX - swipeStartX;
+  if(Math.abs(dx) > 60) navigate(dx < 0 ? 1 : -1);
+}, {passive:true});
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   CALENDAR RENDER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function renderCalendar() {
+  const lbl = document.getElementById('month-label');
+  if(currentCalView==='year') {
+    lbl.textContent = curDate.getFullYear();
+  } else if(currentCalView==='workweek') {
+    lbl.textContent = 'KW '+getWeekNumber(curDate);
+  } else {
+    lbl.textContent = `${DE_MONTHS[curDate.getMonth()]} ${curDate.getFullYear()}`;
+  }
+
+  // Hide all calendar sub-views
+  document.getElementById('month-grid').style.display = 'none';
+  document.getElementById('wday-row').style.display = 'none';
+  document.getElementById('agenda-view').style.display = 'none';
+  document.getElementById('year-view').style.display = 'none';
+  document.getElementById('workweek-view').style.display = 'none';
+  document.getElementById('today-view').style.display = 'none';
+
+  if(currentCalView==='month') {
+    document.getElementById('month-grid').style.display = 'grid';
+    document.getElementById('wday-row').style.display = 'grid';
+    renderMonthGrid();
+  } else if(currentCalView==='year') {
+    document.getElementById('year-view').style.display = 'block';
+    renderYearGrid();
+  } else if(currentCalView==='workweek') {
+    document.getElementById('workweek-view').style.display = 'block';
+    renderWorkweekGrid();
+  } else if(currentCalView==='today') {
+    document.getElementById('today-view').style.display = 'block';
+    renderTodayView();
+  }
+  renderUpcomingStrip();
+}
+
+function getWeekNumber(d) {
+  const t = new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  t.setUTCDate(t.getUTCDate()+4-(t.getUTCDay()||7));
+  const y = new Date(Date.UTC(t.getUTCFullYear(),0,1));
+  return Math.ceil((((t-y)/86400000)+1)/7);
+}
+
+function getEventsForDate(dk) {
+  const all = [...events, ...gEvents];
+  return all.filter(e => {
+    if(e.dateKey===dk) return true;
+    if(e.startDate && e.endDate) {
+      return dk>=e.startDate && dk<=e.endDate;
+    }
+    return false;
+  });
+}
+
+const COLORS = ['blue','green','amber','red','purple'];
+function eventColor(ev) {
+  if(ev.color) return ev.color;
+  const colors = COLORS;
+  let hash = 0;
+  for(let c of (ev.title||'')) hash += c.charCodeAt(0);
+  return colors[hash%colors.length];
+}
+
+function renderMonthGrid() {
+  const grid = document.getElementById('month-grid');
+  const y = curDate.getFullYear(), m = curDate.getMonth();
+  const first = new Date(y,m,1);
+  // Mon=0 offset
+  let startDow = (first.getDay()+6)%7;
+  const totalDays = new Date(y,m+1,0).getDate();
+  const totalCells = 42;
+  let html = '';
+  for(let i=0;i<totalCells;i++) {
+    const dayOffset = i - startDow;
+    const d = new Date(y,m,1+dayOffset);
+    const dk = dateKey(d);
+    const isOther = d.getMonth()!==m;
+    const isTod = isToday(d);
+    const isWE = d.getDay()===0||d.getDay()===6;
+    const dayEvs = getEventsForDate(dk);
+    const chDot = getChallengeStatusForDate(dk);
+    let cls = 'day-cell';
+    if(isOther) cls+=' other';
+    if(isTod) cls+=' today';
+    if(isWE) cls+=' weekend';
+    let chDotHtml = chDot ? `<div class="challenge-day-dot${chDot==='done'?' done':''}"></div>` : '';
+    let chips = dayEvs.slice(0,2).map(ev=>{
+      const col = eventColor(ev);
+      return `<div class="ev-chip ${col}" onclick="openEventDetail(event,'${esc(ev.id)}')">${esc(ev.title||'Termin')}</div>`;
+    }).join('');
+    if(dayEvs.length>2) chips += `<div class="more-chip">+${dayEvs.length-2}</div>`;
+    html += `<div class="${cls}" onclick="openDayPanel('${dk}')">
+      ${chDotHtml}
+      <div class="day-num-wrap"><span class="day-num">${d.getDate()}</span></div>
+      ${chips}
+    </div>`;
+    if((i+1)%7===0) html = wrapWeekRow(html, i);
+  }
+  grid.innerHTML = buildWeekRows(y,m,startDow,totalCells);
+}
+
+function buildWeekRows(y,m,startDow,total) {
+  let rows = '';
+  for(let w=0;w<6;w++) {
+    let cells = '';
+    for(let d=0;d<7;d++) {
+      const i = w*7+d;
+      const dayOffset = i - startDow;
+      const dt = new Date(y,m,1+dayOffset);
+      const dk = dateKey(dt);
+      const isOther = dt.getMonth()!==m;
+      const isTod = isToday(dt);
+      const isWE = dt.getDay()===0||dt.getDay()===6;
+      const dayEvs = getEventsForDate(dk);
+      const chDot = getChallengeStatusForDate(dk);
+      let cls = 'day-cell';
+      if(isOther) cls+=' other'; if(isTod) cls+=' today'; if(isWE) cls+=' weekend';
+      let chDotHtml = chDot ? `<div class="challenge-day-dot${chDot==='done'?' done':''}"></div>` : '';
+      let chips = dayEvs.slice(0,2).map(ev=>{
+        const col = eventColor(ev);
+        return `<div class="ev-chip ${col}">${esc(ev.title||'Termin')}</div>`;
+      }).join('');
+      if(dayEvs.length>2) chips += `<div class="more-chip">+${dayEvs.length-2}</div>`;
+      cells += `<div class="${cls}" onclick="openDayPanel('${dk}')">
+        ${chDotHtml}
+        <div class="day-num-wrap"><span class="day-num">${dt.getDate()}</span></div>
+        ${chips}
+      </div>`;
+    }
+    rows += `<div class="week-row">${cells}</div>`;
+  }
+  return rows;
+}
+
+function renderYearGrid() {
+  const y = curDate.getFullYear();
+  let html = '';
+  for(let m=0;m<12;m++) {
+    const first = new Date(y,m,1);
+    const days = new Date(y,m+1,0).getDate();
+    const startDow = (first.getDay()+6)%7;
+    let miniCells = '<div class="year-mini-day" style="color:var(--t5);font-size:9px">Mo</div>'.repeat(0);
+    // Day headers
+    ['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(d=>{
+      miniCells += `<div class="year-mini-day" style="color:var(--t5);font-size:9px;font-weight:700">${d}</div>`;
+    });
+    for(let i=0;i<startDow;i++) miniCells += '<div class="year-mini-day"></div>';
+    for(let d=1;d<=days;d++) {
+      const dt = new Date(y,m,d);
+      const isTod = isToday(dt);
+      miniCells += `<div class="year-mini-day${isTod?' today':''}">${d}</div>`;
+    }
+    html += `<div class="year-month-card" onclick="curDate=new Date(${y},${m},1);setCalView('month')">
+      <div class="year-month-title">${DE_MONTHS[m]}</div>
+      <div class="year-mini-grid">${miniCells}</div>
+    </div>`;
+  }
+  document.getElementById('year-grid').innerHTML = html;
+}
+
+function renderWorkweekGrid() {
+  const d = new Date(curDate);
+  const dow = (d.getDay()+6)%7;
+  d.setDate(d.getDate()-dow);
+  let html = '';
+  for(let i=0;i<5;i++) {
+    const dt = new Date(d.getFullYear(),d.getMonth(),d.getDate()+i);
+    const dk = dateKey(dt);
+    const isTod = isToday(dt);
+    const dayEvs = getEventsForDate(dk);
+    let evHtml = dayEvs.map(ev=>{
+      const col = eventColor(ev);
+      const t = ev.timeStart ? `<div style="font-size:11px;color:var(--t4);font-family:var(--mono)">${ev.timeStart}${ev.timeEnd?' – '+ev.timeEnd:''}</div>` : '';
+      return `<div class="ag-card ${col}" style="margin-bottom:6px;padding:10px 12px">
+        <div class="ag-body"><div class="ag-title">${esc(ev.title||'Termin')}</div>${t}</div>
+      </div>`;
+    }).join('');
+    html += `<div class="workday-card${isTod?' today':''}">
+      <div class="workday-head" style="${isTod?'color:var(--acc)':''}">${DE_DAYS_F[dt.getDay()]}</div>
+      <div class="workday-date">${dt.getDate()}. ${DE_MONTHS_S[dt.getMonth()]}</div>
+      ${evHtml||'<div style="font-size:12px;color:var(--t5)">Keine Termine</div>'}
+    </div>`;
+  }
+  document.getElementById('workweek-grid').innerHTML = html;
+}
+
+function renderTodayView() {
+  const dk = dateKey(new Date());
+  const dayEvs = getEventsForDate(dk);
+  const today = new Date();
+  let html = `<div style="margin-bottom:16px">
+    <div style="font-size:28px;font-weight:900;color:var(--t1);letter-spacing:-1px">${DE_DAYS_F[today.getDay()]}</div>
+    <div style="font-size:15px;color:var(--t3)">${today.getDate()}. ${DE_MONTHS[today.getMonth()]} ${today.getFullYear()}</div>
+  </div>`;
+  if(dayEvs.length===0) {
+    html += `<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:28px;height:28px;stroke:var(--t4)"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="empty-title">Keine Termine heute</div></div>`;
+  } else {
+    dayEvs.forEach(ev => {
+      const col = eventColor(ev);
+      const t = ev.timeStart ? `${ev.timeStart}${ev.timeEnd?' – '+ev.timeEnd:''}` : 'Ganztag';
+      html += `<div class="ag-card ${col}" style="margin-bottom:8px" onclick="openEventDetail(event,'${esc(ev.id)}')">
+        <div class="ag-time">${t}</div>
+        <div class="ag-body"><div class="ag-title">${esc(ev.title||'Termin')}</div>
+        ${ev.description?`<div class="ag-desc">${esc(ev.description)}</div>`:''}
+        </div>
+      </div>`;
+    });
+  }
+  document.getElementById('today-view').innerHTML = html;
+}
+
+function renderUpcomingStrip() {
+  const all = [...events, ...gEvents];
+  const today = dateKey(new Date());
+  const upcoming = all
+    .filter(e => (e.dateKey||e.startDate||'') >= today)
+    .sort((a,b) => (a.dateKey||a.startDate||'').localeCompare(b.dateKey||b.startDate||''))
+    .slice(0,8);
+  const el = document.getElementById('upcoming-items');
+  if(!upcoming.length) {
+    el.innerHTML = `<span style="font-size:12px;color:var(--t5)">Keine anstehenden Termine</span>`;
+    return;
+  }
+  el.innerHTML = upcoming.map(ev => {
+    const col = eventColor(ev);
+    const d = daysUntil(ev.dateKey||ev.startDate);
+    const when = d===0?'Heute':d===1?'Morgen':`in ${d}T`;
+    return `<div class="us-chip ${col}" onclick="openEventDetail(event,'${esc(ev.id)}')">${when} · ${esc(ev.title||'Termin')}</div>`;
+  }).join('');
+}
+
+function getChallengeStatusForDate(dk) {
+  const active = challenges.filter(c=>c.status==='aktiv');
+  if(!active.length) return null;
+  const done = challengeCompletions.some(c=>c.date===dk&&c.done);
+  if(done) return 'done';
+  if(dk <= dateKey(new Date())) return 'pending';
+  return null;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   DASHBOARD RENDER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function renderDashboard() {
+  document.getElementById('dash-greeting').textContent = getGreeting(userInfo.name);
+  document.getElementById('dash-sub').textContent =
+    isDemoMode ? 'Demo-Modus – Keine echten Daten' : 'Ihr persönlicher Überblick';
+  renderKPIs();
+  renderDashGrid();
+}
+
+function renderKPIs() {
+  const today = dateKey(new Date());
+  const todayEvs = getEventsForDate(today);
+  const upcoming7 = [...events,...gEvents].filter(e=>{
+    const d = daysUntil(e.dateKey||e.startDate);
+    return d>=0&&d<=7;
+  }).length;
+  const totalCh = challenges.length;
+  const doneCh = challengeCompletions.filter(c=>c.done).length;
+  const activeCh = challenges.filter(c=>c.status==='aktiv').length;
+  const kpis = [
+    {label:'Heute',val:todayEvs.length,icon:'calendar',color:'blue'},
+    {label:'Nächste 7 Tage',val:upcoming7,icon:'clock',color:'amber'},
+    {label:'Challenges',val:activeCh,icon:'trophy',color:'purple'},
+    {label:'Abgeschlossen',val:doneCh,icon:'check',color:'green'},
+    {label:'Gesamt Events',val:events.length+gEvents.length,icon:'list',color:'red'},
+  ];
+  document.getElementById('kpi-grid').innerHTML = kpis.map(k=>`
+    <div class="kpi-card" onclick="setMainView('${k.label==='Challenges'||k.label==='Abgeschlossen'?'challenges':'calendar'}')">
+      <div class="kpi-icon-wrap ${k.color}">${kpiIcon(k.icon,k.color)}</div>
+      <div class="kpi-num">${k.val}</div>
+      <div class="kpi-label">${k.label}</div>
+    </div>
+  `).join('');
+}
+
+function kpiIcon(name, color) {
+  const icons = {
+    calendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+    clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    trophy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 21h8"/><path d="M12 21V9"/><path d="M5 9h14"/><path d="M9 3l3 6 3-6"/></svg>',
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+    list: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>',
+  };
+  return icons[name]||icons.calendar;
+}
+
+function renderDashGrid() {
+  const todayEvs = getEventsForDate(dateKey(new Date()));
+  const upcomingEvs = [...events,...gEvents]
+    .filter(e=>daysUntil(e.dateKey||e.startDate)>=0)
+    .sort((a,b)=>(a.dateKey||a.startDate||'').localeCompare(b.dateKey||b.startDate||''))
+    .slice(0,5);
+
+  let card1 = `<div class="dash-card">
+    <div class="dash-card-head"><div class="dash-card-title">Heute</div><div class="dash-card-sub">${dateKey(new Date())}</div></div>
+    <div class="dash-card-body">
+    ${todayEvs.length ? todayEvs.map(ev=>{
+      const col = eventColor(ev);
+      const t = ev.timeStart||'Ganztag';
+      return `<div class="dash-row" onclick="openEventDetail(event,'${esc(ev.id)}')">
+        <div class="dash-row-icon" style="background:var(--${col==='blue'?'acc':col==='green'?'grn':col==='amber'?'amb':col==='red'?'red':'pur'}-d)">📅</div>
+        <div class="dash-row-body">
+          <div class="dash-row-title">${esc(ev.title||'Termin')}</div>
+          <div class="dash-row-sub">${t}</div>
+        </div>
+      </div>`;
+    }).join('') : '<div class="dash-empty">Heute keine Termine</div>'}
+    </div>
+  </div>`;
+
+  let card2 = `<div class="dash-card">
+    <div class="dash-card-head"><div class="dash-card-title">Demnächst</div><div class="dash-card-sub">Nächste Termine</div></div>
+    <div class="dash-card-body">
+    ${upcomingEvs.length ? upcomingEvs.map(ev=>{
+      const d = daysUntil(ev.dateKey||ev.startDate);
+      const badge = d===0?'badge-red':d<=3?'badge-amber':'badge-green';
+      const when = d===0?'Heute':d===1?'Morgen':`+${d}T`;
+      return `<div class="dash-row" onclick="openEventDetail(event,'${esc(ev.id)}')">
+        <div class="dash-row-icon">📌</div>
+        <div class="dash-row-body">
+          <div class="dash-row-title">${esc(ev.title||'Termin')}</div>
+          <div class="dash-row-sub">${fmtDate(ev.dateKey||ev.startDate)}</div>
+        </div>
+        <div class="dash-row-badge ${badge}">${when}</div>
+      </div>`;
+    }).join('') : '<div class="dash-empty">Keine anstehenden Termine</div>'}
+    </div>
+  </div>`;
+
+  document.getElementById('dash-grid').innerHTML = card1 + card2;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   CHALLENGES RENDER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function setChallengeFilter(f, btn) {
+  challengeFilter = f;
+  document.querySelectorAll('#challenge-filters .filter-pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  renderChallenges();
+}
+
+function renderChallenges() {
+  const filtered = challengeFilter==='alle' ? challenges : challenges.filter(c=>c.status===challengeFilter);
+  const playerMap = {};
+  challengePlayers.forEach(p=>{ playerMap[p.id] = p; });
+
+  // Sort players by score
+  const scoreboard = challengePlayers.map(p=>({
+    ...p,
+    score: challengeCompletions.filter(c=>c.playerId===p.id&&c.done).length
+  })).sort((a,b)=>b.score-a.score);
+
+  const chHtml = filtered.length ? filtered.map(ch=>{
+    const done = challengeCompletions.filter(c=>c.challengeId===ch.id&&c.done).length;
+    const icon = ch.icon||'🎯';
+    const status = ch.status||'offen';
+    return `<div class="challenge-item${status==='abgelaufen'?' challenge-done':''}" onclick="openChallengeDetail('${esc(ch.id)}')">
+      <div class="challenge-icon">${icon}</div>
+      <div class="challenge-body">
+        <div class="challenge-name">${esc(ch.name||'Challenge')}</div>
+        <div class="challenge-meta">${done} Abschlüsse · ${status}</div>
+      </div>
+      <div class="points-pill">${ch.points||10} Pts</div>
+    </div>`;
+  }).join('') : `<div class="empty-state">
+    <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:28px;height:28px;stroke:var(--t4)"><path d="M8 21h8"/><path d="M12 21V9"/><path d="M5 9h14"/><path d="M9 3l3 6 3-6"/></svg></div>
+    <div class="empty-title">Keine Challenges</div>
+    <div class="empty-sub">Erstelle deine erste Challenge mit dem + Button</div>
+  </div>`;
+
+  const leaderHtml = scoreboard.length ? scoreboard.map((p,i)=>`
+    <div class="leader-row clickable" onclick="openPlayerDetail('${esc(p.id)}')">
+      <div class="leader-rank">${i+1}</div>
+      <div>
+        <div class="leader-name">${esc(p.name||'Mitspieler')}</div>
+        <div class="leader-detail">${p.score} Abschlüsse</div>
+      </div>
+      <div class="leader-score">${p.score * (challenges[0]?.points||10)}</div>
+    </div>
+  `).join('') : `<div class="dash-empty">Noch keine Mitspieler</div>`;
+
+  document.getElementById('challenge-layout').innerHTML = `
+    <div class="challenge-card">
+      <div class="challenge-card-head">
+        <div>
+          <div class="challenge-title">Aktive Challenges</div>
+          <div class="challenge-sub">${filtered.length} Challenge${filtered.length!==1?'s':''}</div>
+        </div>
+      </div>
+      ${chHtml}
+    </div>
+    <div class="leader-card">
+      <div class="leader-card-head">
+        <div>
+          <div class="challenge-title">Rangliste</div>
+          <div class="challenge-sub">${scoreboard.length} Mitspieler</div>
+        </div>
+      </div>
+      ${leaderHtml}
+    </div>
+  `;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   PANELS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function openPanel(title, content) {
+  document.getElementById('panel-title').textContent = title;
+  document.getElementById('panel-body').innerHTML = content;
+  document.getElementById('side-panel').classList.add('open');
+  document.getElementById('panel-overlay').classList.add('show');
+}
+
+function closePanel() {
+  document.getElementById('side-panel').classList.remove('open');
+  document.getElementById('panel-overlay').classList.remove('show');
+}
+
+function openDayPanel(dk) {
+  const dayEvs = getEventsForDate(dk);
+  const d = new Date(dk+'T12:00:00');
+  const title = `${d.getDate()}. ${DE_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  let html = `<div style="margin-bottom:16px">
+    <div class="section-label">Termine</div>
+    ${dayEvs.length ? dayEvs.map(ev=>{
+      const col = eventColor(ev);
+      const t = ev.timeStart ? `${ev.timeStart}${ev.timeEnd?' – '+ev.timeEnd:''}` : 'Ganztag';
+      return `<div class="ag-card ${col}" style="margin-bottom:8px" onclick="openEventDetail(event,'${esc(ev.id)}')">
+        <div class="ag-time">${t}</div>
+        <div class="ag-body">
+          <div class="ag-title">${esc(ev.title||'Termin')}</div>
+          ${ev.description?`<div class="ag-desc">${esc(ev.description)}</div>`:''}
+        </div>
+      </div>`;
+    }).join('') : `<div class="empty-state" style="padding:24px 0">
+      <div class="empty-title">Keine Termine</div>
+      <div class="empty-sub">An diesem Tag gibt es nichts</div>
+    </div>`}
+  </div>
+  <button class="btn btn-primary btn-full" onclick="openNewEventPanelForDate('${dk}')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Termin hinzufügen
+  </button>`;
+  openPanel(title, html);
+}
+
+function openNewEventPanel() { openNewEventPanelForDate(dateKey(new Date())); }
+
+function openNewEventPanelForDate(dk) {
+  const html = `
+    <div class="fg"><label class="flabel">Titel</label><input type="text" class="finput" id="ev-title" placeholder="Terminname"></div>
+    <div class="fr">
+      <div class="fg"><label class="flabel">Datum</label><input type="date" class="finput" id="ev-date" value="${dk}"></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="flabel">Uhrzeit von</label><input type="time" class="finput" id="ev-start"></div>
+      <div class="fg"><label class="flabel">Uhrzeit bis</label><input type="time" class="finput" id="ev-end"></div>
+    </div>
+    <div class="fg"><label class="flabel">Beschreibung</label><textarea class="finput" id="ev-desc" placeholder="Optionale Notiz…"></textarea></div>
+    <div class="fg"><label class="flabel">Farbe</label>
+      <div class="color-row">
+        ${['#4f7dff','#34d399','#f59e0b','#f87171','#a78bfa'].map((c,i)=>`
+          <div class="col-dot${i===0?' sel':''}" style="background:${c}" onclick="selectColor(this,'${c}')"></div>
+        `).join('')}
+      </div>
+    </div>
+    <div class="fa">
+      <button class="btn btn-primary" style="flex:1" onclick="saveNewEvent()">Termin speichern</button>
+      <button class="btn btn-ghost" onclick="closePanel()">Abbrechen</button>
+    </div>
+  `;
+  openPanel('Neuer Termin', html);
+}
+
+let selectedColor = '#4f7dff';
+function selectColor(el, c) {
+  selectedColor = c;
+  document.querySelectorAll('.col-dot').forEach(d=>d.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function saveNewEvent() {
+  const title = document.getElementById('ev-title')?.value.trim();
+  const dk = document.getElementById('ev-date')?.value;
+  const tStart = document.getElementById('ev-start')?.value;
+  const tEnd = document.getElementById('ev-end')?.value;
+  const desc = document.getElementById('ev-desc')?.value.trim();
+  if(!title||!dk) { toast('Bitte Titel und Datum eingeben','err'); return; }
+  const ev = {
+    id: uid(), title, dateKey:dk, timeStart:tStart||'', timeEnd:tEnd||'',
+    description:desc||'', color:colorNameFromHex(selectedColor)||'blue',
+    createdAt: new Date().toISOString()
+  };
+  events.unshift(ev);
+  persistChangeState();
+  closePanel();
+  renderCalendar(); renderDashboard();
+  toast('Termin gespeichert ✓','ok');
+}
+
+function colorNameFromHex(h) {
+  const map = {'#4f7dff':'blue','#34d399':'green','#f59e0b':'amber','#f87171':'red','#a78bfa':'purple'};
+  return map[h]||'blue';
+}
+
+function openEventDetail(e, id) {
+  e && e.stopPropagation();
+  const all = [...events, ...gEvents];
+  const ev = all.find(x=>x.id===id);
+  if(!ev) return;
+  const col = eventColor(ev);
+  const t = ev.timeStart ? `${ev.timeStart}${ev.timeEnd?' – '+ev.timeEnd:''}` : 'Ganztag';
+  openPanel(ev.title||'Termin', `
+    <div class="ag-card ${col}" style="margin-bottom:16px">
+      <div class="ag-time">${t}</div>
+      <div class="ag-body">
+        <div class="ag-title">${esc(ev.title||'Termin')}</div>
+        ${ev.description?`<div class="ag-desc">${esc(ev.description)}</div>`:''}
+      </div>
+    </div>
+    <div style="font-size:13px;color:var(--t3)">
+      <div style="margin-bottom:6px"><strong style="color:var(--t2)">Datum:</strong> ${fmtDate(ev.dateKey||ev.startDate)}</div>
+      ${ev.location?`<div style="margin-bottom:6px"><strong style="color:var(--t2)">Ort:</strong> ${esc(ev.location)}</div>`:''}
+      ${ev.description?`<div style="margin-bottom:6px"><strong style="color:var(--t2)">Notiz:</strong> ${esc(ev.description)}</div>`:''}
+    </div>
+    <div class="divider"></div>
+    <div class="fa">
+      <button class="btn btn-danger" style="flex:1" onclick="deleteEvent('${esc(id)}')">Löschen</button>
+      <button class="btn btn-ghost" onclick="closePanel()">Schließen</button>
+    </div>
+  `);
+}
+
+function deleteEvent(id) {
+  events = events.filter(e=>e.id!==id);
+  persistChangeState();
+  closePanel();
+  renderCalendar(); renderDashboard();
+  toast('Termin gelöscht','ok');
+}
+
+/* Challenges Panel */
+function openNewChallengePanel() {
+  openPanel('Neue Challenge', `
+    <div class="fg"><label class="flabel">Name</label><input type="text" class="finput" id="ch-name" placeholder="Challenge-Titel"></div>
+    <div class="fr">
+      <div class="fg"><label class="flabel">Icon</label><input type="text" class="finput" id="ch-icon" placeholder="🎯" maxlength="2"></div>
+      <div class="fg"><label class="flabel">Punkte</label><input type="number" class="finput" id="ch-points" value="10" min="1"></div>
+    </div>
+    <div class="fg">
+      <label class="flabel">Status</label>
+      <select class="finput" id="ch-status">
+        <option value="aktiv">Aktiv</option>
+        <option value="offen">Offen</option>
+      </select>
+    </div>
+    <div class="fa">
+      <button class="btn btn-primary" style="flex:1" onclick="saveNewChallenge()">Challenge erstellen</button>
+      <button class="btn btn-ghost" onclick="closePanel()">Abbrechen</button>
+    </div>
+  `);
+}
+
+function saveNewChallenge() {
+  const name = document.getElementById('ch-name')?.value.trim();
+  if(!name) { toast('Bitte Name eingeben','err'); return; }
+  const ch = {
+    id: uid(), name,
+    icon: document.getElementById('ch-icon')?.value||'🎯',
+    points: parseInt(document.getElementById('ch-points')?.value)||10,
+    status: document.getElementById('ch-status')?.value||'aktiv',
+    createdAt: new Date().toISOString()
+  };
+  challenges.unshift(ch);
+  persistChangeState();
+  closePanel();
+  renderChallenges();
+  toast('Challenge erstellt ✓','ok');
+}
+
+function openChallengeDetail(id) {
+  const ch = challenges.find(c=>c.id===id);
+  if(!ch) return;
+  const done = challengeCompletions.filter(c=>c.challengeId===id&&c.done).length;
+  openPanel(ch.name||'Challenge', `
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:48px;margin-bottom:8px">${ch.icon||'🎯'}</div>
+      <div class="stat-strip">
+        <div class="stat-box"><div class="stat-num">${done}</div><div class="stat-label">Abschlüsse</div></div>
+        <div class="stat-box"><div class="stat-num">${ch.points||10}</div><div class="stat-label">Punkte je</div></div>
+      </div>
+      <span class="status-pill ${ch.status==='aktiv'?'status-on':'status-off'}">${ch.status||'offen'}</span>
+    </div>
+    <div class="fa">
+      <button class="btn btn-success" style="flex:1" onclick="markChallengeToday('${esc(id)}')">✓ Heute abschließen</button>
+      <button class="btn btn-danger" onclick="deleteChallenge('${esc(id)}')">Löschen</button>
+    </div>
+  `);
+}
+
+function markChallengeToday(id) {
+  const dk = dateKey(new Date());
+  const exists = challengeCompletions.find(c=>c.challengeId===id&&c.date===dk);
+  if(exists) { toast('Bereits heute abgeschlossen',''); return; }
+  challengeCompletions.push({
+    id:uid(), challengeId:id, date:dk, done:true,
+    playerId: userInfo.email||'demo', timestamp: new Date().toISOString()
+  });
+  persistChangeState();
+  closePanel();
+  renderChallenges(); renderCalendar(); renderDashboard();
+  toast('Challenge abgeschlossen ✓','ok');
+}
+
+function deleteChallenge(id) {
+  challenges = challenges.filter(c=>c.id!==id);
+  challengeCompletions = challengeCompletions.filter(c=>c.challengeId!==id);
+  persistChangeState();
+  closePanel();
+  renderChallenges();
+  toast('Challenge gelöscht','ok');
+}
+
+/* Notifications Panel */
+function openNotifPanel() {
+  document.getElementById('notif-dot').style.display='none';
+  const html = notifications.length ? `
+    <div class="panel-notif-section">
+      <div class="pns-title">Benachrichtigungen</div>
+      ${notifications.map(n=>`
+        <div class="nitem">
+          <div class="nitem-icon" style="background:var(--acc-d)">🔔</div>
+          <div class="nitem-body">
+            <div class="nitem-title">${esc(n.title||'Benachrichtigung')}</div>
+            <div class="nitem-sub">${esc(n.body||'')}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  ` : `<div class="empty-state">
+    <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:28px;height:28px;stroke:var(--t4)"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+    <div class="empty-title">Keine Benachrichtigungen</div>
+    <div class="empty-sub">Hier erscheinen deine Push-Nachrichten</div>
+  </div>`;
+  openPanel('Benachrichtigungen', html);
+}
+
+/* Calendar Settings Panel */
+function openCalendarSettings() {
+  openPanel('Kalender-Einstellungen', `
+    <div class="section-label">Ansicht</div>
+    <div class="toggle-row">
+      <div class="toggle-copy">
+        <div class="toggle-title">Feiertage anzeigen</div>
+        <div class="toggle-sub">Bayerische Feiertage im Kalender</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="toggle-holidays" onchange="saveCalSettings()" checked><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-copy">
+        <div class="toggle-title">Challenge-Dots</div>
+        <div class="toggle-sub">Farbige Punkte für Challenge-Tage</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="toggle-dots" onchange="saveCalSettings()" checked><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-copy">
+        <div class="toggle-title">Wochennummern</div>
+        <div class="toggle-sub">KW-Anzeige im Kalender</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="toggle-kw" onchange="saveCalSettings()"><span class="slider"></span></label>
+    </div>
+  `);
+}
+
+function saveCalSettings() { toast('Einstellungen gespeichert ✓','ok'); }
+
+/* Push Settings Panel */
+function openPushSettingsPanel() {
+  openPanel('Push & Live-Sync', `
+    <div class="push-box">
+      <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:6px">Firebase Push</div>
+      <div class="push-status push-warn" id="push-panel-status">
+        ${Notification.permission==='granted' ? '✓ Push aktiviert' : '⚠ Push noch nicht aktiviert'}
+      </div>
+    </div>
+    <button class="btn btn-primary btn-full" style="margin-bottom:10px" onclick="requestPushPermission()">
+      Push-Benachrichtigungen aktivieren
+    </button>
+    <div class="section-label" style="margin-top:16px">Live-Synchronisation</div>
+    <div class="toggle-row">
+      <div class="toggle-copy">
+        <div class="toggle-title">Live-Sync aktiv</div>
+        <div class="toggle-sub">Echtzeit-Updates von Mitspielern</div>
+      </div>
+      <span class="live-dot off" id="live-dot-panel"></span>
+    </div>
+  `);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   NOTIFICATIONS & PUSH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+async function requestPushPermission() {
+  if(!('Notification' in window)) { toast('Push nicht unterstützt','err'); return; }
+  const perm = await Notification.requestPermission();
+  if(perm==='granted') {
+    toast('Push-Benachrichtigungen aktiviert ✓','ok');
+    document.getElementById('push-status-pill')?.classList.replace('status-off','status-on');
+    if(document.getElementById('push-status-pill')) {
+      document.getElementById('push-status-pill').textContent = 'Aktiv';
+    }
+    document.getElementById('push-status-text').textContent = '✓ Push-Benachrichtigungen sind aktiv.';
+    document.getElementById('push-status-text').className = 'push-status push-ok';
+    initFirebaseMessaging();
+  } else {
+    toast('Push abgelehnt – bitte in Browsereinstellungen erlauben','err');
+  }
+}
+
+function initFirebaseMessaging() {
+  try {
+    if(typeof firebase==='undefined'||!firebase.messaging) return;
+    const messaging = firebase.messaging();
+    messaging.onMessage(payload => {
+      const n = payload.notification||{};
+      notifications.unshift({title:n.title||'Benachrichtigung',body:n.body||''});
+      document.getElementById('notif-dot').style.display='block';
+      toast(n.title||'Neue Nachricht','ok');
+    });
+  } catch(e) { console.warn('FCM Init Fehler:',e); }
+}
+
+function scheduleNotifCheck() {
+  setInterval(() => {
+    const today = dateKey(new Date());
+    const upcoming = [...events,...gEvents].filter(e=>{
+      const d=daysUntil(e.dateKey||e.startDate);
+      return d===1;
+    });
+    if(upcoming.length && Notification.permission==='granted') {
+      upcoming.forEach(e=>{
+        new Notification('Change – Morgen', {body:e.title||'Termin morgen'});
+      });
+    }
+  }, 3600000); // check every hour
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   GOOGLE CALENDAR SYNC
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+async function loadGoogleData() {
+  if(isDemoMode||!accessToken) return;
+  try {
+    const now = new Date();
+    const min = new Date(now.getFullYear(),now.getMonth()-1,1).toISOString();
+    const max = new Date(now.getFullYear(),now.getMonth()+3,1).toISOString();
+    const url = `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${min}&timeMax=${max}&singleEvents=true&orderBy=startTime&maxResults=250`;
+    const res = await fetch(url, {headers:{Authorization:`Bearer ${accessToken}`}});
+    if(!res.ok) throw new Error('GCal Fehler '+res.status);
+    const data = await res.json();
+    gEvents = (data.items||[]).map(ev=>({
+      id: ev.id, title:ev.summary||'Termin',
+      description:ev.description||'', location:ev.location||'',
+      dateKey: (ev.start?.date||ev.start?.dateTime||'').substring(0,10),
+      startDate: (ev.start?.date||ev.start?.dateTime||'').substring(0,10),
+      endDate: (ev.end?.date||ev.end?.dateTime||'').substring(0,10),
+      timeStart: ev.start?.dateTime ? ev.start.dateTime.substring(11,16) : '',
+      timeEnd: ev.end?.dateTime ? ev.end.dateTime.substring(11,16) : '',
+      color: ev.colorId ? gcalColor(ev.colorId) : 'blue',
+      source:'google'
+    }));
+    renderCalendar(); renderDashboard();
+  } catch(e) {
+    console.warn('Google Calendar Fehler:', e);
+    if(e.message.includes('401')) {
+      accessToken=''; ls('access_token','');
+      toast('Google-Session abgelaufen – bitte neu anmelden','err');
+    }
+  }
+}
+
+function gcalColor(id) {
+  const map={'1':'blue','2':'green','3':'purple','4':'red','5':'amber','6':'green','7':'blue','8':'blue','9':'green','10':'green','11':'red'};
+  return map[id]||'blue';
+}
+
+/* Firebase redirect login is handled in SETUP & LOGIN above. */
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   DEMO DATA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function loadDemoData() {
+  const today = new Date();
+  const dk = d => {const x=new Date(today.getFullYear(),today.getMonth(),today.getDate()+d); return dateKey(x);};
+  events = [
+    {id:uid(),title:'Teammeeting',dateKey:dk(0),timeStart:'09:00',timeEnd:'10:00',color:'blue',description:'Wöchentliches Standup'},
+    {id:uid(),title:'Mittagspause mit Anna',dateKey:dk(0),timeStart:'12:30',timeEnd:'13:30',color:'green'},
+    {id:uid(),title:'Kundenpräsentation',dateKey:dk(1),timeStart:'14:00',timeEnd:'15:00',color:'amber',description:'Q3 Ergebnisse vorstellen'},
+    {id:uid(),title:'Sport',dateKey:dk(2),timeStart:'07:00',timeEnd:'08:00',color:'green'},
+    {id:uid(),title:'Arzttermin',dateKey:dk(3),timeStart:'11:00',timeEnd:'11:30',color:'red'},
+    {id:uid(),title:'Geburtstag Mama',dateKey:dk(5),color:'purple'},
+    {id:uid(),title:'Strategiemeeting',dateKey:dk(7),timeStart:'10:00',timeEnd:'12:00',color:'blue'},
+    {id:uid(),title:'Reifenwechsel',dateKey:dk(10),timeStart:'08:00',color:'amber'},
+    {id:uid(),title:'Jahrestag',dateKey:dk(14),color:'red'},
+  ];
+  challenges = [
+    {id:uid(),name:'Täglich 10.000 Schritte',icon:'🚶',points:15,status:'aktiv'},
+    {id:uid(),name:'Kein Zucker diese Woche',icon:'🍎',points:20,status:'aktiv'},
+    {id:uid(),name:'30 Min Lesen',icon:'📚',points:10,status:'offen'},
+  ];
+  challengePlayers = [
+    {id:'demo@change-app.de',name:'Demo Nutzer'},
+    {id:'anna@example.de',name:'Anna Müller'},
+    {id:'max@example.de',name:'Max Schmidt'},
+  ];
+  challengeCompletions = [
+    {id:uid(),challengeId:challenges[0].id,date:dk(-1),done:true,playerId:'anna@example.de'},
+    {id:uid(),challengeId:challenges[0].id,date:dk(-2),done:true,playerId:'demo@change-app.de'},
+    {id:uid(),challengeId:challenges[1].id,date:dk(-1),done:true,playerId:'max@example.de'},
+  ];
+  persistChangeState();
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   LOGOUT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function confirmLogout() {
+  openPanel('Abmelden', `
+    <div class="logout-profile">
+      <div class="logout-avatar" id="logout-av">
+        ${userInfo.photo?`<img src="${esc(userInfo.photo)}" alt="" style="width:100%;height:100%;object-fit:cover">`:(userInfo.name||'').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase()||'?'}
+      </div>
+      <div>
+        <div class="logout-name">${esc(userInfo.name||'Gast')}</div>
+        <div class="logout-mail">${esc(userInfo.email||'')}</div>
+      </div>
+    </div>
+    <p style="font-size:13px;color:var(--t3);line-height:1.6;margin-bottom:16px">
+      Möchtest du dich wirklich abmelden? Deine lokalen Daten bleiben erhalten.
+    </p>
+    <div class="fa">
+      <button class="btn btn-danger" style="flex:1" onclick="doLogout()">Abmelden</button>
+      <button class="btn btn-ghost" onclick="closePanel()">Abbrechen</button>
+    </div>
+  `);
+}
+
+async function doLogout() {
+  try {
+    if(typeof firebase!=='undefined'&&firebase.auth) await firebase.auth().signOut();
+  } catch(e) {}
+  lsDel('access_token'); lsDel('user_info'); lsDel('demo_mode');
+  accessToken=''; userInfo={}; isDemoMode=false;
+  closePanel();
+  document.getElementById('main-app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  toast('Erfolgreich abgemeldet','ok');
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TOAST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function toast(msg, type='') {
+  const el = document.createElement('div');
+  el.className = 'toast'+(type?' '+type:'');
+  el.textContent = msg;
+  document.getElementById('toast-wrap').appendChild(el);
+  setTimeout(()=>{
+    el.style.transition='opacity .3s';
+    el.style.opacity='0';
+    setTimeout(()=>el.remove(),300);
+  },2800);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   PLAYER DETAIL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function openPlayerDetail(id) {
+  const p = challengePlayers.find(x=>x.id===id);
+  if(!p) return;
+  const done = challengeCompletions.filter(c=>c.playerId===id&&c.done).length;
+  const pts = done * (challenges[0]?.points||10);
+  openPanel(p.name||'Mitspieler', `
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--pur));display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff;margin:0 auto 12px">
+        ${(p.name||'?').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase()}
+      </div>
+      <div style="font-size:18px;font-weight:800;color:var(--t1)">${esc(p.name||'Mitspieler')}</div>
+      <div style="font-size:13px;color:var(--t4)">${esc(p.id||'')}</div>
+    </div>
+    <div class="stat-strip">
+      <div class="stat-box"><div class="stat-num">${done}</div><div class="stat-label">Abschlüsse</div></div>
+      <div class="stat-box"><div class="stat-num">${pts}</div><div class="stat-label">Punkte</div></div>
+    </div>
+  `);
+}
+</script>
+
+<script>
+/* CHANGE REPAIR PATCH: großes Original behalten, Login + Navigation stabilisieren */
+(function () {
+  function el(id){ return document.getElementById(id); }
+  function show(id, display){ const x=el(id); if(x) x.style.display=display; }
+  function setText(id, text){ const x=el(id); if(x) x.textContent = text == null ? '' : String(text); }
+  function saveLs(k,v){ try{ if(typeof ls==='function') ls(k,v); }catch(e){ console.warn('ls save',k,e); } }
+  function delLs(k){ try{ if(typeof lsDel==='function') lsDel(k); else localStorage.removeItem((typeof LSK!=='undefined'?LSK+'_':'change_v1_')+k); }catch(e){} }
+  function initials(name){ return (name||'?').split(' ').filter(Boolean).map(w=>w[0]).join('').substring(0,2).toUpperCase() || '?'; }
+
+  window.wrapWeekRow = window.wrapWeekRow || function(html){ return '<div class="week-row">' + html + '</div>'; };
+
+  window.updateAvatarUI = function(){
+    const av = el('user-avatar'); if(!av) return;
+    const info = window.userInfo || userInfo || {};
+    if(info.photo) av.innerHTML = '<img src="' + esc(info.photo) + '" alt="">';
+    else av.innerHTML = '<span id="avatar-initials">' + initials(info.name) + '</span>';
+  };
+  window.updateSettingsProfile = function(){
+    const info = window.userInfo || userInfo || {};
+    setText('settings-name', info.name || 'Gast');
+    setText('settings-mail', info.email || 'Nicht angemeldet');
+    const av = el('settings-avatar'); if(!av) return;
+    if(info.photo) av.innerHTML = '<img src="' + esc(info.photo) + '" alt="" style="width:100%;height:100%;object-fit:cover">';
+    else av.textContent = initials(info.name || 'Gast');
+  };
+
+  function fixNavigation(){
+    const header = el('header'); if(header) header.classList.remove('cal-active');
+    document.querySelectorAll('.h-tabs').forEach(x => x.style.display = 'flex');
+    const calTitle = el('cal-title-bar'); if(calTitle) calTitle.style.display = 'none';
+    const st = el('htab-settings'); if(st) st.style.display = 'none';
+    const sb = el('bnav-settings'); if(sb) sb.style.display = 'none';
+    const sep = document.querySelector('.h-sep'); if(sep) sep.style.display = '';
+  }
+  const oldSetMainView = window.setMainView;
+  window.setMainView = function(v){
+    if(typeof oldSetMainView === 'function') oldSetMainView(v);
+    fixNavigation();
+    ['dashboard','calendar','challenges'].forEach(n=>{
+      const h=el('htab-'+n); if(h) h.classList.toggle('active', n===v);
+      const b=el('bnav-'+n); if(b) b.classList.toggle('active', n===v);
+    });
+  };
+
+  window.bootMainApp = function(){
+    show('loading','none'); show('setup-modal','none'); show('login-screen','none'); show('main-app','flex');
+    const app=el('main-app'); if(app) app.style.flexDirection='column';
+    try{ updateAvatarUI(); }catch(e){ console.warn(e); }
+    try{ updateSettingsProfile(); }catch(e){ console.warn(e); }
+    try{ setMainView('dashboard'); }catch(e){ console.warn(e); show('dashboard-view','flex'); }
+    try{ if(typeof renderDashboard==='function') renderDashboard(); }catch(e){ console.warn(e); }
+    try{ if(typeof renderCalendar==='function') renderCalendar(); }catch(e){ console.warn(e); }
+    try{ if(typeof renderChallenges==='function') renderChallenges(); }catch(e){ console.warn(e); }
+    fixNavigation();
+  };
+
+  async function loadCloudDataForUser(user){
+    if(!user || typeof firebase==='undefined' || !firebase.firestore) return;
+    const db = firebase.firestore();
+    try{
+      const userDoc = await db.collection('users').doc(user.uid).get();
+      if(userDoc.exists){
+        const d=userDoc.data() || {};
+        if(Array.isArray(d.events)) events = window.events = d.events;
+        if(Array.isArray(d.challenges)) challenges = window.challenges = d.challenges;
+        if(Array.isArray(d.challengeCompletions)) challengeCompletions = window.challengeCompletions = d.challengeCompletions;
+        if(Array.isArray(d.challengePlayers)) challengePlayers = window.challengePlayers = d.challengePlayers;
+      }
+    }catch(e){ console.warn('users/{uid} nicht geladen', e); }
+    try{
+      const snap = await db.collection('challenges').get();
+      if(!snap.empty) challenges = window.challenges = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    }catch(e){ console.warn('challenges nicht geladen', e); }
+    try{
+      const snap = await db.collection('players').get();
+      if(!snap.empty) challengePlayers = window.challengePlayers = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    }catch(e){ console.warn('players nicht geladen', e); }
+    try{
+      const snap = await db.collection('challengeCompletions').get();
+      if(!snap.empty) challengeCompletions = window.challengeCompletions = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    }catch(e){ console.warn('challengeCompletions nicht geladen', e); }
+    saveLs('events', events || []); saveLs('challenges', challenges || []); saveLs('challenge_completions', challengeCompletions || []); saveLs('challenge_players', challengePlayers || []);
+    try{ renderDashboard(); renderCalendar(); renderChallenges(); }catch(e){ console.warn(e); }
+  }
+
+  window.handleGoogleLogin = async function(){
+    try{
+      if(typeof firebase==='undefined' || !firebase.auth){ alert('Firebase Auth ist nicht geladen.'); return; }
+      const provider = new firebase.auth.GoogleAuthProvider();
+      provider.addScope('profile'); provider.addScope('email'); provider.addScope('https://www.googleapis.com/auth/calendar');
+      const result = await firebase.auth().signInWithPopup(provider);
+      const user = result && result.user;
+      if(!user){ alert('Google Anmeldung abgeschlossen, aber kein Benutzer erhalten.'); return; }
+      isDemoMode = false; window.isDemoMode = false; delLs('demo_mode'); saveLs('demo_mode', false);
+      userInfo = window.userInfo = { name:user.displayName || user.email || 'Google Nutzer', email:user.email || '', photo:user.photoURL || '' };
+      saveLs('user_info', userInfo);
+      if((userInfo.email||'').toLowerCase() !== 'demo@change-app.de'){
+        events = window.events = [];
+        challenges = window.challenges = [];
+        challengeCompletions = window.challengeCompletions = [];
+        challengePlayers = window.challengePlayers = [];
+      }
+      try{
+        const cred = result.credential;
+        if(cred && cred.accessToken){ accessToken = window.accessToken = cred.accessToken; saveLs('access_token', accessToken); }
+      }catch(e){ console.warn('accessToken nicht gespeichert', e); }
+      bootMainApp();
+      try{ if(typeof loadGoogleData==='function') await loadGoogleData(); }catch(e){ console.warn('Google Kalender nicht geladen', e); }
+      await loadCloudDataForUser(user);
+      setMainView('dashboard');
+    }catch(err){
+      console.error('[CHANGE LOGIN] Fehler:', err);
+      alert('Google Login Fehler: ' + (err && err.message ? err.message : String(err)));
+    }
+  };
+
+  try{
+    if(typeof firebase !== 'undefined' && firebase.auth){
+      firebase.auth().onAuthStateChanged(async function(user){
+        if(!user) return;
+        isDemoMode = false; window.isDemoMode = false; delLs('demo_mode');
+        userInfo = window.userInfo = { name:user.displayName || user.email || 'Google Nutzer', email:user.email || '', photo:user.photoURL || '' };
+        saveLs('user_info', userInfo);
+        bootMainApp();
+        await loadCloudDataForUser(user);
+      });
+    }
+  }catch(e){ console.warn('auth observer', e); }
+  window.addEventListener('load', function(){ setTimeout(fixNavigation, 800); });
+})();
 </script>
 
 </body>
