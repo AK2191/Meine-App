@@ -3023,5 +3023,95 @@ document.addEventListener('touchend',e=>{
 })();
 </script>
 
+
+<script>
+/* CHANGE PRO PATCH: heute-kacheln, reset, settings-persistenz, demnaechst-leiste ausblenden */
+(function(){
+  function el(id){ return document.getElementById(id); }
+  function todayKey(){ if (typeof dateKey === 'function') return dateKey(new Date()); const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function lset(k,v){ try{ if(typeof ls==='function') ls(k,v); else localStorage.setItem('change_v2_'+k, JSON.stringify(v)); }catch(e){} }
+  function lget(k,d){ try{ if(typeof ls==='function'){ const v=ls(k); return v==null?d:v; } const v=localStorage.getItem('change_v2_'+k); return v==null?d:JSON.parse(v); }catch(e){ return d; } }
+  function persist(){ try{ lset('challenge_completions', window.challengeCompletions||[]); }catch(e){} try{ if(typeof persistChangeState==='function') persistChangeState(); }catch(e){} try{ if(typeof saveChallengesToFirebase==='function') saveChallengesToFirebase(); }catch(e){} try{ if(typeof saveChallengeState==='function') saveChallengeState(); }catch(e){} }
+  function refreshAll(){ try{ if(typeof renderChallenges==='function') renderChallenges(); }catch(e){} try{ if(typeof renderCalendar==='function') renderCalendar(); }catch(e){} try{ if(typeof buildDashboard==='function') buildDashboard(); }catch(e){} try{ if(typeof renderDashboard==='function') renderDashboard(); }catch(e){} try{ if(typeof addCalendarPointBadges==='function') setTimeout(addCalendarPointBadges,0); }catch(e){} }
+  function meIds(){ const info=window.userInfo||{}; const ids=[]; if(info.email) ids.push(String(info.email).toLowerCase()); if(info.name) ids.push(String(info.name).toLowerCase()); try{ const u=firebase.auth().currentUser; if(u){ if(u.email) ids.push(String(u.email).toLowerCase()); if(u.uid) ids.push(String(u.uid).toLowerCase()); } }catch(e){} ids.push('me','ich'); return ids; }
+  function isMine(c){ const ids=meIds(); return !c.playerId && !c.userEmail ? true : ids.includes(String(c.playerId||'').toLowerCase()) || ids.includes(String(c.userEmail||'').toLowerCase()); }
+  function todayCompletions(){ const t=todayKey(); return (window.challengeCompletions||[]).filter(c => c && c.date===t && isMine(c)); }
+  function todayPoints(){ return todayCompletions().reduce((a,c)=>a+(parseInt(c.points,10)||0),0); }
+
+  window.resetTodayChallenges = function(){
+    const t=todayKey();
+    const before=(window.challengeCompletions||[]).length;
+    window.challengeCompletions=(window.challengeCompletions||[]).filter(c => !(c && c.date===t && isMine(c)));
+    persist(); refreshAll();
+    const removed=before-window.challengeCompletions.length;
+    if(typeof toast==='function') toast(removed ? 'Heute zurückgesetzt: '+removed+' Erledigungen entfernt' : 'Heute war nichts erledigt','ok');
+  };
+
+  function ensureChallengeTodayKpis(){
+    const host=el('challenge-layout') || el('challenges-view'); if(!host) return;
+    let box=el('challenge-today-kpis');
+    const done=todayCompletions().length; const pts=todayPoints();
+    if(!box){
+      box=document.createElement('div'); box.id='challenge-today-kpis';
+      box.innerHTML='<div class="challenge-today-card"><div class="ct-num" id="ct-done">0</div><div class="ct-label">Heute erledigt</div></div><div class="challenge-today-card"><div class="ct-num" id="ct-points">0</div><div class="ct-label">Punkte heute</div></div><button class="btn btn-ghost btn-sm" onclick="resetTodayChallenges()">Heute zurücksetzen</button>';
+      if(host.id==='challenge-layout') host.parentNode.insertBefore(box, host); else host.insertBefore(box, host.firstChild);
+    }
+    const d=el('ct-done'), p=el('ct-points'); if(d)d.textContent=done; if(p)p.textContent=pts;
+  }
+
+  const oldRenderChallenges=window.renderChallenges;
+  window.renderChallenges=function(){ if(typeof oldRenderChallenges==='function') oldRenderChallenges.apply(this,arguments); setTimeout(ensureChallengeTodayKpis,0); };
+
+  const oldComplete=window.completeChallenge;
+  window.completeChallenge=function(id){
+    if(typeof oldComplete==='function') oldComplete.apply(this,arguments);
+    setTimeout(function(){
+      ensureChallengeTodayKpis();
+      const row=document.querySelector('[data-challenge-id="'+String(id).replace(/"/g,'\\"')+'"]');
+      if(row){
+        row.classList.add('challenge-done');
+        const btn=row.querySelector('button');
+        if(btn){btn.textContent='Erledigt'; btn.classList.remove('btn-primary'); btn.classList.add('btn-success');}
+      }
+      refreshAll();
+    },80);
+  };
+
+  function hideUpcoming(){ const u=el('upcoming-strip'); if(u) u.style.display='none'; }
+  const oldRenderCalendar=window.renderCalendar;
+  window.renderCalendar=function(){ if(typeof oldRenderCalendar==='function') oldRenderCalendar.apply(this,arguments); hideUpcoming(); };
+
+  window.changeCalendarSettings = Object.assign({showWeekNumbers:false, showChallengeDots:true, showHolidays:true}, lget('calendar_settings',{}));
+  window.saveCalSettings = function(){
+    const w=el('toggle-kw') || el('toggle-weeknumbers') || el('setting-weeknumbers');
+    const d=el('toggle-dots') || el('toggle-challenge-dots') || el('setting-dots');
+    const h=el('toggle-holidays') || el('setting-holidays');
+    window.changeCalendarSettings={
+      showWeekNumbers: w ? !!w.checked : !!window.changeCalendarSettings.showWeekNumbers,
+      showChallengeDots: d ? !!d.checked : !!window.changeCalendarSettings.showChallengeDots,
+      showHolidays: h ? !!h.checked : !!window.changeCalendarSettings.showHolidays
+    };
+    lset('calendar_settings', window.changeCalendarSettings);
+    refreshAll();
+    if(typeof toast==='function') toast('Kalender-Einstellungen gespeichert ✓','ok');
+  };
+  function applyCalSettings(){
+    const s=window.changeCalendarSettings||{};
+    [['toggle-kw','showWeekNumbers'],['toggle-weeknumbers','showWeekNumbers'],['setting-weeknumbers','showWeekNumbers'],['toggle-dots','showChallengeDots'],['toggle-challenge-dots','showChallengeDots'],['setting-dots','showChallengeDots'],['toggle-holidays','showHolidays'],['setting-holidays','showHolidays']].forEach(([id,k])=>{ const x=el(id); if(x) x.checked=!!s[k]; });
+  }
+  const oldOpenCalSettings=window.openCalendarSettings;
+  window.openCalendarSettings=function(){ if(typeof oldOpenCalSettings==='function') oldOpenCalSettings.apply(this,arguments); setTimeout(applyCalSettings,50); };
+
+  const oldBuildDashboard=window.buildDashboard;
+  window.buildDashboard=function(){ if(typeof oldBuildDashboard==='function') oldBuildDashboard.apply(this,arguments); try{ if(typeof buildDashCards==='function') buildDashCards(); }catch(e){} };
+
+  if(!el('change-pro-patch-style')){
+    const st=document.createElement('style'); st.id='change-pro-patch-style'; st.textContent='#upcoming-strip{display:none!important}#challenge-today-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) auto;gap:10px;padding:12px 18px;border-bottom:1px solid var(--b1);align-items:stretch}.challenge-today-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:12px 14px}.ct-num{font-family:var(--mono);font-size:28px;font-weight:900;color:var(--grn);line-height:1}.ct-label{font-size:11px;color:var(--t4);font-weight:800;text-transform:uppercase;letter-spacing:.4px;margin-top:5px}.challenge-item.challenge-done{border-color:rgba(52,211,153,.45)!important;background:rgba(52,211,153,.07)!important}.challenge-item.challenge-done .challenge-name{color:var(--grn)!important}@media(max-width:600px){#challenge-today-kpis{grid-template-columns:1fr 1fr}#challenge-today-kpis button{grid-column:1/-1}}';
+    document.head.appendChild(st);
+  }
+  window.addEventListener('load',()=>setTimeout(()=>{ hideUpcoming(); ensureChallengeTodayKpis(); applyCalSettings(); refreshAll(); },600));
+})();
+</script>
+
 </body>
 </html>
