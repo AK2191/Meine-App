@@ -2351,8 +2351,90 @@ function openPlayerDetail(id) {
   `);
 }
 </script>
-   <script>
-/* CHANGE HOTFIX: Google Login erzwingt Dashboard nach erfolgreicher Anmeldung */
+
+<script>
+/* CHANGE FINAL HOTFIX: Login + fehlende Helfer + null-sichere UI */
+
+if (typeof window.wrapWeekRow !== "function") {
+  window.wrapWeekRow = function (html) {
+    return '<div class="week-row">' + html + '</div>';
+  };
+}
+
+window.safeSetText = function(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text == null ? "" : String(text);
+};
+
+window.safeSetDisplay = function(id, display) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = display;
+};
+
+window.updateAvatarUI = function() {
+  const av = document.getElementById("user-avatar");
+  if (!av) return;
+
+  const info = window.userInfo || userInfo || {};
+  const name = info.name || "";
+  const photo = info.photo || "";
+  const initials = name
+    ? name.split(" ").map(w => w[0]).join("").substring(0, 2).toUpperCase()
+    : "?";
+
+  if (photo) {
+    av.innerHTML = '<img src="' + esc(photo) + '" alt="">';
+  } else {
+    av.innerHTML = '<span id="avatar-initials">' + initials + '</span>';
+  }
+};
+
+window.updateSettingsProfile = function() {
+  const info = window.userInfo || userInfo || {};
+  const n = info.name || "Gast";
+  const m = info.email || "Nicht angemeldet";
+  const p = info.photo || "";
+
+  safeSetText("settings-name", n);
+  safeSetText("settings-mail", m);
+
+  const av = document.getElementById("settings-avatar");
+  if (!av) return;
+
+  if (p) {
+    av.innerHTML = '<img src="' + esc(p) + '" alt="" style="width:100%;height:100%;object-fit:cover">';
+  } else {
+    av.textContent = n.split(" ").map(w => w[0]).join("").substring(0, 2).toUpperCase() || "?";
+  }
+};
+
+window.bootMainApp = function() {
+  safeSetDisplay("loading", "none");
+  safeSetDisplay("login-screen", "none");
+  safeSetDisplay("setup-modal", "none");
+  safeSetDisplay("main-app", "flex");
+
+  const mainApp = document.getElementById("main-app");
+  if (mainApp) mainApp.style.flexDirection = "column";
+
+  try { updateAvatarUI(); } catch(e) { console.warn("updateAvatarUI Fehler:", e); }
+  try { updateSettingsProfile(); } catch(e) { console.warn("updateSettingsProfile Fehler:", e); }
+
+  try {
+    if (typeof setMainView === "function") setMainView("dashboard");
+  } catch(e) {
+    console.warn("setMainView Fehler:", e);
+    safeSetDisplay("dashboard-view", "flex");
+    safeSetDisplay("cal-body", "none");
+    safeSetDisplay("challenges-view", "none");
+    safeSetDisplay("settings-view", "none");
+  }
+
+  try { if (typeof renderDashboard === "function") renderDashboard(); } catch(e) { console.warn("renderDashboard Fehler:", e); }
+  try { if (typeof renderCalendar === "function") renderCalendar(); } catch(e) { console.warn("renderCalendar Fehler:", e); }
+  try { if (typeof renderChallenges === "function") renderChallenges(); } catch(e) { console.warn("renderChallenges Fehler:", e); }
+};
+
 window.handleGoogleLogin = async function () {
   try {
     console.log("[CHANGE LOGIN] Google Login gestartet");
@@ -2377,27 +2459,41 @@ window.handleGoogleLogin = async function () {
 
     console.log("[CHANGE LOGIN] Angemeldet:", user.email);
 
-    window.currentUser = user;
-    window.userInfo = {
+    userInfo = {
       name: user.displayName || user.email || "Google Nutzer",
       email: user.email || "",
       photo: user.photoURL || ""
     };
+    window.userInfo = userInfo;
+    window.currentUser = user;
+    isDemoMode = false;
 
-    const loading = document.getElementById("loading");
-    const loginScreen = document.getElementById("login-screen");
-    const mainApp = document.getElementById("main-app");
-
-    if (loading) loading.style.display = "none";
-    if (loginScreen) loginScreen.style.display = "none";
-    if (mainApp) mainApp.style.display = "flex";
-
-    if (typeof bootMainApp === "function") {
-      bootMainApp();
+    try {
+      if (typeof ls === "function") {
+        ls("user_info", userInfo);
+        ls("demo_mode", false);
+      }
+    } catch(e) {
+      console.warn("Speichern user_info fehlgeschlagen:", e);
     }
 
-    if (typeof setMainView === "function") {
-      setMainView("dashboard");
+    try {
+      const credential = result.credential;
+      if (credential && credential.accessToken) {
+        accessToken = credential.accessToken;
+        window.accessToken = accessToken;
+        if (typeof ls === "function") ls("access_token", accessToken);
+      }
+    } catch(e) {
+      console.warn("Access Token konnte nicht gespeichert werden:", e);
+    }
+
+    bootMainApp();
+
+    try {
+      if (typeof loadGoogleData === "function") loadGoogleData();
+    } catch(e) {
+      console.warn("loadGoogleData Fehler:", e);
     }
 
   } catch (err) {
@@ -2417,13 +2513,6 @@ window.handleGoogleLogin = async function () {
   }
 };
 </script>
-   <script>
-/* CHANGE HOTFIX: fehlende Kalender-Hilfsfunktion */
-if (typeof window.wrapWeekRow !== "function") {
-  window.wrapWeekRow = function (html) {
-    return '<div class="week-row">' + html + '</div>';
-  };
-}
-</script>
+
 </body>
 </html>
