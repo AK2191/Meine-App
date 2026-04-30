@@ -2351,5 +2351,71 @@ function openPlayerDetail(id) {
   `);
 }
 </script>
+   <script>
+/* CHANGE HOTFIX: Google Login erzwingt Dashboard nach erfolgreicher Anmeldung */
+window.handleGoogleLogin = async function () {
+  try {
+    console.log("[CHANGE LOGIN] Google Login gestartet");
+
+    if (typeof firebase === "undefined" || !firebase.auth) {
+      alert("Firebase Auth ist nicht geladen. Prüfe firebase-config.js und Firebase SDK.");
+      return;
+    }
+
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.addScope("profile");
+    provider.addScope("email");
+    provider.addScope("https://www.googleapis.com/auth/calendar");
+
+    const result = await firebase.auth().signInWithPopup(provider);
+    const user = result && result.user;
+
+    if (!user) {
+      alert("Google Anmeldung abgeschlossen, aber kein Benutzer erhalten.");
+      return;
+    }
+
+    console.log("[CHANGE LOGIN] Angemeldet:", user.email);
+
+    window.currentUser = user;
+    window.userInfo = {
+      name: user.displayName || user.email || "Google Nutzer",
+      email: user.email || "",
+      photo: user.photoURL || ""
+    };
+
+    const loading = document.getElementById("loading");
+    const loginScreen = document.getElementById("login-screen");
+    const mainApp = document.getElementById("main-app");
+
+    if (loading) loading.style.display = "none";
+    if (loginScreen) loginScreen.style.display = "none";
+    if (mainApp) mainApp.style.display = "flex";
+
+    if (typeof bootMainApp === "function") {
+      bootMainApp();
+    }
+
+    if (typeof setMainView === "function") {
+      setMainView("dashboard");
+    }
+
+  } catch (err) {
+    console.error("[CHANGE LOGIN] Fehler:", err);
+
+    let msg = err && err.message ? err.message : String(err);
+
+    if (err && err.code === "auth/popup-blocked") {
+      msg = "Popup wurde blockiert. Bitte Popups für diese Seite erlauben.";
+    }
+
+    if (err && err.code === "auth/popup-closed-by-user") {
+      msg = "Google-Fenster wurde geschlossen, bevor die Anmeldung abgeschlossen war.";
+    }
+
+    alert("Google Login Fehler: " + msg);
+  }
+};
+</script>
 </body>
 </html>
