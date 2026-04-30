@@ -659,6 +659,9 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 .push-box{background:var(--s2);border:1px solid var(--b2);border-radius:var(--r);padding:14px;margin-bottom:12px}
 .push-status{font-size:12px;color:var(--t3);line-height:1.5;margin-top:8px}
 .push-ok{color:var(--grn)}.push-warn{color:var(--amb)}.push-err{color:var(--red)}
+
+/* ── SETTINGS TOGGLES / PWA HELP ── */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--s2);border:1px solid var(--b2);border-radius:var(--r);padding:12px 14px;margin:12px 0}.toggle-copy{min-width:0}.toggle-title{font-size:13px;font-weight:800;color:var(--t1)}.toggle-sub{font-size:11.5px;color:var(--t4);line-height:1.45;margin-top:2px}.switch{position:relative;display:inline-block;width:48px;height:28px;flex-shrink:0}.switch input{opacity:0;width:0;height:0}.slider{position:absolute;cursor:pointer;inset:0;background:var(--s3);transition:.2s;border-radius:999px;border:1px solid var(--b2)}.slider:before{position:absolute;content:"";height:20px;width:20px;left:3px;top:3px;background:var(--t3);transition:.2s;border-radius:50%}.switch input:checked + .slider{background:var(--grn-d);border-color:rgba(52,211,153,.35)}.switch input:checked + .slider:before{transform:translateX(20px);background:var(--grn)}.status-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:800}.status-on{background:var(--grn-d);color:var(--grn)}.status-off{background:var(--s2);color:var(--t4)}.status-warn{background:var(--amb-d);color:var(--amb)}.help-steps{margin-top:10px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:12px 14px}.help-steps ol{padding-left:18px;margin:6px 0 0}.help-steps li{font-size:12px;color:var(--t3);margin:5px 0;line-height:1.45}
 </style>
 </head>
 <body>
@@ -953,11 +956,51 @@ function hideLd(){
 /* ── PWA ── */
 function initPWA(){
   if(!('serviceWorker' in navigator))return;
-  const sw=`self.addEventListener('install',()=>self.skipWaiting());self.addEventListener('activate',e=>e.waitUntil(clients.claim()));self.addEventListener('fetch',e=>e.respondWith(fetch(e.request).catch(()=>new Response(''))));`;
-  const blob=new Blob([sw],{type:'application/javascript'});
-  navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
+  navigator.serviceWorker.register('./firebase-messaging-sw.js', {scope:'./'}).catch(err=>{
+    console.warn('Service Worker Registrierung fehlgeschlagen:', err);
+  });
 }
 
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (event) => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  ls('pwa_install_available', true);
+});
+window.addEventListener('appinstalled', () => {
+  deferredInstallPrompt = null;
+  ls('pwa_installed', true);
+  toast('Change wurde installiert ✓','ok');
+});
+function isStandaloneApp(){
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+function isIOSDevice(){
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+function installChangeApp(){
+  if(isStandaloneApp()){ toast('Change ist bereits als App geöffnet ✓','ok'); return; }
+  if(deferredInstallPrompt){
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(choice=>{
+      toast(choice.outcome==='accepted'?'Installation gestartet ✓':'Installation abgebrochen', choice.outcome==='accepted'?'ok':'');
+      deferredInstallPrompt=null;
+      if(typeof openPushSettingsPanel==='function') openPushSettingsPanel();
+    });
+    return;
+  }
+  const ios=isIOSDevice();
+  const android=/Android/i.test(navigator.userAgent);
+  let steps='';
+  if(ios){
+    steps='<ol><li>Öffne diese Seite in Safari.</li><li>Tippe unten auf Teilen.</li><li>Wähle „Zum Home-Bildschirm“.</li><li>Starte Change danach vom Home-Bildschirm. Erst dann funktionieren iPhone-Pushs.</li></ol>';
+  }else if(android){
+    steps='<ol><li>Öffne diese Seite in Chrome.</li><li>Tippe oben rechts auf ⋮.</li><li>Wähle „App installieren“ oder „Zum Startbildschirm hinzufügen“.</li><li>Falls der Punkt fehlt: Seite neu laden und kurz warten.</li></ol>';
+  }else{
+    steps='<ol><li>Nutze Chrome oder Edge.</li><li>Klicke rechts in der Adressleiste auf das Installieren-Symbol.</li><li>Alternativ Menü ⋮ → „Installieren“.</li></ol>';
+  }
+  openPanel('Change installieren', '<div class="push-box"><div class="challenge-title">Installation manuell starten</div><div class="push-status">Der Browser hat keinen automatischen Installationsdialog bereitgestellt.</div><div class="help-steps">'+steps+'</div></div>');
+}
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━
    SETUP & AUTH
 ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -2164,14 +2207,18 @@ document.addEventListener('touchend',e=>{
     if(changed){ls('challenges',challenges); if(typeof publishLocalChallengesToFirestore==='function') publishLocalChallengesToFirestore();}
     return daily;
   };
+  window.setAutoChallengesEnabled=function(enabled){
+    ls(AUTO_KEY, !!enabled);
+    if(enabled) ensureDailyAutoChallenges();
+    if(typeof renderChallenges==='function') renderChallenges();
+    if(typeof renderCalendar==='function') renderCalendar();
+    if(typeof buildDashboard==='function') buildDashboard();
+    toast('Auto-Challenges '+(enabled?'aktiviert':'deaktiviert'), enabled?'ok':'');
+    if(typeof openPushSettingsPanel==='function') openPushSettingsPanel();
+  };
   window.toggleAutoChallenges=function(){
     const enabled=ls(AUTO_KEY)!==false;
-    ls(AUTO_KEY,!enabled);
-    if(!enabled) ensureDailyAutoChallenges();
-    if(typeof renderChallenges==='function') renderChallenges();
-    if(typeof buildDashboard==='function') buildDashboard();
-    toast('Auto-Challenges '+(!enabled?'aktiviert':'deaktiviert'), !enabled?'ok':'');
-    openPushSettingsPanel && openPushSettingsPanel();
+    setAutoChallengesEnabled(!enabled);
   };
   const oldBoot=window.bootMainApp;
   window.bootMainApp=function(){
@@ -2291,16 +2338,41 @@ document.addEventListener('touchend',e=>{
     }catch(e){ console.warn('Completion sync:',e); }
   }
 
+  function notificationHelpHtml(perm){
+    const ios=isIOSDevice();
+    const android=/Android/i.test(navigator.userAgent);
+    if(perm==='denied'){
+      return '<div class="help-steps"><strong style="color:var(--amb)">Benachrichtigungen sind blockiert.</strong><ol>'+(ios?'<li>iPhone: Einstellungen → Mitteilungen → Change/Safari → Mitteilungen erlauben.</li><li>Falls Change noch nicht installiert ist: Safari → Teilen → Zum Home-Bildschirm.</li><li>Danach Change vom Home-Bildschirm öffnen und Push erneut aktivieren.</li>':android?'<li>Chrome öffnen → Schloss/Seiteneinstellungen neben der URL.</li><li>Benachrichtigungen auf „Erlauben“ stellen.</li><li>Seite neu laden und Push erneut aktivieren.</li>':'<li>Links neben der URL auf Schloss/Site-Info klicken.</li><li>Benachrichtigungen auf „Erlauben“ stellen.</li><li>Seite neu laden und Push erneut aktivieren.</li>')+'</ol></div>';
+    }
+    if(ios && !isStandaloneApp()){
+      return '<div class="help-steps"><strong style="color:var(--amb)">iPhone-Hinweis:</strong><ol><li>Web-Push funktioniert auf iPhone/iPad nur aus der installierten Home-Bildschirm-App.</li><li>Safari → Teilen → Zum Home-Bildschirm.</li><li>Danach Change vom Home-Bildschirm öffnen und Push aktivieren.</li></ol></div>';
+    }
+    return '';
+  }
+
   window.enablePushNotifications = async function(){
     if(!hasFirebaseConfig()){ toast('Firebase ist noch nicht eingerichtet: firebase-config.js ausfüllen','err'); return; }
-    if(!('Notification' in window)){ toast('Dieser Browser unterstützt keine Push-Mitteilungen','err'); return; }
+    if(!('Notification' in window)){ toast('Dieser Browser unterstützt keine Push-Mitteilungen','err'); openPushSettingsPanel(); return; }
+    if(Notification.permission==='denied'){
+      toast('Benachrichtigungen sind im Browser blockiert','err');
+      openPushSettingsPanel();
+      return;
+    }
+    if(isIOSDevice() && !isStandaloneApp()){
+      toast('iPhone: erst Change zum Home-Bildschirm hinzufügen','err');
+      installChangeApp();
+      return;
+    }
     const ok=await initFirebaseLive(); if(!ok){ toast('Firebase konnte nicht gestartet werden','err'); return; }
     try{
-      const perm=await Notification.requestPermission();
-      if(perm!=='granted'){ toast('Benachrichtigungen wurden nicht erlaubt','err'); return; }
-      const reg=await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+      let perm=Notification.permission;
+      if(perm==='default') perm=await Notification.requestPermission();
+      if(perm!=='granted'){ toast('Benachrichtigungen wurden nicht erlaubt','err'); openPushSettingsPanel(); return; }
+      const reg=await navigator.serviceWorker.register('./firebase-messaging-sw.js', {scope:'./'});
+      await navigator.serviceWorker.ready;
       const vapid=getVapidKey();
       if(!vapid || vapid.includes('HIER_')){ toast('VAPID Key fehlt in firebase-config.js','err'); return; }
+      if(!messaging) messaging=firebase.messaging();
       const token=await messaging.getToken({vapidKey:vapid,serviceWorkerRegistration:reg});
       if(!token) throw new Error('Kein Push-Token erhalten');
       ls('fcm_token',token);
@@ -2309,7 +2381,7 @@ document.addEventListener('touchend',e=>{
       },{merge:true});
       toast('Push-Benachrichtigungen aktiviert ✓','ok');
       openPushSettingsPanel();
-    }catch(e){ console.warn('Push aktivieren:',e); toast('Push konnte nicht aktiviert werden: '+(e.message||e),'err'); }
+    }catch(e){ console.warn('Push aktivieren:',e); toast('Push konnte nicht aktiviert werden: '+(e.message||e),'err'); openPushSettingsPanel(); }
   };
 
   function installForegroundPushHandler(){
@@ -2344,23 +2416,41 @@ document.addEventListener('touchend',e=>{
     }, 15*60*1000);
   }
 
+  window.testLocalPush=function(){
+    if(!('Notification' in window)){ toast('Benachrichtigungen nicht unterstützt','err'); return; }
+    if(Notification.permission!=='granted'){ toast('Benachrichtigungen zuerst erlauben','err'); openPushSettingsPanel(); return; }
+    openLocalNotification('Change Test','Push-Benachrichtigungen sind grundsätzlich erlaubt.');
+    toast('Test gesendet ✓','ok');
+  };
+
   window.openPushSettingsPanel = function(){
     const cfgOk=hasFirebaseConfig();
-    const perm=('Notification' in window)?Notification.permission:'nicht unterstützt';
+    const supported=('Notification' in window);
+    const perm=supported?Notification.permission:'nicht unterstützt';
     const token=ls('fcm_token');
     const online=(challengePlayers||[]).filter(p=>p.online).length;
+    const autoEnabled=ls('auto_challenges_enabled')!==false;
+    const installStatus=isStandaloneApp()?'installiert':(deferredInstallPrompt?'bereit':'manuell');
+    const permClass=perm==='granted'?'push-ok':(perm==='denied'?'push-err':'push-warn');
     const html=`
       <div class="push-box">
         <div class="challenge-title">Firebase Push & Live-Kontest</div>
         <div class="push-status ${cfgOk?'push-ok':'push-warn'}">${cfgOk?'Firebase-Konfiguration gefunden.':'Firebase ist noch nicht konfiguriert. Trage deine Werte in firebase-config.js ein.'}</div>
-        <div class="push-status">Benachrichtigungsstatus: <strong>${esc(perm)}</strong></div>
+        <div class="push-status ${permClass}">Benachrichtigungsstatus: <strong>${esc(perm)}</strong></div>
         <div class="push-status">Push-Token: <strong>${token?'vorhanden':'noch nicht erstellt'}</strong></div>
+        <div class="push-status">App-Installation: <strong>${esc(installStatus)}</strong></div>
         <div class="push-status">Live-Mitspieler erkannt: <strong>${online}</strong></div>
       </div>
-      <button class="btn btn-primary btn-full" onclick="enablePushNotifications()">Echte Push-Benachrichtigungen aktivieren</button><button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="installChangeApp()">Change als App installieren</button>
+      ${notificationHelpHtml(perm)}
+      <div class="toggle-row">
+        <div class="toggle-copy"><div class="toggle-title">Tägliche Auto-Challenges <span class="status-pill ${autoEnabled?'status-on':'status-off'}">${autoEnabled?'AKTIV':'INAKTIV'}</span></div><div class="toggle-sub">Erzeugt jeden Tag kleine Rätsel und Trainingsübungen.</div></div>
+        <label class="switch"><input type="checkbox" ${autoEnabled?'checked':''} onchange="setAutoChallengesEnabled(this.checked)"><span class="slider"></span></label>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="enablePushNotifications()">Echte Push-Benachrichtigungen aktivieren</button>
+      <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="installChangeApp()">Change als App installieren</button>
       <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="initFirebaseLive().then(ok=>toast(ok?'Live-Sync aktiv ✓':'Firebase-Konfiguration fehlt',ok?'ok':'err'))">Live-Mitspieler neu verbinden</button>
-      <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="toggleAutoChallenges()">Tägliche Auto-Challenges ein/aus</button>
-      <div class="settings-hint">Hintergrund-Push auf Android funktioniert im Browser/als PWA. Auf iPhone/iPad muss die App zum Home-Bildschirm hinzugefügt werden und iOS 16.4+ verwenden. Automatische 9-Uhr-Pushs laufen über die Cloud Function aus dem Ordner <strong>functions</strong>.</div>`;
+      <button class="btn btn-ghost btn-full" style="margin-top:8px" onclick="testLocalPush()">Test-Benachrichtigung anzeigen</button>
+      <div class="settings-hint">Android: Push funktioniert in Chrome/als installierte PWA. iPhone/iPad: Push funktioniert nur, wenn Change zum Home-Bildschirm hinzugefügt und von dort gestartet wurde.</div>`;
     openPanel('Push & Live-Sync',html);
   };
 
