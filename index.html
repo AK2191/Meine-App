@@ -4048,5 +4048,172 @@ document.addEventListener('touchend',e=>{
   window.addEventListener('load',function(){setTimeout(refresh,900)});
 })();
 </script>
+
+<script>
+/* CHANGE PATCH v8: optionale Aufgaben bereinigen, Dashboard kompakter, Push über Glocke */
+(function(){
+  'use strict';
+  const PATCH='CHANGE_V8_OPTIONAL_DASHBOARD_BELL';
+  function el(id){return document.getElementById(id)}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+  function today(){try{return typeof dateKey==='function'?dateKey(new Date()):new Date().toISOString().slice(0,10)}catch(e){return new Date().toISOString().slice(0,10)}}
+  function lsSet(k,v){try{if(typeof ls==='function')ls(k,v)}catch(e){} try{localStorage.setItem('change_v2_'+k,JSON.stringify(v))}catch(e){} try{localStorage.setItem('change_v1_'+k,JSON.stringify(v))}catch(e){}}
+  function normalizeId(v){return String(v||'').trim().toLowerCase();}
+  function isBadMe(v){const x=normalizeId(v);return !x||x==='me'||x==='du'||x==='ich'||x==='local-user';}
+  function account(){
+    const fu=(typeof firebase!=='undefined'&&firebase.auth&&firebase.auth().currentUser)?firebase.auth().currentUser:null;
+    const info=window.userInfo||{};
+    const email=normalizeId((fu&&fu.email)||info.email||info.mail||'');
+    const uid=(fu&&fu.uid)||info.uid||'';
+    const id=email||uid||'local-user';
+    const name=(fu&&fu.displayName)||info.name||email||'Du';
+    const photo=(fu&&fu.photoURL)||info.photo||'';
+    if(!window.userInfo) window.userInfo={};
+    window.userInfo=Object.assign({},window.userInfo,{name,email,photo,uid});
+    return {id,name,email,uid,photo};
+  }
+  function points(list){return (list||[]).reduce((s,c)=>s+(parseInt(c.points,10)||0),0)}
+  function myComps(date){
+    const a=account();
+    return (window.challengeCompletions||[]).filter(c=>{
+      let pid=normalizeId(c.playerId||c.userEmail||c.email||c.userId);
+      if(isBadMe(pid)) pid=a.id;
+      return pid===a.id && (!date || String(c.date||'').slice(0,10)===date);
+    });
+  }
+  function saveState(){
+    try{lsSet('challenges',window.challenges||[]);lsSet('challenge_completions',window.challengeCompletions||[]);lsSet('challenge_players',window.challengePlayers||[]);lsSet('user_info',window.userInfo||{});}catch(e){}
+    try{if(typeof persistChangeState==='function')persistChangeState()}catch(e){}
+  }
+  function isWalk(ch){return /10\s*minuten\s*spazieren/i.test(String(ch.title||ch.name||'')) || /walk[_-]?10|spazier/i.test(String(ch.id||''));}
+  function isFitnessOptional(ch){return /fitness\s*optional/i.test(String(ch.title||ch.name||'')) || /daily_fitness_optional|optional_fitness/i.test(String(ch.id||''));}
+  function normalizeOptionalSet(){
+    window.challenges=Array.isArray(window.challenges)?window.challenges:[];
+    let seenWalk=false;
+    const cleaned=[];
+    window.challenges.forEach(ch=>{
+      if(!ch) return;
+      if(isFitnessOptional(ch)) return; // raus: „Fitness optional“
+      if(isWalk(ch)){
+        if(seenWalk) return; // nur einmal
+        seenWalk=true;
+        cleaned.push(Object.assign({},ch,{id:ch.id||'daily_walk_10min',title:'10 Minuten spazieren',name:'10 Minuten spazieren',desc:'Optional: 10 Minuten locker spazieren gehen. Kein Video nötig.',points:10,optional:true,noVideo:true,type:'Optional',level:'optional',url:''}));
+        return;
+      }
+      cleaned.push(ch);
+    });
+    if(!seenWalk){
+      cleaned.push({id:'daily_walk_10min',icon:'🚶',title:'10 Minuten spazieren',name:'10 Minuten spazieren',desc:'Optional: 10 Minuten locker spazieren gehen. Kein Video nötig.',points:10,optional:true,noVideo:true,type:'Optional',level:'optional',active:true,recurrence:'daily',url:''});
+    }
+    window.challenges=cleaned;
+    try{lsSet('challenges',window.challenges)}catch(e){}
+  }
+  function dueTodayClean(){
+    normalizeOptionalSet();
+    const td=today();
+    const doneIds=new Set(myComps(td).map(c=>String(c.challengeId)));
+    const all=(window.challenges||[]).filter(ch=>ch&&ch.active!==false).filter(ch=>{
+      const d=String(ch.date||ch.startDate||td).slice(0,10);
+      return ch.recurrence==='daily'||d===td||(!ch.date&&!ch.startDate);
+    });
+    const open=all.filter(ch=>!doneIds.has(String(ch.id)));
+    const done=all.filter(ch=>doneIds.has(String(ch.id)));
+    const required=open.filter(ch=>!ch.optional).slice(0,7);
+    const optional=open.filter(ch=>!!ch.optional);
+    return {requiredOpen:required, optionalOpen:optional, done, open:required.concat(optional), hiddenRequired:Math.max(0,open.filter(ch=>!ch.optional).length-7), all};
+  }
+  window.todayDueChallenges=dueTodayClean;
+  window.getTodayChallengeState=dueTodayClean;
+
+  // Behalte kompletten Account-Fix, aber reinige vorher die optionalen Aufgaben.
+  const prevComplete=window.completeChallenge;
+  window.completeChallenge=function(id){normalizeOptionalSet(); if(typeof prevComplete==='function') return prevComplete(id);};
+  const prevReset=window.resetTodayChallenges;
+  window.resetTodayChallenges=function(){normalizeOptionalSet(); if(typeof prevReset==='function') return prevReset();};
+
+  function renderChallengeRow(ch,done){
+    const opt=ch.optional?'<span class="dash-row-badge badge-blue">freiwillig</span>':'';
+    const video=(!done&&ch.url&&!ch.noVideo)?'<a href="'+esc(ch.url)+'" target="_blank" rel="noopener" class="challenge-meta" onclick="event.stopPropagation()">So geht die Übung</a>':'';
+    return '<div class="challenge-item '+(done?'challenge-done':'')+' '+(ch.optional?'challenge-optional':'')+'" data-challenge-id="'+esc(ch.id)+'"><div class="challenge-icon">'+esc(ch.icon||'🏆')+'</div><div class="challenge-body"><div class="challenge-name">'+esc(ch.title||ch.name||'Challenge')+'</div><div class="challenge-meta">'+esc(ch.desc||'')+' · '+(parseInt(ch.points,10)||0)+' Punkte '+(done?'· ✅ heute erledigt':'')+'</div>'+video+'</div>'+opt+'<span class="points-pill">'+(done?'✓ ':'+')+(parseInt(ch.points,10)||0)+'</span>'+(done?'<button class="btn btn-success btn-sm" disabled>Erledigt</button>':'<button class="btn btn-primary btn-sm" onclick="completeChallenge(\''+esc(ch.id)+'\')">Erledigen</button>')+'</div>';
+  }
+  window.renderChallenges=function(){
+    normalizeOptionalSet();
+    const view=el('challenges-view'); if(!view) return;
+    view.innerHTML='<div class="list-header"><div><div class="list-title">Challenges</div><div class="challenge-sub" id="challenge-summary-inline"></div></div></div><div id="master-point-calendar"></div><div class="challenge-layout"><div class="challenge-card"><div class="challenge-card-head"><div><div class="challenge-title">Heute erledigen</div><div class="challenge-sub">Maximal 7 Pflichtaufgaben pro Tag · Optional immer sichtbar</div></div><button class="btn btn-ghost btn-sm" onclick="resetTodayChallenges()">Heute zurücksetzen</button></div><div id="challenges-list"></div></div><div class="leader-card"><div class="leader-card-head"><div><div class="challenge-title">Kontest</div><div class="challenge-sub">Punkte & erledigte Challenges</div></div><button class="btn btn-secondary btn-sm" onclick="openParticipantPanel&&openParticipantPanel()">Mitspieler</button></div><div id="leaderboard-list"></div></div></div>';
+    const due=dueTodayClean(), td=today(), doneToday=myComps(td), allMine=myComps();
+    const sum=el('challenge-summary-inline'); if(sum) sum.textContent='Heute erledigt: '+doneToday.length+' · offen: '+(due.requiredOpen.length+due.optionalOpen.length)+(due.hiddenRequired?'+':'')+' · Punkte heute: '+points(doneToday)+' · Gesamt: '+points(allMine);
+    try{ if(typeof renderChallengePointCalendar==='function') renderChallengePointCalendar(); }catch(e){}
+    let html='';
+    if(due.requiredOpen.length) html+=due.requiredOpen.map(ch=>renderChallengeRow(ch,false)).join('');
+    if(due.hiddenRequired) html+='<div class="dash-empty">+'+due.hiddenRequired+' weitere Pflichtaufgabe(n) ausgeblendet – maximal 7 Pflichtaufgaben pro Tag.</div>';
+    if(due.optionalOpen.length) html+='<div class="challenge-done-divider optional-title">Optional</div>'+due.optionalOpen.map(ch=>renderChallengeRow(ch,false)).join('');
+    if(due.done.length) html+='<div class="challenge-done-divider">Heute erledigt</div>'+due.done.map(ch=>renderChallengeRow(ch,true)).join('');
+    if(!html) html='<div class="dash-empty">Keine Aufgaben für heute</div>';
+    const list=el('challenges-list'); if(list) list.innerHTML=html;
+
+    const a=account(), by={};
+    (window.challengePlayers||[]).forEach(p=>{const id=normalizeId(p&& (p.email||p.id)); if(!id||id.includes('demo')||isBadMe(id))return; by[id]={id,name:p.name||p.email||id,email:id,total:0,today:0,count:0,online:!!p.online};});
+    (window.challengeCompletions||[]).forEach(c=>{let id=normalizeId(c.playerId||c.userEmail||c.email); if(isBadMe(id)) id=a.id; if(!id||id.includes('demo')) return; if(!by[id]) by[id]={id,name:c.playerName||id,email:id,total:0,today:0,count:0,online:id===a.id}; const p=parseInt(c.points,10)||0; by[id].total+=p; by[id].count++; if(String(c.date||'').slice(0,10)===td) by[id].today+=p;});
+    if(!by[a.id]) by[a.id]={id:a.id,name:a.name,email:a.email||a.id,total:0,today:0,count:0,online:true};
+    const board=el('leaderboard-list'); if(board) board.innerHTML=Object.values(by).sort((x,y)=>y.total-x.total).map((p,i)=>'<div class="leader-row clickable"><div class="leader-rank">'+(i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1)+'</div><div><div class="leader-name">'+esc(p.name||p.email)+(p.id===a.id?' · Du':'')+(p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>')+'</div><div class="leader-detail">Heute: '+p.today+' P · Gesamt: '+p.total+' P · '+p.count+' erledigt</div></div><div class="leader-score">'+p.total+'</div></div>').join('')||'<div class="dash-empty">Noch keine Kontest-Daten</div>';
+  };
+
+  // Dashboard: nur 3 offene Aufgaben + maximal 1 Optional. Rechts immer „offen“, nicht „optional“.
+  const prevDash=window.buildDashCards;
+  window.buildDashCards=function(){
+    try{ if(typeof prevDash==='function') prevDash(); }catch(e){}
+    try{
+      normalizeOptionalSet();
+      const grid=el('dash-grid'); if(!grid) return;
+      const challengeBody=grid.querySelector('.challenge-card-dashboard .dash-card-body');
+      if(!challengeBody) return;
+      const due=dueTodayClean(); const done=myComps(today());
+      const shown=due.requiredOpen.slice(0,3);
+      const opt=due.optionalOpen.slice(0,1);
+      const rows=shown.concat(opt);
+      challengeBody.innerHTML='<div class="today-visual-box challenge"><div><div class="today-visual-num">'+due.requiredOpen.length+'</div><div class="today-visual-label">offen</div></div><div class="today-visual-copy">Heute erledigt: <strong>'+done.length+'</strong> · Punkte: <strong>'+points(done)+'</strong>'+ (due.optionalOpen.length?' · Optional: <strong>'+due.optionalOpen.length+'</strong>':'') +'</div></div>'+
+        (rows.length?rows.map(ch=>'<div class="dash-row" onclick="setMainView(\'challenges\')"><div class="dash-row-icon" style="background:'+(ch.optional?'var(--acc-d)':'var(--pur-d)')+'">'+esc(ch.icon||'🏆')+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(ch.title||ch.name||'Challenge')+'</div><div class="dash-row-sub">'+(ch.optional?'freiwillig · ':'')+(parseInt(ch.points,10)||0)+' Punkte</div></div><span class="dash-row-badge badge-amber">offen</span></div>').join(''):'<div class="dash-empty">Heute keine offenen Aufgaben</div>')+
+        ((due.requiredOpen.length>3||due.optionalOpen.length>1)?'<div class="dash-empty">+'+Math.max(0,due.requiredOpen.length-3 + due.optionalOpen.length-1)+' weitere Aufgabe(n) in Challenges</div>':'');
+    }catch(e){console.warn(PATCH,'dashboard compact',e)}
+  };
+  window.buildDashboard=function(){try{const n=(window.userInfo&&userInfo.name)||''; const h=el('dash-greeting'); if(h) h.textContent=(new Date().getHours()<12?'Guten Morgen':new Date().getHours()<17?'Guten Tag':'Guten Abend')+(n?', '+n.split(' ')[0]:''); const s=el('dash-sub'); if(s) s.textContent='Kalender und Challenges auf einen Blick';}catch(e){} try{ if(typeof buildKPIs==='function') buildKPIs(); }catch(e){} try{ buildDashCards(); }catch(e){}};
+
+  // Glocke: Push direkt hier aktivieren/deaktivieren und Benachrichtigungen anzeigen.
+  window.openNotifPanel=function(){
+    const enabled=localStorage.getItem('change_push_enabled')==='1' || (typeof Notification!=='undefined'&&Notification.permission==='granted');
+    const perm=(typeof Notification==='undefined')?'nicht unterstützt':Notification.permission;
+    const html='<div class="push-box bell-push-box"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><div style="font-size:13px;font-weight:800;color:var(--t1)">🔔 Push-Benachrichtigungen</div><div class="push-status '+(enabled?'push-ok':'push-warn')+'" id="bell-push-status">Status: '+(enabled?'aktiv':'inaktiv')+' · Browser: '+esc(perm)+'</div></div><label class="switch"><input type="checkbox" id="bell-push-toggle" '+(enabled?'checked':'')+' onchange="togglePushFromBell(this.checked)"><span class="slider"></span></label></div><button class="btn btn-secondary btn-full" style="margin-top:12px" onclick="sendTestBellNotification()">Test-Benachrichtigung anzeigen</button></div><div class="panel-notif-section"><div class="pns-title">Aktuelle Hinweise</div><div id="bell-notif-list">'+(((window.notifications||[]).length)?(window.notifications||[]).slice(0,8).map(n=>'<div class="nitem"><div class="nitem-icon" style="background:var(--acc-d)">🔔</div><div class="nitem-body"><div class="nitem-title">'+esc(n.title||'Benachrichtigung')+'</div><div class="nitem-sub">'+esc(n.body||n.text||'')+'</div></div></div>').join(''):'<div class="dash-empty">Keine neuen Benachrichtigungen</div>')+'</div></div>';
+    if(typeof openPanel==='function') openPanel('Benachrichtigungen',html);
+    const dot=el('notif-dot'); if(dot) dot.style.display='none';
+  };
+  window.togglePushFromBell=async function(on){
+    try{
+      if(!on){localStorage.setItem('change_push_enabled','0'); updateBellPushStatus('inaktiv'); return;}
+      if(typeof Notification==='undefined'){updateBellPushStatus('nicht unterstützt'); if(typeof toast==='function') toast('Push wird von diesem Browser nicht unterstützt','err'); return;}
+      let perm=Notification.permission;
+      if(perm!=='granted') perm=await Notification.requestPermission();
+      if(perm==='granted'){
+        localStorage.setItem('change_push_enabled','1');
+        updateBellPushStatus('aktiv');
+        try{ if(typeof initFirebaseMessaging==='function') initFirebaseMessaging(); }catch(e){}
+        if(typeof toast==='function') toast('Push-Benachrichtigungen aktiviert','ok');
+      }else{
+        localStorage.setItem('change_push_enabled','0');
+        const t=el('bell-push-toggle'); if(t) t.checked=false;
+        updateBellPushStatus('blockiert');
+        if(typeof toast==='function') toast('Push wurde im Browser nicht erlaubt','err');
+      }
+    }catch(e){console.warn(PATCH,'push',e); if(typeof toast==='function') toast('Push konnte nicht aktiviert werden','err');}
+  };
+  window.updateBellPushStatus=function(text){const s=el('bell-push-status'); if(s){s.textContent='Status: '+text+' · Browser: '+(typeof Notification==='undefined'?'nicht unterstützt':Notification.permission); s.className='push-status '+(text==='aktiv'?'push-ok':'push-warn');} const dot=el('notif-dot'); if(dot) dot.style.display=(text==='aktiv')?'block':'none';};
+  window.sendTestBellNotification=function(){
+    try{ if(typeof Notification!=='undefined'&&Notification.permission==='granted'){new Notification('Change', {body:'Push-Benachrichtigungen sind aktiv.'});} else if(typeof toast==='function') toast('Bitte Push zuerst aktivieren','err'); }catch(e){ if(typeof toast==='function') toast('Test-Push nicht möglich','err'); }
+  };
+
+  if(!el('change-v8-style')){const st=document.createElement('style');st.id='change-v8-style';st.textContent='.optional-title{color:var(--acc)!important}.challenge-optional{border-left:3px solid rgba(79,125,255,.45)}.bell-push-box{background:linear-gradient(135deg,rgba(79,125,255,.16),rgba(167,139,250,.08));}.challenge-card-dashboard .dash-row-badge.badge-amber{min-width:42px;text-align:center}';document.head.appendChild(st);}
+  window.addEventListener('load',function(){setTimeout(function(){try{normalizeOptionalSet();saveState(); if(typeof renderChallenges==='function')renderChallenges(); if(typeof buildDashboard==='function')buildDashboard();}catch(e){console.warn(PATCH,e)}},700)});
+})();
+</script>
+
 </body>
 </html>
