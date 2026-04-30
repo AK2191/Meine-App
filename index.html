@@ -1254,6 +1254,7 @@ function saveClientId() {
 
 function showLogin() {
   hideLd();
+  document.getElementById('main-app').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
 }
 
@@ -1270,17 +1271,19 @@ function handleGoogleLogin() {
 
 async function handleFirebaseRedirectLogin() {
   try {
+    if(typeof firebase === 'undefined' || !firebase.auth) return;
     const result = await firebase.auth().getRedirectResult();
-    if(result && result.user) {
-      const credential = result.credential;
-      if(credential) {
+    const user = (result && result.user) || firebase.auth().currentUser;
+    if(user) {
+      const credential = result && result.credential;
+      if(credential && credential.accessToken) {
         accessToken = credential.accessToken;
         ls('access_token', accessToken);
       }
       userInfo = {
-        name: result.user.displayName||'',
-        email: result.user.email||'',
-        photo: result.user.photoURL||''
+        name: user.displayName || '',
+        email: user.email || '',
+        photo: user.photoURL || ''
       };
       ls('user_info', userInfo);
       ls('demo_mode', false);
@@ -2237,20 +2240,7 @@ function gcalColor(id) {
   return map[id]||'blue';
 }
 
-/* Firebase placeholder */
-async function handleFirebaseRedirectLogin() {
-  try {
-    if(typeof firebase==='undefined'||!firebase.auth) return;
-    const result = await firebase.auth().getRedirectResult();
-    if(result?.user) {
-      const cred = result.credential;
-      if(cred?.accessToken) { accessToken=cred.accessToken; ls('access_token',accessToken); }
-      userInfo={name:result.user.displayName||'',email:result.user.email||'',photo:result.user.photoURL||''};
-      ls('user_info',userInfo); ls('demo_mode',false);
-      bootMainApp(); loadGoogleData();
-    }
-  } catch(e) { console.warn('Firebase Auth:',e); }
-}
+/* Firebase redirect login is handled in SETUP & LOGIN above. */
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    DEMO DATA
