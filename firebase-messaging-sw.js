@@ -14,7 +14,10 @@ messaging.onBackgroundMessage((payload) => {
     body: notification.body || data.body || 'Neue Benachrichtigung',
     icon: './icon-192.png',
     badge: './icon-192.png',
-    data: { url: data.url || './' }
+    tag: data.tag || 'change-push',
+    renotify: true,
+    data: { url: data.url || './' },
+    actions: [{ action: 'open', title: 'Öffnen' }]
   };
   self.registration.showNotification(title, options);
 });
@@ -22,9 +25,9 @@ messaging.onBackgroundMessage((payload) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const url = event.notification?.data?.url || './';
-  event.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then((clientList)=>{
+  event.waitUntil(clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
     for (const client of clientList) {
-      if ('focus' in client) return client.focus();
+      if (client.url.includes(self.location.origin) && 'focus' in client) return client.focus();
     }
     if (clients.openWindow) return clients.openWindow(url);
   }));

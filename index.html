@@ -13,6 +13,7 @@
 <script src="https://accounts.google.com/gsi/client" async></script>
 <link rel="manifest" href="./manifest.json">
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging-compat.js"></script>
 <script src="./firebase-config.js"></script>
@@ -925,6 +926,9 @@ window.addEventListener('load', async () => {
   challengeCompletions = ls('challenge_completions') || [];
   challengePlayers = ls('challenge_players') || [];
 
+  await handleFirebaseRedirectLogin();
+  if(document.getElementById('main-app').style.display==='flex') { initPWA(); scheduleNotifCheck(); return; }
+
   if(ls('demo_mode')){
     startDemoInternal();
   } else if(accessToken && userInfo.email){
@@ -976,6 +980,11 @@ function showLogin(){
 }
 
 function handleGoogleLogin(){
+  const isMobile=/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if(isMobile){
+    firebaseMobileLoginFallback();
+    return;
+  }
   if(!CLIENT_ID){document.getElementById('setup-modal').classList.add('show');return;}
   if(!window.google){toast('Google-Bibliothek wird geladen…','');return;}
   try{
@@ -993,6 +1002,37 @@ function handleGoogleLogin(){
     });
     tc.requestAccessToken();
   }catch(e){toast('Google-Anmeldung konnte nicht gestartet werden','err');}
+}
+
+
+
+async function firebaseMobileLoginFallback(){
+  try{
+    if(!window.firebase || !window.FIREBASE_CONFIG){toast('Firebase-Konfiguration fehlt','err');return;}
+    if(!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.addScope('profile');
+    provider.addScope('email');
+    await firebase.auth().signInWithRedirect(provider);
+  }catch(e){console.warn('Mobile Firebase Login:',e);toast('Mobile Anmeldung konnte nicht gestartet werden: '+(e.message||e),'err');}
+}
+
+async function handleFirebaseRedirectLogin(){
+  try{
+    if(!window.firebase || !window.FIREBASE_CONFIG || !firebase.auth) return;
+    if(!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
+    const result = await firebase.auth().getRedirectResult();
+    if(result && result.user){
+      const u=result.user;
+      userInfo={name:u.displayName||u.email,email:u.email,picture:u.photoURL||''};
+      ls('user_info',userInfo);
+      accessToken='firebase-auth';
+      ls('access_token',accessToken);
+      bootMainApp();
+      initFirebaseLive && initFirebaseLive();
+      toast('Mobile Anmeldung erfolgreich ✓','ok');
+    }
+  }catch(e){console.warn('Redirect Ergebnis:',e);}
 }
 
 async function fetchUserInfo(){
@@ -2070,6 +2110,78 @@ document.addEventListener('touchend',e=>{
   setTimeout(()=>{try{renderCalendar();}catch(e){console.warn(e)}},0);
 })();
 
+
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   AUTO-CHALLENGES: täglich kleine Rätsel & Trainingsübungen
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+(function(){
+  const AUTO_KEY='auto_challenges_enabled';
+  const AUTO_POOL=[
+    {icon:'🧠',type:'Rätsel',title:'Zahlenrätsel',desc:'Welche Zahl fehlt? 2 · 4 · 8 · 16 · ?',answer:'32',points:8},
+    {icon:'🔤',type:'Rätsel',title:'Wortblitz',desc:'Nenne in 60 Sekunden 5 Wörter, die mit S anfangen.',answer:'frei',points:6},
+    {icon:'🧩',type:'Rätsel',title:'Logik-Mini',desc:'Wenn alle Blips Blops sind und alle Blops Blau sind: Sind alle Blips Blau?',answer:'Ja',points:8},
+    {icon:'🏃',type:'Training',title:'2-Minuten-Bewegung',desc:'Mache 20 Kniebeugen oder 2 Minuten lockere Bewegung.',answer:'erledigt',points:10},
+    {icon:'🧘',type:'Training',title:'Atem-Fokus',desc:'Atme 10-mal ruhig ein und aus. Danach Challenge abhaken.',answer:'erledigt',points:5},
+    {icon:'👀',type:'Training',title:'Augenpause',desc:'20 Sekunden aus dem Fenster oder in die Ferne schauen.',answer:'erledigt',points:5},
+    {icon:'💧',type:'Training',title:'Wasser-Check',desc:'Trinke ein Glas Wasser.',answer:'erledigt',points:5},
+    {icon:'🎯',type:'Training',title:'Mini-Fokus',desc:'Räume eine kleine Sache auf deinem Tisch weg.',answer:'erledigt',points:7},
+    {icon:'➕',type:'Rätsel',title:'Kopfrechnen',desc:'Rechne ohne Taschenrechner: 17 + 28 + 9 = ?',answer:'54',points:8},
+    {icon:'🕵️',type:'Rätsel',title:'Muster finden',desc:'Was kommt als nächstes: A, C, F, J, O, ?',answer:'U',points:10}
+  ];
+  function seededIndex(dk,offset){
+    let n=0; for(let i=0;i<dk.length;i++) n=(n*31+dk.charCodeAt(i)+offset*17)%100000;
+    return n%AUTO_POOL.length;
+  }
+  function autoChallengesForDate(dk){
+    const out=[];
+    for(let i=0;i<3;i++){
+      const base=AUTO_POOL[seededIndex(dk,i)];
+      out.push({
+        id:'auto_'+dk+'_'+i,
+        title:base.title,
+        desc:base.desc+(base.answer&&base.answer!=='erledigt'?'\nAntwort: '+base.answer:''),
+        points:base.points,
+        icon:base.icon,
+        date:dk,
+        recurrence:'once',
+        active:true,
+        auto:true,
+        type:base.type,
+        createdAt:dk+'T00:00:00.000Z'
+      });
+    }
+    return out;
+  }
+  window.ensureDailyAutoChallenges=function(dk=dateKey(new Date())){
+    if(ls(AUTO_KEY)===false) return [];
+    window.challenges = window.challenges || challenges || [];
+    const daily=autoChallengesForDate(dk);
+    let changed=false;
+    daily.forEach(ch=>{
+      if(!challenges.some(x=>x.id===ch.id)){challenges.push(ch);changed=true;}
+    });
+    if(changed){ls('challenges',challenges); if(typeof publishLocalChallengesToFirestore==='function') publishLocalChallengesToFirestore();}
+    return daily;
+  };
+  window.toggleAutoChallenges=function(){
+    const enabled=ls(AUTO_KEY)!==false;
+    ls(AUTO_KEY,!enabled);
+    if(!enabled) ensureDailyAutoChallenges();
+    if(typeof renderChallenges==='function') renderChallenges();
+    if(typeof buildDashboard==='function') buildDashboard();
+    toast('Auto-Challenges '+(!enabled?'aktiviert':'deaktiviert'), !enabled?'ok':'');
+    openPushSettingsPanel && openPushSettingsPanel();
+  };
+  const oldBoot=window.bootMainApp;
+  window.bootMainApp=function(){
+    oldBoot.apply(this,arguments);
+    setTimeout(()=>{ensureDailyAutoChallenges(); if(typeof renderCalendar==='function') renderCalendar(); if(typeof buildDashboard==='function') buildDashboard();},250);
+  };
+  const oldRenderChallenges=window.renderChallenges;
+  window.renderChallenges=function(){ ensureDailyAutoChallenges(); return oldRenderChallenges.apply(this,arguments); };
+})();
+
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━
    FIREBASE EXTENSION: echte Push Notifications + automatische Mitspieler-Erkennung
    Voraussetzung: firebase-config.js, firebase-messaging-sw.js und manifest.json liegen im Repo-Root.
@@ -2247,7 +2359,8 @@ document.addEventListener('touchend',e=>{
       </div>
       <button class="btn btn-primary btn-full" onclick="enablePushNotifications()">Echte Push-Benachrichtigungen aktivieren</button><button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="installChangeApp()">Change als App installieren</button>
       <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="initFirebaseLive().then(ok=>toast(ok?'Live-Sync aktiv ✓':'Firebase-Konfiguration fehlt',ok?'ok':'err'))">Live-Mitspieler neu verbinden</button>
-      <div class="settings-hint">Damit Push auch im Hintergrund funktioniert, müssen zusätzlich die Firebase-Dateien im GitHub-Repo liegen und die Cloud Function aus dem Ordner <strong>functions</strong> deployed sein.</div>`;
+      <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="toggleAutoChallenges()">Tägliche Auto-Challenges ein/aus</button>
+      <div class="settings-hint">Hintergrund-Push auf Android funktioniert im Browser/als PWA. Auf iPhone/iPad muss die App zum Home-Bildschirm hinzugefügt werden und iOS 16.4+ verwenden. Automatische 9-Uhr-Pushs laufen über die Cloud Function aus dem Ordner <strong>functions</strong>.</div>`;
     openPanel('Push & Live-Sync',html);
   };
 
