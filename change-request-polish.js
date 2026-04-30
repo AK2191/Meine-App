@@ -145,3 +145,126 @@
   window.renderCalendar=function(){ const r=oldRenderCalendar?oldRenderCalendar.apply(this,arguments):undefined; qsa('#month-grid .challenge-day-dot, .workday-card > .challenge-day-dot, .year-mini-day .challenge-day-dot').forEach(el=>el.remove()); return r; };
   setTimeout(()=>{ try{ qsa('#month-grid .challenge-day-dot, .workday-card > .challenge-day-dot, .year-mini-day .challenge-day-dot').forEach(el=>el.remove()); if(window.currentMainView==='challenges') renderChallenges(); }catch(e){} },400);
 })();
+
+/* CHANGE REPAIR: Google Kalender + Kalender-Schalter */
+(function(){
+  const KEY = "change_calendar_options_v2";
+
+  function readOptions(){
+    try {
+      return Object.assign({
+        showHolidays: true,
+        showChallengeDots: true,
+        showWeekNumbers: false
+      }, JSON.parse(localStorage.getItem(KEY) || "{}"));
+    } catch(e) {
+      return { showHolidays:true, showChallengeDots:true, showWeekNumbers:false };
+    }
+  }
+
+  function saveOptions(o){
+    localStorage.setItem(KEY, JSON.stringify(o));
+    window.changeCalendarViewOptions = o;
+    applyCalendarOptions();
+  }
+
+  function applyCalendarOptions(){
+    const o = window.changeCalendarViewOptions || readOptions();
+    let st = document.getElementById("change-calendar-options-style");
+    if (!st) {
+      st = document.createElement("style");
+      st.id = "change-calendar-options-style";
+      document.head.appendChild(st);
+    }
+
+    st.textContent =
+      (o.showChallengeDots ? "" : ".challenge-day-dot{display:none!important;}") +
+      (o.showHolidays ? "" : ".holiday-line,.holiday-badge{display:none!important;}") +
+      (o.showWeekNumbers ? "" : ".kw-badge{display:none!important;}");
+
+    ["toggle-holidays","toggle-dots","toggle-kw"].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (id === "toggle-holidays") el.checked = !!o.showHolidays;
+      if (id === "toggle-dots") el.checked = !!o.showChallengeDots;
+      if (id === "toggle-kw") el.checked = !!o.showWeekNumbers;
+    });
+  }
+
+  const oldRenderCalendar = window.renderCalendar;
+  window.renderCalendar = function(){
+    if (typeof oldRenderCalendar === "function") oldRenderCalendar.apply(this, arguments);
+
+    setTimeout(function(){
+      applyCalendarOptions();
+
+      if (typeof window.loadGoogleData === "function" && window.accessToken && window.accessToken !== "firebase-auth") {
+        try { window.loadGoogleData(); } catch(e) {}
+      }
+    }, 0);
+  };
+
+  window.openCalendarSettings = function(){
+    const o = readOptions();
+
+    openPanel("Kalender-Einstellungen",
+      '<div class="section-label">Ansicht</div>' +
+
+      '<div class="toggle-row">' +
+        '<div class="toggle-copy">' +
+          '<div class="toggle-title">Feiertage anzeigen</div>' +
+          '<div class="toggle-sub">Feiertage im Kalender anzeigen</div>' +
+        '</div>' +
+        '<label class="switch"><input type="checkbox" id="toggle-holidays" ' + (o.showHolidays ? "checked" : "") + '><span class="slider"></span></label>' +
+      '</div>' +
+
+      '<div class="toggle-row">' +
+        '<div class="toggle-copy">' +
+          '<div class="toggle-title">Challenge-Dots</div>' +
+          '<div class="toggle-sub">Farbige Punkte für Challenge-Tage anzeigen</div>' +
+        '</div>' +
+        '<label class="switch"><input type="checkbox" id="toggle-dots" ' + (o.showChallengeDots ? "checked" : "") + '><span class="slider"></span></label>' +
+      '</div>' +
+
+      '<div class="toggle-row">' +
+        '<div class="toggle-copy">' +
+          '<div class="toggle-title">Wochennummern</div>' +
+          '<div class="toggle-sub">KW-Anzeige im Monatskalender anzeigen</div>' +
+        '</div>' +
+        '<label class="switch"><input type="checkbox" id="toggle-kw" ' + (o.showWeekNumbers ? "checked" : "") + '><span class="slider"></span></label>' +
+      '</div>'
+    );
+
+    setTimeout(function(){
+      ["toggle-holidays","toggle-dots","toggle-kw"].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        el.addEventListener("change", function(){
+          saveOptions({
+            showHolidays: !!document.getElementById("toggle-holidays")?.checked,
+            showChallengeDots: !!document.getElementById("toggle-dots")?.checked,
+            showWeekNumbers: !!document.getElementById("toggle-kw")?.checked
+          });
+
+          if (typeof renderCalendar === "function") renderCalendar();
+        });
+      });
+    }, 50);
+  };
+
+  window.changeCalendarViewOptions = readOptions();
+  applyCalendarOptions();
+
+  window.addEventListener("load", function(){
+    setTimeout(function(){
+      applyCalendarOptions();
+
+      if (window.accessToken && window.accessToken !== "firebase-auth" && typeof window.loadGoogleData === "function") {
+        try { window.loadGoogleData(); } catch(e) {}
+      }
+
+      if (typeof renderCalendar === "function") renderCalendar();
+    }, 800);
+  });
+})();
