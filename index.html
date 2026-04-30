@@ -3621,5 +3621,187 @@ document.addEventListener('touchend',e=>{
 })();
 </script>
 
+<script>
+/* CHANGE MASTER PATCH v5: sichtbarer Punkte-Kalender, Dashboard-Mitspieler, robuste Push/Live-Schalter */
+(function(){
+  const PATCH='CHANGE_MASTER_PATCH_V5';
+  const $=id=>document.getElementById(id);
+  const escHtml=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  function localSet(key,val){
+    try{ if(typeof ls==='function') ls(key,val); }catch(e){}
+    try{ localStorage.setItem('change_v2_'+key, JSON.stringify(val)); }catch(e){}
+    try{ localStorage.setItem('change_v1_'+key, JSON.stringify(val)); }catch(e){}
+  }
+  function localGet(key,def){
+    try{ if(typeof ls==='function'){ const v=ls(key); if(v!==null&&v!==undefined) return v; } }catch(e){}
+    for(const prefix of ['change_v2_','change_v1_']){
+      try{ const raw=localStorage.getItem(prefix+key); if(raw!==null) return JSON.parse(raw); }catch(e){}
+    }
+    return def;
+  }
+  function currentId(){
+    const u=(window.userInfo||{});
+    return String(u.email||u.id||'me').toLowerCase();
+  }
+  function playerId(p){ return String((p&& (p.email||p.id))||'').toLowerCase(); }
+  function ensureSelfPlayer(online){
+    window.challengePlayers=window.challengePlayers||[];
+    const id=currentId();
+    if(!id || id==='me') return;
+    const i=challengePlayers.findIndex(p=>playerId(p)===id);
+    const entry={id,email:id,name:(window.userInfo&&userInfo.name)||id,picture:(window.userInfo&&(userInfo.photo||userInfo.picture))||'',online:!!online,lastSeen:new Date().toISOString()};
+    if(i>=0) challengePlayers[i]={...challengePlayers[i],...entry}; else challengePlayers.push(entry);
+    try{ if(typeof ls==='function') ls('challenge_players',challengePlayers); }catch(e){}
+  }
+  function getContestRows(limit){
+    ensureSelfPlayer(localGet('live_sync_enabled',true)!==false);
+    const current=currentId();
+    const by={};
+    (window.challengePlayers||[]).forEach(p=>{
+      const id=playerId(p); if(!id || id.includes('demo')) return;
+      by[id]={id,name:p.name||p.email||id,email:id,online:!!p.online,total:0,today:0,count:0};
+    });
+    const today=(typeof dateKey==='function')?dateKey(new Date()):new Date().toISOString().slice(0,10);
+    (window.challengeCompletions||[]).forEach(c=>{
+      const id=String(c.playerId||c.userEmail||c.email||current).toLowerCase(); if(!id || id.includes('demo')) return;
+      if(!by[id]) by[id]={id,name:c.playerName||id,email:id,online:id===current,total:0,today:0,count:0};
+      const pts=parseInt(c.points,10)||0; by[id].total+=pts; by[id].count++; if(c.date===today) by[id].today+=pts;
+    });
+    if(current && current!=='me' && !by[current]) by[current]={id:current,name:(window.userInfo&&userInfo.name)||'Du',email:current,online:true,total:0,today:0,count:0};
+    return Object.values(by).sort((a,b)=>b.total-a.total).slice(0,limit||5);
+  }
+  function activePeopleHtml(){
+    const people=getContestRows(5);
+    if(!people.length) return '<div class="dash-empty">Noch keine aktiven Mitspieler</div>';
+    return '<div class="dashboard-people-block"><div class="section-label">Aktive Mitspieler</div>'+people.map((p,i)=>{
+      const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);
+      return '<div class="dash-row" onclick="setMainView(\'challenges\')"><div class="dash-row-icon" style="background:var(--amb-d)">'+medal+'</div><div class="dash-row-body"><div class="dash-row-title">'+escHtml(p.name||p.email)+(p.id===currentId()?' · Du':'')+(p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>')+'</div><div class="dash-row-sub">Heute: '+p.today+' P · Gesamt: '+p.total+' P · '+p.count+' erledigt</div></div><span class="dash-row-badge badge-green">'+p.total+' P</span></div>';
+    }).join('')+'</div>';
+  }
+  function injectDashboardPeople(){
+    const body=document.querySelector('.challenge-card-dashboard .dash-card-body');
+    if(!body || body.querySelector('.dashboard-people-block')) return;
+    body.insertAdjacentHTML('beforeend', activePeopleHtml());
+  }
+
+  const oldBuildDashboard=window.buildDashboard;
+  window.buildDashboard=function(){
+    if(typeof oldBuildDashboard==='function') oldBuildDashboard.apply(this,arguments);
+    setTimeout(injectDashboardPeople,0);
+  };
+
+  const oldRenderChallenges=window.renderChallenges;
+  window.renderChallenges=function(){
+    const r=typeof oldRenderChallenges==='function'?oldRenderChallenges.apply(this,arguments):undefined;
+    setTimeout(()=>{
+      try{
+        if(typeof renderChallengePointCalendar==='function') renderChallengePointCalendar();
+        const board=$('leaderboard-list');
+        if(board){
+          const rows=getContestRows(10);
+          board.innerHTML=rows.length?rows.map((p,i)=>{
+            const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);
+            return '<div class="leader-row clickable" onclick="typeof openContestUserDetails===\'function\'&&openContestUserDetails(\''+escHtml(p.id)+'\')"><div class="leader-rank">'+medal+'</div><div><div class="leader-name">'+escHtml(p.name||p.email)+(p.id===currentId()?' · Du':'')+(p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>')+'</div><div class="leader-detail">Heute: '+p.today+' P · Gesamt: '+p.total+' P · '+p.count+' erledigt</div></div><div class="leader-score">'+p.total+'</div></div>';
+          }).join(''):'<div class="dash-empty">Noch keine Mitspieler</div>';
+        }
+      }catch(e){ console.warn(PATCH,'render challenge refresh',e); }
+    },0);
+    return r;
+  };
+
+  window.setLiveSyncEnabled=async function(enabled){
+    const on=!!enabled;
+    localSet('live_sync_enabled',on);
+    ensureSelfPlayer(on);
+    try{
+      if(on){
+        if(typeof initFirebaseLive==='function') await initFirebaseLive();
+        if(typeof registerLivePlayer==='function') await registerLivePlayer();
+        if(typeof toast==='function') toast('Live-Mitspieler verbunden ✓','ok');
+      }else{
+        if(typeof firebase!=='undefined' && firebase.firestore && (window.userInfo&&userInfo.email)){
+          try{ await firebase.firestore().collection('change_players').doc(currentId().replace(/[^a-z0-9._-]/g,'_')).set({online:false,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); }catch(_e){}
+        }
+        if(typeof toast==='function') toast('Live-Mitspieler deaktiviert','');
+      }
+    }catch(e){ console.warn(PATCH,'live toggle',e); if(typeof toast==='function') toast('Live-Sync lokal gespeichert',''); }
+    if(typeof renderChallenges==='function') renderChallenges();
+    if(typeof buildDashboard==='function') buildDashboard();
+    if(typeof openPushSettingsPanel==='function') setTimeout(openPushSettingsPanel,80);
+  };
+
+  window.setPushEnabled=async function(enabled){
+    const on=!!enabled;
+    if(!on){
+      localSet('push_enabled',false);
+      try{
+        if(typeof firebase!=='undefined' && firebase.messaging){
+          const token=localGet('fcm_token','');
+          if(token){ try{ await firebase.messaging().deleteToken(token); }catch(_e){} }
+        }
+      }catch(e){}
+      try{ localStorage.removeItem('change_v2_fcm_token'); localStorage.removeItem('change_v1_fcm_token'); }catch(e){}
+      if(typeof toast==='function') toast('Push in Change deaktiviert','ok');
+      if(typeof openPushSettingsPanel==='function') setTimeout(openPushSettingsPanel,80);
+      return;
+    }
+    localSet('push_enabled',true);
+    try{
+      if(!('Notification' in window)){ if(typeof toast==='function') toast('Browser unterstützt keine Push-Mitteilungen','err'); localSet('push_enabled',false); return; }
+      let perm=Notification.permission;
+      if(perm==='default') perm=await Notification.requestPermission();
+      if(perm!=='granted'){
+        localSet('push_enabled',false);
+        if(typeof toast==='function') toast('Push wurde vom Browser nicht erlaubt','err');
+        if(typeof openPushSettingsPanel==='function') setTimeout(openPushSettingsPanel,80);
+        return;
+      }
+      if('serviceWorker' in navigator){ try{ await navigator.serviceWorker.register('./firebase-messaging-sw.js',{scope:'./'}); }catch(e){ console.warn(PATCH,'SW optional failed',e); } }
+      if(typeof enablePushNotifications==='function'){
+        try{ await enablePushNotifications(); }catch(e){ console.warn(PATCH,'enablePushNotifications fallback',e); }
+      }
+      localSet('push_enabled',true);
+      if(typeof toast==='function') toast('Push in Change aktiviert ✓','ok');
+    }catch(e){ console.warn(PATCH,'push toggle',e); localSet('push_enabled',Notification.permission==='granted'); }
+    if(typeof openPushSettingsPanel==='function') setTimeout(openPushSettingsPanel,120);
+  };
+
+  window.openPushSettingsPanel=function(){
+    const browserPerm=('Notification' in window)?Notification.permission:'nicht unterstützt';
+    const pushOn=localGet('push_enabled',false)===true && browserPerm==='granted';
+    const liveOn=localGet('live_sync_enabled',true)!==false;
+    ensureSelfPlayer(liveOn);
+    const online=liveOn?getContestRows(99).filter(p=>p.online).length:0;
+    const html='<div class="push-box"><div class="challenge-title">Push & Live-Sync</div><div class="push-status '+(browserPerm==='granted'?'push-ok':browserPerm==='denied'?'push-err':'push-warn')+'">Browser-Berechtigung: <strong>'+escHtml(browserPerm)+'</strong></div><div class="push-status">Hinweis: Wenn der Browser blockiert ist, muss Push in den Website-Einstellungen erlaubt werden.</div></div>'+ 
+      '<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">Echte Push-Benachrichtigungen <span class="status-pill '+(pushOn?'status-on':'status-off')+'">'+(pushOn?'AKTIV':'INAKTIV')+'</span></div><div class="toggle-sub">Der Schalter aktiviert/deaktiviert Push in Change. Browser-Berechtigungen können nur im Browser selbst entzogen werden.</div></div><label class="switch"><input type="checkbox" '+(pushOn?'checked':'')+' onchange="setPushEnabled(this.checked)"><span class="slider"></span></label></div>'+ 
+      '<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">Live-Mitspieler <span class="status-pill '+(liveOn?'status-on':'status-off')+'">'+(liveOn?'VERBUNDEN':'DEAKTIVIERT')+'</span></div><div class="toggle-sub">Aktuell online: '+online+' · zeigt Kontest-Daten im Dashboard und bei Challenges.</div></div><label class="switch"><input type="checkbox" '+(liveOn?'checked':'')+' onchange="setLiveSyncEnabled(this.checked)"><span class="slider"></span></label></div>'+ 
+      '<button class="btn btn-secondary btn-full" onclick="setPushEnabled(true)">Push jetzt einrichten / erneuern</button>'+ 
+      '<button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="setLiveSyncEnabled(true)">Live-Mitspieler neu verbinden</button>'+ 
+      '<button class="btn btn-ghost btn-full" style="margin-top:8px" onclick="typeof testLocalPush===\'function\'?testLocalPush():(Notification.permission===\'granted\'&&new Notification(\'Change Test\',{body:\'Benachrichtigungen funktionieren.\'}))">Test-Benachrichtigung anzeigen</button>';
+    if(typeof openPanel==='function') openPanel('Push & Live-Sync',html);
+  };
+
+  if(!document.getElementById('change-master-patch-v5-style')){
+    const st=document.createElement('style'); st.id='change-master-patch-v5-style'; st.textContent=`
+      #challenges-view{overflow-y:auto!important;min-height:0!important;}
+      #master-point-calendar{margin:14px 18px 18px!important;overflow:visible!important;}
+      #master-point-calendar .mpc-head{padding:16px 18px!important;}
+      #master-point-calendar .mpc-grid{display:grid!important;grid-template-columns:repeat(7,minmax(120px,1fr))!important;gap:10px!important;padding:16px 18px 18px!important;overflow-x:auto!important;}
+      #master-point-calendar .mpc-day{min-height:92px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;}
+      #master-point-calendar .mpc-points{font-size:26px!important;margin-top:8px!important;line-height:1!important;}
+      #master-point-calendar .mpc-count{margin-top:4px!important;font-size:11px!important;}
+      #challenges-view .challenge-layout{overflow:visible!important;margin-top:0!important;}
+      .dashboard-people-block{border-top:1px solid var(--b1);margin-top:10px;padding-top:6px;}
+      .dashboard-people-block .section-label{padding:10px 16px 4px;margin:0;color:var(--t3);}
+      @media(max-width:900px){#master-point-calendar .mpc-grid{grid-template-columns:repeat(7,150px)!important}.dash-grid{grid-template-columns:1fr!important}}
+    `; document.head.appendChild(st);
+  }
+
+  window.addEventListener('load',()=>setTimeout(()=>{
+    try{ensureSelfPlayer(localGet('live_sync_enabled',true)!==false); if(typeof renderChallenges==='function') renderChallenges(); if(typeof buildDashboard==='function') buildDashboard();}catch(e){console.warn(PATCH,e);}
+  },700));
+})();
+</script>
+
 </body>
 </html>
