@@ -12,3 +12,10 @@ self.FIREBASE_CONFIG = window.FIREBASE_CONFIG = {
 
 // Firebase Console → Projekteinstellungen → Cloud Messaging → Web Push certificates
 self.FIREBASE_VAPID_KEY = window.FIREBASE_VAPID_KEY = "BIQdYqHQAHiNzvmptyTCaYgHIjDV_LCnjdwApSV6T3jLF_SEQG66VkF-LD055p5eIBM9zdFh_tpLsIQzLmesA9Q";
+
+// ── Firebase initialisieren ──────────────────────────────────────────────────
+// Nur im Browser-Kontext (nicht im Service Worker, der hat kein `window`).
+// Der Service Worker initialisiert Firebase selbst nach dem importScripts-Aufruf.
+if (typeof window !== 'undefined' && typeof firebase !== 'undefined' && !firebase.apps.length) {
+  firebase.initializeApp(window.FIREBASE_CONFIG);
+}
