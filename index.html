@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#080c18">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="ProCal">
-<title>ProCal · Workspace</title>
+<meta name="apple-mobile-web-app-title" content="Change">
+<title>Change · Workspace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async></script>
@@ -356,8 +356,9 @@ body{
 .dash-hello h1{font-size:24px;font-weight:800;color:var(--t1);letter-spacing:-.5px;margin-bottom:4px}
 .dash-hello p{font-size:14px;color:var(--t3)}
 .kpi-grid{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;
+  display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px;
 }
+@media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:480px){.kpi-grid{grid-template-columns:repeat(2,1fr);gap:8px}}
 .kpi-card{
@@ -424,7 +425,7 @@ body{
 .dash-empty{padding:20px 16px;font-size:13px;color:var(--t5);text-align:center}
 
 /* ── RECHNUNGEN / VERTRÄGE VIEWS ── */
-#invoices-view,#contracts-view{display:none;flex:1;overflow:hidden;flex-direction:column}
+#invoices-view,#contracts-view,#challenges-view{display:none;flex:1;overflow:hidden;flex-direction:column}
 .list-header{
   display:flex;align-items:center;gap:10px;
   padding:14px 18px;border-bottom:1px solid var(--b1);flex-shrink:0;
@@ -467,6 +468,16 @@ body{
   width:6px;height:6px;border-radius:50%;background:var(--acc);
   display:inline-block;margin-left:4px;vertical-align:middle;
 }
+
+
+/* ── CHALLENGES ── */
+.challenge-layout{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;padding:16px 18px;overflow-y:auto}
+@media(max-width:800px){.challenge-layout{grid-template-columns:1fr;padding:14px}}
+.challenge-card,.leader-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rlg);overflow:hidden}
+.challenge-card-head,.leader-card-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--b1)}
+.challenge-title{font-size:14px;font-weight:800;color:var(--t1)}.challenge-sub{font-size:12px;color:var(--t4);margin-top:2px}
+.challenge-item{display:flex;gap:12px;align-items:center;padding:13px 16px;border-bottom:1px solid var(--b1)}.challenge-item:last-child{border-bottom:none}.challenge-icon{width:38px;height:38px;border-radius:var(--rsm);display:flex;align-items:center;justify-content:center;background:var(--pur-d);font-size:18px;flex-shrink:0}.challenge-body{flex:1;min-width:0}.challenge-name{font-size:13px;font-weight:700;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.challenge-meta{font-size:11.5px;color:var(--t4)}.challenge-done{opacity:.55}.points-pill{font-size:11px;font-weight:800;padding:4px 8px;border-radius:20px;background:var(--acc-d);color:var(--acc);white-space:nowrap}
+.leader-row{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--b1)}.leader-row:last-child{border-bottom:none}.leader-rank{width:26px;height:26px;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--t3);flex-shrink:0}.leader-row:first-child .leader-rank{background:var(--amb-d);color:var(--amb)}.leader-name{font-size:13px;font-weight:700;color:var(--t1)}.leader-detail{font-size:11.5px;color:var(--t4)}.leader-score{margin-left:auto;font-family:var(--mono);font-size:18px;font-weight:900;color:var(--grn)}
 
 /* ── PANEL / SIDE ── */
 #panel-overlay{
@@ -636,7 +647,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
       <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
     </svg>
   </div>
-  <div class="ld-text">ProCal wird geladen…</div>
+  <div class="ld-text">Change wird geladen…</div>
 </div>
 
 <!-- Setup Modal -->
@@ -698,8 +709,8 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
           <line x1="3" y1="10" x2="21" y2="10"/>
         </svg>
       </div>
-      <div class="login-h">ProCal</div>
-      <div class="login-sub">Ihr professioneller Workspace für Kalender, Rechnungen &amp; Verträge – mit Google-Synchronisation.</div>
+      <div class="login-h">Change</div>
+      <div class="login-sub">Ihr Workspace für Kalender, Rechnungen, Verträge &amp; Challenges – mit Google-Synchronisation.</div>
       <button class="google-btn" onclick="handleGoogleLogin()">
         <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
         Mit Google anmelden
@@ -718,7 +729,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
         <div class="h-logo-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         </div>
-        <span class="h-logo-name">ProCal</span>
+        <span class="h-logo-name">Change</span>
       </div>
       <div class="h-sep"></div>
       <!-- Desktop Tabs -->
@@ -868,7 +879,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
    CONSTANTS & STATE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 const VER = '2.0';
-const LSK = 'procal_v2';
+const LSK = 'change_v1';
 const GCAL_SCOPE = [
   'https://www.googleapis.com/auth/calendar',
   'https://www.googleapis.com/auth/drive.file',
@@ -893,6 +904,9 @@ let events = [];
 let gEvents = [];
 let invoices = [];
 let contracts = [];
+let challenges = [];
+let challengeCompletions = [];
+let challengePlayers = [];
 let notifications = [];
 
 // Drive file IDs
@@ -931,6 +945,9 @@ window.addEventListener('load', async () => {
   events = ls('events') || [];
   invoices = ls('invoices') || [];
   contracts = ls('contracts') || [];
+  challenges = ls('challenges') || [];
+  challengeCompletions = ls('challenge_completions') || [];
+  challengePlayers = ls('challenge_players') || [];
   driveFileId = ls('drive_file_id') || null;
 
   if(ls('demo_mode')){
@@ -2017,7 +2034,7 @@ async function loadFromDrive(){
   if(!accessToken||isDemoMode)return;
   try{
     // Search for procal data file
-    const q=encodeURIComponent("name='procal_workspace_data.json' and trashed=false");
+    const q=encodeURIComponent("name='change_workspace_data.json' and trashed=false");
     const r=await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)`,{
       headers:{'Authorization':'Bearer '+accessToken}
     });
@@ -2052,7 +2069,7 @@ async function saveToDrive(){
 
     if(driveFileId){
       // Update existing
-      const meta=JSON.stringify({name:'procal_workspace_data.json'});
+      const meta=JSON.stringify({name:'change_workspace_data.json'});
       const form=new FormData();
       form.append('metadata',new Blob([meta],{type:'application/json'}));
       form.append('file',blob);
@@ -2062,7 +2079,7 @@ async function saveToDrive(){
       if(!r.ok)throw new Error('Update failed '+r.status);
     }else{
       // Create new
-      const meta=JSON.stringify({name:'procal_workspace_data.json',mimeType:'application/json'});
+      const meta=JSON.stringify({name:'change_workspace_data.json',mimeType:'application/json'});
       const form=new FormData();
       form.append('metadata',new Blob([meta],{type:'application/json'}));
       form.append('file',blob);
@@ -2245,6 +2262,227 @@ document.addEventListener('touchend',e=>{
   const dx=e.changedTouches[0].clientX-touchX0;
   if(Math.abs(dx)>60)navigate(dx<0?1:-1);
 },{passive:true});
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   CHANGE EXTENSIONS: Challenges + Contest + Auto Sync
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+(function(){
+  const originalBoot = bootMainApp;
+  const originalSetMainView = setMainView;
+  const originalFabAction = fabAction;
+  const originalBuildKPIs = buildKPIs;
+  const originalLoadFromDrive = loadFromDrive;
+  const originalSaveToDrive = saveToDrive;
+  const originalSaveEvent = saveEvent;
+  const originalDeleteEvent = deleteEvent;
+
+  window.challenges = window.challenges || [];
+  window.challengeCompletions = window.challengeCompletions || [];
+  window.challengePlayers = window.challengePlayers || [];
+
+  function readChallengeState(){
+    challenges = ls('challenges') || challenges || [];
+    challengeCompletions = ls('challenge_completions') || challengeCompletions || [];
+    challengePlayers = ls('challenge_players') || challengePlayers || [];
+    if(!challenges.length){challenges = buildDefaultChallenges(); ls('challenges',challenges);}
+    ensureCurrentChallengePlayer();
+  }
+
+  window.buildDefaultChallenges = function(){
+    return [
+      {id:'ch_focus',title:'30 Minuten Fokuszeit',points:10,icon:'🎯',desc:'Eine konzentrierte Aufgabe ohne Ablenkung erledigen.',active:true,createdAt:new Date().toISOString()},
+      {id:'ch_invoice',title:'Eine Rechnung prüfen',points:15,icon:'🧾',desc:'Offene Rechnung kontrollieren oder nachfassen.',active:true,createdAt:new Date().toISOString()},
+      {id:'ch_contract',title:'Einen Vertrag checken',points:20,icon:'📋',desc:'Ablaufdatum, Frist oder Notiz eines Vertrags aktualisieren.',active:true,createdAt:new Date().toISOString()},
+      {id:'ch_calendar',title:'Kalender aufräumen',points:10,icon:'📅',desc:'Termine prüfen und Kalender aktuell halten.',active:true,createdAt:new Date().toISOString()}
+    ];
+  };
+  window.getCurrentPlayerId = function(){return (userInfo.email||'demo@example.com').toLowerCase();};
+  window.ensureCurrentChallengePlayer = function(){
+    const id=getCurrentPlayerId();
+    if(!challengePlayers.some(p=>p.id===id)){
+      challengePlayers.push({id:id,name:userInfo.name||userInfo.email||'Ich',email:userInfo.email||'',createdAt:new Date().toISOString()});
+      ls('challenge_players',challengePlayers);
+    }
+  };
+  window.todayKey = function(){return dateKey(new Date());};
+  window.isChallengeDoneToday = function(chId,playerId=getCurrentPlayerId()){
+    return challengeCompletions.some(c=>c.challengeId===chId&&c.playerId===playerId&&c.date===todayKey());
+  };
+  window.getChallengeStats = function(){
+    const stats={};
+    challengePlayers.forEach(p=>stats[p.id]={points:0,count:0});
+    challengeCompletions.forEach(c=>{
+      if(!stats[c.playerId]) stats[c.playerId]={points:0,count:0};
+      stats[c.playerId].points+=(parseInt(c.points)||0);
+      stats[c.playerId].count+=1;
+    });
+    return stats;
+  };
+
+  function installChallengeView(){
+    if(document.getElementById('challenges-view')) return;
+    const content=document.getElementById('content');
+    const div=document.createElement('div');
+    div.id='challenges-view';
+    div.innerHTML='<div class="list-header"><div class="list-title">Challenges</div><button class="btn btn-primary btn-sm" onclick="openChallengePanel(null)">+ Neu</button></div><div class="challenge-layout"><div class="challenge-card"><div class="challenge-card-head"><div><div class="challenge-title">Heute erledigen</div><div class="challenge-sub">Ein Klick erledigt eine Challenge und vergibt Punkte</div></div><button class="btn btn-ghost btn-sm" onclick="resetTodayChallenges()">Heute zurücksetzen</button></div><div id="challenges-list"></div></div><div class="leader-card"><div class="leader-card-head"><div><div class="challenge-title">Kontest</div><div class="challenge-sub">Punkte &amp; erledigte Challenges</div></div><button class="btn btn-secondary btn-sm" onclick="openParticipantPanel()">Mitspieler</button></div><div id="leaderboard-list"></div></div></div>';
+    content.appendChild(div);
+  }
+  function installChallengeNav(){
+    if(!document.getElementById('htab-challenges')){
+      const tabs=document.querySelector('.h-tabs');
+      const btn=document.createElement('button');
+      btn.className='h-tab'; btn.id='htab-challenges'; btn.onclick=()=>setMainView('challenges');
+      btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/></svg>Challenges';
+      tabs && tabs.appendChild(btn);
+    }
+    if(!document.getElementById('bnav-challenges')){
+      const nav=document.querySelector('.bnav-inner');
+      const btn=document.createElement('button');
+      btn.className='bnav-item'; btn.id='bnav-challenges'; btn.onclick=()=>setMainView('challenges');
+      btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/></svg><span class="bnav-label">Contest</span>';
+      nav && nav.appendChild(btn);
+    }
+  }
+
+  window.bootMainApp = function(){
+    originalBoot();
+    readChallengeState();
+    installChallengeView();
+    installChallengeNav();
+  };
+
+  window.setMainView = function(v){
+    if(v!=='challenges') return originalSetMainView(v);
+    currentMainView=v;
+    ['dashboard','calendar','invoices','contracts','challenges'].forEach(vv=>{
+      const el=document.getElementById(vv==='calendar'?'cal-body':vv+'-view');
+      if(el) el.style.display='none';
+    });
+    document.getElementById('cal-controls').style.display='none';
+    installChallengeView();
+    document.getElementById('challenges-view').style.display='flex';
+    document.querySelectorAll('.h-tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById('htab-challenges')?.classList.add('active');
+    document.querySelectorAll('.bnav-item').forEach(t=>t.classList.remove('active'));
+    document.getElementById('bnav-challenges')?.classList.add('active');
+    renderChallenges();
+  };
+  window.fabAction = function(){
+    if(currentMainView==='challenges') openChallengePanel(null);
+    else originalFabAction();
+  };
+
+  window.buildKPIs = function(){
+    originalBuildKPIs();
+    readChallengeState();
+    const grid=document.getElementById('kpi-grid'); if(!grid||document.getElementById('kpi-challenges')) return;
+    const stats=getChallengeStats()[getCurrentPlayerId()]||{points:0,count:0};
+    const card=document.createElement('div'); card.id='kpi-challenges'; card.className='kpi-card good'; card.onclick=()=>setMainView('challenges');
+    card.innerHTML='<div class="kpi-icon-wrap green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/></svg></div><div class="kpi-num good-color">'+stats.points+'</div><div class="kpi-label">Challenge Punkte</div>';
+    grid.appendChild(card);
+  };
+
+  window.renderChallenges = function(){
+    readChallengeState();
+    const list=document.getElementById('challenges-list');
+    const board=document.getElementById('leaderboard-list');
+    if(!list||!board)return;
+    const active=challenges.filter(c=>c.active!==false);
+    list.innerHTML=active.length?active.map(ch=>{
+      const done=isChallengeDoneToday(ch.id);
+      return '<div class="challenge-item '+(done?'challenge-done':'')+'"><div class="challenge-icon">'+esc(ch.icon||'🏆')+'</div><div class="challenge-body"><div class="challenge-name">'+esc(ch.title)+'</div><div class="challenge-meta">'+esc(ch.desc||'')+' · '+(ch.points||0)+' Punkte</div></div><span class="points-pill">+'+(ch.points||0)+'</span><button class="btn '+(done?'btn-success':'btn-primary')+' btn-sm" onclick="completeChallenge(\''+ch.id+'\')">'+(done?'Erledigt':'Erledigen')+'</button><button class="btn btn-ghost btn-sm" onclick="openChallengePanel(\''+ch.id+'\')">Bearbeiten</button></div>';
+    }).join(''):'<div class="empty-state"><div class="empty-title">Keine Challenges</div><div class="empty-sub">Lege eine neue Challenge an.</div></div>';
+    const stats=getChallengeStats();
+    const players=[...challengePlayers].sort((a,b)=>(stats[b.id]?.points||0)-(stats[a.id]?.points||0));
+    board.innerHTML=players.length?players.map((p,idx)=>{
+      const st=stats[p.id]||{points:0,count:0}; const me=p.id===getCurrentPlayerId();
+      return '<div class="leader-row"><div class="leader-rank">'+(idx+1)+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(me?' · Du':'')+'</div><div class="leader-detail">'+st.count+' Challenges erledigt'+(p.email?' · '+esc(p.email):'')+'</div></div><div class="leader-score">'+st.points+'</div></div>';
+    }).join(''):'<div class="dash-empty">Noch keine Mitspieler</div>';
+  };
+  window.completeChallenge = function(id){
+    const ch=challenges.find(c=>c.id===id); if(!ch)return;
+    if(isChallengeDoneToday(id)){toast('Diese Challenge ist heute schon erledigt','');return;}
+    challengeCompletions.push({id:'cc_'+uid(),challengeId:id,playerId:getCurrentPlayerId(),playerName:userInfo.name||userInfo.email||'Ich',date:todayKey(),points:parseInt(ch.points)||0,createdAt:new Date().toISOString()});
+    ls('challenge_completions',challengeCompletions); saveToDrive(); renderChallenges(); buildDashboard(); toast('+'+(ch.points||0)+' Punkte ✓','ok');
+  };
+  window.resetTodayChallenges = function(){
+    const me=getCurrentPlayerId(),td=todayKey(); if(!confirm('Deine heutigen Challenge-Erledigungen zurücksetzen?'))return;
+    challengeCompletions=challengeCompletions.filter(c=>!(c.playerId===me&&c.date===td));
+    ls('challenge_completions',challengeCompletions); saveToDrive(); renderChallenges(); buildDashboard(); toast('Heute zurückgesetzt','');
+  };
+  window.openChallengePanel = function(id){
+    const ch=id?challenges.find(c=>c.id===id):null;
+    const html='<div class="fg"><label class="flabel">Titel *</label><input class="finput" id="ch-title" value="'+esc(ch?.title||'')+'" placeholder="z.B. 10 Minuten Bewegung"></div><div class="fr"><div class="fg"><label class="flabel">Punkte</label><input type="number" class="finput" id="ch-points" min="1" value="'+(ch?.points||10)+'"></div><div class="fg"><label class="flabel">Icon</label><input class="finput" id="ch-icon" value="'+esc(ch?.icon||'🏆')+'" placeholder="🏆"></div></div><div class="fg"><label class="flabel">Beschreibung</label><textarea class="finput" id="ch-desc" rows="4" placeholder="Was muss erledigt werden?">'+esc(ch?.desc||'')+'</textarea></div><div class="fa"><button class="btn btn-primary" style="flex:1" onclick="saveChallenge(\''+(ch?.id||'')+'\')">'+(ch?'Aktualisieren':'Challenge speichern')+'</button>'+(ch?'<button class="btn btn-danger" onclick="deleteChallenge(\''+ch.id+'\')">Löschen</button>':'')+'</div>';
+    openPanel(ch?'Challenge bearbeiten':'Neue Challenge',html);
+  };
+  window.saveChallenge = function(existingId){
+    const title=document.getElementById('ch-title')?.value.trim(); if(!title){toast('Bitte Titel eingeben','err');return;}
+    const ch={id:existingId||'ch_'+uid(),title:title,points:parseInt(document.getElementById('ch-points')?.value)||10,icon:document.getElementById('ch-icon')?.value.trim()||'🏆',desc:document.getElementById('ch-desc')?.value.trim()||'',active:true,createdAt:existingId?(challenges.find(c=>c.id===existingId)?.createdAt||new Date().toISOString()):new Date().toISOString(),updatedAt:new Date().toISOString()};
+    if(existingId){const i=challenges.findIndex(c=>c.id===existingId); if(i>=0)challenges[i]=ch; else challenges.push(ch);} else challenges.push(ch);
+    ls('challenges',challenges); saveToDrive(); closePanel(); renderChallenges(); buildDashboard(); toast('Challenge gespeichert ✓','ok');
+  };
+  window.deleteChallenge = function(id){
+    if(!confirm('Challenge wirklich löschen?'))return;
+    challenges=challenges.filter(c=>c.id!==id); challengeCompletions=challengeCompletions.filter(c=>c.challengeId!==id);
+    ls('challenges',challenges); ls('challenge_completions',challengeCompletions); saveToDrive(); closePanel(); renderChallenges(); buildDashboard(); toast('Challenge gelöscht','');
+  };
+  window.openParticipantPanel = function(){
+    const html='<div class="fg"><label class="flabel">Name des Mitspielers</label><input class="finput" id="pl-name" placeholder="z.B. Anna"></div><div class="fg"><label class="flabel">E-Mail optional</label><input class="finput" id="pl-email" placeholder="anna@example.com"></div><button class="btn btn-primary btn-full" onclick="addParticipant()">Mitspieler hinzufügen</button><div class="divider"></div><div class="section-label">Bestehende Mitspieler</div>'+challengePlayers.map(p=>'<div class="leader-row"><div class="leader-rank">👤</div><div><div class="leader-name">'+esc(p.name)+'</div><div class="leader-detail">'+esc(p.email||p.id)+'</div></div></div>').join('');
+    openPanel('Mitspieler',html);
+  };
+  window.addParticipant = function(){
+    const name=document.getElementById('pl-name')?.value.trim(); const email=document.getElementById('pl-email')?.value.trim();
+    if(!name){toast('Bitte Namen eingeben','err');return;}
+    const id=(email||('player_'+uid())).toLowerCase();
+    if(!challengePlayers.some(p=>p.id===id)) challengePlayers.push({id:id,name:name,email:email,createdAt:new Date().toISOString()});
+    ls('challenge_players',challengePlayers); saveToDrive(); closePanel(); renderChallenges(); toast('Mitspieler hinzugefügt ✓','ok');
+  };
+
+  window.syncLocalEventToGoogle = async function(ev){
+    if(!accessToken||isDemoMode||!ev||ev.source==='google')return;
+    const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const body={summary:ev.title,description:ev.desc||'',start:ev.time?{dateTime:ev.date+'T'+ev.time+':00',timeZone:tz}:{date:ev.date},end:ev.endTime?{dateTime:ev.date+'T'+ev.endTime+':00',timeZone:tz}:(ev.time?{dateTime:ev.date+'T'+ev.time+':00',timeZone:tz}:{date:ev.date})};
+    try{
+      const url=ev.googleEventId?'https://www.googleapis.com/calendar/v3/calendars/primary/events/'+encodeURIComponent(ev.googleEventId):'https://www.googleapis.com/calendar/v3/calendars/primary/events';
+      const r=await fetch(url,{method:ev.googleEventId?'PATCH':'POST',headers:{'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if(!r.ok)throw new Error('Google Kalender '+r.status);
+      const saved=await r.json(); const i=events.findIndex(e=>e.id===ev.id);
+      if(i>=0&&!events[i].googleEventId){events[i].googleEventId=saved.id; ls('events',events); saveToDrive();}
+      loadGoogleEvents();
+    }catch(e){console.warn('Auto Google Sync:',e);toast('Google Kalender-Sync fehlgeschlagen','err');}
+  };
+  window.saveEvent = function(existingId){
+    originalSaveEvent(existingId);
+    const ev=events[events.length-1];
+    if(accessToken&&!isDemoMode&&ev) syncLocalEventToGoogle(ev);
+    saveToDrive();
+  };
+  window.deleteEvent = function(id){originalDeleteEvent(id); saveToDrive();};
+  window.loadFromDrive = async function(){
+    await originalLoadFromDrive();
+    readChallengeState();
+    if(currentMainView==='challenges') renderChallenges();
+  };
+  window.saveToDrive = async function(){
+    if(!accessToken||isDemoMode) return originalSaveToDrive();
+    showDriveStatus(true);
+    try{
+      const content=JSON.stringify({events,invoices,contracts,challenges,challengeCompletions,challengePlayers,version:VER,savedAt:new Date().toISOString()});
+      const blob=new Blob([content],{type:'application/json'});
+      const meta=JSON.stringify({name:'change_workspace_data.json',mimeType:'application/json'});
+      const form=new FormData();form.append('metadata',new Blob([meta],{type:'application/json'}));form.append('file',blob);
+      let r;
+      if(driveFileId){r=await fetch('https://www.googleapis.com/upload/drive/v3/files/'+driveFileId+'?uploadType=multipart',{method:'PATCH',headers:{'Authorization':'Bearer '+accessToken},body:form});}
+      else{r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{'Authorization':'Bearer '+accessToken},body:form});}
+      if(!r.ok)throw new Error('Drive '+r.status);
+      if(!driveFileId){const d=await r.json(); driveFileId=d.id; ls('drive_file_id',driveFileId);}
+    }catch(e){console.warn('Drive save:',e);toast('Drive-Speicherung fehlgeschlagen','err');}
+    finally{showDriveStatus(false);}
+  };
+
+  document.addEventListener('keydown',e=>{if(e.key==='5'&&!document.getElementById('side-panel').classList.contains('open'))setMainView('challenges');});
+})();
+
 </script>
 </body>
 </html>
