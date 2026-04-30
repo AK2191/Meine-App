@@ -424,8 +424,8 @@ body{
 .badge-gray{background:var(--s2);color:var(--t4)}
 .dash-empty{padding:20px 16px;font-size:13px;color:var(--t5);text-align:center}
 
-/* ── RECHNUNGEN / VERTRÄGE VIEWS ── */
-#invoices-view,#contracts-view,#challenges-view{display:none;flex:1;overflow:hidden;flex-direction:column}
+/* ── LISTEN / CHALLENGES ── */
+#challenges-view{display:none;flex:1;overflow:hidden;flex-direction:column}
 .list-header{
   display:flex;align-items:center;gap:10px;
   padding:14px 18px;border-bottom:1px solid var(--b1);flex-shrink:0;
@@ -635,6 +635,27 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
   #dashboard-view{padding:14px 14px 24px}
   .list-header,.filter-row,.list-body{padding-left:14px;padding-right:14px}
 }
+
+/* ── EXTENDED CALENDAR: YEAR, WORKWEEK, HOLIDAYS, CHALLENGE DOTS ── */
+.day-cell{position:relative}
+.challenge-day-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--amb);box-shadow:0 0 0 2px rgba(8,12,24,.8);z-index:2}
+.challenge-day-dot.done{background:var(--grn)}
+.holiday-line{font-size:9.5px;color:var(--amb);padding:1px 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.year-grid{flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:14px}
+.year-month-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:10px;cursor:pointer}
+.year-month-title{font-size:13px;font-weight:800;color:var(--t1);margin-bottom:8px}
+.year-mini-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.year-mini-day{font-size:10px;text-align:center;color:var(--t4);padding:2px;border-radius:4px;min-height:18px;position:relative}
+.year-mini-day.today{background:var(--acc);color:#fff}.year-mini-day.holiday{color:var(--amb)}
+.year-mini-day .challenge-day-dot{width:5px;height:5px;top:1px;right:1px;box-shadow:none}
+.workweek-grid{flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:14px}
+.workday-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:12px;min-height:260px;position:relative}
+.workday-head{font-size:13px;font-weight:800;color:var(--t1);margin-bottom:4px}.workday-date{font-size:12px;color:var(--t4);margin-bottom:10px}
+.holiday-badge{display:inline-flex;margin:2px 0 8px;padding:3px 7px;border-radius:20px;background:var(--amb-d);color:var(--amb);font-size:10.5px;font-weight:700}
+.today-view{flex:1;overflow-y:auto;padding:16px}
+.settings-hint{font-size:12px;color:var(--t4);line-height:1.5;margin-top:8px}
+@media(max-width:900px){.year-grid{grid-template-columns:1fr}.workweek-grid{grid-template-columns:1fr}}
+@media(max-width:700px){.view-toggle{display:flex!important;overflow-x:auto}.vbtn{padding:5px 8px}}
 </style>
 </head>
 <body>
@@ -710,13 +731,13 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
         </svg>
       </div>
       <div class="login-h">Change</div>
-      <div class="login-sub">Ihr Workspace für Kalender, Rechnungen, Verträge &amp; Challenges – mit Google-Synchronisation.</div>
+      <div class="login-sub">Ihr Workspace für Kalender &amp; Challenges – mit Google-Synchronisation.</div>
       <button class="google-btn" onclick="handleGoogleLogin()">
         <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
         Mit Google anmelden
       </button>
       <button class="demo-btn" onclick="startDemo()">Demo ohne Anmeldung starten</button>
-      <div class="login-note">Rechnungen &amp; Verträge werden in Ihrem Google Drive gespeichert. Keine externe Serverspeicherung.</div>
+      <div class="login-note">Kalender &amp; Challenges werden in Ihrem Google Drive gespeichert. Keine externe Serverspeicherung.</div>
     </div>
   </div>
 
@@ -742,14 +763,6 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           Kalender
         </button>
-        <button class="h-tab" id="htab-invoices" onclick="setMainView('invoices')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          Rechnungen
-        </button>
-        <button class="h-tab" id="htab-contracts" onclick="setMainView('contracts')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          Verträge
-        </button>
       </div>
 
       <!-- Cal controls (only shown in calendar) -->
@@ -759,8 +772,10 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
         <button class="h-nav-btn" onclick="navigate(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 18 15 12 9 6"/></svg></button>
         <button class="h-today-btn" onclick="goToday()">Heute</button>
         <div class="view-toggle">
+          <button class="vbtn" id="vbtn-year" onclick="setCalView('year')">Jahr</button>
           <button class="vbtn active" id="vbtn-month" onclick="setCalView('month')">Monat</button>
-          <button class="vbtn" id="vbtn-agenda" onclick="setCalView('agenda')">Agenda</button>
+          <button class="vbtn" id="vbtn-workweek" onclick="setCalView('workweek')">Arbeitswoche</button>
+          <button class="vbtn" id="vbtn-today" onclick="setCalView('today')">Heute</button>
         </div>
       </div>
 
@@ -768,6 +783,9 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
         <button class="icon-btn" onclick="openNotifPanel()" title="Benachrichtigungen">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           <div class="notif-dot" id="notif-dot"></div>
+        </button>
+        <button class="icon-btn" onclick="openCalendarSettings()" title="Kalender-Einstellungen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.33 1.82V22a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1.82-.33H2a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-.6 1.65 1.65 0 0 0 .33-1.82V2a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.12.69.31 1 .6.31.29.51.64.6 1H22a2 2 0 1 1 0 4h-.09c-.37.09-.72.29-1 .6-.29.31-.48.64-.51 1z"/></svg>
         </button>
         <div class="avatar" id="user-avatar" onclick="confirmLogout()" title="Abmelden">
           <span id="avatar-initials">?</span>
@@ -804,42 +822,6 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
         </div>
       </div>
 
-      <!-- RECHNUNGEN -->
-      <div id="invoices-view">
-        <div class="list-header">
-          <div class="list-title">Rechnungen</div>
-          <button class="btn btn-primary btn-sm" onclick="openInvoicePanel(null)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Neu
-          </button>
-        </div>
-        <div class="filter-row" id="inv-filter-row">
-          <button class="filter-pill active" onclick="filterInvoices('alle',this)">Alle</button>
-          <button class="filter-pill" onclick="filterInvoices('offen',this)">Offen</button>
-          <button class="filter-pill" onclick="filterInvoices('überfällig',this)">Überfällig</button>
-          <button class="filter-pill" onclick="filterInvoices('bezahlt',this)">Bezahlt</button>
-        </div>
-        <div class="list-body" id="invoices-list"></div>
-      </div>
-
-      <!-- VERTRÄGE -->
-      <div id="contracts-view">
-        <div class="list-header">
-          <div class="list-title">Verträge</div>
-          <button class="btn btn-primary btn-sm" onclick="openContractPanel(null)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Neu
-          </button>
-        </div>
-        <div class="filter-row">
-          <button class="filter-pill active" onclick="filterContracts('alle',this)">Alle</button>
-          <button class="filter-pill" onclick="filterContracts('aktiv',this)">Aktiv</button>
-          <button class="filter-pill" onclick="filterContracts('abgelaufen',this)">Abgelaufen</button>
-          <button class="filter-pill" onclick="filterContracts('gekündigt',this)">Gekündigt</button>
-        </div>
-        <div class="list-body" id="contracts-list"></div>
-      </div>
-
     </div><!-- /content -->
 
     <!-- Bottom Nav -->
@@ -852,14 +834,6 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
         <button class="bnav-item" id="bnav-calendar" onclick="setMainView('calendar')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           <span class="bnav-label">Kalender</span>
-        </button>
-        <button class="bnav-item" id="bnav-invoices" onclick="setMainView('invoices')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
-          <span class="bnav-label">Rechnungen</span>
-        </button>
-        <button class="bnav-item" id="bnav-contracts" onclick="setMainView('contracts')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
-          <span class="bnav-label">Verträge</span>
         </button>
       </div>
     </div>
@@ -902,8 +876,6 @@ let curDate = new Date();
 // Data
 let events = [];
 let gEvents = [];
-let invoices = [];
-let contracts = [];
 let challenges = [];
 let challengeCompletions = [];
 let challengePlayers = [];
@@ -943,8 +915,6 @@ window.addEventListener('load', async () => {
   accessToken = ls('access_token') || '';
   userInfo = ls('user_info') || {};
   events = ls('events') || [];
-  invoices = ls('invoices') || [];
-  contracts = ls('contracts') || [];
   challenges = ls('challenges') || [];
   challengeCompletions = ls('challenge_completions') || [];
   challengePlayers = ls('challenge_players') || [];
@@ -1035,9 +1005,7 @@ function startDemoInternal(){
   isDemoMode=true; ls('demo_mode',true);
   userInfo={name:'Demo Nutzer',email:'demo@example.com',picture:''};
   if(!events.length) events=buildDemoEvents();
-  if(!invoices.length) invoices=buildDemoInvoices();
-  if(!contracts.length) contracts=buildDemoContracts();
-  ls('events',events); ls('invoices',invoices); ls('contracts',contracts);
+  ls('events',events);
   bootMainApp();
 }
 
@@ -1045,34 +1013,14 @@ function buildDemoEvents(){
   const b=new Date(),y=b.getFullYear(),m=b.getMonth(),d=b.getDate();
   const mk=offset=>{const dd=new Date(y,m,d+offset);return dateKey(dd);};
   return[
-    {id:'d1',title:'Vertrag läuft ab: Müller GmbH',date:mk(3),color:'red',type:'deadline',desc:'Verlängerung prüfen',notifDaysBefore:7,allDay:true,source:'local',createdAt:new Date().toISOString()},
+    {id:'d1',title:'Termin: Müller GmbH',date:mk(3),color:'red',type:'deadline',desc:'Rücksprache vorbereiten',notifDaysBefore:7,allDay:true,source:'local',createdAt:new Date().toISOString()},
     {id:'d2',title:'Team-Meeting',date:mk(1),time:'10:00',color:'blue',type:'meeting',desc:'Wöchentliches Update',notifDaysBefore:1,allDay:false,source:'local',createdAt:new Date().toISOString()},
-    {id:'d3',title:'Rechnung fällig: Weber AG',date:mk(5),color:'amber',type:'billing',desc:'RE-2024-0045',notifDaysBefore:3,allDay:true,source:'local',createdAt:new Date().toISOString()},
+    {id:'d3',title:'Rückfrage Weber AG',date:mk(5),color:'amber',type:'reminder',desc:'Unterlage prüfen',notifDaysBefore:3,allDay:true,source:'local',createdAt:new Date().toISOString()},
     {id:'d4',title:'Kundengespräch Hoffmann',date:mk(12),time:'14:00',color:'purple',type:'meeting',desc:'Neukunde – Erstgespräch',notifDaysBefore:1,allDay:false,source:'local',createdAt:new Date().toISOString()},
   ];
 }
 
-function buildDemoInvoices(){
-  const b=new Date(),y=b.getFullYear(),m=b.getMonth(),d=b.getDate();
-  const mk=offset=>{const dd=new Date(y,m,d+offset);return dateKey(dd);};
-  return[
-    {id:'i1',title:'Website Redesign Phase 1',partner:'Müller GmbH',amount:4800,date:mk(-20),dueDate:mk(-5),status:'überfällig',note:'Bitte dringend nachfassen! Zweite Mahnung wurde bereits versandt.',createdAt:new Date().toISOString()},
-    {id:'i2',title:'Beratungsleistung März',partner:'Weber AG',amount:1950,date:mk(-10),dueDate:mk(5),status:'offen',note:'Zahlungsziel 14 Tage. Erstkontakt war sehr positiv.',createdAt:new Date().toISOString()},
-    {id:'i3',title:'Softwarelizenz Q1',partner:'Schmidt & Co KG',amount:890,date:mk(-45),dueDate:mk(-30),status:'bezahlt',note:'Bezahlt per Überweisung. Beleg liegt vor.',createdAt:new Date().toISOString()},
-    {id:'i4',title:'IT-Support Pauschal',partner:'Fischer Holding',amount:2200,date:mk(-2),dueDate:mk(28),status:'offen',note:'',createdAt:new Date().toISOString()},
-  ];
-}
 
-function buildDemoContracts(){
-  const b=new Date(),y=b.getFullYear(),m=b.getMonth(),d=b.getDate();
-  const mk=offset=>{const dd=new Date(y,m,d+offset);return dateKey(dd);};
-  return[
-    {id:'c1',title:'Wartungsvertrag Server-Infrastruktur',partner:'TechServ GmbH',startDate:mk(-365),endDate:mk(14),amount:3600,period:'jährlich',status:'aktiv',note:'Automatische Verlängerung um 1 Jahr wenn nicht bis 30 Tage vorher gekündigt! Ansprechpartner: Hr. Bauer, 089-12345.',createdAt:new Date().toISOString()},
-    {id:'c2',title:'Softwarepflegevertrag ERP',partner:'SAP Partner AG',startDate:mk(-200),endDate:mk(165),amount:8400,period:'jährlich',status:'aktiv',note:'Inkl. 10 Support-Stunden/Monat. Nicht genutztes Kontingent verfällt.',createdAt:new Date().toISOString()},
-    {id:'c3',title:'Büroraummiete',partner:'Immo Verwaltung GmbH',startDate:mk(-730),endDate:mk(-30),amount:1800,period:'monatlich',status:'abgelaufen',note:'Umzug erfolgt. Kaution von 5.400€ noch ausstehend.',createdAt:new Date().toISOString()},
-    {id:'c4',title:'Rahmenvertrag Beratung',partner:'Hoffmann Consulting',startDate:mk(-100),endDate:mk(265),amount:0,period:'',status:'aktiv',note:'Stundensatz: 150€/h netto. Abruf nach Bedarf.',createdAt:new Date().toISOString()},
-  ];
-}
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━
    BOOT
@@ -1107,13 +1055,11 @@ function bootMainApp(){
 ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function setMainView(v){
   currentMainView=v;
-  const views=['dashboard','calendar','invoices','contracts'];
+  const views=['dashboard','calendar'];
   views.forEach(vv=>{
     const el=document.getElementById(vv==='calendar'?'cal-body':vv+'-view');
     if(el) el.style.display='none';
   });
-
-  // Show active
   if(v==='calendar'){
     document.getElementById('cal-body').style.display='flex';
     document.getElementById('cal-controls').style.display='flex';
@@ -1121,31 +1067,23 @@ function setMainView(v){
     renderUpcoming();
   } else {
     document.getElementById('cal-controls').style.display='none';
-    if(v==='dashboard'){
+    if(v==='challenges'){
+      document.getElementById('challenges-view')?.style.setProperty('display','flex');
+      renderChallenges?.();
+    } else {
       document.getElementById('dashboard-view').style.display='block';
       buildDashboard();
-    } else if(v==='invoices'){
-      document.getElementById('invoices-view').style.display='flex';
-      renderInvoices();
-    } else if(v==='contracts'){
-      document.getElementById('contracts-view').style.display='flex';
-      renderContracts();
     }
   }
-
-  // Desktop tabs
   document.querySelectorAll('.h-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('htab-'+v)?.classList.add('active');
-
-  // Mobile nav
   document.querySelectorAll('.bnav-item').forEach(t=>t.classList.remove('active'));
   document.getElementById('bnav-'+v)?.classList.add('active');
 }
 
 function fabAction(){
   if(currentMainView==='calendar') openEventPanel(null);
-  else if(currentMainView==='invoices') openInvoicePanel(null);
-  else if(currentMainView==='contracts') openContractPanel(null);
+  else if(currentMainView==='challenges') openChallengePanel(null);
   else openEventPanel(null);
 }
 
@@ -1158,45 +1096,39 @@ function buildDashboard(){
 }
 
 function buildKPIs(){
-  const now=new Date();
   const allEvs=getAllEvents();
   const upcoming7=allEvs.filter(e=>{const d=daysUntil(e.date);return d>=0&&d<=7;}).length;
-  const openInv=invoices.filter(i=>i.status==='offen').length;
-  const overdueInv=invoices.filter(i=>i.status==='überfällig'||isOverdue(i)).length;
-  const expContracts=contracts.filter(c=>c.status==='aktiv'&&daysUntil(c.endDate)>=0&&daysUntil(c.endDate)<=30).length;
-
-  const totalOpen=invoices.filter(i=>i.status==='offen'||i.status==='überfällig').reduce((s,i)=>s+(parseFloat(i.amount)||0),0);
-
+  const today=dateKey(new Date());
+  const me=userInfo.email||'demo@example.com';
+  const doneToday=(typeof challengeCompletions!=='undefined'?challengeCompletions:[]).filter(c=>c.date===today&&c.userEmail===me).length;
+  const myPoints=(typeof calcStats==='function'?calcStats()[me]?.points:0)||0;
   document.getElementById('kpi-grid').innerHTML=`
     <div class="kpi-card${upcoming7>0?' warn':''}" onclick="setMainView('calendar')">
       <div class="kpi-icon-wrap blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
       <div class="kpi-num${upcoming7>0?' warn-color':''}">${upcoming7}</div>
       <div class="kpi-label">Termine diese Woche</div>
     </div>
-    <div class="kpi-card${overdueInv>0?' danger':''}" onclick="setMainView('invoices');filterInvoices('überfällig',null)">
-      <div class="kpi-icon-wrap ${overdueInv>0?'red':'green'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
-      <div class="kpi-num${overdueInv>0?' danger-color':''}">${overdueInv}</div>
-      <div class="kpi-label">Überfällige Rechnungen</div>
+    <div class="kpi-card good" onclick="setMainView('challenges')">
+      <div class="kpi-icon-wrap green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 6 9 17l-5-5"/></svg></div>
+      <div class="kpi-num good-color">${doneToday}</div>
+      <div class="kpi-label">Challenges heute</div>
     </div>
-    <div class="kpi-card" onclick="setMainView('invoices')">
-      <div class="kpi-icon-wrap amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-      <div class="kpi-num" style="font-size:${totalOpen>9999?'22px':totalOpen>999?'26px':'32px'}">${totalOpen>0?fmtMoney(totalOpen).replace(' €',''):'0'}</div>
-      <div class="kpi-label">Offener Betrag (€)</div>
+    <div class="kpi-card" onclick="setMainView('challenges')">
+      <div class="kpi-icon-wrap amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg></div>
+      <div class="kpi-num">${myPoints}</div>
+      <div class="kpi-label">Meine Punkte</div>
     </div>
-    <div class="kpi-card${expContracts>0?' warn':''}" onclick="setMainView('contracts')">
-      <div class="kpi-icon-wrap ${expContracts>0?'amber':'purple'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-      <div class="kpi-num${expContracts>0?' warn-color':''}">${expContracts}</div>
-      <div class="kpi-label">Verträge laufen ab (30T)</div>
-    </div>
-  `;
+    <div class="kpi-card" onclick="setMainView('calendar')">
+      <div class="kpi-icon-wrap purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg></div>
+      <div class="kpi-num">${allEvs.length}</div>
+      <div class="kpi-label">Alle Termine</div>
+    </div>`;
 }
 
 function buildDashCards(){
-  // Upcoming events
   const allEvs=getAllEvents();
-  const upcoming=allEvs.filter(e=>daysUntil(e.date)>=0&&daysUntil(e.date)<=14).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,5);
-  const evIcons={deadline:'⚠️',billing:'💰',meeting:'📅',reminder:'🔔',other:'📌'};
-
+  const upcoming=allEvs.filter(e=>daysUntil(e.date)>=0&&daysUntil(e.date)<=14).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,6);
+  const evIcons={deadline:'⚠️',meeting:'📅',reminder:'🔔',other:'📌'};
   let evHtml='';
   if(!upcoming.length){evHtml=`<div class="dash-empty">Keine Termine in den nächsten 14 Tagen</div>`;}
   else upcoming.forEach(ev=>{
@@ -1205,125 +1137,23 @@ function buildDashCards(){
     const bc=diff===0?'badge-red':diff<=3?'badge-amber':'badge-blue';
     evHtml+=`<div class="dash-row" onclick="setMainView('calendar');setTimeout(()=>openEventPanel('${ev.id}'),200)">
       <div class="dash-row-icon" style="background:var(--${ev.color==='blue'?'acc':ev.color==='green'?'grn':ev.color==='amber'?'amb':ev.color==='red'?'red':'pur'}-d)">${evIcons[ev.type]||'📅'}</div>
-      <div class="dash-row-body">
-        <div class="dash-row-title">${esc(ev.title)}</div>
-        <div class="dash-row-sub">${fmtDate(ev.date)}${ev.time?' · '+ev.time:''}</div>
-      </div>
+      <div class="dash-row-body"><div class="dash-row-title">${esc(ev.title)}</div><div class="dash-row-sub">${fmtDate(ev.date)}${ev.time?' · '+ev.time:''}</div></div>
       <span class="dash-row-badge ${bc}">${lbl}</span>
     </div>`;
   });
-
-  // Invoices (open/overdue)
-  const pendingInv=invoices.filter(i=>i.status==='offen'||i.status==='überfällig').sort((a,b)=>(a.dueDate||'').localeCompare(b.dueDate||'')).slice(0,5);
-  let invHtml='';
-  if(!pendingInv.length){invHtml=`<div class="dash-empty">Keine offenen Rechnungen 🎉</div>`;}
-  else pendingInv.forEach(inv=>{
-    const diff=daysUntil(inv.dueDate);
-    const overdue=inv.status==='überfällig'||diff<0;
-    const bc=overdue?'badge-red':diff<=7?'badge-amber':'badge-gray';
-    const lbl=overdue?'Überfällig':diff===0?'Heute fällig':diff<=7?`${diff}T fällig`:'';
-    invHtml+=`<div class="dash-row" onclick="setMainView('invoices');setTimeout(()=>openInvoicePanel('${inv.id}'),200)">
-      <div class="dash-row-icon" style="background:var(--${overdue?'red':'amb'}-d)">🧾</div>
-      <div class="dash-row-body">
-        <div class="dash-row-title">${esc(inv.title)}${inv.note?'<span class="has-note-dot"></span>':''}</div>
-        <div class="dash-row-sub">${esc(inv.partner||'')}${inv.amount?' · '+fmtMoney(inv.amount):''}</div>
-      </div>
-      ${lbl?`<span class="dash-row-badge ${bc}">${lbl}</span>`:''}
-    </div>`;
-  });
-
-  // Contracts expiring soon
-  const expContracts=contracts.filter(c=>c.status==='aktiv'&&c.endDate).sort((a,b)=>a.endDate.localeCompare(b.endDate)).slice(0,5);
-  let conHtml='';
-  if(!expContracts.length){conHtml=`<div class="dash-empty">Keine aktiven Verträge mit Ablaufdatum</div>`;}
-  else expContracts.forEach(con=>{
-    const diff=daysUntil(con.endDate);
-    const bc=diff<0?'badge-red':diff<=30?'badge-amber':diff<=90?'badge-blue':'badge-green';
-    const lbl=diff<0?'Abgelaufen':diff===0?'Heute':diff<=30?`${diff}T`:fmtDate(con.endDate);
-    conHtml+=`<div class="dash-row" onclick="setMainView('contracts');setTimeout(()=>openContractPanel('${con.id}'),200)">
-      <div class="dash-row-icon" style="background:var(--${diff<0?'red':diff<=30?'amb':'grn'}-d)">📋</div>
-      <div class="dash-row-body">
-        <div class="dash-row-title">${esc(con.title)}${con.note?'<span class="has-note-dot"></span>':''}</div>
-        <div class="dash-row-sub">${esc(con.partner||'')}${con.endDate?' · bis '+fmtDate(con.endDate):''}</div>
-      </div>
-      <span class="dash-row-badge ${bc}">${lbl}</span>
-    </div>`;
-  });
-
+  let chHtml='<div class="dash-empty">Noch keine Challenge-Punkte</div>';
+  if(typeof renderLeaderboardMini==='function') chHtml=renderLeaderboardMini();
   document.getElementById('dash-grid').innerHTML=`
-    <div class="dash-card">
-      <div class="dash-card-head">
-        <div>
-          <div class="dash-card-title">📅 Anstehende Termine</div>
-          <div class="dash-card-sub">Nächste 14 Tage</div>
-        </div>
-        <button class="btn btn-ghost btn-sm" onclick="setMainView('calendar')">Alle →</button>
-      </div>
-      <div class="dash-card-body">${evHtml}</div>
-    </div>
-    <div class="dash-card">
-      <div class="dash-card-head">
-        <div>
-          <div class="dash-card-title">🧾 Offene Rechnungen</div>
-          <div class="dash-card-sub">Offen &amp; überfällig</div>
-        </div>
-        <button class="btn btn-ghost btn-sm" onclick="setMainView('invoices')">Alle →</button>
-      </div>
-      <div class="dash-card-body">${invHtml}</div>
-    </div>
-    <div class="dash-card">
-      <div class="dash-card-head">
-        <div>
-          <div class="dash-card-title">📋 Verträge</div>
-          <div class="dash-card-sub">Aktiv nach Ablaufdatum</div>
-        </div>
-        <button class="btn btn-ghost btn-sm" onclick="setMainView('contracts')">Alle →</button>
-      </div>
-      <div class="dash-card-body">${conHtml}</div>
-    </div>
-    <div class="dash-card">
-      <div class="dash-card-head">
-        <div>
-          <div class="dash-card-title">📊 Rechnungsübersicht</div>
-          <div class="dash-card-sub">Alle Status</div>
-        </div>
-      </div>
-      <div class="dash-card-body">${buildInvSummaryHtml()}</div>
-    </div>
-  `;
+    <div class="dash-card"><div class="dash-card-head"><div><div class="dash-card-title">📅 Anstehende Termine</div><div class="dash-card-sub">Nächste 14 Tage</div></div><button class="btn btn-ghost btn-sm" onclick="setMainView('calendar')">Alle →</button></div><div class="dash-card-body">${evHtml}</div></div>
+    <div class="dash-card"><div class="dash-card-head"><div><div class="dash-card-title">🏆 Challenge-Kontest</div><div class="dash-card-sub">Punkte &amp; Rangliste</div></div><button class="btn btn-ghost btn-sm" onclick="setMainView('challenges')">Öffnen →</button></div><div class="dash-card-body">${chHtml}</div></div>`;
 }
 
-function buildInvSummaryHtml(){
-  const groups=[
-    {k:'überfällig',label:'Überfällig',bc:'badge-red'},
-    {k:'offen',label:'Offen',bc:'badge-amber'},
-    {k:'bezahlt',label:'Bezahlt',bc:'badge-green'},
-  ];
-  let html='';
-  groups.forEach(g=>{
-    const items=invoices.filter(i=>{
-      if(g.k==='überfällig') return i.status==='überfällig'||isOverdue(i);
-      return i.status===g.k&&!(isOverdue(i));
-    });
-    if(!items.length)return;
-    const total=items.reduce((s,i)=>s+(parseFloat(i.amount)||0),0);
-    html+=`<div class="dash-row" onclick="setMainView('invoices');filterInvoices('${g.k}',null)">
-      <div class="dash-row-body">
-        <div class="dash-row-title">${g.label} (${items.length})</div>
-        <div class="dash-row-sub">Gesamt: ${fmtMoney(total)}</div>
-      </div>
-      <span class="dash-row-badge ${g.bc}">${g.label}</span>
-    </div>`;
-  });
-  if(!html)html=`<div class="dash-empty">Noch keine Rechnungen angelegt</div>`;
-  return html;
+function renderLeaderboardMini(){
+  if(typeof calcStats!=='function'||typeof getPlayers!=='function') return '<div class="dash-empty">Keine Kontest-Daten</div>';
+  const stats=calcStats();
+  return getPlayers().sort((a,b)=>(stats[b.email]?.points||0)-(stats[a.email]?.points||0)).slice(0,5).map((p,idx)=>`<div class="dash-row" onclick="setMainView('challenges')"><div class="dash-row-icon" style="background:var(--amb-d)">${idx+1}</div><div class="dash-row-body"><div class="dash-row-title">${esc(p.name||p.email)}</div><div class="dash-row-sub">${stats[p.email]?.count||0} Challenges erledigt</div></div><span class="dash-row-badge badge-green">${stats[p.email]?.points||0} P</span></div>`).join('')||'<div class="dash-empty">Noch keine Punkte</div>';
 }
 
-function isOverdue(inv){
-  if(!inv.dueDate)return false;
-  if(inv.status==='bezahlt')return false;
-  return daysUntil(inv.dueDate)<0;
-}
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━
    CALENDAR
@@ -1424,7 +1254,7 @@ function renderAgenda(){
 }
 
 function getUrgencyBadge(type,diff){
-  if(type!=='deadline'&&type!=='billing')return'';
+  if(type!=='deadline')return'';
   if(diff<0) return`<span class="urgency-badge ub-crit">Überfällig</span>`;
   if(diff===0)return`<span class="urgency-badge ub-crit">Heute</span>`;
   if(diff<=7) return`<span class="urgency-badge ub-crit">${diff}T</span>`;
@@ -1483,361 +1313,6 @@ function renderUpcoming(){
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━
-   INVOICES
-━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-function filterInvoices(f,btn){
-  invFilter=f;
-  document.querySelectorAll('#inv-filter-row .filter-pill').forEach(p=>p.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  else{
-    document.querySelectorAll('#inv-filter-row .filter-pill').forEach(p=>{
-      if(p.onclick&&p.onclick.toString().includes(`'${f}'`)) p.classList.add('active');
-    });
-  }
-  renderInvoices();
-}
-
-function renderInvoices(){
-  const list=document.getElementById('invoices-list');
-  if(!list)return;
-  let filtered=invoices;
-  if(invFilter==='offen') filtered=invoices.filter(i=>i.status==='offen'&&!isOverdue(i));
-  else if(invFilter==='überfällig') filtered=invoices.filter(i=>i.status==='überfällig'||isOverdue(i));
-  else if(invFilter==='bezahlt') filtered=invoices.filter(i=>i.status==='bezahlt');
-
-  filtered=filtered.sort((a,b)=>(a.dueDate||a.date||'').localeCompare(b.dueDate||b.date||''));
-
-  if(!filtered.length){
-    list.innerHTML=`<div class="empty-state">
-      <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-      <div class="empty-title">Keine Rechnungen</div>
-      <div class="empty-sub">Legen Sie Ihre erste Rechnung an.</div>
-    </div>`;
-    return;
-  }
-
-  list.innerHTML=filtered.map(inv=>{
-    const overdue=isOverdue(inv);
-    const status=overdue?'überfällig':inv.status;
-    const diff=daysUntil(inv.dueDate);
-    const statusLabel=status==='überfällig'?'Überfällig':status==='offen'?'Offen':status==='bezahlt'?'Bezahlt':'—';
-    const bc=status==='überfällig'?'badge-red':status==='offen'?'badge-amber':status==='bezahlt'?'badge-green':'badge-gray';
-    return`<div class="list-item status-${status}" onclick="openInvoicePanel('${inv.id}')">
-      <div class="list-item-icon" style="background:var(--${status==='überfällig'?'red':status==='bezahlt'?'grn':'amb'}-d)">🧾</div>
-      <div class="list-item-body">
-        <div class="list-item-title">${esc(inv.title)}${inv.note?'<span class="has-note-dot"></span>':''}</div>
-        <div class="list-item-meta">
-          <span class="list-item-sub">${esc(inv.partner||'')}</span>
-          ${inv.dueDate?`<span class="list-item-sub">· Fällig: ${fmtDate(inv.dueDate)}</span>`:''}
-          ${inv.date?`<span class="list-item-sub">· ${fmtDate(inv.date)}</span>`:''}
-        </div>
-      </div>
-      <div class="list-item-amount-wrap">
-        ${inv.amount?`<div class="list-item-amount">${fmtMoney(inv.amount)}</div>`:''}
-        <span class="dash-row-badge ${bc}">${statusLabel}</span>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function openInvoicePanel(id){
-  const inv=id?invoices.find(i=>i.id===id):null;
-  const statusOpts=[
-    ['offen','Offen'],['überfällig','Überfällig'],['bezahlt','Bezahlt']
-  ];
-
-  // View mode if existing with note
-  const noteHtml=inv?.note?`
-    <div class="note-box">
-      <div class="note-box-label">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        Notiz
-      </div>
-      <div class="note-display">${esc(inv.note)}</div>
-    </div>`:'';
-
-  const html=`
-    <div class="fg"><label class="flabel">Bezeichnung *</label>
-      <input type="text" class="finput" id="inv-title" placeholder="z.B. Webdesign Phase 1" value="${esc(inv?.title||'')}">
-    </div>
-    <div class="fg"><label class="flabel">Auftraggeber / Partner</label>
-      <input type="text" class="finput" id="inv-partner" placeholder="Firmenname oder Person" value="${esc(inv?.partner||'')}">
-    </div>
-    <div class="fr">
-      <div class="fg"><label class="flabel">Betrag (€)</label>
-        <input type="number" class="finput" id="inv-amount" placeholder="0.00" step="0.01" min="0" value="${inv?.amount||''}">
-      </div>
-      <div class="fg"><label class="flabel">Status</label>
-        <select class="finput" id="inv-status">
-          ${statusOpts.map(([v,l])=>`<option value="${v}"${inv?.status===v?' selected':''}>${l}</option>`).join('')}
-        </select>
-      </div>
-    </div>
-    <div class="fr">
-      <div class="fg"><label class="flabel">Rechnungsdatum</label>
-        <input type="date" class="finput" id="inv-date" value="${inv?.date||''}" style="color-scheme:dark">
-      </div>
-      <div class="fg"><label class="flabel">Fällig am</label>
-        <input type="date" class="finput" id="inv-due" value="${inv?.dueDate||''}" style="color-scheme:dark">
-      </div>
-    </div>
-    <div class="fg"><label class="flabel">Rechnungsnummer</label>
-      <input type="text" class="finput" id="inv-number" placeholder="RE-2024-0001" value="${esc(inv?.number||'')}">
-    </div>
-    <div class="divider"></div>
-    <div class="section-label">📝 Notiz</div>
-    <div class="fg">
-      <textarea class="finput" id="inv-note" rows="4" placeholder="Interne Notizen, Zahlungsstatus, Besonderheiten…">${esc(inv?.note||'')}</textarea>
-    </div>
-    <div class="fa">
-      <button class="btn btn-primary" style="flex:1" onclick="saveInvoice('${inv?.id||''}')">
-        ${inv?'Aktualisieren':'Rechnung speichern'}
-      </button>
-      ${inv?`<button class="btn btn-danger" onclick="deleteInvoice('${inv.id}')">Löschen</button>`:''}
-    </div>
-    ${inv?.dueDate&&inv.status!=='bezahlt'?`
-    <div style="margin-top:10px">
-      <button class="btn btn-success btn-full" onclick="markInvoicePaid('${inv.id}')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
-        Als bezahlt markieren
-      </button>
-    </div>`:''}
-    ${!isDemoMode&&accessToken?`<div style="margin-top:6px;font-size:11px;color:var(--t5);text-align:center">☁ Wird automatisch in Google Drive gespeichert</div>`:''}
-  `;
-  openPanel(inv?'Rechnung bearbeiten':'Neue Rechnung',html);
-}
-
-function saveInvoice(existingId){
-  const title=document.getElementById('inv-title')?.value.trim();
-  if(!title){toast('Bitte eine Bezeichnung eingeben','err');return;}
-
-  const inv={
-    id:existingId||'inv_'+uid(),
-    title,
-    partner:document.getElementById('inv-partner')?.value.trim()||'',
-    amount:parseFloat(document.getElementById('inv-amount')?.value)||0,
-    status:document.getElementById('inv-status')?.value||'offen',
-    date:document.getElementById('inv-date')?.value||'',
-    dueDate:document.getElementById('inv-due')?.value||'',
-    number:document.getElementById('inv-number')?.value.trim()||'',
-    note:document.getElementById('inv-note')?.value.trim()||'',
-    createdAt:existingId?(invoices.find(i=>i.id===existingId)?.createdAt||new Date().toISOString()):new Date().toISOString(),
-    updatedAt:new Date().toISOString()
-  };
-
-  if(existingId){const idx=invoices.findIndex(i=>i.id===existingId);if(idx>=0)invoices[idx]=inv;else invoices.push(inv);}
-  else invoices.push(inv);
-
-  ls('invoices',invoices);
-  saveToDrive();
-  closePanel();
-  renderInvoices();
-  if(currentMainView==='dashboard')buildDashboard();
-  toast(existingId?'Rechnung aktualisiert ✓':'Rechnung gespeichert ✓','ok');
-}
-
-function deleteInvoice(id){
-  if(!confirm('Rechnung wirklich löschen?'))return;
-  invoices=invoices.filter(i=>i.id!==id);
-  ls('invoices',invoices);
-  saveToDrive();
-  closePanel();
-  renderInvoices();
-  if(currentMainView==='dashboard')buildDashboard();
-  toast('Rechnung gelöscht','');
-}
-
-function markInvoicePaid(id){
-  const inv=invoices.find(i=>i.id===id);
-  if(!inv)return;
-  inv.status='bezahlt';inv.updatedAt=new Date().toISOString();
-  ls('invoices',invoices);
-  saveToDrive();
-  closePanel();
-  renderInvoices();
-  if(currentMainView==='dashboard')buildDashboard();
-  toast('Als bezahlt markiert ✓','ok');
-}
-
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
-   CONTRACTS
-━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-function filterContracts(f,btn){
-  conFilter=f;
-  document.querySelectorAll('#contracts-view .filter-pill').forEach(p=>p.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  renderContracts();
-}
-
-function renderContracts(){
-  const list=document.getElementById('contracts-list');
-  if(!list)return;
-  let filtered=contracts;
-  if(conFilter!=='alle') filtered=contracts.filter(c=>c.status===conFilter);
-  filtered=filtered.sort((a,b)=>(a.endDate||'9999').localeCompare(b.endDate||'9999'));
-
-  if(!filtered.length){
-    list.innerHTML=`<div class="empty-state">
-      <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
-      <div class="empty-title">Keine Verträge</div>
-      <div class="empty-sub">Legen Sie Ihren ersten Vertrag an.</div>
-    </div>`;
-    return;
-  }
-
-  list.innerHTML=filtered.map(con=>{
-    const diff=con.endDate?daysUntil(con.endDate):null;
-    const statusLabel=con.status==='aktiv'?'Aktiv':con.status==='abgelaufen'?'Abgelaufen':con.status==='gekündigt'?'Gekündigt':'—';
-    const bc=con.status==='aktiv'?(diff!==null&&diff<=30?'badge-amber':'badge-green'):con.status==='abgelaufen'?'badge-red':'badge-gray';
-    const daysLabel=diff!==null?(diff<0?'Abgelaufen':diff===0?'Heute':diff<=30?`${diff}T`:fmtDate(con.endDate)):'Kein Ablaufdatum';
-    return`<div class="list-item status-${con.status}" onclick="openContractPanel('${con.id}')">
-      <div class="list-item-icon" style="background:var(--${con.status==='abgelaufen'?'red':con.status==='gekündigt'?'t5':'grn'}-d)">📋</div>
-      <div class="list-item-body">
-        <div class="list-item-title">${esc(con.title)}${con.note?'<span class="has-note-dot"></span>':''}</div>
-        <div class="list-item-meta">
-          <span class="list-item-sub">${esc(con.partner||'')}</span>
-          ${con.amount?`<span class="list-item-sub">· ${fmtMoney(con.amount)}${con.period?' / '+con.period:''}</span>`:''}
-        </div>
-      </div>
-      <div class="list-item-amount-wrap">
-        <span class="dash-row-badge ${bc}">${statusLabel}</span>
-        <span class="list-item-sub" style="font-size:11px;margin-top:2px">${daysLabel}</span>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function openContractPanel(id){
-  const con=id?contracts.find(c=>c.id===id):null;
-  const statusOpts=[
-    ['aktiv','Aktiv'],['abgelaufen','Abgelaufen'],['gekündigt','Gekündigt']
-  ];
-  const periodOpts=[
-    ['','Einmalig'],['monatlich','Monatlich'],['quartalsweise','Quartalsweise'],['halbjährlich','Halbjährlich'],['jährlich','Jährlich']
-  ];
-
-  const html=`
-    <div class="fg"><label class="flabel">Vertragsbezeichnung *</label>
-      <input type="text" class="finput" id="con-title" placeholder="z.B. Wartungsvertrag Server" value="${esc(con?.title||'')}">
-    </div>
-    <div class="fg"><label class="flabel">Vertragspartner</label>
-      <input type="text" class="finput" id="con-partner" placeholder="Firmenname" value="${esc(con?.partner||'')}">
-    </div>
-    <div class="fr">
-      <div class="fg"><label class="flabel">Vertragsbeginn</label>
-        <input type="date" class="finput" id="con-start" value="${con?.startDate||''}" style="color-scheme:dark">
-      </div>
-      <div class="fg"><label class="flabel">Vertragsende</label>
-        <input type="date" class="finput" id="con-end" value="${con?.endDate||''}" style="color-scheme:dark">
-      </div>
-    </div>
-    <div class="fr">
-      <div class="fg"><label class="flabel">Betrag (€)</label>
-        <input type="number" class="finput" id="con-amount" placeholder="0.00" step="0.01" min="0" value="${con?.amount||''}">
-      </div>
-      <div class="fg"><label class="flabel">Intervall</label>
-        <select class="finput" id="con-period">
-          ${periodOpts.map(([v,l])=>`<option value="${v}"${con?.period===v?' selected':''}>${l}</option>`).join('')}
-        </select>
-      </div>
-    </div>
-    <div class="fg"><label class="flabel">Status</label>
-      <select class="finput" id="con-status">
-        ${statusOpts.map(([v,l])=>`<option value="${v}"${con?.status===v?' selected':''}>${l}</option>`).join('')}
-      </select>
-    </div>
-    <div class="fg"><label class="flabel">Kündigungsfrist (Tage)</label>
-      <input type="number" class="finput" id="con-notice" placeholder="z.B. 30" min="0" value="${con?.noticeDays||''}">
-    </div>
-    <div class="divider"></div>
-    <div class="section-label">📝 Notiz</div>
-    <div class="fg">
-      <textarea class="finput" id="con-note" rows="5" placeholder="Wichtige Details, Klauseln, Ansprechpartner, Verlängerungsoptionen…">${esc(con?.note||'')}</textarea>
-    </div>
-    <div class="fa">
-      <button class="btn btn-primary" style="flex:1" onclick="saveContract('${con?.id||''}')">
-        ${con?'Aktualisieren':'Vertrag speichern'}
-      </button>
-      ${con?`<button class="btn btn-danger" onclick="deleteContract('${con.id}')">Löschen</button>`:''}
-    </div>
-    ${con?.endDate?`
-    <div style="margin-top:8px">
-      <button class="btn btn-ghost btn-full" onclick="addContractToCalendar('${con.id}')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:14px;height:14px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        Ablaufdatum im Kalender eintragen
-      </button>
-    </div>`:''}
-    ${!isDemoMode&&accessToken?`<div style="margin-top:6px;font-size:11px;color:var(--t5);text-align:center">☁ Wird automatisch in Google Drive gespeichert</div>`:''}
-  `;
-  openPanel(con?'Vertrag bearbeiten':'Neuer Vertrag',html);
-}
-
-function saveContract(existingId){
-  const title=document.getElementById('con-title')?.value.trim();
-  if(!title){toast('Bitte eine Bezeichnung eingeben','err');return;}
-
-  const con={
-    id:existingId||'con_'+uid(),
-    title,
-    partner:document.getElementById('con-partner')?.value.trim()||'',
-    startDate:document.getElementById('con-start')?.value||'',
-    endDate:document.getElementById('con-end')?.value||'',
-    amount:parseFloat(document.getElementById('con-amount')?.value)||0,
-    period:document.getElementById('con-period')?.value||'',
-    status:document.getElementById('con-status')?.value||'aktiv',
-    noticeDays:parseInt(document.getElementById('con-notice')?.value)||0,
-    note:document.getElementById('con-note')?.value.trim()||'',
-    createdAt:existingId?(contracts.find(c=>c.id===existingId)?.createdAt||new Date().toISOString()):new Date().toISOString(),
-    updatedAt:new Date().toISOString()
-  };
-
-  if(existingId){const idx=contracts.findIndex(c=>c.id===existingId);if(idx>=0)contracts[idx]=con;else contracts.push(con);}
-  else contracts.push(con);
-
-  ls('contracts',contracts);
-  saveToDrive();
-  closePanel();
-  renderContracts();
-  if(currentMainView==='dashboard')buildDashboard();
-  toast(existingId?'Vertrag aktualisiert ✓':'Vertrag gespeichert ✓','ok');
-}
-
-function deleteContract(id){
-  if(!confirm('Vertrag wirklich löschen?'))return;
-  contracts=contracts.filter(c=>c.id!==id);
-  ls('contracts',contracts);
-  saveToDrive();
-  closePanel();
-  renderContracts();
-  if(currentMainView==='dashboard')buildDashboard();
-  toast('Vertrag gelöscht','');
-}
-
-function addContractToCalendar(id){
-  const con=contracts.find(c=>c.id===id);
-  if(!con||!con.endDate)return;
-  // Create calendar event for contract end
-  const ev={
-    id:'ev_'+uid(),
-    title:`Vertragsende: ${con.title}`,
-    date:con.endDate,
-    time:'',
-    color:'amber',
-    type:'deadline',
-    desc:`Vertragspartner: ${con.partner||'—'}\nKündigungsfrist: ${con.noticeDays||'—'} Tage\n\n${con.note||''}`.trim(),
-    notifDaysBefore:con.noticeDays||14,
-    allDay:true,
-    source:'local',
-    createdAt:new Date().toISOString()
-  };
-  events.push(ev);
-  ls('events',events);
-  closePanel();
-  toast('Vertragsablauf im Kalender eingetragen ✓','ok');
-  setTimeout(()=>{setMainView('calendar');},400);
-}
-
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
    EVENT PANEL (CALENDAR)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function openEventPanel(id,preDate){
@@ -1859,7 +1334,7 @@ function openEventPanel(id,preDate){
   const dateVal=ev?.date||(preDate?dateKey(preDate):dateKey(new Date()));
   const types=[
     ['meeting','📅 Termin / Meeting'],['deadline','⚠️ Frist / Ablauf'],
-    ['billing','💰 Abrechnung'],['reminder','🔔 Erinnerung'],['other','📌 Sonstiges']
+['reminder','🔔 Erinnerung'],['other','📌 Sonstiges']
   ];
   const notifs=[['0','Am gleichen Tag'],['1','1 Tag vorher'],['3','3 Tage vorher'],['7','1 Woche vorher'],['14','2 Wochen vorher'],['30','1 Monat vorher']];
   const colors=['blue','green','amber','red','purple'];
@@ -2049,11 +1524,9 @@ async function loadFromDrive(){
       });
       if(fr.ok){
         const content=await fr.json();
-        if(content.invoices){invoices=content.invoices;ls('invoices',invoices);}
-        if(content.contracts){contracts=content.contracts;ls('contracts',contracts);}
+        if(content.events){events=content.events;ls('events',events);}
         if(currentMainView==='dashboard')buildDashboard();
-        if(currentMainView==='invoices')renderInvoices();
-        if(currentMainView==='contracts')renderContracts();
+        if(currentMainView==='calendar'){renderCalendar();renderUpcoming();}
         toast('Daten aus Google Drive geladen ✓','ok');
       }
     }
@@ -2064,7 +1537,7 @@ async function saveToDrive(){
   if(!accessToken||isDemoMode)return;
   showDriveStatus(true);
   try{
-    const content=JSON.stringify({invoices,contracts,version:VER,savedAt:new Date().toISOString()});
+    const content=JSON.stringify({events,version:VER,savedAt:new Date().toISOString()});
     const blob=new Blob([content],{type:'application/json'});
 
     if(driveFileId){
@@ -2118,22 +1591,6 @@ function checkNotifications(){
     }
     if(diff===threshold&&Notification.permission==='granted') fireNotification(ev,diff);
   });
-  // Add overdue invoices as notifications
-  invoices.filter(i=>isOverdue(i)||i.status==='überfällig').forEach(inv=>{
-    notifications.push({
-      id:inv.id,title:`Rechnung überfällig: ${inv.title}`,
-      date:inv.dueDate||'',diff:daysUntil(inv.dueDate||''),
-      type:'billing',color:'red',urgency:'crit',isInvoice:true
-    });
-  });
-  // Add expiring contracts
-  contracts.filter(c=>c.status==='aktiv'&&c.endDate&&daysUntil(c.endDate)>=0&&daysUntil(c.endDate)<=30).forEach(con=>{
-    notifications.push({
-      id:con.id,title:`Vertrag läuft ab: ${con.title}`,
-      date:con.endDate,diff:daysUntil(con.endDate),
-      type:'deadline',color:'amber',urgency:daysUntil(con.endDate)<=7?'crit':'warn',isContract:true
-    });
-  });
   notifications.sort((a,b)=>a.diff-b.diff);
   const hasCrit=notifications.some(n=>n.urgency!=='ok');
   const dot=document.getElementById('notif-dot');
@@ -2166,14 +1623,12 @@ function openNotifPanel(){
   const crit=notifications.filter(n=>n.urgency==='crit');
   const warn=notifications.filter(n=>n.urgency==='warn');
   const ok=notifications.filter(n=>n.urgency==='ok');
-  const icons={deadline:'⚠️',billing:'💰',meeting:'📅',reminder:'🔔',other:'📌'};
+  const icons={deadline:'⚠️',meeting:'📅',reminder:'🔔',other:'📌'};
   const bgs={crit:'var(--red-d)',warn:'var(--amb-d)',ok:'var(--s2)'};
   const mkItem=n=>{
     const label=n.diff<0?'Überfällig':n.diff===0?'Heute':n.diff===1?'Morgen':`In ${n.diff}T`;
     const bcls=n.urgency==='crit'?'ub-crit':n.urgency==='warn'?'ub-warn':'ub-ok';
-    const action=n.isInvoice?`setMainView('invoices');setTimeout(()=>openInvoicePanel('${n.id}'),200)`:
-      n.isContract?`setMainView('contracts');setTimeout(()=>openContractPanel('${n.id}'),200)`:
-      `setMainView('calendar');setTimeout(()=>openEventPanel('${n.id}'),200)`;
+    const action=`setMainView('calendar');setTimeout(()=>openEventPanel('${n.id}'),200)`;
     return`<div class="nitem" onclick="${action};closePanel()">
       <div class="nitem-icon" style="background:${bgs[n.urgency]}">${icons[n.type]||'📅'}</div>
       <div class="nitem-body">
@@ -2246,8 +1701,6 @@ document.addEventListener('keydown',e=>{
   if(e.key==='t'||e.key==='T')goToday();
   if(e.key==='1')setMainView('dashboard');
   if(e.key==='2')setMainView('calendar');
-  if(e.key==='3')setMainView('invoices');
-  if(e.key==='4')setMainView('contracts');
   if(e.key==='n'||e.key==='N')fabAction();
   if(e.key==='m'||e.key==='M')setCalView('month');
   if(e.key==='a'||e.key==='A')setCalView('agenda');
@@ -2291,8 +1744,6 @@ document.addEventListener('touchend',e=>{
   window.buildDefaultChallenges = function(){
     return [
       {id:'ch_focus',title:'30 Minuten Fokuszeit',points:10,icon:'🎯',desc:'Eine konzentrierte Aufgabe ohne Ablenkung erledigen.',active:true,createdAt:new Date().toISOString()},
-      {id:'ch_invoice',title:'Eine Rechnung prüfen',points:15,icon:'🧾',desc:'Offene Rechnung kontrollieren oder nachfassen.',active:true,createdAt:new Date().toISOString()},
-      {id:'ch_contract',title:'Einen Vertrag checken',points:20,icon:'📋',desc:'Ablaufdatum, Frist oder Notiz eines Vertrags aktualisieren.',active:true,createdAt:new Date().toISOString()},
       {id:'ch_calendar',title:'Kalender aufräumen',points:10,icon:'📅',desc:'Termine prüfen und Kalender aktuell halten.',active:true,createdAt:new Date().toISOString()}
     ];
   };
@@ -2354,7 +1805,7 @@ document.addEventListener('touchend',e=>{
   window.setMainView = function(v){
     if(v!=='challenges') return originalSetMainView(v);
     currentMainView=v;
-    ['dashboard','calendar','invoices','contracts','challenges'].forEach(vv=>{
+    ['dashboard','calendar','challenges'].forEach(vv=>{
       const el=document.getElementById(vv==='calendar'?'cal-body':vv+'-view');
       if(el) el.style.display='none';
     });
@@ -2467,7 +1918,7 @@ document.addEventListener('touchend',e=>{
     if(!accessToken||isDemoMode) return originalSaveToDrive();
     showDriveStatus(true);
     try{
-      const content=JSON.stringify({events,invoices,contracts,challenges,challengeCompletions,challengePlayers,version:VER,savedAt:new Date().toISOString()});
+      const content=JSON.stringify({events,challenges,challengeCompletions,challengePlayers,version:VER,savedAt:new Date().toISOString()});
       const blob=new Blob([content],{type:'application/json'});
       const meta=JSON.stringify({name:'change_workspace_data.json',mimeType:'application/json'});
       const form=new FormData();form.append('metadata',new Blob([meta],{type:'application/json'}));form.append('file',blob);
@@ -2481,6 +1932,200 @@ document.addEventListener('touchend',e=>{
   };
 
   document.addEventListener('keydown',e=>{if(e.key==='5'&&!document.getElementById('side-panel').classList.contains('open'))setMainView('challenges');});
+})();
+
+
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   CHANGE CALENDAR EXTENSIONS: VIEWS, HOLIDAYS, STATE SETTINGS, CHALLENGE DOTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+(function(){
+  const STATE_OPTIONS={
+    'ALL':'Alle Bundesländer anzeigen','BW':'Baden-Württemberg','BY':'Bayern','BY-AUGSBURG':'Bayern · Augsburg','BE':'Berlin','BB':'Brandenburg','HB':'Bremen','HH':'Hamburg','HE':'Hessen','MV':'Mecklenburg-Vorpommern','NI':'Niedersachsen','NW':'Nordrhein-Westfalen','RP':'Rheinland-Pfalz','SL':'Saarland','SN':'Sachsen','ST':'Sachsen-Anhalt','SH':'Schleswig-Holstein','TH':'Thüringen'
+  };
+  if(!window.calendarSettings){window.calendarSettings={state:ls('holiday_state')||'ALL',holidayNotifications:ls('holiday_notifications')!==false};}
+  function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x;}
+  function easterDate(year){
+    const a=year%19,b=Math.floor(year/100),c=year%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),day=((h+l-7*m+114)%31)+1;
+    return new Date(year,mo-1,day);
+  }
+  function H(date,name,states,local){return {date:dateKey(date),name,states:states||['ALL'],local:!!local};}
+  window.getGermanHolidays=function(year){
+    const e=easterDate(year), list=[];
+    list.push(H(new Date(year,0,1),'Neujahr',['ALL']));
+    list.push(H(new Date(year,0,6),'Heilige Drei Könige',['BW','BY','BY-AUGSBURG','ST']));
+    list.push(H(new Date(year,2,8),'Internationaler Frauentag',['BE','MV']));
+    list.push(H(addDays(e,-2),'Karfreitag',['ALL']));
+    list.push(H(addDays(e,1),'Ostermontag',['ALL']));
+    list.push(H(new Date(year,4,1),'Tag der Arbeit',['ALL']));
+    list.push(H(addDays(e,39),'Christi Himmelfahrt',['ALL']));
+    list.push(H(addDays(e,50),'Pfingstmontag',['ALL']));
+    list.push(H(addDays(e,60),'Fronleichnam',['BW','BY','BY-AUGSBURG','HE','NW','RP','SL']));
+    list.push(H(new Date(year,7,8),'Augsburger Friedensfest',['BY-AUGSBURG'],true));
+    list.push(H(new Date(year,7,15),'Mariä Himmelfahrt',['SL','BY','BY-AUGSBURG']));
+    list.push(H(new Date(year,8,20),'Weltkindertag',['TH']));
+    list.push(H(new Date(year,9,3),'Tag der Deutschen Einheit',['ALL']));
+    list.push(H(new Date(year,9,31),'Reformationstag',['BB','MV','SN','ST','TH','HB','HH','NI','SH']));
+    list.push(H(new Date(year,10,1),'Allerheiligen',['BW','BY','BY-AUGSBURG','NW','RP','SL']));
+    const nov23=new Date(year,10,23); const offset=(nov23.getDay()+4)%7; list.push(H(addDays(nov23,-offset),'Buß- und Bettag',['SN']));
+    list.push(H(new Date(year,11,25),'1. Weihnachtstag',['ALL']));
+    list.push(H(new Date(year,11,26),'2. Weihnachtstag',['ALL']));
+    return list;
+  };
+  window.getHolidaysForDate=function(dk){
+    const y=parseInt(dk.slice(0,4),10), state=(window.calendarSettings?.state)||ls('holiday_state')||'ALL';
+    return getGermanHolidays(y).filter(h=>h.date===dk && (state==='ALL'||h.states.includes('ALL')||h.states.includes(state)));
+  };
+  function challengeScheduleForDate(dk){
+    const active=(window.challenges||challenges||[]).filter(c=>c.active!==false);
+    return active.filter(c=>{
+      if(c.recurrence==='daily') return true;
+      const sd=c.date||c.startDate;
+      if(sd) return sd===dk;
+      return dk===dateKey(new Date());
+    });
+  }
+  window.getChallengeDayStatus=function(dk){
+    const planned=challengeScheduleForDate(dk);
+    if(!planned.length) return null;
+    const me=(typeof getCurrentPlayerId==='function')?getCurrentPlayerId():((userInfo&&userInfo.email)||'local');
+    const done=planned.filter(ch=>(challengeCompletions||[]).some(c=>c.challengeId===ch.id&&c.playerId===me&&c.date===dk)).length;
+    return {planned:planned.length,done,allDone:done>=planned.length};
+  };
+  function eventRowsForDate(dk){
+    return getAllEvents().filter(e=>e.date===dk).sort((a,b)=>(a.time||'99:99').localeCompare(b.time||'99:99'));
+  }
+  function renderHolidayAndChallengeDecorations(dk){
+    const hs=getHolidaysForDate(dk), ch=getChallengeDayStatus(dk);
+    let html='';
+    if(ch) html+='<span class="challenge-day-dot '+(ch.allDone?'done':'')+'" title="Challenges: '+ch.done+'/'+ch.planned+' erledigt"></span>';
+    if(hs.length) html+=hs.slice(0,2).map(h=>'<div class="holiday-line" title="'+esc(h.name+' · '+h.states.map(s=>STATE_OPTIONS[s]||s).join(', '))+'">'+esc(h.name)+'</div>').join('');
+    return html;
+  }
+  const oldRenderMonth=window.renderMonth;
+  window.renderMonth=function(y,m){
+    const grid=document.getElementById('month-grid'); if(!grid)return;
+    grid.className=''; grid.style.display='grid'; grid.style.gridTemplateRows='repeat(6,1fr)'; grid.innerHTML='';
+    let firstDay=new Date(y,m,1).getDay(); firstDay=firstDay===0?6:firstDay-1;
+    const dim=new Date(y,m+1,0).getDate(), prevDim=new Date(y,m,0).getDate(), cells=[];
+    for(let i=0;i<firstDay;i++) cells.push({d:prevDim-firstDay+1+i,m:m===0?11:m-1,y:m===0?y-1:y,other:true});
+    for(let i=1;i<=dim;i++) cells.push({d:i,m,y,other:false});
+    while(cells.length<42){const ld=cells.length-firstDay-dim+1;cells.push({d:ld,m:m===11?0:m+1,y:m===11?y+1:y,other:true});}
+    for(let w=0;w<6;w++){
+      const row=document.createElement('div'); row.className='week-row';
+      for(let d=0;d<7;d++){
+        const c=cells[w*7+d], dt=new Date(c.y,c.m,c.d), dk=dateKey(dt), dayEvs=eventRowsForDate(dk);
+        const cell=document.createElement('div'); cell.className='day-cell'+(c.other?' other':'')+(d>=5?' weekend':'')+(isToday(dt)?' today':''); cell.onclick=()=>onDayClick(dt,dayEvs);
+        let html='<div class="day-num-wrap"><div class="day-num">'+c.d+'</div></div>'+renderHolidayAndChallengeDecorations(dk);
+        const maxV=window.innerWidth<480?1:2;
+        dayEvs.slice(0,maxV).forEach(ev=>{html+='<div class="ev-chip '+ev.color+'" onclick="event.stopPropagation();openEventPanel(\''+ev.id+'\')">'+esc(ev.title)+'</div>';});
+        if(dayEvs.length>maxV) html+='<div class="more-chip">+'+(dayEvs.length-maxV)+'</div>';
+        cell.innerHTML=html; row.appendChild(cell);
+      }
+      grid.appendChild(row);
+    }
+  };
+  window.renderYear=function(y){
+    const grid=document.getElementById('month-grid'); if(!grid)return;
+    grid.style.display='grid'; grid.style.gridTemplateRows='none'; grid.className='year-grid'; grid.innerHTML='';
+    for(let m=0;m<12;m++){
+      const card=document.createElement('div'); card.className='year-month-card'; card.onclick=()=>{curDate=new Date(y,m,1);setCalView('month');};
+      let first=new Date(y,m,1).getDay(); first=first===0?6:first-1; const dim=new Date(y,m+1,0).getDate();
+      let html='<div class="year-month-title">'+DE_MONTHS[m]+'</div><div class="year-mini-grid">';
+      ['M','D','M','D','F','S','S'].forEach(x=>html+='<div class="year-mini-day" style="font-weight:800;color:var(--t5)">'+x+'</div>');
+      for(let i=0;i<first;i++)html+='<div></div>';
+      for(let d=1;d<=dim;d++){const dt=new Date(y,m,d), dk=dateKey(dt), hs=getHolidaysForDate(dk), ch=getChallengeDayStatus(dk); html+='<div class="year-mini-day '+(isToday(dt)?'today ':'')+(hs.length?'holiday':'')+'">'+d+(ch?'<span class="challenge-day-dot '+(ch.allDone?'done':'')+'"></span>':'')+'</div>';}
+      html+='</div>'; card.innerHTML=html; grid.appendChild(card);
+    }
+  };
+  window.renderWorkweek=function(){
+    const grid=document.getElementById('month-grid'); if(!grid)return;
+    grid.style.display='grid'; grid.style.gridTemplateRows='none'; grid.className='workweek-grid'; grid.innerHTML='';
+    const base=new Date(curDate); const day=(base.getDay()+6)%7; const monday=addDays(base,-day);
+    for(let i=0;i<5;i++){
+      const dt=addDays(monday,i), dk=dateKey(dt), hs=getHolidaysForDate(dk), ch=getChallengeDayStatus(dk), evs=eventRowsForDate(dk);
+      const card=document.createElement('div'); card.className='workday-card'; card.onclick=()=>onDayClick(dt,evs);
+      let html=(ch?'<span class="challenge-day-dot '+(ch.allDone?'done':'')+'"></span>':'')+'<div class="workday-head">'+DE_DAYS_F[dt.getDay()]+'</div><div class="workday-date">'+fmtDate(dk)+'</div>';
+      if(hs.length) html+=hs.map(h=>'<div class="holiday-badge">'+esc(h.name)+'</div>').join('');
+      evs.forEach(ev=>html+='<div class="ag-card '+ev.color+'" style="margin-bottom:7px" onclick="event.stopPropagation();openEventPanel(\''+ev.id+'\')"><div class="ag-time">'+(ev.time||'Ganztägig')+'</div><div class="ag-body"><div class="ag-title">'+esc(ev.title)+'</div></div></div>');
+      if(!evs.length) html+='<div class="dash-empty">Keine Termine</div>';
+      card.innerHTML=html; grid.appendChild(card);
+    }
+  };
+  window.renderTodayView=function(){
+    const ag=document.getElementById('agenda-view'), dk=dateKey(new Date()), hs=getHolidaysForDate(dk), chs=challengeScheduleForDate(dk), evs=eventRowsForDate(dk);
+    let html='<div class="today-view"><div class="dash-hello"><h1>Heute</h1><p>'+fmtDate(dk)+'</p></div>';
+    if(hs.length) html+='<div class="dash-card" style="margin-bottom:14px"><div class="dash-card-head"><div class="dash-card-title">Feiertage</div><div class="dash-card-sub">'+esc(STATE_OPTIONS[calendarSettings.state]||calendarSettings.state)+'</div></div><div class="dash-card-body">'+hs.map(h=>'<div class="dash-row"><div class="dash-row-icon" style="background:var(--amb-d)">🎉</div><div class="dash-row-body"><div class="dash-row-title">'+esc(h.name)+'</div><div class="dash-row-sub">'+esc(h.states.map(s=>STATE_OPTIONS[s]||s).join(', '))+'</div></div></div>').join('')+'</div></div>';
+    html+='<div class="dash-card" style="margin-bottom:14px"><div class="dash-card-head"><div class="dash-card-title">Challenges</div><button class="btn btn-ghost btn-sm" onclick="setMainView(\'challenges\')">Öffnen</button></div><div class="dash-card-body">'+(chs.length?chs.map(ch=>'<div class="dash-row"><div class="dash-row-icon" style="background:var(--pur-d)">'+esc(ch.icon||'🏆')+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(ch.title)+'</div><div class="dash-row-sub">'+(ch.points||0)+' Punkte</div></div><button class="btn btn-primary btn-sm" onclick="completeChallenge(\''+ch.id+'\')">Erledigen</button></div>').join(''):'<div class="dash-empty">Heute keine Challenge geplant</div>')+'</div></div>';
+    html+='<div class="dash-card"><div class="dash-card-head"><div class="dash-card-title">Termine</div></div><div class="dash-card-body">'+(evs.length?evs.map(ev=>'<div class="dash-row" onclick="openEventPanel(\''+ev.id+'\')"><div class="dash-row-icon" style="background:var(--acc-d)">📅</div><div class="dash-row-body"><div class="dash-row-title">'+esc(ev.title)+'</div><div class="dash-row-sub">'+(ev.time||'Ganztägig')+'</div></div></div>').join(''):'<div class="dash-empty">Heute keine Termine</div>')+'</div></div></div>';
+    ag.innerHTML=html;
+  };
+  window.renderCalendar=function(){
+    const y=curDate.getFullYear(),m=curDate.getMonth();
+    const label=currentCalView==='year'?String(y):(currentCalView==='workweek'?'Arbeitswoche · '+DE_MONTHS[m]+' '+y:(currentCalView==='today'?'Heute':DE_MONTHS[m]+' '+y));
+    document.getElementById('month-label').textContent=label;
+    ['year','month','workweek','today'].forEach(v=>document.getElementById('vbtn-'+v)?.classList.toggle('active',currentCalView===v));
+    const grid=document.getElementById('month-grid'), ag=document.getElementById('agenda-view'), wday=document.getElementById('wday-row');
+    if(currentCalView==='year'){ag.style.display='none';wday.style.display='none';renderYear(y);}
+    else if(currentCalView==='month'){ag.style.display='none';wday.style.display='grid';renderMonth(y,m);}
+    else if(currentCalView==='workweek'){ag.style.display='none';wday.style.display='none';renderWorkweek();}
+    else {grid.style.display='none';wday.style.display='none';ag.style.display='block';renderTodayView();}
+    if(currentCalView!=='today') grid.style.display='grid';
+    renderUpcoming();
+  };
+  window.setCalView=function(v){currentCalView=v; renderCalendar();};
+  window.navigate=function(dir){
+    if(currentCalView==='year') curDate=new Date(curDate.getFullYear()+dir,0,1);
+    else if(currentCalView==='workweek') curDate=addDays(curDate,dir*7);
+    else if(currentCalView==='today') curDate=addDays(curDate,dir);
+    else curDate=new Date(curDate.getFullYear(),curDate.getMonth()+dir,1);
+    renderCalendar();
+  };
+  window.goToday=function(){curDate=new Date();currentCalView='today';renderCalendar();};
+  window.openCalendarSettings=function(){
+    const state=calendarSettings.state||'ALL';
+    const opts=Object.entries(STATE_OPTIONS).map(([k,v])=>'<option value="'+k+'" '+(k===state?'selected':'')+'>'+v+'</option>').join('');
+    openPanel('Kalender-Einstellungen','<div class="fg"><label class="flabel">Bundesland für Feiertage & Benachrichtigungen</label><select class="finput" id="holiday-state">'+opts+'</select><div class="settings-hint">Wähle „Bayern · Augsburg“, damit auch das Augsburger Friedensfest als lokaler Feiertag erscheint.</div></div><div class="fg"><label class="flabel">Feiertags-Benachrichtigungen</label><select class="finput" id="holiday-notifications"><option value="1" '+(calendarSettings.holidayNotifications?'selected':'')+'>Aktiv</option><option value="0" '+(!calendarSettings.holidayNotifications?'selected':'')+'>Aus</option></select></div><button class="btn btn-primary btn-full" onclick="saveCalendarSettings()">Einstellungen speichern</button>');
+  };
+  window.saveCalendarSettings=function(){
+    calendarSettings.state=document.getElementById('holiday-state')?.value||'ALL';
+    calendarSettings.holidayNotifications=document.getElementById('holiday-notifications')?.value==='1';
+    ls('holiday_state',calendarSettings.state); ls('holiday_notifications',calendarSettings.holidayNotifications); closePanel(); renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
+  };
+  const originalOpenChallengePanel=window.openChallengePanel;
+  window.openChallengePanel=function(id){
+    const ch=id?challenges.find(c=>c.id===id):null;
+    const html='<div class="fg"><label class="flabel">Titel *</label><input class="finput" id="ch-title" value="'+esc(ch?.title||'')+'" placeholder="z.B. 10 Minuten Bewegung"></div><div class="fr"><div class="fg"><label class="flabel">Punkte</label><input type="number" class="finput" id="ch-points" min="1" value="'+(ch?.points||10)+'"></div><div class="fg"><label class="flabel">Icon</label><input class="finput" id="ch-icon" value="'+esc(ch?.icon||'🏆')+'" placeholder="🏆"></div></div><div class="fr"><div class="fg"><label class="flabel">Challenge-Tag</label><input type="date" class="finput" id="ch-date" value="'+esc(ch?.date||ch?.startDate||dateKey(new Date()))+'"></div><div class="fg"><label class="flabel">Wiederholung</label><select class="finput" id="ch-recurrence"><option value="once" '+((ch?.recurrence||'once')==='once'?'selected':'')+'>Einmalig</option><option value="daily" '+(ch?.recurrence==='daily'?'selected':'')+'>Täglich</option></select></div></div><div class="fg"><label class="flabel">Beschreibung</label><textarea class="finput" id="ch-desc" rows="4" placeholder="Was muss erledigt werden?">'+esc(ch?.desc||'')+'</textarea></div><div class="fa"><button class="btn btn-primary" style="flex:1" onclick="saveChallenge(\''+(ch?.id||'')+'\')">'+(ch?'Aktualisieren':'Challenge speichern')+'</button>'+(ch?'<button class="btn btn-danger" onclick="deleteChallenge(\''+ch.id+'\')">Löschen</button>':'')+'</div>';
+    openPanel(ch?'Challenge bearbeiten':'Neue Challenge',html);
+  };
+  window.saveChallenge=function(existingId){
+    const title=document.getElementById('ch-title')?.value.trim(); if(!title){toast('Bitte Titel eingeben','err');return;}
+    const old=existingId?challenges.find(c=>c.id===existingId):null;
+    const ch={id:existingId||'ch_'+uid(),title,points:parseInt(document.getElementById('ch-points')?.value)||10,icon:document.getElementById('ch-icon')?.value.trim()||'🏆',desc:document.getElementById('ch-desc')?.value.trim()||'',date:document.getElementById('ch-date')?.value||dateKey(new Date()),recurrence:document.getElementById('ch-recurrence')?.value||'once',active:true,createdAt:old?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
+    const i=challenges.findIndex(c=>c.id===ch.id); if(i>=0)challenges[i]=ch; else challenges.push(ch);
+    ls('challenges',challenges); saveToDrive(); closePanel(); renderChallenges(); buildDashboard(); renderCalendar(); toast('Challenge gespeichert ✓','ok');
+  };
+  const originalCompleteChallenge=window.completeChallenge;
+  window.completeChallenge=function(id){
+    const ch=challenges.find(c=>c.id===id); if(!ch)return;
+    const dk=dateKey(new Date()), me=getCurrentPlayerId();
+    if((challengeCompletions||[]).some(c=>c.challengeId===id&&c.playerId===me&&c.date===dk)){toast('Diese Challenge ist heute schon erledigt','');return;}
+    challengeCompletions.push({id:'cc_'+uid(),challengeId:id,playerId:me,playerName:userInfo.name||userInfo.email||'Ich',date:dk,points:parseInt(ch.points)||0,createdAt:new Date().toISOString()});
+    ls('challenge_completions',challengeCompletions); saveToDrive(); renderChallenges(); buildDashboard(); renderCalendar(); toast('+'+(ch.points||0)+' Punkte ✓','ok');
+  };
+  const originalRenderUpcoming=window.renderUpcoming;
+  window.renderUpcoming=function(){
+    originalRenderUpcoming?.();
+    if(!calendarSettings.holidayNotifications) return;
+    const cont=document.getElementById('upcoming-items'); if(!cont)return;
+    const today=new Date(); const upcoming=[];
+    for(let i=0;i<=30;i++){const dk=dateKey(addDays(today,i)); getHolidaysForDate(dk).forEach(h=>upcoming.push({dk,h,d:i}));}
+    if(upcoming.length){
+      const extra=upcoming.slice(0,4).map(x=>'<div class="us-chip amber" title="'+esc(STATE_OPTIONS[calendarSettings.state]||calendarSettings.state)+'"><span>'+(x.d===0?'Heute':x.d+'T')+'</span><span>🎉 '+esc(x.h.name)+'</span></div>').join('');
+      cont.innerHTML=extra+(cont.innerHTML||'');
+    }
+  };
+  setTimeout(()=>{try{renderCalendar();}catch(e){console.warn(e)}},0);
 })();
 
 </script>
