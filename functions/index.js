@@ -11,16 +11,12 @@ function todayBerlinKey() {
 }
 
 const AUTO_POOL = [
-  { icon: '🧠', title: 'Zahlenrätsel', desc: 'Welche Zahl fehlt? 2 · 4 · 8 · 16 · ?', answer: '32', points: 8 },
-  { icon: '🔤', title: 'Wortblitz', desc: 'Nenne in 60 Sekunden 5 Wörter, die mit S anfangen.', answer: 'frei', points: 6 },
-  { icon: '🧩', title: 'Logik-Mini', desc: 'Wenn alle Blips Blops sind und alle Blops Blau sind: Sind alle Blips Blau?', answer: 'Ja', points: 8 },
-  { icon: '🏃', title: '2-Minuten-Bewegung', desc: 'Mache 20 Kniebeugen oder 2 Minuten lockere Bewegung.', answer: 'erledigt', points: 10 },
-  { icon: '🧘', title: 'Atem-Fokus', desc: 'Atme 10-mal ruhig ein und aus. Danach Challenge abhaken.', answer: 'erledigt', points: 5 },
-  { icon: '👀', title: 'Augenpause', desc: '20 Sekunden aus dem Fenster oder in die Ferne schauen.', answer: 'erledigt', points: 5 },
-  { icon: '💧', title: 'Wasser-Check', desc: 'Trinke ein Glas Wasser.', answer: 'erledigt', points: 5 },
-  { icon: '🎯', title: 'Mini-Fokus', desc: 'Räume eine kleine Sache auf deinem Tisch weg.', answer: 'erledigt', points: 7 },
-  { icon: '➕', title: 'Kopfrechnen', desc: 'Rechne ohne Taschenrechner: 17 + 28 + 9 = ?', answer: '54', points: 8 },
-  { icon: '🕵️', title: 'Muster finden', desc: 'Was kommt als nächstes: A, C, F, J, O, ?', answer: 'U', points: 10 }
+  { icon: '🏋️', title: '10 Kniebeugen', desc: 'Mache 10 saubere Kniebeugen. Langsam runter, stabil hoch.', points: 10 },
+  { icon: '💪', title: '10 Wand-Liegestütze', desc: 'Mache 10 leichte Liegestütze an der Wand oder am Tisch.', points: 10 },
+  { icon: '🧘', title: '60 Sekunden Dehnen', desc: 'Dehne Schultern, Rücken oder Beine für 60 Sekunden.', points: 8 },
+  { icon: '🚶', title: '3 Minuten gehen', desc: 'Gehe 3 Minuten locker durch den Raum oder draußen.', points: 8 },
+  { icon: '⏱️', title: '20 Sekunden Plank', desc: 'Halte 20 Sekunden Unterarmstütz. Alternative: Knie am Boden.', points: 12 },
+  { icon: '🙆', title: 'Nacken lockern', desc: 'Rolle Schultern 10-mal und neige den Kopf sanft nach links/rechts.', points: 6 }
 ];
 
 function seededIndex(dk, offset) {
@@ -35,7 +31,7 @@ function dailyChallenges(dk) {
     return {
       id: `auto_${dk}_${i}`,
       title: c.title,
-      desc: c.desc + (c.answer && c.answer !== 'erledigt' ? `\nAntwort: ${c.answer}` : ''),
+      desc: c.desc,
       points: c.points,
       icon: c.icon,
       date: dk,
@@ -73,7 +69,7 @@ exports.createDailyChallengesAndPush = onSchedule({
 
   const players = await db.collection('change_players').where('pushEnabled', '==', true).get();
   const tokens = players.docs.map(d => d.data().fcmToken).filter(Boolean);
-  await sendToTokens(tokens, 'Change: heutige Mini-Challenges', '3 kleine Rätsel/Trainingsübungen warten auf dich.');
+  await sendToTokens(tokens, 'Change: heutige Sport-Challenges', '3 kleine Sportübungen warten heute auf dich.');
 });
 
 exports.pushWhenChallengeCreated = onDocumentCreated({

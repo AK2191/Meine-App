@@ -1,12 +1,20 @@
-CHANGE Update
-================
-Diese Version enthält:
-- robustere App-Installation: automatischer Dialog, sonst klare Anleitung für iPhone/Android/Desktop
-- Push-Hinweise, wenn Benachrichtigungen im Browser blockiert sind
-- iPhone-Hinweis: Push geht nur als Home-Bildschirm-App
-- sichtbarer Regler für tägliche Auto-Challenges (AKTIV/INAKTIV)
-- Test-Benachrichtigung Button
-- Service Worker wird direkt über firebase-messaging-sw.js registriert
+CHANGE – Upload-Paket
 
-GitHub Upload:
-index.html, firebase-config.js, firebase-messaging-sw.js, manifest.json, icon-192.png, icon-512.png hochladen/ersetzen.
+GitHub Pages Upload:
+- index.html
+- firebase-config.js
+- firebase-messaging-sw.js
+- manifest.json
+- icon-192.png
+- icon-512.png
+
+Neu in dieser Version:
+- Google-Kalender-Sync robuster: neue und bearbeitete Termine werden synchronisiert, Standard-Endzeit wird gesetzt.
+- Demo-Nutzer wird im echten Kontest ausgeblendet; nur im Demo-Modus sichtbar.
+- Auto-Challenges bestehen nur noch aus kleinen Sportübungen.
+- Kontest zeigt pro Nutzer: heutige Punkte und Gesamtpunkte.
+- Klick auf einen Kontest-Nutzer zeigt, was heute erledigt wurde.
+
+Für automatische Hintergrund-Pushs:
+- Ordner functions per Firebase deployen.
+- functions/index.js erzeugt jetzt nur kleine Sportübungen.
