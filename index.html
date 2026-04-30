@@ -2876,5 +2876,152 @@ document.addEventListener('touchend',e=>{
 })();
 </script>
 
+<script>
+/* CHANGE FINAL PATCH: Contest ohne Demo, Challenge-Erledigt-Status, Kalenderpunkte, Dashboard Heute */
+(function(){
+  function safeEl(id){ return document.getElementById(id); }
+  function lc(v){ return String(v||'').trim().toLowerCase(); }
+  function isDemoIdentity(v){ const x=lc(v && (v.email||v.id||v.name||v.playerId||v.userEmail||v)); return !x || x==='demo' || x==='demo@example.com' || x==='demo@change-app.de' || x.includes('demo nutzer') || x.includes('demo-user'); }
+  function currentId(){
+    try { if(typeof getCurrentPlayerId==='function') return lc(getCurrentPlayerId()); } catch(e){}
+    return lc((window.userInfo&&userInfo.email) || (firebase?.auth?.().currentUser?.email) || '');
+  }
+  function today(){ return typeof dateKey==='function' ? dateKey(new Date()) : new Date().toISOString().slice(0,10); }
+  function eventDate(ev){ return ev?.date || ev?.dateKey || ev?.startDate || (ev?.start?.date) || (ev?.start?.dateTime ? String(ev.start.dateTime).substring(0,10) : ''); }
+  function eventTitle(ev){ return ev?.title || ev?.summary || '(Kein Titel)'; }
+  function eventTime(ev){
+    if(ev?.time) return ev.time;
+    if(ev?.timeStart) return ev.timeStart;
+    if(ev?.start?.dateTime) return new Date(ev.start.dateTime).toTimeString().substring(0,5);
+    return '';
+  }
+  function escSafe(s){ return typeof esc==='function' ? esc(s) : String(s||'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+  function fmtSafe(d){ return typeof fmtDate==='function' ? fmtDate(d) : d; }
+  function daysSafe(d){ return typeof daysUntil==='function' ? daysUntil(d) : Math.round((new Date(d+'T12:00:00') - new Date(new Date().toDateString()))/86400000); }
+
+  /* lokale Demo-Reste aus echtem Konto entfernen */
+  window.removeDemoFromContest = function(){
+    if(window.isDemoMode) return;
+    if(Array.isArray(window.challengePlayers)) {
+      window.challengePlayers = challengePlayers.filter(p=>!isDemoIdentity(p));
+      try { if(typeof ls==='function') ls('challenge_players', window.challengePlayers); } catch(e){}
+    }
+  };
+
+  const oldGetVisibleContestPlayers = window.getVisibleContestPlayers;
+  window.getVisibleContestPlayers = function(){
+    removeDemoFromContest();
+    let players = [];
+    try { players = oldGetVisibleContestPlayers ? oldGetVisibleContestPlayers() : (window.challengePlayers||[]); } catch(e){ players = window.challengePlayers||[]; }
+    const seen = new Set();
+    return (players||[]).filter(p=>window.isDemoMode || !isDemoIdentity(p)).filter(p=>{
+      const k = lc(p.email||p.id||p.name);
+      if(!k || seen.has(k)) return false;
+      seen.add(k); return true;
+    });
+  };
+
+  window.isChallengeDoneToday = function(chId){
+    const me=currentId(), td=today();
+    return (window.challengeCompletions||[]).some(c =>
+      c.challengeId===chId && c.date===td && (lc(c.playerId)===me || lc(c.userEmail)===me || lc(c.email)===me)
+    );
+  };
+
+  window.getPlayerPointSummary = function(playerId){
+    const id=lc(playerId), td=today();
+    const out={totalPoints:0,totalCount:0,todayPoints:0,todayCount:0,todayItems:[]};
+    (window.challengeCompletions||[]).forEach(c=>{
+      const cid = lc(c.playerId || c.userEmail || c.email);
+      if(cid!==id) return;
+      const ch=(window.challenges||[]).find(x=>x.id===c.challengeId);
+      const pts=parseInt(c.points ?? ch?.points ?? 0,10)||0;
+      out.totalPoints+=pts; out.totalCount+=1;
+      if(c.date===td){ out.todayPoints+=pts; out.todayCount+=1; out.todayItems.push({title:ch?.title||c.challengeId||'Challenge',icon:ch?.icon||'✅',points:pts,url:ch?.url||''}); }
+    });
+    return out;
+  };
+
+  window.completeChallenge = function(id){
+    const ch=(window.challenges||[]).find(x=>x.id===id);
+    if(!ch){ if(typeof toast==='function') toast('Challenge nicht gefunden','err'); return; }
+    if(isChallengeDoneToday(id)){ if(typeof toast==='function') toast('Diese Challenge ist heute schon erledigt',''); if(typeof renderChallenges==='function') renderChallenges(); return; }
+    const me=currentId();
+    const entry={
+      id:'cc_'+(typeof uid==='function'?uid():Date.now()), challengeId:id, playerId:me, userEmail:me,
+      playerName:(window.userInfo&&userInfo.name)||me||'Ich', date:today(), points:parseInt(ch.points,10)||0,
+      createdAt:new Date().toISOString()
+    };
+    window.challengeCompletions = window.challengeCompletions || [];
+    window.challengeCompletions.push(entry);
+    try { if(typeof ls==='function') ls('challenge_completions', challengeCompletions); } catch(e){}
+    try { if(typeof persistChangeState==='function') persistChangeState(); } catch(e){}
+    try { if(typeof renderChallenges==='function') renderChallenges(); } catch(e){}
+    try { if(typeof renderCalendar==='function') renderCalendar(); } catch(e){}
+    try { if(typeof buildDashboard==='function') buildDashboard(); } catch(e){}
+    if(typeof toast==='function') toast('+'+(ch.points||0)+' Punkte ✓','ok');
+  };
+
+  window.renderChallenges = function(){
+    try { if(typeof ensureDailyAutoChallenges==='function') ensureDailyAutoChallenges(); } catch(e){}
+    removeDemoFromContest();
+    const list=safeEl('challenges-list'), board=safeEl('leaderboard-list'); if(!list||!board) return;
+    const active=(window.challenges||[]).filter(c=>c.active!==false && (c.type==='Sport' || /^sport_|^auto_.*_sport_/.test(c.id||'') || !c.type));
+    list.innerHTML=active.length ? active.map(ch=>{
+      const done=isChallengeDoneToday(ch.id);
+      const link=ch.url?'<a href="'+escSafe(ch.url)+'" target="_blank" rel="noopener" class="challenge-meta" onclick="event.stopPropagation()">So geht die Übung</a>':'';
+      return '<div class="challenge-item '+(done?'challenge-done':'')+'" data-challenge-id="'+escSafe(ch.id)+'"><div class="challenge-icon">'+escSafe(ch.icon||'🏃')+'</div><div class="challenge-body"><div class="challenge-name">'+escSafe(ch.title||ch.name||'Challenge')+'</div><div class="challenge-meta">'+escSafe(ch.desc||'')+' · '+escSafe(ch.level||'leicht')+' · '+(ch.points||0)+' Punkte '+(done?'· ✅ heute erledigt':'')+'</div>'+link+'</div><span class="points-pill">'+(done?'✓ ':'+')+(ch.points||0)+'</span><button class="btn '+(done?'btn-success':'btn-primary')+' btn-sm" onclick="completeChallenge(\''+escSafe(ch.id)+'\')">'+(done?'Erledigt':'Erledigen')+'</button></div>';
+    }).join('') : '<div class="empty-state"><div class="empty-title">Keine Challenges</div><div class="empty-sub">Lege eine Challenge an oder aktiviere Auto-Challenges.</div></div>';
+    const players=getVisibleContestPlayers();
+    players.sort((a,b)=>getPlayerPointSummary(lc(b.email||b.id)).totalPoints-getPlayerPointSummary(lc(a.email||a.id)).totalPoints);
+    board.innerHTML=players.length ? players.map((p,idx)=>{
+      const id=lc(p.email||p.id); const st=getPlayerPointSummary(id); const me=id===currentId(); const medal=idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':(idx+1); const live=p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>';
+      return '<div class="leader-row clickable" onclick="openContestUserDetails(\''+escSafe(id)+'\')"><div class="leader-rank">'+medal+'</div><div><div class="leader-name">'+escSafe(p.name||p.email||'Mitspieler')+(me?' · Du':'')+live+'</div><div class="leader-detail">Heute: '+st.todayPoints+' P · Gesamt: '+st.totalPoints+' P · '+st.totalCount+' erledigt</div></div><div class="leader-score">'+st.totalPoints+'</div></div>';
+    }).join('') : '<div class="dash-empty">Noch keine Mitspieler. Demo wird im echten Konto ausgeblendet.</div>';
+  };
+
+  window.getAllEvents = function(){
+    const out=[];
+    (window.events||[]).forEach(ev=>{ const d=eventDate(ev); if(d) out.push(Object.assign({},ev,{date:d,title:eventTitle(ev),time:eventTime(ev)})); });
+    (window.gEvents||[]).forEach(ge=>{ const d=eventDate(ge); if(d) out.push({id:String(ge.id||'').startsWith('g_')?ge.id:'g_'+ge.id,title:eventTitle(ge),date:d,time:eventTime(ge),color:'blue',type:'meeting',desc:ge.description||'',allDay:!!ge.start?.date,source:'google',notifDaysBefore:1}); });
+    return out;
+  };
+
+  window.addCalendarPointBadges=function(){
+    document.querySelectorAll('.challenge-points-badge').forEach(x=>x.remove());
+    const sums={};
+    (window.challengeCompletions||[]).forEach(c=>{ const d=c.date; if(!d) return; sums[d]=(sums[d]||0)+(parseInt(c.points,10)||0); });
+    document.querySelectorAll('#month-grid .day-cell').forEach(cell=>{
+      const num=parseInt(cell.querySelector('.day-num')?.textContent||'',10); if(!num) return;
+      const label=safeEl('month-label')?.textContent||''; const ym=label.match(/(Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember)\s+(\d{4})/); if(!ym) return;
+      const months=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+      const d=(typeof dateKey==='function')?dateKey(new Date(parseInt(ym[2],10), months.indexOf(ym[1]), num)):'';
+      if(sums[d]){ const b=document.createElement('div'); b.className='challenge-points-badge'; b.textContent='+'+sums[d]+'P'; cell.appendChild(b); }
+    });
+  };
+  const oldRenderCalendar=window.renderCalendar;
+  window.renderCalendar=function(){ if(typeof oldRenderCalendar==='function') oldRenderCalendar.apply(this,arguments); setTimeout(addCalendarPointBadges,0); };
+
+  if(!safeEl('challenge-final-style')){ const st=document.createElement('style'); st.id='challenge-final-style'; st.textContent='.challenge-item.challenge-done{border-color:rgba(52,211,153,.45)!important;background:rgba(52,211,153,.07)!important}.challenge-item.challenge-done .challenge-name{color:var(--grn)!important}.challenge-points-badge{position:absolute;right:5px;bottom:4px;font-size:9px;font-weight:800;color:var(--grn);background:rgba(52,211,153,.14);border:1px solid rgba(52,211,153,.25);border-radius:999px;padding:1px 5px;pointer-events:none}'; document.head.appendChild(st); }
+
+  window.buildDashCards=function(){
+    const all=getAllEvents(); const td=today();
+    const todayEvents=all.filter(e=>eventDate(e)===td).sort((a,b)=>(eventTime(a)||'99:99').localeCompare(eventTime(b)||'99:99'));
+    const upcoming=all.filter(e=>{const d=daysSafe(eventDate(e));return d>=0&&d<=14;}).sort((a,b)=>eventDate(a).localeCompare(eventDate(b))||(eventTime(a)||'').localeCompare(eventTime(b)||'')).slice(0,6);
+    function row(ev, forceToday){ const diff=daysSafe(eventDate(ev)); const lbl=forceToday||diff===0?'Heute':diff===1?'Morgen':'in '+diff+'T'; const bc=diff===0?'badge-red':diff<=3?'badge-amber':'badge-blue'; return '<div class="dash-row" onclick="setMainView(\'calendar\')"><div class="dash-row-icon" style="background:var(--acc-d)">📅</div><div class="dash-row-body"><div class="dash-row-title">'+escSafe(eventTitle(ev))+'</div><div class="dash-row-sub">'+fmtSafe(eventDate(ev))+(eventTime(ev)?' · '+eventTime(ev):'')+'</div></div><span class="dash-row-badge '+bc+'">'+lbl+'</span></div>'; }
+    const todayHtml=todayEvents.length?todayEvents.map(e=>row(e,true)).join(''):'<div class="dash-empty">Heute keine Termine gefunden</div>';
+    const upcomingHtml=upcoming.length?upcoming.map(e=>row(e,false)).join(''):'<div class="dash-empty">Keine Termine in den nächsten 14 Tagen</div>';
+    let contest='<div class="dash-empty">Noch keine Challenge-Punkte</div>';
+    try{ const players=getVisibleContestPlayers(); players.sort((a,b)=>getPlayerPointSummary(lc(b.email||b.id)).totalPoints-getPlayerPointSummary(lc(a.email||a.id)).totalPoints); contest=players.slice(0,5).map((p,idx)=>{const id=lc(p.email||p.id); const st=getPlayerPointSummary(id); return '<div class="dash-row" onclick="setMainView(\'challenges\')"><div class="dash-row-icon" style="background:var(--amb-d)">'+(idx+1)+'</div><div class="dash-row-body"><div class="dash-row-title">'+escSafe(p.name||p.email||'Mitspieler')+'</div><div class="dash-row-sub">Heute '+st.todayPoints+' P · Gesamt '+st.totalPoints+' P</div></div><span class="dash-row-badge badge-green">'+st.totalCount+'x</span></div>';}).join('')||contest;}catch(e){}
+    const grid=safeEl('dash-grid'); if(!grid) return;
+    grid.innerHTML='<div class="dash-card"><div class="dash-card-head"><div><div class="dash-card-title">📅 Heute</div><div class="dash-card-sub">Deine heutigen Termine</div></div><button class="btn btn-ghost btn-sm" onclick="setMainView(\'calendar\')">Kalender →</button></div><div class="dash-card-body">'+todayHtml+'</div></div><div class="dash-card"><div class="dash-card-head"><div><div class="dash-card-title">⏭️ Demnächst</div><div class="dash-card-sub">Nächste 14 Tage</div></div></div><div class="dash-card-body">'+upcomingHtml+'</div></div><div class="dash-card"><div class="dash-card-head"><div><div class="dash-card-title">🏆 Challenge-Kontest</div><div class="dash-card-sub">Ohne Demo-Teilnehmer</div></div><button class="btn btn-ghost btn-sm" onclick="setMainView(\'challenges\')">Öffnen →</button></div><div class="dash-card-body">'+contest+'</div></div>';
+  };
+
+  const oldBuildDashboard=window.buildDashboard;
+  window.buildDashboard=function(){ try{ if(typeof buildKPIs==='function') buildKPIs(); }catch(e){} buildDashCards(); };
+  window.addEventListener('load',()=>setTimeout(()=>{ try{removeDemoFromContest(); if(typeof renderChallenges==='function')renderChallenges(); if(typeof renderCalendar==='function')renderCalendar(); if(typeof buildDashboard==='function')buildDashboard();}catch(e){} },900));
+})();
+</script>
+
 </body>
 </html>
