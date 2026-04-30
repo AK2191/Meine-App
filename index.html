@@ -2417,5 +2417,13 @@ window.handleGoogleLogin = async function () {
   }
 };
 </script>
+   <script>
+/* CHANGE HOTFIX: fehlende Kalender-Hilfsfunktion */
+if (typeof window.wrapWeekRow !== "function") {
+  window.wrapWeekRow = function (html) {
+    return '<div class="week-row">' + html + '</div>';
+  };
+}
+</script>
 </body>
 </html>
