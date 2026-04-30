@@ -12,4 +12,4 @@ self.FIREBASE_CONFIG = window.FIREBASE_CONFIG = {
 
 // Wichtig: Diesen Key noch in Firebase erzeugen und hier ersetzen:
 // Firebase Console → Projekteinstellungen → Cloud Messaging → Web Push certificates → Key pair erzeugen
-self.FIREBASE_VAPID_KEY = window.FIREBASE_VAPID_KEY = "HIER_WEB_PUSH_VAPID_KEY_EINTRAGEN";
+self.FIREBASE_VAPID_KEY = window.FIREBASE_VAPID_KEY = "BIQdYqHQAHiNzvmptyTCaYgHIjDV_LCnjdwApSV6T3jLF_SEQG66VkF-LD055p5eIBM9zdFh_tpLsIQzLmesA9Q";
