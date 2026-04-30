@@ -1,0 +1,2250 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="theme-color" content="#080c18">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ProCal">
+<title>ProCal · Workspace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async></script>
+<style>
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   PROCAL v2 · DESIGN SYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+:root{
+  --bg:#080c18; --bg2:#0d1222; --bg3:#111827;
+  --s1:#151d2e; --s2:#1c2640; --s3:#243050;
+  --b1:rgba(255,255,255,.07); --b2:rgba(255,255,255,.13); --b3:rgba(255,255,255,.22);
+  --acc:#4f7dff; --acc-h:#6994ff; --acc-d:rgba(79,125,255,.14); --acc-d2:rgba(79,125,255,.07);
+  --grn:#34d399; --grn-d:rgba(52,211,153,.13);
+  --amb:#f59e0b; --amb-d:rgba(245,158,11,.13);
+  --red:#f87171; --red-d:rgba(248,113,113,.13);
+  --pur:#a78bfa; --pur-d:rgba(167,139,250,.13);
+  --t1:#f1f5f9; --t2:#94a3b8; --t3:#64748b; --t4:#475569; --t5:#334155;
+  --font:'DM Sans',system-ui,sans-serif;
+  --mono:'DM Mono',monospace;
+  --r:10px; --rsm:6px; --rlg:16px; --rxl:22px;
+  --sh:0 4px 24px rgba(0,0,0,.45);
+  --sh-lg:0 20px 64px rgba(0,0,0,.65);
+  --nav-h:58px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{height:100%;height:-webkit-fill-available}
+body{
+  font-family:var(--font);background:var(--bg);color:var(--t1);
+  height:100%;min-height:100vh;min-height:-webkit-fill-available;
+  overflow:hidden;-webkit-font-smoothing:antialiased;line-height:1.5;
+}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--s3);border-radius:10px}
+#app{display:flex;flex-direction:column;height:100vh;height:-webkit-fill-available}
+
+/* ── LOADING ── */
+#loading{
+  position:fixed;inset:0;background:var(--bg);z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  transition:opacity .4s;
+}
+.ld-icon{
+  width:60px;height:60px;border-radius:18px;
+  background:linear-gradient(135deg,var(--acc),var(--pur));
+  display:flex;align-items:center;justify-content:center;
+  animation:ld-pulse 2s ease-in-out infinite;
+}
+.ld-icon svg{width:30px;height:30px;stroke:white;stroke-width:2}
+@keyframes ld-pulse{0%,100%{box-shadow:0 0 0 0 rgba(79,125,255,.4)}50%{box-shadow:0 0 0 14px rgba(79,125,255,0)}}
+.ld-text{font-size:13px;color:var(--t3);font-weight:500}
+
+/* ── SETUP MODAL ── */
+#setup-modal{
+  display:none;position:fixed;inset:0;z-index:800;
+  background:rgba(0,0,0,.75);backdrop-filter:blur(8px);
+  align-items:center;justify-content:center;padding:20px;
+}
+#setup-modal.show{display:flex}
+.modal-box{
+  background:var(--s1);border:1px solid var(--b2);
+  border-radius:var(--rxl);padding:36px 32px;
+  width:min(520px,100%);box-shadow:var(--sh-lg);
+}
+.modal-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 10px;border-radius:20px;
+  background:var(--acc-d);border:1px solid rgba(79,125,255,.2);
+  font-size:11px;font-weight:700;color:var(--acc);
+  text-transform:uppercase;letter-spacing:.7px;margin-bottom:16px;
+}
+.modal-h{font-size:22px;font-weight:800;color:var(--t1);margin-bottom:8px;letter-spacing:-.4px}
+.modal-sub{font-size:14px;color:var(--t3);line-height:1.6;margin-bottom:28px}
+.setup-steps{display:flex;flex-direction:column;gap:14px;margin-bottom:24px}
+.step{display:flex;gap:12px;align-items:flex-start}
+.step-n{
+  width:26px;height:26px;border-radius:50%;flex-shrink:0;
+  background:var(--acc-d);border:1px solid rgba(79,125,255,.25);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;color:var(--acc);margin-top:1px;
+}
+.step-t{font-size:13px;color:var(--t2);line-height:1.55}
+.step-t strong{color:var(--t1)}
+.step-t code{font-family:var(--mono);font-size:11.5px;background:var(--s2);padding:1px 6px;border-radius:4px;color:var(--acc);}
+.fl-input{
+  width:100%;background:var(--s2);border:1px solid var(--b2);
+  border-radius:var(--r);padding:11px 13px;
+  font-family:var(--font);font-size:14px;color:var(--t1);
+  outline:none;transition:border-color .15s;
+}
+.fl-input:focus{border-color:var(--acc);background:var(--s3)}
+.fl-input::placeholder{color:var(--t4)}
+.fl-label{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:block}
+.fl-group{margin-bottom:14px}
+.btn-row{display:flex;gap:8px;margin-top:4px}
+
+/* ── BUTTONS ── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  padding:10px 18px;border-radius:var(--r);border:none;
+  font-family:var(--font);font-size:14px;font-weight:600;
+  cursor:pointer;transition:all .15s;white-space:nowrap;line-height:1;
+}
+.btn-primary{background:var(--acc);color:#fff}
+.btn-primary:hover{background:var(--acc-h);transform:translateY(-1px);box-shadow:0 6px 20px rgba(79,125,255,.4)}
+.btn-secondary{background:var(--s2);color:var(--t2);border:1px solid var(--b2)}
+.btn-secondary:hover{background:var(--s3);color:var(--t1)}
+.btn-ghost{background:transparent;color:var(--t3);border:1px solid var(--b1)}
+.btn-ghost:hover{border-color:var(--b2);color:var(--t2)}
+.btn-danger{background:var(--red-d);color:var(--red)}
+.btn-danger:hover{background:rgba(248,113,113,.25)}
+.btn-success{background:var(--grn-d);color:var(--grn)}
+.btn-success:hover{background:rgba(52,211,153,.22)}
+.btn-full{width:100%}
+.btn svg{width:15px;height:15px;stroke-width:2;flex-shrink:0}
+.btn-sm{padding:6px 11px;font-size:12px;border-radius:var(--rsm)}
+
+/* ── LOGIN ── */
+#login-screen{
+  display:none;flex-direction:column;align-items:center;
+  justify-content:center;height:100%;padding:24px;
+  background:radial-gradient(ellipse 60% 50% at 20% 40%,rgba(79,125,255,.12) 0%,transparent 70%),
+    radial-gradient(ellipse 50% 40% at 80% 70%,rgba(167,139,250,.08) 0%,transparent 60%),var(--bg);
+}
+.login-card{
+  width:min(420px,100%);background:var(--s1);border:1px solid var(--b2);
+  border-radius:28px;padding:48px 40px;box-shadow:var(--sh-lg);text-align:center;
+}
+@media(max-width:480px){.login-card{padding:36px 28px;border-radius:24px}}
+.login-logo{
+  width:68px;height:68px;border-radius:20px;
+  background:linear-gradient(135deg,var(--acc),var(--pur));
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 24px;box-shadow:0 12px 36px rgba(79,125,255,.35);
+}
+.login-logo svg{width:34px;height:34px;stroke:white;stroke-width:1.8}
+.login-h{font-size:30px;font-weight:800;letter-spacing:-.6px;color:var(--t1);margin-bottom:8px}
+.login-sub{font-size:15px;color:var(--t3);line-height:1.65;margin-bottom:36px}
+.google-btn{
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  width:100%;padding:14px 20px;
+  background:var(--s2);border:1px solid var(--b2);border-radius:var(--r);
+  font-family:var(--font);font-size:15px;font-weight:600;color:var(--t1);
+  cursor:pointer;transition:all .2s;margin-bottom:10px;
+}
+.google-btn:hover{background:var(--s3);border-color:var(--b3);transform:translateY(-1px);box-shadow:var(--sh)}
+.google-btn svg{width:20px;height:20px;flex-shrink:0}
+.demo-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:12px 20px;
+  background:transparent;border:1px solid var(--b1);border-radius:var(--r);
+  font-family:var(--font);font-size:14px;color:var(--t4);cursor:pointer;transition:all .15s;
+}
+.demo-btn:hover{border-color:var(--b2);color:var(--t3)}
+.login-note{margin-top:22px;font-size:12px;color:var(--t5);line-height:1.5}
+
+/* ── MAIN APP ── */
+#main-app{display:none;flex-direction:column;height:100%;overflow:hidden}
+
+/* ── HEADER ── */
+#header{
+  display:flex;align-items:center;gap:12px;padding:0 16px;
+  height:58px;flex-shrink:0;
+  background:rgba(8,12,24,.88);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--b1);z-index:100;position:relative;
+}
+.h-logo{display:flex;align-items:center;gap:9px;flex-shrink:0}
+.h-logo-icon{
+  width:34px;height:34px;border-radius:10px;
+  background:linear-gradient(135deg,var(--acc),var(--pur));
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.h-logo-icon svg{width:18px;height:18px;stroke:white;stroke-width:2}
+.h-logo-name{font-size:17px;font-weight:800;color:var(--t1);letter-spacing:-.3px}
+.h-sep{width:1px;height:22px;background:var(--b2);flex-shrink:0}
+
+/* Desktop Tab Nav in header */
+.h-tabs{display:flex;align-items:center;gap:2px;flex:1}
+.h-tab{
+  display:flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:var(--rsm);border:none;
+  font-family:var(--font);font-size:13px;font-weight:600;
+  color:var(--t4);background:transparent;cursor:pointer;transition:all .15s;
+}
+.h-tab:hover{background:var(--s1);color:var(--t2)}
+.h-tab.active{background:var(--acc-d);color:var(--acc)}
+.h-tab svg{width:14px;height:14px;stroke-width:2;flex-shrink:0}
+
+/* Cal controls (only show in calendar view) */
+#cal-controls{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.h-nav-btn{
+  width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+  border:none;background:var(--s1);border-radius:var(--rsm);
+  cursor:pointer;color:var(--t3);transition:all .15s;flex-shrink:0;
+}
+.h-nav-btn:hover{background:var(--s2);color:var(--t1)}
+.h-nav-btn svg{width:15px;height:15px;stroke-width:2.2}
+.h-month{
+  font-size:15px;font-weight:800;color:var(--t1);
+  padding:0 8px;white-space:nowrap;letter-spacing:-.3px;cursor:pointer;
+}
+.h-today-btn{
+  padding:5px 10px;border:1px solid var(--b2);border-radius:var(--rsm);
+  background:transparent;font-family:var(--font);font-size:12px;
+  font-weight:600;color:var(--t3);cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.h-today-btn:hover{background:var(--s1);color:var(--t1)}
+.view-toggle{
+  display:flex;background:var(--s1);border-radius:var(--rsm);padding:2px;gap:2px;flex-shrink:0;
+}
+.vbtn{
+  padding:5px 10px;border:none;border-radius:4px;
+  font-family:var(--font);font-size:12px;font-weight:600;
+  color:var(--t4);cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.vbtn.active{background:var(--acc);color:#fff}
+
+.h-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.icon-btn{
+  width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+  border:none;background:transparent;border-radius:var(--rsm);
+  cursor:pointer;color:var(--t3);transition:all .15s;position:relative;
+}
+.icon-btn:hover{background:var(--s1);color:var(--t1)}
+.icon-btn svg{width:18px;height:18px;stroke-width:1.8}
+.notif-dot{
+  position:absolute;top:5px;right:5px;width:7px;height:7px;
+  background:var(--red);border-radius:50%;border:1.5px solid var(--bg);
+  display:none;animation:ndot 2s ease-in-out infinite;
+}
+@keyframes ndot{0%,100%{opacity:1}50%{opacity:.5}}
+.avatar{
+  width:33px;height:33px;border-radius:50%;
+  background:linear-gradient(135deg,var(--acc),var(--pur));
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:800;color:white;cursor:pointer;
+  overflow:hidden;flex-shrink:0;border:2px solid var(--b2);transition:border-color .15s;
+}
+.avatar:hover{border-color:var(--b3)}
+.avatar img{width:100%;height:100%;object-fit:cover}
+
+@media(max-width:700px){
+  .h-sep,.h-logo-name,.h-today-btn,.view-toggle,.h-tabs,.desktop-only{display:none!important}
+  #header{padding:0 12px;gap:8px}
+  #cal-controls{flex:1}
+  .h-month{font-size:15px;flex:1;text-align:center}
+}
+
+/* ── MAIN CONTENT AREA ── */
+#content{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+
+/* ── CALENDAR ── */
+#cal-body{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.wday-row{
+  display:grid;grid-template-columns:repeat(7,1fr);
+  background:var(--bg2);border-bottom:1px solid var(--b1);flex-shrink:0;
+}
+.wday-cell{
+  padding:9px 6px;text-align:center;
+  font-size:11px;font-weight:700;color:var(--t5);
+  letter-spacing:.6px;text-transform:uppercase;
+}
+#month-grid{flex:1;display:grid;grid-template-rows:repeat(6,1fr);overflow:hidden;}
+.week-row{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--b1)}
+.week-row:last-child{border-bottom:none}
+.day-cell{
+  border-right:1px solid var(--b1);padding:5px 5px 4px;
+  display:flex;flex-direction:column;gap:2px;
+  overflow:hidden;cursor:pointer;transition:background .1s;min-height:0;
+}
+.day-cell:last-child{border-right:none}
+.day-cell:hover{background:var(--s1)}
+.day-cell.other{opacity:.3}
+.day-cell.today .day-num-wrap{background:var(--acc);color:white;border-radius:50%;box-shadow:0 4px 12px rgba(79,125,255,.45);}
+.day-num-wrap{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.day-num{font-size:12px;font-weight:700;color:var(--t3);font-family:var(--mono);line-height:1;}
+.day-cell.today .day-num{color:white}
+.day-cell.weekend .day-num{color:var(--t4)}
+.ev-chip{
+  font-size:10.5px;font-weight:500;padding:2px 5px;border-radius:4px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  cursor:pointer;transition:opacity .1s;flex-shrink:0;
+}
+.ev-chip:hover{opacity:.8}
+.ev-chip.blue{background:rgba(79,125,255,.22);color:#7fa8ff}
+.ev-chip.green{background:rgba(52,211,153,.18);color:#6ee7b7}
+.ev-chip.amber{background:rgba(245,158,11,.18);color:#fcd34d}
+.ev-chip.red{background:rgba(248,113,113,.18);color:#fca5a5}
+.ev-chip.purple{background:rgba(167,139,250,.18);color:#c4b5fd}
+.more-chip{font-size:9.5px;color:var(--t5);padding:1px 3px}
+
+/* ── AGENDA ── */
+#agenda-view{display:none;flex:1;overflow-y:auto;padding:16px}
+.ag-group{margin-bottom:24px}
+.ag-header{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.ag-day-num{font-size:36px;font-weight:900;color:var(--t1);line-height:1;font-family:var(--mono);letter-spacing:-2.5px;}
+.ag-day-num.today{color:var(--acc)}
+.ag-day-info{display:flex;flex-direction:column}
+.ag-weekday{font-size:14px;font-weight:700;color:var(--t1)}
+.ag-month-yr{font-size:12px;color:var(--t4)}
+.ag-events{display:flex;flex-direction:column;gap:7px;padding-left:50px}
+.ag-card{
+  background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);
+  padding:12px 14px;display:flex;gap:12px;align-items:flex-start;
+  cursor:pointer;transition:all .15s;position:relative;overflow:hidden;
+}
+.ag-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:2px 0 0 2px}
+.ag-card.blue::before{background:var(--acc)}
+.ag-card.green::before{background:var(--grn)}
+.ag-card.amber::before{background:var(--amb)}
+.ag-card.red::before{background:var(--red)}
+.ag-card.purple::before{background:var(--pur)}
+.ag-card:hover{border-color:var(--b2);transform:translateX(3px)}
+.ag-time{font-size:12px;color:var(--t4);font-family:var(--mono);white-space:nowrap;min-width:72px;padding-top:1px}
+.ag-body{flex:1;min-width:0}
+.ag-title{font-size:14px;font-weight:700;color:var(--t1);margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ag-desc{font-size:12px;color:var(--t4);line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.urgency-badge{font-size:10px;font-weight:700;padding:3px 7px;border-radius:20px;white-space:nowrap;flex-shrink:0;margin-top:1px;}
+.ub-crit{background:var(--red-d);color:var(--red)}
+.ub-warn{background:var(--amb-d);color:var(--amb)}
+.ub-ok{background:var(--grn-d);color:var(--grn)}
+
+/* ── UPCOMING STRIP ── */
+#upcoming-strip{
+  height:44px;background:var(--bg2);border-top:1px solid var(--b1);
+  display:flex;align-items:center;gap:10px;padding:0 14px;flex-shrink:0;overflow:hidden;
+}
+.us-label{font-size:10px;font-weight:700;color:var(--t5);text-transform:uppercase;letter-spacing:.6px;flex-shrink:0}
+.us-items{display:flex;gap:7px;overflow-x:auto;flex:1;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.us-items::-webkit-scrollbar{display:none}
+.us-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 10px;border-radius:20px;white-space:nowrap;
+  font-size:12px;font-weight:600;flex-shrink:0;cursor:pointer;transition:opacity .1s;
+}
+.us-chip:hover{opacity:.8}
+.us-chip.blue{background:var(--acc-d);color:#7fa8ff}
+.us-chip.green{background:var(--grn-d);color:#6ee7b7}
+.us-chip.amber{background:var(--amb-d);color:#fcd34d}
+.us-chip.red{background:var(--red-d);color:#fca5a5}
+.us-chip.purple{background:var(--pur-d);color:#c4b5fd}
+
+/* ── DASHBOARD ── */
+#dashboard-view{display:none;flex:1;overflow-y:auto;padding:20px 20px 28px;}
+.dash-hello{margin-bottom:24px}
+.dash-hello h1{font-size:24px;font-weight:800;color:var(--t1);letter-spacing:-.5px;margin-bottom:4px}
+.dash-hello p{font-size:14px;color:var(--t3)}
+.kpi-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;
+}
+@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.kpi-grid{grid-template-columns:repeat(2,1fr);gap:8px}}
+.kpi-card{
+  background:var(--s1);border:1px solid var(--b1);border-radius:var(--rlg);
+  padding:18px 16px 14px;cursor:pointer;transition:all .15s;
+  display:flex;flex-direction:column;gap:0;
+}
+.kpi-card:hover{border-color:var(--b2);transform:translateY(-2px);box-shadow:var(--sh)}
+.kpi-card.warn{border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.04)}
+.kpi-card.danger{border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.04)}
+.kpi-card.good{border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.04)}
+.kpi-icon-wrap{
+  width:38px;height:38px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;margin-bottom:14px;
+}
+.kpi-icon-wrap.blue{background:var(--acc-d)}
+.kpi-icon-wrap.green{background:var(--grn-d)}
+.kpi-icon-wrap.amber{background:var(--amb-d)}
+.kpi-icon-wrap.red{background:var(--red-d)}
+.kpi-icon-wrap.purple{background:var(--pur-d)}
+.kpi-icon-wrap svg{width:19px;height:19px;stroke-width:1.8}
+.kpi-icon-wrap.blue svg{stroke:var(--acc)}
+.kpi-icon-wrap.green svg{stroke:var(--grn)}
+.kpi-icon-wrap.amber svg{stroke:var(--amb)}
+.kpi-icon-wrap.red svg{stroke:var(--red)}
+.kpi-icon-wrap.purple svg{stroke:var(--pur)}
+.kpi-num{font-size:32px;font-weight:900;color:var(--t1);line-height:1;letter-spacing:-1.5px;margin-bottom:4px;font-family:var(--mono)}
+.kpi-num.warn-color{color:var(--amb)}
+.kpi-num.danger-color{color:var(--red)}
+.kpi-num.good-color{color:var(--grn)}
+.kpi-label{font-size:11px;color:var(--t4);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:800px){.dash-grid{grid-template-columns:1fr}}
+
+.dash-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rlg);overflow:hidden}
+.dash-card-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-bottom:1px solid var(--b1);
+}
+.dash-card-title{font-size:14px;font-weight:700;color:var(--t1)}
+.dash-card-sub{font-size:12px;color:var(--t4)}
+.dash-card-body{max-height:260px;overflow-y:auto}
+.dash-row{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 16px;border-bottom:1px solid var(--b1);
+  cursor:pointer;transition:background .1s;
+}
+.dash-row:last-child{border-bottom:none}
+.dash-row:hover{background:var(--s2)}
+.dash-row-icon{width:32px;height:32px;border-radius:var(--rsm);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px}
+.dash-row-body{flex:1;min-width:0}
+.dash-row-title{font-size:13px;font-weight:600;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dash-row-sub{font-size:11.5px;color:var(--t4)}
+.dash-row-badge{
+  font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;
+  white-space:nowrap;flex-shrink:0;
+}
+.badge-red{background:var(--red-d);color:var(--red)}
+.badge-amber{background:var(--amb-d);color:var(--amb)}
+.badge-green{background:var(--grn-d);color:var(--grn)}
+.badge-blue{background:var(--acc-d);color:var(--acc)}
+.badge-gray{background:var(--s2);color:var(--t4)}
+.dash-empty{padding:20px 16px;font-size:13px;color:var(--t5);text-align:center}
+
+/* ── RECHNUNGEN / VERTRÄGE VIEWS ── */
+#invoices-view,#contracts-view{display:none;flex:1;overflow:hidden;flex-direction:column}
+.list-header{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 18px;border-bottom:1px solid var(--b1);flex-shrink:0;
+}
+.list-title{font-size:17px;font-weight:800;color:var(--t1);letter-spacing:-.3px;flex:1}
+.filter-row{
+  display:flex;gap:6px;padding:10px 18px;border-bottom:1px solid var(--b1);
+  overflow-x:auto;flex-shrink:0;scrollbar-width:none;
+}
+.filter-row::-webkit-scrollbar{display:none}
+.filter-pill{
+  padding:5px 13px;border-radius:20px;border:1px solid var(--b1);
+  font-family:var(--font);font-size:12px;font-weight:600;color:var(--t4);
+  background:transparent;cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.filter-pill:hover{border-color:var(--b2);color:var(--t2)}
+.filter-pill.active{background:var(--acc-d);border-color:rgba(79,125,255,.3);color:var(--acc)}
+.list-body{flex:1;overflow-y:auto;padding:14px 18px}
+.list-item{
+  background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);
+  padding:14px 16px;margin-bottom:8px;cursor:pointer;transition:all .15s;
+  display:flex;align-items:flex-start;gap:12px;position:relative;
+}
+.list-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px}
+.list-item.status-offen::before{background:var(--amb)}
+.list-item.status-bezahlt::before{background:var(--grn)}
+.list-item.status-überfällig::before,.list-item.status-ueberfaellig::before{background:var(--red)}
+.list-item.status-aktiv::before{background:var(--grn)}
+.list-item.status-abgelaufen::before{background:var(--red)}
+.list-item.status-gekündigt::before{background:var(--t4)}
+.list-item:hover{border-color:var(--b2);transform:translateX(2px)}
+.list-item-icon{width:38px;height:38px;border-radius:var(--rsm);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
+.list-item-body{flex:1;min-width:0}
+.list-item-title{font-size:14px;font-weight:700;color:var(--t1);margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.list-item-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.list-item-sub{font-size:12px;color:var(--t4)}
+.list-item-amount{font-size:15px;font-weight:800;color:var(--t1);font-family:var(--mono);flex-shrink:0;text-align:right}
+.list-item-amount-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.has-note-dot{
+  width:6px;height:6px;border-radius:50%;background:var(--acc);
+  display:inline-block;margin-left:4px;vertical-align:middle;
+}
+
+/* ── PANEL / SIDE ── */
+#panel-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.55);
+  z-index:300;opacity:0;pointer-events:none;transition:opacity .3s;
+}
+#panel-overlay.show{opacity:1;pointer-events:all}
+#side-panel{
+  position:fixed;right:0;top:0;bottom:0;width:min(440px,100vw);
+  background:var(--s1);border-left:1px solid var(--b2);
+  z-index:301;display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .3s cubic-bezier(.25,.8,.25,1);
+  box-shadow:var(--sh-lg);
+}
+#side-panel.open{transform:translateX(0)}
+.panel-hd{
+  display:flex;align-items:center;gap:10px;
+  padding:16px 18px;border-bottom:1px solid var(--b1);flex-shrink:0;
+}
+.panel-title{font-size:16px;font-weight:800;color:var(--t1);flex:1;letter-spacing:-.2px}
+.panel-close-btn{
+  width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+  border:none;background:var(--s2);border-radius:var(--rsm);
+  cursor:pointer;color:var(--t3);transition:all .15s;
+}
+.panel-close-btn:hover{background:var(--s3);color:var(--t1)}
+.panel-close-btn svg{width:16px;height:16px;stroke-width:2.2}
+.panel-body{flex:1;overflow-y:auto;padding:18px}
+
+/* ── FORM ── */
+.fg{margin-bottom:14px}
+.flabel{
+  display:block;font-size:11px;font-weight:700;color:var(--t4);
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;
+}
+.finput{
+  width:100%;background:var(--s2);border:1px solid var(--b2);
+  border-radius:var(--rsm);padding:10px 12px;
+  font-family:var(--font);font-size:14px;color:var(--t1);
+  outline:none;transition:border-color .15s,background .15s;
+  appearance:none;-webkit-appearance:none;
+}
+.finput:focus{border-color:var(--acc);background:var(--s3)}
+.finput::placeholder{color:var(--t5)}
+.finput[type=date]{cursor:pointer;color-scheme:dark}
+select.finput{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2364748b'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 11px center;padding-right:30px;cursor:pointer;
+}
+textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
+.fr{display:flex;gap:8px}.fr .fg{flex:1}
+.color-row{display:flex;gap:7px;flex-wrap:wrap}
+.col-dot{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;transition:all .15s;}
+.col-dot:hover,.col-dot.sel{border-color:var(--t1);transform:scale(1.15)}
+.fa{display:flex;gap:8px;padding-top:14px;border-top:1px solid var(--b1);margin-top:4px;}
+.note-box{
+  background:var(--s2);border:1px solid var(--b2);border-radius:var(--r);
+  padding:12px 14px;margin-bottom:12px;
+}
+.note-box-label{font-size:11px;font-weight:700;color:var(--acc);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.note-box-label svg{width:13px;height:13px;stroke:var(--acc);stroke-width:2}
+.note-display{font-size:13px;color:var(--t2);line-height:1.6;white-space:pre-wrap;word-break:break-word}
+
+.divider{height:1px;background:var(--b1);margin:14px 0}
+.section-label{font-size:11px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+
+/* ── PANEL NOTIF ── */
+.panel-notif-section{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:12px 14px;margin-bottom:12px;}
+.pns-title{font-size:11px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.nitem{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--b1);cursor:pointer;transition:opacity .1s;}
+.nitem:last-child{border-bottom:none}
+.nitem:hover{opacity:.8}
+.nitem-icon{width:38px;height:38px;border-radius:var(--rsm);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.nitem-body{flex:1;min-width:0}
+.nitem-title{font-size:13px;font-weight:700;color:var(--t1);margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nitem-sub{font-size:11.5px;color:var(--t4);line-height:1.4}
+.nitem-badge{font-size:11px;font-weight:700;padding:2px 7px;border-radius:20px;flex-shrink:0;margin-top:1px}
+.notif-pill{display:flex;align-items:center;gap:10px;background:var(--acc-d);border:1px solid rgba(79,125,255,.2);border-radius:var(--r);padding:12px 14px;margin-top:12px;}
+.np-body{flex:1}
+.np-title{font-size:12px;font-weight:700;color:var(--acc);margin-bottom:2px}
+.np-sub{font-size:11.5px;color:var(--t4)}
+
+/* ── EMPTY STATE ── */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:56px 20px;text-align:center;}
+.empty-icon{width:56px;height:56px;border-radius:16px;background:var(--s2);display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
+.empty-icon svg{width:28px;height:28px;stroke:var(--t4);stroke-width:1.5}
+.empty-title{font-size:16px;font-weight:700;color:var(--t3);margin-bottom:4px}
+.empty-sub{font-size:13px;color:var(--t5);line-height:1.6}
+
+/* ── BOTTOM NAV ── */
+#bottom-nav{
+  display:none;background:rgba(8,12,24,.92);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:1px solid var(--b1);flex-shrink:0;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media(max-width:700px){#bottom-nav{display:block}}
+.bnav-inner{display:flex;align-items:stretch;height:var(--nav-h)}
+.bnav-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;cursor:pointer;color:var(--t5);transition:color .15s;
+  border:none;background:transparent;font-family:var(--font);padding:6px 4px;
+}
+.bnav-item.active{color:var(--acc)}
+.bnav-item svg{width:21px;height:21px;stroke-width:1.7}
+.bnav-label{font-size:10px;font-weight:600}
+
+/* ── FAB ── */
+#fab{
+  position:fixed;bottom:calc(var(--nav-h) + 14px + env(safe-area-inset-bottom,0px));right:16px;
+  width:50px;height:50px;border-radius:50%;
+  background:linear-gradient(135deg,var(--acc),#6366f1);
+  display:none;align-items:center;justify-content:center;
+  cursor:pointer;border:none;z-index:200;
+  box-shadow:0 6px 24px rgba(79,125,255,.55);
+  transition:transform .2s,box-shadow .2s;
+}
+#fab:hover,#fab:active{transform:scale(1.1)}
+#fab svg{width:22px;height:22px;stroke:white;stroke-width:2.2}
+@media(max-width:700px){#fab{display:flex}}
+
+/* ── TOAST ── */
+#toast-wrap{
+  position:fixed;bottom:calc(var(--nav-h) + 12px + env(safe-area-inset-bottom,0px));
+  left:50%;transform:translateX(-50%);
+  z-index:900;display:flex;flex-direction:column;gap:6px;pointer-events:none;align-items:center;
+}
+@media(min-width:701px){#toast-wrap{bottom:24px}}
+.toast{
+  background:var(--s3);border:1px solid var(--b2);border-radius:10px;
+  padding:10px 18px;font-size:13px;font-weight:600;color:var(--t1);
+  box-shadow:var(--sh);white-space:nowrap;
+  animation:tin .25s ease;pointer-events:none;
+}
+.toast.ok{border-color:rgba(52,211,153,.35);color:var(--grn)}
+.toast.err{border-color:rgba(248,113,113,.35);color:var(--red)}
+@keyframes tin{from{opacity:0;transform:translateY(8px) scale(.95)}to{opacity:1;transform:none}}
+
+/* ── DRIVE STATUS ── */
+#drive-status{
+  position:fixed;top:66px;right:14px;z-index:500;
+  background:var(--s1);border:1px solid var(--b2);border-radius:var(--r);
+  padding:8px 14px;font-size:12px;color:var(--t3);font-weight:600;
+  display:none;align-items:center;gap:7px;box-shadow:var(--sh);
+}
+#drive-status svg{width:13px;height:13px;stroke:var(--acc);stroke-width:2;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:480px){
+  .day-cell{padding:3px 3px 2px}
+  .day-num-wrap{width:22px;height:22px}
+  .day-num{font-size:10.5px}
+  .ev-chip{font-size:9px;padding:1px 4px}
+  .kpi-num{font-size:26px}
+  #dashboard-view{padding:14px 14px 24px}
+  .list-header,.filter-row,.list-body{padding-left:14px;padding-right:14px}
+}
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading">
+  <div class="ld-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/>
+      <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+  </div>
+  <div class="ld-text">ProCal wird geladen…</div>
+</div>
+
+<!-- Setup Modal -->
+<div id="setup-modal">
+  <div class="modal-box">
+    <div class="modal-badge">⚙ Einmalige Einrichtung</div>
+    <div class="modal-h">Google API konfigurieren</div>
+    <div class="modal-sub">Für Google-Login, Kalender &amp; Drive-Speicher bitte einmalig eine OAuth Client-ID eintragen.</div>
+    <div class="setup-steps">
+      <div class="step"><div class="step-n">1</div><div class="step-t">Öffne <strong>console.cloud.google.com</strong> → Projekt erstellen</div></div>
+      <div class="step"><div class="step-n">2</div><div class="step-t">APIs aktivieren: <strong>Google Calendar API</strong> + <strong>Google Drive API</strong></div></div>
+      <div class="step"><div class="step-n">3</div><div class="step-t">Anmeldedaten → OAuth 2.0 → <strong>Web-Anwendung</strong> → Ihre Domain eintragen</div></div>
+      <div class="step"><div class="step-n">4</div><div class="step-t">Client-ID kopieren (endet auf <code>.apps.googleusercontent.com</code>)</div></div>
+    </div>
+    <div class="fl-group">
+      <label class="fl-label">Google OAuth Client-ID</label>
+      <input type="text" class="fl-input" id="client-id-input" placeholder="1234567890-xxxx.apps.googleusercontent.com">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" style="flex:1" onclick="saveClientId()">Speichern &amp; Starten</button>
+      <button class="btn btn-ghost" onclick="startDemo()">Demo-Modus</button>
+    </div>
+  </div>
+</div>
+
+<!-- Drive Status -->
+<div id="drive-status">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+  Google Drive wird gespeichert…
+</div>
+
+<!-- Panel overlay -->
+<div id="panel-overlay" onclick="closePanel()"></div>
+
+<!-- Side Panel -->
+<div id="side-panel">
+  <div class="panel-hd">
+    <div class="panel-title" id="panel-title">Panel</div>
+    <button class="panel-close-btn" onclick="closePanel()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="panel-body" id="panel-body"></div>
+</div>
+
+<!-- Toast -->
+<div id="toast-wrap"></div>
+
+<!-- ═══ APP ═══ -->
+<div id="app">
+
+  <!-- Login -->
+  <div id="login-screen">
+    <div class="login-card">
+      <div class="login-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <rect x="3" y="4" width="18" height="18" rx="3"/>
+          <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+      </div>
+      <div class="login-h">ProCal</div>
+      <div class="login-sub">Ihr professioneller Workspace für Kalender, Rechnungen &amp; Verträge – mit Google-Synchronisation.</div>
+      <button class="google-btn" onclick="handleGoogleLogin()">
+        <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Mit Google anmelden
+      </button>
+      <button class="demo-btn" onclick="startDemo()">Demo ohne Anmeldung starten</button>
+      <div class="login-note">Rechnungen &amp; Verträge werden in Ihrem Google Drive gespeichert. Keine externe Serverspeicherung.</div>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div id="main-app">
+
+    <!-- Header -->
+    <div id="header">
+      <div class="h-logo">
+        <div class="h-logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <span class="h-logo-name">ProCal</span>
+      </div>
+      <div class="h-sep"></div>
+      <!-- Desktop Tabs -->
+      <div class="h-tabs">
+        <button class="h-tab active" id="htab-dashboard" onclick="setMainView('dashboard')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </button>
+        <button class="h-tab" id="htab-calendar" onclick="setMainView('calendar')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Kalender
+        </button>
+        <button class="h-tab" id="htab-invoices" onclick="setMainView('invoices')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Rechnungen
+        </button>
+        <button class="h-tab" id="htab-contracts" onclick="setMainView('contracts')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Verträge
+        </button>
+      </div>
+
+      <!-- Cal controls (only shown in calendar) -->
+      <div id="cal-controls" style="display:none">
+        <button class="h-nav-btn" onclick="navigate(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <span class="h-month" id="month-label" onclick="goToday()">Mai 2025</span>
+        <button class="h-nav-btn" onclick="navigate(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 18 15 12 9 6"/></svg></button>
+        <button class="h-today-btn" onclick="goToday()">Heute</button>
+        <div class="view-toggle">
+          <button class="vbtn active" id="vbtn-month" onclick="setCalView('month')">Monat</button>
+          <button class="vbtn" id="vbtn-agenda" onclick="setCalView('agenda')">Agenda</button>
+        </div>
+      </div>
+
+      <div class="h-right">
+        <button class="icon-btn" onclick="openNotifPanel()" title="Benachrichtigungen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <div class="notif-dot" id="notif-dot"></div>
+        </button>
+        <div class="avatar" id="user-avatar" onclick="confirmLogout()" title="Abmelden">
+          <span id="avatar-initials">?</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div id="content">
+
+      <!-- DASHBOARD -->
+      <div id="dashboard-view">
+        <div class="dash-hello">
+          <h1 id="dash-greeting">Guten Tag</h1>
+          <p id="dash-sub">Ihr persönlicher Überblick</p>
+        </div>
+        <div class="kpi-grid" id="kpi-grid"></div>
+        <div class="dash-grid" id="dash-grid"></div>
+      </div>
+
+      <!-- CALENDAR -->
+      <div id="cal-body" style="display:none">
+        <div class="wday-row" id="wday-row">
+          <div class="wday-cell">Mo</div><div class="wday-cell">Di</div>
+          <div class="wday-cell">Mi</div><div class="wday-cell">Do</div>
+          <div class="wday-cell">Fr</div>
+          <div class="wday-cell">Sa</div><div class="wday-cell">So</div>
+        </div>
+        <div id="month-grid"></div>
+        <div id="agenda-view"></div>
+        <div id="upcoming-strip">
+          <span class="us-label">Demnächst</span>
+          <div class="us-items" id="upcoming-items"><span style="font-size:12px;color:var(--t5)">Keine anstehenden Termine</span></div>
+        </div>
+      </div>
+
+      <!-- RECHNUNGEN -->
+      <div id="invoices-view">
+        <div class="list-header">
+          <div class="list-title">Rechnungen</div>
+          <button class="btn btn-primary btn-sm" onclick="openInvoicePanel(null)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Neu
+          </button>
+        </div>
+        <div class="filter-row" id="inv-filter-row">
+          <button class="filter-pill active" onclick="filterInvoices('alle',this)">Alle</button>
+          <button class="filter-pill" onclick="filterInvoices('offen',this)">Offen</button>
+          <button class="filter-pill" onclick="filterInvoices('überfällig',this)">Überfällig</button>
+          <button class="filter-pill" onclick="filterInvoices('bezahlt',this)">Bezahlt</button>
+        </div>
+        <div class="list-body" id="invoices-list"></div>
+      </div>
+
+      <!-- VERTRÄGE -->
+      <div id="contracts-view">
+        <div class="list-header">
+          <div class="list-title">Verträge</div>
+          <button class="btn btn-primary btn-sm" onclick="openContractPanel(null)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Neu
+          </button>
+        </div>
+        <div class="filter-row">
+          <button class="filter-pill active" onclick="filterContracts('alle',this)">Alle</button>
+          <button class="filter-pill" onclick="filterContracts('aktiv',this)">Aktiv</button>
+          <button class="filter-pill" onclick="filterContracts('abgelaufen',this)">Abgelaufen</button>
+          <button class="filter-pill" onclick="filterContracts('gekündigt',this)">Gekündigt</button>
+        </div>
+        <div class="list-body" id="contracts-list"></div>
+      </div>
+
+    </div><!-- /content -->
+
+    <!-- Bottom Nav -->
+    <div id="bottom-nav">
+      <div class="bnav-inner">
+        <button class="bnav-item" id="bnav-dashboard" onclick="setMainView('dashboard')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          <span class="bnav-label">Dashboard</span>
+        </button>
+        <button class="bnav-item" id="bnav-calendar" onclick="setMainView('calendar')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span class="bnav-label">Kalender</span>
+        </button>
+        <button class="bnav-item" id="bnav-invoices" onclick="setMainView('invoices')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+          <span class="bnav-label">Rechnungen</span>
+        </button>
+        <button class="bnav-item" id="bnav-contracts" onclick="setMainView('contracts')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+          <span class="bnav-label">Verträge</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- FAB (context-sensitive) -->
+    <button id="fab" onclick="fabAction()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+
+  </div><!-- /main-app -->
+</div><!-- /app -->
+
+<script>
+'use strict';
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   CONSTANTS & STATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const VER = '2.0';
+const LSK = 'procal_v2';
+const GCAL_SCOPE = [
+  'https://www.googleapis.com/auth/calendar',
+  'https://www.googleapis.com/auth/drive.file',
+  'https://www.googleapis.com/auth/userinfo.profile',
+  'https://www.googleapis.com/auth/userinfo.email'
+].join(' ');
+
+const DE_MONTHS = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const DE_MONTHS_S = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+const DE_DAYS_F = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+
+let CLIENT_ID = '';
+let accessToken = '';
+let userInfo = {};
+let isDemoMode = false;
+let currentMainView = 'dashboard';
+let currentCalView = 'month';
+let curDate = new Date();
+
+// Data
+let events = [];
+let gEvents = [];
+let invoices = [];
+let contracts = [];
+let notifications = [];
+
+// Drive file IDs
+let driveFileId = null;
+
+// Filter state
+let invFilter = 'alle';
+let conFilter = 'alle';
+
+/* ── LOCAL STORAGE ── */
+const ls = (k,v) => {
+  if(v===undefined){try{return JSON.parse(localStorage.getItem(LSK+'_'+k));}catch{return null;}}
+  try{localStorage.setItem(LSK+'_'+k,JSON.stringify(v));}catch{}
+};
+const lsDel = k => {try{localStorage.removeItem(LSK+'_'+k);}catch{}};
+
+/* ── DATE HELPERS ── */
+const pad = n => String(n).padStart(2,'0');
+const dateKey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const isToday = d => {const t=new Date();return d.getFullYear()===t.getFullYear()&&d.getMonth()===t.getMonth()&&d.getDate()===t.getDate();};
+const daysUntil = dk => {if(!dk)return 999;const d=new Date(dk+'T12:00:00'),t=new Date();t.setHours(0,0,0,0);d.setHours(0,0,0,0);return Math.round((d-t)/86400000);};
+const fmtDate = dk => {if(!dk)return'—';const d=new Date(dk+'T12:00:00');return`${d.getDate()}. ${DE_MONTHS_S[d.getMonth()]} ${d.getFullYear()}`;};
+const fmtMoney = v => {if(!v&&v!==0)return'—';return Number(v).toLocaleString('de-DE',{style:'currency',currency:'EUR'});};
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const uid = () => Math.random().toString(36).substring(2,10)+Date.now().toString(36);
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   INIT
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+window.addEventListener('load', async () => {
+  await new Promise(r => setTimeout(r,700));
+
+  CLIENT_ID = ls('client_id') || '';
+  accessToken = ls('access_token') || '';
+  userInfo = ls('user_info') || {};
+  events = ls('events') || [];
+  invoices = ls('invoices') || [];
+  contracts = ls('contracts') || [];
+  driveFileId = ls('drive_file_id') || null;
+
+  if(ls('demo_mode')){
+    startDemoInternal();
+  } else if(accessToken && userInfo.email){
+    bootMainApp();
+    loadGoogleData();
+  } else if(CLIENT_ID){
+    showLogin();
+  } else {
+    hideLd();
+    document.getElementById('setup-modal').classList.add('show');
+  }
+  initPWA();
+  scheduleNotifCheck();
+});
+
+function hideLd(){
+  const el=document.getElementById('loading');
+  el.style.opacity='0';
+  setTimeout(()=>el.style.display='none',400);
+}
+
+/* ── PWA ── */
+function initPWA(){
+  if(!('serviceWorker' in navigator))return;
+  const sw=`self.addEventListener('install',()=>self.skipWaiting());self.addEventListener('activate',e=>e.waitUntil(clients.claim()));self.addEventListener('fetch',e=>e.respondWith(fetch(e.request).catch(()=>new Response(''))));`;
+  const blob=new Blob([sw],{type:'application/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SETUP & AUTH
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function saveClientId(){
+  const v=document.getElementById('client-id-input').value.trim();
+  if(!v||!v.includes('.apps.googleusercontent.com')){toast('Bitte eine gültige Client-ID eingeben','err');return;}
+  CLIENT_ID=v; ls('client_id',v);
+  document.getElementById('setup-modal').classList.remove('show');
+  showLogin();
+}
+
+function startDemo(){
+  document.getElementById('setup-modal').classList.remove('show');
+  startDemoInternal();
+}
+
+function showLogin(){
+  hideLd();
+  document.getElementById('login-screen').style.display='flex';
+}
+
+function handleGoogleLogin(){
+  if(!CLIENT_ID){document.getElementById('setup-modal').classList.add('show');return;}
+  if(!window.google){toast('Google-Bibliothek wird geladen…','');return;}
+  try{
+    const tc=google.accounts.oauth2.initTokenClient({
+      client_id:CLIENT_ID,
+      scope:GCAL_SCOPE,
+      callback: async resp => {
+        if(resp.error){toast('Anmeldung fehlgeschlagen: '+resp.error,'err');return;}
+        accessToken=resp.access_token;
+        ls('access_token',accessToken);
+        await fetchUserInfo();
+        bootMainApp();
+        loadGoogleData();
+      }
+    });
+    tc.requestAccessToken();
+  }catch(e){toast('Google-Anmeldung konnte nicht gestartet werden','err');}
+}
+
+async function fetchUserInfo(){
+  try{
+    const r=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{'Authorization':'Bearer '+accessToken}});
+    if(!r.ok)return;
+    const u=await r.json();
+    userInfo={name:u.name||u.email,email:u.email,picture:u.picture||''};
+    ls('user_info',userInfo);
+  }catch{}
+}
+
+/* ── DEMO ── */
+function startDemoInternal(){
+  isDemoMode=true; ls('demo_mode',true);
+  userInfo={name:'Demo Nutzer',email:'demo@example.com',picture:''};
+  if(!events.length) events=buildDemoEvents();
+  if(!invoices.length) invoices=buildDemoInvoices();
+  if(!contracts.length) contracts=buildDemoContracts();
+  ls('events',events); ls('invoices',invoices); ls('contracts',contracts);
+  bootMainApp();
+}
+
+function buildDemoEvents(){
+  const b=new Date(),y=b.getFullYear(),m=b.getMonth(),d=b.getDate();
+  const mk=offset=>{const dd=new Date(y,m,d+offset);return dateKey(dd);};
+  return[
+    {id:'d1',title:'Vertrag läuft ab: Müller GmbH',date:mk(3),color:'red',type:'deadline',desc:'Verlängerung prüfen',notifDaysBefore:7,allDay:true,source:'local',createdAt:new Date().toISOString()},
+    {id:'d2',title:'Team-Meeting',date:mk(1),time:'10:00',color:'blue',type:'meeting',desc:'Wöchentliches Update',notifDaysBefore:1,allDay:false,source:'local',createdAt:new Date().toISOString()},
+    {id:'d3',title:'Rechnung fällig: Weber AG',date:mk(5),color:'amber',type:'billing',desc:'RE-2024-0045',notifDaysBefore:3,allDay:true,source:'local',createdAt:new Date().toISOString()},
+    {id:'d4',title:'Kundengespräch Hoffmann',date:mk(12),time:'14:00',color:'purple',type:'meeting',desc:'Neukunde – Erstgespräch',notifDaysBefore:1,allDay:false,source:'local',createdAt:new Date().toISOString()},
+  ];
+}
+
+function buildDemoInvoices(){
+  const b=new Date(),y=b.getFullYear(),m=b.getMonth(),d=b.getDate();
+  const mk=offset=>{const dd=new Date(y,m,d+offset);return dateKey(dd);};
+  return[
+    {id:'i1',title:'Website Redesign Phase 1',partner:'Müller GmbH',amount:4800,date:mk(-20),dueDate:mk(-5),status:'überfällig',note:'Bitte dringend nachfassen! Zweite Mahnung wurde bereits versandt.',createdAt:new Date().toISOString()},
+    {id:'i2',title:'Beratungsleistung März',partner:'Weber AG',amount:1950,date:mk(-10),dueDate:mk(5),status:'offen',note:'Zahlungsziel 14 Tage. Erstkontakt war sehr positiv.',createdAt:new Date().toISOString()},
+    {id:'i3',title:'Softwarelizenz Q1',partner:'Schmidt & Co KG',amount:890,date:mk(-45),dueDate:mk(-30),status:'bezahlt',note:'Bezahlt per Überweisung. Beleg liegt vor.',createdAt:new Date().toISOString()},
+    {id:'i4',title:'IT-Support Pauschal',partner:'Fischer Holding',amount:2200,date:mk(-2),dueDate:mk(28),status:'offen',note:'',createdAt:new Date().toISOString()},
+  ];
+}
+
+function buildDemoContracts(){
+  const b=new Date(),y=b.getFullYear(),m=b.getMonth(),d=b.getDate();
+  const mk=offset=>{const dd=new Date(y,m,d+offset);return dateKey(dd);};
+  return[
+    {id:'c1',title:'Wartungsvertrag Server-Infrastruktur',partner:'TechServ GmbH',startDate:mk(-365),endDate:mk(14),amount:3600,period:'jährlich',status:'aktiv',note:'Automatische Verlängerung um 1 Jahr wenn nicht bis 30 Tage vorher gekündigt! Ansprechpartner: Hr. Bauer, 089-12345.',createdAt:new Date().toISOString()},
+    {id:'c2',title:'Softwarepflegevertrag ERP',partner:'SAP Partner AG',startDate:mk(-200),endDate:mk(165),amount:8400,period:'jährlich',status:'aktiv',note:'Inkl. 10 Support-Stunden/Monat. Nicht genutztes Kontingent verfällt.',createdAt:new Date().toISOString()},
+    {id:'c3',title:'Büroraummiete',partner:'Immo Verwaltung GmbH',startDate:mk(-730),endDate:mk(-30),amount:1800,period:'monatlich',status:'abgelaufen',note:'Umzug erfolgt. Kaution von 5.400€ noch ausstehend.',createdAt:new Date().toISOString()},
+    {id:'c4',title:'Rahmenvertrag Beratung',partner:'Hoffmann Consulting',startDate:mk(-100),endDate:mk(265),amount:0,period:'',status:'aktiv',note:'Stundensatz: 150€/h netto. Abruf nach Bedarf.',createdAt:new Date().toISOString()},
+  ];
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   BOOT
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function bootMainApp(){
+  hideLd();
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('main-app').style.display='flex';
+
+  const initials=(userInfo.name||'?').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase();
+  const av=document.getElementById('user-avatar');
+  if(userInfo.picture){
+    av.innerHTML=`<img src="${esc(userInfo.picture)}" alt="" onerror="this.parentElement.innerHTML='<span id=avatar-initials>${initials}</span>'">`;
+  }else{
+    av.innerHTML=`<span id="avatar-initials">${initials}</span>`;
+  }
+
+  setMainView('dashboard');
+  checkNotifications();
+  reqNotifPermission();
+
+  // Greeting
+  const h=new Date().getHours();
+  const gr=h<12?'Guten Morgen':h<18?'Guten Tag':'Guten Abend';
+  const name=userInfo.name?userInfo.name.split(' ')[0]:'';
+  document.getElementById('dash-greeting').textContent=`${gr}${name?', '+name:''}`;
+  document.getElementById('dash-sub').textContent=`${new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'})} · Ihr persönlicher Überblick`;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   MAIN VIEW CONTROLLER
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function setMainView(v){
+  currentMainView=v;
+  const views=['dashboard','calendar','invoices','contracts'];
+  views.forEach(vv=>{
+    const el=document.getElementById(vv==='calendar'?'cal-body':vv+'-view');
+    if(el) el.style.display='none';
+  });
+
+  // Show active
+  if(v==='calendar'){
+    document.getElementById('cal-body').style.display='flex';
+    document.getElementById('cal-controls').style.display='flex';
+    renderCalendar();
+    renderUpcoming();
+  } else {
+    document.getElementById('cal-controls').style.display='none';
+    if(v==='dashboard'){
+      document.getElementById('dashboard-view').style.display='block';
+      buildDashboard();
+    } else if(v==='invoices'){
+      document.getElementById('invoices-view').style.display='flex';
+      renderInvoices();
+    } else if(v==='contracts'){
+      document.getElementById('contracts-view').style.display='flex';
+      renderContracts();
+    }
+  }
+
+  // Desktop tabs
+  document.querySelectorAll('.h-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('htab-'+v)?.classList.add('active');
+
+  // Mobile nav
+  document.querySelectorAll('.bnav-item').forEach(t=>t.classList.remove('active'));
+  document.getElementById('bnav-'+v)?.classList.add('active');
+}
+
+function fabAction(){
+  if(currentMainView==='calendar') openEventPanel(null);
+  else if(currentMainView==='invoices') openInvoicePanel(null);
+  else if(currentMainView==='contracts') openContractPanel(null);
+  else openEventPanel(null);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   DASHBOARD
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function buildDashboard(){
+  buildKPIs();
+  buildDashCards();
+}
+
+function buildKPIs(){
+  const now=new Date();
+  const allEvs=getAllEvents();
+  const upcoming7=allEvs.filter(e=>{const d=daysUntil(e.date);return d>=0&&d<=7;}).length;
+  const openInv=invoices.filter(i=>i.status==='offen').length;
+  const overdueInv=invoices.filter(i=>i.status==='überfällig'||isOverdue(i)).length;
+  const expContracts=contracts.filter(c=>c.status==='aktiv'&&daysUntil(c.endDate)>=0&&daysUntil(c.endDate)<=30).length;
+
+  const totalOpen=invoices.filter(i=>i.status==='offen'||i.status==='überfällig').reduce((s,i)=>s+(parseFloat(i.amount)||0),0);
+
+  document.getElementById('kpi-grid').innerHTML=`
+    <div class="kpi-card${upcoming7>0?' warn':''}" onclick="setMainView('calendar')">
+      <div class="kpi-icon-wrap blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+      <div class="kpi-num${upcoming7>0?' warn-color':''}">${upcoming7}</div>
+      <div class="kpi-label">Termine diese Woche</div>
+    </div>
+    <div class="kpi-card${overdueInv>0?' danger':''}" onclick="setMainView('invoices');filterInvoices('überfällig',null)">
+      <div class="kpi-icon-wrap ${overdueInv>0?'red':'green'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+      <div class="kpi-num${overdueInv>0?' danger-color':''}">${overdueInv}</div>
+      <div class="kpi-label">Überfällige Rechnungen</div>
+    </div>
+    <div class="kpi-card" onclick="setMainView('invoices')">
+      <div class="kpi-icon-wrap amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+      <div class="kpi-num" style="font-size:${totalOpen>9999?'22px':totalOpen>999?'26px':'32px'}">${totalOpen>0?fmtMoney(totalOpen).replace(' €',''):'0'}</div>
+      <div class="kpi-label">Offener Betrag (€)</div>
+    </div>
+    <div class="kpi-card${expContracts>0?' warn':''}" onclick="setMainView('contracts')">
+      <div class="kpi-icon-wrap ${expContracts>0?'amber':'purple'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      <div class="kpi-num${expContracts>0?' warn-color':''}">${expContracts}</div>
+      <div class="kpi-label">Verträge laufen ab (30T)</div>
+    </div>
+  `;
+}
+
+function buildDashCards(){
+  // Upcoming events
+  const allEvs=getAllEvents();
+  const upcoming=allEvs.filter(e=>daysUntil(e.date)>=0&&daysUntil(e.date)<=14).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,5);
+  const evIcons={deadline:'⚠️',billing:'💰',meeting:'📅',reminder:'🔔',other:'📌'};
+
+  let evHtml='';
+  if(!upcoming.length){evHtml=`<div class="dash-empty">Keine Termine in den nächsten 14 Tagen</div>`;}
+  else upcoming.forEach(ev=>{
+    const diff=daysUntil(ev.date);
+    const lbl=diff===0?'Heute':diff===1?'Morgen':`in ${diff}T`;
+    const bc=diff===0?'badge-red':diff<=3?'badge-amber':'badge-blue';
+    evHtml+=`<div class="dash-row" onclick="setMainView('calendar');setTimeout(()=>openEventPanel('${ev.id}'),200)">
+      <div class="dash-row-icon" style="background:var(--${ev.color==='blue'?'acc':ev.color==='green'?'grn':ev.color==='amber'?'amb':ev.color==='red'?'red':'pur'}-d)">${evIcons[ev.type]||'📅'}</div>
+      <div class="dash-row-body">
+        <div class="dash-row-title">${esc(ev.title)}</div>
+        <div class="dash-row-sub">${fmtDate(ev.date)}${ev.time?' · '+ev.time:''}</div>
+      </div>
+      <span class="dash-row-badge ${bc}">${lbl}</span>
+    </div>`;
+  });
+
+  // Invoices (open/overdue)
+  const pendingInv=invoices.filter(i=>i.status==='offen'||i.status==='überfällig').sort((a,b)=>(a.dueDate||'').localeCompare(b.dueDate||'')).slice(0,5);
+  let invHtml='';
+  if(!pendingInv.length){invHtml=`<div class="dash-empty">Keine offenen Rechnungen 🎉</div>`;}
+  else pendingInv.forEach(inv=>{
+    const diff=daysUntil(inv.dueDate);
+    const overdue=inv.status==='überfällig'||diff<0;
+    const bc=overdue?'badge-red':diff<=7?'badge-amber':'badge-gray';
+    const lbl=overdue?'Überfällig':diff===0?'Heute fällig':diff<=7?`${diff}T fällig`:'';
+    invHtml+=`<div class="dash-row" onclick="setMainView('invoices');setTimeout(()=>openInvoicePanel('${inv.id}'),200)">
+      <div class="dash-row-icon" style="background:var(--${overdue?'red':'amb'}-d)">🧾</div>
+      <div class="dash-row-body">
+        <div class="dash-row-title">${esc(inv.title)}${inv.note?'<span class="has-note-dot"></span>':''}</div>
+        <div class="dash-row-sub">${esc(inv.partner||'')}${inv.amount?' · '+fmtMoney(inv.amount):''}</div>
+      </div>
+      ${lbl?`<span class="dash-row-badge ${bc}">${lbl}</span>`:''}
+    </div>`;
+  });
+
+  // Contracts expiring soon
+  const expContracts=contracts.filter(c=>c.status==='aktiv'&&c.endDate).sort((a,b)=>a.endDate.localeCompare(b.endDate)).slice(0,5);
+  let conHtml='';
+  if(!expContracts.length){conHtml=`<div class="dash-empty">Keine aktiven Verträge mit Ablaufdatum</div>`;}
+  else expContracts.forEach(con=>{
+    const diff=daysUntil(con.endDate);
+    const bc=diff<0?'badge-red':diff<=30?'badge-amber':diff<=90?'badge-blue':'badge-green';
+    const lbl=diff<0?'Abgelaufen':diff===0?'Heute':diff<=30?`${diff}T`:fmtDate(con.endDate);
+    conHtml+=`<div class="dash-row" onclick="setMainView('contracts');setTimeout(()=>openContractPanel('${con.id}'),200)">
+      <div class="dash-row-icon" style="background:var(--${diff<0?'red':diff<=30?'amb':'grn'}-d)">📋</div>
+      <div class="dash-row-body">
+        <div class="dash-row-title">${esc(con.title)}${con.note?'<span class="has-note-dot"></span>':''}</div>
+        <div class="dash-row-sub">${esc(con.partner||'')}${con.endDate?' · bis '+fmtDate(con.endDate):''}</div>
+      </div>
+      <span class="dash-row-badge ${bc}">${lbl}</span>
+    </div>`;
+  });
+
+  document.getElementById('dash-grid').innerHTML=`
+    <div class="dash-card">
+      <div class="dash-card-head">
+        <div>
+          <div class="dash-card-title">📅 Anstehende Termine</div>
+          <div class="dash-card-sub">Nächste 14 Tage</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="setMainView('calendar')">Alle →</button>
+      </div>
+      <div class="dash-card-body">${evHtml}</div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-head">
+        <div>
+          <div class="dash-card-title">🧾 Offene Rechnungen</div>
+          <div class="dash-card-sub">Offen &amp; überfällig</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="setMainView('invoices')">Alle →</button>
+      </div>
+      <div class="dash-card-body">${invHtml}</div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-head">
+        <div>
+          <div class="dash-card-title">📋 Verträge</div>
+          <div class="dash-card-sub">Aktiv nach Ablaufdatum</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="setMainView('contracts')">Alle →</button>
+      </div>
+      <div class="dash-card-body">${conHtml}</div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-head">
+        <div>
+          <div class="dash-card-title">📊 Rechnungsübersicht</div>
+          <div class="dash-card-sub">Alle Status</div>
+        </div>
+      </div>
+      <div class="dash-card-body">${buildInvSummaryHtml()}</div>
+    </div>
+  `;
+}
+
+function buildInvSummaryHtml(){
+  const groups=[
+    {k:'überfällig',label:'Überfällig',bc:'badge-red'},
+    {k:'offen',label:'Offen',bc:'badge-amber'},
+    {k:'bezahlt',label:'Bezahlt',bc:'badge-green'},
+  ];
+  let html='';
+  groups.forEach(g=>{
+    const items=invoices.filter(i=>{
+      if(g.k==='überfällig') return i.status==='überfällig'||isOverdue(i);
+      return i.status===g.k&&!(isOverdue(i));
+    });
+    if(!items.length)return;
+    const total=items.reduce((s,i)=>s+(parseFloat(i.amount)||0),0);
+    html+=`<div class="dash-row" onclick="setMainView('invoices');filterInvoices('${g.k}',null)">
+      <div class="dash-row-body">
+        <div class="dash-row-title">${g.label} (${items.length})</div>
+        <div class="dash-row-sub">Gesamt: ${fmtMoney(total)}</div>
+      </div>
+      <span class="dash-row-badge ${g.bc}">${g.label}</span>
+    </div>`;
+  });
+  if(!html)html=`<div class="dash-empty">Noch keine Rechnungen angelegt</div>`;
+  return html;
+}
+
+function isOverdue(inv){
+  if(!inv.dueDate)return false;
+  if(inv.status==='bezahlt')return false;
+  return daysUntil(inv.dueDate)<0;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   CALENDAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function renderCalendar(){
+  const y=curDate.getFullYear(),m=curDate.getMonth();
+  document.getElementById('month-label').textContent=`${DE_MONTHS[m]} ${y}`;
+
+  if(currentCalView==='month'){
+    renderMonth(y,m);
+    document.getElementById('month-grid').style.display='grid';
+    document.getElementById('agenda-view').style.display='none';
+    document.getElementById('wday-row').style.display='grid';
+  }else{
+    renderAgenda();
+    document.getElementById('month-grid').style.display='none';
+    document.getElementById('agenda-view').style.display='block';
+    document.getElementById('wday-row').style.display='none';
+  }
+}
+
+function renderMonth(y,m){
+  const grid=document.getElementById('month-grid');
+  grid.innerHTML='';
+  let firstDay=new Date(y,m,1).getDay();
+  firstDay=firstDay===0?6:firstDay-1;
+  const dim=new Date(y,m+1,0).getDate();
+  const prevDim=new Date(y,m,0).getDate();
+  const cells=[];
+  for(let i=0;i<firstDay;i++) cells.push({d:prevDim-firstDay+1+i,m:m===0?11:m-1,y:m===0?y-1:y,other:true});
+  for(let i=1;i<=dim;i++) cells.push({d:i,m,y,other:false});
+  while(cells.length<42){const ld=cells.length-firstDay-dim+1;cells.push({d:ld,m:m===11?0:m+1,y:m===11?y+1:y,other:true});}
+  const allEvs=getAllEvents();
+  for(let w=0;w<6;w++){
+    const row=document.createElement('div');row.className='week-row';
+    for(let d=0;d<7;d++){
+      const c=cells[w*7+d];
+      const dt=new Date(c.y,c.m,c.d);
+      const dk=dateKey(dt);
+      const isWknd=d>=5;
+      const isTod=isToday(dt);
+      const dayEvs=allEvs.filter(e=>e.date===dk);
+      const cell=document.createElement('div');
+      cell.className='day-cell'+(c.other?' other':'')+(isWknd?' weekend':'')+(isTod?' today':'');
+      cell.onclick=()=>onDayClick(dt,dayEvs);
+      let html=`<div class="day-num-wrap"><div class="day-num">${c.d}</div></div>`;
+      const maxV=window.innerWidth<480?1:2;
+      dayEvs.slice(0,maxV).forEach(ev=>{
+        html+=`<div class="ev-chip ${ev.color}" onclick="event.stopPropagation();openEventPanel('${ev.id}')">${esc(ev.title)}</div>`;
+      });
+      if(dayEvs.length>maxV)html+=`<div class="more-chip">+${dayEvs.length-maxV}</div>`;
+      cell.innerHTML=html;row.appendChild(cell);
+    }
+    grid.appendChild(row);
+  }
+}
+
+function renderAgenda(){
+  const ag=document.getElementById('agenda-view');
+  const allEvs=getAllEvents();
+  const grouped={};
+  allEvs.forEach(ev=>{if(!grouped[ev.date])grouped[ev.date]=[];grouped[ev.date].push(ev);});
+  const sorted=Object.keys(grouped).sort().filter(dk=>{const d=daysUntil(dk);return d>=-30&&d<=180;});
+  if(!sorted.length){
+    ag.innerHTML=`<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="empty-title">Keine Termine</div><div class="empty-sub">Erstellen Sie Ihren ersten Termin mit dem + Button</div></div>`;
+    return;
+  }
+  let html='';
+  sorted.forEach(dk=>{
+    const dt=new Date(dk+'T12:00:00');
+    const diff=daysUntil(dk);
+    const isT=diff===0;
+    const evs=grouped[dk].sort((a,b)=>(a.time||'99:99').localeCompare(b.time||'99:99'));
+    const relLabel=diff===0?' · Heute':diff===1?' · Morgen':diff===-1?' · Gestern':'';
+    html+=`<div class="ag-group">
+      <div class="ag-header">
+        <div class="ag-day-num${isT?' today':''}">${pad(dt.getDate())}</div>
+        <div class="ag-day-info">
+          <div class="ag-weekday">${DE_DAYS_F[dt.getDay()]}${relLabel}</div>
+          <div class="ag-month-yr">${DE_MONTHS[dt.getMonth()]} ${dt.getFullYear()}</div>
+        </div>
+      </div>
+      <div class="ag-events">`;
+    evs.forEach(ev=>{
+      const badge=getUrgencyBadge(ev.type,diff);
+      html+=`<div class="ag-card ${ev.color}" onclick="openEventPanel('${ev.id}')">
+        <div class="ag-time">${ev.time||'Ganztägig'}</div>
+        <div class="ag-body">
+          <div class="ag-title">${esc(ev.title)}</div>
+          ${ev.desc?`<div class="ag-desc">${esc(ev.desc)}</div>`:''}
+        </div>${badge}
+      </div>`;
+    });
+    html+=`</div></div>`;
+  });
+  ag.innerHTML=html;
+  setTimeout(()=>{ag.querySelector('.ag-day-num.today')?.closest('.ag-group')?.scrollIntoView({block:'start'});},80);
+}
+
+function getUrgencyBadge(type,diff){
+  if(type!=='deadline'&&type!=='billing')return'';
+  if(diff<0) return`<span class="urgency-badge ub-crit">Überfällig</span>`;
+  if(diff===0)return`<span class="urgency-badge ub-crit">Heute</span>`;
+  if(diff<=7) return`<span class="urgency-badge ub-crit">${diff}T</span>`;
+  if(diff<=30)return`<span class="urgency-badge ub-warn">${diff}T</span>`;
+  return`<span class="urgency-badge ub-ok">${diff}T</span>`;
+}
+
+function navigate(dir){
+  if(currentCalView==='month'){curDate=new Date(curDate.getFullYear(),curDate.getMonth()+dir,1);}
+  else{curDate=new Date(curDate.getTime()+dir*30*86400000);}
+  renderCalendar();
+}
+function goToday(){curDate=new Date();renderCalendar();}
+function setCalView(v){
+  currentCalView=v;
+  ['month','agenda'].forEach(vv=>{
+    document.getElementById('vbtn-'+vv)?.classList.toggle('active',vv===v);
+  });
+  renderCalendar();
+}
+
+function getAllEvents(){
+  const all=[...events];
+  gEvents.forEach(ge=>{
+    all.push({
+      id:'g_'+ge.id,title:ge.summary||'(Kein Titel)',
+      date:ge.start?.date||ge.start?.dateTime?.substring(0,10)||'',
+      time:ge.start?.dateTime?new Date(ge.start.dateTime).toTimeString().substring(0,5):'',
+      color:'blue',type:'meeting',desc:ge.description||'',allDay:!!ge.start?.date,source:'google',notifDaysBefore:1
+    });
+  });
+  return all.filter(e=>e.date);
+}
+
+function getEventById(id){return events.find(e=>e.id===id)||getAllEvents().find(e=>e.id===id);}
+
+function onDayClick(dt,dayEvs){
+  if(dayEvs.length===1) openEventPanel(dayEvs[0].id);
+  else if(dayEvs.length>1) openDayPanel(dt,dayEvs);
+  else openEventPanel(null,dt);
+}
+
+function renderUpcoming(){
+  const allEvs=getAllEvents();
+  const soon=allEvs.filter(ev=>{const d=daysUntil(ev.date);return d>=0&&d<=30;}).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,10);
+  const cont=document.getElementById('upcoming-items');
+  if(!cont)return;
+  if(!soon.length){cont.innerHTML=`<span style="font-size:12px;color:var(--t5)">Keine Termine in den nächsten 30 Tagen</span>`;return;}
+  cont.innerHTML=soon.map(ev=>{
+    const diff=daysUntil(ev.date);
+    const lbl=diff===0?'Heute':diff===1?'Morgen':`${diff}T`;
+    const chip=ev.type==='deadline'?(diff<=7?'red':'amber'):ev.color;
+    const shortTitle=ev.title.length>22?ev.title.substring(0,22)+'…':ev.title;
+    return`<div class="us-chip ${chip}" onclick="openEventPanel('${ev.id}')"><span>${lbl}</span><span>${esc(shortTitle)}</span></div>`;
+  }).join('');
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   INVOICES
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function filterInvoices(f,btn){
+  invFilter=f;
+  document.querySelectorAll('#inv-filter-row .filter-pill').forEach(p=>p.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  else{
+    document.querySelectorAll('#inv-filter-row .filter-pill').forEach(p=>{
+      if(p.onclick&&p.onclick.toString().includes(`'${f}'`)) p.classList.add('active');
+    });
+  }
+  renderInvoices();
+}
+
+function renderInvoices(){
+  const list=document.getElementById('invoices-list');
+  if(!list)return;
+  let filtered=invoices;
+  if(invFilter==='offen') filtered=invoices.filter(i=>i.status==='offen'&&!isOverdue(i));
+  else if(invFilter==='überfällig') filtered=invoices.filter(i=>i.status==='überfällig'||isOverdue(i));
+  else if(invFilter==='bezahlt') filtered=invoices.filter(i=>i.status==='bezahlt');
+
+  filtered=filtered.sort((a,b)=>(a.dueDate||a.date||'').localeCompare(b.dueDate||b.date||''));
+
+  if(!filtered.length){
+    list.innerHTML=`<div class="empty-state">
+      <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div class="empty-title">Keine Rechnungen</div>
+      <div class="empty-sub">Legen Sie Ihre erste Rechnung an.</div>
+    </div>`;
+    return;
+  }
+
+  list.innerHTML=filtered.map(inv=>{
+    const overdue=isOverdue(inv);
+    const status=overdue?'überfällig':inv.status;
+    const diff=daysUntil(inv.dueDate);
+    const statusLabel=status==='überfällig'?'Überfällig':status==='offen'?'Offen':status==='bezahlt'?'Bezahlt':'—';
+    const bc=status==='überfällig'?'badge-red':status==='offen'?'badge-amber':status==='bezahlt'?'badge-green':'badge-gray';
+    return`<div class="list-item status-${status}" onclick="openInvoicePanel('${inv.id}')">
+      <div class="list-item-icon" style="background:var(--${status==='überfällig'?'red':status==='bezahlt'?'grn':'amb'}-d)">🧾</div>
+      <div class="list-item-body">
+        <div class="list-item-title">${esc(inv.title)}${inv.note?'<span class="has-note-dot"></span>':''}</div>
+        <div class="list-item-meta">
+          <span class="list-item-sub">${esc(inv.partner||'')}</span>
+          ${inv.dueDate?`<span class="list-item-sub">· Fällig: ${fmtDate(inv.dueDate)}</span>`:''}
+          ${inv.date?`<span class="list-item-sub">· ${fmtDate(inv.date)}</span>`:''}
+        </div>
+      </div>
+      <div class="list-item-amount-wrap">
+        ${inv.amount?`<div class="list-item-amount">${fmtMoney(inv.amount)}</div>`:''}
+        <span class="dash-row-badge ${bc}">${statusLabel}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openInvoicePanel(id){
+  const inv=id?invoices.find(i=>i.id===id):null;
+  const statusOpts=[
+    ['offen','Offen'],['überfällig','Überfällig'],['bezahlt','Bezahlt']
+  ];
+
+  // View mode if existing with note
+  const noteHtml=inv?.note?`
+    <div class="note-box">
+      <div class="note-box-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Notiz
+      </div>
+      <div class="note-display">${esc(inv.note)}</div>
+    </div>`:'';
+
+  const html=`
+    <div class="fg"><label class="flabel">Bezeichnung *</label>
+      <input type="text" class="finput" id="inv-title" placeholder="z.B. Webdesign Phase 1" value="${esc(inv?.title||'')}">
+    </div>
+    <div class="fg"><label class="flabel">Auftraggeber / Partner</label>
+      <input type="text" class="finput" id="inv-partner" placeholder="Firmenname oder Person" value="${esc(inv?.partner||'')}">
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="flabel">Betrag (€)</label>
+        <input type="number" class="finput" id="inv-amount" placeholder="0.00" step="0.01" min="0" value="${inv?.amount||''}">
+      </div>
+      <div class="fg"><label class="flabel">Status</label>
+        <select class="finput" id="inv-status">
+          ${statusOpts.map(([v,l])=>`<option value="${v}"${inv?.status===v?' selected':''}>${l}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="flabel">Rechnungsdatum</label>
+        <input type="date" class="finput" id="inv-date" value="${inv?.date||''}" style="color-scheme:dark">
+      </div>
+      <div class="fg"><label class="flabel">Fällig am</label>
+        <input type="date" class="finput" id="inv-due" value="${inv?.dueDate||''}" style="color-scheme:dark">
+      </div>
+    </div>
+    <div class="fg"><label class="flabel">Rechnungsnummer</label>
+      <input type="text" class="finput" id="inv-number" placeholder="RE-2024-0001" value="${esc(inv?.number||'')}">
+    </div>
+    <div class="divider"></div>
+    <div class="section-label">📝 Notiz</div>
+    <div class="fg">
+      <textarea class="finput" id="inv-note" rows="4" placeholder="Interne Notizen, Zahlungsstatus, Besonderheiten…">${esc(inv?.note||'')}</textarea>
+    </div>
+    <div class="fa">
+      <button class="btn btn-primary" style="flex:1" onclick="saveInvoice('${inv?.id||''}')">
+        ${inv?'Aktualisieren':'Rechnung speichern'}
+      </button>
+      ${inv?`<button class="btn btn-danger" onclick="deleteInvoice('${inv.id}')">Löschen</button>`:''}
+    </div>
+    ${inv?.dueDate&&inv.status!=='bezahlt'?`
+    <div style="margin-top:10px">
+      <button class="btn btn-success btn-full" onclick="markInvoicePaid('${inv.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
+        Als bezahlt markieren
+      </button>
+    </div>`:''}
+    ${!isDemoMode&&accessToken?`<div style="margin-top:6px;font-size:11px;color:var(--t5);text-align:center">☁ Wird automatisch in Google Drive gespeichert</div>`:''}
+  `;
+  openPanel(inv?'Rechnung bearbeiten':'Neue Rechnung',html);
+}
+
+function saveInvoice(existingId){
+  const title=document.getElementById('inv-title')?.value.trim();
+  if(!title){toast('Bitte eine Bezeichnung eingeben','err');return;}
+
+  const inv={
+    id:existingId||'inv_'+uid(),
+    title,
+    partner:document.getElementById('inv-partner')?.value.trim()||'',
+    amount:parseFloat(document.getElementById('inv-amount')?.value)||0,
+    status:document.getElementById('inv-status')?.value||'offen',
+    date:document.getElementById('inv-date')?.value||'',
+    dueDate:document.getElementById('inv-due')?.value||'',
+    number:document.getElementById('inv-number')?.value.trim()||'',
+    note:document.getElementById('inv-note')?.value.trim()||'',
+    createdAt:existingId?(invoices.find(i=>i.id===existingId)?.createdAt||new Date().toISOString()):new Date().toISOString(),
+    updatedAt:new Date().toISOString()
+  };
+
+  if(existingId){const idx=invoices.findIndex(i=>i.id===existingId);if(idx>=0)invoices[idx]=inv;else invoices.push(inv);}
+  else invoices.push(inv);
+
+  ls('invoices',invoices);
+  saveToDrive();
+  closePanel();
+  renderInvoices();
+  if(currentMainView==='dashboard')buildDashboard();
+  toast(existingId?'Rechnung aktualisiert ✓':'Rechnung gespeichert ✓','ok');
+}
+
+function deleteInvoice(id){
+  if(!confirm('Rechnung wirklich löschen?'))return;
+  invoices=invoices.filter(i=>i.id!==id);
+  ls('invoices',invoices);
+  saveToDrive();
+  closePanel();
+  renderInvoices();
+  if(currentMainView==='dashboard')buildDashboard();
+  toast('Rechnung gelöscht','');
+}
+
+function markInvoicePaid(id){
+  const inv=invoices.find(i=>i.id===id);
+  if(!inv)return;
+  inv.status='bezahlt';inv.updatedAt=new Date().toISOString();
+  ls('invoices',invoices);
+  saveToDrive();
+  closePanel();
+  renderInvoices();
+  if(currentMainView==='dashboard')buildDashboard();
+  toast('Als bezahlt markiert ✓','ok');
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   CONTRACTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function filterContracts(f,btn){
+  conFilter=f;
+  document.querySelectorAll('#contracts-view .filter-pill').forEach(p=>p.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderContracts();
+}
+
+function renderContracts(){
+  const list=document.getElementById('contracts-list');
+  if(!list)return;
+  let filtered=contracts;
+  if(conFilter!=='alle') filtered=contracts.filter(c=>c.status===conFilter);
+  filtered=filtered.sort((a,b)=>(a.endDate||'9999').localeCompare(b.endDate||'9999'));
+
+  if(!filtered.length){
+    list.innerHTML=`<div class="empty-state">
+      <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+      <div class="empty-title">Keine Verträge</div>
+      <div class="empty-sub">Legen Sie Ihren ersten Vertrag an.</div>
+    </div>`;
+    return;
+  }
+
+  list.innerHTML=filtered.map(con=>{
+    const diff=con.endDate?daysUntil(con.endDate):null;
+    const statusLabel=con.status==='aktiv'?'Aktiv':con.status==='abgelaufen'?'Abgelaufen':con.status==='gekündigt'?'Gekündigt':'—';
+    const bc=con.status==='aktiv'?(diff!==null&&diff<=30?'badge-amber':'badge-green'):con.status==='abgelaufen'?'badge-red':'badge-gray';
+    const daysLabel=diff!==null?(diff<0?'Abgelaufen':diff===0?'Heute':diff<=30?`${diff}T`:fmtDate(con.endDate)):'Kein Ablaufdatum';
+    return`<div class="list-item status-${con.status}" onclick="openContractPanel('${con.id}')">
+      <div class="list-item-icon" style="background:var(--${con.status==='abgelaufen'?'red':con.status==='gekündigt'?'t5':'grn'}-d)">📋</div>
+      <div class="list-item-body">
+        <div class="list-item-title">${esc(con.title)}${con.note?'<span class="has-note-dot"></span>':''}</div>
+        <div class="list-item-meta">
+          <span class="list-item-sub">${esc(con.partner||'')}</span>
+          ${con.amount?`<span class="list-item-sub">· ${fmtMoney(con.amount)}${con.period?' / '+con.period:''}</span>`:''}
+        </div>
+      </div>
+      <div class="list-item-amount-wrap">
+        <span class="dash-row-badge ${bc}">${statusLabel}</span>
+        <span class="list-item-sub" style="font-size:11px;margin-top:2px">${daysLabel}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openContractPanel(id){
+  const con=id?contracts.find(c=>c.id===id):null;
+  const statusOpts=[
+    ['aktiv','Aktiv'],['abgelaufen','Abgelaufen'],['gekündigt','Gekündigt']
+  ];
+  const periodOpts=[
+    ['','Einmalig'],['monatlich','Monatlich'],['quartalsweise','Quartalsweise'],['halbjährlich','Halbjährlich'],['jährlich','Jährlich']
+  ];
+
+  const html=`
+    <div class="fg"><label class="flabel">Vertragsbezeichnung *</label>
+      <input type="text" class="finput" id="con-title" placeholder="z.B. Wartungsvertrag Server" value="${esc(con?.title||'')}">
+    </div>
+    <div class="fg"><label class="flabel">Vertragspartner</label>
+      <input type="text" class="finput" id="con-partner" placeholder="Firmenname" value="${esc(con?.partner||'')}">
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="flabel">Vertragsbeginn</label>
+        <input type="date" class="finput" id="con-start" value="${con?.startDate||''}" style="color-scheme:dark">
+      </div>
+      <div class="fg"><label class="flabel">Vertragsende</label>
+        <input type="date" class="finput" id="con-end" value="${con?.endDate||''}" style="color-scheme:dark">
+      </div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="flabel">Betrag (€)</label>
+        <input type="number" class="finput" id="con-amount" placeholder="0.00" step="0.01" min="0" value="${con?.amount||''}">
+      </div>
+      <div class="fg"><label class="flabel">Intervall</label>
+        <select class="finput" id="con-period">
+          ${periodOpts.map(([v,l])=>`<option value="${v}"${con?.period===v?' selected':''}>${l}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="fg"><label class="flabel">Status</label>
+      <select class="finput" id="con-status">
+        ${statusOpts.map(([v,l])=>`<option value="${v}"${con?.status===v?' selected':''}>${l}</option>`).join('')}
+      </select>
+    </div>
+    <div class="fg"><label class="flabel">Kündigungsfrist (Tage)</label>
+      <input type="number" class="finput" id="con-notice" placeholder="z.B. 30" min="0" value="${con?.noticeDays||''}">
+    </div>
+    <div class="divider"></div>
+    <div class="section-label">📝 Notiz</div>
+    <div class="fg">
+      <textarea class="finput" id="con-note" rows="5" placeholder="Wichtige Details, Klauseln, Ansprechpartner, Verlängerungsoptionen…">${esc(con?.note||'')}</textarea>
+    </div>
+    <div class="fa">
+      <button class="btn btn-primary" style="flex:1" onclick="saveContract('${con?.id||''}')">
+        ${con?'Aktualisieren':'Vertrag speichern'}
+      </button>
+      ${con?`<button class="btn btn-danger" onclick="deleteContract('${con.id}')">Löschen</button>`:''}
+    </div>
+    ${con?.endDate?`
+    <div style="margin-top:8px">
+      <button class="btn btn-ghost btn-full" onclick="addContractToCalendar('${con.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:14px;height:14px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Ablaufdatum im Kalender eintragen
+      </button>
+    </div>`:''}
+    ${!isDemoMode&&accessToken?`<div style="margin-top:6px;font-size:11px;color:var(--t5);text-align:center">☁ Wird automatisch in Google Drive gespeichert</div>`:''}
+  `;
+  openPanel(con?'Vertrag bearbeiten':'Neuer Vertrag',html);
+}
+
+function saveContract(existingId){
+  const title=document.getElementById('con-title')?.value.trim();
+  if(!title){toast('Bitte eine Bezeichnung eingeben','err');return;}
+
+  const con={
+    id:existingId||'con_'+uid(),
+    title,
+    partner:document.getElementById('con-partner')?.value.trim()||'',
+    startDate:document.getElementById('con-start')?.value||'',
+    endDate:document.getElementById('con-end')?.value||'',
+    amount:parseFloat(document.getElementById('con-amount')?.value)||0,
+    period:document.getElementById('con-period')?.value||'',
+    status:document.getElementById('con-status')?.value||'aktiv',
+    noticeDays:parseInt(document.getElementById('con-notice')?.value)||0,
+    note:document.getElementById('con-note')?.value.trim()||'',
+    createdAt:existingId?(contracts.find(c=>c.id===existingId)?.createdAt||new Date().toISOString()):new Date().toISOString(),
+    updatedAt:new Date().toISOString()
+  };
+
+  if(existingId){const idx=contracts.findIndex(c=>c.id===existingId);if(idx>=0)contracts[idx]=con;else contracts.push(con);}
+  else contracts.push(con);
+
+  ls('contracts',contracts);
+  saveToDrive();
+  closePanel();
+  renderContracts();
+  if(currentMainView==='dashboard')buildDashboard();
+  toast(existingId?'Vertrag aktualisiert ✓':'Vertrag gespeichert ✓','ok');
+}
+
+function deleteContract(id){
+  if(!confirm('Vertrag wirklich löschen?'))return;
+  contracts=contracts.filter(c=>c.id!==id);
+  ls('contracts',contracts);
+  saveToDrive();
+  closePanel();
+  renderContracts();
+  if(currentMainView==='dashboard')buildDashboard();
+  toast('Vertrag gelöscht','');
+}
+
+function addContractToCalendar(id){
+  const con=contracts.find(c=>c.id===id);
+  if(!con||!con.endDate)return;
+  // Create calendar event for contract end
+  const ev={
+    id:'ev_'+uid(),
+    title:`Vertragsende: ${con.title}`,
+    date:con.endDate,
+    time:'',
+    color:'amber',
+    type:'deadline',
+    desc:`Vertragspartner: ${con.partner||'—'}\nKündigungsfrist: ${con.noticeDays||'—'} Tage\n\n${con.note||''}`.trim(),
+    notifDaysBefore:con.noticeDays||14,
+    allDay:true,
+    source:'local',
+    createdAt:new Date().toISOString()
+  };
+  events.push(ev);
+  ls('events',events);
+  closePanel();
+  toast('Vertragsablauf im Kalender eingetragen ✓','ok');
+  setTimeout(()=>{setMainView('calendar');},400);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   EVENT PANEL (CALENDAR)
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function openEventPanel(id,preDate){
+  const ev=id?getEventById(id):null;
+
+  if(ev?.source==='google'){
+    openPanel(ev.title,`
+      <div style="background:var(--acc-d);border:1px solid rgba(79,125,255,.2);border-radius:var(--r);padding:12px 14px;margin-bottom:14px">
+        <div style="font-size:11px;font-weight:700;color:var(--acc);margin-bottom:4px">📅 Google Kalender</div>
+        <div style="font-size:14px;font-weight:700;color:var(--t1);margin-bottom:4px">${esc(ev.title)}</div>
+        <div style="font-size:12px;color:var(--t4)">${fmtDate(ev.date)} ${ev.time?'· '+ev.time:''}</div>
+        ${ev.desc?`<div style="font-size:12px;color:var(--t3);margin-top:8px;line-height:1.5">${esc(ev.desc)}</div>`:''}
+      </div>
+      <button class="btn btn-ghost btn-full" onclick="closePanel()">Schließen</button>
+    `);
+    return;
+  }
+
+  const dateVal=ev?.date||(preDate?dateKey(preDate):dateKey(new Date()));
+  const types=[
+    ['meeting','📅 Termin / Meeting'],['deadline','⚠️ Frist / Ablauf'],
+    ['billing','💰 Abrechnung'],['reminder','🔔 Erinnerung'],['other','📌 Sonstiges']
+  ];
+  const notifs=[['0','Am gleichen Tag'],['1','1 Tag vorher'],['3','3 Tage vorher'],['7','1 Woche vorher'],['14','2 Wochen vorher'],['30','1 Monat vorher']];
+  const colors=['blue','green','amber','red','purple'];
+  const curColor=ev?.color||'blue';
+
+  const html=`
+    ${isDemoMode?`<div style="background:var(--amb-d);border:1px solid rgba(245,158,11,.2);border-radius:var(--rsm);padding:9px 12px;margin-bottom:12px;font-size:12px;color:var(--amb)">⚡ Demo-Modus: Lokal gespeichert</div>`:''}
+    <div class="fg"><label class="flabel">Titel *</label>
+      <input type="text" class="finput" id="ev-title" placeholder="Terminbezeichnung" value="${esc(ev?.title||'')}">
+    </div>
+    <div class="fg"><label class="flabel">Datum *</label>
+      <input type="date" class="finput" id="ev-date" value="${ev?.date||dateVal}" style="color-scheme:dark">
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="flabel">Von</label>
+        <input type="time" class="finput" id="ev-time" value="${ev?.time||''}">
+      </div>
+      <div class="fg"><label class="flabel">Bis</label>
+        <input type="time" class="finput" id="ev-end" value="${ev?.endTime||''}">
+      </div>
+    </div>
+    <div class="fg"><label class="flabel">Typ</label>
+      <select class="finput" id="ev-type">
+        ${types.map(([v,l])=>`<option value="${v}"${ev?.type===v?' selected':''}>${l}</option>`).join('')}
+      </select>
+    </div>
+    <div class="fg"><label class="flabel">Benachrichtigung</label>
+      <select class="finput" id="ev-notif">
+        ${notifs.map(([v,l])=>`<option value="${v}"${String(ev?.notifDaysBefore??1)===v?' selected':''}>${l}</option>`).join('')}
+      </select>
+    </div>
+    <div class="fg"><label class="flabel">Farbe</label>
+      <div class="color-row">
+        ${colors.map(c=>`<div class="col-dot${curColor===c?' sel':''}" 
+          style="background:var(--${c==='blue'?'acc':c==='amber'?'amb':c==='green'?'grn':c==='purple'?'pur':'red'})"
+          onclick="pickColor(this,'${c}')"></div>`).join('')}
+      </div>
+      <input type="hidden" id="ev-color" value="${curColor}">
+    </div>
+    <div class="fg"><label class="flabel">Beschreibung / Notiz</label>
+      <textarea class="finput" id="ev-desc" rows="3" placeholder="Notizen, Hinweise…">${esc(ev?.desc||'')}</textarea>
+    </div>
+    <div class="fa">
+      <button class="btn btn-primary" style="flex:1" onclick="saveEvent('${ev?.id||''}')">
+        ${ev?'Aktualisieren':'Speichern'}
+      </button>
+      ${ev?`<button class="btn btn-danger" onclick="deleteEvent('${ev.id}')">Löschen</button>`:''}
+    </div>
+    ${accessToken&&!isDemoMode?`
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--b1)">
+      <button class="btn btn-ghost btn-full" onclick="saveToGoogleCal('${ev?.id||''}')">
+        <svg viewBox="0 0 24 24" width="14" height="14"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/></svg>
+        In Google Kalender speichern
+      </button>
+    </div>`:''}
+  `;
+  openPanel(ev?'Termin bearbeiten':'Neuer Termin',html);
+}
+
+function pickColor(el,color){
+  document.querySelectorAll('.col-dot').forEach(d=>d.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById('ev-color').value=color;
+}
+
+function saveEvent(existingId){
+  const title=document.getElementById('ev-title')?.value.trim();
+  const date=document.getElementById('ev-date')?.value;
+  if(!title){toast('Bitte einen Titel eingeben','err');return;}
+  if(!date){toast('Bitte ein Datum wählen','err');return;}
+  const ev={
+    id:existingId||'ev_'+uid(),title,date,
+    time:document.getElementById('ev-time')?.value||'',
+    endTime:document.getElementById('ev-end')?.value||'',
+    type:document.getElementById('ev-type')?.value||'meeting',
+    color:document.getElementById('ev-color')?.value||'blue',
+    desc:document.getElementById('ev-desc')?.value.trim()||'',
+    notifDaysBefore:parseInt(document.getElementById('ev-notif')?.value||'1'),
+    allDay:!document.getElementById('ev-time')?.value,
+    source:'local',
+    createdAt:existingId?(getEventById(existingId)?.createdAt||new Date().toISOString()):new Date().toISOString(),
+    updatedAt:new Date().toISOString()
+  };
+  if(existingId){const i=events.findIndex(e=>e.id===existingId);if(i>=0)events[i]=ev;else events.push(ev);}
+  else events.push(ev);
+  ls('events',events);
+  closePanel();
+  if(currentMainView==='calendar'){renderCalendar();renderUpcoming();}
+  checkNotifications();
+  if(currentMainView==='dashboard')buildDashboard();
+  toast(existingId?'Termin aktualisiert ✓':'Termin erstellt ✓','ok');
+}
+
+function deleteEvent(id){
+  if(!confirm('Termin wirklich löschen?'))return;
+  events=events.filter(e=>e.id!==id);
+  ls('events',events);
+  closePanel();
+  if(currentMainView==='calendar'){renderCalendar();renderUpcoming();}
+  checkNotifications();
+  if(currentMainView==='dashboard')buildDashboard();
+  toast('Termin gelöscht','');
+}
+
+function openDayPanel(dt,dayEvs){
+  const ds=`${DE_DAYS_F[dt.getDay()]}, ${dt.getDate()}. ${DE_MONTHS[dt.getMonth()]} ${dt.getFullYear()}`;
+  let html=`<div style="font-size:12px;color:var(--t4);margin-bottom:12px;font-weight:600">${ds}</div>`;
+  dayEvs.forEach(ev=>{
+    html+=`<div class="ag-card ${ev.color}" style="margin-bottom:8px" onclick="openEventPanel('${ev.id}')">
+      <div class="ag-time">${ev.time||'Ganztägig'}</div>
+      <div class="ag-body"><div class="ag-title">${esc(ev.title)}</div>${ev.desc?`<div class="ag-desc">${esc(ev.desc)}</div>`:''}</div>
+    </div>`;
+  });
+  html+=`<button class="btn btn-primary btn-full" style="margin-top:10px" onclick="openEventPanel(null,new Date('${dateKey(dt)}'))">+ Neuer Termin für diesen Tag</button>`;
+  openPanel(`${dayEvs.length} Termine`,html);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   GOOGLE APIs
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+async function loadGoogleData(){
+  if(!accessToken)return;
+  await Promise.all([loadGoogleEvents(),loadFromDrive()]);
+}
+
+async function loadGoogleEvents(){
+  if(!accessToken)return;
+  try{
+    const start=new Date(curDate.getFullYear(),curDate.getMonth()-1,1).toISOString();
+    const end=new Date(curDate.getFullYear(),curDate.getMonth()+4,0).toISOString();
+    const r=await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${encodeURIComponent(start)}&timeMax=${encodeURIComponent(end)}&singleEvents=true&orderBy=startTime&maxResults=500`,
+      {headers:{'Authorization':'Bearer '+accessToken}}
+    );
+    if(r.status===401){lsDel('access_token');accessToken='';return;}
+    if(!r.ok)return;
+    const data=await r.json();
+    gEvents=data.items||[];
+    if(currentMainView==='calendar'){renderCalendar();renderUpcoming();}
+    if(currentMainView==='dashboard')buildDashboard();
+  }catch(e){console.warn('GCal:',e);}
+}
+
+async function saveToGoogleCal(existingId){
+  if(!accessToken){toast('Bitte zuerst mit Google anmelden','err');return;}
+  const title=document.getElementById('ev-title')?.value.trim();
+  const date=document.getElementById('ev-date')?.value;
+  const time=document.getElementById('ev-time')?.value;
+  const end=document.getElementById('ev-end')?.value;
+  const desc=document.getElementById('ev-desc')?.value.trim();
+  const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+  if(!title||!date){toast('Bitte Titel und Datum eingeben','err');return;}
+  const body={
+    summary:title,description:desc,
+    start:time?{dateTime:`${date}T${time}:00`,timeZone:tz}:{date},
+    end:end?{dateTime:`${date}T${end}:00`,timeZone:tz}:(time?{dateTime:`${date}T${time}:00`,timeZone:tz}:{date})
+  };
+  try{
+    const r=await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events',{
+      method:'POST',headers:{'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},
+      body:JSON.stringify(body)
+    });
+    if(!r.ok)throw new Error('API-Fehler '+r.status);
+    toast('In Google Kalender gespeichert ✓','ok');
+    saveEvent(existingId);
+    loadGoogleEvents();
+  }catch(e){toast('Fehler: '+e.message,'err');}
+}
+
+/* ── GOOGLE DRIVE STORAGE ── */
+async function loadFromDrive(){
+  if(!accessToken||isDemoMode)return;
+  try{
+    // Search for procal data file
+    const q=encodeURIComponent("name='procal_workspace_data.json' and trashed=false");
+    const r=await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)`,{
+      headers:{'Authorization':'Bearer '+accessToken}
+    });
+    if(!r.ok)return;
+    const data=await r.json();
+    if(data.files&&data.files.length>0){
+      driveFileId=data.files[0].id;
+      ls('drive_file_id',driveFileId);
+      // Load content
+      const fr=await fetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`,{
+        headers:{'Authorization':'Bearer '+accessToken}
+      });
+      if(fr.ok){
+        const content=await fr.json();
+        if(content.invoices){invoices=content.invoices;ls('invoices',invoices);}
+        if(content.contracts){contracts=content.contracts;ls('contracts',contracts);}
+        if(currentMainView==='dashboard')buildDashboard();
+        if(currentMainView==='invoices')renderInvoices();
+        if(currentMainView==='contracts')renderContracts();
+        toast('Daten aus Google Drive geladen ✓','ok');
+      }
+    }
+  }catch(e){console.warn('Drive load:',e);}
+}
+
+async function saveToDrive(){
+  if(!accessToken||isDemoMode)return;
+  showDriveStatus(true);
+  try{
+    const content=JSON.stringify({invoices,contracts,version:VER,savedAt:new Date().toISOString()});
+    const blob=new Blob([content],{type:'application/json'});
+
+    if(driveFileId){
+      // Update existing
+      const meta=JSON.stringify({name:'procal_workspace_data.json'});
+      const form=new FormData();
+      form.append('metadata',new Blob([meta],{type:'application/json'}));
+      form.append('file',blob);
+      const r=await fetch(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=multipart`,{
+        method:'PATCH',headers:{'Authorization':'Bearer '+accessToken},body:form
+      });
+      if(!r.ok)throw new Error('Update failed '+r.status);
+    }else{
+      // Create new
+      const meta=JSON.stringify({name:'procal_workspace_data.json',mimeType:'application/json'});
+      const form=new FormData();
+      form.append('metadata',new Blob([meta],{type:'application/json'}));
+      form.append('file',blob);
+      const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{
+        method:'POST',headers:{'Authorization':'Bearer '+accessToken},body:form
+      });
+      if(!r.ok)throw new Error('Create failed '+r.status);
+      const d=await r.json();
+      driveFileId=d.id;
+      ls('drive_file_id',driveFileId);
+    }
+  }catch(e){console.warn('Drive save:',e);toast('Drive-Speicherung fehlgeschlagen','err');}
+  finally{showDriveStatus(false);}
+}
+
+function showDriveStatus(show){
+  const el=document.getElementById('drive-status');
+  if(el)el.style.display=show?'flex':'none';
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   NOTIFICATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function checkNotifications(){
+  const allEvs=getAllEvents();
+  notifications=[];
+  allEvs.forEach(ev=>{
+    if(!ev.date)return;
+    const diff=daysUntil(ev.date);
+    const threshold=ev.notifDaysBefore??1;
+    if(diff>=-3&&diff<=60){
+      notifications.push({
+        id:ev.id,title:ev.title,date:ev.date,diff,type:ev.type,color:ev.color,
+        urgency:diff<0?'crit':diff===0?'crit':diff<=7?'warn':'ok'
+      });
+    }
+    if(diff===threshold&&Notification.permission==='granted') fireNotification(ev,diff);
+  });
+  // Add overdue invoices as notifications
+  invoices.filter(i=>isOverdue(i)||i.status==='überfällig').forEach(inv=>{
+    notifications.push({
+      id:inv.id,title:`Rechnung überfällig: ${inv.title}`,
+      date:inv.dueDate||'',diff:daysUntil(inv.dueDate||''),
+      type:'billing',color:'red',urgency:'crit',isInvoice:true
+    });
+  });
+  // Add expiring contracts
+  contracts.filter(c=>c.status==='aktiv'&&c.endDate&&daysUntil(c.endDate)>=0&&daysUntil(c.endDate)<=30).forEach(con=>{
+    notifications.push({
+      id:con.id,title:`Vertrag läuft ab: ${con.title}`,
+      date:con.endDate,diff:daysUntil(con.endDate),
+      type:'deadline',color:'amber',urgency:daysUntil(con.endDate)<=7?'crit':'warn',isContract:true
+    });
+  });
+  notifications.sort((a,b)=>a.diff-b.diff);
+  const hasCrit=notifications.some(n=>n.urgency!=='ok');
+  const dot=document.getElementById('notif-dot');
+  if(dot)dot.style.display=hasCrit?'block':'none';
+}
+
+function fireNotification(ev,daysLeft){
+  if(Notification.permission!=='granted')return;
+  const title=daysLeft===0?`Heute fällig: ${ev.title}`:`In ${daysLeft} Tag${daysLeft>1?'en':''}: ${ev.title}`;
+  new Notification(title,{body:ev.desc||'Termin',tag:ev.id});
+}
+
+function scheduleNotifCheck(){setInterval(checkNotifications,3600000);}
+function reqNotifPermission(){
+  if('Notification' in window&&Notification.permission==='default'){
+    Notification.requestPermission().then(p=>{if(p==='granted')toast('Benachrichtigungen aktiviert ✓','ok');});
+  }
+}
+
+function openNotifPanel(){
+  checkNotifications();
+  if(!notifications.length){
+    openPanel('Benachrichtigungen',`<div class="empty-state">
+      <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+      <div class="empty-title">Alles im Griff</div>
+      <div class="empty-sub">Keine dringenden Einträge</div>
+    </div>`);
+    return;
+  }
+  const crit=notifications.filter(n=>n.urgency==='crit');
+  const warn=notifications.filter(n=>n.urgency==='warn');
+  const ok=notifications.filter(n=>n.urgency==='ok');
+  const icons={deadline:'⚠️',billing:'💰',meeting:'📅',reminder:'🔔',other:'📌'};
+  const bgs={crit:'var(--red-d)',warn:'var(--amb-d)',ok:'var(--s2)'};
+  const mkItem=n=>{
+    const label=n.diff<0?'Überfällig':n.diff===0?'Heute':n.diff===1?'Morgen':`In ${n.diff}T`;
+    const bcls=n.urgency==='crit'?'ub-crit':n.urgency==='warn'?'ub-warn':'ub-ok';
+    const action=n.isInvoice?`setMainView('invoices');setTimeout(()=>openInvoicePanel('${n.id}'),200)`:
+      n.isContract?`setMainView('contracts');setTimeout(()=>openContractPanel('${n.id}'),200)`:
+      `setMainView('calendar');setTimeout(()=>openEventPanel('${n.id}'),200)`;
+    return`<div class="nitem" onclick="${action};closePanel()">
+      <div class="nitem-icon" style="background:${bgs[n.urgency]}">${icons[n.type]||'📅'}</div>
+      <div class="nitem-body">
+        <div class="nitem-title">${esc(n.title)}</div>
+        <div class="nitem-sub">${fmtDate(n.date)}</div>
+      </div>
+      <span class="nitem-badge urgency-badge ${bcls}">${label}</span>
+    </div>`;
+  };
+  let html='';
+  if(crit.length)html+=`<div class="panel-notif-section"><div class="pns-title" style="color:var(--red)">⚡ Dringend</div>${crit.map(mkItem).join('')}</div>`;
+  if(warn.length)html+=`<div class="panel-notif-section"><div class="pns-title" style="color:var(--amb)">⚠ Diese Woche</div>${warn.map(mkItem).join('')}</div>`;
+  if(ok.length)html+=`<div class="panel-notif-section"><div class="pns-title">Demnächst</div>${ok.map(mkItem).join('')}</div>`;
+  if(Notification.permission!=='granted'){
+    html+=`<div class="notif-pill"><div class="np-body"><div class="np-title">Push aktivieren</div><div class="np-sub">Automatische Erinnerungen für iPhone &amp; Android.</div></div><button class="btn btn-primary" style="font-size:12px;padding:8px 12px" onclick="reqNotifPermission()">Aktivieren</button></div>`;
+  }
+  openPanel(`${notifications.length} Hinweis${notifications.length!==1?'e':''}`,html);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   PANEL SYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function openPanel(title,html){
+  document.getElementById('panel-title').textContent=title;
+  document.getElementById('panel-body').innerHTML=html;
+  document.getElementById('side-panel').classList.add('open');
+  document.getElementById('panel-overlay').classList.add('show');
+}
+function closePanel(){
+  document.getElementById('side-panel').classList.remove('open');
+  document.getElementById('panel-overlay').classList.remove('show');
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TOAST
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function toast(msg,type){
+  const w=document.getElementById('toast-wrap');
+  const el=document.createElement('div');
+  el.className='toast'+(type?' '+type:'');
+  el.textContent=msg;
+  w.appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300);},3200);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   AUTH / LOGOUT
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function confirmLogout(){
+  const name=userInfo.name||userInfo.email||'Nutzer';
+  if(!confirm(`Abmelden?\n\n${name}`))return;
+  logout();
+}
+function logout(){
+  accessToken='';userInfo={};isDemoMode=false;gEvents=[];notifications=[];driveFileId=null;
+  lsDel('access_token');lsDel('user_info');lsDel('demo_mode');lsDel('drive_file_id');
+  document.getElementById('main-app').style.display='none';
+  if(CLIENT_ID)showLogin();
+  else document.getElementById('setup-modal').classList.add('show');
+}
+
+/* ── KEYBOARD ── */
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('side-panel').classList.contains('open')){
+    if(e.key==='Escape')closePanel();
+    return;
+  }
+  if(e.key==='ArrowLeft'&&currentMainView==='calendar')navigate(-1);
+  if(e.key==='ArrowRight'&&currentMainView==='calendar')navigate(1);
+  if(e.key==='t'||e.key==='T')goToday();
+  if(e.key==='1')setMainView('dashboard');
+  if(e.key==='2')setMainView('calendar');
+  if(e.key==='3')setMainView('invoices');
+  if(e.key==='4')setMainView('contracts');
+  if(e.key==='n'||e.key==='N')fabAction();
+  if(e.key==='m'||e.key==='M')setCalView('month');
+  if(e.key==='a'||e.key==='A')setCalView('agenda');
+});
+
+/* ── TOUCH SWIPE (calendar) ── */
+let touchX0=0;
+document.addEventListener('touchstart',e=>{touchX0=e.touches[0].clientX;},{passive:true});
+document.addEventListener('touchend',e=>{
+  if(document.getElementById('side-panel').classList.contains('open'))return;
+  if(currentMainView!=='calendar')return;
+  const dx=e.changedTouches[0].clientX-touchX0;
+  if(Math.abs(dx)>60)navigate(dx<0?1:-1);
+},{passive:true});
+</script>
+</body>
+</html>
