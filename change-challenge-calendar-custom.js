@@ -14,7 +14,7 @@
     ['sport_pushups_6','6 leichte Liegestütze',10,'💪','Normal oder auf Knien. Saubere Bewegung zählt.','Liegestütze richtig ausführen Anfänger'],
     ['sport_jumping_20','20 Hampelmänner',8,'🤸','Locker aufwärmen, 20 Wiederholungen.','Hampelmänner richtig ausführen'],
     ['sport_glute_12','12 Glute Bridges',8,'🧘','Rückenlage, Hüfte kontrolliert anheben und senken.','Glute Bridge richtig ausführen'],
-    ['sport_fitness_30','30 Minuten Fitness gehen',40,'🏋️‍♀️','Gehe 30 Minuten ins Fitnessstudio oder mache ein leichtes bis mittleres Workout.','30 Minuten Fitnessstudio Ganzkörper Workout Anfänger']
+    ['sport_fitness_30','30 Minuten Fitness gehen',40,'🏋️‍♀️','Gehe 30 Minuten ins Fitnessstudio','30 Minuten Fitnessstudio Ganzkörper Workout Anfänger']
   ].map(a=>({id:a[0],title:a[1],points:a[2],icon:a[3],desc:a[4],url:yt(a[5]),type:'Sport',active:true,recurrence:'daily'}));
   function ensureSports(){
     window.challenges=Array.isArray(window.challenges)?window.challenges:[];
