@@ -671,6 +671,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 
 /* ── SETTINGS TOGGLES / PWA HELP ── */
 .toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--s2);border:1px solid var(--b2);border-radius:var(--r);padding:12px 14px;margin:12px 0}.toggle-copy{min-width:0}.toggle-title{font-size:13px;font-weight:800;color:var(--t1)}.toggle-sub{font-size:11.5px;color:var(--t4);line-height:1.45;margin-top:2px}.switch{position:relative;display:inline-block;width:48px;height:28px;flex-shrink:0}.switch input{opacity:0;width:0;height:0}.slider{position:absolute;cursor:pointer;inset:0;background:var(--s3);transition:.2s;border-radius:999px;border:1px solid var(--b2)}.slider:before{position:absolute;content:"";height:20px;width:20px;left:3px;top:3px;background:var(--t3);transition:.2s;border-radius:50%}.switch input:checked + .slider{background:var(--grn-d);border-color:rgba(52,211,153,.35)}.switch input:checked + .slider:before{transform:translateX(20px);background:var(--grn)}.status-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:800}.status-on{background:var(--grn-d);color:var(--grn)}.status-off{background:var(--s2);color:var(--t4)}.status-warn{background:var(--amb-d);color:var(--amb)}.help-steps{margin-top:10px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:12px 14px}.help-steps ol{padding-left:18px;margin:6px 0 0}.help-steps li{font-size:12px;color:var(--t3);margin:5px 0;line-height:1.45}
+.logout-profile{display:flex;gap:12px;align-items:center;background:var(--s2);border:1px solid var(--b2);border-radius:var(--r);padding:14px;margin-bottom:14px}.logout-avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--pur));display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;overflow:hidden;flex-shrink:0}.logout-avatar img{width:100%;height:100%;object-fit:cover}.logout-name{font-size:15px;font-weight:800;color:var(--t1)}.logout-mail{font-size:12px;color:var(--t4);margin-top:2px}.logout-warning{font-size:12px;color:var(--t3);line-height:1.5;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:12px;margin-bottom:12px}
 </style>
 </head>
 <body>
@@ -1047,6 +1048,7 @@ function handleGoogleLogin(){
         if(resp.error){toast('Anmeldung fehlgeschlagen: '+resp.error,'err');return;}
         accessToken=resp.access_token;
         ls('access_token',accessToken);
+        isDemoMode=false; lsDel('demo_mode');
         await fetchUserInfo();
         bootMainApp();
         loadGoogleData();
@@ -1065,6 +1067,7 @@ async function firebaseMobileLoginFallback(){
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.addScope('profile');
     provider.addScope('email');
+    provider.addScope('https://www.googleapis.com/auth/calendar');
     await firebase.auth().signInWithRedirect(provider);
   }catch(e){console.warn('Mobile Firebase Login:',e);toast('Mobile Anmeldung konnte nicht gestartet werden: '+(e.message||e),'err');}
 }
@@ -1078,10 +1081,17 @@ async function handleFirebaseRedirectLogin(){
       const u=result.user;
       userInfo={name:u.displayName||u.email,email:u.email,picture:u.photoURL||''};
       ls('user_info',userInfo);
-      accessToken='firebase-auth';
+      let oauthToken='';
+      try{
+        const cred=firebase.auth.GoogleAuthProvider.credentialFromResult(result);
+        oauthToken=cred && cred.accessToken ? cred.accessToken : '';
+      }catch(_e){}
+      accessToken=oauthToken || 'firebase-auth';
       ls('access_token',accessToken);
+      isDemoMode=false; lsDel('demo_mode');
       bootMainApp();
       initFirebaseLive && initFirebaseLive();
+      if(oauthToken) loadGoogleData();
       toast('Mobile Anmeldung erfolgreich ✓','ok');
     }
   }catch(e){console.warn('Redirect Ergebnis:',e);}
@@ -1725,12 +1735,33 @@ function toast(msg,type){
 ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function confirmLogout(){
   const name=userInfo.name||userInfo.email||'Nutzer';
-  if(!confirm(`Abmelden?\n\n${name}`))return;
-  logout();
+  const mail=userInfo.email||'';
+  const avatar=userInfo.picture
+    ? `<img src="${esc(userInfo.picture)}" alt="">`
+    : esc((name||'?').split(' ').map(x=>x[0]).join('').substring(0,2).toUpperCase()||'?');
+  const html=`
+    <div class="logout-profile">
+      <div class="logout-avatar">${avatar}</div>
+      <div style="min-width:0">
+        <div class="logout-name">${esc(name)}</div>
+        <div class="logout-mail">${esc(mail)}</div>
+      </div>
+    </div>
+    <div class="logout-warning">Du meldest dich nur auf diesem Gerät ab. Deine Punkte, Challenges und Kontest-Daten bleiben in Firebase erhalten.</div>
+    <button class="btn btn-danger btn-full" onclick="logout()">Jetzt abmelden</button>
+    <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="closePanel()">Angemeldet bleiben</button>`;
+  openPanel('Abmelden',html);
 }
-function logout(){
+async function logout(){
+  try{
+    if(typeof firebase!=='undefined' && typeof db!=='undefined' && db && userInfo.email){
+      await db.collection('change_players').doc(String(userInfo.email).toLowerCase().replace(/[^a-z0-9._-]/g,'_')).set({online:false,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+    }
+  }catch(e){}
+  try{ if(window.firebase && firebase.auth) await firebase.auth().signOut(); }catch(e){}
   accessToken='';userInfo={};isDemoMode=false;gEvents=[];notifications=[];
   lsDel('access_token');lsDel('user_info');lsDel('demo_mode');
+  closePanel();
   document.getElementById('main-app').style.display='none';
   if(CLIENT_ID)showLogin();
   else document.getElementById('setup-modal').classList.add('show');
@@ -2278,16 +2309,21 @@ document.addEventListener('touchend',e=>{
       db=firebase.firestore();
       if(firebase.messaging && 'serviceWorker' in navigator && 'Notification' in window){ messaging=firebase.messaging(); }
       ls(FIREBASE_READY_KEY,true);
+      installForegroundPushHandler();
+      startChallengeReminderLoop();
+      if(ls('live_sync_enabled')===false){
+        try{ if(userInfo.email) await db.collection('change_players').doc(safeDocId(currentEmail())).set({online:false,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); }catch(_e){}
+        return true;
+      }
       await registerLivePlayer();
       startLivePlayersListener();
       startLiveCompletionsListener();
-      installForegroundPushHandler();
-      startChallengeReminderLoop();
       return true;
     }catch(e){ console.warn('Firebase init fehlgeschlagen:',e); return false; }
   };
 
   window.registerLivePlayer = async function(){
+    if(ls('live_sync_enabled')===false) return;
     if(!db || !userInfo.email) return;
     try{
       await db.collection('change_players').doc(safeDocId(currentEmail())).set(publicPlayer(),{merge:true});
@@ -2304,6 +2340,7 @@ document.addEventListener('touchend',e=>{
   }
 
   function startLivePlayersListener(){
+    if(ls('live_sync_enabled')===false) return;
     if(!db || unsubscribePlayers) return;
     unsubscribePlayers=db.collection('change_players').onSnapshot(snap=>{
       snap.forEach(doc=>mergePlayer({id:doc.id,...doc.data()}));
@@ -2314,6 +2351,7 @@ document.addEventListener('touchend',e=>{
   }
 
   function startLiveCompletionsListener(){
+    if(ls('live_sync_enabled')===false) return;
     if(!db || unsubscribeCompletions) return;
     unsubscribeCompletions=db.collection('change_completions').orderBy('createdAt','desc').limit(500).onSnapshot(snap=>{
       snap.forEach(doc=>{
@@ -2385,6 +2423,7 @@ document.addEventListener('touchend',e=>{
       const token=await messaging.getToken({vapidKey:vapid,serviceWorkerRegistration:reg});
       if(!token) throw new Error('Kein Push-Token erhalten');
       ls('fcm_token',token);
+      ls('push_enabled',true);
       await db.collection('change_players').doc(safeDocId(currentEmail())).set({
         ...publicPlayer(), fcmToken:token, pushEnabled:true, tokenUpdatedAt:firebase.firestore.FieldValue.serverTimestamp()
       },{merge:true});
@@ -2432,12 +2471,52 @@ document.addEventListener('touchend',e=>{
     toast('Test gesendet ✓','ok');
   };
 
+  window.disablePushNotifications = async function(){
+    try{
+      await initFirebaseLive();
+      if(messaging){
+        const token=ls('fcm_token');
+        if(token){ try{ await messaging.deleteToken(token); }catch(_e){} }
+      }
+      lsDel('fcm_token');
+      ls('push_enabled',false);
+      if(db && userInfo.email){
+        await db.collection('change_players').doc(safeDocId(currentEmail())).set({pushEnabled:false,fcmToken:'',tokenUpdatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+      }
+      toast('Push-Benachrichtigungen deaktiviert','ok');
+      openPushSettingsPanel();
+    }catch(e){ console.warn('Push deaktivieren:',e); toast('Push konnte nicht deaktiviert werden','err'); }
+  };
+
+  window.setPushNotificationsEnabled = function(enabled){
+    if(enabled) enablePushNotifications();
+    else disablePushNotifications();
+  };
+
+  window.setLiveSyncEnabled = async function(enabled){
+    ls('live_sync_enabled',!!enabled);
+    try{
+      if(!enabled){
+        if(unsubscribePlayers){unsubscribePlayers(); unsubscribePlayers=null;}
+        if(unsubscribeCompletions){unsubscribeCompletions(); unsubscribeCompletions=null;}
+        if(db && userInfo.email){ await db.collection('change_players').doc(safeDocId(currentEmail())).set({online:false,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); }
+        toast('Live-Mitspieler deaktiviert','ok');
+      }else{
+        await initFirebaseLive();
+        toast('Live-Mitspieler verbunden ✓','ok');
+      }
+    }catch(e){ console.warn('Live-Sync Umschalten:',e); toast('Live-Sync konnte nicht geändert werden','err'); }
+    openPushSettingsPanel();
+  };
+
   window.openPushSettingsPanel = function(){
     const cfgOk=hasFirebaseConfig();
     const supported=('Notification' in window);
     const perm=supported?Notification.permission:'nicht unterstützt';
     const token=ls('fcm_token');
-    const online=(challengePlayers||[]).filter(p=>p.online).length;
+    const pushEnabled=!!token && ls('push_enabled')!==false && perm==='granted';
+    const liveEnabled=ls('live_sync_enabled')!==false;
+    const online=liveEnabled?(challengePlayers||[]).filter(p=>p.online).length:0;
     const autoEnabled=ls('auto_challenges_enabled')!==false;
     const installStatus=isStandaloneApp()?'installiert':(deferredInstallPrompt?'bereit':'manuell');
     const permClass=perm==='granted'?'push-ok':(perm==='denied'?'push-err':'push-warn');
@@ -2448,14 +2527,22 @@ document.addEventListener('touchend',e=>{
         <div class="push-status ${permClass}">Benachrichtigungsstatus: <strong>${esc(perm)}</strong></div>
         <div class="push-status">Push-Token: <strong>${token?'vorhanden':'noch nicht erstellt'}</strong></div>
         <div class="push-status">App-Installation: <strong>${esc(installStatus)}</strong></div>
-        <div class="push-status">Live-Mitspieler erkannt: <strong>${online}</strong></div>
+        <div class="push-status">Live-Mitspieler: <strong>${liveEnabled?('verbunden · '+online+' online'):'deaktiviert'}</strong></div>
       </div>
       ${notificationHelpHtml(perm)}
       <div class="toggle-row">
-        <div class="toggle-copy"><div class="toggle-title">Tägliche Auto-Challenges <span class="status-pill ${autoEnabled?'status-on':'status-off'}">${autoEnabled?'AKTIV':'INAKTIV'}</span></div><div class="toggle-sub">Erzeugt jeden Tag kleine Rätsel und Trainingsübungen.</div></div>
+        <div class="toggle-copy"><div class="toggle-title">Echte Push-Benachrichtigungen <span class="status-pill ${pushEnabled?'status-on':'status-off'}">${pushEnabled?'AKTIV':'INAKTIV'}</span></div><div class="toggle-sub">Benachrichtigt dich über offene Challenges. Bei blockierten Browser-Berechtigungen bleibt der Regler aus.</div></div>
+        <label class="switch"><input type="checkbox" ${pushEnabled?'checked':''} onchange="setPushNotificationsEnabled(this.checked)"><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-copy"><div class="toggle-title">Live-Mitspieler <span class="status-pill ${liveEnabled?'status-on':'status-off'}">${liveEnabled?'VERBUNDEN':'DEAKTIVIERT'}</span></div><div class="toggle-sub">Synchronisiert Kontest-Teilnehmer und erledigte Übungen live über Firebase.</div></div>
+        <label class="switch"><input type="checkbox" ${liveEnabled?'checked':''} onchange="setLiveSyncEnabled(this.checked)"><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-copy"><div class="toggle-title">Tägliche Auto-Challenges <span class="status-pill ${autoEnabled?'status-on':'status-off'}">${autoEnabled?'AKTIV':'INAKTIV'}</span></div><div class="toggle-sub">Erzeugt jeden Tag kleine Sportübungen.</div></div>
         <label class="switch"><input type="checkbox" ${autoEnabled?'checked':''} onchange="setAutoChallengesEnabled(this.checked)"><span class="slider"></span></label>
       </div>
-      <button class="btn btn-primary btn-full" onclick="enablePushNotifications()">Echte Push-Benachrichtigungen aktivieren</button>
+      <button class="btn btn-primary btn-full" onclick="enablePushNotifications()">Push jetzt einrichten / erneuern</button>
       <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="installChangeApp()">Change als App installieren</button>
       <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="initFirebaseLive().then(ok=>toast(ok?'Live-Sync aktiv ✓':'Firebase-Konfiguration fehlt',ok?'ok':'err'))">Live-Mitspieler neu verbinden</button>
       <button class="btn btn-ghost btn-full" style="margin-top:8px" onclick="testLocalPush()">Test-Benachrichtigung anzeigen</button>
@@ -2612,6 +2699,131 @@ document.addEventListener('touchend',e=>{
     const i=events.findIndex(e=>e.id===ev.id); if(i>=0)events[i]=ev; else events.push(ev); ls('events',events); closePanel(); if(currentMainView==='calendar'){renderCalendar();renderUpcoming();} syncEventToGoogleReliable(ev);
   };
   setTimeout(()=>{normalizeSportChallenges(); if(typeof renderChallenges==='function') renderChallenges();},500);
+})();
+
+
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   FINAL FIX 2: Demo-User aus echtem Contest, Sportlinks, Kalender-403-Hilfe
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+(function(){
+  const DEMO_IDS=['demo@example.com','demo nutzer','demo-nutzer','demo'];
+  const SPORTS_ONLY_POOL=[
+    {id:'sport_squat',icon:'🏋️',title:'10 Kniebeugen',desc:'Mache 10 saubere Kniebeugen. Füße etwa schulterbreit, Rücken gerade, langsam runter und stabil hoch.',points:10,level:'leicht bis mittel',url:'https://www.tk.de/techniker/magazin/sport/fitness/kniebeugen-2008836'},
+    {id:'sport_wall_pushup',icon:'💪',title:'10 Wand-Liegestütze',desc:'Stelle dich vor eine Wand, Hände auf Schulterhöhe, Körper gerade. Beuge und strecke die Arme kontrolliert.',points:10,level:'leicht',url:'https://www.aok.de/pk/magazin/sport/fitness/liegestuetze-richtig-ausfuehren/'},
+    {id:'sport_plank_easy',icon:'⏱️',title:'20 Sekunden Unterarmstütz',desc:'Halte 20 Sekunden Plank. Leichtere Variante: Knie auf den Boden setzen.',points:12,level:'mittel',url:'https://www.aok.de/pk/magazin/sport/fitness/plank-richtig-ausfuehren/'},
+    {id:'sport_calf_raise',icon:'🦵',title:'15 Wadenheben',desc:'Stelle dich aufrecht hin, hebe die Fersen langsam an und senke sie kontrolliert wieder ab.',points:8,level:'leicht',url:'https://www.tk.de/techniker/magazin/sport/fitness/krafttraining-zuhause-2008872'},
+    {id:'sport_march',icon:'🚶',title:'2 Minuten Marschieren',desc:'Marschieren auf der Stelle: Knie locker anheben, Arme mitschwingen, ruhig atmen.',points:8,level:'leicht',url:'https://www.aok.de/pk/magazin/sport/fitness/fitnessuebungen-fuer-zuhause/'},
+    {id:'sport_shoulder',icon:'🙆',title:'30 Sekunden Schulterkreisen',desc:'Kreise beide Schultern langsam nach hinten und vorne. Ohne ruckartige Bewegung.',points:6,level:'leicht',url:'https://www.tk.de/techniker/magazin/sport/fitness/dehnen-2008902'},
+    {id:'sport_lunge_easy',icon:'🏃',title:'8 Ausfallschritte',desc:'Mache 4 Ausfallschritte pro Bein. Halte den Oberkörper aufrecht, Knie kontrolliert beugen.',points:12,level:'mittel',url:'https://www.aok.de/pk/magazin/sport/fitness/fitnessuebungen-fuer-zuhause/'},
+    {id:'sport_balance',icon:'⚖️',title:'30 Sekunden Balance',desc:'Stehe 15 Sekunden auf einem Bein, dann wechseln. Bei Bedarf an Wand oder Stuhl festhalten.',points:7,level:'leicht',url:'https://www.tk.de/techniker/magazin/sport/fitness/gleichgewicht-trainieren-2116034'}
+  ];
+  function keyOfPlayer(p){return String((p && (p.email||p.id||p.name))||'').trim().toLowerCase();}
+  function isDemo(p){const k=keyOfPlayer(p); return DEMO_IDS.some(x=>k===x || k.includes(x));}
+  function clearDemoEverywhere(){
+    if(!isDemoMode){
+      challengePlayers=(challengePlayers||[]).filter(p=>!isDemo(p));
+      challengeCompletions=(challengeCompletions||[]).filter(c=>!DEMO_IDS.some(x=>String(c.playerId||'').toLowerCase().includes(x) || String(c.playerName||'').toLowerCase().includes(x)));
+      ls('challenge_players',challengePlayers); ls('challenge_completions',challengeCompletions);
+      try{
+        if(window.firebase && firebase.apps.length && firebase.firestore){
+          const db=firebase.firestore();
+          db.collection('change_players').doc('demo@example.com').delete().catch(()=>{});
+          db.collection('change_players').doc('demo').delete().catch(()=>{});
+        }
+      }catch(_e){}
+    }
+  }
+  function stripNonSport(){
+    clearDemoEverywhere();
+    const existing=(challenges||[]).filter(c=>{
+      const text=((c.title||'')+' '+(c.desc||'')+' '+(c.type||'')).toLowerCase();
+      if(c.auto) return false;
+      if(['ch_focus','ch_calendar'].includes(c.id)) return false;
+      if(/rätsel|raetsel|logik|wortblitz|zahlen|kopfrechnen|fokuszeit|kalender aufräumen/.test(text)) return false;
+      return true;
+    });
+    SPORTS_ONLY_POOL.forEach(sp=>{
+      const i=existing.findIndex(c=>c.id===sp.id);
+      if(i>=0) existing[i]={...existing[i],...sp,active:true,type:'Sport'};
+      else existing.push({...sp,active:true,type:'Sport',createdAt:new Date().toISOString()});
+    });
+    challenges=existing;
+    ls('challenges',challenges);
+  }
+  window.buildDefaultChallenges=function(){return SPORTS_ONLY_POOL.slice(0,4).map(x=>({...x,active:true,type:'Sport',createdAt:new Date().toISOString()}));};
+  window.ensureDailyAutoChallenges=function(dk=dateKey(new Date())){
+    if(ls('auto_challenges_enabled')===false) return [];
+    stripNonSport();
+    const dayIndex=Math.floor(new Date(dk+'T12:00:00').getTime()/86400000);
+    const picks=[0,1,2].map(i=>SPORTS_ONLY_POOL[(dayIndex+i)%SPORTS_ONLY_POOL.length]);
+    const daily=picks.map((base,i)=>({id:'auto_'+dk+'_sport_'+i,title:base.title,desc:base.desc,points:base.points,icon:base.icon,url:base.url,level:base.level,date:dk,recurrence:'once',active:true,auto:true,type:'Sport',createdAt:dk+'T00:00:00.000Z'}));
+    challenges=(challenges||[]).filter(c=>!c.auto || String(c.id||'').startsWith('auto_'+dk+'_sport_'));
+    daily.forEach(ch=>{ if(!challenges.some(x=>x.id===ch.id)) challenges.push(ch); });
+    ls('challenges',challenges);
+    if(typeof publishChallengesToFirestore==='function') setTimeout(()=>publishChallengesToFirestore(),50);
+    return daily;
+  };
+  window.getVisibleContestPlayers=function(){
+    clearDemoEverywhere();
+    const seen=new Set();
+    return (challengePlayers||[]).filter(p=>isDemoMode || !isDemo(p)).filter(p=>{const k=String(p.email||p.id||'').toLowerCase(); if(!k||seen.has(k)) return false; seen.add(k); return true;});
+  };
+  window.getPlayerPointSummary=function(playerId){
+    const id=String(playerId||'').toLowerCase(); const td=dateKey(new Date());
+    const out={totalPoints:0,totalCount:0,todayPoints:0,todayCount:0,todayItems:[]};
+    (challengeCompletions||[]).forEach(c=>{
+      if(String(c.playerId||'').toLowerCase()!==id) return;
+      const pts=parseInt(c.points)||0; out.totalPoints+=pts; out.totalCount+=1;
+      if(c.date===td){ const ch=(challenges||[]).find(x=>x.id===c.challengeId); out.todayPoints+=pts; out.todayCount+=1; out.todayItems.push({title:ch?.title||c.challengeId||'Challenge',icon:ch?.icon||'✅',points:pts,url:ch?.url||''}); }
+    });
+    return out;
+  };
+  window.openContestUserDetails=function(playerId){
+    const id=String(playerId||'').toLowerCase(); const p=(challengePlayers||[]).find(x=>String(x.email||x.id||'').toLowerCase()===id)||{id,name:id,email:id}; if(!isDemoMode&&isDemo(p))return;
+    const sum=getPlayerPointSummary(id);
+    const items=sum.todayItems.length?sum.todayItems.map(it=>'<div class="challenge-item"><div class="challenge-icon">'+esc(it.icon)+'</div><div class="challenge-body"><div class="challenge-name">'+esc(it.title)+'</div><div class="challenge-meta">Heute erledigt</div>'+(it.url?'<a href="'+esc(it.url)+'" target="_blank" rel="noopener" class="challenge-meta">Übung ansehen</a>':'')+'</div><span class="points-pill">+'+it.points+'</span></div>').join(''):'<div class="dash-empty">Heute noch nichts erledigt.</div>';
+    openPanel('Kontest · '+esc(p.name||p.email||'Mitspieler'),'<div class="stat-strip"><div class="stat-box"><div class="stat-num">'+sum.todayPoints+'</div><div class="stat-label">Punkte heute</div></div><div class="stat-box"><div class="stat-num">'+sum.totalPoints+'</div><div class="stat-label">Punkte gesamt</div></div></div><div class="push-status">Erledigt heute: <strong>'+sum.todayCount+'</strong> · Gesamt erledigt: <strong>'+sum.totalCount+'</strong></div><div class="divider"></div><div class="section-label">Heute erledigt</div>'+items);
+  };
+  window.renderChallenges=function(){
+    ensureDailyAutoChallenges(); clearDemoEverywhere();
+    const list=document.getElementById('challenges-list'); const board=document.getElementById('leaderboard-list'); if(!list||!board)return;
+    const active=(challenges||[]).filter(c=>c.active!==false && (c.type==='Sport' || /^sport_|^auto_.*_sport_/.test(c.id||'')));
+    list.innerHTML=active.length?active.map(ch=>{const done=isChallengeDoneToday(ch.id); const link=ch.url?'<a href="'+esc(ch.url)+'" target="_blank" rel="noopener" class="challenge-meta" onclick="event.stopPropagation()">So geht die Übung</a>':''; return '<div class="challenge-item '+(done?'challenge-done':'')+'"><div class="challenge-icon">'+esc(ch.icon||'🏃')+'</div><div class="challenge-body"><div class="challenge-name">'+esc(ch.title)+'</div><div class="challenge-meta">'+esc(ch.desc||'')+' · '+esc(ch.level||'leicht')+' · '+(ch.points||0)+' Punkte</div>'+link+'</div><span class="points-pill">+'+(ch.points||0)+'</span><button class="btn '+(done?'btn-success':'btn-primary')+' btn-sm" onclick="completeChallenge(\''+ch.id+'\')">'+(done?'Erledigt':'Erledigen')+'</button></div>';}).join(''):'<div class="empty-state"><div class="empty-title">Keine Sportübungen</div><div class="empty-sub">Aktiviere Auto-Challenges oder lege eine Sportübung an.</div></div>';
+    const players=getVisibleContestPlayers(); players.sort((a,b)=>getPlayerPointSummary(String(b.email||b.id).toLowerCase()).totalPoints-getPlayerPointSummary(String(a.email||a.id).toLowerCase()).totalPoints);
+    board.innerHTML=players.length?players.map((p,idx)=>{const id=String(p.email||p.id||'').toLowerCase(); const st=getPlayerPointSummary(id); const me=id===getCurrentPlayerId(); const medal=idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':(idx+1); const live=p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>'; return '<div class="leader-row clickable" onclick="openContestUserDetails(\''+esc(id)+'\')"><div class="leader-rank">'+medal+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(me?' · Du':'')+live+'</div><div class="leader-detail">Heute: '+st.todayPoints+' P · Gesamt: '+st.totalPoints+' P · '+st.totalCount+' erledigt</div></div><div class="leader-score">'+st.totalPoints+'</div></div>';}).join(''):'<div class="dash-empty">Noch keine Mitspieler. Sobald sich jemand mit Google anmeldet, erscheint er hier automatisch.</div>';
+  };
+  const oldRegister=window.registerLivePlayer;
+  if(oldRegister){
+    window.registerLivePlayer=async function(){
+      isDemoMode=!!ls('demo_mode');
+      if(!isDemoMode && userInfo && userInfo.email && String(userInfo.email).toLowerCase()!== 'demo@example.com') clearDemoEverywhere();
+      return oldRegister.apply(this,arguments);
+    };
+  }
+  function calendar403Help(status, bodyText){
+    if(status===403){
+      return 'Google Kalender API 403: Bitte in Google Cloud die Calendar API aktivieren, deine OAuth-Client-ID für ak2191.github.io erlauben und dich danach neu anmelden. Auf Android wurde der Kalenderzugriff jetzt ebenfalls mit angefordert.';
+    }
+    return 'Google Kalender '+status+' '+String(bodyText||'').substring(0,100);
+  }
+  window.syncEventToGoogleReliable=async function(ev){
+    if(!accessToken||isDemoMode||!ev||ev.source==='google')return false;
+    if(accessToken==='firebase-auth'){toast('Kalender-Sync braucht Google-Kalenderzugriff. Bitte abmelden und erneut mit Google anmelden.','err'); return false;}
+    const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const addHour=(date,time)=>{const d=new Date(date+'T'+(time||'09:00')+':00'); d.setHours(d.getHours()+1); return d.toTimeString().substring(0,5);};
+    const nextDate=(date)=>{const d=new Date(date+'T12:00:00'); d.setDate(d.getDate()+1); return dateKey(d);};
+    const endTime=ev.endTime||addHour(ev.date,ev.time);
+    const body={summary:ev.title,description:ev.desc||'',start:ev.time?{dateTime:ev.date+'T'+ev.time+':00',timeZone:tz}:{date:ev.date},end:ev.time?{dateTime:ev.date+'T'+endTime+':00',timeZone:tz}:{date:nextDate(ev.date)}};
+    try{
+      const url=ev.googleEventId?'https://www.googleapis.com/calendar/v3/calendars/primary/events/'+encodeURIComponent(ev.googleEventId):'https://www.googleapis.com/calendar/v3/calendars/primary/events';
+      const r=await fetch(url,{method:ev.googleEventId?'PATCH':'POST',headers:{'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if(r.status===401){lsDel('access_token'); accessToken=''; toast('Google-Anmeldung abgelaufen. Bitte neu anmelden.','err'); return false;}
+      if(!r.ok){const txt=await r.text().catch(()=>String(r.status)); throw new Error(calendar403Help(r.status,txt));}
+      const saved=await r.json(); const i=events.findIndex(e=>e.id===ev.id); if(i>=0){events[i].googleEventId=saved.id; events[i].googleSyncedAt=new Date().toISOString(); ls('events',events);} loadGoogleEvents(); toast('Mit Google Kalender synchronisiert ✓','ok'); return true;
+    }catch(e){console.warn('Google Calendar Sync:',e); toast(e.message||'Kalender-Sync fehlgeschlagen','err'); return false;}
+  };
+  setTimeout(()=>{stripNonSport(); if(typeof renderChallenges==='function')renderChallenges(); if(typeof buildDashboard==='function')buildDashboard();},600);
 })();
 
 </script>

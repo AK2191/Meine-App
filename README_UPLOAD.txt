@@ -1,20 +1,19 @@
-CHANGE – Upload-Paket
+CHANGE Upload-Paket
 
-GitHub Pages Upload:
-- index.html
-- firebase-config.js
-- firebase-messaging-sw.js
-- manifest.json
-- icon-192.png
-- icon-512.png
+Diese Version enthält:
+- professionelles Abmelde-Panel statt Browser-confirm
+- Regler für echte Push-Benachrichtigungen
+- Regler für Live-Mitspieler verbunden/deaktiviert
+- Statusanzeige für Push, App-Installation und Live-Mitspieler
+- Sport-Challenges und Kontest-Anpassungen aus der vorherigen Version
 
-Neu in dieser Version:
-- Google-Kalender-Sync robuster: neue und bearbeitete Termine werden synchronisiert, Standard-Endzeit wird gesetzt.
-- Demo-Nutzer wird im echten Kontest ausgeblendet; nur im Demo-Modus sichtbar.
-- Auto-Challenges bestehen nur noch aus kleinen Sportübungen.
-- Kontest zeigt pro Nutzer: heutige Punkte und Gesamtpunkte.
-- Klick auf einen Kontest-Nutzer zeigt, was heute erledigt wurde.
+Upload zu GitHub Pages:
+1. Inhalt dieses Ordners in den Root deines Repositories hochladen.
+2. index.html, firebase-config.js, firebase-messaging-sw.js, manifest.json und Icons ersetzen.
+3. Commit changes.
+4. Seite mit STRG+SHIFT+R neu laden.
 
-Für automatische Hintergrund-Pushs:
-- Ordner functions per Firebase deployen.
-- functions/index.js erzeugt jetzt nur kleine Sportübungen.
+Hinweise:
+- Push kann nur aktiviert werden, wenn der Browser Benachrichtigungen erlaubt.
+- iPhone/iPad: Push funktioniert nur aus der installierten Home-Bildschirm-App.
+- Live-Mitspieler kann im Push & Live-Sync Panel über den Regler deaktiviert/aktiviert werden.
