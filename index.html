@@ -11,6 +11,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async></script>
+<link rel="manifest" href="./manifest.json">
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging-compat.js"></script>
+<script src="./firebase-config.js"></script>
 <style>
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    PROCAL v2 · DESIGN SYSTEM
@@ -656,6 +661,13 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 .settings-hint{font-size:12px;color:var(--t4);line-height:1.5;margin-top:8px}
 @media(max-width:900px){.year-grid{grid-template-columns:1fr}.workweek-grid{grid-template-columns:1fr}}
 @media(max-width:700px){.view-toggle{display:flex!important;overflow-x:auto}.vbtn{padding:5px 8px}}
+
+/* ── FIREBASE PUSH & LIVE CONTEST ── */
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--grn);display:inline-block;margin-left:6px;box-shadow:0 0 0 3px rgba(52,211,153,.12)}
+.live-dot.off{background:var(--t5);box-shadow:none}
+.push-box{background:var(--s2);border:1px solid var(--b2);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.push-status{font-size:12px;color:var(--t3);line-height:1.5;margin-top:8px}
+.push-ok{color:var(--grn)}.push-warn{color:var(--amb)}.push-err{color:var(--red)}
 </style>
 </head>
 <body>
@@ -786,6 +798,9 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
         </button>
         <button class="icon-btn" onclick="openCalendarSettings()" title="Kalender-Einstellungen">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.33 1.82V22a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1.82-.33H2a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-.6 1.65 1.65 0 0 0 .33-1.82V2a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.12.69.31 1 .6.31.29.51.64.6 1H22a2 2 0 1 1 0 4h-.09c-.37.09-.72.29-1 .6-.29.31-.48.64-.51 1z"/></svg>
+        </button>
+        <button class="icon-btn" onclick="openPushSettingsPanel()" title="Push & Live-Sync">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v4"/><path d="M12 18v4"/><path d="m4.93 4.93 2.83 2.83"/><path d="m16.24 16.24 2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="m4.93 19.07 2.83-2.83"/><path d="m16.24 7.76 2.83-2.83"/></svg>
         </button>
         <div class="avatar" id="user-avatar" onclick="confirmLogout()" title="Abmelden">
           <span id="avatar-initials">?</span>
@@ -2126,6 +2141,246 @@ document.addEventListener('touchend',e=>{
     }
   };
   setTimeout(()=>{try{renderCalendar();}catch(e){console.warn(e)}},0);
+})();
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   FIREBASE EXTENSION: echte Push Notifications + automatische Mitspieler-Erkennung
+   Voraussetzung: firebase-config.js, firebase-messaging-sw.js und manifest.json liegen im Repo-Root.
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+(function(){
+  let fbApp=null, db=null, messaging=null, unsubscribePlayers=null, unsubscribeCompletions=null;
+  let lastChallengeNotifyKey='';
+  const FIREBASE_READY_KEY='firebase_ready_v1';
+
+  function hasFirebaseConfig(){
+    const cfg=window.FIREBASE_CONFIG||{};
+    return !!(cfg.apiKey && !String(cfg.apiKey).includes('HIER_') && cfg.projectId);
+  }
+  function getFirebaseConfig(){ return window.FIREBASE_CONFIG||{}; }
+  function getVapidKey(){ return window.FIREBASE_VAPID_KEY||''; }
+  function currentEmail(){ return (userInfo.email||'demo@example.com').toLowerCase(); }
+  function safeDocId(id){ return String(id||'unknown').toLowerCase().replace(/[^a-z0-9._-]/g,'_'); }
+  function publicPlayer(){
+    return {
+      id: currentEmail(),
+      name: userInfo.name||userInfo.email||'Mitspieler',
+      email: userInfo.email||'',
+      picture: userInfo.picture||'',
+      lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+      online: true,
+      app: 'Change'
+    };
+  }
+
+  window.initFirebaseLive = async function(){
+    if(!hasFirebaseConfig() || !window.firebase){
+      console.info('Firebase ist noch nicht konfiguriert. firebase-config.js ausfüllen.');
+      return false;
+    }
+    try{
+      if(!firebase.apps.length) fbApp=firebase.initializeApp(getFirebaseConfig());
+      else fbApp=firebase.app();
+      db=firebase.firestore();
+      if(firebase.messaging && 'serviceWorker' in navigator && 'Notification' in window){ messaging=firebase.messaging(); }
+      ls(FIREBASE_READY_KEY,true);
+      await registerLivePlayer();
+      startLivePlayersListener();
+      startLiveCompletionsListener();
+      installForegroundPushHandler();
+      startChallengeReminderLoop();
+      return true;
+    }catch(e){ console.warn('Firebase init fehlgeschlagen:',e); return false; }
+  };
+
+  window.registerLivePlayer = async function(){
+    if(!db || !userInfo.email) return;
+    try{
+      await db.collection('change_players').doc(safeDocId(currentEmail())).set(publicPlayer(),{merge:true});
+      if(typeof ensureCurrentChallengePlayer==='function') ensureCurrentChallengePlayer();
+    }catch(e){ console.warn('Player sync:',e); }
+  };
+
+  function mergePlayer(p){
+    if(!p || !p.id) return;
+    const id=(p.email||p.id).toLowerCase();
+    const entry={id:id,name:p.name||p.email||'Mitspieler',email:p.email||id,picture:p.picture||'',online:!!p.online,lastSeen:p.lastSeen||null,createdAt:p.createdAt||new Date().toISOString()};
+    const i=challengePlayers.findIndex(x=>(x.id||x.email||'').toLowerCase()===id);
+    if(i>=0) challengePlayers[i]={...challengePlayers[i],...entry}; else challengePlayers.push(entry);
+  }
+
+  function startLivePlayersListener(){
+    if(!db || unsubscribePlayers) return;
+    unsubscribePlayers=db.collection('change_players').onSnapshot(snap=>{
+      snap.forEach(doc=>mergePlayer({id:doc.id,...doc.data()}));
+      ls('challenge_players',challengePlayers);
+      if(currentMainView==='challenges') renderChallenges();
+      if(currentMainView==='dashboard') buildDashboard();
+    },err=>console.warn('Players listener:',err));
+  }
+
+  function startLiveCompletionsListener(){
+    if(!db || unsubscribeCompletions) return;
+    unsubscribeCompletions=db.collection('change_completions').orderBy('createdAt','desc').limit(500).onSnapshot(snap=>{
+      snap.forEach(doc=>{
+        const d={id:doc.id,...doc.data()};
+        if(!challengeCompletions.some(c=>c.id===d.id)){
+          challengeCompletions.push({
+            id:d.id, challengeId:d.challengeId, playerId:(d.playerId||d.email||'').toLowerCase(),
+            playerName:d.playerName||d.email||'Mitspieler', date:d.date, points:parseInt(d.points)||0,
+            createdAt:d.createdAtLocal||new Date().toISOString()
+          });
+        }
+      });
+      ls('challenge_completions',challengeCompletions);
+      if(currentMainView==='challenges') renderChallenges();
+      if(currentMainView==='dashboard') buildDashboard();
+      if(currentMainView==='calendar') renderCalendar();
+    },err=>console.warn('Completions listener:',err));
+  }
+
+  async function publishCompletionToFirestore(completion){
+    if(!db || !completion) return;
+    try{
+      await db.collection('change_completions').doc(completion.id).set({
+        ...completion,
+        email: currentEmail(),
+        playerId: currentEmail(),
+        playerName: userInfo.name||userInfo.email||'Mitspieler',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        createdAtLocal: completion.createdAt||new Date().toISOString()
+      },{merge:true});
+    }catch(e){ console.warn('Completion sync:',e); }
+  }
+
+  window.enablePushNotifications = async function(){
+    if(!hasFirebaseConfig()){ toast('Firebase ist noch nicht eingerichtet: firebase-config.js ausfüllen','err'); return; }
+    if(!('Notification' in window)){ toast('Dieser Browser unterstützt keine Push-Mitteilungen','err'); return; }
+    const ok=await initFirebaseLive(); if(!ok){ toast('Firebase konnte nicht gestartet werden','err'); return; }
+    try{
+      const perm=await Notification.requestPermission();
+      if(perm!=='granted'){ toast('Benachrichtigungen wurden nicht erlaubt','err'); return; }
+      const reg=await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+      const vapid=getVapidKey();
+      if(!vapid || vapid.includes('HIER_')){ toast('VAPID Key fehlt in firebase-config.js','err'); return; }
+      const token=await messaging.getToken({vapidKey:vapid,serviceWorkerRegistration:reg});
+      if(!token) throw new Error('Kein Push-Token erhalten');
+      ls('fcm_token',token);
+      await db.collection('change_players').doc(safeDocId(currentEmail())).set({
+        ...publicPlayer(), fcmToken:token, pushEnabled:true, tokenUpdatedAt:firebase.firestore.FieldValue.serverTimestamp()
+      },{merge:true});
+      toast('Push-Benachrichtigungen aktiviert ✓','ok');
+      openPushSettingsPanel();
+    }catch(e){ console.warn('Push aktivieren:',e); toast('Push konnte nicht aktiviert werden: '+(e.message||e),'err'); }
+  };
+
+  function installForegroundPushHandler(){
+    if(!messaging || messaging._changeHandlerInstalled) return;
+    messaging.onMessage(payload=>{
+      const n=payload.notification||{};
+      if(Notification.permission==='granted') new Notification(n.title||'Change', {body:n.body||'', icon:'./icon-192.png', badge:'./icon-192.png'});
+      toast(n.title||'Neue Change-Nachricht','ok');
+    });
+    messaging._changeHandlerInstalled=true;
+  }
+
+  function openLocalNotification(title,body){
+    if('Notification' in window && Notification.permission==='granted'){
+      try{ new Notification(title,{body,icon:'./icon-192.png',badge:'./icon-192.png'}); }catch{}
+    }
+  }
+  function startChallengeReminderLoop(){
+    if(window._changeReminderLoop) return;
+    window._changeReminderLoop=setInterval(()=>{
+      try{
+        const today=dateKey(new Date());
+        const due=(typeof challengeScheduleForDate==='function'?challengeScheduleForDate(today):(challenges||[])).filter(ch=>ch.active!==false);
+        if(!due.length) return;
+        const open=due.filter(ch=>!(challengeCompletions||[]).some(c=>c.challengeId===ch.id&&c.playerId===currentEmail()&&c.date===today));
+        const key=today+'_'+open.map(x=>x.id).join(',');
+        if(open.length && key!==lastChallengeNotifyKey){
+          lastChallengeNotifyKey=key;
+          openLocalNotification('Change: offene Challenges', open.length+' Challenge(s) warten heute auf dich.');
+        }
+      }catch(e){}
+    }, 15*60*1000);
+  }
+
+  window.openPushSettingsPanel = function(){
+    const cfgOk=hasFirebaseConfig();
+    const perm=('Notification' in window)?Notification.permission:'nicht unterstützt';
+    const token=ls('fcm_token');
+    const online=(challengePlayers||[]).filter(p=>p.online).length;
+    const html=`
+      <div class="push-box">
+        <div class="challenge-title">Firebase Push & Live-Kontest</div>
+        <div class="push-status ${cfgOk?'push-ok':'push-warn'}">${cfgOk?'Firebase-Konfiguration gefunden.':'Firebase ist noch nicht konfiguriert. Trage deine Werte in firebase-config.js ein.'}</div>
+        <div class="push-status">Benachrichtigungsstatus: <strong>${esc(perm)}</strong></div>
+        <div class="push-status">Push-Token: <strong>${token?'vorhanden':'noch nicht erstellt'}</strong></div>
+        <div class="push-status">Live-Mitspieler erkannt: <strong>${online}</strong></div>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="enablePushNotifications()">Echte Push-Benachrichtigungen aktivieren</button>
+      <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="initFirebaseLive().then(ok=>toast(ok?'Live-Sync aktiv ✓':'Firebase-Konfiguration fehlt',ok?'ok':'err'))">Live-Mitspieler neu verbinden</button>
+      <div class="settings-hint">Damit Push auch im Hintergrund funktioniert, müssen zusätzlich die Firebase-Dateien im GitHub-Repo liegen und die Cloud Function aus dem Ordner <strong>functions</strong> deployed sein.</div>`;
+    openPanel('Push & Live-Sync',html);
+  };
+
+  window.openParticipantPanel = function(){
+    initFirebaseLive();
+    const players=[...(challengePlayers||[])].sort((a,b)=>(b.online===true)-(a.online===true)||String(a.name||'').localeCompare(String(b.name||'')));
+    const html='<div class="section-label">Automatisch erkannte Mitspieler</div>'+
+      (players.length?players.map(p=>'<div class="leader-row"><div class="leader-rank">'+(p.picture?'<img src="'+esc(p.picture)+'" style="width:28px;height:28px;border-radius:50%;object-fit:cover">':'👤')+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(p.email===userInfo.email?' · Du':'')+(p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>')+'</div><div class="leader-detail">'+esc(p.email||'')+'</div></div></div>').join(''):'<div class="dash-empty">Noch keine Mitspieler erkannt. Sobald sich jemand mit Google anmeldet, erscheint er hier automatisch.</div>')+
+      '<div class="settings-hint">Manuelles Hinzufügen ist deaktiviert. Jeder Google-Login wird automatisch als Mitspieler registriert.</div>';
+    openPanel('Mitspieler',html);
+  };
+
+  const _boot=window.bootMainApp;
+  window.bootMainApp=function(){ _boot.apply(this,arguments); setTimeout(()=>initFirebaseLive(),300); };
+
+  const _fetchUserInfo=window.fetchUserInfo;
+  if(_fetchUserInfo){
+    window.fetchUserInfo=async function(){ const r=await _fetchUserInfo.apply(this,arguments); setTimeout(()=>initFirebaseLive(),300); return r; };
+  }
+
+  const _complete=window.completeChallenge;
+  window.completeChallenge=function(id){
+    const before=(challengeCompletions||[]).length;
+    _complete.apply(this,arguments);
+    const latest=(challengeCompletions||[])[(challengeCompletions||[]).length-1];
+    if((challengeCompletions||[]).length>before) publishCompletionToFirestore(latest);
+  };
+
+  window.addEventListener('beforeunload',()=>{
+    try{ if(db && userInfo.email) db.collection('change_players').doc(safeDocId(currentEmail())).set({online:false,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); }catch(e){}
+  });
+
+  setTimeout(()=>{ if(userInfo && userInfo.email) initFirebaseLive(); },1200);
+})();
+
+/* ── FIREBASE EXTENSION 2: Challenges live veröffentlichen ── */
+(function(){
+  function hasCfg(){const c=window.FIREBASE_CONFIG||{};return !!(c.apiKey&&!String(c.apiKey).includes('HIER_')&&c.projectId&&window.firebase)}
+  function getDb(){try{return firebase.firestore()}catch(e){return null}}
+  function chDueData(ch){return {id:ch.id,title:ch.title||'Challenge',desc:ch.desc||'',points:parseInt(ch.points)||0,icon:ch.icon||'🏆',date:ch.date||ch.startDate||dateKey(new Date()),recurrence:ch.recurrence||'once',active:ch.active!==false,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}}
+  window.publishChallengesToFirestore=async function(){
+    if(!hasCfg()) return;
+    const db=getDb(); if(!db) return;
+    try{for(const ch of (challenges||[])){await db.collection('change_challenges').doc(ch.id).set(chDueData(ch),{merge:true});}}catch(e){console.warn('Challenge live publish:',e)}
+  };
+  window.listenLiveChallenges=function(){
+    if(window._changeLiveChallengesListener || !hasCfg()) return;
+    const db=getDb(); if(!db) return;
+    window._changeLiveChallengesListener=db.collection('change_challenges').where('active','==',true).onSnapshot(snap=>{
+      snap.forEach(doc=>{const ch={id:doc.id,...doc.data()}; const i=(challenges||[]).findIndex(x=>x.id===ch.id); if(i>=0) challenges[i]={...challenges[i],...ch}; else challenges.push(ch);});
+      ls('challenges',challenges);
+      if(currentMainView==='challenges') renderChallenges();
+      if(currentMainView==='calendar') renderCalendar();
+      if(currentMainView==='dashboard') buildDashboard();
+    },e=>console.warn('Live challenges:',e));
+  };
+  const _init=window.initFirebaseLive;
+  if(_init){window.initFirebaseLive=async function(){const ok=await _init.apply(this,arguments); if(ok){listenLiveChallenges(); publishChallengesToFirestore();} return ok;};}
+  const _save=window.saveChallenge;
+  if(_save){window.saveChallenge=function(){_save.apply(this,arguments); setTimeout(()=>publishChallengesToFirestore(),200);};}
 })();
 
 </script>
