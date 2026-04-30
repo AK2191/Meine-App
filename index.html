@@ -3905,5 +3905,148 @@ document.addEventListener('touchend',e=>{
 })();
 </script>
 
+
+<script>
+/* CHANGE PATCH v7: Aufgabenpunkte immer dem echten Google-Account zuordnen, kein "me - Du" mehr */
+(function(){
+  'use strict';
+  const PATCH='CHANGE_ACCOUNT_IDENTITY_V7';
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+  function today(){try{return typeof dateKey==='function'?dateKey(new Date()):new Date().toISOString().slice(0,10)}catch(e){return new Date().toISOString().slice(0,10)}}
+  function lsSet(k,v){try{if(typeof ls==='function')ls(k,v)}catch(e){} try{localStorage.setItem('change_v2_'+k,JSON.stringify(v))}catch(e){} try{localStorage.setItem('change_v1_'+k,JSON.stringify(v))}catch(e){}}
+  function getStoredUser(){
+    for(const key of ['change_v2_user_info','change_v1_user_info','change_v2_user','change_v1_user']){
+      try{const raw=localStorage.getItem(key); if(raw){const o=JSON.parse(raw); if(o&&typeof o==='object')return o;}}catch(e){}
+    }
+    return {};
+  }
+  function account(){
+    let au=null; try{au=firebase&&firebase.auth&&firebase.auth().currentUser}catch(e){}
+    const stored=getStoredUser();
+    const info=window.userInfo||{};
+    const email=String((au&&au.email)||info.email||stored.email||'').trim().toLowerCase();
+    const uid=String((au&&au.uid)||info.uid||stored.uid||'').trim().toLowerCase();
+    const id=email || uid || 'local-user';
+    const name=String((au&&au.displayName)||info.name||stored.name||email||uid||'Du').trim();
+    const photo=String((au&&au.photoURL)||info.photo||info.picture||stored.photo||stored.picture||'');
+    window.userInfo=Object.assign({},info,{email:email||info.email||'',uid:uid||info.uid||'',name:name,photo:photo});
+    return {id,name,email,uid,photo};
+  }
+  function normalizeId(v){return String(v||'').trim().toLowerCase();}
+  function isBadMe(v){const x=normalizeId(v); return !x || x==='me' || x==='ich' || x==='du' || x==='local-user';}
+  function saveAll(){
+    lsSet('user_info',window.userInfo||{});
+    lsSet('challenge_completions',window.challengeCompletions||[]);
+    lsSet('challenge_players',window.challengePlayers||[]);
+    try{if(typeof persistChangeState==='function')persistChangeState()}catch(e){}
+  }
+  function migrateMeToAccount(){
+    const a=account();
+    if(!a.id || a.id==='local-user') return a;
+    window.challengeCompletions=window.challengeCompletions||[];
+    window.challengePlayers=window.challengePlayers||[];
+    let changed=false;
+    window.challengeCompletions.forEach(c=>{
+      if(!c) return;
+      const pid=normalizeId(c.playerId||c.userEmail||c.email||c.userId);
+      const pname=normalizeId(c.playerName||'');
+      if(isBadMe(pid) || pname==='du' || pname==='ich' || pname==='me'){
+        c.playerId=a.id;
+        c.userEmail=a.email||a.id;
+        c.email=a.email||a.id;
+        c.playerName=a.name;
+        changed=true;
+      }
+    });
+    window.challengePlayers=window.challengePlayers.filter(p=>{
+      const id=normalizeId(p&& (p.email||p.id));
+      return !(isBadMe(id) || normalizeId(p&&p.name)==='du');
+    });
+    const idx=window.challengePlayers.findIndex(p=>normalizeId(p.email||p.id)===a.id);
+    const self={id:a.id,email:a.email||a.id,uid:a.uid||'',name:a.name,picture:a.photo,photo:a.photo,online:true,lastSeen:new Date().toISOString()};
+    if(idx>=0) window.challengePlayers[idx]=Object.assign({},window.challengePlayers[idx],self);
+    else window.challengePlayers.unshift(self);
+    if(changed) saveAll(); else lsSet('challenge_players',window.challengePlayers);
+    return a;
+  }
+  function myComps(date){
+    const a=migrateMeToAccount();
+    return (window.challengeCompletions||[]).filter(c=>{
+      const pid=normalizeId(c.playerId||c.userEmail||c.email||c.userId);
+      return pid===a.id && (!date || String(c.date||'').slice(0,10)===date);
+    });
+  }
+  function points(list){return (list||[]).reduce((s,c)=>s+(parseInt(c.points,10)||0),0)}
+  function dueToday(){
+    const td=today();
+    try{if(typeof ensureOptionalDailyChallenges==='function')ensureOptionalDailyChallenges()}catch(e){}
+    let all=(window.challenges||[]).filter(ch=>ch&&ch.active!==false).filter(ch=>{
+      const d=String(ch.date||ch.startDate||td).slice(0,10);
+      return ch.recurrence==='daily'||d===td||(!ch.date&&!ch.startDate);
+    });
+    const doneIds=new Set(myComps(td).map(c=>String(c.challengeId)));
+    let open=all.filter(ch=>!doneIds.has(String(ch.id)));
+    let done=all.filter(ch=>doneIds.has(String(ch.id)));
+    const mandatory=open.filter(ch=>!ch.optional).slice(0,7);
+    const optional=open.filter(ch=>ch.optional); // Optionale IMMER anzeigen, zählen nicht zu den 7 Pflichtaufgaben
+    const hidden=Math.max(0,open.filter(ch=>!ch.optional).length-7);
+    return {open:mandatory, optional, done, hidden, all};
+  }
+  function refresh(){
+    migrateMeToAccount();
+    try{if(typeof renderChallenges==='function')renderChallenges()}catch(e){}
+    try{if(typeof renderChallengePointCalendar==='function')renderChallengePointCalendar()}catch(e){}
+    try{if(typeof renderCalendar==='function')renderCalendar()}catch(e){}
+    try{if(typeof buildDashboard==='function')buildDashboard()}catch(e){}
+  }
+  window.completeChallenge=function(id){
+    const a=migrateMeToAccount();
+    const ch=(window.challenges||[]).find(x=>String(x.id)===String(id));
+    if(!ch)return;
+    const td=today();
+    if(myComps(td).some(c=>String(c.challengeId)===String(id))){if(typeof toast==='function')toast('Heute bereits erledigt','');refresh();return;}
+    const c={id:'cc_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),challengeId:id,playerId:a.id,userEmail:a.email||a.id,email:a.email||a.id,uid:a.uid||'',playerName:a.name,date:td,points:parseInt(ch.points,10)||0,createdAt:new Date().toISOString()};
+    window.challengeCompletions=window.challengeCompletions||[];
+    window.challengeCompletions.push(c);
+    saveAll();
+    try{if(typeof firebase!=='undefined'&&firebase.firestore)firebase.firestore().collection('change_completions').doc(c.id).set(c,{merge:true}).catch(()=>{})}catch(e){}
+    if(typeof toast==='function')toast('+'+c.points+' Punkte für '+a.name+' ✓','ok');
+    refresh();
+  };
+  window.resetTodayChallenges=function(){
+    const a=migrateMeToAccount(), td=today();
+    const before=(window.challengeCompletions||[]).length;
+    window.challengeCompletions=(window.challengeCompletions||[]).filter(c=>!(String(c.date||'').slice(0,10)===td && normalizeId(c.playerId||c.userEmail||c.email)===a.id));
+    saveAll();
+    try{if(typeof firebase!=='undefined'&&firebase.firestore)firebase.firestore().collection('change_completions').where('playerId','==',a.id).where('date','==',td).get().then(s=>s.forEach(d=>d.ref.delete().catch(()=>{}))).catch(()=>{})}catch(e){}
+    if(typeof toast==='function')toast((before-(window.challengeCompletions||[]).length)+' erledigte Aufgabe(n) zurückgesetzt','ok');
+    refresh();
+  };
+  window.renderChallenges=function(){
+    const a=migrateMeToAccount();
+    const view=document.getElementById('challenges-view'); if(!view)return;
+    view.innerHTML='<div class="list-header"><div><div class="list-title">Challenges</div><div class="challenge-sub" id="challenge-summary-inline"></div></div></div><div id="master-point-calendar"></div><div class="challenge-layout"><div class="challenge-card"><div class="challenge-card-head"><div><div class="challenge-title">Heute erledigen</div><div class="challenge-sub">Maximal 7 Pflichtaufgaben plus optionale Aufgaben</div></div><button class="btn btn-ghost btn-sm" onclick="resetTodayChallenges()">Heute zurücksetzen</button></div><div id="challenges-list"></div></div><div class="leader-card"><div class="leader-card-head"><div><div class="challenge-title">Kontest</div><div class="challenge-sub">Punkte & erledigte Challenges</div></div><button class="btn btn-secondary btn-sm" onclick="openParticipantPanel&&openParticipantPanel()">Mitspieler</button></div><div id="leaderboard-list"></div></div></div>';
+    const due=dueToday(), td=today(), doneToday=myComps(td), allMine=myComps();
+    const sum=document.getElementById('challenge-summary-inline'); if(sum)sum.textContent='Heute erledigt: '+doneToday.length+' · offen: '+(due.open.length+due.optional.length)+(due.hidden?'+':'')+' · Punkte heute: '+points(doneToday)+' · Gesamt: '+points(allMine);
+    try{if(typeof renderChallengePointCalendar==='function')renderChallengePointCalendar()}catch(e){}
+    function row(ch,done){const opt=ch.optional?'<span class="dash-row-badge badge-blue">Optional</span>':''; const video=(!done&&ch.url&&!ch.noVideo)?'<a href="'+esc(ch.url)+'" target="_blank" rel="noopener" class="challenge-meta" onclick="event.stopPropagation()">So geht die Übung</a>':''; return '<div class="challenge-item '+(done?'challenge-done':'')+'" data-challenge-id="'+esc(ch.id)+'"><div class="challenge-icon">'+esc(ch.icon||'🏆')+'</div><div class="challenge-body"><div class="challenge-name">'+esc(ch.title||ch.name||'Challenge')+'</div><div class="challenge-meta">'+esc(ch.desc||'')+' · '+(parseInt(ch.points,10)||0)+' Punkte '+(done?'· ✅ heute erledigt':'')+'</div>'+video+'</div>'+opt+'<span class="points-pill">'+(done?'✓ ':'+')+(parseInt(ch.points,10)||0)+'</span>'+(done?'<button class="btn btn-success btn-sm" disabled>Erledigt</button>':'<button class="btn btn-primary btn-sm" onclick="completeChallenge(\''+esc(ch.id)+'\')">Erledigen</button>')+'</div>';}
+    let html='';
+    if(due.open.length) html+=due.open.map(ch=>row(ch,false)).join('');
+    if(due.hidden) html+='<div class="dash-empty">+'+due.hidden+' weitere Pflichtaufgabe(n) ausgeblendet – maximal 7 Pflichtaufgaben pro Tag.</div>';
+    if(due.optional.length) html+='<div class="challenge-done-divider" style="color:var(--acc)">Optional</div>'+due.optional.map(ch=>row(ch,false)).join('');
+    if(due.done.length) html+='<div class="challenge-done-divider">Heute erledigt</div>'+due.done.map(ch=>row(ch,true)).join('');
+    if(!html)html='<div class="dash-empty">Keine Aufgaben für heute</div>';
+    const list=document.getElementById('challenges-list'); if(list)list.innerHTML=html;
+    const by={};
+    (window.challengePlayers||[]).forEach(p=>{const id=normalizeId(p.email||p.id); if(!id||id.includes('demo')||isBadMe(id))return; by[id]={id,name:p.name||p.email||id,email:id,total:0,today:0,count:0,online:!!p.online};});
+    (window.challengeCompletions||[]).forEach(c=>{let id=normalizeId(c.playerId||c.userEmail||c.email); if(isBadMe(id))id=a.id; if(!id||id.includes('demo'))return; if(!by[id])by[id]={id,name:c.playerName||id,email:id,total:0,today:0,count:0,online:id===a.id}; by[id].total+=parseInt(c.points,10)||0; by[id].count++; if(String(c.date||'').slice(0,10)===td)by[id].today+=parseInt(c.points,10)||0;});
+    if(!by[a.id])by[a.id]={id:a.id,name:a.name,email:a.email||a.id,total:0,today:0,count:0,online:true};
+    const players=Object.values(by).sort((x,y)=>y.total-x.total);
+    const board=document.getElementById('leaderboard-list'); if(board)board.innerHTML=players.map((p,i)=>'<div class="leader-row clickable"><div class="leader-rank">'+(i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1)+'</div><div><div class="leader-name">'+esc(p.name||p.email)+(p.id===a.id?' · Du':'')+(p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>')+'</div><div class="leader-detail">Heute: '+p.today+' P · Gesamt: '+p.total+' P · '+p.count+' erledigt</div></div><div class="leader-score">'+p.total+'</div></div>').join('')||'<div class="dash-empty">Noch keine Kontest-Daten</div>';
+  };
+  try{firebase&&firebase.auth&&firebase.auth().onAuthStateChanged(function(){setTimeout(refresh,250)})}catch(e){}
+  window.addEventListener('load',function(){setTimeout(refresh,900)});
+})();
+</script>
 </body>
 </html>
