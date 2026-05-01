@@ -4327,6 +4327,149 @@ document.addEventListener('touchend',e=>{
 })();
 </script>
 
+<script id="beautiful-calendar-range-final">
+/* BEAUTIFUL CLEAN CALENDAR FINAL: echte Zeitraum-Balken, Von/Bis-Dialog, dezente Google-Quelle */
+(function(){
+  const LS_OPTS='change_v1_calendar_view_options';
+  function $(id){return document.getElementById(id)}
+  function esc(s){return String(s??'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[m]));}
+  function dkey(d){try{return (typeof dateKey==='function')?dateKey(d):d.toISOString().slice(0,10)}catch(e){return ''}}
+  function addDaysSafe(d,n){return new Date(d.getTime()+n*86400000)}
+  function parseDate(k){return new Date(String(k||'').slice(0,10)+'T12:00:00')}
+  function fmt(k){return (typeof fmtDate==='function')?fmtDate(k):String(k||'')}
+  function opt(){try{return Object.assign({showHolidays:true,showChallengeDots:true,showWeekNumbers:false},JSON.parse(localStorage.getItem(LS_OPTS)||'{}'))}catch(e){return {showHolidays:true,showChallengeDots:true,showWeekNumbers:false}}}
+  function saveOpt(o){localStorage.setItem(LS_OPTS,JSON.stringify(o)); window.changeCalendarViewOptions=o; applyCleanCalendarStyle();}
+  function startOf(ev){return String(ev?.startDate||ev?.date||ev?.dateKey||(ev?.start&&ev.start.date)||(ev?.start&&ev.start.dateTime?ev.start.dateTime.slice(0,10):'')).slice(0,10)}
+  function endOf(ev){let e=ev?.endDate||ev?.toDate||ev?.untilDate||''; if(!e&&ev?.end?.date) e=dkey(addDaysSafe(parseDate(ev.end.date),-1)); if(!e&&ev?.end?.dateTime) e=String(ev.end.dateTime).slice(0,10); const s=startOf(ev); return (e&&e>=s)?String(e).slice(0,10):s}
+  function titleOf(ev){return ev?.title||ev?.summary||ev?.name||'(Kein Titel)'}
+  function timeOf(ev){if(ev?.time)return ev.time; if(ev?.start?.dateTime)return new Date(ev.start.dateTime).toTimeString().slice(0,5); return ''}
+  function colorOf(ev){return ev?.color||'blue'}
+  function isGoogle(ev){return ev?.source==='google'||String(ev?.id||'').startsWith('g_')}
+  function isSynced(ev){return !!(ev?.googleEventId||ev?.syncedToGoogle)}
+  function gIcon(ev){return isGoogle(ev)?'<span class="g-mini" title="Von Google Kalender">G</span>':(isSynced(ev)?'<span class="g-mini synced" title="An Google übertragen">✓</span>':'')}
+  function allEvents(){
+    const out=[];
+    (window.events||[]).forEach(e=>{ if(e&&startOf(e)) out.push(Object.assign({},e,{startDate:startOf(e),endDate:endOf(e)})); });
+    const syncOn=(window.googleCalendarSyncEnabled!==false && localStorage.getItem('change_v1_google_calendar_sync')!=='false');
+    if(syncOn){(window.gEvents||[]).forEach(ge=>{ const s=startOf(ge); if(!s)return; out.push({id:'g_'+(ge.id||s+'_'+titleOf(ge)),title:titleOf(ge),startDate:s,endDate:endOf(ge),date:s,time:timeOf(ge),color:'blue',type:'meeting',desc:ge.description||'',allDay:!!ge?.start?.date,source:'google',raw:ge}); });}
+    return out;
+  }
+  window.getAllEvents=function(){return allEvents().map(e=>Object.assign({},e,{date:e.startDate}));};
+  window.getEventById=function(id){return (window.events||[]).find(e=>e.id===id)||allEvents().find(e=>e.id===id)};
+
+  function applyCleanCalendarStyle(){
+    let st=$('beautiful-calendar-range-style'); if(!st){st=document.createElement('style');st.id='beautiful-calendar-range-style';document.head.appendChild(st)}
+    const o=opt();
+    st.textContent=`
+      #month-grid{background:var(--bg)!important;gap:0!important;overflow:hidden!important}
+      #month-grid .week-row{position:relative;display:grid!important;grid-template-columns:repeat(7,1fr)!important;min-height:136px;border-bottom:1px solid var(--b1);overflow:visible;background:var(--s1)}
+      #month-grid .day-cell{min-height:136px;padding:10px 8px 6px!important;border-right:1px solid var(--b1);background:transparent;position:relative;overflow:hidden;transition:background .14s ease}
+      #month-grid .day-cell:hover{background:rgba(45,106,79,.035)!important}
+      #month-grid .day-cell.today{background:linear-gradient(180deg,rgba(45,106,79,.055),transparent)!important}
+      #month-grid .day-cell.other{opacity:.45;background:rgba(0,0,0,.012)!important}
+      .week-event-layer{position:absolute;left:0;right:0;top:42px;bottom:7px;display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:24px;row-gap:5px;pointer-events:none;z-index:4;padding:0 8px 0 8px}
+      .range-bar{height:22px;border-radius:999px;background:rgba(45,106,79,.12);border:1px solid rgba(45,106,79,.08);box-shadow:0 2px 7px rgba(18,38,31,.04);display:flex;align-items:center;gap:6px;padding:0 9px;font-size:11px;font-weight:700;color:var(--acc);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:auto;cursor:pointer;backdrop-filter:blur(5px)}
+      .range-bar.single{border-radius:8px;margin-right:6px}.range-bar.blue{background:rgba(66,133,244,.10);color:#3577f0;border-color:rgba(66,133,244,.13)}.range-bar.green{background:rgba(22,163,74,.10);color:var(--grn)}.range-bar.amber{background:rgba(245,158,11,.12);color:var(--amb)}.range-bar.red{background:rgba(239,68,68,.10);color:var(--red)}.range-bar.purple{background:rgba(139,92,246,.11);color:var(--pur)}
+      .range-bar.continues-left{border-top-left-radius:0;border-bottom-left-radius:0;margin-left:-8px}.range-bar.continues-right{border-top-right-radius:0;border-bottom-right-radius:0;margin-right:-8px}.range-bar:hover{transform:translateY(-1px);box-shadow:0 5px 12px rgba(18,38,31,.08)}
+      .g-mini{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;border-radius:50%;font-size:9px;font-weight:900;line-height:1;background:rgba(66,133,244,.12);color:#4285F4;margin-left:auto;flex:0 0 auto}.g-mini.synced{background:rgba(22,163,74,.12);color:var(--grn)}
+      .holiday-line{display:inline-flex!important;align-items:center;max-width:calc(100% - 16px);margin-top:4px;padding:2px 6px;border-radius:999px;background:rgba(245,158,11,.10);color:var(--amb);font-size:9.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative;z-index:6}
+      .challenge-day-dot{${o.showChallengeDots?'':'display:none!important;'}}
+      ${o.showHolidays?'':'.holiday-line,.holiday-card,.holiday-chip{display:none!important;}'}
+      .source-pill{display:none!important}.range-pill{display:inline-flex;margin-left:7px;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:800;background:rgba(45,106,79,.09);color:var(--acc)}
+      .fr.date-range-row{grid-template-columns:1fr 1fr!important}.date-help{font-size:12px;color:var(--t4);line-height:1.5;margin-top:-4px}.google-note-mini{display:inline-flex;align-items:center;gap:6px;margin-top:6px;font-size:11px;color:#4285F4;font-weight:700}.google-note-mini .g-mini{margin:0}
+      @media(max-width:700px){#month-grid .week-row,#month-grid .day-cell{min-height:108px}.week-event-layer{top:34px;grid-auto-rows:21px;row-gap:3px;padding:0 4px}.range-bar{height:19px;font-size:9.5px;padding:0 6px}.g-mini{min-width:14px;height:14px;font-size:8px}}
+    `;
+  }
+
+  function buildMonthCells(y,m){let first=new Date(y,m,1).getDay(); first=first===0?6:first-1; const dim=new Date(y,m+1,0).getDate(), prevDim=new Date(y,m,0).getDate(), cells=[]; for(let i=0;i<first;i++)cells.push({d:prevDim-first+1+i,m:m===0?11:m-1,y:m===0?y-1:y,other:true}); for(let i=1;i<=dim;i++)cells.push({d:i,m,y,other:false}); while(cells.length<42){const ld=cells.length-first-dim+1;cells.push({d:ld,m:m===11?0:m+1,y:m===11?y+1:y,other:true});} return cells;}
+  function layoutWeekEvents(weekDates){
+    const from=weekDates[0], to=weekDates[6];
+    const candidates=allEvents().filter(ev=>startOf(ev)<=to && endOf(ev)>=from).sort((a,b)=>startOf(a).localeCompare(startOf(b))||endOf(b).localeCompare(endOf(a))||titleOf(a).localeCompare(titleOf(b)));
+    const rows=[];
+    return candidates.slice(0,12).map(ev=>{const s=startOf(ev), e=endOf(ev); const startIdx=Math.max(0,weekDates.indexOf(s)); const endIdx=weekDates.indexOf(e)===-1?(e>to?6:0):weekDates.indexOf(e); const span=Math.max(1,endIdx-startIdx+1); let lane=0; for(;lane<4;lane++){if(!rows[lane])rows[lane]=Array(7).fill(false); let ok=true; for(let i=startIdx;i<=endIdx;i++)if(rows[lane][i])ok=false; if(ok)break;} if(lane>=4)return null; for(let i=startIdx;i<=endIdx;i++)rows[lane][i]=true; return {ev,startIdx,endIdx,span,lane,continuesLeft:s<from,continuesRight:e>to};}).filter(Boolean);
+  }
+  window.renderMonth=function(y,m){
+    applyCleanCalendarStyle(); const grid=$('month-grid'); if(!grid)return; grid.innerHTML=''; grid.style.display='grid'; const cells=buildMonthCells(y,m);
+    for(let w=0;w<6;w++){
+      const row=document.createElement('div'); row.className='week-row'; const weekDates=[];
+      for(let d=0;d<7;d++){
+        const c=cells[w*7+d], dt=new Date(c.y,c.m,c.d), day=dkey(dt); weekDates.push(day);
+        const dayEvs=allEvents().filter(ev=>startOf(ev)<=day&&endOf(ev)>=day);
+        const cell=document.createElement('div'); cell.className='day-cell'+(c.other?' other':'')+(d>=5?' weekend':'')+((typeof isToday==='function'&&isToday(dt))?' today':''); cell.onclick=()=>{ if(typeof onDayClick==='function')onDayClick(dt,dayEvs); else if(dayEvs[0])openEventPanel(dayEvs[0].id); else openEventPanel(null,dt); };
+        let html='<div class="day-num-wrap"><div class="day-num">'+c.d+'</div></div>';
+        try{ if(opt().showHolidays&&typeof getHolidaysForDate==='function') html+=(getHolidaysForDate(day)||[]).slice(0,1).map(h=>'<div class="holiday-line">'+esc(h.name)+'</div>').join(''); if(opt().showChallengeDots&&typeof getChallengeDayStatus==='function'){const ch=getChallengeDayStatus(day); if(ch)html+='<span class="challenge-day-dot '+(ch.allDone?'done':'')+'"></span>';}}
+        catch(e){}
+        cell.innerHTML=html; row.appendChild(cell);
+      }
+      const layer=document.createElement('div'); layer.className='week-event-layer';
+      layoutWeekEvents(weekDates).forEach(seg=>{const ev=seg.ev, single=startOf(ev)===endOf(ev); const bar=document.createElement('div'); bar.className='range-bar '+colorOf(ev)+(single?' single':'')+(seg.continuesLeft?' continues-left':'')+(seg.continuesRight?' continues-right':''); bar.style.gridColumn=(seg.startIdx+1)+' / span '+seg.span; bar.style.gridRow=(seg.lane+1); bar.title=titleOf(ev)+' · '+fmt(startOf(ev))+(endOf(ev)!==startOf(ev)?' – '+fmt(endOf(ev)):'')+(timeOf(ev)?' · '+timeOf(ev):''); bar.onclick=(e)=>{e.stopPropagation(); openEventPanel(ev.id)}; const label=(seg.continuesLeft?'':titleOf(ev)); bar.innerHTML='<span style="overflow:hidden;text-overflow:ellipsis">'+esc(label||titleOf(ev))+'</span>'+gIcon(ev); layer.appendChild(bar);});
+      row.appendChild(layer); grid.appendChild(row);
+    }
+  };
+
+  const oldRenderCalendar=window.renderCalendar;
+  window.renderCalendar=function(){
+    const y=window.curDate?curDate.getFullYear():new Date().getFullYear(), m=window.curDate?curDate.getMonth():new Date().getMonth();
+    const ml=$('month-label'); if(ml&&typeof DE_MONTHS!=='undefined')ml.textContent=DE_MONTHS[m]+' '+y;
+    if(window.currentCalView==='agenda'){ if(typeof renderAgenda==='function')renderAgenda(); if($('month-grid'))$('month-grid').style.display='none'; if($('agenda-view'))$('agenda-view').style.display='block'; if($('wday-row'))$('wday-row').style.display='none'; return; }
+    window.renderMonth(y,m); if($('month-grid'))$('month-grid').style.display='grid'; if($('agenda-view'))$('agenda-view').style.display='none'; if($('wday-row'))$('wday-row').style.display='grid';
+  };
+
+  window.openEventPanel=function(id,preDate){
+    const ev=id?window.getEventById(id):null;
+    if(ev&&isGoogle(ev)){
+      const s=startOf(ev), e=endOf(ev), range=e&&e!==s?fmt(s)+' – '+fmt(e):fmt(s);
+      openPanel(titleOf(ev),'<div style="background:linear-gradient(135deg,rgba(66,133,244,.10),rgba(66,133,244,.035));border:1px solid rgba(66,133,244,.16);border-radius:16px;padding:14px 15px;margin-bottom:14px"><div class="google-note-mini"><span class="g-mini">G</span><span>Aus Google Kalender</span></div><div style="font-size:17px;font-weight:850;color:var(--t1);margin-top:10px;margin-bottom:6px">'+esc(titleOf(ev))+'</div><div style="font-size:13px;color:var(--t3)">'+esc(range)+(timeOf(ev)?' · '+esc(timeOf(ev)):'')+'</div>'+(ev.desc?'<div style="font-size:13px;color:var(--t3);margin-top:10px;line-height:1.55">'+esc(ev.desc)+'</div>':'')+'</div><button class="btn btn-ghost btn-full" onclick="closePanel()">Schließen</button>'); return;
+    }
+    const baseDate=ev?startOf(ev):(preDate?dkey(preDate):dkey(new Date())); const baseEnd=ev?endOf(ev):baseDate;
+    const types=[['meeting','📅 Termin'],['deadline','⚠️ Frist / Ablauf'],['reminder','🔔 Erinnerung'],['other','📌 Sonstiges']]; const colors=['blue','green','amber','red','purple']; const notifs=[['0','Am gleichen Tag'],['1','1 Tag vorher'],['3','3 Tage vorher'],['7','1 Woche vorher'],['14','2 Wochen vorher'],['30','1 Monat vorher']]; const curColor=ev?.color||'blue';
+    const html=`${window.isDemoMode?'<div style="background:var(--amb-d);border:1px solid rgba(245,158,11,.2);border-radius:12px;padding:9px 12px;margin-bottom:12px;font-size:12px;color:var(--amb)">⚡ Demo-Modus: Lokal gespeichert</div>':''}
+      <div class="fg"><label class="flabel">Titel *</label><input type="text" class="finput" id="ev-title" placeholder="Terminbezeichnung" value="${esc(ev?.title||'')}"></div>
+      <div class="fr date-range-row"><div class="fg"><label class="flabel">Von-Datum *</label><input type="date" class="finput" id="ev-date" value="${esc(baseDate)}" style="color-scheme:dark"></div><div class="fg"><label class="flabel">Bis-Datum</label><input type="date" class="finput" id="ev-end-date" value="${esc(baseEnd)}" style="color-scheme:dark"></div></div>
+      <div class="date-help">Für Urlaub oder mehrtägige Termine einfach ein Bis-Datum auswählen. Im Kalender erscheint daraus ein durchgehender Zeitraum.</div>
+      <div class="fr"><div class="fg"><label class="flabel">Von Uhrzeit</label><input type="time" class="finput" id="ev-time" value="${esc(ev?.time||'')}"></div><div class="fg"><label class="flabel">Bis Uhrzeit</label><input type="time" class="finput" id="ev-end" value="${esc(ev?.endTime||'')}"></div></div>
+      <div class="fr"><div class="fg"><label class="flabel">Art</label><select class="finput" id="ev-type">${types.map(([v,l])=>`<option value="${v}"${(ev?.type||'meeting')===v?' selected':''}>${l}</option>`).join('')}</select></div><div class="fg"><label class="flabel">Farbe</label><select class="finput" id="ev-color">${colors.map(c=>`<option value="${c}"${curColor===c?' selected':''}>${c[0].toUpperCase()+c.slice(1)}</option>`).join('')}</select></div></div>
+      <div class="fg"><label class="flabel">Beschreibung</label><textarea class="finput" id="ev-desc" rows="4" placeholder="Notiz">${esc(ev?.desc||'')}</textarea></div>
+      <div class="fg"><label class="flabel">Erinnerung</label><select class="finput" id="ev-notif">${notifs.map(([v,l])=>`<option value="${v}"${String(ev?.notifDaysBefore??1)===v?' selected':''}>${l}</option>`).join('')}</select></div>
+      <div class="fa"><button class="btn btn-primary" style="flex:1" onclick="saveEventBeautiful('${esc(ev?.id||'')}')">Speichern</button>${ev?'<button class="btn btn-danger" onclick="deleteEvent(\''+esc(ev.id)+'\')">Löschen</button>':''}</div>`;
+    openPanel(ev?'Termin bearbeiten':'Neuer Termin',html);
+    const sd=$('ev-date'), ed=$('ev-end-date'); if(sd&&ed)sd.addEventListener('change',()=>{if(!ed.value||ed.value<sd.value)ed.value=sd.value;});
+  };
+  window.saveEventBeautiful=function(existingId){
+    const title=$('ev-title')?.value.trim(); if(!title){ if(typeof toast==='function')toast('Bitte Titel eingeben','err'); return; }
+    const s=$('ev-date')?.value||dkey(new Date()); let e=$('ev-end-date')?.value||s; if(e<s)e=s;
+    const ev={id:existingId||('ev_'+Date.now()),title,startDate:s,endDate:e,date:s,time:$('ev-time')?.value||'',endTime:$('ev-end')?.value||'',type:$('ev-type')?.value||'meeting',color:$('ev-color')?.value||'blue',desc:$('ev-desc')?.value||'',notifDaysBefore:parseInt($('ev-notif')?.value||'1',10),createdAt:new Date().toISOString()};
+    const arr=window.events||(window.events=[]); const old=existingId?arr.find(x=>x.id===existingId):null; if(old){Object.assign(old,ev,{googleEventId:old.googleEventId,syncedToGoogle:old.syncedToGoogle});} else arr.push(ev);
+    if(typeof ls==='function')ls('events',arr); else localStorage.setItem('events',JSON.stringify(arr));
+    closePanel(); renderCalendar(); if(typeof renderUpcoming==='function')renderUpcoming(); if(typeof buildDashboard==='function')buildDashboard(); if(typeof checkNotifications==='function')checkNotifications(); if(typeof saveToDrive==='function')try{saveToDrive()}catch(_){ } if(typeof toast==='function')toast(existingId?'Termin aktualisiert ✓':'Termin erstellt ✓','ok');
+    try{ if(window.accessToken&&!window.isDemoMode&&typeof syncEventToGoogleReliable==='function')syncEventToGoogleReliable(old||ev); }catch(_){ }
+  };
+
+  const oldSettings=window.openCalendarSettings;
+  window.openCalendarSettings=function(){
+    const o=opt(); let extra='';
+    try{ if(window.calendarSettings&&typeof STATE_OPTIONS!=='undefined'){const state=calendarSettings.state||'ALL'; const opts=Object.keys(STATE_OPTIONS).map(k=>'<option value="'+k+'" '+(state===k?'selected':'')+'>'+STATE_OPTIONS[k]+'</option>').join(''); extra='<div class="fg"><label class="flabel">Bundesland für Feiertage</label><select class="finput" id="holiday-state">'+opts+'</select></div>';}}
+    catch(e){}
+    openPanel('Kalender-Einstellungen',extra+'<div class="section-label">Ansicht</div><div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">Feiertage anzeigen</div><div class="toggle-sub">Feiertage im Kalender anzeigen</div></div><label class="switch"><input type="checkbox" id="toggle-holidays" '+(o.showHolidays?'checked':'')+'><span class="slider"></span></label></div><div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">Challenge-Dots</div><div class="toggle-sub">Punkte für Challenge-Tage ein-/ausblenden</div></div><label class="switch"><input type="checkbox" id="toggle-dots" '+(o.showChallengeDots?'checked':'')+'><span class="slider"></span></label></div><div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">Wochennummern</div><div class="toggle-sub">KW-Anzeige im Monatskalender</div></div><label class="switch"><input type="checkbox" id="toggle-kw" '+(o.showWeekNumbers?'checked':'')+'><span class="slider"></span></label></div><button class="btn btn-primary btn-full" onclick="saveCalSettings()">Einstellungen speichern</button>');
+  };
+  window.saveCalSettings=function(){
+    const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked}; saveOpt(o);
+    try{ if($('holiday-state')&&window.calendarSettings){calendarSettings.state=$('holiday-state').value; if(typeof ls==='function')ls('holiday_state',calendarSettings.state);}}
+    catch(e){}
+    closePanel(); renderCalendar(); if(typeof buildDashboard==='function')buildDashboard(); if(typeof toast==='function')toast('Kalender-Einstellungen gespeichert ✓','ok');
+  };
+  document.addEventListener('change',function(e){ if(e.target&&['toggle-holidays','toggle-dots','toggle-kw'].includes(e.target.id)){ const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked}; saveOpt(o); renderCalendar(); }});
+
+  // Kein Dummy-„Du“ als eigener Mitspieler: Anzeigenamen nur noch bei aktuellem Konto ergänzen, nicht als extra Account.
+  function accountId(){return String((window.userInfo&&(userInfo.email||userInfo.id))||localStorage.getItem('change_v1_user_email')||'').toLowerCase()}
+  const oldGetPlayers=window.getVisibleContestPlayers||window.visiblePlayers;
+  window.getVisibleContestPlayers=window.visiblePlayers=function(){const me=accountId(); let arr=[]; try{arr=oldGetPlayers?oldGetPlayers():(window.challengePlayers||[])}catch(e){arr=window.challengePlayers||[]} const seen=new Set(), out=[]; (arr||[]).forEach(p=>{let id=String(p?.email||p?.id||p?.userEmail||'').toLowerCase(); const name=String(p?.name||'').trim().toLowerCase(); if(!id&&(name==='du'||name==='ich'))id=me; if((name==='du'||name==='ich'||id==='du'||id==='demo@example.com')&&id!==me)return; if(!id)return; if(seen.has(id))return; seen.add(id); out.push(Object.assign({},p,{id,email:id,name:id===me?((window.userInfo&&(userInfo.name||userInfo.email))||p.name||p.email):p.name}));}); return out;};
+
+  applyCleanCalendarStyle();
+  setTimeout(()=>{try{if(window.currentMainView==='calendar')renderCalendar(); if(window.currentMainView==='dashboard'&&typeof buildDashboard==='function')buildDashboard();}catch(e){console.warn(e)}},300);
+})();
+</script>
+
 </body>
 </html>
 <script id="change-final-user-fixes-3">
