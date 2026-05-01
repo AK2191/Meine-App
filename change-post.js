@@ -1318,52 +1318,116 @@
   });
 })();
 
-/* CHANGE · Dashboard final sauber: Feiertage + Datum links */
+
+/* CHANGE CLEAN DASHBOARD FIX v2026-05-01-ROBUST
+   Last loaded dashboard renderer. No extra files required.
+   Fixes: dashboard calendar shows holidays, dates are bound left to content, today is visible. */
 (function(){
   'use strict';
-  const $ = id => document.getElementById(id);
-  const pad = n => String(n).padStart(2,'0');
-  const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const key = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
-  const parse = v => new Date(String(v||'').slice(0,10)+'T12:00:00');
-  const today = () => key(new Date());
-  const deShort = k => parse(k).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
-  const deLong = k => parse(k).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'}).replace('.','');
-  const diff = k => Math.round((parse(k)-parse(today()))/86400000);
-  function dayLabel(k){ const d=diff(k); return d===0?'Heute':d===1?'Morgen':deShort(k); }
-  function easter(y){const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),kk=c%4,l=(32+2*e+2*i-h-kk)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;return new Date(y,mo-1,da,12)}
-  function fallbackHoliday(k){const d=parse(k),y=d.getFullYear(),md=k.slice(5,10),fixed={'01-01':'Neujahr','05-01':'Tag der Arbeit','10-03':'Tag der Deutschen Einheit','12-25':'1. Weihnachtstag','12-26':'2. Weihnachtstag'}; if(fixed[md]) return fixed[md]; const e=easter(y); for(const [o,n] of [[-2,'Karfreitag'],[1,'Ostermontag'],[39,'Christi Himmelfahrt'],[50,'Pfingstmontag']]){const x=new Date(e);x.setDate(e.getDate()+o);if(key(x)===k)return n} return '';}
-  function holidayName(k){
-    try{ if(typeof window.getHolidaysForDate==='function'){const r=window.getHolidaysForDate(k)||[]; const h=Array.isArray(r)?r[0]:r; if(typeof h==='string')return h; if(h&&(h.name||h.title||h.label))return h.name||h.title||h.label;}}catch(e){}
-    try{ if(typeof window.getHolidayName==='function'){const h=window.getHolidayName(k); if(typeof h==='string')return h; if(h&&(h.name||h.title||h.label))return h.name||h.title||h.label;}}catch(e){}
-    try{ if(typeof window.getHoliday==='function'){const h=window.getHoliday(k); if(typeof h==='string')return h; if(h&&(h.name||h.title||h.label))return h.name||h.title||h.label;}}catch(e){}
-    try{const all=[].concat(window.holidays||[],window.publicHolidays||[],window.feiertage||[]); const hit=all.find(h=>String(h.date||h.day||h.datum||h.key||'').slice(0,10)===k); if(hit)return hit.name||hit.title||hit.label||'';}catch(e){}
-    return fallbackHoliday(k);
+  const $ = (id)=>document.getElementById(id);
+  const pad = (n)=>String(n).padStart(2,'0');
+  const esc = (v)=>String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const toDate = (v)=>{ const d = v instanceof Date ? new Date(v) : new Date(String(v||'').slice(0,10)+'T12:00:00'); return isNaN(d) ? null : d; };
+  const key = (d)=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  const today = ()=>key(new Date());
+  const addDays = (k,n)=>{ const d=toDate(k); d.setDate(d.getDate()+n); return key(d); };
+  const diffDays = (k)=>Math.round((toDate(k)-toDate(today()))/86400000);
+  const fmt = (k)=>{ const d=toDate(k); return d ? d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+'.' : ''; };
+  const fmtLong = (k)=>{ const d=toDate(k); return d ? d.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'}).replace(',', '') : ''; };
+
+  function easter(y){
+    const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),kk=c%4,l=(32+2*e+2*i-h-kk)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;
+    return new Date(y,mo-1,da,12);
   }
-  function events(){try{return typeof window.getAllEvents==='function'?window.getAllEvents():(window.events||[])}catch(e){return window.events||[]}}
-  function evStart(e){return String(e?.date||e?.startDate||e?.fromDate||e?.start?.date||(e?.start?.dateTime||'').slice(0,10)||'').slice(0,10)}
-  function evEnd(e){let x=String(e?.endDate||e?.toDate||e?.untilDate||e?.dateEnd||'').slice(0,10); if(!x&&e?.end?.date){const d=parse(e.end.date);d.setDate(d.getDate()-1);x=key(d)} if(!x&&e?.end?.dateTime)x=String(e.end.dateTime).slice(0,10); const s=evStart(e); return (!x||x<s)?s:x}
-  function evTitle(e){return String(e?.title||e?.summary||e?.name||'Termin').replace(/\bZeitraum\b/gi,'').replace(/\s{2,}/g,' ').trim()}
-  function dateBlock(k){return '<div class="change-final-date '+(dayLabel(k)==='Heute'?'today':'')+'"><strong>'+esc(dayLabel(k))+'</strong><span>'+esc(deLong(k))+'</span></div>'}
-  function calendarRows(){
-    const now=today(), limit=(()=>{const d=parse(now);d.setDate(d.getDate()+30);return key(d)})();
-    const rows=[];
-    for(let i=0;i<=30;i++){const d=parse(now);d.setDate(d.getDate()+i);const k=key(d),h=holidayName(k); if(h)rows.push({kind:'holiday',date:k,sort:k,title:h});}
-    events().forEach(e=>{const s=evStart(e),en=evEnd(e); if(!s||en<now||s>limit)return; rows.push({kind:'event',date:s<now?now:s,start:s,end:en,sort:s<now?now:s,title:evTitle(e),id:e.id||e.googleEventId||''});});
-    rows.sort((a,b)=>a.sort.localeCompare(b.sort)||(a.kind==='holiday'?-1:1));
-    if(!rows.length)return '<div class="dash-empty">Keine Termine oder Feiertage.</div>';
-    return rows.slice(0,7).map(r=>{
-      if(r.kind==='holiday')return '<div class="change-final-row holiday" onclick="setMainView&&setMainView(\'calendar\')">'+dateBlock(r.date)+'<div class="change-final-icon holiday">🎉</div><div class="change-final-main"><div class="change-final-title">'+esc(r.title)+' <span>Feiertag</span></div><div class="change-final-sub">'+esc(parse(r.date).toLocaleDateString('de-DE',{weekday:'long'}))+'</div></div></div>';
-      const active=r.start<=now&&r.end>=now, d=active?now:r.date, range=r.end&&r.end!==r.start;
-      return '<div class="change-final-row '+(active?'today':'')+'" onclick="setMainView&&setMainView(\'calendar\')">'+dateBlock(d)+'<div class="change-final-icon">📅</div><div class="change-final-main"><div class="change-final-title">'+esc(r.title)+'</div><div class="change-final-sub">'+esc(range?deShort(r.start)+' – '+deShort(r.end):dayLabel(r.date))+'</div></div></div>';
+  function fallbackHolidays(k){
+    const d=toDate(k), y=d.getFullYear(), md=pad(d.getMonth()+1)+'-'+pad(d.getDate()), out=[];
+    const fixed={'01-01':'Neujahr','05-01':'Tag der Arbeit','10-03':'Tag der Deutschen Einheit','12-25':'1. Weihnachtstag','12-26':'2. Weihnachtstag'};
+    if(fixed[md]) out.push({name:fixed[md]});
+    const es=easter(y);
+    [[-2,'Karfreitag'],[1,'Ostermontag'],[39,'Christi Himmelfahrt'],[50,'Pfingstmontag']].forEach(([off,name])=>{ const x=new Date(es); x.setDate(x.getDate()+off); if(key(x)===k) out.push({name}); });
+    return out;
+  }
+  function holidaysFor(k){
+    const list=[];
+    try{ if(typeof window.getHolidaysForDate==='function') list.push(...(window.getHolidaysForDate(k)||[])); }catch(e){}
+    try{ if(typeof window.getHolidayName==='function'){ const n=window.getHolidayName(k); if(n) list.push({name:n}); } }catch(e){}
+    try{ if(Array.isArray(window.holidays)) list.push(...window.holidays.filter(h=>String(h.date||h.datum||h.key||'').slice(0,10)===k)); }catch(e){}
+    list.push(...fallbackHolidays(k));
+    const seen=new Set();
+    return list.map(h=>({name:h.name||h.title||h.label||String(h)})).filter(h=>h.name && !seen.has(h.name) && seen.add(h.name));
+  }
+  function allEvents(){
+    try{ if(typeof window.getAllEvents==='function') return window.getAllEvents()||[]; }catch(e){}
+    return Array.isArray(window.events) ? window.events : [];
+  }
+  function evStart(e){ return String(e.startDate||e.fromDate||e.date||e.start?.date||e.start?.dateTime||'').slice(0,10); }
+  function evEnd(e){ return String(e.endDate||e.toDate||e.untilDate||e.date||e.end?.date||e.end?.dateTime||evStart(e)||'').slice(0,10); }
+  function evTitle(e){ return e.title || e.summary || e.name || 'Termin'; }
+  function evTime(e){ return e.time || (e.start?.dateTime ? new Date(e.start.dateTime).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}) : ''); }
+
+  function dashboardCalendarRows(){
+    const td=today(), limit=addDays(td,30), rows=[], seen=new Set();
+    for(let i=0;i<=30;i++){
+      const k=addDays(td,i);
+      holidaysFor(k).forEach(h=>rows.push({kind:'holiday',date:k,start:k,end:k,sort:k,title:h.name}));
+    }
+    allEvents().forEach(e=>{
+      const s=evStart(e), en=evEnd(e)||s;
+      if(!s || en<td || s>limit) return;
+      const id=(e.googleEventId?'g:'+e.googleEventId:(e.id||evTitle(e)+s+en));
+      if(seen.has(id)) return; seen.add(id);
+      rows.push({kind:'event',date:s<td?td:s,start:s,end:en,sort:s<td?td:s,event:e,title:evTitle(e)});
+    });
+    return rows.sort((a,b)=>a.sort.localeCompare(b.sort)||(a.kind==='holiday'?-1:1)).slice(0,8);
+  }
+  function dateBlock(r){
+    const td=today(), active=r.start<=td && r.end>=td, d=diffDays(r.date);
+    const top=active?'Heute':(d===1?'Morgen':fmt(r.date));
+    const sub=active?fmt(r.date):fmtLong(r.date);
+    return '<div class="change-date-left '+(active?'is-today':'')+'"><strong>'+esc(top)+'</strong><span>'+esc(sub)+'</span></div>';
+  }
+  function calendarHtml(){
+    const rows=dashboardCalendarRows();
+    if(!rows.length) return '<div class="dash-empty">Keine Termine oder Feiertage in den nächsten 30 Tagen</div>';
+    return rows.map(r=>{
+      if(r.kind==='holiday'){
+        return '<div class="dash-row change-dashboard-row change-holiday-row" onclick="setMainView(\'calendar\')">'+dateBlock(r)+'<div class="dash-row-icon change-icon-holiday">🎉</div><div class="dash-row-body"><div class="dash-row-title">'+esc(r.title)+' <span class="change-holiday-badge">Feiertag</span></div><div class="dash-row-sub">'+esc(fmtLong(r.date))+'</div></div></div>';
+      }
+      const range=r.end && r.end!==r.start;
+      const sub=range ? fmt(r.start)+' – '+fmt(r.end) : (fmtLong(r.start)+(evTime(r.event)?' · '+esc(evTime(r.event)):''));
+      return '<div class="dash-row change-dashboard-row '+((r.start<=today()&&r.end>=today())?'change-today-row':'')+'" onclick="setMainView(\'calendar\')">'+dateBlock(r)+'<div class="dash-row-icon change-icon-event">📅</div><div class="dash-row-body"><div class="dash-row-title">'+esc(r.title)+'</div><div class="dash-row-sub">'+sub+'</div></div></div>';
     }).join('');
   }
-  function challenges(){try{const now=today(),chs=(window.challenges||[]).filter(c=>c&&c.active!==false&&(c.recurrence==='daily'||!c.date||String(c.date||c.startDate||'').slice(0,10)===now)).slice(0,4); if(!chs.length)return '<div class="dash-empty">Heute keine Challenges.</div>'; return chs.map(c=>'<div class="change-mini-row"><div class="change-mini-icon">'+esc(c.icon||'🏆')+'</div><div class="change-mini-body"><div class="change-mini-title">'+esc(c.title||c.name||'Challenge')+'</div><div class="change-mini-meta">'+(parseInt(c.points,10)||0)+' Punkte</div></div><span class="change-mini-pill open">offen</span></div>').join('')}catch(e){return '<div class="dash-empty">Heute keine Challenges.</div>'}}
-  function players(){try{const ps=(typeof window.getVisibleContestPlayers==='function'?window.getVisibleContestPlayers():(window.challengePlayers||[])).slice(0,4); if(!ps.length)return '<div class="dash-empty">Keine Mitspieler.</div>'; return ps.map(p=>{const id=String(p.email||p.id||'').toLowerCase(),st=typeof window.getPlayerPointSummary==='function'?window.getPlayerPointSummary(id):{totalPoints:0,todayPoints:0};return '<div class="change-mini-row"><div class="change-mini-icon">🏅</div><div class="change-mini-body"><div class="change-mini-title">'+esc(p.name||p.email||'Mitspieler')+'</div><div class="change-mini-meta">Heute: '+(st.todayPoints||0)+' P · Gesamt: '+(st.totalPoints||0)+' P</div></div><span class="change-mini-pill">'+(st.totalPoints||0)+' P</span></div>'}).join('')}catch(e){return '<div class="dash-empty">Keine Mitspieler.</div>'}}
-  function css(){if($('change-dashboard-final-real-style'))return;const s=document.createElement('style');s.id='change-dashboard-final-real-style';s.textContent='#dash-grid{display:grid!important;grid-template-columns:minmax(380px,.82fr) minmax(460px,1.18fr)!important;gap:16px!important;align-items:start!important}.change-final-row{display:flex!important;align-items:center!important;gap:10px!important;min-height:52px!important;padding:10px 16px!important;border-bottom:1px solid var(--b1)!important;cursor:pointer!important}.change-final-row:last-child{border-bottom:0!important}.change-final-row.holiday{background:rgba(245,158,11,.075)!important;box-shadow:inset 3px 0 0 var(--amb)!important}.change-final-row.today{background:rgba(45,106,79,.055)!important;box-shadow:inset 3px 0 0 var(--acc)!important}.change-final-date{width:62px!important;flex:0 0 62px!important;line-height:1.05!important}.change-final-date strong{display:block!important;font-size:11px!important;font-weight:850!important;color:var(--t2)!important}.change-final-date span{display:block!important;margin-top:3px!important;font-size:9.5px!important;font-weight:700!important;color:var(--t5)!important}.change-final-date.today strong,.change-final-date.today span{color:var(--acc)!important}.change-final-icon{width:30px!important;height:30px!important;border-radius:9px!important;display:flex!important;align-items:center!important;justify-content:center!important;background:var(--acc-d)!important;flex:0 0 30px!important}.change-final-icon.holiday{background:var(--amb-d)!important}.change-final-main{min-width:0!important;flex:1!important}.change-final-title{font-size:13px!important;font-weight:750!important;color:var(--t1)!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}.change-final-title span{display:inline-flex!important;margin-left:6px!important;padding:1px 6px!important;border-radius:999px!important;background:rgba(245,158,11,.14)!important;color:#b85f00!important;border:1px solid rgba(245,158,11,.22)!important;font-size:10px!important;font-weight:850!important}.change-final-sub{margin-top:2px!important;font-size:11px!important;color:var(--t4)!important;font-weight:600!important}.change-combo-card .dash-card-body{display:grid!important;grid-template-columns:1fr 1fr!important;padding:0!important}.change-combo-section+.change-combo-section{border-left:1px solid var(--b1)!important}.change-combo-head{padding:10px 14px 7px!important;font-size:12px!important;font-weight:800!important;color:var(--t2)!important}@media(max-width:900px){#dash-grid{grid-template-columns:1fr!important}.change-combo-card .dash-card-body{grid-template-columns:1fr!important}.change-combo-section+.change-combo-section{border-left:0!important;border-top:1px solid var(--b1)!important}}';document.head.appendChild(s)}
-  function render(){css();const grid=$('dash-grid');if(!grid)return false;grid.innerHTML='<div class="dash-card change-dash-calendar"><div class="dash-card-head"><div><div class="dash-card-title">📅 Kalender</div><div class="dash-card-sub">Heute + nächste Tage</div></div></div><div class="dash-card-body">'+calendarRows()+'</div></div><div class="dash-card change-combo-card"><div class="dash-card-head"><div><div class="dash-card-title">🏆 Challenges & 👥 Mitspieler</div><div class="dash-card-sub">Heute und Rangliste</div></div></div><div class="dash-card-body"><div class="change-combo-section"><div class="change-combo-head">Challenges</div>'+challenges()+'</div><div class="change-combo-section"><div class="change-combo-head">Mitspieler</div>'+players()+'</div></div></div>';return true}
-  const oldDash = window.buildDashboard;
-  window.buildDashCards = render;
-  window.buildDashboard = function(){try{if(typeof oldDash==='function')oldDash.apply(this,arguments)}catch(e){}render()};
-  setTimeout(render,300); window.addEventListener('load',()=>setTimeout(render,900));
+  function challengeHtml(){
+    const td=today();
+    try{
+      const list=(window.challenges||[]).filter(c=>c && c.active!==false && (c.recurrence==='daily'||!c.date||String(c.date||c.startDate||'').slice(0,10)===td)).slice(0,4);
+      if(!list.length) return '<div class="dash-empty">Heute keine Challenges</div>';
+      return list.map(ch=>'<div class="dash-row change-dashboard-row" onclick="setMainView(\'challenges\')"><div class="dash-row-icon" style="background:var(--pur-d)">'+esc(ch.icon||'🏆')+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(ch.title||ch.name||'Challenge')+'</div><div class="dash-row-sub">'+(parseInt(ch.points,10)||0)+' Punkte</div></div><span class="dash-row-badge badge-amber">offen</span></div>').join('');
+    }catch(e){return '<div class="dash-empty">Heute keine Challenges</div>';}
+  }
+  function playersHtml(){
+    try{
+      const players=(typeof window.getVisibleContestPlayers==='function'?window.getVisibleContestPlayers():(window.challengePlayers||[])).slice(0,4);
+      const me=String(window.userInfo?.email||'').toLowerCase();
+      if(!players.length) return '<div class="dash-empty">Noch keine Mitspieler</div>';
+      return players.map((p,i)=>{const id=String(p.email||p.id||'').toLowerCase(), st=typeof window.getPlayerPointSummary==='function'?window.getPlayerPointSummary(id):{todayPoints:0,totalPoints:0}, medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1); return '<div class="dash-row change-dashboard-row" onclick="setMainView(\'challenges\')"><div class="dash-row-icon" style="background:var(--amb-d)">'+medal+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(p.name||p.email||'Mitspieler')+(id===me?' · Du':'')+'</div><div class="dash-row-sub">Heute '+(st.todayPoints||0)+' P · Gesamt '+(st.totalPoints||0)+' P</div></div><span class="dash-row-badge badge-green">'+(st.totalPoints||0)+' P</span></div>';}).join('');
+    }catch(e){return '<div class="dash-empty">Noch keine Mitspieler</div>';}
+  }
+  function injectStyle(){
+    let st=$('change-clean-dashboard-style');
+    if(!st){ st=document.createElement('style'); st.id='change-clean-dashboard-style'; document.head.appendChild(st); }
+    st.textContent='#kpi-grid{display:none!important}#dash-grid,.dash-grid{display:grid!important;grid-template-columns:minmax(380px,.82fr) minmax(460px,1.18fr)!important;gap:16px!important;align-items:start!important}.dash-card{border-radius:18px!important}.dash-card-body{max-height:360px!important;overflow:auto!important}.dashboard-combined-card .dash-card-body{display:grid!important;grid-template-columns:1fr 1fr!important;padding:0!important}.dashboard-section{min-width:0!important}.dashboard-section+.dashboard-section{border-left:1px solid var(--b1)!important}.dashboard-section-head{padding:10px 14px 7px!important;font-size:12px!important;font-weight:850!important;color:var(--t2)!important}.change-dashboard-row{min-height:50px!important;padding:10px 14px!important;gap:10px!important;align-items:center!important}.change-dashboard-row .dash-row-icon{width:30px!important;height:30px!important;border-radius:9px!important;flex:0 0 30px!important}.change-date-left{width:58px!important;flex:0 0 58px!important;text-align:left!important;line-height:1.05!important;color:var(--t2)!important}.change-date-left strong{display:block!important;font-size:11px!important;font-weight:900!important}.change-date-left span{display:block!important;margin-top:3px!important;font-size:9.5px!important;font-weight:750!important;color:var(--t5)!important}.change-date-left.is-today strong,.change-date-left.is-today span{color:var(--acc)!important}.change-holiday-row{background:rgba(245,158,11,.075)!important;box-shadow:inset 3px 0 0 var(--amb)!important}.change-today-row{background:rgba(45,106,79,.055)!important;box-shadow:inset 3px 0 0 var(--acc)!important}.change-icon-holiday{background:var(--amb-d)!important}.change-icon-event{background:var(--acc-d)!important}.change-holiday-badge{display:inline-flex!important;margin-left:6px!important;padding:1px 6px!important;border-radius:999px!important;background:rgba(245,158,11,.14)!important;color:#b85f00!important;border:1px solid rgba(245,158,11,.22)!important;font-size:10px!important;font-weight:850!important}@media(max-width:900px){#dash-grid,.dash-grid{grid-template-columns:1fr!important}.dashboard-combined-card .dash-card-body{grid-template-columns:1fr!important}.dashboard-section+.dashboard-section{border-left:0!important;border-top:1px solid var(--b1)!important}.dash-card-body{max-height:none!important}}';
+  }
+  window.buildDashCards=function(){
+    const grid=$('dash-grid'); if(!grid) return;
+    injectStyle();
+    grid.innerHTML='<div class="dash-card calendar-card"><div class="dash-card-head"><div><div class="dash-card-title">📅 Kalender</div><div class="dash-card-sub">Heute · Feiertage · nächste Termine</div></div></div><div class="dash-card-body">'+calendarHtml()+'</div></div><div class="dash-card dashboard-combined-card"><div class="dash-card-head"><div><div class="dash-card-title">🏆 Challenges & 👥 Mitspieler</div><div class="dash-card-sub">Heute und Rangliste</div></div></div><div class="dash-card-body"><div class="dashboard-section"><div class="dashboard-section-head">Challenges</div>'+challengeHtml()+'</div><div class="dashboard-section"><div class="dashboard-section-head">Mitspieler</div>'+playersHtml()+'</div></div></div>';
+  };
+  window.buildDashboard=function(){
+    try{const n=(window.userInfo&&window.userInfo.name)||'', h=$('dash-greeting'); if(h) h.textContent=(new Date().getHours()<12?'Guten Morgen':new Date().getHours()<17?'Guten Tag':'Guten Abend')+(n?', '+n.split(' ')[0]:''); const s=$('dash-sub'); if(s) s.textContent='Kalender, Challenges und Mitspieler auf einen Blick';}catch(e){}
+    window.buildDashCards();
+  };
+  function run(){ try{ if(!$('change-clean-dashboard-style')) injectStyle(); window.buildDashboard(); }catch(e){ console.warn('clean dashboard fix failed', e); } }
+  setTimeout(run,50); setTimeout(run,400); setTimeout(run,1200);
 })();
