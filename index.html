@@ -6192,3 +6192,110 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   window.onDayClick=function(dt,dayEvs){window.openDayPanel(dt,dayEvs||[]);};
 })();
 </script>
+<script id="dashboard-calendar-tile-only-final">
+(function(){
+  'use strict';
+  const PATCH='dashboard-calendar-tile-only-final';
+  const $=id=>document.getElementById(id);
+  const pad=n=>String(n).padStart(2,'0');
+  const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const toKey=d=>{ if(d instanceof Date) return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); return String(d||'').slice(0,10); };
+  const parse=k=>new Date(String(k||'').slice(0,10)+'T12:00:00');
+  const addDays=(k,n)=>{const d=parse(k); d.setDate(d.getDate()+n); return toKey(d);};
+  const today=()=>toKey(new Date());
+  const daysFromToday=k=>Math.round((parse(k)-parse(today()))/86400000);
+  const fmtShort=k=>parse(k).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+  const fmtLong=k=>parse(k).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
+  const titleOf=e=>String(e?.title||e?.summary||e?.name||'Termin').replace(/\bZeitraum\b\s*:?/gi,'').replace(/\s{2,}/g,' ').trim();
+  const timeOf=e=>{ if(e?.time) return String(e.time); if(e?.startTime) return String(e.startTime); if(e?.start?.dateTime) return String(e.start.dateTime).slice(11,16); return ''; };
+  function endExclusiveGoogle(e){return !!(e && e.start && e.start.date && e.end && e.end.date && !e.end.dateTime && !e.time && !e.startTime);}
+  function rangeOf(e){
+    let s=toKey(e?.date||e?.startDate||e?.dateKey||e?.start?.date||e?.start?.dateTime||'');
+    let en=toKey(e?.endDate||e?.end||e?.end?.date||e?.end?.dateTime||s);
+    if(endExclusiveGoogle(e)) en=addDays(en,-1);
+    if(!en) en=s;
+    if(en<s){const t=s; s=en; en=t;}
+    return {start:s,end:en,isRange:!!(s&&en&&s!==en)};
+  }
+  function allEvents(){
+    let a=[];
+    try{ if(typeof getAllEvents==='function') a=getAllEvents()||[]; }catch(e){}
+    if(!a.length) try{ a=window.events||[]; }catch(e){}
+    return Array.isArray(a)?a:[];
+  }
+  function fallbackHolidays(k){
+    const y=parseInt(String(k).slice(0,4),10); if(!y) return [];
+    function easter(year){const a=year%19,b=Math.floor(year/100),c=year%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),l=c%4,m=(32+2*e+2*i-h-l)%7,n=Math.floor((a+11*h+22*m)/451),mo=Math.floor((h+m-7*n+114)/31),da=((h+m-7*n+114)%31)+1;return new Date(year,mo-1,da)}
+    const e=easter(y), defs=[['Neujahr',new Date(y,0,1)],['Tag der Arbeit',new Date(y,4,1)],['Tag der Deutschen Einheit',new Date(y,9,3)],['1. Weihnachtstag',new Date(y,11,25)],['2. Weihnachtstag',new Date(y,11,26)],['Karfreitag',new Date(e.getFullYear(),e.getMonth(),e.getDate()-2)],['Ostermontag',new Date(e.getFullYear(),e.getMonth(),e.getDate()+1)],['Christi Himmelfahrt',new Date(e.getFullYear(),e.getMonth(),e.getDate()+39)],['Pfingstmontag',new Date(e.getFullYear(),e.getMonth(),e.getDate()+50)],['Fronleichnam',new Date(e.getFullYear(),e.getMonth(),e.getDate()+60)]];
+    return defs.filter(([,d])=>toKey(d)===k).map(([name])=>({name,states:['ALL']}));
+  }
+  function holidaysFor(k){
+    const map=new Map();
+    try{ (typeof getHolidaysForDate==='function'?getHolidaysForDate(k):[]||[]).forEach(h=>{if(h&&h.name)map.set(h.name,h);}); }catch(e){}
+    fallbackHolidays(k).forEach(h=>{if(h&&h.name&&!map.has(h.name))map.set(h.name,h);});
+    return Array.from(map.values());
+  }
+  function dedupeKey(ev,r){
+    return String(ev?.googleEventId||ev?.icalUID||ev?.id||'') || (titleOf(ev).toLowerCase()+'|'+r.start+'|'+r.end+'|'+timeOf(ev));
+  }
+  function rows(){
+    const td=today(), limit=addDays(td,30), out=[], seen=new Set();
+    allEvents().forEach(ev=>{
+      const r=rangeOf(ev); if(!r.start || r.end<td || r.start>limit) return;
+      const k=dedupeKey(ev,r); if(seen.has(k)) return; seen.add(k);
+      const active=r.start<=td && r.end>=td;
+      out.push({kind:'event',ev,range:r,date:active?td:r.start,sort:active?td:r.start,active});
+    });
+    for(let i=0;i<=30;i++){
+      const k=addDays(td,i);
+      holidaysFor(k).forEach(h=>out.push({kind:'holiday',holiday:h,date:k,sort:k,active:k===td}));
+    }
+    return out.sort((a,b)=>a.sort.localeCompare(b.sort)||(a.kind==='holiday'?-1:1)||(a.kind==='event'&&b.kind==='event'?String(timeOf(a.ev)||'99:99').localeCompare(String(timeOf(b.ev)||'99:99')):0)).slice(0,10);
+  }
+  function dateBlock(date,active){
+    const d=daysFromToday(date);
+    const top=active?'Heute':(d===1?'Morgen':fmtShort(date));
+    const bottom=active?fmtShort(date):fmtLong(date).replace('.', '');
+    return '<div class="dash-date-block '+(active?'is-today':'')+'"><div>'+esc(top)+'</div><span>'+esc(bottom)+'</span></div>';
+  }
+  function calendarHtml(){
+    const rs=rows();
+    if(!rs.length) return '<div class="dash-empty compact-empty">Keine Termine oder Feiertage</div>';
+    return rs.map(r=>{
+      if(r.kind==='holiday'){
+        return '<div class="dash-row compact-row dashboard-calendar-row holiday-row '+(r.active?'dash-today-row':'')+'" onclick="setMainView(\'calendar\')">'+dateBlock(r.date,r.active)+'<div class="dash-row-icon" style="background:var(--amb-d)">🎉</div><div class="dash-row-body"><div class="dash-row-title">'+esc(r.holiday.name)+' <span class="holiday-mini-badge">Feiertag</span></div><div class="dash-row-sub">'+esc(fmtLong(r.date))+'</div></div></div>';
+      }
+      const ev=r.ev, rg=r.range, isRange=rg.isRange;
+      const sub=isRange?fmtShort(rg.start)+' – '+fmtShort(rg.end):(timeOf(ev)?esc(timeOf(ev))+' Uhr':'Ganztägig');
+      const pill=isRange?' <span class="range-mini-badge">'+esc(fmtShort(rg.start)+' – '+fmtShort(rg.end))+'</span>':'';
+      return '<div class="dash-row compact-row dashboard-calendar-row '+(r.active?'dash-today-row':'')+'" onclick="setMainView(\'calendar\')">'+dateBlock(r.date,r.active)+'<div class="dash-row-icon" style="background:var(--acc-d)">📅</div><div class="dash-row-body"><div class="dash-row-title">'+esc(titleOf(ev))+pill+'</div><div class="dash-row-sub">'+sub+'</div></div></div>';
+    }).join('');
+  }
+  function injectStyle(){
+    if($('dashboard-calendar-tile-only-style')) return;
+    const st=document.createElement('style'); st.id='dashboard-calendar-tile-only-style';
+    st.textContent='.calendar-card .dash-card-sub{font-size:12px!important}.dashboard-calendar-row{align-items:center!important}.calendar-card .dash-card-body{max-height:360px!important;overflow:auto!important}.dash-date-block{width:50px!important;flex:0 0 50px!important;text-align:left!important;font-size:11px!important;font-weight:850!important;color:var(--t2)!important;line-height:1.05!important;margin-right:-2px!important}.dash-date-block span{display:block!important;margin-top:3px!important;font-size:9.5px!important;font-weight:700!important;color:var(--t5)!important}.dash-date-block.is-today div,.dash-date-block.is-today span{color:var(--acc)!important}.dash-today-row{background:rgba(45,106,79,.06)!important;box-shadow:inset 3px 0 0 var(--acc)!important}.holiday-row{background:rgba(245,158,11,.075)!important;box-shadow:inset 3px 0 0 var(--amb)!important}.holiday-mini-badge,.range-mini-badge{display:inline-flex!important;margin-left:6px!important;padding:1px 6px!important;border-radius:999px!important;font-size:10px!important;font-weight:800!important;white-space:nowrap!important}.holiday-mini-badge{background:rgba(245,158,11,.14)!important;color:#b85f00!important;border:1px solid rgba(245,158,11,.22)!important}.range-mini-badge{background:rgba(22,163,74,.12)!important;color:var(--grn)!important;border:1px solid rgba(22,163,74,.18)!important}.compact-empty{padding:22px 14px!important;font-size:12px!important}';
+    document.head.appendChild(st);
+  }
+  function patchCalendarTile(){
+    injectStyle();
+    const card=document.querySelector('#dash-grid .calendar-card'); if(!card) return;
+    const title=card.querySelector('.dash-card-title'); if(title) title.textContent='📅 Kalender';
+    const sub=card.querySelector('.dash-card-sub'); if(sub) sub.textContent='Heute + nächste Tage';
+    const body=card.querySelector('.dash-card-body'); if(body) body.innerHTML=calendarHtml();
+    card.querySelectorAll('.dash-card-head button,.dash-row-action').forEach(b=>b.remove());
+  }
+  const previous=window.buildDashCards;
+  window.buildDashCards=function(){
+    if(typeof previous==='function') previous.apply(this,arguments);
+    try{ patchCalendarTile(); }catch(e){ console.warn(PATCH,e); }
+  };
+  const previousDash=window.buildDashboard;
+  window.buildDashboard=function(){
+    if(typeof previousDash==='function') previousDash.apply(this,arguments);
+    try{ patchCalendarTile(); }catch(e){ console.warn(PATCH,e); }
+  };
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{try{ if(window.currentMainView==='dashboard') patchCalendarTile(); }catch(e){}},100));
+  setTimeout(()=>{try{ if(window.currentMainView==='dashboard') { if(typeof previous==='function') window.buildDashCards(); else patchCalendarTile(); } }catch(e){}},300);
+})();
+</script>
