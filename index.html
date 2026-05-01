@@ -6097,3 +6097,62 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   setTimeout(()=>{try{window.buildDashboard()}catch(e){}},150);
 })();
 </script>
+
+<script id="daypanel-dedupe-google-exclusive-final">
+(function(){
+  'use strict';
+  const pad=n=>String(n).padStart(2,'0');
+  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const parse=k=>new Date(String(k).slice(0,10)+'T12:00:00');
+  const key=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  const add=(k,n)=>{const d=parse(k);d.setDate(d.getDate()+n);return key(d);};
+  const fmt=k=>{try{return parse(k).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});}catch(e){return String(k||'');}};
+  const weekday=k=>{try{return parse(k).toLocaleDateString('de-DE',{weekday:'long'});}catch(e){return '';}};
+  const dkey=v=>v instanceof Date?key(v):String(v||'').slice(0,10);
+  const titleOf=e=>String(e?.title||e?.summary||e?.name||'Termin').replace(/\bZeitraum\b\s*:?/gi,'').replace(/\s{2,}/g,' ').trim();
+  const timeOf=e=>{ if(e?.time) return e.time; if(e?.start?.dateTime) return new Date(e.start.dateTime).toTimeString().slice(0,5); return ''; };
+  function rangeOf(e){
+    if(!e) return {start:'',end:'',isRange:false};
+    let s='', en='';
+    if(e.start && (e.start.date || e.start.dateTime)){
+      s=String(e.start.date || e.start.dateTime).slice(0,10);
+      if(e.end?.date) en=add(String(e.end.date).slice(0,10),-1);
+      else if(e.end?.dateTime) en=String(e.end.dateTime).slice(0,10);
+    }else{
+      s=String(e.startDate||e.date||e.fromDate||e.dateKey||'').slice(0,10);
+      en=String(e.endDate||e.dateEnd||e.toDate||e.untilDate||e.date||e.startDate||'').slice(0,10);
+    }
+    if(!en || en<s) en=s;
+    return {start:s,end:en,isRange:!!(s&&en&&s!==en)};
+  }
+  function normalizeGoogle(ge){
+    const r=rangeOf(ge);
+    return {id:String(ge.id||'').startsWith('g_')?String(ge.id):'g_'+String(ge.id||''), googleEventId:ge.id||'', title:ge.summary||ge.title||'(Kein Titel)', date:r.start, startDate:r.start, endDate:r.end, time:ge.start?.dateTime?new Date(ge.start.dateTime).toTimeString().slice(0,5):'', endTime:ge.end?.dateTime?new Date(ge.end.dateTime).toTimeString().slice(0,5):'', desc:ge.description||'', color:'blue', source:'google'};
+  }
+  function allPanelEvents(pre){
+    const candidates=[];
+    try{(window.events||[]).forEach(e=>candidates.push(e));}catch(e){}
+    try{(window.gEvents||[]).forEach(g=>candidates.push(normalizeGoogle(g)));}catch(e){}
+    try{if(Array.isArray(pre)) pre.forEach(e=>candidates.push(e));}catch(e){}
+    try{if(!candidates.length && typeof window.getAllEvents==='function') (window.getAllEvents()||[]).forEach(e=>candidates.push(e));}catch(e){}
+    const byG=new Map(), other=[];
+    candidates.forEach(e=>{const r=rangeOf(e); if(!r.start) return; const gid=e.googleEventId||(String(e.id||'').startsWith('g_')?String(e.id).slice(2):''); if(gid){const k='g:'+gid, p=byG.get(k); if(!p || r.end<rangeOf(p).end) byG.set(k,e);} else other.push(e);});
+    const semantic=new Map();
+    [...byG.values(),...other].forEach(e=>{const r=rangeOf(e); if(!r.start) return; const sig=titleOf(e).toLowerCase()+'|'+r.start+'|'+(timeOf(e)||'')+'|'+(e.source==='google'||e.googleEventId?'google':'local'); const p=semantic.get(sig); if(!p || r.end<rangeOf(p).end) semantic.set(sig,e);});
+    return [...semantic.values()];
+  }
+  function eventsForDay(k,pre){return allPanelEvents(pre).filter(e=>{const r=rangeOf(e);return r.start<=k&&r.end>=k;}).sort((a,b)=>{const ar=rangeOf(a),br=rangeOf(b);if(ar.isRange!==br.isRange)return ar.isRange?-1:1;return (timeOf(a)||'99:99').localeCompare(timeOf(b)||'99:99')||titleOf(a).localeCompare(titleOf(b));});}
+  function holidaysForDate(k){try{return (typeof window.getHolidaysForDate==='function'?window.getHolidaysForDate(k):[])||[];}catch(e){return [];}}
+  window.openDayPanel=function(dt,dayEvs){
+    const k=dkey(dt), evs=eventsForDay(k,dayEvs), hols=holidaysForDate(k);
+    const title=evs.length?(evs.length+' '+(evs.length===1?'Termin':'Termine')):(hols.length?(hols.length===1?'Feiertag':'Feiertage'):'Tag');
+    let html='<div class="day-detail-date">'+esc(weekday(k)+', '+fmt(k))+'</div>';
+    if(hols.length) html+='<div class="day-detail-holidays">'+hols.map(h=>'<div class="day-detail-holiday"><span>🎉</span><div><b>'+esc(h.name)+'</b><small>Feiertag</small></div></div>').join('')+'</div>';
+    if(evs.length) html+='<div class="day-detail-list">'+evs.map(ev=>{const r=rangeOf(ev), sub=r.isRange?(fmt(r.start)+' – '+fmt(r.end)):fmt(k), id=esc(ev.id||ev.googleEventId||''), g=(ev.source==='google'||ev.googleEventId)?' <span class="cal-g" title="von Google">G</span>':''; return '<div class="day-detail-event" onclick="openEventPanel(\''+id+'\')"><div class="day-detail-time">'+(timeOf(ev)||'Ganztägig')+'</div><div class="day-detail-main"><div class="day-detail-title">'+esc(titleOf(ev))+g+'</div><div class="day-detail-sub">'+esc(sub)+'</div></div></div>';}).join('')+'</div>'; else html+='<div class="day-detail-empty">Keine Termine für diesen Tag</div>';
+    html+='<button class="btn btn-primary btn-full day-detail-add" onclick="window.__openNewEventForDay&&window.__openNewEventForDay(\''+k+'\')">+ Neuer Termin für diesen Tag</button>';
+    window.__openNewEventForDay=function(day){if(typeof window.openEventPanel==='function')window.openEventPanel(null,parse(day));};
+    if(typeof window.openPanel==='function')window.openPanel(title,html);
+  };
+  window.onDayClick=function(dt,dayEvs){window.openDayPanel(dt,dayEvs||[]);};
+})();
+</script>
