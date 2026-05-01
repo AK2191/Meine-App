@@ -4251,6 +4251,82 @@ document.addEventListener('touchend',e=>{
   window.addEventListener('load',()=>setTimeout(()=>{try{if(typeof buildDashboard==='function')buildDashboard();}catch(e){}},300));
 })();
 </script>
+
+
+<script id="final-range-dashboard-contest-fix">
+/* FINAL FIX: ruhiges Dashboard, Zeitraum-Darstellung, Challenge-Dots, kein Dummy-„Du“ */
+(function(){
+  function $(id){return document.getElementById(id)}
+  function escS(s){return (typeof esc==='function')?esc(s):String(s||'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
+  function dk(d){return (typeof dateKey==='function')?dateKey(d):d.toISOString().substring(0,10)}
+  function addD(d,n){return (typeof addDays==='function')?addDays(d,n):new Date(d.getTime()+n*86400000)}
+  function todayKey(){return dk(new Date())}
+  function fmtS(d){return (typeof fmtDate==='function')?fmtDate(d):d}
+  function daysS(d){return (typeof daysUntil==='function')?daysUntil(d):Math.round((new Date(d+'T12:00:00')-new Date(new Date().toDateString()))/86400000)}
+  function lc(v){return String(v||'').trim().toLowerCase()}
+  function currentEmail(){return lc((window.userInfo&&(userInfo.email||userInfo.id))||localStorage.getItem('change_v1_user_email')||'')}
+  function currentName(){return (window.userInfo&&(userInfo.name||userInfo.email))||currentEmail()||'Ich'}
+  function isDummyDu(p){const v=lc(p&&(p.email||p.id||p.name||p.playerId||p.userEmail||p));return v==='du'||v==='ich'||v==='me'||v==='demo'||v==='demo@example.com'||v.includes('demo nutzer')||v.includes('demo-user')}
+  function normalizeMyData(){
+    const me=currentEmail(); if(!me) return;
+    try{
+      (window.challengeCompletions||[]).forEach(c=>{ if(isDummyDu(c)){ c.playerId=me; c.userEmail=me; c.email=me; c.playerName=currentName(); } });
+      if(typeof ls==='function') ls('challenge_completions',window.challengeCompletions||[]);
+    }catch(e){}
+    try{
+      window.challengePlayers=(window.challengePlayers||[]).filter(p=>!isDummyDu(p)||lc(p.email||p.id)===me);
+      const found=window.challengePlayers.some(p=>lc(p.email||p.id)===me);
+      if(!found) window.challengePlayers.push({id:me,email:me,name:currentName(),online:true});
+      if(typeof ls==='function') ls('challenge_players',window.challengePlayers);
+    }catch(e){}
+  }
+  function playerId(p){return lc((p&&(p.email||p.id||p.userEmail))||p)}
+  function playerName(p){const me=currentEmail(), id=playerId(p); if(id===me) return currentName(); const n=String((p&&(p.name||p.email||p.id))||'Mitspieler').trim(); return (lc(n)==='du'||lc(n)==='ich')?'Mitspieler':n;}
+  window.getCurrentPlayerId=function(){return currentEmail()||'local-user'};
+  const oldVisible=window.getVisibleContestPlayers||window.visiblePlayers;
+  window.getVisibleContestPlayers=window.visiblePlayers=function(){
+    normalizeMyData(); const me=currentEmail(); let arr=[];
+    try{arr=oldVisible?oldVisible():(window.challengePlayers||[])}catch(e){arr=window.challengePlayers||[]}
+    const seen=new Set(), out=[];
+    (arr||[]).forEach(p=>{let id=playerId(p); if(!id&&isDummyDu(p)&&me) id=me; if(!id) return; if(isDummyDu(p)&&id!==me) return; if(seen.has(id)) return; seen.add(id); out.push(Object.assign({},p,{id,email:id,name:id===me?currentName():playerName(p)}));});
+    if(me&&!seen.has(me)) out.push({id:me,email:me,name:currentName(),online:true});
+    return out;
+  };
+  function pointSummary(id){id=lc(id); const td=todayKey(); const out={totalPoints:0,totalCount:0,todayPoints:0,todayCount:0,todayItems:[]};
+    (window.challengeCompletions||[]).forEach(c=>{const cid=lc(c.playerId||c.userEmail||c.email); if(cid!==id) return; const ch=(window.challenges||[]).find(x=>x.id===c.challengeId)||{}; const pts=parseInt(c.points??ch.points??0,10)||0; out.totalPoints+=pts; out.totalCount++; if(c.date===td){out.todayPoints+=pts; out.todayCount++; out.todayItems.push({title:ch.title||c.challengeId||'Challenge',icon:ch.icon||'✅',points:pts});}}); return out;}
+  window.getPlayerPointSummary=pointSummary;
+
+  function rawEvents(){const a=[];(window.events||[]).forEach(e=>a.push(e)); if(window.googleCalendarSyncEnabled!==false&&(localStorage.getItem('change_v1_google_calendar_sync')!=='false')) (window.gEvents||[]).forEach(e=>a.push(Object.assign({},e,{source:'google'}))); return a;}
+  function startOf(ev){return ev.startDate||ev.date||ev.dateKey||(ev.start&&ev.start.date)||(ev.start&&ev.start.dateTime?String(ev.start.dateTime).substring(0,10):'')}
+  function endOf(ev){if(ev.endDate)return ev.endDate;if(ev.toDate)return ev.toDate;if(ev.untilDate)return ev.untilDate;if(ev.end&&ev.end.date)return dk(addD(new Date(ev.end.date+'T12:00:00'),-1));if(ev.end&&ev.end.dateTime)return String(ev.end.dateTime).substring(0,10);return startOf(ev)}
+  function titleOf(ev){return ev.title||ev.summary||ev.name||'(Kein Titel)'}
+  function timeOf(ev){if(ev.time)return ev.time;if(ev.start&&ev.start.dateTime)return new Date(ev.start.dateTime).toTimeString().substring(0,5);return ''}
+  function colorOf(ev){return ev.color||'blue'}
+  function sourceBadge(ev){if((ev.source==='google')||String(ev.id||'').startsWith('g_'))return '<span class="source-pill">von Google</span>'; if(ev.googleEventId||ev.syncedToGoogle)return '<span class="source-pill synced">Google ✓</span>'; return ''}
+  function rangeText(ev){const s=startOf(ev), e=endOf(ev); return e&&e!==s?fmtS(s)+' – '+fmtS(e):fmtS(s)}
+  function displayDateForRange(ev){const s=startOf(ev), e=endOf(ev)||s, t=todayKey(); if(s<=t&&e>=t) return t; return s;}
+  function dashCalendarRows(){const t=todayKey(), limit=dk(addD(new Date(),14)); const rows=[]; const seen=new Set();
+    rawEvents().forEach(ev=>{const s=startOf(ev), e=endOf(ev)||s; if(!s) return; if(e<t||s>limit) return; const key=(ev.id||titleOf(ev)+'_'+s+'_'+e); if(seen.has(key))return; seen.add(key); rows.push({kind:'event',ev,date:displayDateForRange(ev),sort:(s<t?t:s)});});
+    try{if(typeof getHolidaysForDate==='function'){let cur=new Date(t+'T12:00:00'), end=new Date(limit+'T12:00:00');while(cur<=end){const d=dk(cur);(getHolidaysForDate(d)||[]).forEach(h=>rows.push({kind:'holiday',holiday:h,date:d,sort:d}));cur=addD(cur,1);}}}catch(e){}
+    return rows.sort((a,b)=>String(a.sort).localeCompare(String(b.sort))).slice(0,8);
+  }
+  function challengeRows(){let ch=[]; try{ch=(typeof challengeDue==='function'?challengeDue().open:(window.challenges||[]).filter(c=>!(typeof isChallengeDoneToday==='function'&&isChallengeDoneToday(c.id))))}catch(e){ch=[]} return (ch||[]).slice(0,4);}
+  function playersHtml(){const players=(window.getVisibleContestPlayers?getVisibleContestPlayers():[]).slice().sort((a,b)=>pointSummary(playerId(b)).totalPoints-pointSummary(playerId(a)).totalPoints).slice(0,5); return players.length?players.map((p,i)=>{const id=playerId(p), st=pointSummary(id), medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1);return '<div class="dash-row"><div class="dash-row-icon" style="background:var(--amb-d)">'+medal+'</div><div class="dash-row-body"><div class="dash-row-title">'+escS(playerName(p))+(id===currentEmail()?'':'')+'</div><div class="dash-row-sub">Heute: '+st.todayPoints+' P · Gesamt: '+st.totalPoints+' P · '+st.totalCount+' erledigt</div></div><span class="dash-row-badge badge-green">'+st.totalPoints+' P</span></div>';}).join(''):'<div class="dash-empty">Noch keine Mitspieler.</div>';}
+  window.buildDashCards=function(){const grid=$('dash-grid'); if(!grid)return; normalizeMyData(); const cal=dashCalendarRows(); const calHtml=cal.length?cal.map(r=>{if(r.kind==='holiday'){const diff=daysS(r.date), badge=diff===0?'':(diff===1?'Morgen':'in '+diff+'T');return '<div class="dash-row" onclick="setMainView(\'calendar\')"><div class="dash-row-icon" style="background:var(--amb-d)">🎉</div><div class="dash-row-body"><div class="dash-row-title">'+escS(r.holiday.name)+'</div><div class="dash-row-sub">'+fmtS(r.date)+'</div></div>'+(badge?'<span class="dash-row-badge badge-amber">'+badge+'</span>':'')+'</div>';} const ev=r.ev, diff=daysS(r.date), badge=diff===0?'':(diff===1?'Morgen':'in '+diff+'T'), isRange=(endOf(ev)&&endOf(ev)!==startOf(ev)); return '<div class="dash-row" onclick="setMainView(\'calendar\')"><div class="dash-row-icon" style="background:var(--acc-d)">📅</div><div class="dash-row-body"><div class="dash-row-title">'+escS(titleOf(ev))+(isRange?'<span class="range-pill">'+escS(rangeText(ev))+'</span>':'')+sourceBadge(ev)+'</div><div class="dash-row-sub">'+fmtS(r.date)+(timeOf(ev)?' · '+timeOf(ev):'')+(isRange?' · Zeitraum: '+rangeText(ev):'')+'</div></div>'+(badge?'<span class="dash-row-badge badge-blue">'+badge+'</span>':'')+'</div>';}).join(''):'<div class="dash-empty">Keine Termine oder Feiertage gefunden</div>'; const ch=challengeRows(); const chHtml=ch.length?ch.map(c=>'<div class="dash-row" onclick="setMainView(\'challenges\')"><div class="dash-row-icon" style="background:var(--pur-d)">'+escS(c.icon||'🏆')+'</div><div class="dash-row-body"><div class="dash-row-title">'+escS(c.title||c.name||'Challenge')+'</div><div class="dash-row-sub">'+(parseInt(c.points,10)||0)+' Punkte</div></div><span class="dash-row-badge badge-amber">offen</span></div>').join(''):'<div class="dash-empty">Keine offenen Aufgaben</div>'; grid.innerHTML='<div class="dash-card calendar-card"><div class="dash-card-head"><div><div class="dash-card-title">📅 Kalender</div><div class="dash-card-sub"></div></div></div><div class="dash-card-body">'+calHtml+'</div></div><div class="dash-card challenge-card-dashboard"><div class="dash-card-head"><div><div class="dash-card-title">🏆 Challenges</div><div class="dash-card-sub"></div></div></div><div class="dash-card-body">'+chHtml+'</div></div><div class="dash-card players-card-dashboard"><div class="dash-card-head"><div><div class="dash-card-title">👥 Mitspieler</div><div class="dash-card-sub"></div></div></div><div class="dash-card-body">'+playersHtml()+'</div></div>';};
+  window.buildDashboard=function(){try{if(typeof buildKPIs==='function')buildKPIs()}catch(e){} try{const h=$('dash-greeting'); if(h)h.textContent=(new Date().getHours()<12?'Guten Morgen':new Date().getHours()<17?'Guten Tag':'Guten Abend')+((currentName()&&currentName()!=='Ich')?', '+currentName().split(' ')[0]:''); const s=$('dash-sub'); if(s)s.textContent='Kalender, Challenges und Mitspieler auf einen Blick';}catch(e){} buildDashCards();};
+
+  window.renderMonth=function(y,m){const grid=$('month-grid'); if(!grid)return; grid.className=''; grid.style.display='grid'; grid.style.gridTemplateRows='repeat(6,1fr)'; grid.innerHTML=''; let firstDay=new Date(y,m,1).getDay(); firstDay=firstDay===0?6:firstDay-1; const dim=new Date(y,m+1,0).getDate(), prevDim=new Date(y,m,0).getDate(), cells=[]; for(let i=0;i<firstDay;i++)cells.push({d:prevDim-firstDay+1+i,m:m===0?11:m-1,y:m===0?y-1:y,other:true}); for(let i=1;i<=dim;i++)cells.push({d:i,m,y,other:false}); while(cells.length<42){const ld=cells.length-firstDay-dim+1;cells.push({d:ld,m:m===11?0:m+1,y:m===11?y+1:y,other:true});}
+    for(let w=0;w<6;w++){const row=document.createElement('div'); row.className='week-row'; for(let d=0;d<7;d++){const c=cells[w*7+d], dt=new Date(c.y,c.m,c.d), day=dk(dt); const cell=document.createElement('div'); cell.className='day-cell'+(c.other?' other':'')+(d>=5?' weekend':'')+((typeof isToday==='function'&&isToday(dt))?' today':''); const dayEvs=rawEvents().filter(ev=>{const s=startOf(ev), e=endOf(ev)||s;return s&&s<=day&&e>=day;}).sort((a,b)=>(timeOf(a)||'99:99').localeCompare(timeOf(b)||'99:99')); cell.onclick=()=>onDayClick(dt,dayEvs); let html='<div class="day-num-wrap"><div class="day-num">'+c.d+'</div></div>'; try{if(typeof getHolidaysForDate==='function') html+=(getHolidaysForDate(day)||[]).slice(0,2).map(h=>'<div class="holiday-line">'+escS(h.name)+'</div>').join(''); if(typeof getChallengeDayStatus==='function'){const ch=getChallengeDayStatus(day); if(ch)html+='<span class="challenge-day-dot '+(ch.allDone?'done':'')+'"></span>';}}catch(e){}
+      const maxV=window.innerWidth<480?1:2; dayEvs.slice(0,maxV).forEach(ev=>{const s=startOf(ev), e=endOf(ev)||s, isRange=e>s, start=day===s, end=day===e, weekStart=d===0, weekEnd=d===6; const cls='ev-chip '+colorOf(ev)+(isRange?' range-event '+(start||weekStart?'range-start ':'')+(end||weekEnd?'range-end ':'range-mid '):''); const label=(!isRange||start||weekStart)?escS(titleOf(ev)):''; html+='<div class="'+cls+'" onclick="event.stopPropagation();openEventPanel(\''+escS(ev.id||'')+'\')">'+label+(start?sourceBadge(ev):'')+'</div>';}); if(dayEvs.length>maxV)html+='<div class="more-chip">+'+(dayEvs.length-maxV)+'</div>'; cell.innerHTML=html; row.appendChild(cell);} grid.appendChild(row);} applyCalOptionStyle();};
+
+  function applyCalOptionStyle(){let o={showHolidays:true,showChallengeDots:true,showWeekNumbers:false}; try{o=Object.assign(o,JSON.parse(localStorage.getItem('change_v1_calendar_view_options')||'{}'))}catch(e){} let st=$('final-calendar-options-style'); if(!st){st=document.createElement('style');st.id='final-calendar-options-style';document.head.appendChild(st)} st.textContent=(o.showChallengeDots?'':'.challenge-day-dot,.challenge-dot{display:none!important;}')+(o.showHolidays?'':'.holiday-line,.holiday-card,.holiday-chip{display:none!important;}')+'.ev-chip.range-event{display:block;margin-left:-4px;margin-right:-4px;border-radius:0;min-height:18px}.ev-chip.range-start{margin-left:0;border-top-left-radius:9px;border-bottom-left-radius:9px}.ev-chip.range-end{margin-right:0;border-top-right-radius:9px;border-bottom-right-radius:9px}.ev-chip.range-mid{color:transparent}.source-pill,.range-pill{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:999px;font-size:10px;font-weight:800;background:rgba(66,133,244,.12);color:#4285F4}.source-pill.synced{background:rgba(22,163,74,.12);color:var(--grn)}';}
+  const oldSaveCal=window.saveCalSettings; window.saveCalSettings=function(){try{const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked}; localStorage.setItem('change_v1_calendar_view_options',JSON.stringify(o)); window.changeCalendarViewOptions=o;}catch(e){} if(typeof oldSaveCal==='function')oldSaveCal(); applyCalOptionStyle(); if(typeof renderCalendar==='function')renderCalendar();};
+  document.addEventListener('change',function(e){if(e.target&&['toggle-holidays','toggle-dots','toggle-kw'].includes(e.target.id)){try{const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked}; localStorage.setItem('change_v1_calendar_view_options',JSON.stringify(o)); window.changeCalendarViewOptions=o; applyCalOptionStyle(); if(typeof renderCalendar==='function')renderCalendar();}catch(x){}}});
+  const oldOpenContest=window.openContestUserDetails; window.openContestUserDetails=function(id){id=lc(id); if(isDummyDu(id)) id=currentEmail(); if(!id)return; if(typeof oldOpenContest==='function')return oldOpenContest(id);};
+  applyCalOptionStyle(); setTimeout(()=>{normalizeMyData(); try{if(currentMainView==='dashboard')buildDashboard(); if(currentMainView==='calendar')renderCalendar();}catch(e){}},500);
+})();
+</script>
+
 </body>
 </html>
 <script id="change-final-user-fixes-3">
