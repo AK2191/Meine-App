@@ -5260,3 +5260,77 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   const style=document.createElement('style');style.id='calendar-polish-user-final-style';style.textContent=`.range-bar,.fx-range,.clean-range-row>.range-bar{display:none!important}.h-actions,.h-cal-controls{position:relative;z-index:80}.icon-btn{pointer-events:auto!important}.icon-btn[title="Kalender-Einstellungen"],.icon-btn[title="Sync"]{position:relative;z-index:90}#month-grid.month-grid-polished{overflow:hidden!important;background:#fff!important}.cal-week-polished{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr));min-height:122px;border-bottom:1px solid var(--b1);position:relative}.cal-day-polished{position:relative;min-width:0;padding:7px 8px 23px;background:#fff;border-right:1px solid var(--b1);overflow:hidden;cursor:pointer}.cal-day-polished.weekend{background:#fbfaf7}.cal-day-polished.other{opacity:.42}.cal-day-polished.today{box-shadow:inset 0 0 0 1px rgba(45,106,79,.25);background:#f7fbf9}.cal-day-head{display:flex;align-items:center;gap:6px;min-height:24px;padding-right:44px;min-width:0}.cal-day-num{font-size:13px;font-weight:850;color:var(--t2);line-height:1}.cal-day-polished.today .cal-day-num{display:inline-flex;align-items:center;justify-content:center;height:22px;min-width:22px;border-radius:999px;background:rgba(45,106,79,.12);border:1px solid rgba(45,106,79,.22);color:var(--acc);padding:0 6px}.cal-holiday-inline{font-size:10px;font-weight:850;color:#b85f00;background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.18);border-radius:999px;padding:2px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100% - 38px)}.cal-event-stack{display:flex;flex-direction:column;gap:3px;margin-top:5px}.cal-event-chip{height:20px;border:1px solid rgba(59,130,246,.17);background:rgba(59,130,246,.08);color:#2563eb;border-radius:7px;padding:0 6px;display:flex;align-items:center;gap:4px;min-width:0;text-align:left;font-size:11px;font-weight:760;line-height:18px;cursor:pointer}.cal-event-chip.is-range{order:-10;background:rgba(45,106,79,.09)!important;border-color:rgba(45,106,79,.18)!important;color:var(--acc)!important}.cal-event-chip.is-range:before{content:'↔';font-size:9px;font-weight:900;opacity:.65}.cal-event-chip.green{background:rgba(22,163,74,.10);border-color:rgba(22,163,74,.18);color:#15803d}.cal-event-chip.amber{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.20);color:#b45309}.cal-event-chip.red{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.18);color:#dc2626}.cal-event-chip.purple{background:rgba(124,58,237,.10);border-color:rgba(124,58,237,.18);color:#6d28d9}.cal-event-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}.cal-range-text{font-size:9px;font-weight:850;opacity:.8;white-space:nowrap}.cal-range-text.muted{opacity:.55}.cal-g{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;font-size:8px;font-weight:900;color:#4285f4;background:rgba(66,133,244,.13);flex:0 0 auto}.cal-g.ok{color:var(--grn);background:var(--grn-d)}.cal-more{font-size:10px;font-weight:800;color:var(--t3);padding:1px 6px}.cal-points{position:absolute;right:7px;bottom:5px;z-index:8;font-size:10px;font-weight:900;color:var(--grn);background:rgba(52,211,153,.14);border:1px solid rgba(52,211,153,.24);border-radius:999px;padding:2px 6px;line-height:1}.cal-points.done{background:rgba(45,106,79,.14);border-color:rgba(45,106,79,.24);color:var(--acc)}.cal-kw{position:absolute;left:7px;bottom:5px;z-index:8;font-size:10.5px;font-weight:900;color:var(--acc);background:rgba(45,106,79,.12);border:1px solid rgba(45,106,79,.20);border-radius:999px;padding:2px 7px}.year-grid-stacked{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important;padding:14px!important;overflow:auto!important}.year-card-stacked{background:#fff;border:1px solid var(--b1);border-radius:14px;padding:10px;text-align:left;cursor:pointer}.year-title-stacked{font-weight:850;font-size:13px;margin-bottom:7px}.year-days-stacked{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}.year-days-stacked b,.year-days-stacked span{height:18px;font-size:9px;color:var(--t4);display:flex;align-items:center;justify-content:center;position:relative}.year-days-stacked span.today{background:var(--acc);color:white;border-radius:50%}.year-days-stacked span i{position:absolute;bottom:0;width:5px;height:5px;border-radius:50%;background:var(--acc)}.year-days-stacked span.has-holiday i{background:#f59e0b}.year-days-stacked span.has-event.has-holiday i{background:linear-gradient(90deg,var(--acc) 50%,#f59e0b 50%)}@media(max-width:800px){.cal-week-polished{min-height:110px}.year-grid-stacked{grid-template-columns:1fr!important}.cal-holiday-inline{max-width:62px}.cal-event-chip{font-size:10px;padding:0 4px}}`;document.head.appendChild(style);setTimeout(()=>{try{fixToolbarTitles();renderCalendar()}catch(e){console.warn('calendar polish failed',e)}},120);
 })();
 </script>
+
+<script id="day-detail-panel-for-every-day-final">
+(function(){
+  'use strict';
+  const DAY=86400000;
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const pad=n=>String(n).padStart(2,'0');
+  function dkey(d){
+    if(typeof d==='string') return d.slice(0,10);
+    const x=new Date(d); return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate());
+  }
+  function parse(k){ return new Date(String(k).slice(0,10)+'T12:00:00'); }
+  function fmt(k){ try{ if(typeof fmtDate==='function') return fmtDate(k); }catch(e){} const d=parse(k); return pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+d.getFullYear(); }
+  function weekday(k){ const names=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag']; return names[parse(k).getDay()]; }
+  function rangeOf(ev){
+    let s=ev?.startDate||ev?.date||ev?.dateKey||ev?.start?.date||(ev?.start?.dateTime?String(ev.start.dateTime).slice(0,10):'')||'';
+    let e=ev?.endDate||ev?.date||ev?.dateKey||ev?.end?.date||(ev?.end?.dateTime?String(ev.end.dateTime).slice(0,10):'')||s;
+    if(ev?.end?.date && e>s){ const x=parse(e); x.setDate(x.getDate()-1); e=dkey(x); }
+    if(!e || e<s) e=s;
+    return {start:s,end:e};
+  }
+  function titleOf(ev){ return ev?.title||ev?.summary||ev?.name||'Termin'; }
+  function timeOf(ev){ return ev?.time||(ev?.start?.dateTime?new Date(ev.start.dateTime).toTimeString().slice(0,5):''); }
+  function googleBadge(ev){
+    if(ev?.source==='google' || String(ev?.id||'').startsWith('g_')) return '<span class="day-google-dot" title="von Google">G</span>';
+    if(ev?.googleEventId || ev?.syncedToGoogle || ev?.googleSyncedAt) return '<span class="day-google-dot synced" title="an Google übertragen">✓</span>';
+    return '';
+  }
+  function allEventsRaw(){
+    let arr=[];
+    try{ if(Array.isArray(window.events)) arr=arr.concat(window.events); }catch(e){}
+    try{ if(Array.isArray(window.gEvents)) arr=arr.concat(window.gEvents.map(ge=>({id:String(ge.id||'').startsWith('g_')?ge.id:'g_'+ge.id,title:ge.summary||ge.title||'(Kein Titel)',date:ge.start?.date||String(ge.start?.dateTime||'').slice(0,10),startDate:ge.start?.date||String(ge.start?.dateTime||'').slice(0,10),endDate:ge.end?.date||String(ge.end?.dateTime||'').slice(0,10),time:ge.start?.dateTime?new Date(ge.start.dateTime).toTimeString().slice(0,5):'',endTime:ge.end?.dateTime?new Date(ge.end.dateTime).toTimeString().slice(0,5):'',desc:ge.description||'',source:'google',googleEventId:ge.id,color:'blue'}))); }catch(e){}
+    try{ if(!arr.length && typeof window.getAllEvents==='function') arr=window.getAllEvents(); }catch(e){}
+    const seen=new Set();
+    return arr.filter(ev=>{ const r=rangeOf(ev); if(!r.start) return false; const id=(ev.id||titleOf(ev))+'|'+r.start+'|'+r.end; if(seen.has(id)) return false; seen.add(id); return true; });
+  }
+  function eventsForDate(k,pre){
+    const list=(pre&&pre.length?pre:allEventsRaw()).filter(ev=>{ const r=rangeOf(ev); return r.start<=k && r.end>=k; });
+    const seen=new Set();
+    return list.filter(ev=>{ const r=rangeOf(ev); const id=(ev.id||titleOf(ev))+'|'+r.start+'|'+r.end; if(seen.has(id)) return false; seen.add(id); return true; })
+      .sort((a,b)=>{ const ar=rangeOf(a), br=rangeOf(b); const aRange=ar.start!==ar.end, bRange=br.start!==br.end; return (bRange-aRange) || (timeOf(a)||'99:99').localeCompare(timeOf(b)||'99:99') || titleOf(a).localeCompare(titleOf(b)); });
+  }
+  function holidaysForDate(k){ try{ return (typeof window.getHolidaysForDate==='function'?window.getHolidaysForDate(k):getHolidaysForDate(k))||[]; }catch(e){ return []; } }
+  function openNewFor(k){ if(typeof window.openEventPanel==='function') window.openEventPanel(null,parse(k)); }
+  window.openDayPanel=function(dt,dayEvs){
+    const k=dkey(dt);
+    const evs=eventsForDate(k,dayEvs);
+    const hols=holidaysForDate(k);
+    const title = evs.length ? (evs.length+' '+(evs.length===1?'Termin':'Termine')) : (hols.length ? (hols.length===1?'Feiertag':'Feiertage') : 'Tag');
+    let html='<div class="day-detail-date">'+esc(weekday(k)+', '+fmt(k))+'</div>';
+    if(hols.length){
+      html+='<div class="day-detail-holidays">'+hols.map(h=>'<div class="day-detail-holiday"><span>🎉</span><div><b>'+esc(h.name)+'</b><small>Feiertag</small></div></div>').join('')+'</div>';
+    }
+    if(evs.length){
+      html+='<div class="day-detail-list">'+evs.map(ev=>{ const r=rangeOf(ev); const isRange=r.start!==r.end; const sub=isRange?(fmt(r.start)+' – '+fmt(r.end)):(fmt(k)); return '<div class="day-detail-event" onclick="openEventPanel(\''+esc(ev.id||'')+'\')"><div class="day-detail-time">'+(timeOf(ev)||'Ganztägig')+'</div><div class="day-detail-main"><div class="day-detail-title">'+esc(titleOf(ev))+googleBadge(ev)+'</div><div class="day-detail-sub">'+esc(sub)+(isRange?' · Zeitraum':'')+'</div></div></div>'; }).join('')+'</div>';
+    }else{
+      html+='<div class="day-detail-empty">Keine Termine für diesen Tag</div>';
+    }
+    html+='<button class="btn btn-primary btn-full day-detail-add" onclick="window.__openNewEventForDay&&window.__openNewEventForDay(\''+k+'\')">+ Neuer Termin für diesen Tag</button>';
+    window.__openNewEventForDay=openNewFor;
+    if(typeof window.openPanel==='function') window.openPanel(title,html);
+  };
+  window.onDayClick=function(dt,dayEvs){ window.openDayPanel(dt,dayEvs||[]); };
+  const st=document.createElement('style'); st.id='day-detail-panel-for-every-day-style'; st.textContent=`
+    .day-detail-date{font-size:12px;font-weight:850;color:var(--t4);margin:4px 0 14px;letter-spacing:.01em}
+    .day-detail-holidays{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+    .day-detail-holiday{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.18);color:#b45309}
+    .day-detail-holiday span{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(245,158,11,.13)}
+    .day-detail-holiday b{display:block;font-size:13px;font-weight:900;color:#b45309}.day-detail-holiday small{display:block;font-size:11px;color:#c7812c;margin-top:2px}
+    .day-detail-list{display:flex;flex-direction:column;gap:10px}.day-detail-event{display:grid;grid-template-columns:80px 1fr;gap:12px;align-items:center;padding:13px 14px;border:1px solid var(--b1);border-left:4px solid var(--acc);border-radius:14px;background:var(--s1);cursor:pointer;transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease}.day-detail-event:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(16,24,40,.08);border-color:rgba(45,106,79,.22)}
+    .day-detail-time{font-size:12px;font-weight:700;color:var(--t3)}.day-detail-title{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:900;color:var(--t1);line-height:1.25}.day-detail-sub{font-size:12px;color:var(--t4);margin-top:3px}.day-google-dot{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:rgba(66,133,244,.13);color:#4285f4;font-size:9px;font-weight:950;line-height:1}.day-google-dot.synced{background:rgba(22,163,74,.13);color:var(--grn)}.day-detail-empty{padding:18px 14px;border:1px dashed var(--b2);border-radius:14px;color:var(--t5);font-size:13px;text-align:center;background:var(--s2)}.day-detail-add{margin-top:16px}
+  `; document.head.appendChild(st);
+})();
+</script>
