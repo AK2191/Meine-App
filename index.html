@@ -5552,6 +5552,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
 </script>
 
 <script id="day-detail-panel-for-every-day-final">
+<!-- patched-daypanel-range-merge-2026-05-01 -->
 (function(){
   'use strict';
   const DAY=86400000;
@@ -5587,9 +5588,12 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     return arr.filter(ev=>{ const r=rangeOf(ev); if(!r.start) return false; const id=(ev.id||titleOf(ev))+'|'+r.start+'|'+r.end; if(seen.has(id)) return false; seen.add(id); return true; });
   }
   function eventsForDate(k,pre){
-    const list=(pre&&pre.length?pre:allEventsRaw()).filter(ev=>{ const r=rangeOf(ev); return r.start<=k && r.end>=k; });
+    // Tagespanel immer aus allen Terminen + uebergebener Tagesliste bauen.
+    // Sonst fehlen mehrtaegige Termine am letzten/inneren Tag, wenn die Klickliste unvollstaendig ist.
+    const merged=[...allEventsRaw(), ...(Array.isArray(pre)?pre:[])];
+    const list=merged.filter(ev=>{ const r=rangeOf(ev); return r.start<=k && r.end>=k; });
     const seen=new Set();
-    return list.filter(ev=>{ const r=rangeOf(ev); const id=(ev.id||titleOf(ev))+'|'+r.start+'|'+r.end; if(seen.has(id)) return false; seen.add(id); return true; })
+    return list.filter(ev=>{ const r=rangeOf(ev); const id=(ev.googleEventId?'g:'+ev.googleEventId:(ev.id||titleOf(ev)))+'|' + r.start + '|' + r.end; if(seen.has(id)) return false; seen.add(id); return true; })
       .sort((a,b)=>{ const ar=rangeOf(a), br=rangeOf(b); const aRange=ar.start!==ar.end, bRange=br.start!==br.end; return (bRange-aRange) || (timeOf(a)||'99:99').localeCompare(timeOf(b)||'99:99') || titleOf(a).localeCompare(titleOf(b)); });
   }
   function holidaysForDate(k){ try{ return (typeof window.getHolidaysForDate==='function'?window.getHolidaysForDate(k):getHolidaysForDate(k))||[]; }catch(e){ return []; } }
@@ -5604,7 +5608,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       html+='<div class="day-detail-holidays">'+hols.map(h=>'<div class="day-detail-holiday"><span>🎉</span><div><b>'+esc(h.name)+'</b><small>Feiertag</small></div></div>').join('')+'</div>';
     }
     if(evs.length){
-      html+='<div class="day-detail-list">'+evs.map(ev=>{ const r=rangeOf(ev); const isRange=r.start!==r.end; const sub=isRange?(fmt(r.start)+' – '+fmt(r.end)):(fmt(k)); return '<div class="day-detail-event" onclick="openEventPanel(\''+esc(ev.id||'')+'\')"><div class="day-detail-time">'+(timeOf(ev)||'Ganztägig')+'</div><div class="day-detail-main"><div class="day-detail-title">'+esc(titleOf(ev))+googleBadge(ev)+'</div><div class="day-detail-sub">'+esc(sub)+(isRange?' · Zeitraum':'')+'</div></div></div>'; }).join('')+'</div>';
+      html+='<div class="day-detail-list">'+evs.map(ev=>{ const r=rangeOf(ev); const isRange=r.start!==r.end; const sub=isRange?(fmt(r.start)+' – '+fmt(r.end)):(fmt(k)); return '<div class="day-detail-event" onclick="openEventPanel(\''+esc(ev.id||'')+'\')"><div class="day-detail-time">'+(timeOf(ev)||'Ganztägig')+'</div><div class="day-detail-main"><div class="day-detail-title">'+esc(titleOf(ev))+googleBadge(ev)+'</div><div class="day-detail-sub">'+esc(sub)+'</div></div></div>'; }).join('')+'</div>';
     }else{
       html+='<div class="day-detail-empty">Keine Termine für diesen Tag</div>';
     }
