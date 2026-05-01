@@ -607,6 +607,13 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 }
 </style>
 </style>
+<style id="range-google-style">
+.ev-chip.google-source,.ag-card.google-source{border-left:3px solid #4285F4!important}
+.ev-chip.synced-source,.ag-card.synced-source{border-left:3px solid var(--grn)!important}
+.source-pill{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;border-radius:999px;padding:2px 7px;margin-left:6px;background:rgba(79,125,255,.12);color:var(--acc);vertical-align:middle}
+.source-pill.synced{background:rgba(52,211,153,.12);color:var(--grn)}
+.range-pill{display:inline-flex;font-size:10px;font-weight:800;border-radius:999px;padding:2px 7px;margin-left:6px;background:rgba(139,92,246,.12);color:var(--pur);vertical-align:middle}
+</style>
 </head>
 <body>
 
@@ -1386,8 +1393,13 @@ function openEventPanel(id,preDate){
     <div class="fg"><label class="flabel">Titel *</label>
       <input type="text" class="finput" id="ev-title" placeholder="Terminbezeichnung" value="${esc(ev?.title||'')}">
     </div>
-    <div class="fg"><label class="flabel">Datum *</label>
-      <input type="date" class="finput" id="ev-date" value="${ev?.date||dateVal}" style="color-scheme:dark">
+    <div class="fr">
+      <div class="fg"><label class="flabel">Von-Datum *</label>
+        <input type="date" class="finput" id="ev-date" value="${ev?.startDate||ev?.date||dateVal}" style="color-scheme:dark">
+      </div>
+      <div class="fg"><label class="flabel">Bis-Datum</label>
+        <input type="date" class="finput" id="ev-end-date" value="${ev?.endDate||ev?.date||''}" style="color-scheme:dark">
+      </div>
     </div>
     <div class="fr">
       <div class="fg"><label class="flabel">Von</label>
@@ -1446,8 +1458,11 @@ function saveEvent(existingId){
   const date=document.getElementById('ev-date')?.value;
   if(!title){toast('Bitte einen Titel eingeben','err');return;}
   if(!date){toast('Bitte ein Datum wählen','err');return;}
+  const endDateRaw=document.getElementById('ev-end-date')?.value||'';
   const ev={
     id:existingId||'ev_'+uid(),title,date,
+    startDate:date,
+    endDate:(endDateRaw&&endDateRaw>=date)?endDateRaw:date,
     time:document.getElementById('ev-time')?.value||'',
     endTime:document.getElementById('ev-end')?.value||'',
     type:document.getElementById('ev-type')?.value||'meeting',
@@ -1526,13 +1541,15 @@ async function saveToGoogleCal(existingId){
   const date=document.getElementById('ev-date')?.value;
   const time=document.getElementById('ev-time')?.value;
   const end=document.getElementById('ev-end')?.value;
+  const endDateRaw=document.getElementById('ev-end-date')?.value||date;
+  const endDate=(endDateRaw&&endDateRaw>=date)?endDateRaw:date;
   const desc=document.getElementById('ev-desc')?.value.trim();
   const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
   if(!title||!date){toast('Bitte Titel und Datum eingeben','err');return;}
   const body={
     summary:title,description:desc,
     start:time?{dateTime:`${date}T${time}:00`,timeZone:tz}:{date},
-    end:end?{dateTime:`${date}T${end}:00`,timeZone:tz}:(time?{dateTime:`${date}T${time}:00`,timeZone:tz}:{date})
+    end:time?{dateTime:`${endDate}T${end||time}:00`,timeZone:tz}:{date:addDays(new Date(endDate+'T12:00:00'),1).toISOString().substring(0,10)}
   };
   try{
     const r=await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events',{
@@ -4248,5 +4265,45 @@ document.addEventListener('touchend',e=>{
   window.updateBellPushStatus=function(text){const s=$('bell-push-status');const perm=(typeof Notification==='undefined'?'nicht unterstützt':Notification.permission);if(s){s.textContent='Status: '+text+' · Browser: '+perm;s.className='push-status '+(text==='aktiv'?'push-ok':'push-warn');} const dot=$('notif-dot');if(dot)dot.style.display=(text==='aktiv')?'block':'none';};
   window.sendTestBellNotification=function(){try{if(!storedPushEnabled()){if(typeof toast==='function')toast('Push ist deaktiviert','err');return;} if(typeof Notification!=='undefined'&&Notification.permission==='granted'){new Notification('Change',{body:'Test-Benachrichtigung funktioniert.'});if(typeof toast==='function')toast('Test gesendet ✓','ok');}else if(typeof toast==='function')toast('Bitte Push zuerst aktivieren','err');}catch(e){if(typeof toast==='function')toast('Test-Push nicht möglich','err');}};
   const st=document.createElement('style');st.id='change-final-user-fixes-3-style';st.textContent='.last-remove-btn{display:none!important}.last-completed-main{flex:1}.bell-push-box .btn:empty::before{content:"Test-Benachrichtigung senden";}';document.head.appendChild(st);
+})();
+</script>
+
+
+<script id="range-google-final-fix">
+/* RANGE DATES + GOOGLE SOURCE MARKERS */
+(function(){
+  function escX(s){return (typeof esc==='function')?esc(s):String(s||'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
+  function dk(d){return (typeof dateKey==='function')?dateKey(d):d.toISOString().substring(0,10);}
+  function addD(d,n){return (typeof addDays==='function')?addDays(d,n):new Date(d.getTime()+n*86400000);}
+  function startOf(ev){return ev?.startDate||ev?.date||ev?.dateKey||(ev?.start?.date)||(ev?.start?.dateTime?String(ev.start.dateTime).substring(0,10):'');}
+  function endOf(ev){if(ev?.endDate)return ev.endDate;if(ev?.toDate)return ev.toDate;if(ev?.untilDate)return ev.untilDate;if(ev?.end?.date)return dk(addD(new Date(ev.end.date+'T12:00:00'),-1));if(ev?.end?.dateTime)return String(ev.end.dateTime).substring(0,10);return startOf(ev);}
+  function datesBetween(a,b){if(!a)return[];if(!b||b<a)b=a;const out=[];let cur=new Date(a+'T12:00:00'),end=new Date(b+'T12:00:00'),guard=0;while(cur<=end&&guard<370){out.push(dk(cur));cur=addD(cur,1);guard++;}return out;}
+  function titleOf(ev){return ev?.title||ev?.summary||ev?.name||'(Kein Titel)';}
+  function timeOf(ev){if(ev?.time)return ev.time;if(ev?.start?.dateTime)return new Date(ev.start.dateTime).toTimeString().substring(0,5);return '';}
+  function endTimeOf(ev){if(ev?.endTime)return ev.endTime;if(ev?.end?.dateTime)return new Date(ev.end.dateTime).toTimeString().substring(0,5);return '';}
+  function expandOne(ev,source){const s=startOf(ev),e=endOf(ev)||s,arr=[];datesBetween(s,e).forEach(day=>{arr.push(Object.assign({},ev,{id:source==='google'?(String(ev.id||'').startsWith('g_')?ev.id:'g_'+ev.id):ev.id,title:titleOf(ev),date:day,startDate:s,endDate:e,time:timeOf(ev),endTime:endTimeOf(ev),color:ev.color||(source==='google'?'blue':'blue'),type:ev.type||'meeting',desc:ev.desc||ev.description||'',allDay:ev.allDay!==undefined?ev.allDay:!timeOf(ev),source,isRange:e>s,isRangeStart:day===s,isRangeEnd:day===e}));});return arr;}
+  window.getAllEvents=function(){const out=[];(window.events||[]).forEach(ev=>out.push(...expandOne(ev,ev.source==='google'?'google':'local')));(window.gEvents||[]).forEach(ge=>out.push(...expandOne(ge,'google')));return out.filter(e=>e.date);};
+  window.getEventById=function(id){const plain=String(id||'').replace(/__\d{4}-\d{2}-\d{2}$/,'');return (window.events||[]).find(e=>e.id===plain||e.id===id)||getAllEvents().find(e=>e.id===id||e.id===plain);};
+  const baseOpen=window.openEventPanel;
+  window.openEventPanel=function(id,preDate){const ev=id?getEventById(id):null;if(ev?.source==='google'){const range=(ev.endDate&&ev.endDate!==ev.startDate)?(fmtDate(ev.startDate)+' – '+fmtDate(ev.endDate)):fmtDate(ev.date||ev.startDate);openPanel(ev.title,'<div style="background:var(--acc-d);border:1px solid rgba(79,125,255,.2);border-radius:var(--r);padding:12px 14px;margin-bottom:14px"><div style="font-size:11px;font-weight:800;color:var(--acc);margin-bottom:4px">📅 Von Google übertragen</div><div style="font-size:14px;font-weight:800;color:var(--t1);margin-bottom:4px">'+escX(ev.title)+'</div><div style="font-size:12px;color:var(--t4)">'+range+(ev.time?' · '+ev.time:'')+'</div>'+(ev.desc?'<div style="font-size:12px;color:var(--t3);margin-top:8px;line-height:1.5">'+escX(ev.desc)+'</div>':'')+'</div><button class="btn btn-ghost btn-full" onclick="closePanel()">Schließen</button>');return;}if(typeof baseOpen==='function')baseOpen(id,preDate);};
+  function badge(ev){let p='';if(ev.isRange)p+='<span class="range-pill">'+escX(fmtDate(ev.startDate))+'–'+escX(fmtDate(ev.endDate))+'</span>';if(ev.source==='google')p+='<span class="source-pill">von Google</span>';else if(ev.googleEventId||ev.syncedToGoogle)p+='<span class="source-pill synced">Google ✓</span>';return p;}
+  window.rangeSourceBadge=badge;
+  const oldBuild=window.buildDashCards;
+  window.buildDashCards=function(){if(typeof oldBuild==='function')oldBuild();setTimeout(()=>{document.querySelectorAll('.dash-row').forEach(row=>{const title=row.querySelector('.dash-row-title')?.textContent||'';const ev=getAllEvents().find(e=>e.title===title);if(ev){const t=row.querySelector('.dash-row-title'); if(t&&!t.querySelector('.source-pill,.range-pill'))t.insertAdjacentHTML('beforeend',badge(ev));}});},0);};
+  const oldRenderCal=window.renderCalendar;
+  window.renderCalendar=function(){if(typeof oldRenderCal==='function')oldRenderCal.apply(this,arguments);setTimeout(()=>{document.querySelectorAll('.ev-chip,.ag-card').forEach(el=>{const text=(el.textContent||'').trim();const ev=getAllEvents().find(e=>text.includes(e.title));if(ev){if(ev.source==='google')el.classList.add('google-source');if(ev.googleEventId||ev.syncedToGoogle)el.classList.add('synced-source');if(!el.querySelector('.source-pill,.range-pill'))el.insertAdjacentHTML('beforeend',badge(ev));}});},0);};
+  const oldSave=window.saveEvent;
+  window.saveEvent=function(existingId){if(typeof oldSave==='function')oldSave(existingId);try{const id=existingId||((window.events||[]).at(-1)||{}).id;const ev=(window.events||[]).find(e=>e.id===id);if(ev){ev.startDate=ev.date||ev.startDate;ev.endDate=(ev.endDate&&ev.endDate>=ev.startDate)?ev.endDate:ev.startDate;if(ev.googleEventId)ev.syncedToGoogle=true;ls('events',window.events);}}catch(e){}};
+
+  // range syncLocalEventToGoogle override
+  window.syncLocalEventToGoogle=async function(ev){
+    if(!accessToken||isDemoMode||!ev||ev.source==='google')return;
+    const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const start=ev.startDate||ev.date, endDate=(ev.endDate&&ev.endDate>=start)?ev.endDate:start;
+    const body={summary:ev.title,description:ev.desc||'',start:ev.time?{dateTime:start+'T'+ev.time+':00',timeZone:tz}:{date:start},end:ev.time?{dateTime:endDate+'T'+(ev.endTime||ev.time)+':00',timeZone:tz}:{date:addDays(new Date(endDate+'T12:00:00'),1).toISOString().substring(0,10)}};
+    try{const url=ev.googleEventId?'https://www.googleapis.com/calendar/v3/calendars/primary/events/'+encodeURIComponent(ev.googleEventId):'https://www.googleapis.com/calendar/v3/calendars/primary/events';const r=await fetch(url,{method:ev.googleEventId?'PATCH':'POST',headers:{'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify(body)});if(!r.ok)throw new Error('Google Kalender '+r.status);const saved=await r.json();const i=events.findIndex(e=>e.id===ev.id);if(i>=0){events[i].googleEventId=saved.id;events[i].syncedToGoogle=true;ls('events',events);try{persistChangeState();}catch(e){}}loadGoogleEvents();}catch(e){console.warn('Auto Google Sync:',e);toast('Google Kalender-Sync fehlgeschlagen','err');}
+  };
+
+  setTimeout(()=>{try{if(typeof buildDashboard==='function')buildDashboard();if(typeof renderCalendar==='function')renderCalendar();}catch(e){}},300);
 })();
 </script>
