@@ -5663,7 +5663,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
         let html = '<div class="cfx-head"><span class="cfx-num">'+c.d+'</span>';
         if (hs.length) html += '<span class="cfx-hol" title="'+esc(hs[0].name)+'">'+esc(hs[0].name)+'</span>';
         html += '</div>';
-        if (ch) html += '<span class="cfx-dot'+(ch.allDone?' done':'')+'"></span>';
+        if (ch && Number(ch.points)>0) html += '<span class="cfx-points'+(ch.allDone?' done':'')+'">'+Number(ch.points)+'P</span>';
         if (o.showWeekNumbers && i===0) {
           try {
             const dd=new Date(Date.UTC(dt.getFullYear(),dt.getMonth(),dt.getDate())), dy=dd.getUTCDay()||7;
@@ -5709,8 +5709,8 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
 .cfx-num{font-size:12px!important;font-weight:850!important;color:var(--t2)!important;flex-shrink:0!important;line-height:1!important}
 .cfx-day.today .cfx-num{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:22px!important;height:22px!important;border-radius:50%!important;background:var(--acc)!important;color:#fff!important;margin:-1px 0!important}
 .cfx-hol{font-size:9.5px!important;font-weight:750!important;color:#b85f00!important;background:rgba(245,158,11,.10)!important;border:1px solid rgba(245,158,11,.18)!important;border-radius:999px!important;padding:1px 5px!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:calc(100% - 24px)!important;white-space:nowrap!important}
-.cfx-dot{position:absolute!important;right:6px!important;bottom:5px!important;width:7px!important;height:7px!important;border-radius:50%!important;background:var(--acc)!important;opacity:.35!important;pointer-events:none!important}
-.cfx-dot.done{opacity:1!important}
+.cfx-points{position:absolute!important;right:6px!important;bottom:5px!important;min-width:18px!important;height:17px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;border-radius:999px!important;padding:0 5px!important;background:rgba(52,211,153,.13)!important;border:1px solid rgba(52,211,153,.22)!important;color:var(--grn)!important;font-size:9.5px!important;line-height:1!important;font-weight:900!important;font-family:var(--mono)!important;pointer-events:none!important;z-index:8!important}
+.cfx-points.done{opacity:1!important}
 .cfx-kw{position:absolute!important;left:4px!important;bottom:4px!important;font-size:9px!important;font-weight:900!important;color:var(--acc)!important;background:rgba(45,106,79,.10)!important;border-radius:999px!important;padding:2px 5px!important;pointer-events:none!important;z-index:2!important}
 /* ─── Balken ─── */
 .cfx-bar{grid-row:1!important;align-self:start!important;height:20px!important;min-width:0!important;margin-top:calc(28px + var(--cfx-lane,0)*23px)!important;padding:0 7px!important;border:1px solid transparent!important;border-top-left-radius:10px!important;border-bottom-left-radius:10px!important;border-top-right-radius:10px!important;border-bottom-right-radius:10px!important;margin-left:4px!important;margin-right:4px!important;display:flex!important;align-items:center!important;gap:4px!important;z-index:6!important;overflow:hidden!important;cursor:pointer!important;font-size:11px!important;font-weight:700!important;white-space:nowrap!important;box-shadow:0 2px 7px rgba(0,0,0,.06)!important;transition:transform .1s,box-shadow .1s!important}
