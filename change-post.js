@@ -811,3 +811,509 @@
 
   window.addEventListener('load', () => setTimeout(renderBars, 500));
 })();
+/* ── 7. compact dashboard layout ───────────────────────── */
+(function(){
+  'use strict';
+
+  const pad = n => String(n).padStart(2, '0');
+
+  function esc(s){
+    return String(s ?? '').replace(/[&<>"']/g, m => ({
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      '"':'&quot;',
+      "'":'&#39;'
+    }[m]));
+  }
+
+  function todayKey(){
+    const d = new Date();
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  }
+
+  function parseDate(v){
+    if(!v) return null;
+    const d = v instanceof Date ? new Date(v) : new Date(String(v).slice(0,10) + 'T12:00:00');
+    return isNaN(d) ? null : d;
+  }
+
+  function dateKey(d){
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  }
+
+  function deShort(v){
+    const d = parseDate(v);
+    return d ? d.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' }) : '';
+  }
+
+  function deRange(ev){
+    const s = parseDate(ev.startDate || ev.fromDate || ev.date);
+    const e = parseDate(ev.endDate || ev.toDate || ev.untilDate || ev.date);
+    if(!s) return '';
+    if(e && dateKey(s) !== dateKey(e)) return deShort(s) + ' – ' + deShort(e);
+    return deShort(s);
+  }
+
+  function getEvents(){
+    try {
+      if(typeof window.getAllEvents === 'function') return window.getAllEvents() || [];
+    } catch(e){}
+    return Array.isArray(window.events) ? window.events : [];
+  }
+
+  function getHolidayNameFor(date){
+    const key = typeof date === 'string' ? date : dateKey(date);
+
+    try {
+      if(typeof window.getHolidayName === 'function'){
+        const h = window.getHolidayName(key);
+        if(h) return h;
+      }
+    } catch(e){}
+
+    try {
+      if(typeof window.getHoliday === 'function'){
+        const h = window.getHoliday(key);
+        if(typeof h === 'string') return h;
+        if(h && h.name) return h.name;
+      }
+    } catch(e){}
+
+    try {
+      const list = []
+        .concat(Array.isArray(window.holidays) ? window.holidays : [])
+        .concat(Array.isArray(window.feiertage) ? window.feiertage : []);
+
+      const hit = list.find(h => String(h.date || h.datum || h.key || '').slice(0,10) === key);
+      if(hit) return hit.name || hit.title || hit.label || '';
+    } catch(e){}
+
+    return '';
+  }
+
+  function upcomingHolidays(limit){
+    const start = parseDate(todayKey());
+    const out = [];
+
+    for(let i = 0; i < 370 && out.length < limit; i++){
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      const k = dateKey(d);
+      const name = getHolidayNameFor(k);
+      if(name){
+        out.push({
+          id: 'holiday_' + k,
+          title: name,
+          date: k,
+          isHoliday: true
+        });
+      }
+    }
+
+    return out;
+  }
+
+  function normalizeEvent(ev){
+    return {
+      id: ev.id || ev.googleEventId || '',
+      title: String(ev.title || ev.summary || 'Termin').replace(/\bZeitraum\b/gi, '').replace(/\s{2,}/g, ' ').trim(),
+      date: ev.date || ev.startDate || ev.fromDate || '',
+      startDate: ev.startDate || ev.fromDate || ev.date || '',
+      endDate: ev.endDate || ev.toDate || ev.untilDate || ev.date || '',
+      badge: deRange(ev),
+      isHoliday: false
+    };
+  }
+
+  function openEvent(id){
+    if(id && typeof window.openEventPanel === 'function') window.openEventPanel(id);
+  }
+
+  function injectCss(){
+    let st = document.getElementById('change-compact-dashboard-style');
+    if(!st){
+      st = document.createElement('style');
+      st.id = 'change-compact-dashboard-style';
+      document.head.appendChild(st);
+    }
+
+    st.textContent = `
+      #dash-grid{
+        display:grid!important;
+        grid-template-columns:minmax(320px,.9fr) minmax(360px,1.1fr)!important;
+        gap:16px!important;
+        align-items:start!important;
+      }
+
+      @media(max-width:900px){
+        #dash-grid{
+          grid-template-columns:1fr!important;
+        }
+      }
+
+      .dash-card.change-dash-calendar{
+        min-height:auto!important;
+      }
+
+      .change-dash-list{
+        display:flex;
+        flex-direction:column;
+      }
+
+      .change-dash-row{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        min-height:42px;
+        padding:9px 14px;
+        border-bottom:1px solid var(--b1);
+        cursor:pointer;
+      }
+
+      .change-dash-row:last-child{
+        border-bottom:none;
+      }
+
+      .change-dash-row:hover{
+        background:var(--bg);
+      }
+
+      .change-dash-icon{
+        width:30px;
+        height:30px;
+        border-radius:8px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        flex:0 0 auto;
+        background:var(--acc-d);
+        font-size:14px;
+      }
+
+      .change-dash-icon.holiday{
+        background:var(--amb-d);
+      }
+
+      .change-dash-main{
+        min-width:0;
+        flex:1;
+      }
+
+      .change-dash-title{
+        font-size:13px;
+        font-weight:750;
+        color:var(--t1);
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+      }
+
+      .change-dash-subtle{
+        font-size:11px;
+        font-weight:700;
+        color:var(--amb);
+        text-transform:uppercase;
+        letter-spacing:.35px;
+        margin-bottom:1px;
+      }
+
+      .change-dash-badge{
+        flex:0 0 auto;
+        font-size:11px;
+        font-weight:800;
+        color:var(--grn);
+        background:var(--grn-d);
+        border:1px solid rgba(22,163,74,.14);
+        padding:4px 8px;
+        border-radius:999px;
+        white-space:nowrap;
+        font-family:var(--mono);
+      }
+
+      .change-combo-card .dash-card-body{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        min-height:220px;
+      }
+
+      @media(max-width:700px){
+        .change-combo-card .dash-card-body{
+          grid-template-columns:1fr;
+        }
+      }
+
+      .change-combo-section{
+        min-width:0;
+      }
+
+      .change-combo-section + .change-combo-section{
+        border-left:1px solid var(--b1);
+      }
+
+      @media(max-width:700px){
+        .change-combo-section + .change-combo-section{
+          border-left:none;
+          border-top:1px solid var(--b1);
+        }
+      }
+
+      .change-combo-head{
+        padding:10px 14px;
+        font-size:11px;
+        font-weight:800;
+        color:var(--t3);
+        text-transform:uppercase;
+        letter-spacing:.45px;
+        border-bottom:1px solid var(--b1);
+        background:var(--bg);
+      }
+
+      .change-mini-row{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        padding:10px 14px;
+        min-height:44px;
+        border-bottom:1px solid var(--b1);
+      }
+
+      .change-mini-row:last-child{
+        border-bottom:none;
+      }
+
+      .change-mini-icon{
+        width:28px;
+        height:28px;
+        border-radius:8px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:var(--pur-d);
+        flex:0 0 auto;
+      }
+
+      .change-mini-body{
+        min-width:0;
+        flex:1;
+      }
+
+      .change-mini-title{
+        font-size:13px;
+        font-weight:750;
+        color:var(--t1);
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+      }
+
+      .change-mini-meta{
+        font-size:11.5px;
+        color:var(--t3);
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+      }
+
+      .change-mini-pill{
+        font-size:11px;
+        font-weight:800;
+        border-radius:999px;
+        padding:4px 8px;
+        background:var(--acc-d);
+        color:var(--acc);
+        white-space:nowrap;
+      }
+
+      .change-mini-pill.open{
+        background:var(--amb-d);
+        color:var(--amb);
+      }
+    `;
+  }
+
+  function visibleChallenges(){
+    const list = Array.isArray(window.challenges) ? window.challenges : [];
+    return list
+      .filter(ch => !ch.done && !ch.completed)
+      .slice(0,4);
+  }
+
+  function visiblePlayers(){
+    const list = Array.isArray(window.challengePlayers) ? window.challengePlayers : [];
+    const seen = new Set();
+
+    return list
+      .filter(p => p && (p.email || p.id || p.name))
+      .filter(p => {
+        const k = String(p.email || p.id || p.name || '').toLowerCase();
+        if(seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      })
+      .slice(0,4);
+  }
+
+  function playerPoints(p){
+    const id = String(p.email || p.id || '').toLowerCase();
+
+    try {
+      if(typeof window.getPlayerPointSummary === 'function'){
+        return window.getPlayerPointSummary(id).todayPoints || 0;
+      }
+    } catch(e){}
+
+    return (Array.isArray(window.challengeCompletions) ? window.challengeCompletions : [])
+      .filter(c => String(c.playerId || c.email || c.userEmail || '').toLowerCase() === id)
+      .filter(c => String(c.date || '') === todayKey())
+      .reduce((sum,c) => sum + (parseInt(c.points,10) || 0), 0);
+  }
+
+  function buildCalendarRows(){
+    const now = todayKey();
+
+    const events = getEvents()
+      .filter(ev => ev && (ev.date || ev.startDate || ev.fromDate))
+      .map(normalizeEvent)
+      .filter(ev => String(ev.endDate || ev.date) >= now)
+      .sort((a,b) => String(a.startDate || a.date).localeCompare(String(b.startDate || b.date)))
+      .slice(0,5);
+
+    const holidays = upcomingHolidays(3);
+
+    const combined = events
+      .concat(holidays)
+      .sort((a,b) => String(a.date || a.startDate).localeCompare(String(b.date || b.startDate)))
+      .slice(0,6);
+
+    if(!combined.length){
+      return '<div class="dash-empty">Keine kommenden Termine.</div>';
+    }
+
+    return combined.map(item => {
+      if(item.isHoliday){
+        return `
+          <div class="change-dash-row">
+            <div class="change-dash-icon holiday">🎌</div>
+            <div class="change-dash-main">
+              <div class="change-dash-subtle">Feiertag</div>
+              <div class="change-dash-title">${esc(item.title)}</div>
+            </div>
+            <span class="change-dash-badge">${esc(deShort(item.date))}</span>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="change-dash-row" onclick="window.__changeOpenDashEvent && window.__changeOpenDashEvent('${esc(item.id)}')">
+          <div class="change-dash-icon">📅</div>
+          <div class="change-dash-main">
+            <div class="change-dash-title">${esc(item.title)}</div>
+          </div>
+          <span class="change-dash-badge">${esc(item.badge)}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function buildChallengeRows(){
+    const rows = visibleChallenges();
+
+    if(!rows.length){
+      return '<div class="dash-empty">Keine offenen Challenges.</div>';
+    }
+
+    return rows.map(ch => `
+      <div class="change-mini-row">
+        <div class="change-mini-icon">${esc(ch.icon || '🏆')}</div>
+        <div class="change-mini-body">
+          <div class="change-mini-title">${esc(ch.title || 'Challenge')}</div>
+          <div class="change-mini-meta">${esc(ch.points || 0)} Punkte</div>
+        </div>
+        <span class="change-mini-pill open">offen</span>
+      </div>
+    `).join('');
+  }
+
+  function buildPlayerRows(){
+    const rows = visiblePlayers();
+
+    if(!rows.length){
+      return '<div class="dash-empty">Keine Mitspieler.</div>';
+    }
+
+    return rows.map(p => {
+      const pts = playerPoints(p);
+      return `
+        <div class="change-mini-row">
+          <div class="change-mini-icon">🏅</div>
+          <div class="change-mini-body">
+            <div class="change-mini-title">${esc(p.name || p.email || 'Mitspieler')}</div>
+            <div class="change-mini-meta">Heute: ${pts} P</div>
+          </div>
+          <span class="change-mini-pill">${pts} P</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  window.__changeOpenDashEvent = openEvent;
+
+  function renderDashboard(){
+    injectCss();
+
+    const grid = document.getElementById('dash-grid');
+    if(!grid) return false;
+
+    grid.innerHTML = `
+      <div class="dash-card change-dash-calendar">
+        <div class="dash-card-head">
+          <div>
+            <div class="dash-card-title">📅 Kalender</div>
+            <div class="dash-card-sub">Nächste Termine und Feiertage</div>
+          </div>
+        </div>
+        <div class="dash-card-body change-dash-list">
+          ${buildCalendarRows()}
+        </div>
+      </div>
+
+      <div class="dash-card change-combo-card">
+        <div class="dash-card-head">
+          <div>
+            <div class="dash-card-title">🏆 Challenges & Mitspieler</div>
+            <div class="dash-card-sub">Offene Aufgaben und Punkte</div>
+          </div>
+        </div>
+        <div class="dash-card-body">
+          <div class="change-combo-section">
+            <div class="change-combo-head">Challenges</div>
+            ${buildChallengeRows()}
+          </div>
+          <div class="change-combo-section">
+            <div class="change-combo-head">Mitspieler</div>
+            ${buildPlayerRows()}
+          </div>
+        </div>
+      </div>
+    `;
+
+    return true;
+  }
+
+  const oldBuildDashCards = window.buildDashCards;
+  window.buildDashCards = function(){
+    const done = renderDashboard();
+    if(!done && typeof oldBuildDashCards === 'function'){
+      return oldBuildDashCards.apply(this, arguments);
+    }
+  };
+
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      try {
+        if(typeof window.buildDashCards === 'function') window.buildDashCards();
+      } catch(e){}
+    }, 400);
+  });
+})();
