@@ -12,9 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async></script>
 <link rel="manifest" href="./manifest.json">
-<link rel="stylesheet" href="./change-final-fixes.css">
-<link rel="stylesheet" href="./change-challenge-calendar-custom.css">
-<link rel="stylesheet" href="./change-routing-week-points.css">
+<link rel="stylesheet" href="./change.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
@@ -609,7 +607,6 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 }
 </style>
 </style>
-<link rel="stylesheet" href="./change-request-polish.css">
 </head>
 <body>
 
@@ -2764,10 +2761,7 @@ document.addEventListener('touchend',e=>{
 })();
 
 </script>
-<script src="./change-final-fixes.js"></script>
-<script src="./change-challenge-calendar-custom.js"></script>
-<script src="./change-routing-week-points.js"></script>
-<script src="./change-request-polish.js"></script>
+<script src="./change-pre.js"></script>
 <script>
 /* CHANGE RESTORE PATCH: dauerhafte Kalender-Optionen + alter Google-Consent-Flow bleibt aktiv */
 (function(){
@@ -4148,8 +4142,7 @@ document.addEventListener('touchend',e=>{
 })();
 </script>
 
-<script src="./change-critical-fixes.js"></script>
-<script src="./change-google-calendar-final-fix.js"></script>
+<script src="./change-post.js"></script>
 <script id="change-v3-text-cleanup">
 (function(){
   const bad=['Heute ist deutlich hervorgehoben','Maximal 7 offene Aufgaben pro Tag','Maximal 7 Pflichtaufgaben pro Tag · Optional immer sichtbar','Punkte & erledigte Challenges','Aktuelle Woche · Challenge-Punkte','maximal 7 Pflichtaufgaben pro Tag.','oder mache ein leichtes bis mittleres Workout.','Browser-Berechtigung:','Hinweis: Wenn der Browser blockiert ist','Echte Push-Benachrichtigung'];
@@ -4214,7 +4207,5 @@ document.addEventListener('touchend',e=>{
   if(!document.getElementById('change-v5-remove-style')){const st=document.createElement('style');st.id='change-v5-remove-style';st.textContent='.last-completed-main{flex:1}.last-remove-btn{margin-left:auto;white-space:nowrap}.last-completed-row{gap:10px}';document.head.appendChild(st);}
 })();
 </script>
-<script src="./change-complete-fix.js"></script>
-<script src="./change-master-fix.js"></script>
 </body>
 </html>
