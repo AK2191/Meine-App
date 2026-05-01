@@ -4913,6 +4913,79 @@ document.addEventListener('touchend',e=>{
 })();
 </script>
 
+
+
+<!-- USER FINAL CALENDAR FIX: no duplicate UI, compact points, holidays inline, settings stable -->
+<script id="user-final-calendar-fix">
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const qsa=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const pad=n=>String(n).padStart(2,'0');
+const key=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parse=s=>{ if(!s) return null; if(s instanceof Date) return new Date(s.getFullYear(),s.getMonth(),s.getDate()); const m=String(s).match(/^(\d{4})-(\d{2})-(\d{2})/); return m?new Date(+m[1],+m[2]-1,+m[3]):null; };
+const add=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const monthNames=window.DE_MONTHS||['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+function opts(){
+  let def={showHolidays:true,showChallengeDots:true,showWeekNumbers:true};
+  try{Object.assign(def,JSON.parse(localStorage.getItem('change_v1_calendar_view_options')||'{}')||{});}catch(e){}
+  try{let x=JSON.parse(localStorage.getItem('calendar_settings')||'{}')||{}; ['showHolidays','showChallengeDots','showWeekNumbers'].forEach(k=>{ if(typeof x[k]==='boolean') def[k]=x[k]; });}catch(e){}
+  return def;
+}
+function saveOpts(o){localStorage.setItem('change_v1_calendar_view_options',JSON.stringify(o));localStorage.setItem('calendar_settings',JSON.stringify(o));}
+function weekNo(d){d=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));d.setUTCDate(d.getUTCDate()+4-(d.getUTCDay()||7));const y=new Date(Date.UTC(d.getUTCFullYear(),0,1));return Math.ceil((((d-y)/86400000)+1)/7);}
+function today(d){const n=new Date();return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth()&&d.getDate()===n.getDate();}
+function evRange(ev){let s=parse(ev.startDate||ev.date||ev.start?.date||ev.start?.dateTime);let e=parse(ev.endDate||ev.date||ev.end?.date||ev.end?.dateTime); if(ev.end&&ev.end.date&&e&&s&&key(e)>key(s)) e=add(e,-1); if(!s) s=new Date(); if(!e||e<s)e=s; return {s,e,sk:key(s),ek:key(e)};}
+function allEvents(){
+  let out=[];
+  try{(window.events||events||[]).forEach(ev=>out.push(Object.assign({},ev,{source:ev.source||'local'})));}catch(e){}
+  try{(window.gEvents||gEvents||[]).forEach(ge=>{const s=ge.start?.date||ge.start?.dateTime||ge.date; if(!s)return; let e=ge.end?.date||ge.end?.dateTime||s; out.push({id:'g_'+(ge.id||Math.random()),title:ge.summary||ge.title||'(Kein Titel)',startDate:String(s).slice(0,10),endDate:String(e).slice(0,10),date:String(s).slice(0,10),time:ge.start?.dateTime?String(new Date(ge.start.dateTime).toTimeString()).slice(0,5):'',color:'blue',type:'meeting',source:'google',googleEventId:ge.id});});}catch(e){}
+  // dedupe by id/title/start/end
+  const seen=new Set(); return out.filter(ev=>{const r=evRange(ev); const id=(ev.id||ev.googleEventId||ev.title)+'|'+r.sk+'|'+r.ek; if(seen.has(id))return false; seen.add(id); return true;});
+}
+function eventsOn(k){return allEvents().filter(ev=>{const r=evRange(ev);return r.sk<=k&&r.ek>=k;});}
+function holidays(k){try{return (typeof getHolidaysForDate==='function'?getHolidaysForDate(k):[])||[]}catch(e){return[]}}
+function points(k){let p=0;try{(window.challengeCompletions||challengeCompletions||[]).forEach(c=>{if(c&&c.date===k)p+=parseInt(c.points,10)||0;});}catch(e){} return p;}
+function colorClass(ev){return ['blue','green','amber','red','purple'].includes(ev.color)?ev.color:'blue'}
+function googleMark(ev){return ev.source==='google'||ev.googleEventId?'<span class="fx-g" title="Google Kalender">G</span>':(ev.syncedToGoogle?'<span class="fx-g ok" title="an Google übertragen">✓</span>':'')}
+function cells(y,m){let first=new Date(y,m,1).getDay(); first=first===0?6:first-1; const dim=new Date(y,m+1,0).getDate(), pdim=new Date(y,m,0).getDate(), a=[]; for(let i=0;i<first;i++)a.push({d:pdim-first+1+i,m:m===0?11:m-1,y:m===0?y-1:y,other:true}); for(let d=1;d<=dim;d++)a.push({d,m,y,other:false}); while(a.length<42){const n=a.length-first-dim+1; a.push({d:n,m:m===11?0:m+1,y:m===11?y+1:y,other:true});} return a;}
+function onDay(dt){try{ if(typeof onDayClick==='function') return onDayClick(dt,eventsOn(key(dt))); }catch(e){} }
+function openEv(ev){try{ if(typeof openEventPanel==='function') return openEventPanel(ev.id); }catch(e){} }
+window.renderMonth=function(y,m){
+  const grid=$('month-grid'), o=opts(); if(!grid)return;
+  grid.className='fx-month'; grid.style.display='grid'; grid.innerHTML='';
+  const all=cells(y,m);
+  for(let w=0;w<6;w++){
+    const week=all.slice(w*7,w*7+7), row=document.createElement('div'); row.className='fx-week';
+    const wkStart=parse(key(new Date(week[0].y,week[0].m,week[0].d))), wkEnd=parse(key(new Date(week[6].y,week[6].m,week[6].d)));
+    week.forEach((c,i)=>{const dt=new Date(c.y,c.m,c.d), k=key(dt), hs=holidays(k), pts=points(k); const cell=document.createElement('div'); cell.className='fx-day'+(c.other?' other':'')+(i>4?' weekend':'')+(today(dt)?' is-today':''); cell.style.gridColumn=String(i+1); cell.onclick=()=>onDay(dt); cell.innerHTML='<div class="fx-day-head"><span class="fx-num">'+c.d+'</span>'+(o.showHolidays&&hs.length?'<span class="fx-holiday" title="'+esc(hs[0].name)+'">'+esc(hs[0].name)+'</span>':'')+'</div>'+(o.showChallengeDots&&pts>0?'<span class="fx-points">+'+pts+'P</span>':'')+(i===0&&o.showWeekNumbers?'<span class="fx-kw">KW '+weekNo(dt)+'</span>':''); row.appendChild(cell);});
+    const lanes=[];
+    allEvents().filter(ev=>{const r=evRange(ev);return r.s<=wkEnd&&r.e>=wkStart;}).sort((a,b)=>evRange(a).sk.localeCompare(evRange(b).sk)||String(a.title).localeCompare(String(b.title))).forEach(ev=>{const r=evRange(ev); const s=r.s<wkStart?wkStart:r.s, e=r.e>wkEnd?wkEnd:r.e; const sc=Math.round((s-wkStart)/86400000)+1, ec=Math.round((e-wkStart)/86400000)+1; let lane=0; while(lanes[lane]&&lanes[lane]>=sc)lane++; lanes[lane]=ec; if(lane>2)return; const bar=document.createElement('button'); bar.type='button'; bar.className='fx-event '+colorClass(ev)+(key(s)===r.sk?' start':'')+(key(e)===r.ek?' end':''); bar.style.gridColumn=sc+' / '+(ec+1); bar.style.setProperty('--lane',lane); bar.onclick=(e)=>{e.stopPropagation();openEv(ev)}; const multi=r.sk!==r.ek; bar.innerHTML='<span class="fx-title">'+esc(ev.title||'Termin')+'</span>'+(multi&&key(s)===r.sk?'<span class="fx-range">'+esc((typeof fmtDate==='function'?fmtDate(r.sk):r.sk)+'–'+(typeof fmtDate==='function'?fmtDate(r.ek):r.ek))+'</span>':'')+googleMark(ev); row.appendChild(bar);});
+    grid.appendChild(row);
+  }
+};
+window.renderYear=function(y){const grid=$('month-grid'),o=opts(); if(!grid)return; grid.className='fx-year'; grid.style.display='grid'; grid.innerHTML=''; for(let m=0;m<12;m++){const card=document.createElement('button'); card.type='button'; card.className='fx-year-card'; card.onclick=()=>{window.curDate=curDate=new Date(y,m,1); window.currentCalView=currentCalView='month'; window.renderCalendar();}; let html='<div class="fx-year-title">'+monthNames[m]+'</div><div class="fx-year-days">'; ['M','D','M','D','F','S','S'].forEach(x=>html+='<b>'+x+'</b>'); let first=new Date(y,m,1).getDay(); first=first===0?6:first-1; for(let i=0;i<first;i++)html+='<span></span>'; const dim=new Date(y,m+1,0).getDate(); for(let d=1;d<=dim;d++){const k=key(new Date(y,m,d)), hasE=eventsOn(k).length, hasH=holidays(k).length; html+='<span class="'+(today(new Date(y,m,d))?'today ':'')+(hasE?'ev ':'')+(hasH&&o.showHolidays?'hol ':'')+'">'+d+((hasE||(hasH&&o.showHolidays))?'<i></i>':'')+'</span>'; } card.innerHTML=html+'</div>'; grid.appendChild(card);} };
+window.renderCalendar=function(){const y=curDate.getFullYear(),m=curDate.getMonth(); const ml=$('month-label'), grid=$('month-grid'), ag=$('agenda-view'), wd=$('wday-row'); if(ml)ml.textContent=(currentCalView==='year'?String(y):monthNames[m]+' '+y); ['year','month','workweek','today'].forEach(v=>$('vbtn-'+v)?.classList.toggle('active',currentCalView===v)); if(ag)ag.style.display='none'; if(wd)wd.style.display=currentCalView==='year'?'none':'grid'; if(currentCalView==='year')window.renderYear(y); else window.renderMonth(y,m); if(grid)grid.style.display='grid';};
+window.setCalView=function(v){currentCalView=(v==='today')?'month':v; if(v==='today')curDate=new Date(); window.renderCalendar();};
+window.goToday=function(){curDate=new Date(); currentCalView='month'; window.renderCalendar();};
+window.navigate=function(dir){ if(currentCalView==='year')curDate=new Date(curDate.getFullYear()+dir,0,1); else curDate=new Date(curDate.getFullYear(),curDate.getMonth()+dir,1); window.renderCalendar();};
+window.openCalendarSettings=function(){const o=opts(); const states=window.STATE_OPTIONS||(typeof STATE_OPTIONS!=='undefined'?STATE_OPTIONS:{ALL:'Alle Bundesländer',BW:'Baden-Württemberg',BY:'Bayern','BY-AUGSBURG':'Bayern · Augsburg',BE:'Berlin',BB:'Brandenburg',HB:'Bremen',HH:'Hamburg',HE:'Hessen',MV:'Mecklenburg-Vorpommern',NI:'Niedersachsen',NW:'Nordrhein-Westfalen',RP:'Rheinland-Pfalz',SL:'Saarland',SN:'Sachsen',ST:'Sachsen-Anhalt',SH:'Schleswig-Holstein',TH:'Thüringen'}); const st=(window.calendarSettings&&calendarSettings.state)||localStorage.getItem('holiday_state')||'ALL'; const options=Object.entries(states).map(([k,v])=>'<option value="'+k+'" '+(k===st?'selected':'')+'>'+esc(v)+'</option>').join(''); const sw=(title,id,on)=>'<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">'+title+'</div></div><label class="switch"><input type="checkbox" id="'+id+'" '+(on?'checked':'')+'><span class="slider"></span></label></div>'; const html='<div class="fg"><label class="flabel">Bundesland für Feiertage</label><select class="finput" id="holiday-state">'+options+'</select></div>'+sw('Feiertage anzeigen','toggle-holidays',o.showHolidays)+sw('Challenge-Punkte anzeigen','toggle-dots',o.showChallengeDots)+sw('Kalenderwochen anzeigen','toggle-kw',o.showWeekNumbers)+'<button class="btn btn-primary btn-full" onclick="saveCalSettings()">Speichern</button>'; if(typeof openPanel==='function')openPanel('Kalender-Einstellungen',html);};
+window.saveCalSettings=function(){const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked}; saveOpts(o); try{if(!window.calendarSettings)window.calendarSettings={}; calendarSettings.state=$('holiday-state')?.value||'ALL'; if(typeof ls==='function')ls('holiday_state',calendarSettings.state); else localStorage.setItem('holiday_state',calendarSettings.state);}catch(e){} if(typeof closePanel==='function')closePanel(); window.renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen gespeichert ✓','ok');};
+const css=document.createElement('style'); css.id='user-final-calendar-fix-css'; css.textContent=`
+#month-grid.fx-month{display:grid!important;grid-template-rows:repeat(6,minmax(112px,1fr))!important;background:var(--b1);gap:1px;overflow:hidden}
+.fx-week{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr));position:relative;min-height:112px;background:var(--bg)}
+.fx-day{position:relative;grid-row:1;min-width:0;background:var(--s0,#fff);padding:8px 8px 22px 8px;overflow:hidden;border:0!important;cursor:pointer}.fx-day.weekend{background:rgba(0,0,0,.015)}.fx-day.other{opacity:.45}.fx-day.is-today:after{content:'';position:absolute;inset:3px;border:1px solid rgba(45,106,79,.24);border-radius:12px;pointer-events:none}.fx-day-head{display:flex;align-items:center;gap:6px;height:20px;min-width:0;padding-right:46px}.fx-num{font-size:13px;font-weight:850;color:var(--t2)}.fx-day.is-today .fx-num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--acc);color:#fff}.fx-holiday{font-size:10px;font-weight:800;color:var(--amb);background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.16);border-radius:999px;padding:1px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100% - 32px)}
+.fx-points{position:absolute!important;right:7px!important;bottom:6px!important;top:auto!important;left:auto!important;width:auto!important;height:auto!important;min-width:0!important;max-width:52px!important;z-index:8!important;font-size:10px!important;line-height:1!important;font-weight:900!important;color:var(--grn)!important;background:rgba(52,211,153,.13)!important;border:1px solid rgba(52,211,153,.22)!important;border-radius:999px!important;padding:3px 6px!important;box-shadow:none!important;writing-mode:horizontal-tb!important;transform:none!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;pointer-events:none!important}
+.fx-kw{position:absolute;left:7px;bottom:6px;z-index:7;font-size:10px;font-weight:950;color:var(--acc);background:rgba(45,106,79,.12);border:1px solid rgba(45,106,79,.20);border-radius:999px;padding:3px 7px;pointer-events:none}.fx-event{position:relative;grid-row:1;align-self:start;margin-top:calc(34px + var(--lane)*24px);height:20px;line-height:20px;z-index:5;border:1px solid rgba(59,130,246,.18);border-radius:0;background:rgba(59,130,246,.12);color:#2563eb;padding:0 7px;display:flex;align-items:center;gap:5px;overflow:hidden;min-width:0;cursor:pointer;box-shadow:none}.fx-event.start{border-top-left-radius:9px;border-bottom-left-radius:9px}.fx-event.end{border-top-right-radius:9px;border-bottom-right-radius:9px}.fx-event.green{background:rgba(52,211,153,.13);border-color:rgba(52,211,153,.22);color:var(--grn)}.fx-event.amber{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.20);color:var(--amb)}.fx-event.red{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.18);color:var(--red)}.fx-event.purple{background:rgba(124,58,237,.10);border-color:rgba(124,58,237,.18);color:var(--pur)}.fx-title{font-size:11px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fx-range{font-size:10px;font-weight:800;opacity:.75;white-space:nowrap}.fx-g{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;font-size:8px;font-weight:950;color:#4285f4;background:rgba(66,133,244,.12);flex:0 0 auto}.fx-g.ok{color:var(--grn);background:rgba(52,211,153,.14)}
+#month-grid.fx-year{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:14px;background:var(--bg)}.fx-year-card{background:var(--s1);border:1px solid var(--b1);border-radius:16px;padding:12px;text-align:left;cursor:pointer}.fx-year-title{font-weight:900;margin-bottom:8px;color:var(--t2)}.fx-year-days{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}.fx-year-days b{font-size:9px;color:var(--t5);text-align:center}.fx-year-days span{position:relative;font-size:10px;color:var(--t4);text-align:center;height:18px;line-height:18px;border-radius:6px}.fx-year-days span.today{background:var(--acc);color:#fff}.fx-year-days span i{position:absolute;left:50%;transform:translateX(-50%);bottom:0;width:5px;height:5px;border-radius:50%;background:var(--acc)}.fx-year-days span.hol i{background:var(--amb)}.fx-year-days span.ev.hol i{background:linear-gradient(90deg,var(--acc) 50%,var(--amb) 50%)}
+/* alten kaputten Challenge-Säulen/Badges sicher verstecken, wenn sie irgendwo noch übrig sind */
+.month-grid-clean .challenge-points-badge,.clean-range-row .challenge-points-badge,.cal-points-badge{display:none!important}
+`; document.head.appendChild(css);
+setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calendar fix',e)}},0);
+})();
+</script>
+
 </body>
 </html>
 <script id="change-final-user-fixes-3">
