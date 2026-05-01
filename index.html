@@ -6192,110 +6192,141 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   window.onDayClick=function(dt,dayEvs){window.openDayPanel(dt,dayEvs||[]);};
 })();
 </script>
-<script id="dashboard-calendar-tile-only-final">
+<script id="change-final-identity-cleanup-stable">
+/* FINAL STABILISIERUNG: eine saubere Nutzeridentität für Challenges, Dashboard und Rangliste */
 (function(){
   'use strict';
-  const PATCH='dashboard-calendar-tile-only-final';
-  const $=id=>document.getElementById(id);
-  const pad=n=>String(n).padStart(2,'0');
-  const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const toKey=d=>{ if(d instanceof Date) return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); return String(d||'').slice(0,10); };
-  const parse=k=>new Date(String(k||'').slice(0,10)+'T12:00:00');
-  const addDays=(k,n)=>{const d=parse(k); d.setDate(d.getDate()+n); return toKey(d);};
-  const today=()=>toKey(new Date());
-  const daysFromToday=k=>Math.round((parse(k)-parse(today()))/86400000);
-  const fmtShort=k=>parse(k).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
-  const fmtLong=k=>parse(k).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
-  const titleOf=e=>String(e?.title||e?.summary||e?.name||'Termin').replace(/\bZeitraum\b\s*:?/gi,'').replace(/\s{2,}/g,' ').trim();
-  const timeOf=e=>{ if(e?.time) return String(e.time); if(e?.startTime) return String(e.startTime); if(e?.start?.dateTime) return String(e.start.dateTime).slice(11,16); return ''; };
-  function endExclusiveGoogle(e){return !!(e && e.start && e.start.date && e.end && e.end.date && !e.end.dateTime && !e.time && !e.startTime);}
-  function rangeOf(e){
-    let s=toKey(e?.date||e?.startDate||e?.dateKey||e?.start?.date||e?.start?.dateTime||'');
-    let en=toKey(e?.endDate||e?.end||e?.end?.date||e?.end?.dateTime||s);
-    if(endExclusiveGoogle(e)) en=addDays(en,-1);
-    if(!en) en=s;
-    if(en<s){const t=s; s=en; en=t;}
-    return {start:s,end:en,isRange:!!(s&&en&&s!==en)};
+  const BAD_IDS = new Set(['du','ich','me','demo','demo@example.com','local','local-user','']);
+  const today = () => (typeof dateKey === 'function' ? dateKey(new Date()) : new Date().toISOString().slice(0,10));
+  const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const norm = v => String(v || '').trim().toLowerCase();
+  function store(key, value){ try { if(typeof ls === 'function') ls(key, value); else localStorage.setItem('change_v2_'+key, JSON.stringify(value)); } catch(e){} }
+  function readUserInfo(){
+    let auth = null;
+    try { auth = firebase && firebase.auth && firebase.auth().currentUser; } catch(e) {}
+    const u = window.userInfo || {};
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem('change_v2_user_info') || localStorage.getItem('change_user_info') || '{}'); } catch(e) {}
+    const email = norm((auth && auth.email) || u.email || saved.email || '');
+    const name = String((auth && auth.displayName) || u.name || saved.name || email || 'Ich').trim();
+    const id = email || norm((auth && auth.uid) || u.id || saved.id || 'ich');
+    return { id, email, name: name || email || 'Ich' };
   }
-  function allEvents(){
-    let a=[];
-    try{ if(typeof getAllEvents==='function') a=getAllEvents()||[]; }catch(e){}
-    if(!a.length) try{ a=window.events||[]; }catch(e){}
-    return Array.isArray(a)?a:[];
+  function isBadId(id){ id = norm(id); return BAD_IDS.has(id) || id.includes('demo@example.com'); }
+  function isSelfishDummy(p){
+    const id = norm(p && (p.email || p.id || p.userEmail));
+    const name = norm(p && p.name);
+    return isBadId(id) || name === 'du' || name === 'ich';
   }
-  function fallbackHolidays(k){
-    const y=parseInt(String(k).slice(0,4),10); if(!y) return [];
-    function easter(year){const a=year%19,b=Math.floor(year/100),c=year%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),l=c%4,m=(32+2*e+2*i-h-l)%7,n=Math.floor((a+11*h+22*m)/451),mo=Math.floor((h+m-7*n+114)/31),da=((h+m-7*n+114)%31)+1;return new Date(year,mo-1,da)}
-    const e=easter(y), defs=[['Neujahr',new Date(y,0,1)],['Tag der Arbeit',new Date(y,4,1)],['Tag der Deutschen Einheit',new Date(y,9,3)],['1. Weihnachtstag',new Date(y,11,25)],['2. Weihnachtstag',new Date(y,11,26)],['Karfreitag',new Date(e.getFullYear(),e.getMonth(),e.getDate()-2)],['Ostermontag',new Date(e.getFullYear(),e.getMonth(),e.getDate()+1)],['Christi Himmelfahrt',new Date(e.getFullYear(),e.getMonth(),e.getDate()+39)],['Pfingstmontag',new Date(e.getFullYear(),e.getMonth(),e.getDate()+50)],['Fronleichnam',new Date(e.getFullYear(),e.getMonth(),e.getDate()+60)]];
-    return defs.filter(([,d])=>toKey(d)===k).map(([name])=>({name,states:['ALL']}));
-  }
-  function holidaysFor(k){
-    const map=new Map();
-    try{ (typeof getHolidaysForDate==='function'?getHolidaysForDate(k):[]||[]).forEach(h=>{if(h&&h.name)map.set(h.name,h);}); }catch(e){}
-    fallbackHolidays(k).forEach(h=>{if(h&&h.name&&!map.has(h.name))map.set(h.name,h);});
-    return Array.from(map.values());
-  }
-  function dedupeKey(ev,r){
-    return String(ev?.googleEventId||ev?.icalUID||ev?.id||'') || (titleOf(ev).toLowerCase()+'|'+r.start+'|'+r.end+'|'+timeOf(ev));
-  }
-  function rows(){
-    const td=today(), limit=addDays(td,30), out=[], seen=new Set();
-    allEvents().forEach(ev=>{
-      const r=rangeOf(ev); if(!r.start || r.end<td || r.start>limit) return;
-      const k=dedupeKey(ev,r); if(seen.has(k)) return; seen.add(k);
-      const active=r.start<=td && r.end>=td;
-      out.push({kind:'event',ev,range:r,date:active?td:r.start,sort:active?td:r.start,active});
+  function completionId(c){ return norm(c && (c.playerId || c.userEmail || c.email || c.uid)); }
+  function cleanIdentityState(){
+    const me = readUserInfo();
+    let players = Array.isArray(window.challengePlayers) ? window.challengePlayers.slice() : [];
+    try { if(typeof challengePlayers !== 'undefined' && Array.isArray(challengePlayers) && challengePlayers.length > players.length) players = challengePlayers.slice(); } catch(e) {}
+
+    const byId = new Map();
+    players.forEach(p => {
+      if(!p) return;
+      let id = norm(p.email || p.id || p.userEmail);
+      if(isSelfishDummy(p)) id = me.id;
+      if(!id || id.includes('demo')) return;
+      const current = byId.get(id) || {};
+      byId.set(id, Object.assign({}, current, p, {
+        id,
+        email: id.includes('@') ? id : (p.email || ''),
+        name: id === me.id ? me.name : (p.name || p.email || id),
+        online: !!(current.online || p.online || id === me.id)
+      }));
     });
-    for(let i=0;i<=30;i++){
-      const k=addDays(td,i);
-      holidaysFor(k).forEach(h=>out.push({kind:'holiday',holiday:h,date:k,sort:k,active:k===td}));
-    }
-    return out.sort((a,b)=>a.sort.localeCompare(b.sort)||(a.kind==='holiday'?-1:1)||(a.kind==='event'&&b.kind==='event'?String(timeOf(a.ev)||'99:99').localeCompare(String(timeOf(b.ev)||'99:99')):0)).slice(0,10);
+    byId.set(me.id, Object.assign({}, byId.get(me.id) || {}, { id: me.id, email: me.email || me.id, name: me.name, online: true }));
+    players = Array.from(byId.values());
+
+    let comps = Array.isArray(window.challengeCompletions) ? window.challengeCompletions.slice() : [];
+    try { if(typeof challengeCompletions !== 'undefined' && Array.isArray(challengeCompletions) && challengeCompletions.length > comps.length) comps = challengeCompletions.slice(); } catch(e) {}
+    comps = comps.map(c => {
+      if(!c) return c;
+      let id = completionId(c);
+      if(isBadId(id) || id === 'du' || id === 'ich') id = me.id;
+      return Object.assign({}, c, {
+        playerId: id || me.id,
+        userEmail: id && id.includes('@') ? id : (me.email || ''),
+        playerName: (id || me.id) === me.id ? me.name : (c.playerName || id)
+      });
+    });
+
+    window.challengePlayers = players;
+    window.challengeCompletions = comps;
+    try { challengePlayers = players; } catch(e) {}
+    try { challengeCompletions = comps; } catch(e) {}
+    store('challenge_players', players);
+    store('challenge_completions', comps);
+    try { localStorage.setItem('change_identity_cleanup_done','1'); } catch(e) {}
+    return { me, players, comps };
   }
-  function dateBlock(date,active){
-    const d=daysFromToday(date);
-    const top=active?'Heute':(d===1?'Morgen':fmtShort(date));
-    const bottom=active?fmtShort(date):fmtLong(date).replace('.', '');
-    return '<div class="dash-date-block '+(active?'is-today':'')+'"><div>'+esc(top)+'</div><span>'+esc(bottom)+'</span></div>';
-  }
-  function calendarHtml(){
-    const rs=rows();
-    if(!rs.length) return '<div class="dash-empty compact-empty">Keine Termine oder Feiertage</div>';
-    return rs.map(r=>{
-      if(r.kind==='holiday'){
-        return '<div class="dash-row compact-row dashboard-calendar-row holiday-row '+(r.active?'dash-today-row':'')+'" onclick="setMainView(\'calendar\')">'+dateBlock(r.date,r.active)+'<div class="dash-row-icon" style="background:var(--amb-d)">🎉</div><div class="dash-row-body"><div class="dash-row-title">'+esc(r.holiday.name)+' <span class="holiday-mini-badge">Feiertag</span></div><div class="dash-row-sub">'+esc(fmtLong(r.date))+'</div></div></div>';
-      }
-      const ev=r.ev, rg=r.range, isRange=rg.isRange;
-      const sub=isRange?fmtShort(rg.start)+' – '+fmtShort(rg.end):(timeOf(ev)?esc(timeOf(ev))+' Uhr':'Ganztägig');
-      const pill=isRange?' <span class="range-mini-badge">'+esc(fmtShort(rg.start)+' – '+fmtShort(rg.end))+'</span>':'';
-      return '<div class="dash-row compact-row dashboard-calendar-row '+(r.active?'dash-today-row':'')+'" onclick="setMainView(\'calendar\')">'+dateBlock(r.date,r.active)+'<div class="dash-row-icon" style="background:var(--acc-d)">📅</div><div class="dash-row-body"><div class="dash-row-title">'+esc(titleOf(ev))+pill+'</div><div class="dash-row-sub">'+sub+'</div></div></div>';
-    }).join('');
-  }
-  function injectStyle(){
-    if($('dashboard-calendar-tile-only-style')) return;
-    const st=document.createElement('style'); st.id='dashboard-calendar-tile-only-style';
-    st.textContent='.calendar-card .dash-card-sub{font-size:12px!important}.dashboard-calendar-row{align-items:center!important}.calendar-card .dash-card-body{max-height:360px!important;overflow:auto!important}.dash-date-block{width:50px!important;flex:0 0 50px!important;text-align:left!important;font-size:11px!important;font-weight:850!important;color:var(--t2)!important;line-height:1.05!important;margin-right:-2px!important}.dash-date-block span{display:block!important;margin-top:3px!important;font-size:9.5px!important;font-weight:700!important;color:var(--t5)!important}.dash-date-block.is-today div,.dash-date-block.is-today span{color:var(--acc)!important}.dash-today-row{background:rgba(45,106,79,.06)!important;box-shadow:inset 3px 0 0 var(--acc)!important}.holiday-row{background:rgba(245,158,11,.075)!important;box-shadow:inset 3px 0 0 var(--amb)!important}.holiday-mini-badge,.range-mini-badge{display:inline-flex!important;margin-left:6px!important;padding:1px 6px!important;border-radius:999px!important;font-size:10px!important;font-weight:800!important;white-space:nowrap!important}.holiday-mini-badge{background:rgba(245,158,11,.14)!important;color:#b85f00!important;border:1px solid rgba(245,158,11,.22)!important}.range-mini-badge{background:rgba(22,163,74,.12)!important;color:var(--grn)!important;border:1px solid rgba(22,163,74,.18)!important}.compact-empty{padding:22px 14px!important;font-size:12px!important}';
-    document.head.appendChild(st);
-  }
-  function patchCalendarTile(){
-    injectStyle();
-    const card=document.querySelector('#dash-grid .calendar-card'); if(!card) return;
-    const title=card.querySelector('.dash-card-title'); if(title) title.textContent='📅 Kalender';
-    const sub=card.querySelector('.dash-card-sub'); if(sub) sub.textContent='Heute + nächste Tage';
-    const body=card.querySelector('.dash-card-body'); if(body) body.innerHTML=calendarHtml();
-    card.querySelectorAll('.dash-card-head button,.dash-row-action').forEach(b=>b.remove());
-  }
-  const previous=window.buildDashCards;
-  window.buildDashCards=function(){
-    if(typeof previous==='function') previous.apply(this,arguments);
-    try{ patchCalendarTile(); }catch(e){ console.warn(PATCH,e); }
+  window.getVisibleContestPlayers = window.visiblePlayers = function(){
+    const s = cleanIdentityState();
+    const seen = new Set();
+    return s.players.filter(p => {
+      const id = norm(p.email || p.id || p.userEmail);
+      if(!id || id.includes('demo') || seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
   };
-  const previousDash=window.buildDashboard;
-  window.buildDashboard=function(){
-    if(typeof previousDash==='function') previousDash.apply(this,arguments);
-    try{ patchCalendarTile(); }catch(e){ console.warn(PATCH,e); }
+  window.getPlayerPointSummary = function(playerId){
+    const s = cleanIdentityState();
+    const id = norm(playerId) || s.me.id;
+    const aliases = new Set([id]);
+    if(id === s.me.id){ ['du','ich','me','demo@example.com',''].forEach(x => aliases.add(x)); if(s.me.email) aliases.add(s.me.email); }
+    let totalPoints = 0, todayPoints = 0, totalCount = 0;
+    s.comps.forEach(c => {
+      const cid = completionId(c);
+      if(!aliases.has(cid)) return;
+      const pts = parseInt(c.points, 10) || 0;
+      totalPoints += pts; totalCount += 1;
+      if(String(c.date || '').slice(0,10) === today()) todayPoints += pts;
+    });
+    return { totalPoints, todayPoints, totalCount };
   };
-  document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{try{ if(window.currentMainView==='dashboard') patchCalendarTile(); }catch(e){}},100));
-  setTimeout(()=>{try{ if(window.currentMainView==='dashboard') { if(typeof previous==='function') window.buildDashCards(); else patchCalendarTile(); } }catch(e){}},300);
+  function challengeDueToday(ch){
+    if(!ch || ch.active === false) return false;
+    if(ch.recurrence === 'daily') return true;
+    const d = String(ch.date || ch.startDate || '').slice(0,10);
+    return !d || d === today();
+  }
+  function myDoneSet(){
+    const s = cleanIdentityState();
+    const ids = new Set([s.me.id, s.me.email, 'du', 'ich', 'me', '']);
+    return new Set(s.comps.filter(c => String(c.date || '').slice(0,10) === today() && ids.has(completionId(c))).map(c => c.challengeId));
+  }
+  window.renderChallenges = function(){
+    const s = cleanIdentityState();
+    const list = document.getElementById('challenges-list');
+    const board = document.getElementById('leaderboard-list');
+    if(!list || !board) return;
+    const doneIds = myDoneSet();
+    const due = (window.challenges || []).filter(challengeDueToday).sort((a,b) => (a.optional === true) - (b.optional === true) || String(a.title || a.name || '').localeCompare(String(b.title || b.name || ''),'de'));
+    list.innerHTML = due.length ? due.slice(0,8).map(ch => {
+      const done = doneIds.has(ch.id);
+      const url = ch.url && !ch.noVideo ? '<a href="'+esc(ch.url)+'" target="_blank" rel="noopener" class="challenge-meta" onclick="event.stopPropagation()">So geht die Übung</a>' : '';
+      return '<div class="challenge-item '+(done?'challenge-done':'')+'" data-challenge-id="'+esc(ch.id)+'"><div class="challenge-icon">'+esc(ch.icon || '🏆')+'</div><div class="challenge-body"><div class="challenge-name">'+esc(ch.title || ch.name || 'Challenge')+'</div><div class="challenge-meta">'+esc(ch.desc || '')+' · '+(parseInt(ch.points,10)||0)+' Punkte '+(done?'· ✅ heute erledigt':'')+'</div>'+url+'</div>'+(ch.optional?'<span class="dash-row-badge badge-blue">Optional</span>':'')+'<span class="points-pill">'+(done?'✓ ':'+')+(parseInt(ch.points,10)||0)+'</span>'+(done?'<button class="btn btn-success btn-sm" disabled>Erledigt</button>':'<button class="btn btn-primary btn-sm" onclick="completeChallenge(\''+esc(ch.id)+'\')">Erledigen</button>')+'</div>';
+    }).join('') : '<div class="empty-state"><div class="empty-title">Keine Aufgaben für heute</div><div class="empty-sub">Heute sind keine offenen Challenges geplant.</div></div>';
+
+    const players = window.getVisibleContestPlayers().slice().sort((a,b) => window.getPlayerPointSummary(norm(b.email || b.id)).totalPoints - window.getPlayerPointSummary(norm(a.email || a.id)).totalPoints);
+    board.innerHTML = players.length ? players.map((p,i) => {
+      const id = norm(p.email || p.id), st = window.getPlayerPointSummary(id), medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);
+      return '<div class="leader-row clickable"><div class="leader-rank">'+medal+'</div><div><div class="leader-name">'+esc(id === s.me.id ? s.me.name : (p.name || p.email || 'Mitspieler'))+(id === s.me.id?' · Du':'')+'</div><div class="leader-detail">Heute: '+st.todayPoints+' P · Gesamt: '+st.totalPoints+' P · '+st.totalCount+' erledigt</div></div><div class="leader-score">'+st.totalPoints+'</div></div>';
+    }).join('') : '<div class="dash-empty">Noch keine Mitspieler.</div>';
+  };
+  const oldComplete = window.completeChallenge;
+  window.completeChallenge = function(id){
+    cleanIdentityState();
+    if(typeof oldComplete === 'function') return oldComplete(id);
+  };
+  setTimeout(function(){
+    cleanIdentityState();
+    try { if(typeof renderChallenges === 'function') renderChallenges(); } catch(e) {}
+    try { if(typeof buildDashboard === 'function') buildDashboard(); } catch(e) {}
+  }, 250);
 })();
 </script>
