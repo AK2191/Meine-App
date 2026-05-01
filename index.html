@@ -5840,3 +5840,102 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   }, 200);
 })();
 </script>
+
+<script id="dashboard-calm-compact-final">
+(function(){
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const pad = n => String(n).padStart(2,'0');
+  const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const key = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  const todayKey = () => key(new Date());
+  const addDays = (k,n) => { const d=new Date(k+'T12:00:00'); d.setDate(d.getDate()+n); return key(d); };
+  const daysFromToday = k => Math.round((new Date(k+'T12:00:00')-new Date(todayKey()+'T12:00:00'))/86400000);
+  const fmt = k => { try { return new Date(k+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}); } catch(e){ return k; } };
+  const eventDate = ev => String(ev?.date || ev?.startDate || ev?.dateKey || '').slice(0,10);
+  const eventEnd = ev => String(ev?.endDate || ev?.end || ev?.date || ev?.startDate || ev?.dateKey || '').slice(0,10) || eventDate(ev);
+  const eventTitle = ev => ev?.title || ev?.summary || ev?.name || 'Termin';
+  function allEvents(){ try { return typeof getAllEvents==='function' ? getAllEvents() : (window.events||[]); } catch(e){ return window.events||[]; } }
+  function holidays(k){ try { return typeof getHolidaysForDate==='function' ? (getHolidaysForDate(k)||[]) : []; } catch(e){ return []; } }
+  function eventRows(){
+    const td=todayKey(), lim=addDays(td,14), seen=new Set();
+    return allEvents().filter(ev=>{
+      const s=eventDate(ev), e=eventEnd(ev); if(!s) return false;
+      const id=ev.googleEventId?'g:'+ev.googleEventId:(ev.id||eventTitle(ev)+s+e); if(seen.has(id)) return false; seen.add(id);
+      return e>=td && s<=lim;
+    }).map(ev=>({kind:'event',ev,date:eventDate(ev),end:eventEnd(ev),sort:(eventDate(ev)<td?td:eventDate(ev))}))
+      .sort((a,b)=>a.sort.localeCompare(b.sort)||String(a.ev.time||'').localeCompare(String(b.ev.time||''))).slice(0,5);
+  }
+  function holidayRows(){
+    const td=todayKey(), rows=[];
+    for(let i=0;i<=14;i++){ const k=addDays(td,i); holidays(k).slice(0,1).forEach(h=>rows.push({kind:'holiday',date:k,sort:k,holiday:h})); }
+    return rows;
+  }
+  function calendarRows(){ return holidayRows().concat(eventRows()).sort((a,b)=>a.sort.localeCompare(b.sort)||(a.kind==='holiday'?-1:1)).slice(0,7); }
+  function challengeHtml(){
+    const td=todayKey();
+    try{
+      const me=String(window.userInfo?.email||'').toLowerCase();
+      const doneIds=new Set((window.challengeCompletions||[]).filter(c=>String(c.date||'')===td && (!me || String(c.userEmail||c.playerId||c.email||'').toLowerCase()===me)).map(c=>c.challengeId));
+      const chs=(window.challenges||[]).filter(c=>c && c.active!==false && (c.recurrence==='daily' || !c.date || String(c.date||c.startDate||'').slice(0,10)===td)).slice(0,4);
+      if(!chs.length) return '<div class="dash-empty compact-empty">Heute keine Challenges</div>';
+      return chs.map(ch=>{ const done=doneIds.has(ch.id); return '<div class="dash-row compact-row" onclick="setMainView(\'challenges\')"><div class="dash-row-icon" style="background:var(--pur-d)">'+esc(ch.icon||'🏆')+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(ch.title||ch.name||'Challenge')+'</div><div class="dash-row-sub">'+(parseInt(ch.points,10)||0)+' Punkte</div></div><span class="dash-row-badge '+(done?'badge-green':'badge-amber')+'">'+(done?'✓':'offen')+'</span></div>'; }).join('');
+    }catch(e){ return '<div class="dash-empty compact-empty">Heute keine Challenges</div>'; }
+  }
+  function playersHtml(){
+    try{
+      const players=(typeof getVisibleContestPlayers==='function'?getVisibleContestPlayers():(window.challengePlayers||[])).slice(0,4);
+      const me=String(window.userInfo?.email||'').toLowerCase();
+      if(!players.length) return '<div class="dash-empty compact-empty">Noch keine Mitspieler</div>';
+      return players.map((p,i)=>{ const id=String(p.email||p.id||'').toLowerCase(); const st=typeof getPlayerPointSummary==='function'?getPlayerPointSummary(id):{totalPoints:0,todayPoints:0,totalCount:0}; const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1); return '<div class="dash-row compact-row" onclick="try{openContestUserDetails(\''+esc(id)+'\')}catch(e){setMainView(\'challenges\')}"><div class="dash-row-icon" style="background:var(--amb-d)">'+medal+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(p.name||p.email||'Mitspieler')+(id===me?' · Du':'')+'</div><div class="dash-row-sub">Heute '+(st.todayPoints||0)+' P · Gesamt '+(st.totalPoints||0)+' P</div></div><span class="dash-row-badge badge-green">'+(st.totalPoints||0)+' P</span></div>'; }).join('');
+    }catch(e){ return '<div class="dash-empty compact-empty">Noch keine Mitspieler</div>'; }
+  }
+  function calHtml(){
+    const rows=calendarRows(), td=todayKey();
+    if(!rows.length) return '<div class="dash-empty compact-empty">Keine Termine oder Feiertage</div>';
+    return rows.map(r=>{
+      const isToday=(r.date<=td && (r.end||r.date)>=td), diff=daysFromToday(r.date), label=isToday?'Heute':(diff===1?'Morgen':fmt(r.date));
+      if(r.kind==='holiday') return '<div class="dash-row compact-row dash-today-row holiday-row" onclick="setMainView(\'calendar\')"><div class="dash-row-icon" style="background:var(--amb-d)">🎉</div><div class="dash-row-body"><div class="dash-row-title">'+esc(r.holiday.name)+'</div><div class="dash-row-sub">'+fmt(r.date)+' · Feiertag</div></div><span class="dash-row-badge badge-amber">'+label+'</span></div>';
+      const range=(r.end&&r.end!==r.date), sub=range?fmt(r.date)+' – '+fmt(r.end):(fmt(r.date)+(r.ev.time?' · '+esc(r.ev.time):''));
+      return '<div class="dash-row compact-row '+(isToday?'dash-today-row':'')+'" onclick="setMainView(\'calendar\')"><div class="dash-row-icon" style="background:var(--acc-d)">'+(isToday?'⭐':'📅')+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(eventTitle(r.ev))+'</div><div class="dash-row-sub">'+sub+'</div></div><span class="dash-row-badge '+(isToday?'badge-red':'badge-blue')+'">'+label+'</span></div>';
+    }).join('');
+  }
+  function inject(){
+    if($('dashboard-calm-compact-style')) return;
+    const st=document.createElement('style'); st.id='dashboard-calm-compact-style'; st.textContent=`
+      #kpi-grid{display:none!important}
+      #dashboard-view{padding:18px 18px 24px!important}
+      .dash-grid{display:grid!important;grid-template-columns:minmax(360px,.82fr) minmax(420px,1.18fr)!important;gap:16px!important;align-items:start!important}
+      .calendar-card{grid-column:auto!important}
+      .dash-card{border-radius:18px!important;box-shadow:0 2px 12px rgba(0,0,0,.05)!important}
+      .dash-card-head{padding:12px 16px!important}
+      .dash-card-body{max-height:340px!important;overflow:auto!important}
+      .calendar-card .dash-card-body{max-height:300px!important}
+      .dashboard-combined-card .dash-card-body{max-height:300px!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:0!important;padding:0!important}
+      .dashboard-section{min-width:0!important}.dashboard-section+.dashboard-section{border-left:1px solid var(--b1)!important}
+      .dashboard-section-head{padding:10px 14px 7px!important;font-size:12px!important;font-weight:800!important;color:var(--t2)!important;display:flex!important;align-items:center!important;justify-content:space-between!important}
+      .compact-row{padding:10px 14px!important;min-height:46px!important}.compact-row .dash-row-icon{width:30px!important;height:30px!important;border-radius:9px!important;font-size:13px!important}.compact-row .dash-row-title{font-size:13px!important}.compact-row .dash-row-sub{font-size:11px!important}.compact-row .dash-row-badge{font-size:10.5px!important;padding:3px 7px!important}
+      .dash-today-row{background:rgba(45,106,79,.08)!important;box-shadow:inset 3px 0 0 var(--acc)!important}.holiday-row{background:rgba(245,158,11,.07)!important;box-shadow:inset 3px 0 0 var(--amb)!important}.compact-empty{padding:22px 14px!important;font-size:12px!important}
+      @media(max-width:900px){.dash-grid{grid-template-columns:1fr!important}.dashboard-combined-card .dash-card-body{grid-template-columns:1fr!important}.dashboard-section+.dashboard-section{border-left:0!important;border-top:1px solid var(--b1)!important}.calendar-card .dash-card-body,.dashboard-combined-card .dash-card-body{max-height:none!important}}
+    `; document.head.appendChild(st);
+  }
+  window.buildDashCards=function(){
+    const grid=$('dash-grid'); if(!grid) return; inject();
+    grid.innerHTML=`
+      <div class="dash-card calendar-card">
+        <div class="dash-card-head"><div><div class="dash-card-title">📅 Kalender</div><div class="dash-card-sub">Heute + nächste Tage</div></div></div>
+        <div class="dash-card-body">${calHtml()}</div>
+      </div>
+      <div class="dash-card dashboard-combined-card">
+        <div class="dash-card-head"><div><div class="dash-card-title">🏆 Challenges & 👥 Mitspieler</div><div class="dash-card-sub">Heute und Rangliste</div></div></div>
+        <div class="dash-card-body">
+          <div class="dashboard-section"><div class="dashboard-section-head"><span>Challenges</span></div>${challengeHtml()}</div>
+          <div class="dashboard-section"><div class="dashboard-section-head"><span>Mitspieler</span></div>${playersHtml()}</div>
+        </div>
+      </div>`;
+  };
+  const oldBuild=window.buildDashboard;
+  window.buildDashboard=function(){ try{ if(typeof oldBuild==='function') oldBuild(); }catch(e){} inject(); window.buildDashCards(); };
+  setTimeout(()=>{ try{ if(window.currentMainView==='dashboard') window.buildDashboard(); }catch(e){} },100);
+})();
+</script>
