@@ -515,3 +515,33 @@
   applyCSS();
   window.addEventListener('load',()=>{setTimeout(()=>{applyCSS();try{if(typeof renderCalendar==='function')renderCalendar();}catch(e){}try{if(window.accessToken&&typeof loadGoogleEvents==='function')loadGoogleEvents();}catch(e){}try{if(typeof renderChallenges==='function')renderChallenges();}catch(e){}},600);});
 })();
+
+/* CHANGE · Fix 5: Dashboard kompakt, kein Wort mit Z..., Google-Sync nur Kalendereinstellungen */
+(function(){
+  'use strict';
+  const $=id=>document.getElementById(id);
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const pad=n=>String(n).padStart(2,'0');
+  const dk=d=>{try{return typeof dateKey==='function'?dateKey(d):d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}catch(e){return new Date(d).toISOString().slice(0,10)}};
+  const parse=v=>{const d=v instanceof Date?v:new Date(String(v||'').includes('T')?v:String(v||'')+'T12:00:00');return isNaN(d)?new Date():d};
+  const fmt=v=>parse(v).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+  const today=()=>dk(new Date());
+  const banned=/\bZ\s*e\s*i\s*t\s*r\s*a\s*u\s*m\b\s*:?/gi;
+  const clean=s=>String(s??'').replace(banned,'').replace(/\s*[·-]\s*$/,'').replace(/\s{2,}/g,' ').trim();
+  const startOf=ev=>String(ev?.date||ev?.startDate||ev?.start||'').slice(0,10);
+  const endOf=ev=>String(ev?.endDate||ev?.dateEnd||ev?.until||ev?.end||ev?.date||'').slice(0,10);
+  const titleOf=ev=>clean(ev?.title||ev?.name||ev?.summary||'Termin');
+  const timeOf=ev=>{if(ev?.allDay||(!ev?.time&&!ev?.endTime))return 'Ganztag'; const a=String(ev.time||'').slice(0,5),b=String(ev.endTime||'').slice(0,5); return a&&b?a+' – '+b:(a||'Ganztag')};
+  const rangeLabel=ev=>{const a=startOf(ev),b=endOf(ev);return a&&b&&a!==b?fmt(a)+' – '+fmt(b):timeOf(ev)};
+  const diff=d=>Math.round((parse(d)-parse(today()))/86400000);
+  const badgeFor=(ev,d)=>{const a=startOf(ev),b=endOf(ev); if(a&&b&&a!==b)return rangeLabel(ev); const x=diff(d||a); if(x===0)return 'Heute'; if(x===1)return 'Morgen'; return fmt(d||a)};
+  function injectCss(){let st=$('change-fix5-style');if(!st){st=document.createElement('style');st.id='change-fix5-style';document.head.appendChild(st)}st.textContent='.dash-row-title-line{display:flex;align-items:center;gap:8px;min-width:0}.dash-row-title-line .dash-row-title{flex:1;min-width:0}.dash-row.compact .dash-row-sub{display:none!important}.dash-info-badge{font-size:10px;font-weight:800;border-radius:999px;padding:3px 8px;white-space:nowrap;background:var(--grn-d);color:var(--grn);border:1px solid rgba(22,163,74,.16)}.holiday-badge{background:var(--amb-d)!important;color:var(--amb)!important;border-color:rgba(217,119,6,.2)!important}#vbtn-year,[onclick*="setCalView(\'year\')"],[onclick*="setCalView(&quot;year&quot;)"]{display:none!important}.google-sync-duplicate,.google-sync-header,.dashboard-google-sync{display:none!important}'}
+  function holidayRows(limit=3){const out=[];const hs=window.holidays||window.publicHolidays||[];if(Array.isArray(hs))hs.forEach(h=>{const d=String(h.date||h.day||'').slice(0,10);if(d>=today())out.push({date:d,name:h.name||h.title||'Feiertag'})});return out.sort((a,b)=>a.date.localeCompare(b.date)).slice(0,limit)}
+  function compactDashboard(){const grid=$('dash-grid');if(!grid)return false;const card=grid.querySelector('.calendar-card .dash-card-body');if(!card)return false;const evs=(window.getAllEvents?window.getAllEvents():(window.events||[])).filter(e=>startOf(e)&&endOf(e)>=today()).sort((a,b)=>(startOf(a)+(a.time||'')).localeCompare(startOf(b)+(b.time||''))).slice(0,5);const rows=[];holidayRows(3).forEach(h=>rows.push('<div class="dash-row compact" onclick="setMainView&&setMainView(\'calendar\')"><div class="dash-row-icon" style="background:var(--amb-d)">🎉</div><div class="dash-row-body"><div class="dash-row-title-line"><div class="dash-row-title">Feiertag · '+esc(h.name)+'</div><span class="dash-info-badge holiday-badge">'+esc(fmt(h.date))+'</span></div></div></div>'));evs.forEach(ev=>{const d=startOf(ev);rows.push('<div class="dash-row compact" onclick="setMainView&&setMainView(\'calendar\')"><div class="dash-row-icon" style="background:var(--acc-d)">📅</div><div class="dash-row-body"><div class="dash-row-title-line"><div class="dash-row-title">'+esc(titleOf(ev))+'</div><span class="dash-info-badge">'+esc(badgeFor(ev,d))+'</span></div></div></div>')});card.innerHTML=rows.length?rows.join(''):'<div class="dash-empty">Keine Termine oder Feiertage gefunden</div>';return true}
+  function scrubText(root=document.body){if(!root)return;const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);const nodes=[];while(w.nextNode())nodes.push(w.currentNode);nodes.forEach(n=>{if(banned.test(n.nodeValue)){banned.lastIndex=0;n.nodeValue=clean(n.nodeValue)}})}
+  function patchDashboard(){['buildDashCards','buildDashboard'].forEach(name=>{const old=window[name];if(typeof old==='function'&&!old.__fix5){const wrapped=function(){const r=old.apply(this,arguments);setTimeout(()=>{injectCss();compactDashboard();scrubText()},0);return r};wrapped.__fix5=true;window[name]=wrapped}})}
+  window.openCalendarSettings=function(){const has=!!(window.accessToken&&window.accessToken!=='firebase-auth'&&!window.isDemoMode);const html='<div class="settings-section"><div class="settings-row"><div><div class="settings-title">Google Kalender</div><div class="settings-hint">Termine zentral mit Google synchronisieren.</div></div><label class="switch"><input id="google-sync-toggle" type="checkbox" '+(has?'checked':'')+'><span></span></label></div><button class="btn btn-secondary btn-full" id="google-sync-now" style="margin-top:12px">Jetzt synchronisieren</button></div>';if(typeof openPanel==='function')openPanel('Kalendereinstellungen',html);setTimeout(()=>{const sync=()=>{if(typeof window.loadGoogleEvents==='function')window.loadGoogleEvents()};const b=$('google-sync-now');if(b)b.onclick=sync;const t=$('google-sync-toggle');if(t)t.onchange=()=>{if(t.checked)sync()}},0)};
+  function centralizeGoogleSync(){document.querySelectorAll('button,a').forEach(el=>{const txt=(el.textContent||'').toLowerCase();if(txt.includes('google')&&txt.includes('sync')&&!el.closest('#side-panel'))el.classList.add('google-sync-duplicate')})}
+  function init(){injectCss();patchDashboard();centralizeGoogleSync();compactDashboard();scrubText()}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,250));else setTimeout(init,250);window.addEventListener('load',()=>setTimeout(init,900));setInterval(()=>{centralizeGoogleSync();scrubText()},1200);
+})();
