@@ -5194,6 +5194,88 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
 })();
 
 </script>
+
+<script id="daypanel-range-final-fix">
+/* ── final fix: day detail includes multi-day range events ── */
+(function(){
+  'use strict';
+  const pad=n=>String(n).padStart(2,'0');
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const key=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  const parse=v=>{ if(!v) return null; const d=v instanceof Date?new Date(v):new Date(String(v).slice(0,10)+'T12:00:00'); return isNaN(d)?null:d; };
+  const addDays=(d,n)=>{ const x=new Date(d); x.setDate(x.getDate()+n); return x; };
+  const dateKey=v=>{ const d=v instanceof Date?v:parse(v); return d?key(d):String(v||'').slice(0,10); };
+  const deLong=v=>{ try{return parse(v).toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});}catch(e){return String(v||'');} };
+  const deShort=v=>{ try{return parse(v).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});}catch(e){return String(v||'');} };
+
+  function startOf(ev){
+    return String(ev?.date||ev?.startDate||ev?.fromDate||ev?.dateKey||ev?.start?.date||(ev?.start?.dateTime?ev.start.dateTime.slice(0,10):'')||'').slice(0,10);
+  }
+  function endOf(ev){
+    let x=String(ev?.endDate||ev?.dateEnd||ev?.toDate||ev?.untilDate||'').slice(0,10);
+    if(!x && ev?.end?.date){ const d=parse(ev.end.date); if(d){ d.setDate(d.getDate()-1); x=key(d); } }
+    if(!x && ev?.end?.dateTime) x=String(ev.end.dateTime).slice(0,10);
+    const s=startOf(ev);
+    return (!x || (s && x<s)) ? s : x;
+  }
+  function titleOf(ev){ return String(ev?.title||ev?.summary||ev?.name||'Termin').replace(/\bZeitraum\b\s*:?/gi,'').replace(/\s{2,}/g,' ').trim(); }
+  function timeOf(ev){
+    const allDay=ev?.allDay||!!ev?.start?.date||(!ev?.time&&!ev?.endTime&&!ev?.start?.dateTime);
+    if(allDay) return 'Ganztägig';
+    const a=String(ev?.time||(ev?.start?.dateTime?new Date(ev.start.dateTime).toTimeString().slice(0,5):'')).slice(0,5);
+    const b=String(ev?.endTime||(ev?.end?.dateTime?new Date(ev.end.dateTime).toTimeString().slice(0,5):'')).slice(0,5);
+    return a&&b?a+' – '+b:(a||'Ganztägig');
+  }
+  function isRange(ev){ const s=startOf(ev), e=endOf(ev); return !!(s&&e&&s!==e); }
+  function normalizedRawGoogle(ge){
+    const s=String(ge?.start?.date||(ge?.start?.dateTime?ge.start.dateTime.slice(0,10):'')).slice(0,10);
+    let e='';
+    if(ge?.end?.date){ const d=parse(ge.end.date); if(d){ d.setDate(d.getDate()-1); e=key(d); } }
+    else if(ge?.end?.dateTime) e=String(ge.end.dateTime).slice(0,10);
+    return {id:'g_'+String(ge.id||''),googleEventId:ge.id||'',title:ge.summary||'(Kein Titel)',date:s,startDate:s,endDate:e||s,time:ge?.start?.dateTime?new Date(ge.start.dateTime).toTimeString().slice(0,5):'',endTime:ge?.end?.dateTime?new Date(ge.end.dateTime).toTimeString().slice(0,5):'',allDay:!!ge?.start?.date,color:'blue',source:'google',desc:ge.description||''};
+  }
+  function allEvents(){
+    const out=[];
+    try{ if(typeof window.getAllEvents==='function') out.push(...(window.getAllEvents()||[])); }catch(e){}
+    try{ if(Array.isArray(window.gEvents)) window.gEvents.forEach(ge=>out.push(normalizedRawGoogle(ge))); }catch(e){}
+    try{ if(!out.length && Array.isArray(window.events)) out.push(...window.events); }catch(e){}
+    const seen=new Map();
+    out.forEach(ev=>{
+      const s=startOf(ev); if(!s) return;
+      const id=ev.googleEventId?'g:'+ev.googleEventId:(ev.id?'l:'+ev.id:titleOf(ev)+'|'+s+'|'+endOf(ev));
+      const prev=seen.get(id);
+      if(!prev || (isRange(ev)&&!isRange(prev))) seen.set(id,ev);
+    });
+    return Array.from(seen.values());
+  }
+  function eventsForDay(k, extra){
+    const list=allEvents();
+    if(Array.isArray(extra)) list.push(...extra);
+    const byId=new Map();
+    list.filter(ev=>{const s=startOf(ev),e=endOf(ev);return s&&e&&s<=k&&e>=k;}).forEach(ev=>{
+      const id=ev.googleEventId?'g:'+ev.googleEventId:(ev.id?'l:'+ev.id:titleOf(ev)+'|'+startOf(ev)+'|'+endOf(ev));
+      if(!byId.has(id)) byId.set(id,ev);
+    });
+    return Array.from(byId.values()).sort((a,b)=>{
+      const ar=isRange(a), br=isRange(b); if(ar!==br) return ar?-1:1;
+      return (startOf(a)+(a.time||'')).localeCompare(startOf(b)+(b.time||''));
+    });
+  }
+  window.openDayPanel=function(dt,dayEvs){
+    const k=dateKey(dt instanceof Date?dt:new Date(dt));
+    const evs=eventsForDay(k,dayEvs);
+    let html='<div style="font-size:12px;color:var(--t4);margin-bottom:12px;font-weight:700">'+esc(deLong(k))+'</div>';
+    html+=evs.length?evs.map(ev=>{
+      const range=isRange(ev);
+      const sub=range?deShort(startOf(ev))+' – '+deShort(endOf(ev)):(deShort(startOf(ev))+(ev.desc?' · '+esc(ev.desc):''));
+      const id=esc(ev.id||ev.googleEventId||'');
+      return '<div class="ag-card '+esc(ev.color||'blue')+'" style="margin-bottom:8px" onclick="openEventPanel(\''+id+'\')"><div class="ag-time">'+esc(range?'Ganztägig':timeOf(ev))+'</div><div class="ag-body"><div class="ag-title">'+esc(titleOf(ev))+'</div><div class="ag-desc">'+sub+'</div></div></div>';
+    }).join(''):'<div class="dash-empty">Keine Termine an diesem Tag.</div>';
+    html+='<button type="button" class="btn btn-primary btn-full" style="margin-top:10px" onclick="openEventPanel(null,new Date(\''+k+'T12:00:00\'))">+ Neuer Termin für diesen Tag</button>';
+    if(typeof window.openPanel==='function') window.openPanel((evs.length===1?'1 Termin':evs.length+' Termine'),html);
+  };
+})();
+</script>
 </body>
 </html>
 <script id="change-final-user-fixes-3">
