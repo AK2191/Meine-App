@@ -4307,3 +4307,84 @@ document.addEventListener('touchend',e=>{
   setTimeout(()=>{try{if(typeof buildDashboard==='function')buildDashboard();if(typeof renderCalendar==='function')renderCalendar();}catch(e){}},300);
 })();
 </script>
+<script>
+/* CHANGE PATCH: Sync-Panel bereinigt + Google-Kalender-Sync-Schalter */
+(function(){
+  const PATCH='sync-panel-google-toggle';
+  const KEY='change_google_calendar_sync_enabled';
+  const get=(k,d)=>{try{const v=localStorage.getItem(k); if(v===null)return d; return v==='1'||v==='true'?true:v==='0'||v==='false'?false:JSON.parse(v);}catch(e){return d;}};
+  const set=(k,v)=>{try{localStorage.setItem(k,v?'1':'0');}catch(e){}};
+  const esc2=(s)=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  const googleSyncOn=()=>get(KEY,true)!==false;
+
+  const originalLoadGoogleEvents=window.loadGoogleEvents;
+  window.loadGoogleEvents=async function(){
+    if(!googleSyncOn()){
+      try{window.gEvents=[];}catch(e){}
+      try{ if(window.currentMainView==='calendar'){renderCalendar();renderUpcoming&&renderUpcoming();} if(window.currentMainView==='dashboard')buildDashboard&&buildDashboard(); }catch(e){}
+      return;
+    }
+    if(typeof originalLoadGoogleEvents==='function') return originalLoadGoogleEvents.apply(this,arguments);
+  };
+
+  const originalSyncLocal=window.syncLocalEventToGoogle;
+  window.syncLocalEventToGoogle=async function(ev){
+    if(!googleSyncOn()) return false;
+    if(typeof originalSyncLocal==='function') return originalSyncLocal.apply(this,arguments);
+    return false;
+  };
+
+  const originalReliable=window.syncEventToGoogleReliable;
+  window.syncEventToGoogleReliable=async function(ev){
+    if(!googleSyncOn()){ if(typeof toast==='function')toast('Google-Kalender-Sync ist deaktiviert',''); return false; }
+    if(typeof originalReliable==='function') return originalReliable.apply(this,arguments);
+    if(typeof window.syncLocalEventToGoogle==='function') return window.syncLocalEventToGoogle(ev);
+    return false;
+  };
+
+  window.setGoogleCalendarSyncEnabled=async function(enabled){
+    const on=!!enabled;
+    set(KEY,on);
+    try{
+      if(!on){
+        window.gEvents=[];
+        if(typeof renderCalendar==='function')renderCalendar();
+        if(typeof renderUpcoming==='function')renderUpcoming();
+        if(typeof buildDashboard==='function')buildDashboard();
+        if(typeof toast==='function')toast('Google-Kalender-Sync deaktiviert','');
+      }else{
+        if(!window.accessToken){ if(typeof toast==='function')toast('Bitte zuerst mit Google anmelden','err'); }
+        else{
+          if(typeof toast==='function')toast('Google-Kalender-Sync wird aktualisiert…','');
+          if(typeof originalLoadGoogleEvents==='function') await originalLoadGoogleEvents();
+          const evs=(window.events||[]).filter(ev=>ev && ev.source!=='google' && !ev.googleEventId && !ev.syncedToGoogle);
+          for(const ev of evs.slice(0,25)){
+            try{ if(typeof originalSyncLocal==='function') await originalSyncLocal(ev); }
+            catch(e){ console.warn(PATCH,'sync one',e); }
+          }
+          if(typeof buildDashboard==='function')buildDashboard();
+          if(typeof renderCalendar==='function')renderCalendar();
+          if(typeof toast==='function')toast('Google-Kalender-Sync aktualisiert ✓','ok');
+        }
+      }
+    }catch(e){ console.warn(PATCH,e); if(typeof toast==='function')toast('Google-Kalender-Sync konnte nicht aktualisiert werden','err'); }
+    setTimeout(()=>{try{openPushSettingsPanel&&openPushSettingsPanel();}catch(e){}},160);
+  };
+
+  window.openPushSettingsPanel=function(){
+    const liveOn=get('change_v1_live_sync_enabled', get('live_sync_enabled',true))!==false;
+    const googleOn=googleSyncOn();
+    let online=0; try{ online=liveOn?((window.challengePlayers||[]).filter(p=>p.online).length||0):0; }catch(e){}
+    const googleStatus=googleOn?(window.accessToken?'AKTIV':'ANMELDUNG NÖTIG'):'DEAKTIVIERT';
+    const googleClass=googleOn&&window.accessToken?'status-on':(googleOn?'status-warn':'status-off');
+    const html=
+      '<div class="push-box"><div class="challenge-title">Live- & Kalender-Sync</div><div class="settings-hint" style="margin-top:8px">Push-Benachrichtigungen steuerst du nur noch über die Glocke.</div></div>'+ 
+      '<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">Live-Mitspieler <span class="status-pill '+(liveOn?'status-on':'status-off')+'">'+(liveOn?'VERBUNDEN':'DEAKTIVIERT')+'</span></div><div class="toggle-sub">Aktuell online: '+online+' · zeigt Kontest-Daten im Dashboard und bei Challenges.</div></div><label class="switch"><input type="checkbox" '+(liveOn?'checked':'')+' onchange="setLiveSyncEnabled&&setLiveSyncEnabled(this.checked)"><span class="slider"></span></label></div>'+ 
+      '<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">Google-Kalender-Sync <span class="status-pill '+googleClass+'">'+googleStatus+'</span></div><div class="toggle-sub">Zeigt Google-Termine im Kalender/Dashboard und überträgt lokale Termine zu Google. Beim Aktivieren wird erneut synchronisiert.</div></div><label class="switch"><input type="checkbox" '+(googleOn?'checked':'')+' onchange="setGoogleCalendarSyncEnabled(this.checked)"><span class="slider"></span></label></div>';
+    if(typeof openPanel==='function') openPanel('Live- & Kalender-Sync',html);
+  };
+
+  try{ const btn=document.querySelector('[title="Push & Live-Sync"]'); if(btn)btn.title='Live- & Kalender-Sync'; }catch(e){}
+  setTimeout(()=>{try{ if(!googleSyncOn()){window.gEvents=[];} if(typeof buildDashboard==='function')buildDashboard(); if(typeof renderCalendar==='function')renderCalendar(); }catch(e){}},250);
+})();
+</script>
