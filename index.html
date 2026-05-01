@@ -2002,11 +2002,17 @@ document.addEventListener('touchend',e=>{
     });
   }
   window.getChallengeDayStatus=function(dk){
-    const planned=challengeScheduleForDate(dk);
-    if(!planned.length) return null;
-    const me=(typeof getCurrentPlayerId==='function')?getCurrentPlayerId():((userInfo&&userInfo.email)||'local');
-    const done=planned.filter(ch=>(challengeCompletions||[]).some(c=>c.challengeId===ch.id&&c.playerId===me&&c.date===dk)).length;
-    return {planned:planned.length,done,allDone:done>=planned.length};
+    const me=String((typeof getCurrentPlayerId==='function')?getCurrentPlayerId():((userInfo&&userInfo.email)||'local')).trim().toLowerCase();
+    const completions=(window.challengeCompletions||challengeCompletions||[]).filter(c=>{
+      const player=String(c.playerId||c.userEmail||c.email||'').trim().toLowerCase();
+      return player===me && String(c.date||'')===dk;
+    });
+    const points=completions.reduce((sum,c)=>{
+      const ch=(window.challenges||challenges||[]).find(x=>String(x.id)===String(c.challengeId))||{};
+      return sum+(parseInt(c.points??ch.points??0,10)||0);
+    },0);
+    if(points<=0) return null;
+    return {planned:completions.length,done:completions.length,points,allDone:true};
   };
   function eventRowsForDate(dk){
     return getAllEvents().filter(e=>e.date===dk).sort((a,b)=>(a.time||'99:99').localeCompare(b.time||'99:99'));
