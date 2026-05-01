@@ -545,3 +545,269 @@
   function init(){injectCss();patchDashboard();centralizeGoogleSync();compactDashboard();scrubText()}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,250));else setTimeout(init,250);window.addEventListener('load',()=>setTimeout(init,900));setInterval(()=>{centralizeGoogleSync();scrubText()},1200);
 })();
+
+/* ── 6. continuous multi-day calendar bars ───────────────── */
+(function(){
+  'use strict';
+
+  const pad = n => String(n).padStart(2, '0');
+  const dayMs = 86400000;
+
+  function esc(s){
+    return String(s ?? '').replace(/[&<>"']/g, m => ({
+      '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+    }[m]));
+  }
+
+  function key(d){
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  }
+
+  function parseDate(v){
+    if(!v) return null;
+    const d = v instanceof Date ? new Date(v) : new Date(String(v).slice(0,10) + 'T12:00:00');
+    return isNaN(d) ? null : d;
+  }
+
+  function addDays(d,n){
+    const x = new Date(d);
+    x.setDate(x.getDate() + n);
+    return x;
+  }
+
+  function diffDays(a,b){
+    const aa = new Date(a.getFullYear(), a.getMonth(), a.getDate());
+    const bb = new Date(b.getFullYear(), b.getMonth(), b.getDate());
+    return Math.round((bb - aa) / dayMs);
+  }
+
+  function eventStart(ev){
+    return parseDate(ev.startDate || ev.fromDate || ev.date);
+  }
+
+  function eventEnd(ev){
+    return parseDate(ev.endDate || ev.toDate || ev.untilDate || ev.date);
+  }
+
+  function isMultiDay(ev){
+    const s = eventStart(ev);
+    const e = eventEnd(ev);
+    return !!(s && e && key(s) !== key(e));
+  }
+
+  function colorOf(ev){
+    return ['blue','green','amber','red','purple'].includes(ev.color) ? ev.color : 'blue';
+  }
+
+  function injectCss(){
+    let st = document.getElementById('change-continuous-range-bars-style');
+    if(!st){
+      st = document.createElement('style');
+      st.id = 'change-continuous-range-bars-style';
+      document.head.appendChild(st);
+    }
+
+    st.textContent = `
+      #month-grid .week-row{
+        position:relative!important;
+        overflow:hidden!important;
+      }
+
+      #month-grid .day-cell{
+        position:relative;
+        padding-top:34px!important;
+      }
+
+      #month-grid .ev-chip[data-range-event="1"],
+      #month-grid .ev-chip.range-event,
+      #month-grid .ev-chip.is-range,
+      #month-grid .ev-chip.multi-day,
+      #month-grid .ev-chip[title*="Urlaub"][data-continuous-hidden="1"]{
+        display:none!important;
+      }
+
+      .change-range-bar{
+        position:absolute;
+        top:34px;
+        height:19px;
+        z-index:6;
+        display:flex;
+        align-items:center;
+        padding:0 8px;
+        font-size:10.5px;
+        font-weight:700;
+        line-height:1;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        pointer-events:auto;
+        cursor:pointer;
+        border-radius:0;
+        border:1px solid rgba(45,106,79,.18);
+        background:rgba(45,106,79,.10);
+        color:var(--acc);
+      }
+
+      .change-range-bar.start{
+        border-top-left-radius:8px;
+        border-bottom-left-radius:8px;
+      }
+
+      .change-range-bar.end{
+        border-top-right-radius:8px;
+        border-bottom-right-radius:8px;
+      }
+
+      .change-range-bar.blue{
+        background:rgba(45,106,79,.10);
+        border-color:rgba(45,106,79,.20);
+        color:var(--acc);
+      }
+
+      .change-range-bar.green{
+        background:rgba(22,163,74,.10);
+        border-color:rgba(22,163,74,.20);
+        color:var(--grn);
+      }
+
+      .change-range-bar.amber{
+        background:rgba(217,119,6,.10);
+        border-color:rgba(217,119,6,.20);
+        color:var(--amb);
+      }
+
+      .change-range-bar.red{
+        background:rgba(220,38,38,.09);
+        border-color:rgba(220,38,38,.18);
+        color:var(--red);
+      }
+
+      .change-range-bar.purple{
+        background:rgba(124,58,237,.09);
+        border-color:rgba(124,58,237,.18);
+        color:var(--pur);
+      }
+
+      .change-range-bar:hover{
+        filter:brightness(.98);
+      }
+    `;
+  }
+
+  function getGridStart(){
+    const cur = window.curDate instanceof Date ? window.curDate : new Date();
+    const first = new Date(cur.getFullYear(), cur.getMonth(), 1);
+    const mondayOffset = (first.getDay() + 6) % 7;
+    return addDays(first, -mondayOffset);
+  }
+
+  function getEvents(){
+    try {
+      if(typeof window.getAllEvents === 'function') return window.getAllEvents() || [];
+    } catch(e){}
+    return Array.isArray(window.events) ? window.events : [];
+  }
+
+  function removeOldBars(){
+    document.querySelectorAll('.change-range-bar').forEach(x => x.remove());
+  }
+
+  function hideDuplicateDayChips(events){
+    const titles = new Set(events.map(ev => String(ev.title || '').trim()).filter(Boolean));
+    if(!titles.size) return;
+
+    document.querySelectorAll('#month-grid .ev-chip').forEach(chip => {
+      const txt = String(chip.textContent || '').replace(/\s+/g, ' ').trim();
+      for(const title of titles){
+        if(txt.includes(title)){
+          chip.dataset.continuousHidden = '1';
+          chip.style.display = 'none';
+          break;
+        }
+      }
+    });
+  }
+
+  function renderBars(){
+    injectCss();
+    removeOldBars();
+
+    const grid = document.getElementById('month-grid');
+    if(!grid) return;
+
+    const rows = Array.from(grid.querySelectorAll('.week-row'));
+    if(!rows.length) return;
+
+    const gridStart = getGridStart();
+    const gridEnd = addDays(gridStart, 41);
+
+    const events = getEvents()
+      .filter(isMultiDay)
+      .filter(ev => {
+        const s = eventStart(ev);
+        const e = eventEnd(ev);
+        return s && e && e >= gridStart && s <= gridEnd;
+      });
+
+    hideDuplicateDayChips(events);
+
+    rows.forEach((row, weekIndex) => {
+      const weekStart = addDays(gridStart, weekIndex * 7);
+      const weekEnd = addDays(weekStart, 6);
+
+      events.forEach(ev => {
+        const s = eventStart(ev);
+        const e = eventEnd(ev);
+        if(!s || !e || e < weekStart || s > weekEnd) return;
+
+        const segStart = s > weekStart ? s : weekStart;
+        const segEnd = e < weekEnd ? e : weekEnd;
+
+        const startCol = Math.max(0, diffDays(weekStart, segStart));
+        const endCol = Math.min(6, diffDays(weekStart, segEnd));
+        const span = endCol - startCol + 1;
+
+        const left = `calc(${(startCol / 7) * 100}% + 2px)`;
+        const width = `calc(${(span / 7) * 100}% - 4px)`;
+
+        const bar = document.createElement('div');
+        bar.className =
+          'change-range-bar ' +
+          colorOf(ev) + ' ' +
+          (key(segStart) === key(s) ? 'start ' : '') +
+          (key(segEnd) === key(e) ? 'end' : '');
+
+        bar.style.left = left;
+        bar.style.width = width;
+
+        const isFirstVisibleSegment = key(segStart) === key(s) || weekIndex === 0;
+        bar.textContent = isFirstVisibleSegment ? esc(ev.title || '') : '';
+
+        bar.title = ev.title || '';
+
+        bar.addEventListener('click', evt => {
+          evt.stopPropagation();
+          if(typeof window.openEventPanel === 'function') {
+            window.openEventPanel(ev.id || ev.googleEventId);
+          }
+        });
+
+        row.appendChild(bar);
+      });
+    });
+  }
+
+  const oldRender = window.renderCalendar;
+  if(typeof oldRender === 'function' && !oldRender.__continuousRangeBars){
+    const fixed = function(){
+      const res = oldRender.apply(this, arguments);
+      setTimeout(renderBars, 0);
+      setTimeout(renderBars, 80);
+      return res;
+    };
+    fixed.__continuousRangeBars = true;
+    window.renderCalendar = fixed;
+  }
+
+  window.addEventListener('load', () => setTimeout(renderBars, 500));
+})();
