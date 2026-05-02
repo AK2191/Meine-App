@@ -5145,13 +5145,16 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     function chItem(ch){
       const done=isDoneToday(ch.id);
       const pts=parseInt(ch.points,10)||0;
-      // Optional challenges (spazieren/fitness) never show a link
-      const url=ch._optional?'':(ch.url||ch.video||ch.youtube||ch.youtubeUrl||ch.link||'');
+      // Always show a link: custom URL first, otherwise YouTube search
+      // Optional challenges (spazieren/fitness) skip the link
+      const customUrl=ch.url||ch.video||ch.youtube||ch.youtubeUrl||ch.link||'';
+      const ytSearch='https://www.youtube.com/results?search_query='+encodeURIComponent((ch.title||ch.name||'Sportübung')+' richtige Ausführung');
+      const url=ch._optional?'':(customUrl||ytSearch);
       return `<div class="challenge-item ${done?'challenge-done':''}">
         <div class="challenge-icon">${esc(ch.icon||'🏆')}</div>
         <div class="challenge-body">
           <div class="challenge-name">${esc(ch.title||ch.name||'Challenge')}</div>
-          <div class="challenge-meta">${esc(ch.desc||'')}${ch.desc?' · ':''}${pts} Punkte</div>
+          ${ch.desc?`<div class="challenge-meta">${esc(ch.desc)}</div>`:''}
           ${url?`<a class="challenge-meta" style="color:var(--acc);text-decoration:none;font-weight:600" href="${esc(url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Übung ansehen ↗</a>`:''}
         </div>
         <span class="points-pill">+${pts}</span>
@@ -5202,7 +5205,114 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     try{history.pushState({view:v},'','#/'+v);}catch(e){}
   }
 
-  /* ── CALENDAR CHALLENGE DOTS: override to use myId() ──
+  /* ── CONSOLIDATED SETTINGS PANEL (Zahnrad ⚙) ── */
+  window.openCalendarSettings=function(){
+    const STATE_OPTIONS=window.calendarSettings&&typeof window.STATE_OPTIONS!=='undefined'
+      ?window.STATE_OPTIONS
+      :{ALL:'Alle Bundesländer',BW:'Baden-Württemberg',BY:'Bayern','BY-AUGSBURG':'Bayern · Augsburg',BE:'Berlin',BB:'Brandenburg',HB:'Bremen',HH:'Hamburg',HE:'Hessen',MV:'Mecklenburg-Vorpommern',NI:'Niedersachsen',NW:'Nordrhein-Westfalen',RP:'Rheinland-Pfalz',SL:'Saarland',SN:'Sachsen',ST:'Sachsen-Anhalt',SH:'Schleswig-Holstein',TH:'Thüringen'};
+    const cs=window.calendarSettings||{};
+    const curState=cs.state||'ALL';
+    const calOpts=window.changeCalendarViewOptions||{showHolidays:true,showChallengeDots:true,showWeekNumbers:false};
+    const hasGoogle=!!(window.accessToken&&window.accessToken!=='firebase-auth'&&!window.isDemoMode);
+    const liveOn=localStorage.getItem('change_live_sync_enabled')!=='false';
+
+    const stateSelect=Object.entries(STATE_OPTIONS)
+      .map(([k,v])=>`<option value="${k}" ${k===curState?'selected':''}>${esc(v)}</option>`)
+      .join('');
+
+    function tog(id,label,sub,checked){
+      return `<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">${label}</div>${sub?`<div class="toggle-sub">${sub}</div>`:''}</div><label class="switch"><input type="checkbox" id="${id}" ${checked?'checked':''}><span class="slider"></span></label></div>`;
+    }
+
+    const html=`
+      <div class="section-label" style="margin-top:0">Kalender</div>
+      <div class="fg"><label class="flabel">Bundesland für Feiertage</label>
+        <select class="finput" id="s-state">${stateSelect}</select>
+      </div>
+      ${tog('s-holidays','Feiertage anzeigen','',calOpts.showHolidays)}
+      ${tog('s-dots','Challenge-Punkte im Kalender','Kleine Punkte an Tagen mit erledigten Challenges',calOpts.showChallengeDots)}
+      ${tog('s-kw','Kalenderwochen anzeigen','KW-Nummern links in der Wochenzeile',calOpts.showWeekNumbers)}
+
+      <div class="section-label" style="margin-top:16px">Synchronisation</div>
+      ${tog('s-google','Google Kalender Sync','Termine aus Google Kalender laden und synchronisieren',hasGoogle)}
+      <button class="btn btn-secondary btn-full" id="s-google-sync-now" style="margin-top:6px;margin-bottom:4px">Jetzt synchronisieren</button>
+      ${tog('s-live','Live-Sync (Firebase)','Punkte und Mitspieler in Echtzeit aktualisieren',liveOn)}
+
+      <div class="section-label" style="margin-top:16px">Benachrichtigungen</div>
+      <div id="s-push-info" class="push-status" style="margin-bottom:8px"></div>
+      <button class="btn btn-secondary btn-full" id="s-push-enable">Push-Benachrichtigungen aktivieren</button>
+
+      <div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--b1)">
+        <button class="btn btn-primary btn-full" onclick="window._saveAllSettings()">Einstellungen speichern</button>
+      </div>`;
+
+    if(typeof openPanel==='function') openPanel('Einstellungen',html);
+
+    setTimeout(()=>{
+      // Google sync button
+      const syncNow=document.getElementById('s-google-sync-now');
+      if(syncNow) syncNow.onclick=()=>{
+        if(typeof window.loadGoogleEvents==='function') window.loadGoogleEvents();
+        if(typeof toast==='function') toast('Google Kalender wird synchronisiert…','');
+      };
+
+      // Google toggle
+      const gToggle=document.getElementById('s-google');
+      if(gToggle) gToggle.onchange=()=>{
+        if(gToggle.checked&&typeof window.loadGoogleEvents==='function'){
+          window.loadGoogleEvents();
+          if(typeof toast==='function') toast('Google Kalender wird geladen…','');
+        }
+      };
+
+      // Live sync toggle
+      const lToggle=document.getElementById('s-live');
+      if(lToggle) lToggle.onchange=()=>{
+        localStorage.setItem('change_live_sync_enabled', lToggle.checked?'true':'false');
+        if(lToggle.checked&&typeof window.initFirebaseLive==='function') window.initFirebaseLive();
+      };
+
+      // Push info
+      const pInfo=document.getElementById('s-push-info');
+      if(pInfo){
+        const p=Notification&&Notification.permission;
+        pInfo.textContent=p==='granted'?'✓ Push-Benachrichtigungen sind aktiv':p==='denied'?'✗ Im Browser blockiert — bitte in den Browser-Einstellungen erlauben':'Push noch nicht aktiviert';
+        pInfo.className='push-status '+(p==='granted'?'push-ok':p==='denied'?'push-err':'push-warn');
+      }
+      const pBtn=document.getElementById('s-push-enable');
+      if(pBtn){
+        if(Notification&&Notification.permission==='granted') pBtn.style.display='none';
+        else pBtn.onclick=()=>{
+          Notification&&Notification.requestPermission&&Notification.requestPermission().then(r=>{
+            if(pInfo) pInfo.textContent=r==='granted'?'✓ Aktiviert':'Nicht erlaubt';
+            if(typeof toast==='function') toast(r==='granted'?'Push aktiviert ✓':'Push nicht erlaubt','');
+          });
+        };
+      }
+    },80);
+
+    window._saveAllSettings=function(){
+      // Calendar state
+      const state=document.getElementById('s-state')?.value||'ALL';
+      if(!window.calendarSettings) window.calendarSettings={};
+      window.calendarSettings.state=state;
+      try{if(typeof ls==='function')ls('holiday_state',state);}catch(e){}
+      // View options
+      const opts={
+        showHolidays:!!document.getElementById('s-holidays')?.checked,
+        showChallengeDots:!!document.getElementById('s-dots')?.checked,
+        showWeekNumbers:!!document.getElementById('s-kw')?.checked
+      };
+      window.changeCalendarViewOptions=opts;
+      const KEY='change_calendar_options_v2';
+      localStorage.setItem(KEY,JSON.stringify(opts));
+      // Re-apply calendar styles
+      try{if(typeof window.applyCalendarOptions==='function')window.applyCalendarOptions();}catch(e){}
+      try{if(typeof window.renderCalendar==='function')window.renderCalendar();}catch(e){}
+      if(typeof closePanel==='function') closePanel();
+      if(typeof toast==='function') toast('Einstellungen gespeichert ✓','ok');
+    };
+  };
      Ensures calendar dots and Punkte-Kalender use the same ID
      as completeChallenge. */
   function challengePointsForDate(dk){
