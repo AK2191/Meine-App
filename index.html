@@ -783,18 +783,18 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
           <div class="list-title">Challenges</div>
           <button class="btn btn-ghost btn-sm" onclick="window.resetTodayChallenges&&window.resetTodayChallenges()">Heute zurücksetzen</button>
         </div>
+        <!-- Week bar: full-width, OUTSIDE the two-column grid -->
+        <div id="challenge-week-bar-clean" style="flex-shrink:0"></div>
+        <!-- Two-column layout: challenges left, leaderboard right -->
         <div class="challenge-layout" style="flex:1;min-height:0;overflow-y:auto">
-          <div>
-            <div id="challenge-week-bar-clean"></div>
-            <div class="challenge-card">
-              <div class="challenge-card-head">
-                <div>
-                  <div class="challenge-title">Heute erledigen</div>
-                  <div class="challenge-sub">Ein Klick erledigt eine Challenge und vergibt Punkte</div>
-                </div>
+          <div class="challenge-card">
+            <div class="challenge-card-head">
+              <div>
+                <div class="challenge-title">Heute erledigen</div>
+                <div class="challenge-sub">Ein Klick erledigt eine Challenge und vergibt Punkte</div>
               </div>
-              <div id="challenges-list"></div>
             </div>
+            <div id="challenges-list"></div>
           </div>
           <div class="leader-card">
             <div class="leader-card-head">
@@ -4697,7 +4697,9 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       .dashboard-combined-card .dash-card-body{display:block!important;grid-template-columns:unset!important;padding:0!important}
       .dash-section-label{padding:8px 16px 4px!important;font-size:10.5px!important;font-weight:700!important;
         color:var(--t4)!important;text-transform:uppercase!important;letter-spacing:.4px!important;border-bottom:1px solid var(--b1)!important}
-      #challenge-week-bar-clean{display:block!important;margin:0!important}
+      #challenge-week-bar-clean{display:block!important;flex-shrink:0!important;margin:0!important}
+      /* Hide any duplicate week bar injected inside the layout grid */
+      .challenge-layout #challenge-week-bar-clean{display:none!important}
       .ch-optional-badge{display:inline-block;margin-left:7px;padding:1px 6px;border-radius:999px;
         font-size:9.5px;font-weight:700;color:var(--amb);background:rgba(245,158,11,.12);
         border:1px solid rgba(245,158,11,.22);vertical-align:middle}
@@ -4756,7 +4758,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   }
 
   /* ── ACTIVE CHALLENGES: max 7 normal + optional ── */
-  const isOptional=c=>/spazier|fitness|gehen|walk/i.test(c.title||c.name||'')||!!c.optional;
+  const isOptional=c=>/spazier|fitness/i.test(c.title||c.name||'')||!!c.optional;
 
   function activeChallenges(){
     const td=todayStr();
@@ -5048,12 +5050,9 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     // Ensure today's auto challenges are generated
     try{ if(typeof window.ensureDailyAutoChallenges==='function') window.ensureDailyAutoChallenges(todayStr()); }catch(e){}
 
-    // Refresh week bar
+    // Refresh week bar (let step7's ensureWeekBar handle it — avoids duplicates)
     try{
-      if(typeof window.renderWeekBar==='function'){
-        const bar=$('challenge-week-bar-clean');
-        if(bar) bar.outerHTML=window.renderWeekBar();
-      }
+      if(typeof window.ensureWeekBar==='function') window.ensureWeekBar();
     }catch(e){}
 
     const active=activeChallenges();
@@ -5083,7 +5082,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
 
     let html=normal.map(chItem).join('');
     if(optional.length){
-      html+=`<div class="ch-optional-section">Optional · Spazieren &amp; Fitness</div>`;
+      html+=`<div class="ch-optional-section">Optionale Punkte</div>`;
       html+=optional.map(chItem).join('');
     }
     list$.innerHTML=html||'<div class="dash-empty">Keine Challenges für heute</div>';
