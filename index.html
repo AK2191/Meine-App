@@ -326,55 +326,56 @@ body{
 .us-chip.purple{background:var(--pur-d);color:var(--pur)}
 
 /* ── DASHBOARD ───────────────────────── */
-#dashboard-view{display:none;flex:1;overflow-y:auto;padding:20px 20px 28px;background:var(--bg)}
-.dash-hello{margin-bottom:24px}
-.dash-hello h1{font-size:22px;font-weight:800;color:var(--t1);letter-spacing:-.4px;margin-bottom:3px}
-.dash-hello p{font-size:13px;color:var(--t3)}
-.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
-@media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(3,1fr)}}
+#dashboard-view{display:none;flex:1;overflow-y:auto;padding:24px 24px 32px;background:var(--bg)}
+.dash-hello{margin-bottom:20px}
+.dash-hello h1{font-size:24px;font-weight:800;color:var(--t1);letter-spacing:-.5px;margin-bottom:3px;line-height:1.2}
+.dash-hello p{font-size:13px;color:var(--t4);font-weight:500}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
 @media(max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:480px){.kpi-grid{grid-template-columns:repeat(2,1fr);gap:8px}}
 .kpi-card{
-  background:var(--s1);border:1px solid var(--b1);border-radius:var(--rlg);
-  padding:16px 14px 14px;cursor:pointer;transition:all .15s;box-shadow:var(--sh);
+  background:var(--s1);border:1px solid var(--b1);border-radius:14px;
+  padding:16px 14px 14px;cursor:pointer;transition:all .18s;
+  box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 10px rgba(0,0,0,.05);
 }
 .kpi-card:hover{border-color:var(--b2);transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,.10)}
-.kpi-card.warn{border-color:rgba(217,119,6,.25);background:#FFFBF2}
-.kpi-card.danger{border-color:rgba(220,38,38,.25);background:#FEF9F9}
-.kpi-card.good{border-color:rgba(22,163,74,.25);background:#F2FAF6}
-.kpi-icon-wrap{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.kpi-card.warn{border-color:rgba(217,119,6,.22);background:#FFFCF5}
+.kpi-card.danger{border-color:rgba(220,38,38,.22);background:#FEF9F9}
+.kpi-card.good{border-color:rgba(22,163,74,.22);background:#F2FAF6}
+.kpi-icon-wrap{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
 .kpi-icon-wrap.blue{background:var(--acc-d)}.kpi-icon-wrap.green{background:var(--grn-d)}
 .kpi-icon-wrap.amber{background:var(--amb-d)}.kpi-icon-wrap.red{background:var(--red-d)}
 .kpi-icon-wrap.purple{background:var(--pur-d)}
-.kpi-icon-wrap svg{width:18px;height:18px;stroke-width:1.8}
+.kpi-icon-wrap svg{width:17px;height:17px;stroke-width:1.9}
 .kpi-icon-wrap.blue svg{stroke:var(--acc)}.kpi-icon-wrap.green svg{stroke:var(--grn)}
 .kpi-icon-wrap.amber svg{stroke:var(--amb)}.kpi-icon-wrap.red svg{stroke:var(--red)}
 .kpi-icon-wrap.purple svg{stroke:var(--pur)}
-.kpi-num{font-size:30px;font-weight:800;color:var(--t1);line-height:1;letter-spacing:-1.5px;margin-bottom:4px;font-family:var(--mono)}
+.kpi-num{font-size:28px;font-weight:800;color:var(--t1);line-height:1;letter-spacing:-1px;margin-bottom:4px;font-family:var(--mono)}
 .kpi-num.warn-color{color:var(--amb)}.kpi-num.danger-color{color:var(--red)}.kpi-num.good-color{color:var(--grn)}
-.kpi-label{font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
-.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.kpi-label{font-size:11px;color:var(--t4);font-weight:600;letter-spacing:.3px}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:800px){.dash-grid{grid-template-columns:1fr}}
-.dash-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rlg);overflow:hidden;box-shadow:var(--sh)}
-.dash-card-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--b1)}
-.dash-card-title{font-size:14px;font-weight:700;color:var(--t1)}
-.dash-card-sub{font-size:12px;color:var(--t3)}
-.dash-card-body{max-height:260px;overflow-y:auto}
+.dash-card{background:var(--s1);border:1px solid var(--b1);border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 10px rgba(0,0,0,.05)}
+.dash-card-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 12px;border-bottom:1px solid var(--b1)}
+.dash-card-title{font-size:13px;font-weight:700;color:var(--t1)}
+.dash-card-sub{font-size:11px;color:var(--t4);margin-top:2px}
+.dash-card-body{max-height:280px;overflow-y:auto}
+.dash-section-label{padding:8px 16px 4px;font-size:10.5px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--b1)}
 .dash-row{
-  display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--b1);
+  display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--b1);
   cursor:pointer;transition:background .1s;
 }
 .dash-row:last-child{border-bottom:none}
 .dash-row:hover{background:var(--bg)}
-.dash-row-icon{width:32px;height:32px;border-radius:var(--rsm);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px}
+.dash-row-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
 .dash-row-body{flex:1;min-width:0}
-.dash-row-title{font-size:13px;font-weight:600;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dash-row-sub{font-size:11.5px;color:var(--t3)}
-.dash-row-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.dash-row-title{font-size:12.5px;font-weight:600;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dash-row-sub{font-size:11px;color:var(--t4);margin-top:1px}
+.dash-row-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;white-space:nowrap;flex-shrink:0}
 .badge-red{background:var(--red-d);color:var(--red)}.badge-amber{background:var(--amb-d);color:var(--amb)}
 .badge-green{background:var(--grn-d);color:var(--grn)}.badge-blue{background:var(--acc-d);color:var(--acc)}
 .badge-gray{background:var(--s2);color:var(--t3)}
-.dash-empty{padding:20px 16px;font-size:13px;color:var(--t4);text-align:center}
+.dash-empty{padding:18px 16px;font-size:12.5px;color:var(--t4);text-align:center}
 
 /* ── CHALLENGES ──────────────────────── */
 #challenges-view{display:none;flex:1;overflow:hidden;flex-direction:column}
@@ -715,6 +716,10 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           Kalender
         </button>
+        <button class="h-tab" id="htab-challenges" onclick="setMainView('challenges')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/></svg>
+          Challenges
+        </button>
       </div>
 
       <!-- Cal controls (only shown in calendar) -->
@@ -773,6 +778,38 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
         <div id="agenda-view"></div>
       </div>
 
+      <!-- CHALLENGES (static HTML, always in DOM) -->
+      <div id="challenges-view" style="display:none;flex:1;overflow:hidden;flex-direction:column">
+        <div class="list-header">
+          <div class="list-title">Challenges</div>
+          <button class="btn btn-ghost btn-sm" onclick="window.resetTodayChallenges&&window.resetTodayChallenges()">Heute zurücksetzen</button>
+        </div>
+        <div class="challenge-layout" style="flex:1;min-height:0;overflow-y:auto">
+          <div>
+            <div id="challenge-week-bar-clean"></div>
+            <div class="challenge-card">
+              <div class="challenge-card-head">
+                <div>
+                  <div class="challenge-title">Heute erledigen</div>
+                  <div class="challenge-sub">Ein Klick erledigt eine Challenge und vergibt Punkte</div>
+                </div>
+              </div>
+              <div id="challenges-list"></div>
+            </div>
+          </div>
+          <div class="leader-card">
+            <div class="leader-card-head">
+              <div>
+                <div class="challenge-title">Kontest · Rangliste</div>
+                <div class="challenge-sub"></div>
+              </div>
+              <button class="btn btn-secondary btn-sm" onclick="window.openParticipantPanel&&window.openParticipantPanel()">Mitspieler</button>
+            </div>
+            <div id="leaderboard-list"></div>
+          </div>
+        </div>
+      </div>
+
     </div><!-- /content -->
 
     <!-- Bottom Nav -->
@@ -785,6 +822,10 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
         <button class="bnav-item" id="bnav-calendar" onclick="setMainView('calendar')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           <span class="bnav-label">Kalender</span>
+        </button>
+        <button class="bnav-item" id="bnav-challenges" onclick="setMainView('challenges')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/></svg>
+          <span class="bnav-label">Challenges</span>
         </button>
       </div>
     </div>
@@ -3786,6 +3827,7 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
 </script>
 </body>
 </html>
+
 <script id="range-google-final-fix">
 /* RANGE DATES + GOOGLE SOURCE MARKERS */
 (function(){
@@ -4625,3 +4667,459 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
 })();
 </script>
 
+
+<!-- ═══════════════════════════════════════
+     CHANGE · FINAL STABLE OVERRIDE
+     Letztes Skript — gewinnt alle Konflikte.
+     Fixes: Dashboard-Design, Feiertage, Challenges.
+═══════════════════════════════════════ -->
+<script id="change-final-stable">
+(function(){
+  'use strict';
+
+  /* ── UTILS ── */
+  const $  = id => document.getElementById(id);
+  const pad = n  => String(n).padStart(2,'0');
+  const esc = s  => String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const pad2 = n => String(n).padStart(2,'0');
+
+  /* ── INJECT FINAL CSS (overrides all previous style hacks) ── */
+  function injectFinalStyle(){
+    /* Neutralize older scripts that hide kpi-grid */
+    const old=document.getElementById('change-clean-dashboard-style');
+    if(old) old.textContent='#kpi-grid{display:grid!important}';
+
+    let st=document.getElementById('change-final-stable-style');
+    if(!st){ st=document.createElement('style'); st.id='change-final-stable-style'; document.head.appendChild(st); }
+    st.textContent=`
+      /* Show KPI grid — override older scripts that hide it */
+      #kpi-grid{display:grid!important}
+      /* Clean dash grid — 2 equal columns */
+      #dash-grid,.dash-grid{
+        display:grid!important;
+        grid-template-columns:1fr 1fr!important;
+        gap:14px!important;
+        margin-bottom:0!important;
+        align-items:start!important;
+      }
+      @media(max-width:800px){
+        #dash-grid,.dash-grid{grid-template-columns:1fr!important}
+      }
+      /* Dash card body scroll height */
+      .dash-card-body{max-height:300px!important;overflow-y:auto!important}
+      /* Disable old combined card forced layout */
+      .dashboard-combined-card .dash-card-body{
+        display:block!important;
+        grid-template-columns:unset!important;
+        padding:0!important;
+      }
+      /* Section labels in dash-card-body */
+      .dash-section-label{
+        padding:8px 16px 4px!important;
+        font-size:10.5px!important;
+        font-weight:700!important;
+        color:var(--t4)!important;
+        text-transform:uppercase!important;
+        letter-spacing:.4px!important;
+        border-bottom:1px solid var(--b1)!important;
+      }
+      /* Week bar — keep compact in challenges */
+      #challenge-week-bar-clean{display:block!important;margin:0!important}
+    `;
+  }
+
+  function todayStr(){
+    const d=new Date();
+    return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
+  }
+  function dkOf(d){
+    return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
+  }
+  function diffDays(dk){
+    if(!dk)return 999;
+    const d=new Date(dk+'T12:00:00'),t=new Date();
+    t.setHours(0,0,0,0);d.setHours(0,0,0,0);
+    return Math.round((d-t)/86400000);
+  }
+  function fmtShort(dk){
+    if(!dk)return '';
+    const d=new Date(dk+'T12:00:00');
+    return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+  }
+
+  /* ── HOLIDAYS: iterate days, call getHolidaysForDate ── */
+  function upcomingHolidays(limit){
+    const out=[];
+    if(typeof window.getHolidaysForDate!=='function') return out;
+    const today=new Date();
+    for(let i=0;i<120&&out.length<(limit||4);i++){
+      const d=new Date(today);d.setDate(today.getDate()+i);
+      const dk=dkOf(d);
+      try{
+        (window.getHolidaysForDate(dk)||[]).forEach(h=>{
+          if(out.length<(limit||4)) out.push({date:dk,name:h.name||h.title||'Feiertag'});
+        });
+      }catch(e){}
+    }
+    return out;
+  }
+
+  /* ── MY PLAYER ID ── */
+  function myId(){
+    try{
+      const fi=typeof firebase!=='undefined'&&firebase.auth&&firebase.auth().currentUser;
+      if(fi&&fi.email) return fi.email.toLowerCase();
+    }catch(e){}
+    const info=window.userInfo||{};
+    return ((info.email||info.uid||'')).toLowerCase()||'local-user';
+  }
+
+  /* ── ALL EVENTS (safe) ── */
+  function allEvents(){
+    try{
+      if(typeof window.getAllEvents==='function'){
+        return (window.getAllEvents()||[]).filter(e=>e&&e.date);
+      }
+    }catch(e){}
+    return (window.events||[]).filter(e=>e&&e.date);
+  }
+
+  /* ── ACTIVE CHALLENGES ── */
+  function activeChallenges(){
+    const td=todayStr();
+    return (window.challenges||[]).filter(c=>
+      c&&c.active!==false&&
+      (!c.date||c.date===td||c.recurrence==='daily')
+    );
+  }
+
+  /* ── IS DONE TODAY ── */
+  function isDoneToday(chId,playerId){
+    const pid=(playerId||myId()).toLowerCase();
+    const td=todayStr();
+    return (window.challengeCompletions||[]).some(c=>
+      String(c.challengeId)===String(chId)&&
+      String(c.date||'').slice(0,10)===td&&
+      String(c.playerId||c.userEmail||c.email||'').toLowerCase()===pid
+    );
+  }
+
+  /* ── PLAYER STATS ── */
+  function playerStats(){
+    const td=todayStr(), me=myId();
+    const by={};
+    (window.challengePlayers||[]).forEach(p=>{
+      const id=String(p.email||p.id||'').toLowerCase();
+      if(!id||/^demo/.test(id)) return;
+      by[id]={id,name:p.name||p.email||id,total:0,today:0,count:0,online:!!p.online};
+    });
+    (window.challengeCompletions||[]).forEach(c=>{
+      const id=String(c.playerId||c.userEmail||c.email||'').toLowerCase();
+      if(!id||/^demo/.test(id)) return;
+      if(!by[id]) by[id]={id,name:c.playerName||id,total:0,today:0,count:0,online:id===me};
+      const pts=parseInt(c.points,10)||0;
+      by[id].total+=pts; by[id].count++;
+      if(String(c.date||'').slice(0,10)===td) by[id].today+=pts;
+    });
+    if(!by[me]){
+      const info=window.userInfo||{};
+      by[me]={id:me,name:info.name||me,total:0,today:0,count:0,online:true};
+    }
+    by[me].online=true;
+    return Object.values(by).sort((a,b)=>b.total-a.total);
+  }
+
+  /* ══════════════════════════════════════
+     BUILD DASHBOARD — definitive version
+  ══════════════════════════════════════ */
+  function buildDashboard(){
+    /* Greeting */
+    const g$=$('dash-greeting'), s$=$('dash-sub');
+    if(g$){
+      const h=new Date().getHours();
+      const gr=h<12?'Guten Morgen':h<17?'Guten Tag':'Guten Abend';
+      const name=(window.userInfo&&window.userInfo.name||'').split(' ')[0];
+      g$.textContent=gr+(name?', '+name:'');
+    }
+    if(s$){
+      s$.textContent=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    }
+
+    /* KPI cards */
+    const kpi=$('kpi-grid');
+    if(kpi){
+      const active=activeChallenges();
+      const done=active.filter(c=>isDoneToday(c.id)).length;
+      const total=active.length;
+      const st=playerStats().find(p=>p.id===myId())||{today:0,total:0};
+      const evs=allEvents();
+      const week7=evs.filter(e=>{const d=diffDays(e.date);return d>=0&&d<=7;}).length;
+      const allDone=done>=total&&total>0;
+
+      kpi.innerHTML=
+        `<div class="kpi-card ${allDone?'good':''}" onclick="setMainView('challenges')">
+          <div class="kpi-icon-wrap green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 6 9 17l-5-5"/></svg></div>
+          <div class="kpi-num ${allDone?'good-color':''}">${done}<span style="font-size:.45em;font-weight:600;color:var(--t4);letter-spacing:0">/${total}</span></div>
+          <div class="kpi-label">Challenges heute</div>
+        </div>
+        <div class="kpi-card" onclick="setMainView('challenges')">
+          <div class="kpi-icon-wrap amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg></div>
+          <div class="kpi-num">${st.today}</div>
+          <div class="kpi-label">Punkte heute</div>
+        </div>
+        <div class="kpi-card" onclick="setMainView('challenges')">
+          <div class="kpi-icon-wrap purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/></svg></div>
+          <div class="kpi-num">${st.total}</div>
+          <div class="kpi-label">Punkte gesamt</div>
+        </div>
+        <div class="kpi-card ${week7>0?'warn':''}" onclick="setMainView('calendar')">
+          <div class="kpi-icon-wrap blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+          <div class="kpi-num ${week7>0?'warn-color':''}">${week7}</div>
+          <div class="kpi-label">Termine diese Woche</div>
+        </div>`;
+    }
+
+    /* Dash grid */
+    const grid=$('dash-grid');
+    if(!grid) return;
+
+    /* — Calendar card rows — */
+    const holidays=upcomingHolidays(4);
+    const upcomingEvs=allEvents()
+      .filter(e=>diffDays(e.date)>=0&&diffDays(e.date)<=60)
+      .sort((a,b)=>(a.date+(a.time||'')).localeCompare(b.date+(b.time||'')))
+      .slice(0,6);
+
+    let calRows='';
+
+    holidays.forEach(h=>{
+      const diff=diffDays(h.date);
+      const badge=diff===0?'Heute':diff===1?'Morgen':fmtShort(h.date);
+      const badgeClass=diff===0?'badge-red':diff===1?'badge-amber':'badge-amber';
+      calRows+=`<div class="dash-row" onclick="setMainView('calendar')">
+        <div class="dash-row-icon" style="background:var(--amb-d)">🎉</div>
+        <div class="dash-row-body">
+          <div class="dash-row-title">${esc(h.name)}</div>
+          <div class="dash-row-sub">Feiertag</div>
+        </div>
+        <span class="dash-row-badge ${badgeClass}">${esc(badge)}</span>
+      </div>`;
+    });
+
+    upcomingEvs.forEach(ev=>{
+      const diff=diffDays(ev.date);
+      const badge=diff===0?'Heute':diff===1?'Morgen':fmtShort(ev.date);
+      const badgeClass=diff===0?'badge-red':diff<=3?'badge-amber':'badge-blue';
+      const colBg=ev.color==='red'?'var(--red-d)':ev.color==='green'?'var(--grn-d)':ev.color==='amber'?'var(--amb-d)':ev.color==='purple'?'var(--pur-d)':'var(--acc-d)';
+      const title=esc(ev.title||ev.summary||'Termin').replace(/\bZeitraum\b\s*:?\s*/gi,'').trim();
+      calRows+=`<div class="dash-row" onclick="setMainView('calendar')">
+        <div class="dash-row-icon" style="background:${colBg}">📅</div>
+        <div class="dash-row-body">
+          <div class="dash-row-title">${title}</div>
+          <div class="dash-row-sub">${ev.time?ev.time+' Uhr':'Ganztägig'}</div>
+        </div>
+        <span class="dash-row-badge ${badgeClass}">${badge}</span>
+      </div>`;
+    });
+
+    if(!calRows) calRows='<div class="dash-empty">Keine Termine oder Feiertage</div>';
+
+    /* — Challenge card rows — */
+    const active=activeChallenges();
+    const pending=active.filter(c=>!isDoneToday(c.id)).slice(0,4);
+
+    let chRows=pending.map(c=>`<div class="dash-row" onclick="setMainView('challenges')">
+      <div class="dash-row-icon" style="background:var(--amb-d)">${esc(c.icon||'🏆')}</div>
+      <div class="dash-row-body">
+        <div class="dash-row-title">${esc(c.title||c.name||'Challenge')}</div>
+        <div class="dash-row-sub">${parseInt(c.points,10)||0} Punkte</div>
+      </div>
+      <span class="dash-row-badge badge-amber">offen</span>
+    </div>`).join('');
+
+    if(!chRows) chRows='<div class="dash-empty">Alle Challenges heute erledigt ✓</div>';
+
+    /* — Leaderboard rows — */
+    const players=playerStats().slice(0,4);
+    const medals=['🥇','🥈','🥉'];
+    let plRows=players.map((p,i)=>`<div class="dash-row" onclick="setMainView('challenges')">
+      <div class="dash-row-icon" style="background:var(--s2);font-size:13px">${medals[i]||String(i+1)}</div>
+      <div class="dash-row-body">
+        <div class="dash-row-title">${esc(p.name||p.id)}</div>
+        <div class="dash-row-sub">Heute ${p.today} P · Gesamt ${p.total} P</div>
+      </div>
+    </div>`).join('');
+    if(!plRows) plRows='<div class="dash-empty">Noch keine Mitspieler</div>';
+
+    /* — Render — */
+    grid.innerHTML=
+      `<div class="dash-card">
+        <div class="dash-card-head">
+          <div>
+            <div class="dash-card-title">📅 Kalender</div>
+            <div class="dash-card-sub">Feiertage &amp; nächste Termine</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="setMainView('calendar')">Öffnen →</button>
+        </div>
+        <div class="dash-card-body">${calRows}</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-head">
+          <div>
+            <div class="dash-card-title">🏆 Challenges &amp; Mitspieler</div>
+            <div class="dash-card-sub">Heute &amp; Rangliste</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="setMainView('challenges')">Öffnen →</button>
+        </div>
+        <div class="dash-card-body">
+          <div class="dash-section-label">Heute offen</div>
+          ${chRows}
+          <div class="dash-section-label" style="border-top:1px solid var(--b1)">Rangliste</div>
+          ${plRows}
+        </div>
+      </div>`;
+  }
+
+  /* ══════════════════════════════════════
+     RENDER CHALLENGES — definitive version
+  ══════════════════════════════════════ */
+  function renderChallenges(){
+    const list$=$('challenges-list'), board$=$('leaderboard-list');
+    if(!list$||!board$) return;
+
+    /* Ensure daily auto challenges exist */
+    try{ if(typeof window.ensureDailyAutoChallenges==='function') window.ensureDailyAutoChallenges(todayStr()); }catch(e){}
+
+    const active=activeChallenges();
+    const me=myId();
+
+    list$.innerHTML=active.length?active.map(ch=>{
+      const done=isDoneToday(ch.id);
+      const pts=parseInt(ch.points,10)||0;
+      const url=ch.url||ch.video||ch.youtube||ch.youtubeUrl||ch.link||'';
+      return `<div class="challenge-item ${done?'challenge-done':''}">
+        <div class="challenge-icon">${esc(ch.icon||'🏆')}</div>
+        <div class="challenge-body">
+          <div class="challenge-name">${esc(ch.title||ch.name||'Challenge')}</div>
+          <div class="challenge-meta">${esc(ch.desc||'')}${ch.desc?' · ':''}${pts} Punkte</div>
+          ${url?`<a class="challenge-meta" style="color:var(--acc);text-decoration:none;font-weight:600" href="${esc(url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Übung ansehen ↗</a>`:''}
+        </div>
+        <span class="points-pill">+${pts}</span>
+        ${done
+          ?`<button class="btn btn-success btn-sm" disabled>Erledigt ✓</button>
+             <button class="btn btn-undo btn-sm" title="Rückgängig" onclick="window.undoChallenge&&window.undoChallenge('${esc(ch.id)}')">↶</button>`
+          :`<button class="btn btn-primary btn-sm" onclick="window.completeChallenge&&window.completeChallenge('${esc(ch.id)}')">Erledigen</button>`
+        }
+      </div>`;
+    }).join(''):'<div class="dash-empty">Keine Challenges für heute</div>';
+
+    /* Leaderboard */
+    const players=playerStats();
+    const medals=['🥇','🥈','🥉'];
+    board$.innerHTML=players.length?players.map((p,i)=>`
+      <div class="leader-row clickable" onclick="window.openPlayerRecentPanel&&window.openPlayerRecentPanel('${esc(p.id)}','${esc(p.name||p.id)}')">
+        <div class="leader-rank">${medals[i]||String(i+1)}</div>
+        <div style="flex:1;min-width:0">
+          <div class="leader-name">${esc(p.name||p.id)}${p.id===me?' <span style=\"font-size:10px;color:var(--t4)\">· Du</span>':''}${p.online?'<span class="live-dot"></span>':''}</div>
+          <div class="leader-detail">Heute: ${p.today} P · Gesamt: ${p.total} P · ${p.count} erledigt</div>
+        </div>
+        <div class="leader-score">${p.total}</div>
+      </div>`).join(''):'<div class="dash-empty">Noch keine Mitspieler</div>';
+  }
+
+  /* ══════════════════════════════════════
+     SET MAIN VIEW — definitive version
+  ══════════════════════════════════════ */
+  function setMainView(v){
+    if(!['dashboard','calendar','challenges'].includes(v)) v='dashboard';
+    window.currentMainView=v;
+
+    const views={
+      'dashboard-view': v==='dashboard'?'block':'none',
+      'cal-body':        v==='calendar'?'flex':'none',
+      'challenges-view': v==='challenges'?'flex':'none',
+      'cal-controls':    v==='calendar'?'flex':'none',
+    };
+    Object.entries(views).forEach(([id,disp])=>{
+      const el=document.getElementById(id);
+      if(el) el.style.display=disp;
+    });
+
+    /* Tab highlights */
+    document.querySelectorAll('.h-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.bnav-item').forEach(t=>t.classList.remove('active'));
+    document.getElementById('htab-'+v)?.classList.add('active');
+    document.getElementById('bnav-'+v)?.classList.add('active');
+
+    /* Renders */
+    if(v==='dashboard') buildDashboard();
+    if(v==='calendar'){ window.renderCalendar&&window.renderCalendar(); window.renderUpcoming&&window.renderUpcoming(); }
+    if(v==='challenges') renderChallenges();
+
+    /* URL */
+    try{ history.pushState({view:v},'','#/'+v); }catch(e){}
+  }
+
+  /* ── EXPOSE ── */
+  /* Mark __fix5=true so compactDashboard() wrapper is skipped */
+  buildDashboard.__fix5=true;
+  renderChallenges.__fix5=true;
+  window.buildDashboard=buildDashboard;
+  window.buildDashboard.__fix5=true;
+  window.buildDashCards=buildDashboard;  /* alias some callers use */
+  window.buildDashCards.__fix5=true;
+  window.buildKPIs=function(){buildDashboard();};
+  window.renderChallenges=renderChallenges;
+  window.setMainView=setMainView;
+
+  /* Refresh dashboard when google events or firebase completions arrive */
+  const _prevLoadGoogle=window.loadGoogleEvents;
+  window.loadGoogleEvents=async function(){
+    const r=_prevLoadGoogle?await _prevLoadGoogle.apply(this,arguments):[];
+    try{if(window.currentMainView==='dashboard') buildDashboard();}catch(e){}
+    return r;
+  };
+
+  /* ── INIT ── */
+  function init(){
+    injectFinalStyle();
+    /* routing */
+    const route=location.hash.replace('#/','').replace('#','')||'dashboard';
+    const view=['dashboard','calendar','challenges'].includes(route)?route:'dashboard';
+    setMainView(view);
+  }
+
+  window.addEventListener('popstate',e=>{
+    const v=(e.state&&e.state.view)||(location.hash.replace('#/',''))||'dashboard';
+    setMainView(v);
+  });
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',()=>setTimeout(init,200));
+  } else {
+    setTimeout(init,200);
+  }
+  window.addEventListener('load',()=>{
+    setTimeout(init,500);
+    /* Retry buildDashboard after firebase completions may have loaded */
+    setTimeout(()=>{
+      try{if(window.currentMainView==='dashboard'||!window.currentMainView) buildDashboard();}catch(e){}
+    },2000);
+    /* Final override: fires after step7's last timer (5200ms) to ensure we win */
+    setTimeout(()=>{
+      injectFinalStyle();
+      window.buildDashboard=buildDashboard;
+      window.buildDashboard.__fix5=true;
+      window.renderChallenges=renderChallenges;
+      window.setMainView=setMainView;
+      try{
+        const v=window.currentMainView||'dashboard';
+        if(v==='dashboard') buildDashboard();
+        if(v==='challenges') renderChallenges();
+      }catch(e){}
+    },5600);
+  });
+
+})();
+
+</script>
