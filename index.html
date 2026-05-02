@@ -3784,6 +3784,116 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
   };
 })();
 </script>
+
+<script id="change-step9-clean-final">
+(function(){
+  'use strict';
+  const q=(s,r=document)=>r.querySelector(s);
+  const qa=(s,r=document)=>Array.from(r.querySelectorAll(s));
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const pad=n=>String(n).padStart(2,'0');
+  const key=d=>{if(typeof d==='string')return d.slice(0,10);const x=new Date(d);return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate())};
+  const today=()=>key(new Date());
+  const norm=s=>String(s||'').toLowerCase().trim();
+  const read=(k,def)=>{try{if(typeof window.ls==='function'){const v=window.ls(k);return v===undefined?def:v}const raw=localStorage.getItem(k);return raw==null?def:JSON.parse(raw)}catch(e){return def}};
+  const write=(k,v)=>{try{if(typeof window.ls==='function')window.ls(k,v);else localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+  const toast=(m,t)=>{try{if(typeof window.toast==='function')window.toast(m,t||'');else console.log(m)}catch(e){}};
+
+  const SPORT_POOL=[
+    ['sport_squat_10','🏋️','10 Kniebeugen','Mache 10 saubere Kniebeugen. Füße schulterbreit, Rücken gerade.',10],
+    ['sport_wall_push_10','💪','10 Wand-Liegestütze','Hände auf Schulterhöhe an die Wand, Körper gerade, kontrolliert beugen.',10],
+    ['sport_plank_20','⏱️','20 Sekunden Plank','Halte einen stabilen Unterarmstütz. Knie am Boden ist okay.',12],
+    ['sport_calf_20','🦵','20 Wadenheben','Fersen langsam anheben und kontrolliert wieder absenken.',8],
+    ['sport_march_2','🚶','2 Minuten Marschieren','Marschieren auf der Stelle, Arme locker mitschwingen.',8],
+    ['sport_shoulder_30','🔄','30 Sekunden Schulterkreisen','Schultern langsam nach hinten und vorne kreisen.',6],
+    ['sport_wall_sit_30','🦵','30 Sekunden Wandsitz','Rücken an die Wand, Knie ungefähr 90 Grad, ruhig halten.',8],
+    ['sport_glute_12','🧘','12 Glute Bridges','Rückenlage, Hüfte kontrolliert anheben und senken.',8],
+    ['sport_lunge_10','🚶','10 Ausfallschritte','Je Seite 5 kontrollierte Ausfallschritte.',10],
+    ['sport_arm_circle_30','🌀','30 Sekunden Armkreisen','Arme seitlich ausstrecken und kleine Kreise machen.',6],
+    ['sport_superman_12','🦸','12 Superman','Bauchlage, Arme und Beine leicht anheben, Rücken kontrolliert aktivieren.',10],
+    ['sport_side_steps_30','↔️','30 Sekunden Seit Schritte','Seitlich nach links und rechts gehen, locker bleiben.',6],
+    ['sport_hip_mob_60','🧘','60 Sekunden Hüfte mobilisieren','Hüfte langsam kreisen und sanft bewegen.',6],
+    ['sport_ankle_60','🦶','60 Sekunden Fußgelenke mobilisieren','Beide Fußgelenke kreisen und locker bewegen.',6],
+    ['sport_knee_lift_20','🚶','20 Knieheben','Abwechselnd die Knie locker anheben.',8],
+    ['sport_good_morning_12','🙆','12 Good Mornings','Hände an die Hüfte, Rücken gerade, Oberkörper leicht vorbeugen.',8],
+    ['sport_reverse_fly_12','🪽','12 Reverse Fly ohne Gewicht','Oberkörper leicht vor, Arme kontrolliert nach außen führen.',8],
+    ['sport_dead_bug_12','🐞','12 Dead Bugs','Rückenlage, diagonal Arm und Bein langsam strecken.',10],
+    ['sport_bird_dog_12','🐕','12 Bird Dogs','Vierfüßlerstand, diagonal Arm und Bein strecken.',10],
+    ['sport_side_plank_15','⏱️','15 Sekunden Seitenstütz je Seite','Seitlich abstützen, Knievariante ist okay.',12],
+    ['sport_sit_to_stand_10','🪑','10 Aufstehen vom Stuhl','Ohne Schwung vom Stuhl aufstehen und wieder hinsetzen.',8],
+    ['sport_step_touch_45','🎵','45 Sekunden Step Touch','Seitliche Schritte im lockeren Rhythmus.',7],
+    ['sport_back_stretch_60','🧘','60 Sekunden Rücken dehnen','Rücken sanft rund machen und wieder lösen.',6],
+    ['sport_chest_open_45','🙆','45 Sekunden Brust öffnen','Schultern nach hinten, Brustkorb sanft öffnen.',6],
+    ['sport_hamstring_60','🦵','60 Sekunden Beinrückseite dehnen','Beinrückseite links und rechts sanft dehnen.',6],
+    ['sport_quad_60','🦵','60 Sekunden Oberschenkel dehnen','Oberschenkelvorderseite links und rechts dehnen.',6],
+    ['sport_neck_45','🙆','45 Sekunden Nacken lockern','Kopf langsam zur Seite neigen, nicht ziehen.',6],
+    ['sport_toe_taps_30','🦶','30 Toe Taps','Fußspitzen abwechselnd locker antippen.',7],
+    ['sport_punches_45','🥊','45 Sekunden lockere Punches','Arme locker nach vorne bewegen, Rumpf stabil.',8],
+    ['sport_mountain_slow_16','⛰️','16 langsame Mountain Climbers','Langsam und kontrolliert, je Seite 8.',10],
+    ['sport_half_squat_12','🏋️','12 halbe Kniebeugen','Nur halb tief gehen, sauber und kontrolliert.',8],
+    ['sport_balance_30','⚖️','30 Sekunden Balance je Seite','Auf einem Bein stehen, bei Bedarf festhalten.',8],
+    ['sport_stairs_2','🪜','2 Minuten Treppe oder Step','Locker Treppe gehen oder auf einen Step steigen.',10],
+    ['sport_high_reach_20','🙌','20 mal nach oben strecken','Arme nach oben strecken, lang machen, lösen.',6],
+    ['sport_wrist_45','✋','45 Sekunden Handgelenke mobilisieren','Handgelenke kreisen und sanft bewegen.',5],
+    ['sport_core_breathe_60','🌬️','60 Sekunden Rumpfspannung + Atmung','Bauch leicht anspannen und ruhig atmen.',6],
+    ['sport_floor_touch_12','🧘','12 langsame Vorbeugen','Langsam Richtung Boden, nur so weit angenehm.',8],
+    ['sport_seated_twist_12','🪑','12 Sitzende Rotationen','Aufrecht sitzen und Oberkörper sanft links/rechts drehen.',6],
+    ['sport_scaps_15','💪','15 Schulterblatt-Züge','Schulterblätter sanft zusammenziehen und lösen.',7],
+    ['sport_cool_walk_3','🚶','3 Minuten locker gehen','Gehe 3 Minuten locker durch den Raum oder draußen.',8]
+  ].map(x=>({id:x[0],icon:x[1],title:x[2],name:x[2],desc:x[3],points:x[4],active:true,category:'sport',type:'Sport',url:'https://www.youtube.com/results?search_query='+encodeURIComponent(x[2]+' richtig ausführen')}));
+  const OPTIONAL=[
+    {id:'sport_walk_10_optional',icon:'🚶',title:'10 Minuten spazieren gehen',name:'10 Minuten spazieren gehen',desc:'Gehe 10 Minuten locker spazieren.',points:15,active:true,category:'sport',type:'Sport',optional:true},
+    {id:'sport_fitness_30_optional',icon:'🏋️',title:'Fitness gehen · mindestens 30 Minuten',name:'Fitness gehen · mindestens 30 Minuten',desc:'Leichtes bis mittleres Training für mindestens 30 Minuten.',points:30,active:true,category:'sport',type:'Sport',optional:true}
+  ];
+  function user(){const u=window.userInfo||{};const email=norm(u.email||read('user_email','')||'');const name=String(u.name||read('user_name','')||email||'').trim();return {id:email,name,email,picture:u.picture||u.photoURL||''}}
+  function playerKey(p){return norm((p&& (p.email||p.id))||p||'')}
+  function isDemo(p){const s=norm((p&&((p.name||'')+' '+(p.email||'')+' '+(p.id||'')))||p);return !s||/demo|demo@example\.com|ohne anmeldung|gast|anonymous|mitspieler$/.test(s)}
+  function completions(){let a=[];try{a=Array.isArray(window.challengeCompletions)?window.challengeCompletions:read('challenge_completions',[])}catch(e){};return Array.isArray(a)?a:[]}
+  function saveCompletions(a){window.challengeCompletions=a;write('challenge_completions',a);try{write('change_completions',a)}catch(e){}}
+  function completionUser(c){return norm(c.userEmail||c.email||c.playerEmail||c.playerId||c.uid||'')}
+  function currentPlayers(){const me=user();let arr=[];try{arr=Array.isArray(window.challengePlayers)?window.challengePlayers:read('challenge_players',[])}catch(e){};arr=(Array.isArray(arr)?arr:[]).filter(p=>!isDemo(p));if(me.email&&!arr.some(p=>playerKey(p)===me.email))arr.push({id:me.email,email:me.email,name:me.name||me.email,picture:me.picture,online:true});const seen=new Set();arr=arr.filter(p=>{const k=playerKey(p);if(!k||seen.has(k))return false;seen.add(k);return true}).map(p=>({...p,name:String(p.name||p.email||p.id||'').replace(/^Mitspieler$/i,'').trim()||p.email||p.id}));window.challengePlayers=arr;write('challenge_players',arr);return arr}
+  function pointsForDate(k,id=user().id){return completions().filter(c=>String(c.date||'').slice(0,10)===k&&completionUser(c)===id).reduce((s,c)=>s+(parseInt(c.points,10)||0),0)}
+  function stats(id){const t=today();let totalPoints=0,todayPoints=0,totalCount=0;completions().forEach(c=>{if(completionUser(c)!==id)return;const p=parseInt(c.points,10)||0;totalPoints+=p;totalCount++;if(String(c.date||'').slice(0,10)===t)todayPoints+=p});return {totalPoints,todayPoints,totalCount}}
+  function seedShuffle(list,k){let seed=String(k).split('').reduce((a,c)=>a+c.charCodeAt(0),0)+17;const rnd=()=>{seed=(seed*9301+49297)%233280;return seed/233280};return list.slice().sort(()=>rnd()-.5)}
+  function daily(){const t=today();let saved=read('change_daily_sports_v2',null);if(!saved||saved.date!==t||!Array.isArray(saved.ids)||saved.ids.length!==7){saved={date:t,ids:seedShuffle(SPORT_POOL,t).slice(0,7).map(x=>x.id)};write('change_daily_sports_v2',saved)}const map=new Map(SPORT_POOL.map(x=>[x.id,x]));return saved.ids.map(id=>map.get(id)).filter(Boolean).concat(OPTIONAL)}
+  function challengeById(id){return daily().find(c=>String(c.id)===String(id))||SPORT_POOL.find(c=>String(c.id)===String(id))||OPTIONAL.find(c=>String(c.id)===String(id))}
+  function done(id){const me=user().id,t=today();return completions().some(c=>String(c.challengeId)===String(id)&&String(c.date||'').slice(0,10)===t&&completionUser(c)===me)}
+
+  window.getCurrentPlayerId=()=>user().id;
+  window.getVisibleContestPlayers=currentPlayers;
+  window.getPlayerPointSummary=id=>stats(norm(id||user().id));
+  window.getChallengePointsForDate=k=>pointsForDate(String(k).slice(0,10));
+  window.getChallengeDayStatus=k=>{const p=pointsForDate(String(k).slice(0,10));return p>0?{points:p,done:true,allDone:true}:null};
+  window.isChallengeDoneToday=(id)=>done(id);
+  window.buildDefaultChallenges=()=>SPORT_POOL.map(x=>({...x}));
+  window.ensureDailyAutoChallenges=()=>daily().filter(c=>!c.optional);
+
+  function ensureChallengeCalendar(){const view=q('#challenges-view');if(!view)return null;q('#challenge-week-bar-clean')?.remove();qa('.challenge-mini-card',view).forEach(e=>e.remove());let card=q('#challenge-week-points-card');const layout=q('.challenge-layout',view);if(!card&&layout){card=document.createElement('div');card.id='challenge-week-points-card';card.className='challenge-week-card';card.innerHTML='<div class="challenge-week-head"><div><div class="challenge-week-title">Punkte-Kalender</div><div class="challenge-week-sub">Aktuelle Woche · nur Challenge-Punkte</div></div><div class="challenge-week-actions"><button class="btn btn-ghost btn-sm" data-dir="-1">← Letzte Woche</button><button class="btn btn-secondary btn-sm" data-dir="0">Heute</button><button class="btn btn-ghost btn-sm" data-dir="1">Nächste Woche →</button></div></div><div id="challenge-week-points-grid" class="challenge-week-grid"></div>';view.insertBefore(card,layout);card.querySelector('[data-dir="-1"]').onclick=()=>{window.__challengeWeekOffset=(window.__challengeWeekOffset||0)-1;renderChallengeMiniCalendar()};card.querySelector('[data-dir="0"]').onclick=()=>{window.__challengeWeekOffset=0;renderChallengeMiniCalendar()};card.querySelector('[data-dir="1"]').onclick=()=>{window.__challengeWeekOffset=(window.__challengeWeekOffset||0)+1;renderChallengeMiniCalendar()};}return card}
+  function monday(d){const x=new Date(d);x.setHours(12,0,0,0);x.setDate(x.getDate()-((x.getDay()+6)%7));return x}
+  function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
+  window.renderChallengeMiniCalendar=function(){const card=ensureChallengeCalendar();if(!card)return;const grid=q('#challenge-week-points-grid');if(!grid)return;const base=addDays(new Date(),(window.__challengeWeekOffset||0)*7),start=monday(base),days=Array.from({length:7},(_,i)=>addDays(start,i));const sub=q('.challenge-week-sub',card);if(sub)sub.textContent=((window.__challengeWeekOffset||0)===0?'Aktuelle Woche':(window.__challengeWeekOffset<0?'Letzte Woche':'Nächste Woche'))+' · nur Challenge-Punkte';grid.innerHTML=days.map((d,i)=>{const k=key(d),p=pointsForDate(k);return '<div class="challenge-week-day '+(k===today()?'is-today ':'')+(p?'has-points':'empty')+'"><div class="challenge-week-day-name">'+['MO','DI','MI','DO','FR','SA','SO'][i]+'</div><div class="challenge-week-day-date">'+pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.</div><div class="challenge-week-day-points">'+(p?p+' P':'0 P')+'</div></div>'}).join('')};
+
+  window.renderChallenges=function(){currentPlayers();ensureChallengeCalendar();const list=q('#challenges-list'),board=q('#leaderboard-list');if(!list||!board)return;const rows=daily(),normal=rows.filter(c=>!c.optional),optional=rows.filter(c=>c.optional);const row=ch=>{const is=done(ch.id),pts=parseInt(ch.points,10)||0,url=ch.optional?'':ch.url;return '<div class="challenge-item '+(is?'challenge-done':'')+'"><div class="challenge-icon">'+esc(ch.icon||'🏃')+'</div><div class="challenge-body"><div class="challenge-name">'+esc(ch.title||ch.name)+'</div><div class="challenge-meta">'+esc(ch.desc||'')+' · '+pts+' Punkte</div>'+(url?'<a class="exercise-link" href="'+esc(url)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">So geht die Übung</a>':'')+'</div><span class="points-pill">+'+pts+'</span>'+(is?'<button class="btn btn-success btn-sm" disabled>Erledigt</button><button class="btn btn-undo btn-sm" title="Heute rückgängig machen" onclick="undoChallenge(\''+esc(ch.id)+'\')">↶</button>':'<button class="btn btn-primary btn-sm" onclick="completeChallenge(\''+esc(ch.id)+'\')">Erledigen</button>')+'</div>'};list.innerHTML=normal.map(row).join('')+'<div class="section-label" style="padding:14px 16px 6px">Optionale Sportpunkte</div>'+optional.map(row).join('');const players=currentPlayers().sort((a,b)=>stats(playerKey(b)).totalPoints-stats(playerKey(a)).totalPoints);board.innerHTML=players.length?players.map((p,i)=>{const id=playerKey(p),s=stats(id),med=i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);return '<div class="leader-row clickable" onclick="openPlayerRecentPanel&&openPlayerRecentPanel(\''+esc(id)+'\',\''+esc(p.name||p.email||id)+'\')"><div class="leader-rank">'+med+'</div><div><div class="leader-name">'+esc(p.name||p.email||id)+(p.online?'<span class="live-dot"></span>':'')+'</div><div class="leader-detail">Heute: '+s.todayPoints+' P · Gesamt: '+s.totalPoints+' P · '+s.totalCount+' erledigt</div></div><div class="leader-score">'+s.totalPoints+'</div></div>'}).join(''):'<div class="dash-empty">Noch keine Google-Mitspieler.</div>';renderChallengeMiniCalendar()};
+  window.completeChallenge=function(id){const me=user();if(!me.email){toast('Bitte zuerst mit Google anmelden.','err');return}const ch=challengeById(id);if(!ch){toast('Challenge nicht gefunden','err');return}if(done(id)){toast('Bereits erledigt','');return}const c={id:'cc_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7),challengeId:String(id),playerId:me.email,userEmail:me.email,email:me.email,playerName:me.name||me.email,date:today(),points:parseInt(ch.points,10)||0,createdAt:new Date().toISOString()};saveCompletions(completions().concat(c));currentPlayers();try{if(typeof window.publishCompletionToFirestore==='function')window.publishCompletionToFirestore(c)}catch(e){};try{renderChallenges();renderChallengeMiniCalendar();window.renderCalendar&&window.renderCalendar();window.buildDashboard&&window.buildDashboard()}catch(e){}toast('+'+c.points+' Punkte ✓','ok')};
+  window.undoChallenge=function(id){const me=user().id,t=today();let removed=0;saveCompletions(completions().filter(c=>{const hit=String(c.challengeId)===String(id)&&String(c.date||'').slice(0,10)===t&&completionUser(c)===me;if(hit)removed++;return !hit}));try{renderChallenges();renderChallengeMiniCalendar();window.renderCalendar&&window.renderCalendar();window.buildDashboard&&window.buildDashboard()}catch(e){}toast(removed?'Challenge zurückgesetzt':'Nichts zurückzusetzen','')};
+  window.resetTodayChallenges=function(){const me=user().id,t=today();saveCompletions(completions().filter(c=>!(String(c.date||'').slice(0,10)===t&&completionUser(c)===me)));try{renderChallenges();renderChallengeMiniCalendar();window.renderCalendar&&window.renderCalendar();window.buildDashboard&&window.buildDashboard()}catch(e){}toast('Heute zurückgesetzt','')};
+
+  window.openPushSettingsPanel=function(){const push=read('push_enabled',false)===true||((window.Notification&&Notification.permission==='granted')&&!!read('fcm_token',''));const live=read('live_sync_enabled',false)===true;const html='<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">Push-Benachrichtigungen <span class="status-pill '+(push?'status-on':'status-off')+'">'+(push?'AKTIV':'INAKTIV')+'</span></div><div class="toggle-sub">Benachrichtigungen steuerst du über die Glocke.</div></div><label class="switch"><input type="checkbox" '+(push?'checked':'')+' onchange="setPushNotificationsEnabled(this.checked)"><span class="slider"></span></label></div><div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">Live-Mitspieler <span class="status-pill '+(live?'status-on':'status-off')+'">'+(live?'VERBUNDEN':'DEAKTIVIERT')+'</span></div><div class="toggle-sub">Synchronisiert Kontest-Teilnehmer und erledigte Übungen über Firebase.</div></div><label class="switch"><input type="checkbox" '+(live?'checked':'')+' onchange="setLiveSyncEnabled(this.checked)"><span class="slider"></span></label></div>';if(typeof openPanel==='function')openPanel('Push & Live-Sync',html)};
+  window.setLiveSyncEnabled=function(on){write('live_sync_enabled',!!on);try{if(on&&typeof window.initFirebaseLive==='function')window.initFirebaseLive()}catch(e){}toast(on?'Live-Mitspieler aktiviert':'Live-Mitspieler deaktiviert',on?'ok':'');openPushSettingsPanel()};
+
+  const oldOpenCal=window.openCalendarSettings;
+  window.openCalendarSettings=function(){try{if(typeof oldOpenCal==='function'){oldOpenCal();setTimeout(()=>{const body=q('#panel-body')||q('.panel-body')||document; if(body&&!q('#toggle-google-sync',body)){const row=document.createElement('div');row.className='toggle-row';const googleOn=read('google_calendar_sync_enabled',!!window.accessToken);row.innerHTML='<div class="toggle-copy"><div class="toggle-title">Google-Kalender-Sync</div><div class="toggle-sub">Google-Termine im Kalender/Dashboard anzeigen und lokale Termine übertragen.</div></div><label class="switch"><input type="checkbox" id="toggle-google-sync" '+(googleOn?'checked':'')+'><span class="slider"></span></label>';const save=q('button.btn-primary.btn-full',body);body.insertBefore(row,save||null)}},0);return}}catch(e){} };
+  const oldSaveCal=window.saveCalSettings;
+  window.saveCalSettings=function(){write('google_calendar_sync_enabled',!!q('#toggle-google-sync')?.checked);try{if(q('#toggle-google-sync')?.checked&&typeof window.loadGoogleEvents==='function')window.loadGoogleEvents()}catch(e){};if(typeof oldSaveCal==='function')return oldSaveCal();};
+
+  function installStyle(){let st=q('#change-step9-clean-style');if(!st){st=document.createElement('style');st.id='change-step9-clean-style';document.head.appendChild(st)}st.textContent='#challenge-week-bar-clean,.challenge-mini-card{display:none!important}.btn-undo{background:rgba(239,68,68,.08)!important;border:1px solid rgba(239,68,68,.25)!important;color:#dc2626!important;min-width:36px!important}.challenge-week-card{margin:0 18px 14px;background:#fff;border:1px solid var(--b1);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}.challenge-week-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--b1)}.challenge-week-title{font-weight:900}.challenge-week-sub{font-size:12px;color:var(--t4);margin-top:2px}.challenge-week-actions{display:flex;gap:6px}.challenge-week-grid{display:grid!important;grid-template-columns:repeat(7,1fr)}.challenge-week-day{min-height:76px;padding:12px;border-right:1px solid var(--b1);background:#fff}.challenge-week-day:last-child{border-right:0}.challenge-week-day.is-today{background:rgba(45,106,79,.06);box-shadow:inset 0 0 0 1px rgba(45,106,79,.22)}.challenge-week-day-name{font-size:11px;font-weight:850;color:var(--t4)}.challenge-week-day-date{font-size:16px;font-weight:950;margin-top:4px}.challenge-week-day-points{font-size:12px;font-weight:950;color:var(--acc);margin-top:8px}.demo-btn,[onclick="startDemo()"],button[onclick="startDemo()"]{display:none!important}'}
+  function init(){installStyle();currentPlayers();q('#challenge-week-bar-clean')?.remove();if((window.currentMainView||'')==='challenges')renderChallenges();if((window.currentMainView||'')==='dashboard'&&window.buildDashboard)window.buildDashboard();}
+  const oldSet=window.setMainView;window.setMainView=function(v){if(typeof oldSet==='function')oldSet(v);setTimeout(()=>{if(v==='challenges')renderChallenges();if(v==='dashboard'&&window.buildDashboard)window.buildDashboard()},0)};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,80));else setTimeout(init,80);
+  window.addEventListener('load',()=>[200,800,1800].forEach(ms=>setTimeout(init,ms)));
+})();
+</script>
+
 </body>
 </html>
 <script id="range-google-final-fix">
