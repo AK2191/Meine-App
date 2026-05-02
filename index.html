@@ -783,8 +783,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
           <div class="list-title">Challenges</div>
           <button class="btn btn-ghost btn-sm" onclick="window.resetTodayChallenges&&window.resetTodayChallenges()">Heute zurücksetzen</button>
         </div>
-        <!-- Week bar: full-width, OUTSIDE the two-column grid -->
-        <div id="challenge-week-bar-clean" style="flex-shrink:0"></div>
+        <!-- Week bar injected here dynamically by ensureWeekBar() -->
         <!-- Two-column layout: challenges left, leaderboard right -->
         <div class="challenge-layout" style="flex:1;min-height:0;overflow-y:auto">
           <div class="challenge-card">
@@ -4698,8 +4697,10 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       .dash-section-label{padding:8px 16px 4px!important;font-size:10.5px!important;font-weight:700!important;
         color:var(--t4)!important;text-transform:uppercase!important;letter-spacing:.4px!important;border-bottom:1px solid var(--b1)!important}
       #challenge-week-bar-clean{display:block!important;flex-shrink:0!important;margin:0!important}
-      /* Hide any duplicate week bar injected inside the layout grid */
-      .challenge-layout #challenge-week-bar-clean{display:none!important}
+      /* Safety net: hide any second/third week card that older scripts inject */
+      .challenge-week-card+.challenge-week-card{display:none!important}
+      /* Also hide week cards inside the two-column layout (wrong position) */
+      .challenge-layout .challenge-week-card{display:none!important}
       .ch-optional-badge{display:inline-block;margin-left:7px;padding:1px 6px;border-radius:999px;
         font-size:9.5px;font-weight:700;color:var(--amb);background:rgba(245,158,11,.12);
         border:1px solid rgba(245,158,11,.22);vertical-align:middle}
@@ -5052,6 +5053,54 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       </div>`;
   }
 
+  /* ── OVERRIDE renderWeekBar: use myId() so points always match completeChallenge ── */
+  function buildWeekBar(offsetWeeks){
+    offsetWeeks=offsetWeeks||0;
+    const me=myId();
+    const today=new Date();
+    const day=(today.getDay()+6)%7;
+    const mon=new Date(today);
+    mon.setDate(today.getDate()-day+(offsetWeeks*7));
+    const days=Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d;});
+    const DE=['Mo','Di','Mi','Do','Fr','Sa','So'];
+    const td=todayStr();
+    function pts(dk){
+      return (window.challengeCompletions||[]).reduce((s,c)=>{
+        if(String(c.date||'').slice(0,10)===dk&&String(c.playerId||c.userEmail||c.email||'').toLowerCase()===me)
+          s+=parseInt(c.points,10)||0;
+        return s;
+      },0);
+    }
+    const cells=days.map((d,i)=>{
+      const k=dkOf(d), p=pts(k), isT=k===td;
+      return `<div class="challenge-week-day ${isT?'today is-today':''} ${p>0?'has-points':'empty'}">
+        <div class="cwd-name challenge-week-day-name">${DE[i]}</div>
+        <div class="cwd-date challenge-week-day-date">${d.getDate()}.</div>
+        <div class="cwd-points challenge-week-day-points">${p>0?p+' P':'–'}</div>
+      </div>`;
+    }).join('');
+    return `<div id="challenge-week-bar-clean" class="challenge-week-card">
+      <div class="challenge-card-head">
+        <div><div class="challenge-title">Punkte-Woche</div><div class="challenge-sub">Mo – So · Challenge-Punkte</div></div>
+      </div>
+      <div class="challenge-week-grid">${cells}</div>
+    </div>`;
+  }
+  window.renderWeekBar=()=>buildWeekBar(0);
+  // Also expose for navigation (routing script uses these)
+  window.prevWeek=function(){
+    const bar=$('challenge-week-bar-clean');
+    if(bar){const prev=parseInt(bar.dataset.offset||0)-1;bar.outerHTML=buildWeekBar(prev);$('challenge-week-bar-clean').dataset.offset=prev;}
+  };
+  window.nextWeek=function(){
+    const bar=$('challenge-week-bar-clean');
+    if(bar){const next=parseInt(bar.dataset.offset||0)+1;bar.outerHTML=buildWeekBar(next);$('challenge-week-bar-clean').dataset.offset=next;}
+  };
+  window.goToCurrentWeek=function(){
+    const bar=$('challenge-week-bar-clean');
+    if(bar){bar.outerHTML=buildWeekBar(0);}
+  };
+
   /* ══════════════════════════════════════
      RENDER CHALLENGES
   ══════════════════════════════════════ */
@@ -5062,9 +5111,30 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     // Ensure today's auto challenges are generated
     try{ if(typeof window.ensureDailyAutoChallenges==='function') window.ensureDailyAutoChallenges(todayStr()); }catch(e){}
 
-    // Refresh week bar (let step7's ensureWeekBar handle it — avoids duplicates)
+    // Render week bar — use ensureWeekBar (inserts before .challenge-layout if missing)
+    // then remove any duplicate .challenge-week-card elements
     try{
-      if(typeof window.ensureWeekBar==='function') window.ensureWeekBar();
+      if(typeof window.ensureWeekBar==='function'){
+        window.ensureWeekBar();
+      } else {
+        // Fallback: inject directly
+        const view=$('challenges-view');
+        const layout=view&&view.querySelector('.challenge-layout');
+        let bar=$('challenge-week-bar-clean');
+        if(!bar&&view&&layout){
+          bar=document.createElement('div');
+          bar.id='challenge-week-bar-clean';
+          view.insertBefore(bar,layout);
+        }
+        if(bar) bar.outerHTML=buildWeekBar(0);
+      }
+      // Remove any duplicate week cards (keep only the first one)
+      setTimeout(()=>{
+        const view=$('challenges-view');
+        if(!view) return;
+        const cards=[...view.querySelectorAll('.challenge-week-card')];
+        if(cards.length>1) cards.slice(1).forEach(c=>c.remove());
+      },0);
     }catch(e){}
 
     const active=activeChallenges();
