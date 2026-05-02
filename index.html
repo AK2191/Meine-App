@@ -4760,22 +4760,31 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   /* ── ACTIVE CHALLENGES: max 7 normal + optional ── */
   const isOptional=c=>/spazier|fitness/i.test(c.title||c.name||'')||!!c.optional;
 
+  // Remove these specific challenges from the list entirely
+  const BLACKLIST=['spazieren gehen für 10'];
+  const isBlacklisted=c=>BLACKLIST.some(b=>String(c.title||c.name||'').toLowerCase().includes(b));
+
   function activeChallenges(){
     const td=todayStr();
     const all=(window.challenges||[]).filter(c=>
-      c&&c.active!==false&&(!c.date||c.date===td||c.recurrence==='daily')
+      c&&c.active!==false&&(!c.date||c.date===td||c.recurrence==='daily')&&!isBlacklisted(c)
     );
     const normal=all.filter(c=>!isOptional(c));
     const optional=all.filter(isOptional);
+    // Deduplicate optional by normalised title
+    const seenOpt=new Set();
+    const dedupOpt=optional.filter(c=>{
+      const k=String(c.title||c.name||'').toLowerCase().replace(/\s+/g,' ').trim();
+      if(seenOpt.has(k))return false; seenOpt.add(k); return true;
+    });
     // Deterministic 7-pick based on date seed
     const seed=td.replace(/-/g,'').split('').reduce((a,c)=>a*31+c.charCodeAt(0),0);
     const sorted=[...normal].sort((a,b)=>String(a.id).localeCompare(String(b.id)));
-    // Rotate by seed to vary daily selection
     const offset=seed%Math.max(sorted.length,1);
     const rotated=[...sorted.slice(offset),...sorted.slice(0,offset)];
     const picked=rotated.slice(0,7);
     return [...picked.map(c=>({...c,_optional:false})),
-            ...optional.map(c=>({...c,_optional:true}))];
+            ...dedupOpt.map(c=>({...c,_optional:true}))];
   }
 
   /* ── IS DONE TODAY ── */
@@ -4814,8 +4823,10 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     try{if(typeof ls==='function')ls('challenge_completions',window.challengeCompletions);}catch(e){}
     // Sync to Firestore if available
     try{if(typeof window.publishCompletionToFirestore==='function')window.publishCompletionToFirestore(rec);}catch(e){}
+    // Refresh all views
     try{renderChallenges();}catch(e){}
     try{buildDashboard();}catch(e){}
+    try{if(window.currentMainView==='calendar'&&typeof window.renderCalendar==='function')window.renderCalendar();}catch(e){}
     try{if(typeof toast==='function')toast('+'+pts+' Punkte ✓','ok');}catch(e){}
   };
 
@@ -4839,6 +4850,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     }catch(e){}
     try{renderChallenges();}catch(e){}
     try{buildDashboard();}catch(e){}
+    try{if(window.currentMainView==='calendar'&&typeof window.renderCalendar==='function')window.renderCalendar();}catch(e){}
     try{if(typeof toast==='function')toast(removed.length?'Zurückgesetzt':'Nichts zurückzusetzen','');}catch(e){}
   };
 
@@ -5063,7 +5075,8 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     function chItem(ch){
       const done=isDoneToday(ch.id);
       const pts=parseInt(ch.points,10)||0;
-      const url=ch.url||ch.video||ch.youtube||ch.youtubeUrl||ch.link||'';
+      // Optional challenges (spazieren/fitness) never show a link
+      const url=ch._optional?'':(ch.url||ch.video||ch.youtube||ch.youtubeUrl||ch.link||'');
       return `<div class="challenge-item ${done?'challenge-done':''}">
         <div class="challenge-icon">${esc(ch.icon||'🏆')}</div>
         <div class="challenge-body">
@@ -5119,6 +5132,24 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     try{history.pushState({view:v},'','#/'+v);}catch(e){}
   }
 
+  /* ── CALENDAR CHALLENGE DOTS: override to use myId() ──
+     Ensures calendar dots and Punkte-Kalender use the same ID
+     as completeChallenge. */
+  function challengePointsForDate(dk){
+    const me=myId(), td=String(dk||'').slice(0,10);
+    if(!td||me==='local-user') return 0;
+    return (window.challengeCompletions||[]).reduce((sum,c)=>{
+      const pid=String(c.playerId||c.userEmail||c.email||'').toLowerCase();
+      if(String(c.date||'').slice(0,10)===td&&pid===me) sum+=parseInt(c.points,10)||0;
+      return sum;
+    },0);
+  }
+  window.getChallengePointsForDate=challengePointsForDate;
+  window.getChallengeDayStatus=function(dk){
+    const pts=challengePointsForDate(dk);
+    return pts>0?{points:pts,done:true,allDone:true}:null;
+  };
+
   /* ── EXPOSE ── */
   buildDashboard.__fix5=true; renderChallenges.__fix5=true;
   window.buildDashboard=buildDashboard; window.buildDashboard.__fix5=true;
@@ -5152,6 +5183,8 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       window.buildDashboard=buildDashboard; window.buildDashboard.__fix5=true;
       window.renderChallenges=renderChallenges;
       window.setMainView=setMainView;
+      window.getChallengeDayStatus=function(dk){const p=challengePointsForDate(dk);return p>0?{points:p,done:true,allDone:true}:null;};
+      window.getChallengePointsForDate=challengePointsForDate;
       injectFinalStyle();
       const v=window.currentMainView||'dashboard';
       if(v==='dashboard') buildDashboard();
@@ -5162,6 +5195,8 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       window.buildDashboard=buildDashboard; window.buildDashboard.__fix5=true;
       window.renderChallenges=renderChallenges;
       window.setMainView=setMainView;
+      window.getChallengeDayStatus=function(dk){const p=challengePointsForDate(dk);return p>0?{points:p,done:true,allDone:true}:null;};
+      window.getChallengePointsForDate=challengePointsForDate;
       injectFinalStyle();
       const v=window.currentMainView||'dashboard';
       if(v==='dashboard') buildDashboard();
