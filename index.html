@@ -3935,6 +3935,151 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
   setTimeout(()=>{try{if(window.currentMainView==='dashboard')window.buildDashboard()}catch(e){}},250);
 })();
 </script>
+
+<script id="cleanup-regression-fix-2026-05-02">
+(function(){
+  'use strict';
+  const $=id=>document.getElementById(id);
+  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const pad=n=>String(n).padStart(2,'0');
+  const dayKey=d=>{try{if(typeof dateKey==='function')return dateKey(d)}catch(e){} const x=d instanceof Date?d:new Date(d); return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate())};
+  const today=()=>dayKey(new Date());
+  const getStore=(name,fallback)=>{try{ if(typeof eval(name)!=='undefined') return eval(name); }catch(e){} try{return window[name]??fallback}catch(e){return fallback}};
+  const setStore=(name,val)=>{try{ eval(name+' = val'); }catch(e){} try{window[name]=val}catch(e){}};
+  const readLS=(k,d)=>{try{const v=localStorage.getItem(k); if(v==null)return d; return JSON.parse(v)}catch(e){return d}};
+  const writeLS=(k,v)=>{try{ if(typeof ls==='function')ls(k,v); else localStorage.setItem(k,JSON.stringify(v)); }catch(e){try{localStorage.setItem(k,JSON.stringify(v))}catch(_){}}};
+  function account(){
+    let fu=null; try{fu=(window.firebase&&firebase.auth&&firebase.auth().currentUser)||null}catch(e){}
+    const u=getStore('userInfo',{})||{};
+    const email=String((fu&&fu.email)||u.email||u.mail||'').trim().toLowerCase();
+    const uid=String((fu&&fu.uid)||u.uid||'').trim();
+    const name=(fu&&fu.displayName)||u.name||email||'Du';
+    const picture=(fu&&fu.photoURL)||u.picture||u.photoURL||'';
+    return {id:email||uid||'local-user',email,uid,name,picture};
+  }
+  function syncArrays(){
+    let cps=getStore('challengePlayers',[]); if(!Array.isArray(cps)) cps=[];
+    let cms=getStore('challengeCompletions',[]); if(!Array.isArray(cms)) cms=[];
+    let chs=getStore('challenges',[]); if(!Array.isArray(chs)) chs=[];
+    if(!cms.length) cms=readLS('challenge_completions',[]);
+    if(!chs.length) chs=readLS('challenges',[]);
+    const a=account();
+    const by=new Map();
+    cps.forEach(p=>{const id=String(p?.email||p?.id||p?.uid||'').toLowerCase(); if(id && !['du','ich','me','local-user'].includes(id)) by.set(id,{...p,id,email:p.email||id});});
+    cms.forEach(c=>{let id=String(c?.playerId||c?.userEmail||c?.email||'').toLowerCase(); if(['du','ich','me','local-user',''].includes(id)) id=a.id; if(id) by.set(id,{...(by.get(id)||{}),id,email:id,name:(by.get(id)?.name)||c.playerName||c.userName||id});});
+    if(a.id) by.set(a.id,{...(by.get(a.id)||{}),id:a.id,email:a.email||a.id,uid:a.uid,name:a.name,picture:a.picture,online:true});
+    cps=[...by.values()].filter(p=>!String(p.name||p.email||p.id||'').toLowerCase().match(/^(du|ich|me)$/));
+    setStore('challengePlayers',cps); setStore('challengeCompletions',cms); setStore('challenges',chs);
+    return {players:cps,completions:cms,challenges:chs,account:a};
+  }
+  function playerIdOf(c){const a=account();let id=String(c?.playerId||c?.userEmail||c?.email||c?.userId||'').toLowerCase(); if(!id||['du','ich','me','local-user'].includes(id)) id=a.id; return id;}
+  function isDone(chId){const {completions,account:a}=syncArrays(), td=today(); return completions.some(c=>String(c.challengeId)===String(chId)&&String(c.date||'').slice(0,10)===td&&playerIdOf(c)===a.id);}
+  function persistChallenges(){const {players,completions,challenges}=syncArrays(); writeLS('challenge_players',players); writeLS('challenge_completions',completions); writeLS('challenges',challenges); try{persistChangeState&&persistChangeState()}catch(e){} }
+  function statsFor(id){const {completions}=syncArrays(); const td=today(); let totalPoints=0,todayPoints=0,totalCount=0; completions.forEach(c=>{if(playerIdOf(c)!==id)return; const p=parseInt(c.points,10)||0; totalPoints+=p; totalCount++; if(String(c.date||'').slice(0,10)===td)todayPoints+=p;}); return {totalPoints,todayPoints,totalCount};}
+
+  // 1) Navigation sauber: Kalender-Steuerung nur im Kalender; keine Sichtbarkeit in anderen Reitern.
+  window.setMainView=function(view){
+    const v=view||'dashboard';
+    try{window.currentMainView=currentMainView=v}catch(e){window.currentMainView=v}
+    ['dashboard-view','cal-body','challenges-view'].forEach(id=>{const el=$(id); if(el)el.style.display='none'});
+    const controls=$('cal-controls'); if(controls)controls.style.display='none';
+    if(v==='calendar'){
+      const cal=$('cal-body'); if(cal)cal.style.display='flex';
+      if(controls)controls.style.display='flex';
+      try{renderCalendar&&renderCalendar()}catch(e){}
+    }else if(v==='challenges'){
+      if(!$('challenges-view') && typeof installChallengeView==='function') installChallengeView();
+      const chv=$('challenges-view'); if(chv)chv.style.display='flex';
+      try{renderChallenges&&renderChallenges()}catch(e){}
+    }else{
+      const dash=$('dashboard-view'); if(dash)dash.style.display='block';
+      try{buildDashboard&&buildDashboard()}catch(e){}
+    }
+    document.querySelectorAll('.h-tab,.bnav-item').forEach(x=>x.classList.remove('active'));
+    $('htab-'+v)?.classList.add('active'); $('bnav-'+v)?.classList.add('active');
+  };
+
+  // 2) Unterste Kalender-Zeile „Demnächst“ entfernen.
+  function removeUpcoming(){const u=$('upcoming-strip'); if(u)u.remove();}
+  window.renderUpcoming=function(){removeUpcoming();};
+
+  // 3) Google-Sync nur in Kalender-Einstellungen; Sync-Panel nur Live-Sync.
+  const googleKey='change_google_calendar_sync_enabled';
+  const googleOn=()=>{try{return localStorage.getItem(googleKey)!=='0'&&localStorage.getItem(googleKey)!=='false'}catch(e){return true}};
+  const setGoogle=v=>{try{localStorage.setItem(googleKey,v?'1':'0')}catch(e){}};
+  window.openPushSettingsPanel=function(){
+    const liveOn=readLS('live_sync_enabled',true)!==false && readLS('change_v1_live_sync_enabled',true)!==false;
+    const online=liveOn?syncArrays().players.filter(p=>p.online).length:0;
+    const html='<div class="push-box"><div class="challenge-title">Live-Sync</div><div class="settings-hint" style="margin-top:8px">Push steuerst du über die Glocke. Google-Kalender-Sync liegt nur in den Kalender-Einstellungen.</div></div>'+ 
+      '<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">Live-Mitspieler <span class="status-pill '+(liveOn?'status-on':'status-off')+'">'+(liveOn?'VERBUNDEN':'DEAKTIVIERT')+'</span></div><div class="toggle-sub">Aktuell online: '+online+' · synchronisiert Mitspieler und erledigte Challenges.</div></div><label class="switch"><input type="checkbox" '+(liveOn?'checked':'')+' onchange="setLiveSyncEnabled&&setLiveSyncEnabled(this.checked)"><span class="slider"></span></label></div>';
+    openPanel&&openPanel('Live-Sync',html);
+  };
+  window.setGoogleCalendarSyncEnabled=async function(enabled){
+    setGoogle(!!enabled);
+    if(enabled){try{toast&&toast('Google-Kalender-Sync wird aktualisiert…','')}catch(e){} try{await loadGoogleEvents?.()}catch(e){} try{renderCalendar?.();buildDashboard?.()}catch(e){} try{toast&&toast('Google-Kalender-Sync aktualisiert ✓','ok')}catch(e){}}
+    else{try{setStore('gEvents',[]);renderCalendar?.();buildDashboard?.();toast&&toast('Google-Kalender-Sync deaktiviert','')}catch(e){}}
+    try{openCalendarSettings&&openCalendarSettings()}catch(e){}
+  };
+  const oldCalendarSettings=window.openCalendarSettings;
+  window.openCalendarSettings=function(){
+    const states=window.STATE_OPTIONS||{ALL:'Alle Bundesländer',BW:'Baden-Württemberg',BY:'Bayern','BY-AUGSBURG':'Bayern · Augsburg',BE:'Berlin',BB:'Brandenburg',HB:'Bremen',HH:'Hamburg',HE:'Hessen',MV:'Mecklenburg-Vorpommern',NI:'Niedersachsen',NW:'Nordrhein-Westfalen',RP:'Rheinland-Pfalz',SL:'Saarland',SN:'Sachsen',ST:'Sachsen-Anhalt',SH:'Schleswig-Holstein',TH:'Thüringen'};
+    const opt=readLS('change_v1_calendar_view_options',{showHolidays:true,showChallengeDots:true,showWeekNumbers:true});
+    const st=(getStore('calendarSettings',{})?.state)||localStorage.getItem('holiday_state')||'ALL';
+    const options=Object.entries(states).map(([k,v])=>'<option value="'+esc(k)+'" '+(k===st?'selected':'')+'>'+esc(v)+'</option>').join('');
+    const row=(title,id,on,sub)=>'<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">'+title+'</div><div class="toggle-sub">'+sub+'</div></div><label class="switch"><input type="checkbox" id="'+id+'" '+(on?'checked':'')+'><span class="slider"></span></label></div>';
+    const html='<div class="fg"><label class="flabel">Bundesland für Feiertage</label><select class="finput" id="holiday-state">'+options+'</select></div>'+row('Feiertage anzeigen','toggle-holidays',opt.showHolidays!==false,'Direkt im Kalender und Dashboard anzeigen.')+row('Challenge-Punkte anzeigen','toggle-dots',opt.showChallengeDots!==false,'Nur klein unten rechts im Kalendertag.')+row('Kalenderwochen anzeigen','toggle-kw',opt.showWeekNumbers!==false,'KW links unten je Woche.')+row('Google-Kalender-Sync','toggle-google-sync',googleOn(),'Beim Aktivieren wird neu synchronisiert.')+'<button class="btn btn-primary btn-full" onclick="saveCalSettings()">Speichern</button>';
+    openPanel&&openPanel('Kalender-Einstellungen',html);
+  };
+  window.saveCalSettings=function(){
+    const opts={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked};
+    writeLS('change_v1_calendar_view_options',opts);
+    try{ if(!window.calendarSettings)window.calendarSettings={}; calendarSettings.state=$('holiday-state')?.value||'ALL'; localStorage.setItem('holiday_state',calendarSettings.state); }catch(e){}
+    const desired=!!$('toggle-google-sync')?.checked;
+    const changed=desired!==googleOn(); setGoogle(desired);
+    closePanel&&closePanel();
+    if(changed&&desired){try{loadGoogleEvents?.()}catch(e){}}
+    try{renderCalendar?.();buildDashboard?.();toast&&toast('Kalender-Einstellungen gespeichert ✓','ok')}catch(e){}
+  };
+
+  // 4 + 5) Challenges: echte Mitspieler anzeigen, „Du“-Einzelzeile verhindern, Erledigen aktualisiert Punkte sofort.
+  window.getVisibleContestPlayers=function(){return syncArrays().players;};
+  window.getPlayerPointSummary=function(id){return statsFor(String(id||account().id).toLowerCase());};
+  window.renderChallenges=function(){
+    const data=syncArrays(), list=$('challenges-list'), board=$('leaderboard-list'); if(!list||!board)return;
+    const active=data.challenges.filter(c=>c&&c.active!==false);
+    list.innerHTML=active.length?active.map(ch=>{const done=isDone(ch.id); const url=ch.url||ch.video||ch.youtube||ch.youtubeUrl||ch.link||''; const link=url?'<a href="'+esc(url)+'" target="_blank" rel="noopener" class="challenge-meta" onclick="event.stopPropagation()">So geht die Übung</a>':''; return '<div class="challenge-item '+(done?'challenge-done':'')+'"><div class="challenge-icon">'+esc(ch.icon||'🏆')+'</div><div class="challenge-body"><div class="challenge-name">'+esc(ch.title||ch.name||'Challenge')+'</div><div class="challenge-meta">'+esc(ch.desc||'')+' · '+(parseInt(ch.points,10)||0)+' Punkte</div>'+link+'</div><span class="points-pill">+'+(parseInt(ch.points,10)||0)+'</span><button class="btn '+(done?'btn-success':'btn-primary')+' btn-sm" onclick="completeChallenge(\''+esc(ch.id)+'\')">'+(done?'Erledigt':'Erledigen')+'</button></div>';}).join(''):'<div class="empty-state"><div class="empty-title">Keine Challenges</div><div class="empty-sub">Aktiviere Auto-Challenges oder lege eine Aufgabe an.</div></div>';
+    const players=data.players.slice().sort((a,b)=>statsFor(String(b.email||b.id).toLowerCase()).totalPoints-statsFor(String(a.email||a.id).toLowerCase()).totalPoints);
+    board.innerHTML=players.length?players.map((p,i)=>{const id=String(p.email||p.id||'').toLowerCase(), st=statsFor(id), me=id===data.account.id, medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1); return '<div class="leader-row clickable" onclick="try{openPlayerRecentPanel(\''+esc(id)+'\',\''+esc(p.name||p.email||id)+'\')}catch(e){}"><div class="leader-rank">'+medal+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(me?' · Du':'')+(p.online?'<span class="live-dot"></span>':'')+'</div><div class="leader-detail">Heute: '+st.todayPoints+' P · Gesamt: '+st.totalPoints+' P · '+st.totalCount+' erledigt</div></div><div class="leader-score">'+st.totalPoints+'</div></div>';}).join(''):'<div class="dash-empty">Noch keine Mitspieler.</div>';
+  };
+  window.completeChallenge=function(id){
+    const data=syncArrays(); const ch=data.challenges.find(c=>String(c.id)===String(id)); if(!ch)return;
+    if(isDone(id)){try{toast&&toast('Diese Challenge ist heute schon erledigt','')}catch(e){} return;}
+    const row={id:'cc_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),challengeId:String(id),playerId:data.account.id,userEmail:data.account.email,playerName:data.account.name,date:today(),points:parseInt(ch.points,10)||0,createdAt:new Date().toISOString()};
+    data.completions.push(row); setStore('challengeCompletions',data.completions); persistChallenges();
+    try{ if(typeof publishCompletionToFirestore==='function') publishCompletionToFirestore(row); }catch(e){}
+    try{renderChallenges(); buildDashboard(); renderCalendar(); toast&&toast('+'+row.points+' Punkte ✓','ok')}catch(e){}
+  };
+  window.resetTodayChallenges=function(){const data=syncArrays(),td=today(); data.completions=data.completions.filter(c=>!(String(c.date||'').slice(0,10)===td&&playerIdOf(c)===data.account.id)); setStore('challengeCompletions',data.completions); persistChallenges(); try{renderChallenges();buildDashboard();renderCalendar();toast&&toast('Heute zurückgesetzt','')}catch(e){}};
+
+  // 6) „Angemeldet bleiben“ entfernen.
+  window.confirmLogout=function(){
+    const u=account();
+    const html='<div class="logout-profile"><div class="logout-avatar">'+(u.picture?'<img src="'+esc(u.picture)+'" alt="">':esc((u.name||'?').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()))+'</div><div style="min-width:0"><div class="logout-name">'+esc(u.name)+'</div><div class="logout-mail">'+esc(u.email)+'</div></div></div><div class="logout-warning">Du meldest dich auf diesem Gerät ab.</div><button class="btn btn-danger btn-full" onclick="doLogout&&doLogout()">Abmelden</button>';
+    openPanel&&openPanel('Abmelden',html);
+  };
+
+  // UI-Schutz und Initialisierung.
+  function inject(){
+    if(!$('cleanup-regression-fix-style')){const st=document.createElement('style');st.id='cleanup-regression-fix-style';st.textContent='#upcoming-strip{display:none!important}body:not(.calendar-active) #cal-controls{display:none!important}.icon-btn[title="Sync"],.icon-btn[title="Live- & Kalender-Sync"],.icon-btn[title="Push & Live-Sync"]{pointer-events:auto!important}';document.head.appendChild(st)}
+    removeUpcoming(); document.querySelectorAll('button').forEach(b=>{if((b.textContent||'').trim()==='Angemeldet bleiben')b.remove()});
+  }
+  const oldOpenPanel=window.openPanel;
+  if(typeof oldOpenPanel==='function') window.openPanel=function(title,html){oldOpenPanel(title,html); setTimeout(inject,0)};
+  setInterval(()=>{document.body.classList.toggle('calendar-active',(window.currentMainView||'')==='calendar');inject()},500);
+  setTimeout(()=>{inject();syncArrays();try{if((window.currentMainView||'dashboard')==='challenges')renderChallenges(); if((window.currentMainView||'dashboard')==='dashboard')buildDashboard();}catch(e){}},150);
+})();
+</script>
+
 </body>
 </html>
 <script id="change-final-user-fixes-3">
