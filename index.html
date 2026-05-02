@@ -771,10 +771,6 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
         </div>
         <div id="month-grid"></div>
         <div id="agenda-view"></div>
-        <div id="upcoming-strip">
-          <span class="us-label">Demnächst</span>
-          <div class="us-items" id="upcoming-items"><span style="font-size:12px;color:var(--t5)">Keine anstehenden Termine</span></div>
-        </div>
       </div>
 
     </div><!-- /content -->
@@ -4077,6 +4073,119 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
   if(typeof oldOpenPanel==='function') window.openPanel=function(title,html){oldOpenPanel(title,html); setTimeout(inject,0)};
   setInterval(()=>{document.body.classList.toggle('calendar-active',(window.currentMainView||'')==='calendar');inject()},500);
   setTimeout(()=>{inject();syncArrays();try{if((window.currentMainView||'dashboard')==='challenges')renderChallenges(); if((window.currentMainView||'dashboard')==='dashboard')buildDashboard();}catch(e){}},150);
+})();
+</script>
+
+<script id="CHANGE-CLEANUP-2026-05-02-DIRECT">
+(function(){
+  'use strict';
+  const $=id=>document.getElementById(id);
+  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const pad=n=>String(n).padStart(2,'0');
+  const today=()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+  function read(k,fb){try{const v=localStorage.getItem(k);return v==null?fb:JSON.parse(v)}catch(e){return fb}}
+  function write(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+  function raw(k,v){try{localStorage.setItem(k,String(v))}catch(e){}}
+  function me(){
+    const email=String((window.userInfo&&userInfo.email)||'').trim().toLowerCase();
+    const name=String((window.userInfo&&userInfo.name)||'').trim();
+    const id=email||'local-user';
+    return {id,email,name:name||email||'Ich'};
+  }
+  function sportsDefaults(){return [
+    {id:'sport_knee_squats_10',title:'10 Kniebeugen',points:10,icon:'🏋️',desc:'Mache 10 saubere Kniebeugen. Füße etwa schulterbreit, Rücken gerade, langsam runter und stabil hoch.',url:'',active:true,category:'sport'},
+    {id:'sport_wall_pushups_10',title:'10 Wand-Liegestütze',points:10,icon:'💪',desc:'Mache 10 leichte Liegestütze an der Wand oder am Tisch.',url:'',active:true,category:'sport'},
+    {id:'sport_stretch_60',title:'60 Sekunden Dehnen',points:8,icon:'🧘',desc:'Dehne Schultern, Rücken oder Beine für 60 Sekunden.',url:'',active:true,category:'sport'},
+    {id:'sport_walk_3',title:'3 Minuten gehen',points:8,icon:'🚶',desc:'Gehe 3 Minuten locker durch den Raum oder draußen.',url:'',active:true,category:'sport'},
+    {id:'sport_plank_20',title:'20 Sekunden Plank',points:12,icon:'⏱️',desc:'Halte 20 Sekunden Unterarmstütz. Alternative: Knie am Boden.',url:'',active:true,category:'sport'},
+    {id:'sport_neck_relax',title:'Nacken lockern',points:6,icon:'🧠',desc:'Rolle Schultern 10-mal und neige den Kopf sanft nach links/rechts.',url:'',active:true,category:'sport'},
+    {id:'sport_forearm_20',title:'20 Sekunden Unterarmstütz',points:12,icon:'🧱',desc:'Halte den Unterarmstütz 20 Sekunden sauber und ruhig.',url:'',active:true,category:'sport'},
+    {id:'sport_fitness_30',title:'Fitness gehen für mind. 30 Min',points:20,icon:'🏃',desc:'Optional: Gehe mindestens 30 Minuten zum Sport/Fitness oder mache ein leichtes bis mittleres Workout.',url:'',active:true,category:'sport',optional:true},
+    {id:'sport_walk_10',title:'Spazieren gehen für 10 Minuten',points:10,icon:'🌳',desc:'Optional: Gehe mindestens 10 Minuten spazieren.',url:'',active:true,category:'sport',optional:true}
+  ].map(x=>Object.assign({createdAt:new Date().toISOString()},x));}
+  function similar(a,b){a=String(a||'').toLowerCase();b=String(b||'').toLowerCase();return a===b||a.includes(b)||b.includes(a)}
+  function migrateChallenges(){
+    const old=(window.challenges||read('challenges',[])||[]).filter(Boolean);
+    const out=sportsDefaults().map(def=>{
+      const prev=old.find(o=>similar(o.title||o.name,def.title)||String(o.id)===def.id);
+      return Object.assign({},def,prev?{desc:prev.desc||def.desc,url:prev.url||prev.video||prev.youtube||prev.youtubeUrl||prev.link||def.url,points:parseInt(prev.points,10)||def.points,active:prev.active!==false}:{});
+    });
+    window.challenges=out; try{challenges=out}catch(e){} write('challenges',out);
+    let cps=(window.challengePlayers||read('challenge_players',[])||[]).filter(p=>{
+      const t=String((p&&[p.id,p.email,p.name].join(' '))||'').toLowerCase();
+      return p && !/demo|demo@example\.com|^du$|^ich$/.test(t.trim());
+    });
+    const a=me();
+    if(!cps.some(p=>String(p.id||p.email||'').toLowerCase()===a.id)) cps.unshift({id:a.id,email:a.email,name:a.name,createdAt:new Date().toISOString(),online:true});
+    window.challengePlayers=cps; try{challengePlayers=cps}catch(e){} write('challenge_players',cps);
+    let comps=(window.challengeCompletions||read('challenge_completions',[])||[]).filter(c=>c&&out.some(ch=>String(ch.id)===String(c.challengeId)));
+    comps=comps.map(c=>Object.assign({},c,{playerId:String(c.playerId||c.userEmail||c.email||a.id).toLowerCase(),date:String(c.date||c.completedDate||c.createdAt||today()).slice(0,10)}));
+    window.challengeCompletions=comps; try{challengeCompletions=comps}catch(e){} write('challenge_completions',comps);
+    return {challenges:out,players:cps,completions:comps,account:a};
+  }
+  function currentIds(){const a=me();const ids=new Set([a.id]); if(a.email)ids.add(a.email); return ids;}
+  function isMine(c){const ids=currentIds();const who=String(c.playerId||c.userEmail||c.email||'').toLowerCase();return !who||ids.has(who)}
+  function isDone(chId){const td=today();return (window.challengeCompletions||[]).some(c=>String(c.challengeId)===String(chId)&&String(c.date).slice(0,10)===td&&isMine(c));}
+  function stats(id){id=String(id||'').toLowerCase();let total=0,todayPts=0,count=0;(window.challengeCompletions||[]).forEach(c=>{const who=String(c.playerId||c.userEmail||c.email||'').toLowerCase();if(who!==id)return;const p=parseInt(c.points,10)||0;total+=p;count++;if(String(c.date).slice(0,10)===today())todayPts+=p;});return{totalPoints:total,todayPoints:todayPts,totalCount:count};}
+  function cleanupChallengeCards(){
+    document.querySelectorAll('.challenge-week-card,.challenge-week-grid').forEach(el=>{const card=el.closest('.challenge-week-card')||el;card.remove();});
+    document.querySelectorAll('body *').forEach(el=>{if(el.children.length>8)return;const t=(el.textContent||'').trim();if(/^Punkte-Kalender\s*(Aktuelle Woche|Nur für Challenges|$)/i.test(t)){const card=el.closest('.challenge-card,.leader-card,.dash-card,.card')||el; if(card&&card.id!=='challenges-list')card.remove();}});
+  }
+  window.getVisibleContestPlayers=function(){return migrateChallenges().players.filter(p=>!String(p.name||p.email||p.id||'').toLowerCase().includes('demo'));};
+  window.getPlayerPointSummary=function(id){return stats(id||me().id);};
+  window.buildDefaultChallenges=sportsDefaults;
+  window.renderChallenges=function(){
+    const data=migrateChallenges(); const list=$('challenges-list'), board=$('leaderboard-list'); if(!list||!board)return;
+    const renderOne=ch=>{const done=isDone(ch.id),link=(ch.url||ch.video||ch.youtube||ch.youtubeUrl||ch.link||'');return '<div class="challenge-item '+(done?'challenge-done':'')+'"><div class="challenge-icon">'+esc(ch.icon||'🏆')+'</div><div class="challenge-body"><div class="challenge-name">'+esc(ch.title||ch.name||'Sportübung')+'</div><div class="challenge-meta">'+esc(ch.desc||'')+' · '+(parseInt(ch.points,10)||0)+' Punkte</div>'+(link?'<a class="challenge-meta" href="'+esc(link)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">So geht die Übung</a>':'')+'</div><span class="points-pill">+'+(parseInt(ch.points,10)||0)+'</span>'+(done?'<button class="btn btn-success btn-sm" disabled>Erledigt</button><button class="btn btn-ghost btn-sm" onclick="undoChallenge(\''+esc(ch.id)+'\')">Zurück</button>':'<button class="btn btn-primary btn-sm" onclick="completeChallenge(\''+esc(ch.id)+'\')">Erledigen</button>')+'</div>';};
+    const required=data.challenges.filter(c=>c.active!==false&&!c.optional), optional=data.challenges.filter(c=>c.active!==false&&c.optional);
+    list.innerHTML=required.map(renderOne).join('')+(optional.length?'<div class="section-label" style="padding:14px 16px 6px">Optionale Sportpunkte</div>'+optional.map(renderOne).join(''):'');
+    const players=data.players.slice().sort((a,b)=>stats(String(b.email||b.id).toLowerCase()).totalPoints-stats(String(a.email||a.id).toLowerCase()).totalPoints);
+    board.innerHTML=players.map((p,i)=>{const id=String(p.email||p.id||'').toLowerCase(),s=stats(id),mine=currentIds().has(id),med=i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);return '<div class="leader-row"><div class="leader-rank">'+med+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(mine?' · Du':'')+(p.online?'<span class="live-dot"></span>':'')+'</div><div class="leader-detail">Heute: '+s.todayPoints+' P · Gesamt: '+s.totalPoints+' P · '+s.totalCount+' erledigt</div></div><div class="leader-score">'+s.totalPoints+'</div></div>';}).join('')||'<div class="dash-empty">Noch keine Mitspieler</div>';
+    cleanupChallengeCards();
+  };
+  window.completeChallenge=function(id){
+    const data=migrateChallenges(), ch=data.challenges.find(c=>String(c.id)===String(id)); if(!ch)return;
+    if(isDone(id)){if(typeof toast==='function')toast('Bereits erledigt','');return;}
+    const a=me(); const c={id:'cc_'+(typeof uid==='function'?uid():Date.now()),challengeId:id,playerId:a.id,userEmail:a.email,email:a.email,playerName:a.name,date:today(),points:parseInt(ch.points,10)||0,createdAt:new Date().toISOString()};
+    const comps=(window.challengeCompletions||[]).concat(c); window.challengeCompletions=comps; try{challengeCompletions=comps}catch(e){} write('challenge_completions',comps);
+    try{persistChangeState&&persistChangeState()}catch(e){} try{renderChallenges()}catch(e){} try{renderCalendar()}catch(e){} try{buildDashboard()}catch(e){} if(typeof toast==='function')toast('+'+(c.points||0)+' Punkte ✓','ok');
+  };
+  window.undoChallenge=function(id){
+    const td=today(); let comps=(window.challengeCompletions||[]); const before=comps.length;
+    comps=comps.filter(c=>!(String(c.challengeId)===String(id)&&String(c.date).slice(0,10)===td&&isMine(c)));
+    window.challengeCompletions=comps; try{challengeCompletions=comps}catch(e){} write('challenge_completions',comps);
+    try{persistChangeState&&persistChangeState()}catch(e){} try{renderChallenges()}catch(e){} try{renderCalendar()}catch(e){} try{buildDashboard()}catch(e){} if(typeof toast==='function')toast(before!==comps.length?'Challenge zurückgesetzt':'Nichts zurückzusetzen','');
+  };
+  window.resetTodayChallenges=function(){const td=today();let comps=(window.challengeCompletions||[]).filter(c=>!(String(c.date).slice(0,10)===td&&isMine(c)));window.challengeCompletions=comps;try{challengeCompletions=comps}catch(e){}write('challenge_completions',comps);try{renderChallenges()}catch(e){}try{renderCalendar()}catch(e){}try{buildDashboard()}catch(e){}if(typeof toast==='function')toast('Heute zurückgesetzt','')};
+  window.getChallengePointsForDate=function(k){let sum=0;(window.challengeCompletions||[]).forEach(c=>{if(String(c.date||'').slice(0,10)===String(k).slice(0,10)&&isMine(c))sum+=parseInt(c.points,10)||0;});return sum;};
+  window.getChallengeDayStatus=function(k){const points=window.getChallengePointsForDate(k);return points>0?{points,done:true,planned:1,allDone:true}:null};
+
+  const googleKey='change_google_calendar_sync_enabled';
+  function googleOn(){try{return localStorage.getItem(googleKey)==='1'||localStorage.getItem('change_v1_google_calendar_sync')==='true'}catch(e){return false}}
+  function setGoogle(v){raw(googleKey,v?'1':'0');raw('change_v1_google_calendar_sync',v?'true':'false');window.googleCalendarSyncEnabled=!!v;}
+  window.openPushSettingsPanel=function(){const live=read('live_sync_enabled',true)!==false;const online=(window.getVisibleContestPlayers?window.getVisibleContestPlayers():[]).filter(p=>p.online).length;const html='<div class="push-box"><div class="challenge-title">Live-Sync</div><div class="settings-hint" style="margin-top:8px">Google-Kalender-Sync ist nur in den Kalender-Einstellungen. Push steuerst du über die Glocke.</div></div><div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">Live-Mitspieler <span class="status-pill '+(live?'status-on':'status-off')+'">'+(live?'AKTIV':'AUS')+'</span></div><div class="toggle-sub">Online: '+online+' · synchronisiert Mitspieler und Punkte.</div></div><label class="switch"><input type="checkbox" '+(live?'checked':'')+' onchange="setLiveSyncEnabled&&setLiveSyncEnabled(this.checked)"><span class="slider"></span></label></div>';if(typeof openPanel==='function')openPanel('Live-Sync',html)};
+  window.openCalendarSettings=function(){const states=window.STATE_OPTIONS||{ALL:'Alle Bundesländer',BW:'Baden-Württemberg',BY:'Bayern','BY-AUGSBURG':'Bayern · Augsburg',BE:'Berlin',BB:'Brandenburg',HB:'Bremen',HH:'Hamburg',HE:'Hessen',MV:'Mecklenburg-Vorpommern',NI:'Niedersachsen',NW:'Nordrhein-Westfalen',RP:'Rheinland-Pfalz',SL:'Saarland',SN:'Sachsen',ST:'Sachsen-Anhalt',SH:'Schleswig-Holstein',TH:'Thüringen'};const o=read('change_v1_calendar_view_options',{showHolidays:true,showChallengeDots:true,showWeekNumbers:true});const st=(window.calendarSettings&&calendarSettings.state)||localStorage.getItem('holiday_state')||'ALL';const opts=Object.entries(states).map(([k,v])=>'<option value="'+esc(k)+'" '+(k===st?'selected':'')+'>'+esc(v)+'</option>').join('');const row=(t,id,on,sub)=>'<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">'+t+'</div><div class="toggle-sub">'+sub+'</div></div><label class="switch"><input type="checkbox" id="'+id+'" '+(on?'checked':'')+'><span class="slider"></span></label></div>';const html='<div class="fg"><label class="flabel">Bundesland für Feiertage</label><select class="finput" id="holiday-state">'+opts+'</select></div>'+row('Feiertage anzeigen','toggle-holidays',o.showHolidays!==false,'Direkt im Kalender und Dashboard.')+row('Challenge-Punkte anzeigen','toggle-dots',o.showChallengeDots!==false,'Nur erledigte Punkte klein unten rechts.')+row('Kalenderwochen anzeigen','toggle-kw',o.showWeekNumbers!==false,'KW links unten im Kalender.')+row('Google-Kalender-Sync','toggle-google-sync',googleOn(),'Beim Aktivieren wird neu synchronisiert.')+'<button class="btn btn-primary btn-full" onclick="saveCalSettings()">Speichern</button>';if(typeof openPanel==='function')openPanel('Kalender-Einstellungen',html)};
+  window.saveCalSettings=function(){const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked};write('change_v1_calendar_view_options',o);write('calendar_settings',o);try{if(!window.calendarSettings)window.calendarSettings={};calendarSettings.state=$('holiday-state')?.value||'ALL';localStorage.setItem('holiday_state',calendarSettings.state)}catch(e){}const g=!!$('toggle-google-sync')?.checked,changed=g!==googleOn();setGoogle(g);if(typeof closePanel==='function')closePanel();if(changed&&g){try{loadGoogleEvents&&loadGoogleEvents()}catch(e){}}try{renderCalendar()}catch(e){}try{buildDashboard()}catch(e){}if(typeof toast==='function')toast('Kalender-Einstellungen gespeichert ✓','ok')};
+
+  const oldSet=window.setMainView;
+  window.setMainView=function(v){
+    v=v||'dashboard'; document.body.classList.toggle('calendar-active',v==='calendar');
+    try{oldSet&&oldSet(v)}catch(e){
+      ['dashboard-view','cal-body','challenges-view'].forEach(id=>{const el=$(id);if(el)el.style.display='none'});
+      if(v==='calendar'){$('cal-body')&&( $('cal-body').style.display='flex');try{renderCalendar()}catch(_){}}
+      else if(v==='challenges'){$('challenges-view')&&($('challenges-view').style.display='flex');try{renderChallenges()}catch(_){}}
+      else {$('dashboard-view')&&($('dashboard-view').style.display='block');try{buildDashboard()}catch(_){}}
+    }
+    const controls=$('cal-controls'); if(controls)controls.style.display=v==='calendar'?'flex':'none';
+    document.querySelectorAll('[onclick="openCalendarSettings()"],[title="Kalender-Einstellungen"]').forEach(b=>{b.style.display=v==='calendar'?'inline-flex':'none'});
+    cleanupChallengeCards();
+  };
+  const oldRenderCalendar=window.renderCalendar;
+  window.renderCalendar=function(){try{oldRenderCalendar&&oldRenderCalendar()}catch(e){console.warn(e)}document.querySelectorAll('.cal-points').forEach(el=>{const m=(el.textContent||'').match(/\+(\d+)/);if(!m||parseInt(m[1],10)<=0)el.remove()});const up=$('upcoming-strip');if(up)up.remove();};
+  window.renderUpcoming=function(){const up=$('upcoming-strip');if(up)up.remove();};
+  const st=document.createElement('style');st.id='change-direct-cleanup-style';st.textContent='#upcoming-strip,.challenge-week-card,.challenge-week-grid{display:none!important}body:not(.calendar-active) #cal-controls,body:not(.calendar-active) [onclick="openCalendarSettings()"],body:not(.calendar-active) [title="Kalender-Einstellungen"]{display:none!important}.challenge-item .btn[disabled]{opacity:.85;cursor:default}.section-label{font-size:11px;font-weight:900;color:var(--t4);text-transform:uppercase;letter-spacing:.04em;background:var(--s2);border-top:1px solid var(--b1)}';document.head.appendChild(st);
+  function boot(){migrateChallenges();cleanupChallengeCards();try{if(window.currentMainView)window.setMainView(window.currentMainView);else window.setMainView('dashboard')}catch(e){}try{renderChallenges()}catch(e){}try{renderCalendar()}catch(e){}try{buildDashboard()}catch(e){}}
+  setTimeout(boot,100);setTimeout(boot,700);new MutationObserver(()=>cleanupChallengeCards()).observe(document.documentElement,{childList:true,subtree:true});
 })();
 </script>
 
