@@ -129,6 +129,8 @@ body{
 .btn-ghost:hover{border-color:var(--b2);color:var(--t2);background:var(--s2)}
 .btn-danger{background:var(--red-d);color:var(--red)}
 .btn-danger:hover{background:rgba(220,38,38,.16)}
+.btn-undo{background:rgba(220,38,38,.08);color:#B91C1C;border-color:rgba(220,38,38,.18);font-weight:800;min-width:36px}
+.btn-undo:hover{background:rgba(220,38,38,.14)}
 .btn-success{background:var(--grn-d);color:var(--grn)}
 .btn-success:hover{background:rgba(22,163,74,.16)}
 .btn-full{width:100%}
@@ -1880,7 +1882,7 @@ document.addEventListener('touchend',e=>{
       const st=stats[p.id]||{points:0,count:0}; const me=p.id===getCurrentPlayerId();
       const medal=idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':(idx+1);
       const live=p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>';
-      return '<div class="leader-row"><div class="leader-rank">'+medal+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(me?' · Du':'')+live+'</div><div class="leader-detail">'+st.count+' Challenges erledigt · Platz '+(idx+1)+(p.email?' · '+esc(p.email):'')+'</div></div><div class="leader-score">'+st.points+'</div></div>';
+      return '<div class="leader-row"><div class="leader-rank">'+medal+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+live+'</div><div class="leader-detail">'+st.count+' Challenges erledigt · Platz '+(idx+1)+(p.email?' · '+esc(p.email):'')+'</div></div><div class="leader-score">'+st.points+'</div></div>';
     }).join(''):'<div class="dash-empty">Noch keine Mitspieler</div>';
   };
   window.completeChallenge = function(id){
@@ -2628,7 +2630,7 @@ document.addEventListener('touchend',e=>{
     const active=(challenges||[]).filter(c=>c.active!==false);
     list.innerHTML=active.length?active.map(ch=>{const done=isChallengeDoneToday(ch.id); return '<div class="challenge-item '+(done?'challenge-done':'')+'"><div class="challenge-icon">'+esc(ch.icon||'🏃')+'</div><div class="challenge-body"><div class="challenge-name">'+esc(ch.title)+'</div><div class="challenge-meta">'+esc(ch.desc||'')+' · '+(ch.points||0)+' Punkte</div></div><span class="points-pill">+'+(ch.points||0)+'</span><button class="btn '+(done?'btn-success':'btn-primary')+' btn-sm" onclick="completeChallenge(\''+ch.id+'\')">'+(done?'Erledigt':'Erledigen')+'</button></div>';}).join(''):'<div class="empty-state"><div class="empty-title">Keine Sportübungen</div><div class="empty-sub">Auto-Challenges aktivieren oder Sportübung anlegen.</div></div>';
     const players=getVisibleContestPlayers(); players.sort((a,b)=>getPlayerPointSummary(playerKey(b)).totalPoints-getPlayerPointSummary(playerKey(a)).totalPoints);
-    board.innerHTML=players.length?players.map((p,idx)=>{const id=playerKey(p); const st=getPlayerPointSummary(id); const me=id===getCurrentPlayerId(); const medal=idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':(idx+1); const live=p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>'; return '<div class="leader-row clickable" onclick="openContestUserDetails(\''+esc(id)+'\')"><div class="leader-rank">'+medal+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(me?' · Du':'')+live+'</div><div class="leader-detail">Heute: '+st.todayPoints+' Punkte · Gesamt: '+st.totalPoints+' Punkte · '+st.totalCount+' erledigt</div></div><div class="leader-score">'+st.totalPoints+'</div></div>';}).join(''):'<div class="dash-empty">Noch keine Mitspieler. Sobald sich jemand mit Google anmeldet, erscheint er hier automatisch.</div>';
+    board.innerHTML=players.length?players.map((p,idx)=>{const id=playerKey(p); const st=getPlayerPointSummary(id); const me=id===getCurrentPlayerId(); const medal=idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':(idx+1); const live=p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>'; return '<div class="leader-row clickable" onclick="openContestUserDetails(\''+esc(id)+'\')"><div class="leader-rank">'+medal+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+live+'</div><div class="leader-detail">Heute: '+st.todayPoints+' Punkte · Gesamt: '+st.totalPoints+' Punkte · '+st.totalCount+' erledigt</div></div><div class="leader-score">'+st.totalPoints+'</div></div>';}).join(''):'<div class="dash-empty">Noch keine Mitspieler. Sobald sich jemand mit Google anmeldet, erscheint er hier automatisch.</div>';
   };
   function addOneHour(date,time){const d=new Date(date+'T'+(time||'09:00')+':00'); d.setHours(d.getHours()+1); return d.toTimeString().substring(0,5);}
   function nextDate(date){const d=new Date(date+'T12:00:00'); d.setDate(d.getDate()+1); return dateKey(d);}
@@ -2741,7 +2743,7 @@ document.addEventListener('touchend',e=>{
     const active=(challenges||[]).filter(c=>c.active!==false && (c.type==='Sport' || /^sport_|^auto_.*_sport_/.test(c.id||'')));
     list.innerHTML=active.length?active.map(ch=>{const done=isChallengeDoneToday(ch.id); const link=ch.url?'<a href="'+esc(ch.url)+'" target="_blank" rel="noopener" class="challenge-meta" onclick="event.stopPropagation()">So geht die Übung</a>':''; return '<div class="challenge-item '+(done?'challenge-done':'')+'"><div class="challenge-icon">'+esc(ch.icon||'🏃')+'</div><div class="challenge-body"><div class="challenge-name">'+esc(ch.title)+'</div><div class="challenge-meta">'+esc(ch.desc||'')+' · '+esc(ch.level||'leicht')+' · '+(ch.points||0)+' Punkte</div>'+link+'</div><span class="points-pill">+'+(ch.points||0)+'</span><button class="btn '+(done?'btn-success':'btn-primary')+' btn-sm" onclick="completeChallenge(\''+ch.id+'\')">'+(done?'Erledigt':'Erledigen')+'</button></div>';}).join(''):'<div class="empty-state"><div class="empty-title">Keine Sportübungen</div><div class="empty-sub">Aktiviere Auto-Challenges oder lege eine Sportübung an.</div></div>';
     const players=getVisibleContestPlayers(); players.sort((a,b)=>getPlayerPointSummary(String(b.email||b.id).toLowerCase()).totalPoints-getPlayerPointSummary(String(a.email||a.id).toLowerCase()).totalPoints);
-    board.innerHTML=players.length?players.map((p,idx)=>{const id=String(p.email||p.id||'').toLowerCase(); const st=getPlayerPointSummary(id); const me=id===getCurrentPlayerId(); const medal=idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':(idx+1); const live=p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>'; return '<div class="leader-row clickable" onclick="openContestUserDetails(\''+esc(id)+'\')"><div class="leader-rank">'+medal+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(me?' · Du':'')+live+'</div><div class="leader-detail">Heute: '+st.todayPoints+' P · Gesamt: '+st.totalPoints+' P · '+st.totalCount+' erledigt</div></div><div class="leader-score">'+st.totalPoints+'</div></div>';}).join(''):'<div class="dash-empty">Noch keine Mitspieler. Sobald sich jemand mit Google anmeldet, erscheint er hier automatisch.</div>';
+    board.innerHTML=players.length?players.map((p,idx)=>{const id=String(p.email||p.id||'').toLowerCase(); const st=getPlayerPointSummary(id); const me=id===getCurrentPlayerId(); const medal=idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':(idx+1); const live=p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>'; return '<div class="leader-row clickable" onclick="openContestUserDetails(\''+esc(id)+'\')"><div class="leader-rank">'+medal+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+live+'</div><div class="leader-detail">Heute: '+st.todayPoints+' P · Gesamt: '+st.totalPoints+' P · '+st.totalCount+' erledigt</div></div><div class="leader-score">'+st.totalPoints+'</div></div>';}).join(''):'<div class="dash-empty">Noch keine Mitspieler. Sobald sich jemand mit Google anmeldet, erscheint er hier automatisch.</div>';
   };
   const oldRegister=window.registerLivePlayer;
   if(oldRegister){
@@ -4006,7 +4008,7 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
   window.openPushSettingsPanel=function(){
     const liveOn=readLS('live_sync_enabled',true)!==false && readLS('change_v1_live_sync_enabled',true)!==false;
     const online=liveOn?syncArrays().players.filter(p=>p.online).length:0;
-    const html='<div class="push-box"><div class="challenge-title">Live-Sync</div><div class="settings-hint" style="margin-top:8px">Push steuerst du über die Glocke. Google-Kalender-Sync liegt nur in den Kalender-Einstellungen.</div></div>'+ 
+    const html='<div class="push-box"><div class="challenge-title">Live-Sync</div><div class="settings-hint" style="margin-top:8px">Push steuerst du über die Glocke. Live-Sync synchronisiert nur Mitspieler und Punkte.</div></div>'+ 
       '<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">Live-Mitspieler <span class="status-pill '+(liveOn?'status-on':'status-off')+'">'+(liveOn?'VERBUNDEN':'DEAKTIVIERT')+'</span></div><div class="toggle-sub">Aktuell online: '+online+' · synchronisiert Mitspieler und erledigte Challenges.</div></div><label class="switch"><input type="checkbox" '+(liveOn?'checked':'')+' onchange="setLiveSyncEnabled&&setLiveSyncEnabled(this.checked)"><span class="slider"></span></label></div>';
     openPanel&&openPanel('Live-Sync',html);
   };
@@ -4045,7 +4047,7 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
     const active=data.challenges.filter(c=>c&&c.active!==false);
     list.innerHTML=active.length?active.map(ch=>{const done=isDone(ch.id); const url=ch.url||ch.video||ch.youtube||ch.youtubeUrl||ch.link||''; const link=url?'<a href="'+esc(url)+'" target="_blank" rel="noopener" class="challenge-meta" onclick="event.stopPropagation()">So geht die Übung</a>':''; return '<div class="challenge-item '+(done?'challenge-done':'')+'"><div class="challenge-icon">'+esc(ch.icon||'🏆')+'</div><div class="challenge-body"><div class="challenge-name">'+esc(ch.title||ch.name||'Challenge')+'</div><div class="challenge-meta">'+esc(ch.desc||'')+' · '+(parseInt(ch.points,10)||0)+' Punkte</div>'+link+'</div><span class="points-pill">+'+(parseInt(ch.points,10)||0)+'</span><button class="btn '+(done?'btn-success':'btn-primary')+' btn-sm" onclick="completeChallenge(\''+esc(ch.id)+'\')">'+(done?'Erledigt':'Erledigen')+'</button></div>';}).join(''):'<div class="empty-state"><div class="empty-title">Keine Challenges</div><div class="empty-sub">Aktiviere Auto-Challenges oder lege eine Aufgabe an.</div></div>';
     const players=data.players.slice().sort((a,b)=>statsFor(String(b.email||b.id).toLowerCase()).totalPoints-statsFor(String(a.email||a.id).toLowerCase()).totalPoints);
-    board.innerHTML=players.length?players.map((p,i)=>{const id=String(p.email||p.id||'').toLowerCase(), st=statsFor(id), me=id===data.account.id, medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1); return '<div class="leader-row clickable" onclick="try{openPlayerRecentPanel(\''+esc(id)+'\',\''+esc(p.name||p.email||id)+'\')}catch(e){}"><div class="leader-rank">'+medal+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(me?' · Du':'')+(p.online?'<span class="live-dot"></span>':'')+'</div><div class="leader-detail">Heute: '+st.todayPoints+' P · Gesamt: '+st.totalPoints+' P · '+st.totalCount+' erledigt</div></div><div class="leader-score">'+st.totalPoints+'</div></div>';}).join(''):'<div class="dash-empty">Noch keine Mitspieler.</div>';
+    board.innerHTML=players.length?players.map((p,i)=>{const id=String(p.email||p.id||'').toLowerCase(), st=statsFor(id), me=id===data.account.id, medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1); return '<div class="leader-row clickable" onclick="try{openPlayerRecentPanel(\''+esc(id)+'\',\''+esc(p.name||p.email||id)+'\')}catch(e){}"><div class="leader-rank">'+medal+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(p.online?'<span class="live-dot"></span>':'')+'</div><div class="leader-detail">Heute: '+st.todayPoints+' P · Gesamt: '+st.totalPoints+' P · '+st.totalCount+' erledigt</div></div><div class="leader-score">'+st.totalPoints+'</div></div>';}).join(''):'<div class="dash-empty">Noch keine Mitspieler.</div>';
   };
   window.completeChallenge=function(id){
     const data=syncArrays(); const ch=data.challenges.find(c=>String(c.id)===String(id)); if(!ch)return;
@@ -4090,38 +4092,94 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
     const email=String((window.userInfo&&userInfo.email)||'').trim().toLowerCase();
     const name=String((window.userInfo&&userInfo.name)||'').trim();
     const id=email||'local-user';
-    return {id,email,name:name||email||'Ich'};
+    return {id,email,name:name||email||'Mitspieler'};
   }
   function sportsDefaults(){return [
-    {id:'sport_knee_squats_10',title:'10 Kniebeugen',points:10,icon:'🏋️',desc:'Mache 10 saubere Kniebeugen. Füße etwa schulterbreit, Rücken gerade, langsam runter und stabil hoch.',url:'',active:true,category:'sport'},
-    {id:'sport_wall_pushups_10',title:'10 Wand-Liegestütze',points:10,icon:'💪',desc:'Mache 10 leichte Liegestütze an der Wand oder am Tisch.',url:'',active:true,category:'sport'},
-    {id:'sport_stretch_60',title:'60 Sekunden Dehnen',points:8,icon:'🧘',desc:'Dehne Schultern, Rücken oder Beine für 60 Sekunden.',url:'',active:true,category:'sport'},
-    {id:'sport_walk_3',title:'3 Minuten gehen',points:8,icon:'🚶',desc:'Gehe 3 Minuten locker durch den Raum oder draußen.',url:'',active:true,category:'sport'},
-    {id:'sport_plank_20',title:'20 Sekunden Plank',points:12,icon:'⏱️',desc:'Halte 20 Sekunden Unterarmstütz. Alternative: Knie am Boden.',url:'',active:true,category:'sport'},
-    {id:'sport_neck_relax',title:'Nacken lockern',points:6,icon:'🧠',desc:'Rolle Schultern 10-mal und neige den Kopf sanft nach links/rechts.',url:'',active:true,category:'sport'},
-    {id:'sport_forearm_20',title:'20 Sekunden Unterarmstütz',points:12,icon:'🧱',desc:'Halte den Unterarmstütz 20 Sekunden sauber und ruhig.',url:'',active:true,category:'sport'},
-    {id:'sport_fitness_30',title:'Fitness gehen für mind. 30 Min',points:20,icon:'🏃',desc:'Optional: Gehe mindestens 30 Minuten zum Sport/Fitness oder mache ein leichtes bis mittleres Workout.',url:'',active:true,category:'sport',optional:true},
-    {id:'sport_walk_10',title:'Spazieren gehen für 10 Minuten',points:10,icon:'🌳',desc:'Optional: Gehe mindestens 10 Minuten spazieren.',url:'',active:true,category:'sport',optional:true}
-  ].map(x=>Object.assign({createdAt:new Date().toISOString()},x));}
+    {id:'sport_knee_squats_10',title:'10 Kniebeugen',points:10,icon:'🏋️',desc:'Saubere Kniebeugen: Füße schulterbreit, Rücken gerade, langsam runter und stabil hoch.',url:'https://www.youtube.com/results?search_query=Kniebeugen+richtig+ausf%C3%BChren',active:true,category:'sport'},
+    {id:'sport_wall_pushups_10',title:'10 Wand-Liegestütze',points:10,icon:'💪',desc:'Leichte Liegestütze an der Wand oder am Tisch, Körper gerade halten.',url:'https://www.youtube.com/results?search_query=Wand+Liegest%C3%BCtze+richtig',active:true,category:'sport'},
+    {id:'sport_stretch_60',title:'60 Sekunden Dehnen',points:8,icon:'🧘',desc:'Dehne Schultern, Rücken oder Beine ruhig für 60 Sekunden.',url:'https://www.youtube.com/results?search_query=60+Sekunden+Dehnen+Anf%C3%A4nger',active:true,category:'sport'},
+    {id:'sport_walk_3',title:'3 Minuten gehen',points:8,icon:'🚶',desc:'Gehe 3 Minuten locker durch den Raum oder draußen.',url:'https://www.youtube.com/results?search_query=kurzes+Gehen+Bewegungspause',active:true,category:'sport'},
+    {id:'sport_plank_20',title:'20 Sekunden Plank',points:12,icon:'⏱️',desc:'Halte 20 Sekunden Unterarmstütz. Alternative: Knie am Boden.',url:'https://www.youtube.com/results?search_query=Plank+richtig+ausf%C3%BChren',active:true,category:'sport'},
+    {id:'sport_neck_relax',title:'Nacken lockern',points:6,icon:'🧠',desc:'Rolle die Schultern 10-mal und neige den Kopf sanft links/rechts.',url:'https://www.youtube.com/results?search_query=Nacken+lockern+%C3%9Cbungen',active:true,category:'sport'},
+    {id:'sport_forearm_20',title:'20 Sekunden Unterarmstütz',points:12,icon:'🧱',desc:'Halte den Unterarmstütz 20 Sekunden sauber und ruhig.',url:'https://www.youtube.com/results?search_query=Unterarmst%C3%BCtz+richtig',active:true,category:'sport'},
+    {id:'sport_lunges_10',title:'10 Ausfallschritte',points:12,icon:'🦵',desc:'Mache 10 kontrollierte Ausfallschritte, abwechselnd links und rechts.',url:'https://www.youtube.com/results?search_query=Ausfallschritte+richtig+ausf%C3%BChren',active:true,category:'sport'},
+    {id:'sport_calf_raises_20',title:'20 Wadenheben',points:8,icon:'🦶',desc:'Stelle dich aufrecht hin und hebe die Fersen 20-mal langsam an.',url:'https://www.youtube.com/results?search_query=Wadenheben+richtig',active:true,category:'sport'},
+    {id:'sport_arm_circles_30',title:'30 Sekunden Armkreisen',points:6,icon:'🔄',desc:'Kreise die Arme 30 Sekunden locker vorwärts und rückwärts.',url:'https://www.youtube.com/results?search_query=Armkreisen+%C3%9Cbung',active:true,category:'sport'},
+    {id:'sport_side_steps_30',title:'30 Sekunden Seitsteps',points:8,icon:'↔️',desc:'Mache 30 Sekunden lockere Seitsteps, Knie leicht gebeugt.',url:'https://www.youtube.com/results?search_query=Side+Steps+Fitness+%C3%9Cbung',active:true,category:'sport'},
+    {id:'sport_jumping_jacks_20',title:'20 Hampelmänner',points:12,icon:'⭐',desc:'Mache 20 Hampelmänner. Alternative: ohne Springen seitlich tippen.',url:'https://www.youtube.com/results?search_query=Hampelm%C3%A4nner+richtig',active:true,category:'sport'},
+    {id:'sport_glute_bridge_12',title:'12 Glute Bridges',points:10,icon:'🌉',desc:'Lege dich auf den Rücken und hebe das Becken 12-mal kontrolliert.',url:'https://www.youtube.com/results?search_query=Glute+Bridge+richtig',active:true,category:'sport'},
+    {id:'sport_bird_dog_10',title:'10 Bird Dogs',points:10,icon:'🐦',desc:'Im Vierfüßlerstand diagonal Arm und Bein strecken, 10 Wiederholungen.',url:'https://www.youtube.com/results?search_query=Bird+Dog+%C3%9Cbung+richtig',active:true,category:'sport'},
+    {id:'sport_dead_bug_10',title:'10 Dead Bugs',points:10,icon:'🐞',desc:'Rückenlage, diagonal Arm und Bein senken, Bauchspannung halten.',url:'https://www.youtube.com/results?search_query=Dead+Bug+%C3%9Cbung+richtig',active:true,category:'sport'},
+    {id:'sport_shoulder_blades_15',title:'15 Schulterblatt-Züge',points:8,icon:'🪽',desc:'Ziehe die Schulterblätter 15-mal bewusst nach hinten unten.',url:'https://www.youtube.com/results?search_query=Schulterbl%C3%A4tter+aktivieren+%C3%9Cbung',active:true,category:'sport'},
+    {id:'sport_hip_circles_30',title:'30 Sekunden Hüftkreisen',points:6,icon:'⭕',desc:'Kreise die Hüfte locker 30 Sekunden in beide Richtungen.',url:'https://www.youtube.com/results?search_query=H%C3%BCftkreisen+%C3%9Cbung',active:true,category:'sport'},
+    {id:'sport_standing_crunch_12',title:'12 Standing Crunches',points:10,icon:'🧍',desc:'Im Stand Knie und Ellenbogen diagonal zusammenführen.',url:'https://www.youtube.com/results?search_query=Standing+Crunches+richtig',active:true,category:'sport'},
+    {id:'sport_mountain_20',title:'20 Mountain Climbers',points:12,icon:'⛰️',desc:'Mache 20 kontrollierte Mountain Climbers. Langsame Variante erlaubt.',url:'https://www.youtube.com/results?search_query=Mountain+Climbers+richtig',active:true,category:'sport'},
+    {id:'sport_wall_sit_30',title:'30 Sekunden Wandsitz',points:12,icon:'🧱',desc:'Setze dich mit dem Rücken an die Wand und halte 30 Sekunden.',url:'https://www.youtube.com/results?search_query=Wandsitz+richtig',active:true,category:'sport'},
+    {id:'sport_superman_12',title:'12 Superman',points:10,icon:'🦸',desc:'Bauchlage, Arme und Beine leicht anheben, Rücken kontrolliert aktivieren.',url:'https://www.youtube.com/results?search_query=Superman+%C3%9Cbung+richtig',active:true,category:'sport'},
+    {id:'sport_cat_cow_60',title:'60 Sekunden Cat-Cow',points:8,icon:'🐈',desc:'Mobilisiere die Wirbelsäule langsam im Vierfüßlerstand.',url:'https://www.youtube.com/results?search_query=Cat+Cow+%C3%9Cbung',active:true,category:'sport'},
+    {id:'sport_chair_squats_12',title:'12 Stuhl-Kniebeugen',points:10,icon:'🪑',desc:'Setze dich kontrolliert auf einen Stuhl und stehe wieder auf.',url:'https://www.youtube.com/results?search_query=Stuhl+Kniebeugen+%C3%9Cbung',active:true,category:'sport'},
+    {id:'sport_step_touch_60',title:'60 Sekunden Step Touch',points:8,icon:'🎵',desc:'Leichter Step Touch im Stand, Arme locker mitnehmen.',url:'https://www.youtube.com/results?search_query=Step+Touch+Fitness',active:true,category:'sport'},
+    {id:'sport_pushup_knees_8',title:'8 Knie-Liegestütze',points:10,icon:'💪',desc:'Mache 8 Liegestütze auf den Knien, Körper stabil halten.',url:'https://www.youtube.com/results?search_query=Knie+Liegest%C3%BCtze+richtig',active:true,category:'sport'},
+    {id:'sport_sit_to_stand_15',title:'15 Aufstehen-Hinsetzen',points:10,icon:'⬆️',desc:'Stehe 15-mal kontrolliert vom Stuhl auf und setze dich wieder.',url:'https://www.youtube.com/results?search_query=Sit+to+Stand+%C3%9Cbung',active:true,category:'sport'},
+    {id:'sport_ankle_mobility_60',title:'60 Sekunden Fußgelenke mobilisieren',points:6,icon:'🦶',desc:'Kreise und bewege beide Fußgelenke für 60 Sekunden.',url:'https://www.youtube.com/results?search_query=Fu%C3%9Fgelenk+Mobilisation+%C3%9Cbung',active:true,category:'sport'},
+    {id:'sport_hamstring_stretch_60',title:'60 Sekunden Beinrückseite dehnen',points:8,icon:'🦵',desc:'Dehne die Beinrückseite sanft ohne Federn.',url:'https://www.youtube.com/results?search_query=Beinr%C3%BCckseite+dehnen',active:true,category:'sport'},
+    {id:'sport_chest_opener_60',title:'60 Sekunden Brust öffnen',points:8,icon:'👐',desc:'Öffne die Brust, ziehe Schultern nach hinten und atme ruhig.',url:'https://www.youtube.com/results?search_query=Brust%C3%B6ffner+Dehnung',active:true,category:'sport'},
+    {id:'sport_balance_30',title:'30 Sekunden Einbeinstand',points:8,icon:'⚖️',desc:'Stehe 30 Sekunden auf einem Bein, dann wechseln.',url:'https://www.youtube.com/results?search_query=Einbeinstand+%C3%9Cbung',active:true,category:'sport'},
+    {id:'sport_high_knees_30',title:'30 Sekunden Knieheben',points:10,icon:'🏃',desc:'Hebe die Knie im Stand 30 Sekunden kontrolliert an.',url:'https://www.youtube.com/results?search_query=High+Knees+richtig',active:true,category:'sport'},
+    {id:'sport_shadow_box_30',title:'30 Sekunden Schattenboxen',points:10,icon:'🥊',desc:'Boxe 30 Sekunden locker in die Luft, Schultern entspannt.',url:'https://www.youtube.com/results?search_query=Schattenboxen+Anf%C3%A4nger',active:true,category:'sport'},
+    {id:'sport_side_plank_15',title:'15 Sekunden Seitstütz je Seite',points:12,icon:'📐',desc:'Halte den Seitstütz 15 Sekunden je Seite. Knie-Variante erlaubt.',url:'https://www.youtube.com/results?search_query=Seitst%C3%BCtz+richtig',active:true,category:'sport'},
+    {id:'sport_reverse_fly_12',title:'12 Reverse Fly ohne Gewicht',points:8,icon:'🪽',desc:'Beuge dich leicht vor und ziehe die Arme kontrolliert nach außen.',url:'https://www.youtube.com/results?search_query=Reverse+Fly+ohne+Gewicht',active:true,category:'sport'},
+    {id:'sport_triceps_dips_8',title:'8 Trizeps-Dips am Stuhl',points:12,icon:'🪑',desc:'Mache 8 vorsichtige Dips am stabilen Stuhl.',url:'https://www.youtube.com/results?search_query=Trizeps+Dips+Stuhl+richtig',active:true,category:'sport'},
+    {id:'sport_good_morning_12',title:'12 Good Mornings',points:8,icon:'🙇',desc:'Hände an die Hüfte, Rücken gerade, aus der Hüfte nach vorne beugen.',url:'https://www.youtube.com/results?search_query=Good+Morning+%C3%9Cbung+richtig',active:true,category:'sport'},
+    {id:'sport_heel_taps_20',title:'20 Heel Taps',points:10,icon:'👟',desc:'Rückenlage, Fersen abwechselnd antippen, Bauchspannung halten.',url:'https://www.youtube.com/results?search_query=Heel+Taps+%C3%9Cbung',active:true,category:'sport'},
+    {id:'sport_world_greatest_2',title:'2 Minuten Mobility Flow',points:12,icon:'🌊',desc:'Mache einen ruhigen Ganzkörper-Mobility-Flow für 2 Minuten.',url:'https://www.youtube.com/results?search_query=Mobility+Flow+2+Minuten',active:true,category:'sport'},
+    {id:'sport_stairs_2',title:'2 Minuten Treppen gehen',points:12,icon:'🪜',desc:'Gehe 2 Minuten locker Treppen oder simuliere Step-ups.',url:'https://www.youtube.com/results?search_query=Step+Ups+Treppen+%C3%9Cbung',active:true,category:'sport'},
+    {id:'sport_fitness_30',title:'Fitness gehen für mind. 30 Min',points:20,icon:'🏃',desc:'Optional: Gehe mindestens 30 Minuten zum Sport/Fitness oder mache ein leichtes bis mittleres Workout.',url:'https://www.youtube.com/results?search_query=30+Minuten+Fitness+Workout+Anf%C3%A4nger',active:true,category:'sport',optional:true},
+    {id:'sport_walk_10',title:'Spazieren gehen für 10 Minuten',points:10,icon:'🌳',desc:'Optional: Gehe mindestens 10 Minuten spazieren.',url:'https://www.youtube.com/results?search_query=10+Minuten+Spaziergang+Gesundheit',active:true,category:'sport',optional:true},
+  ].map(x=>Object.assign({recurrence:'daily',createdAt:new Date().toISOString()},x));}
   function similar(a,b){a=String(a||'').toLowerCase();b=String(b||'').toLowerCase();return a===b||a.includes(b)||b.includes(a)}
+  function seededDailySportList(list, count){
+    const d=today().replace(/-/g,''); let seed=parseInt(d,10)||Date.now();
+    const arr=(list||[]).slice();
+    function rnd(){seed=(seed*9301+49297)%233280;return seed/233280;}
+    for(let i=arr.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t;}
+    return arr.slice(0,count);
+  }
   function migrateChallenges(){
     const old=(window.challenges||read('challenges',[])||[]).filter(Boolean);
-    const out=sportsDefaults().map(def=>{
+    let all=sportsDefaults().map(def=>{
       const prev=old.find(o=>similar(o.title||o.name,def.title)||String(o.id)===def.id);
-      return Object.assign({},def,prev?{desc:prev.desc||def.desc,url:prev.url||prev.video||prev.youtube||prev.youtubeUrl||prev.link||def.url,points:parseInt(prev.points,10)||def.points,active:prev.active!==false}:{});
+      return Object.assign({},def,prev?{url:prev.url||prev.video||prev.youtube||prev.youtubeUrl||prev.link||def.url,active:prev.active!==false}:{});
     });
+    const required=seededDailySportList(all.filter(c=>!c.optional),7);
+    const optional=all.filter(c=>c.optional);
+    const out=required.concat(optional);
     window.challenges=out; try{challenges=out}catch(e){} write('challenges',out);
-    let cps=(window.challengePlayers||read('challenge_players',[])||[]).filter(p=>{
-      const t=String((p&&[p.id,p.email,p.name].join(' '))||'').toLowerCase();
-      return p && !/demo|demo@example\.com|^du$|^ich$/.test(t.trim());
-    });
+
     const a=me();
-    if(!cps.some(p=>String(p.id||p.email||'').toLowerCase()===a.id)) cps.unshift({id:a.id,email:a.email,name:a.name,createdAt:new Date().toISOString(),online:true});
+    let cps=(window.challengePlayers||read('challenge_players',[])||[]).filter(p=>{
+      const raw=String((p&&[p.id,p.email,p.name].join(' '))||'').toLowerCase().trim();
+      if(!p||!raw)return false;
+      if(/demo|demo@example\.com/.test(raw))return false;
+      const id=String(p.email||p.id||'').toLowerCase().trim();
+      const nm=String(p.name||'').toLowerCase().trim();
+      if((nm==='du'||nm==='ich'||id==='du'||id==='ich'||id==='local-user') && id!==a.id && id!==a.email)return false;
+      return true;
+    }).map(p=>{
+      const id=String(p.email||p.id||'').toLowerCase().trim();
+      if(id===a.id||id===a.email||String(p.name||'').toLowerCase().trim()==='ich'||String(p.name||'').toLowerCase().trim()==='du'){
+        return Object.assign({},p,{id:a.id,email:a.email||a.id,name:a.name||a.email||p.name||'Mitspieler',online:true});
+      }
+      return p;
+    });
+    if(a.email && !cps.some(p=>String(p.id||p.email||'').toLowerCase()===a.id)) cps.unshift({id:a.id,email:a.email,name:a.name||a.email,createdAt:new Date().toISOString(),online:true});
+    const seen=new Set(); cps=cps.filter(p=>{const id=String(p.email||p.id||'').toLowerCase(); if(!id||seen.has(id))return false; seen.add(id); return true;});
     window.challengePlayers=cps; try{challengePlayers=cps}catch(e){} write('challenge_players',cps);
-    let comps=(window.challengeCompletions||read('challenge_completions',[])||[]).filter(c=>c&&out.some(ch=>String(ch.id)===String(c.challengeId)));
+
+    let comps=(window.challengeCompletions||read('challenge_completions',[])||[]).filter(c=>c&&all.some(ch=>String(ch.id)===String(c.challengeId)));
     comps=comps.map(c=>Object.assign({},c,{playerId:String(c.playerId||c.userEmail||c.email||a.id).toLowerCase(),date:String(c.date||c.completedDate||c.createdAt||today()).slice(0,10)}));
     window.challengeCompletions=comps; try{challengeCompletions=comps}catch(e){} write('challenge_completions',comps);
-    return {challenges:out,players:cps,completions:comps,account:a};
+    return {challenges:out,allChallenges:all,players:cps,completions:comps,account:a};
   }
   function currentIds(){const a=me();const ids=new Set([a.id]); if(a.email)ids.add(a.email); return ids;}
   function isMine(c){const ids=currentIds();const who=String(c.playerId||c.userEmail||c.email||'').toLowerCase();return !who||ids.has(who)}
@@ -4136,11 +4194,11 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
   window.buildDefaultChallenges=sportsDefaults;
   window.renderChallenges=function(){
     const data=migrateChallenges(); const list=$('challenges-list'), board=$('leaderboard-list'); if(!list||!board)return;
-    const renderOne=ch=>{const done=isDone(ch.id),link=(ch.url||ch.video||ch.youtube||ch.youtubeUrl||ch.link||'');return '<div class="challenge-item '+(done?'challenge-done':'')+'"><div class="challenge-icon">'+esc(ch.icon||'🏆')+'</div><div class="challenge-body"><div class="challenge-name">'+esc(ch.title||ch.name||'Sportübung')+'</div><div class="challenge-meta">'+esc(ch.desc||'')+' · '+(parseInt(ch.points,10)||0)+' Punkte</div>'+(link?'<a class="challenge-meta" href="'+esc(link)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">So geht die Übung</a>':'')+'</div><span class="points-pill">+'+(parseInt(ch.points,10)||0)+'</span>'+(done?'<button class="btn btn-success btn-sm" disabled>Erledigt</button><button class="btn btn-ghost btn-sm" onclick="undoChallenge(\''+esc(ch.id)+'\')">Zurück</button>':'<button class="btn btn-primary btn-sm" onclick="completeChallenge(\''+esc(ch.id)+'\')">Erledigen</button>')+'</div>';};
+    const renderOne=ch=>{const done=isDone(ch.id),link=(ch.url||ch.video||ch.youtube||ch.youtubeUrl||ch.link||'');return '<div class="challenge-item '+(done?'challenge-done':'')+'"><div class="challenge-icon">'+esc(ch.icon||'🏆')+'</div><div class="challenge-body"><div class="challenge-name">'+esc(ch.title||ch.name||'Sportübung')+'</div><div class="challenge-meta">'+esc(ch.desc||'')+' · '+(parseInt(ch.points,10)||0)+' Punkte</div>'+(link?'<a class="challenge-meta" href="'+esc(link)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">So geht die Übung</a>':'')+'</div><span class="points-pill">+'+(parseInt(ch.points,10)||0)+'</span>'+(done?'<button class="btn btn-success btn-sm" disabled>Erledigt</button><button class="btn btn-undo btn-sm" title="Heute rückgängig machen" onclick="undoChallenge(\''+esc(ch.id)+'\')">↶</button>':'<button class="btn btn-primary btn-sm" onclick="completeChallenge(\''+esc(ch.id)+'\')">Erledigen</button>')+'</div>';};
     const required=data.challenges.filter(c=>c.active!==false&&!c.optional), optional=data.challenges.filter(c=>c.active!==false&&c.optional);
     list.innerHTML=required.map(renderOne).join('')+(optional.length?'<div class="section-label" style="padding:14px 16px 6px">Optionale Sportpunkte</div>'+optional.map(renderOne).join(''):'');
     const players=data.players.slice().sort((a,b)=>stats(String(b.email||b.id).toLowerCase()).totalPoints-stats(String(a.email||a.id).toLowerCase()).totalPoints);
-    board.innerHTML=players.map((p,i)=>{const id=String(p.email||p.id||'').toLowerCase(),s=stats(id),mine=currentIds().has(id),med=i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);return '<div class="leader-row"><div class="leader-rank">'+med+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(mine?' · Du':'')+(p.online?'<span class="live-dot"></span>':'')+'</div><div class="leader-detail">Heute: '+s.todayPoints+' P · Gesamt: '+s.totalPoints+' P · '+s.totalCount+' erledigt</div></div><div class="leader-score">'+s.totalPoints+'</div></div>';}).join('')||'<div class="dash-empty">Noch keine Mitspieler</div>';
+    board.innerHTML=players.map((p,i)=>{const id=String(p.email||p.id||'').toLowerCase(),s=stats(id),mine=currentIds().has(id),med=i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);return '<div class="leader-row"><div class="leader-rank">'+med+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(p.online?'<span class="live-dot"></span>':'')+'</div><div class="leader-detail">Heute: '+s.todayPoints+' P · Gesamt: '+s.totalPoints+' P · '+s.totalCount+' erledigt</div></div><div class="leader-score">'+s.totalPoints+'</div></div>';}).join('')||'<div class="dash-empty">Noch keine Mitspieler</div>';
     cleanupChallengeCards();
   };
   window.completeChallenge=function(id){
@@ -4163,7 +4221,7 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
   const googleKey='change_google_calendar_sync_enabled';
   function googleOn(){try{return localStorage.getItem(googleKey)==='1'||localStorage.getItem('change_v1_google_calendar_sync')==='true'}catch(e){return false}}
   function setGoogle(v){raw(googleKey,v?'1':'0');raw('change_v1_google_calendar_sync',v?'true':'false');window.googleCalendarSyncEnabled=!!v;}
-  window.openPushSettingsPanel=function(){const live=read('live_sync_enabled',true)!==false;const online=(window.getVisibleContestPlayers?window.getVisibleContestPlayers():[]).filter(p=>p.online).length;const html='<div class="push-box"><div class="challenge-title">Live-Sync</div><div class="settings-hint" style="margin-top:8px">Google-Kalender-Sync ist nur in den Kalender-Einstellungen. Push steuerst du über die Glocke.</div></div><div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">Live-Mitspieler <span class="status-pill '+(live?'status-on':'status-off')+'">'+(live?'AKTIV':'AUS')+'</span></div><div class="toggle-sub">Online: '+online+' · synchronisiert Mitspieler und Punkte.</div></div><label class="switch"><input type="checkbox" '+(live?'checked':'')+' onchange="setLiveSyncEnabled&&setLiveSyncEnabled(this.checked)"><span class="slider"></span></label></div>';if(typeof openPanel==='function')openPanel('Live-Sync',html)};
+  window.openPushSettingsPanel=function(){const live=read('live_sync_enabled',true)!==false;const online=(window.getVisibleContestPlayers?window.getVisibleContestPlayers():[]).filter(p=>p.online).length;const html='<div class="push-box"><div class="challenge-title">Live-Sync</div><div class="settings-hint" style="margin-top:8px">Push steuerst du über die Glocke. Live-Sync synchronisiert nur Mitspieler und Punkte.</div></div><div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">Live-Mitspieler <span class="status-pill '+(live?'status-on':'status-off')+'">'+(live?'AKTIV':'AUS')+'</span></div><div class="toggle-sub">Online: '+online+' · synchronisiert Mitspieler und Punkte.</div></div><label class="switch"><input type="checkbox" '+(live?'checked':'')+' onchange="setLiveSyncEnabled&&setLiveSyncEnabled(this.checked)"><span class="slider"></span></label></div>';if(typeof openPanel==='function')openPanel('Live-Sync',html)};
   window.openCalendarSettings=function(){const states=window.STATE_OPTIONS||{ALL:'Alle Bundesländer',BW:'Baden-Württemberg',BY:'Bayern','BY-AUGSBURG':'Bayern · Augsburg',BE:'Berlin',BB:'Brandenburg',HB:'Bremen',HH:'Hamburg',HE:'Hessen',MV:'Mecklenburg-Vorpommern',NI:'Niedersachsen',NW:'Nordrhein-Westfalen',RP:'Rheinland-Pfalz',SL:'Saarland',SN:'Sachsen',ST:'Sachsen-Anhalt',SH:'Schleswig-Holstein',TH:'Thüringen'};const o=read('change_v1_calendar_view_options',{showHolidays:true,showChallengeDots:true,showWeekNumbers:true});const st=(window.calendarSettings&&calendarSettings.state)||localStorage.getItem('holiday_state')||'ALL';const opts=Object.entries(states).map(([k,v])=>'<option value="'+esc(k)+'" '+(k===st?'selected':'')+'>'+esc(v)+'</option>').join('');const row=(t,id,on,sub)=>'<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">'+t+'</div><div class="toggle-sub">'+sub+'</div></div><label class="switch"><input type="checkbox" id="'+id+'" '+(on?'checked':'')+'><span class="slider"></span></label></div>';const html='<div class="fg"><label class="flabel">Bundesland für Feiertage</label><select class="finput" id="holiday-state">'+opts+'</select></div>'+row('Feiertage anzeigen','toggle-holidays',o.showHolidays!==false,'Direkt im Kalender und Dashboard.')+row('Challenge-Punkte anzeigen','toggle-dots',o.showChallengeDots!==false,'Nur erledigte Punkte klein unten rechts.')+row('Kalenderwochen anzeigen','toggle-kw',o.showWeekNumbers!==false,'KW links unten im Kalender.')+row('Google-Kalender-Sync','toggle-google-sync',googleOn(),'Beim Aktivieren wird neu synchronisiert.')+'<button class="btn btn-primary btn-full" onclick="saveCalSettings()">Speichern</button>';if(typeof openPanel==='function')openPanel('Kalender-Einstellungen',html)};
   window.saveCalSettings=function(){const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked};write('change_v1_calendar_view_options',o);write('calendar_settings',o);try{if(!window.calendarSettings)window.calendarSettings={};calendarSettings.state=$('holiday-state')?.value||'ALL';localStorage.setItem('holiday_state',calendarSettings.state)}catch(e){}const g=!!$('toggle-google-sync')?.checked,changed=g!==googleOn();setGoogle(g);if(typeof closePanel==='function')closePanel();if(changed&&g){try{loadGoogleEvents&&loadGoogleEvents()}catch(e){}}try{renderCalendar()}catch(e){}try{buildDashboard()}catch(e){}if(typeof toast==='function')toast('Kalender-Einstellungen gespeichert ✓','ok')};
 
@@ -4246,85 +4304,6 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
 })();
 </script>
 <script>
-/* CHANGE PATCH: Sync-Panel bereinigt + Google-Kalender-Sync-Schalter */
-(function(){
-  const PATCH='sync-panel-google-toggle';
-  const KEY='change_google_calendar_sync_enabled';
-  const get=(k,d)=>{try{const v=localStorage.getItem(k); if(v===null)return d; return v==='1'||v==='true'?true:v==='0'||v==='false'?false:JSON.parse(v);}catch(e){return d;}};
-  const set=(k,v)=>{try{localStorage.setItem(k,v?'1':'0');}catch(e){}};
-  const esc2=(s)=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-  const googleSyncOn=()=>get(KEY,true)!==false;
-
-  const originalLoadGoogleEvents=window.loadGoogleEvents;
-  window.loadGoogleEvents=async function(){
-    if(!googleSyncOn()){
-      try{window.gEvents=[];}catch(e){}
-      try{ if(window.currentMainView==='calendar'){renderCalendar();renderUpcoming&&renderUpcoming();} if(window.currentMainView==='dashboard')buildDashboard&&buildDashboard(); }catch(e){}
-      return;
-    }
-    if(typeof originalLoadGoogleEvents==='function') return originalLoadGoogleEvents.apply(this,arguments);
-  };
-
-  const originalSyncLocal=window.syncLocalEventToGoogle;
-  window.syncLocalEventToGoogle=async function(ev){
-    if(!googleSyncOn()) return false;
-    if(typeof originalSyncLocal==='function') return originalSyncLocal.apply(this,arguments);
-    return false;
-  };
-
-  const originalReliable=window.syncEventToGoogleReliable;
-  window.syncEventToGoogleReliable=async function(ev){
-    if(!googleSyncOn()){ if(typeof toast==='function')toast('Google-Kalender-Sync ist deaktiviert',''); return false; }
-    if(typeof originalReliable==='function') return originalReliable.apply(this,arguments);
-    if(typeof window.syncLocalEventToGoogle==='function') return window.syncLocalEventToGoogle(ev);
-    return false;
-  };
-
-  window.setGoogleCalendarSyncEnabled=async function(enabled){
-    const on=!!enabled;
-    set(KEY,on);
-    try{
-      if(!on){
-        window.gEvents=[];
-        if(typeof renderCalendar==='function')renderCalendar();
-        if(typeof renderUpcoming==='function')renderUpcoming();
-        if(typeof buildDashboard==='function')buildDashboard();
-        if(typeof toast==='function')toast('Google-Kalender-Sync deaktiviert','');
-      }else{
-        if(!window.accessToken){ if(typeof toast==='function')toast('Bitte zuerst mit Google anmelden','err'); }
-        else{
-          if(typeof toast==='function')toast('Google-Kalender-Sync wird aktualisiert…','');
-          if(typeof originalLoadGoogleEvents==='function') await originalLoadGoogleEvents();
-          const evs=(window.events||[]).filter(ev=>ev && ev.source!=='google' && !ev.googleEventId && !ev.syncedToGoogle);
-          for(const ev of evs.slice(0,25)){
-            try{ if(typeof originalSyncLocal==='function') await originalSyncLocal(ev); }
-            catch(e){ console.warn(PATCH,'sync one',e); }
-          }
-          if(typeof buildDashboard==='function')buildDashboard();
-          if(typeof renderCalendar==='function')renderCalendar();
-          if(typeof toast==='function')toast('Google-Kalender-Sync aktualisiert ✓','ok');
-        }
-      }
-    }catch(e){ console.warn(PATCH,e); if(typeof toast==='function')toast('Google-Kalender-Sync konnte nicht aktualisiert werden','err'); }
-    setTimeout(()=>{try{openPushSettingsPanel&&openPushSettingsPanel();}catch(e){}},160);
-  };
-
-  window.openPushSettingsPanel=function(){
-    const liveOn=get('change_v1_live_sync_enabled', get('live_sync_enabled',true))!==false;
-    const googleOn=googleSyncOn();
-    let online=0; try{ online=liveOn?((window.challengePlayers||[]).filter(p=>p.online).length||0):0; }catch(e){}
-    const googleStatus=googleOn?(window.accessToken?'AKTIV':'ANMELDUNG NÖTIG'):'DEAKTIVIERT';
-    const googleClass=googleOn&&window.accessToken?'status-on':(googleOn?'status-warn':'status-off');
-    const html=
-      '<div class="push-box"><div class="challenge-title">Live- & Kalender-Sync</div><div class="settings-hint" style="margin-top:8px">Push-Benachrichtigungen steuerst du nur noch über die Glocke.</div></div>'+ 
-      '<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">Live-Mitspieler <span class="status-pill '+(liveOn?'status-on':'status-off')+'">'+(liveOn?'VERBUNDEN':'DEAKTIVIERT')+'</span></div><div class="toggle-sub">Aktuell online: '+online+' · zeigt Kontest-Daten im Dashboard und bei Challenges.</div></div><label class="switch"><input type="checkbox" '+(liveOn?'checked':'')+' onchange="setLiveSyncEnabled&&setLiveSyncEnabled(this.checked)"><span class="slider"></span></label></div>'+ 
-      '<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">Google-Kalender-Sync <span class="status-pill '+googleClass+'">'+googleStatus+'</span></div><div class="toggle-sub">Zeigt Google-Termine im Kalender/Dashboard und überträgt lokale Termine zu Google. Beim Aktivieren wird erneut synchronisiert.</div></div><label class="switch"><input type="checkbox" '+(googleOn?'checked':'')+' onchange="setGoogleCalendarSyncEnabled(this.checked)"><span class="slider"></span></label></div>';
-    if(typeof openPanel==='function') openPanel('Live- & Kalender-Sync',html);
-  };
-
-  try{ const btn=document.querySelector('[title="Push & Live-Sync"]'); if(btn)btn.title='Live- & Kalender-Sync'; }catch(e){}
-  setTimeout(()=>{try{ if(!googleSyncOn()){window.gEvents=[];} if(typeof buildDashboard==='function')buildDashboard(); if(typeof renderCalendar==='function')renderCalendar(); }catch(e){}},250);
-})();
 /* FINAL UI CALENDAR FIX */
 (function(){
 const DAY=86400000,$=id=>document.getElementById(id),E=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),D=d=>typeof dateKey==='function'?dateKey(d):new Date(d).toISOString().slice(0,10),PD=s=>new Date(String(s).slice(0,10)+'T12:00:00'),AD=(d,n)=>typeof addDays==='function'?addDays(d,n):new Date(new Date(d).getTime()+n*DAY);
