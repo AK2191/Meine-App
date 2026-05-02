@@ -1,803 +1,10 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<meta name="theme-color" content="#F8F7F3">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Change">
-<title>Change · Workspace</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://accounts.google.com/gsi/client" async></script>
-<link rel="manifest" href="./manifest.json">
-<link rel="stylesheet" href="./change.css">
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging-compat.js"></script>
-<script src="./firebase-config.js"></script>
-<style>
-/* ═══════════════════════════════════════
-   CHANGE · LIGHT DESIGN SYSTEM
-   Minimalistisch · Warm · Klar
-═══════════════════════════════════════ */
-:root{
-  /* Surfaces */
-  --bg:#F8F7F3; --bg2:#FFFFFF; --bg3:#F1F0EB;
-  --s1:#FFFFFF; --s2:#F5F4EF; --s3:#EDECEA;
-  /* Borders */
-  --b1:rgba(0,0,0,.07); --b2:rgba(0,0,0,.12); --b3:rgba(0,0,0,.20);
-  /* Accent — Forest Green */
-  --acc:#2D6A4F; --acc-h:#245C43; --acc-d:rgba(45,106,79,.09); --acc-d2:rgba(45,106,79,.05);
-  /* Status */
-  --grn:#16A34A; --grn-d:rgba(22,163,74,.09);
-  --amb:#D97706; --amb-d:rgba(217,119,6,.09);
-  --red:#DC2626; --red-d:rgba(220,38,38,.09);
-  --pur:#7C3AED; --pur-d:rgba(124,58,237,.09);
-  /* Text */
-  --t1:#18181B; --t2:#3F3F46; --t3:#71717A; --t4:#A1A1AA; --t5:#D4D4D8;
-  /* Type */
-  --font:'Plus Jakarta Sans',system-ui,sans-serif;
-  --mono:'JetBrains Mono',ui-monospace,monospace;
-  /* Shape */
-  --r:10px; --rsm:6px; --rlg:16px; --rxl:24px;
-  /* Shadows — warm, subtle */
-  --sh:0 1px 3px rgba(0,0,0,.05),0 4px 12px rgba(0,0,0,.06);
-  --sh-lg:0 2px 8px rgba(0,0,0,.06),0 16px 40px rgba(0,0,0,.10);
-  --nav-h:58px;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html{height:100%;height:-webkit-fill-available}
-body{
-  font-family:var(--font);background:var(--bg);color:var(--t1);
-  height:100%;min-height:100vh;min-height:-webkit-fill-available;
-  overflow:hidden;-webkit-font-smoothing:antialiased;line-height:1.5;
-}
-::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--b2);border-radius:10px}
-#app{display:flex;flex-direction:column;height:100vh;height:-webkit-fill-available}
-
-/* ── LOADING ─────────────────────────── */
-#loading{
-  position:fixed;inset:0;background:var(--bg);z-index:9999;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
-  transition:opacity .4s;
-}
-.ld-icon{
-  width:56px;height:56px;border-radius:16px;background:var(--acc);
-  display:flex;align-items:center;justify-content:center;
-  animation:ld-pulse 2s ease-in-out infinite;
-}
-.ld-icon svg{width:28px;height:28px;stroke:white;stroke-width:2}
-.ld-text{font-size:13px;color:var(--t4);font-weight:500;letter-spacing:.3px}
-@keyframes ld-pulse{0%,100%{box-shadow:0 0 0 0 rgba(45,106,79,.3)}50%{box-shadow:0 0 0 12px rgba(45,106,79,0)}}
-
-/* ── SETUP MODAL ─────────────────────── */
-#setup-modal{
-  display:none;position:fixed;inset:0;z-index:800;
-  background:rgba(0,0,0,.35);backdrop-filter:blur(6px);
-  align-items:center;justify-content:center;padding:20px;
-}
-#setup-modal.show{display:flex}
-.modal-box{
-  background:var(--s1);border:1px solid var(--b1);border-radius:var(--rxl);
-  padding:36px 32px;width:min(520px,100%);box-shadow:var(--sh-lg);
-}
-.modal-badge{
-  display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;
-  background:var(--acc-d);border:1px solid rgba(45,106,79,.2);
-  font-size:11px;font-weight:700;color:var(--acc);text-transform:uppercase;letter-spacing:.7px;margin-bottom:16px;
-}
-.modal-h{font-size:22px;font-weight:800;color:var(--t1);margin-bottom:8px;letter-spacing:-.4px}
-.modal-sub{font-size:14px;color:var(--t3);line-height:1.6;margin-bottom:28px}
-.setup-steps{display:flex;flex-direction:column;gap:14px;margin-bottom:24px}
-.step{display:flex;gap:12px;align-items:flex-start}
-.step-n{
-  width:26px;height:26px;border-radius:50%;flex-shrink:0;
-  background:var(--acc-d);border:1px solid rgba(45,106,79,.2);
-  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--acc);margin-top:1px;
-}
-.step-t{font-size:13px;color:var(--t2);line-height:1.55}
-.step-t strong{color:var(--t1)}
-.step-t code{font-family:var(--mono);font-size:11.5px;background:var(--s2);padding:1px 6px;border-radius:4px;color:var(--acc)}
-.fl-input{
-  width:100%;background:var(--bg);border:1px solid var(--b2);border-radius:var(--r);
-  padding:11px 13px;font-family:var(--font);font-size:14px;color:var(--t1);
-  outline:none;transition:border-color .15s,box-shadow .15s;
-}
-.fl-input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-d)}
-.fl-input::placeholder{color:var(--t4)}
-.fl-label{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:block}
-.fl-group{margin-bottom:14px}
-.btn-row{display:flex;gap:8px;margin-top:4px}
-
-/* ── BUTTONS ─────────────────────────── */
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:7px;
-  padding:10px 18px;border-radius:var(--r);border:none;
-  font-family:var(--font);font-size:14px;font-weight:600;
-  cursor:pointer;transition:all .15s;white-space:nowrap;line-height:1;
-}
-.btn-primary{background:var(--acc);color:#fff}
-.btn-primary:hover{background:var(--acc-h);transform:translateY(-1px);box-shadow:0 4px 16px rgba(45,106,79,.3)}
-.btn-secondary{background:var(--s2);color:var(--t2);border:1px solid var(--b1)}
-.btn-secondary:hover{background:var(--s3);color:var(--t1)}
-.btn-ghost{background:transparent;color:var(--t3);border:1px solid var(--b1)}
-.btn-ghost:hover{border-color:var(--b2);color:var(--t2);background:var(--s2)}
-.btn-danger{background:var(--red-d);color:var(--red)}
-.btn-danger:hover{background:rgba(220,38,38,.16)}
-.btn-undo{background:rgba(220,38,38,.08);color:#B91C1C;border-color:rgba(220,38,38,.18);font-weight:800;min-width:36px}
-.btn-undo:hover{background:rgba(220,38,38,.14)}
-.btn-success{background:var(--grn-d);color:var(--grn)}
-.btn-success:hover{background:rgba(22,163,74,.16)}
-.btn-full{width:100%}
-.btn svg{width:15px;height:15px;stroke-width:2;flex-shrink:0}
-.btn-sm{padding:6px 11px;font-size:12px;border-radius:var(--rsm)}
-
-/* ── LOGIN ───────────────────────────── */
-#login-screen{
-  display:none;flex-direction:column;align-items:center;justify-content:center;
-  height:100%;padding:24px;background:var(--bg);
-}
-.login-card{
-  width:min(400px,100%);background:var(--s1);border:1px solid var(--b1);
-  border-radius:var(--rxl);padding:48px 40px 40px;box-shadow:var(--sh-lg);text-align:center;
-}
-@media(max-width:480px){.login-card{padding:36px 24px 32px;border-radius:var(--rlg)}}
-.login-logo{
-  width:60px;height:60px;border-radius:16px;background:var(--acc);
-  display:flex;align-items:center;justify-content:center;margin:0 auto 24px;
-  box-shadow:0 8px 24px rgba(45,106,79,.25);
-}
-.login-logo svg{width:30px;height:30px;stroke:white;stroke-width:1.8}
-.login-h{font-size:28px;font-weight:800;color:var(--t1);letter-spacing:-.5px;margin-bottom:6px}
-.login-sub{font-size:15px;color:var(--t3);line-height:1.5;margin-bottom:32px}
-.google-btn{
-  display:flex;align-items:center;justify-content:center;gap:10px;
-  width:100%;padding:13px 20px;background:var(--bg);border:1px solid var(--b2);border-radius:var(--r);
-  font-family:var(--font);font-size:14px;font-weight:600;color:var(--t1);
-  cursor:pointer;transition:all .2s;margin-bottom:10px;
-}
-.google-btn:hover{background:var(--s2);border-color:var(--b3);transform:translateY(-1px);box-shadow:var(--sh)}
-.google-btn svg{width:18px;height:18px;flex-shrink:0}
-.demo-btn{
-  display:flex;align-items:center;justify-content:center;
-  width:100%;padding:10px 20px;background:transparent;border:none;
-  font-family:var(--font);font-size:13px;color:var(--t4);cursor:pointer;transition:color .15s;
-}
-.demo-btn:hover{color:var(--t2)}
-.login-note{margin-top:20px;font-size:12px;color:var(--t5);line-height:1.5}
-
-/* ── MAIN APP ────────────────────────── */
-#main-app{display:none;flex-direction:column;height:100%;overflow:hidden}
-
-/* ── HEADER ──────────────────────────── */
-#header{
-  display:flex;align-items:center;gap:12px;padding:0 16px;height:56px;flex-shrink:0;
-  background:var(--s1);border-bottom:1px solid var(--b1);z-index:100;position:relative;
-}
-.h-logo{display:flex;align-items:center;gap:9px;flex-shrink:0}
-.h-logo-icon{
-  width:32px;height:32px;border-radius:9px;background:var(--acc);
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
-}
-.h-logo-icon svg{width:17px;height:17px;stroke:white;stroke-width:2}
-.h-logo-name{font-size:16px;font-weight:800;color:var(--t1);letter-spacing:-.3px}
-.h-sep{width:1px;height:20px;background:var(--b1);flex-shrink:0}
-.h-tabs{display:flex;align-items:center;gap:2px;flex:1}
-.h-tab{
-  display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--rsm);border:none;
-  font-family:var(--font);font-size:13px;font-weight:600;color:var(--t3);background:transparent;cursor:pointer;transition:all .15s;
-}
-.h-tab:hover{background:var(--s2);color:var(--t2)}
-.h-tab.active{background:var(--acc-d);color:var(--acc)}
-.h-tab svg{width:14px;height:14px;stroke-width:2;flex-shrink:0}
-#cal-controls{display:flex;align-items:center;gap:4px;flex-shrink:0}
-.h-nav-btn{
-  width:30px;height:30px;display:flex;align-items:center;justify-content:center;
-  border:none;background:var(--s2);border-radius:var(--rsm);cursor:pointer;color:var(--t3);transition:all .15s;
-}
-.h-nav-btn:hover{background:var(--s3);color:var(--t1)}
-.h-nav-btn svg{width:14px;height:14px;stroke-width:2.2}
-.h-month{font-size:14px;font-weight:700;color:var(--t1);padding:0 8px;white-space:nowrap;letter-spacing:-.2px;cursor:pointer}
-.h-today-btn{
-  padding:5px 10px;border:1px solid var(--b1);border-radius:var(--rsm);
-  background:transparent;font-family:var(--font);font-size:12px;font-weight:600;color:var(--t3);cursor:pointer;transition:all .15s;
-}
-.h-today-btn:hover{background:var(--s2);color:var(--t1)}
-.view-toggle{display:flex;background:var(--s2);border-radius:var(--rsm);padding:2px;gap:2px;flex-shrink:0}
-.vbtn{
-  padding:5px 10px;border:none;border-radius:4px;
-  font-family:var(--font);font-size:12px;font-weight:600;color:var(--t3);cursor:pointer;transition:all .15s;
-}
-.vbtn.active{background:var(--acc);color:#fff}
-.h-right{display:flex;align-items:center;gap:4px;flex-shrink:0}
-.icon-btn{
-  width:34px;height:34px;display:flex;align-items:center;justify-content:center;
-  border:none;background:transparent;border-radius:var(--rsm);cursor:pointer;color:var(--t3);transition:all .15s;position:relative;
-}
-.icon-btn:hover{background:var(--s2);color:var(--t1)}
-.icon-btn svg{width:17px;height:17px;stroke-width:1.8}
-.notif-dot{
-  position:absolute;top:5px;right:5px;width:7px;height:7px;
-  background:var(--red);border-radius:50%;border:1.5px solid var(--s1);display:none;
-}
-.avatar{
-  width:32px;height:32px;border-radius:50%;background:var(--acc);
-  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;
-  cursor:pointer;overflow:hidden;flex-shrink:0;transition:opacity .15s;
-}
-.avatar:hover{opacity:.85}
-.avatar img{width:100%;height:100%;object-fit:cover}
-@media(max-width:700px){
-  .h-sep,.h-logo-name,.h-today-btn,.view-toggle,.h-tabs,.desktop-only{display:none!important}
-  #header{padding:0 12px;gap:8px}
-  #cal-controls{flex:1}
-  .h-month{font-size:15px;flex:1;text-align:center}
-}
-
-/* ── CONTENT ─────────────────────────── */
-#content{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
-
-/* ── CALENDAR ────────────────────────── */
-#cal-body{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
-.wday-row{
-  display:grid;grid-template-columns:repeat(7,1fr);
-  background:var(--s1);border-bottom:1px solid var(--b1);flex-shrink:0;
-}
-.wday-cell{padding:8px 6px;text-align:center;font-size:11px;font-weight:700;color:var(--t4);letter-spacing:.6px;text-transform:uppercase}
-#month-grid{flex:1;display:grid;grid-template-rows:repeat(6,1fr);overflow:hidden}
-.week-row{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--b1)}
-.week-row:last-child{border-bottom:none}
-.day-cell{
-  border-right:1px solid var(--b1);padding:5px 5px 4px;
-  display:flex;flex-direction:column;gap:2px;overflow:hidden;cursor:pointer;transition:background .1s;min-height:0;
-  background:var(--s1);
-}
-.day-cell:last-child{border-right:none}
-.day-cell:hover{background:var(--bg)}
-.day-cell.other{opacity:.35}
-.day-cell.today .day-num-wrap{background:var(--acc);border-radius:50%;box-shadow:0 2px 8px rgba(45,106,79,.3)}
-.day-num-wrap{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.day-num{font-size:12px;font-weight:600;color:var(--t3);font-family:var(--mono);line-height:1}
-.day-cell.today .day-num{color:white}
-.day-cell.weekend .day-num{color:var(--t4)}
-.ev-chip{
-  font-size:10.5px;font-weight:500;padding:2px 5px;border-radius:4px;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;transition:opacity .1s;flex-shrink:0;
-}
-.ev-chip:hover{opacity:.75}
-.ev-chip.blue{background:rgba(45,106,79,.12);color:var(--acc)}
-.ev-chip.green{background:rgba(22,163,74,.12);color:var(--grn)}
-.ev-chip.amber{background:rgba(217,119,6,.12);color:var(--amb)}
-.ev-chip.red{background:rgba(220,38,38,.12);color:var(--red)}
-.ev-chip.purple{background:rgba(124,58,237,.12);color:var(--pur)}
-.more-chip{font-size:9.5px;color:var(--t4);padding:1px 3px}
-
-/* ── AGENDA ──────────────────────────── */
-#agenda-view{display:none;flex:1;overflow-y:auto;padding:16px;background:var(--bg)}
-.ag-group{margin-bottom:24px}
-.ag-header{display:flex;align-items:center;gap:14px;margin-bottom:10px}
-.ag-day-num{font-size:36px;font-weight:800;color:var(--t1);line-height:1;font-family:var(--mono);letter-spacing:-2px}
-.ag-day-num.today{color:var(--acc)}
-.ag-day-info{display:flex;flex-direction:column}
-.ag-weekday{font-size:14px;font-weight:700;color:var(--t1)}
-.ag-month-yr{font-size:12px;color:var(--t3)}
-.ag-events{display:flex;flex-direction:column;gap:6px;padding-left:50px}
-.ag-card{
-  background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);
-  padding:12px 14px;display:flex;gap:12px;align-items:flex-start;
-  cursor:pointer;transition:all .15s;position:relative;overflow:hidden;
-}
-.ag-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:2px 0 0 2px}
-.ag-card.blue::before{background:var(--acc)}.ag-card.green::before{background:var(--grn)}
-.ag-card.amber::before{background:var(--amb)}.ag-card.red::before{background:var(--red)}
-.ag-card.purple::before{background:var(--pur)}
-.ag-card:hover{border-color:var(--b2);transform:translateX(3px);box-shadow:var(--sh)}
-.ag-time{font-size:12px;color:var(--t3);font-family:var(--mono);white-space:nowrap;min-width:70px;padding-top:1px}
-.ag-body{flex:1;min-width:0}
-.ag-title{font-size:14px;font-weight:700;color:var(--t1);margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ag-desc{font-size:12px;color:var(--t3);line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.urgency-badge{font-size:10px;font-weight:700;padding:3px 7px;border-radius:20px;white-space:nowrap;flex-shrink:0;margin-top:1px}
-.ub-crit{background:var(--red-d);color:var(--red)}
-.ub-warn{background:var(--amb-d);color:var(--amb)}
-.ub-ok{background:var(--grn-d);color:var(--grn)}
-
-/* ── UPCOMING STRIP ───────────────────── */
-#upcoming-strip{
-  height:44px;background:var(--s1);border-top:1px solid var(--b1);
-  display:flex;align-items:center;gap:10px;padding:0 14px;flex-shrink:0;overflow:hidden;
-}
-.us-label{font-size:10px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.6px;flex-shrink:0}
-.us-items{display:flex;gap:7px;overflow-x:auto;flex:1;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.us-items::-webkit-scrollbar{display:none}
-.us-chip{
-  display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;
-  white-space:nowrap;font-size:12px;font-weight:600;flex-shrink:0;cursor:pointer;transition:opacity .1s;
-}
-.us-chip:hover{opacity:.8}
-.us-chip.blue{background:var(--acc-d);color:var(--acc)}
-.us-chip.green{background:var(--grn-d);color:var(--grn)}
-.us-chip.amber{background:var(--amb-d);color:var(--amb)}
-.us-chip.red{background:var(--red-d);color:var(--red)}
-.us-chip.purple{background:var(--pur-d);color:var(--pur)}
-
-/* ── DASHBOARD ───────────────────────── */
-#dashboard-view{display:none;flex:1;overflow-y:auto;padding:20px 20px 28px;background:var(--bg)}
-.dash-hello{margin-bottom:24px}
-.dash-hello h1{font-size:22px;font-weight:800;color:var(--t1);letter-spacing:-.4px;margin-bottom:3px}
-.dash-hello p{font-size:13px;color:var(--t3)}
-.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
-@media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:480px){.kpi-grid{grid-template-columns:repeat(2,1fr);gap:8px}}
-.kpi-card{
-  background:var(--s1);border:1px solid var(--b1);border-radius:var(--rlg);
-  padding:16px 14px 14px;cursor:pointer;transition:all .15s;box-shadow:var(--sh);
-}
-.kpi-card:hover{border-color:var(--b2);transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,.10)}
-.kpi-card.warn{border-color:rgba(217,119,6,.25);background:#FFFBF2}
-.kpi-card.danger{border-color:rgba(220,38,38,.25);background:#FEF9F9}
-.kpi-card.good{border-color:rgba(22,163,74,.25);background:#F2FAF6}
-.kpi-icon-wrap{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
-.kpi-icon-wrap.blue{background:var(--acc-d)}.kpi-icon-wrap.green{background:var(--grn-d)}
-.kpi-icon-wrap.amber{background:var(--amb-d)}.kpi-icon-wrap.red{background:var(--red-d)}
-.kpi-icon-wrap.purple{background:var(--pur-d)}
-.kpi-icon-wrap svg{width:18px;height:18px;stroke-width:1.8}
-.kpi-icon-wrap.blue svg{stroke:var(--acc)}.kpi-icon-wrap.green svg{stroke:var(--grn)}
-.kpi-icon-wrap.amber svg{stroke:var(--amb)}.kpi-icon-wrap.red svg{stroke:var(--red)}
-.kpi-icon-wrap.purple svg{stroke:var(--pur)}
-.kpi-num{font-size:30px;font-weight:800;color:var(--t1);line-height:1;letter-spacing:-1.5px;margin-bottom:4px;font-family:var(--mono)}
-.kpi-num.warn-color{color:var(--amb)}.kpi-num.danger-color{color:var(--red)}.kpi-num.good-color{color:var(--grn)}
-.kpi-label{font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
-.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
-@media(max-width:800px){.dash-grid{grid-template-columns:1fr}}
-.dash-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rlg);overflow:hidden;box-shadow:var(--sh)}
-.dash-card-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--b1)}
-.dash-card-title{font-size:14px;font-weight:700;color:var(--t1)}
-.dash-card-sub{font-size:12px;color:var(--t3)}
-.dash-card-body{max-height:260px;overflow-y:auto}
-.dash-row{
-  display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--b1);
-  cursor:pointer;transition:background .1s;
-}
-.dash-row:last-child{border-bottom:none}
-.dash-row:hover{background:var(--bg)}
-.dash-row-icon{width:32px;height:32px;border-radius:var(--rsm);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px}
-.dash-row-body{flex:1;min-width:0}
-.dash-row-title{font-size:13px;font-weight:600;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dash-row-sub{font-size:11.5px;color:var(--t3)}
-.dash-row-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0}
-.badge-red{background:var(--red-d);color:var(--red)}.badge-amber{background:var(--amb-d);color:var(--amb)}
-.badge-green{background:var(--grn-d);color:var(--grn)}.badge-blue{background:var(--acc-d);color:var(--acc)}
-.badge-gray{background:var(--s2);color:var(--t3)}
-.dash-empty{padding:20px 16px;font-size:13px;color:var(--t4);text-align:center}
-
-/* ── CHALLENGES ──────────────────────── */
-#challenges-view{display:none;flex:1;overflow:hidden;flex-direction:column}
-.list-header{
-  display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--b1);flex-shrink:0;
-  background:var(--s1);
-}
-.list-title{font-size:17px;font-weight:800;color:var(--t1);letter-spacing:-.3px;flex:1}
-.filter-row{display:flex;gap:6px;padding:10px 18px;border-bottom:1px solid var(--b1);overflow-x:auto;flex-shrink:0;scrollbar-width:none}
-.filter-row::-webkit-scrollbar{display:none}
-.filter-pill{
-  padding:5px 13px;border-radius:20px;border:1px solid var(--b1);
-  font-family:var(--font);font-size:12px;font-weight:600;color:var(--t3);background:transparent;cursor:pointer;transition:all .15s;white-space:nowrap;
-}
-.filter-pill:hover{border-color:var(--b2);color:var(--t2)}
-.filter-pill.active{background:var(--acc-d);border-color:rgba(45,106,79,.3);color:var(--acc)}
-.list-body{flex:1;overflow-y:auto;padding:14px 18px;background:var(--bg)}
-.list-item{
-  background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);
-  padding:14px 16px;margin-bottom:8px;cursor:pointer;transition:all .15s;
-  display:flex;align-items:flex-start;gap:12px;position:relative;
-}
-.list-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px}
-.list-item.status-offen::before{background:var(--amb)}.list-item.status-bezahlt::before{background:var(--grn)}
-.list-item.status-überfällig::before,.list-item.status-ueberfaellig::before{background:var(--red)}
-.list-item.status-aktiv::before{background:var(--grn)}.list-item.status-abgelaufen::before{background:var(--red)}
-.list-item.status-gekündigt::before{background:var(--t4)}
-.list-item:hover{border-color:var(--b2);transform:translateX(2px);box-shadow:var(--sh)}
-.list-item-icon{width:38px;height:38px;border-radius:var(--rsm);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
-.list-item-body{flex:1;min-width:0}
-.list-item-title{font-size:14px;font-weight:700;color:var(--t1);margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.list-item-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.list-item-sub{font-size:12px;color:var(--t3)}
-.list-item-amount{font-size:15px;font-weight:800;color:var(--t1);font-family:var(--mono);flex-shrink:0;text-align:right}
-.list-item-amount-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
-.has-note-dot{width:6px;height:6px;border-radius:50%;background:var(--acc);display:inline-block;margin-left:4px;vertical-align:middle}
-.challenge-layout{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;padding:16px 18px;overflow-y:auto;background:var(--bg)}
-@media(max-width:800px){.challenge-layout{grid-template-columns:1fr;padding:14px}}
-.challenge-card,.leader-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rlg);overflow:hidden;box-shadow:var(--sh)}
-.challenge-card-head,.leader-card-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--b1)}
-.challenge-title{font-size:14px;font-weight:700;color:var(--t1)}.challenge-sub{font-size:12px;color:var(--t3);margin-top:2px}
-.challenge-item{display:flex;gap:12px;align-items:center;padding:13px 16px;border-bottom:1px solid var(--b1);background:var(--s1)}.challenge-item:last-child{border-bottom:none}
-.challenge-icon{width:36px;height:36px;border-radius:var(--rsm);display:flex;align-items:center;justify-content:center;background:var(--acc-d);font-size:17px;flex-shrink:0}
-.challenge-body{flex:1;min-width:0}.challenge-name{font-size:13px;font-weight:700;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.challenge-meta{font-size:11.5px;color:var(--t3)}.challenge-done{border-left:3px solid rgba(22,163,74,.4)!important;background:#F2FAF6!important}.challenge-done .challenge-name{color:var(--grn)!important}
-.points-pill{font-size:11px;font-weight:700;padding:4px 8px;border-radius:20px;background:var(--acc-d);color:var(--acc);white-space:nowrap}
-.leader-row{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--b1);background:var(--s1)}.leader-row:last-child{border-bottom:none}
-.leader-row.clickable{cursor:pointer;transition:background .1s}.leader-row.clickable:hover{background:var(--bg)}
-.leader-rank{width:26px;height:26px;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--t3);flex-shrink:0}
-.leader-name{font-size:13px;font-weight:700;color:var(--t1)}.leader-detail{font-size:11.5px;color:var(--t3)}.leader-score{margin-left:auto;font-family:var(--mono);font-size:18px;font-weight:800;color:var(--acc)}
-
-/* ── PANEL ───────────────────────────── */
-#panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:300;opacity:0;pointer-events:none;transition:opacity .3s}
-#panel-overlay.show{opacity:1;pointer-events:all}
-#side-panel{
-  position:fixed;right:0;top:0;bottom:0;width:min(440px,100vw);
-  background:var(--s1);border-left:1px solid var(--b1);z-index:301;
-  display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.25,.8,.25,1);box-shadow:var(--sh-lg);
-}
-#side-panel.open{transform:translateX(0)}
-.panel-hd{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--b1);flex-shrink:0;background:var(--s1)}
-.panel-title{font-size:16px;font-weight:800;color:var(--t1);flex:1;letter-spacing:-.2px}
-.panel-close-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border:none;background:var(--s2);border-radius:var(--rsm);cursor:pointer;color:var(--t3);transition:all .15s}
-.panel-close-btn:hover{background:var(--s3);color:var(--t1)}
-.panel-close-btn svg{width:15px;height:15px;stroke-width:2.2}
-.panel-body{flex:1;overflow-y:auto;padding:18px;background:var(--s1)}
-
-/* ── FORM ────────────────────────────── */
-.fg{margin-bottom:14px}
-.flabel{display:block;font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-.finput{
-  width:100%;background:var(--bg);border:1px solid var(--b2);border-radius:var(--rsm);padding:10px 12px;
-  font-family:var(--font);font-size:14px;color:var(--t1);outline:none;transition:border-color .15s,box-shadow .15s;appearance:none;-webkit-appearance:none;
-}
-.finput:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-d);background:var(--s1)}
-.finput::placeholder{color:var(--t4)}
-.finput[type=date]{cursor:pointer}
-select.finput{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23A1A1AA'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;padding-right:30px;cursor:pointer}
-textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
-.fr{display:flex;gap:8px}.fr .fg{flex:1}
-.color-row{display:flex;gap:7px;flex-wrap:wrap}
-.col-dot{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;transition:all .15s}
-.col-dot:hover,.col-dot.sel{border-color:var(--t1);transform:scale(1.15)}
-.fa{display:flex;gap:8px;padding-top:14px;border-top:1px solid var(--b1);margin-top:4px}
-.note-box{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:12px 14px;margin-bottom:12px}
-.note-box-label{font-size:11px;font-weight:700;color:var(--acc);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:flex;align-items:center;gap:6px}
-.note-box-label svg{width:13px;height:13px;stroke:var(--acc);stroke-width:2}
-.note-display{font-size:13px;color:var(--t2);line-height:1.6;white-space:pre-wrap;word-break:break-word}
-.divider{height:1px;background:var(--b1);margin:14px 0}
-.section-label{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
-
-/* ── PANEL NOTIF ─────────────────────── */
-.panel-notif-section{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:12px 14px;margin-bottom:12px}
-.pns-title{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
-.nitem{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--b1);cursor:pointer;transition:opacity .1s}
-.nitem:last-child{border-bottom:none}.nitem:hover{opacity:.75}
-.nitem-icon{width:36px;height:36px;border-radius:var(--rsm);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:17px}
-.nitem-body{flex:1;min-width:0}
-.nitem-title{font-size:13px;font-weight:700;color:var(--t1);margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.nitem-sub{font-size:11.5px;color:var(--t3);line-height:1.4}
-.nitem-badge{font-size:11px;font-weight:700;padding:2px 7px;border-radius:20px;flex-shrink:0;margin-top:1px}
-.notif-pill{display:flex;align-items:center;gap:10px;background:var(--acc-d);border:1px solid rgba(45,106,79,.2);border-radius:var(--r);padding:12px 14px;margin-top:12px}
-.np-body{flex:1}.np-title{font-size:12px;font-weight:700;color:var(--acc);margin-bottom:2px}.np-sub{font-size:11.5px;color:var(--t3)}
-
-/* ── EMPTY STATE ─────────────────────── */
-.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px;text-align:center}
-.empty-icon{width:52px;height:52px;border-radius:14px;background:var(--s2);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
-.empty-icon svg{width:26px;height:26px;stroke:var(--t3);stroke-width:1.5}
-.empty-title{font-size:15px;font-weight:700;color:var(--t2);margin-bottom:4px}
-.empty-sub{font-size:13px;color:var(--t4);line-height:1.6}
-
-/* ── BOTTOM NAV ──────────────────────── */
-#bottom-nav{display:none;background:var(--s1);border-top:1px solid var(--b1);flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(max-width:700px){#bottom-nav{display:block}}
-.bnav-inner{display:flex;align-items:stretch;height:var(--nav-h)}
-.bnav-item{
-  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:3px;cursor:pointer;color:var(--t4);transition:color .15s;border:none;background:transparent;font-family:var(--font);padding:6px 4px;
-}
-.bnav-item.active{color:var(--acc)}
-.bnav-item svg{width:21px;height:21px;stroke-width:1.7}
-.bnav-label{font-size:10px;font-weight:600}
-
-/* ── FAB ─────────────────────────────── */
-#fab{
-  position:fixed;bottom:calc(var(--nav-h) + 14px + env(safe-area-inset-bottom,0px));right:16px;
-  width:48px;height:48px;border-radius:50%;background:var(--acc);
-  display:none;align-items:center;justify-content:center;cursor:pointer;border:none;z-index:200;
-  box-shadow:0 4px 16px rgba(45,106,79,.35);transition:transform .2s;
-}
-#fab:hover{transform:scale(1.08)}
-#fab svg{width:22px;height:22px;stroke:white;stroke-width:2.2}
-@media(max-width:700px){#fab{display:flex}}
-
-/* ── TOAST ───────────────────────────── */
-#toast-wrap{
-  position:fixed;bottom:calc(var(--nav-h) + 12px + env(safe-area-inset-bottom,0px));
-  left:50%;transform:translateX(-50%);z-index:900;display:flex;flex-direction:column;gap:6px;pointer-events:none;align-items:center;
-}
-@media(min-width:701px){#toast-wrap{bottom:24px}}
-.toast{background:var(--t1);border-radius:10px;padding:10px 18px;font-size:13px;font-weight:600;color:#fff;box-shadow:var(--sh-lg);white-space:nowrap;animation:tin .25s ease;pointer-events:none}
-.toast.ok{background:var(--grn)}.toast.err{background:var(--red)}
-@keyframes tin{from{opacity:0;transform:translateY(8px) scale(.95)}to{opacity:1;transform:none}}
-
-/* ── EXTENDED CALENDAR ────────────────── */
-.day-cell{position:relative}
-.challenge-day-dot{position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--amb);z-index:2}
-.challenge-day-dot.done{background:var(--grn)}
-.holiday-line{font-size:9.5px;color:var(--amb);padding:1px 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.year-grid{flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:14px;background:var(--bg)}
-.year-month-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:10px;cursor:pointer;box-shadow:var(--sh)}
-.year-month-title{font-size:13px;font-weight:700;color:var(--t1);margin-bottom:8px}
-.year-mini-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
-.year-mini-day{font-size:10px;text-align:center;color:var(--t3);padding:2px;border-radius:4px;min-height:18px;position:relative}
-.year-mini-day.today{background:var(--acc);color:#fff}.year-mini-day.holiday{color:var(--amb)}
-.year-mini-day .challenge-day-dot{width:5px;height:5px;top:1px;right:1px;box-shadow:none}
-.workweek-grid{flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:14px;background:var(--bg)}
-.workday-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:12px;min-height:260px;position:relative;box-shadow:var(--sh)}
-.workday-head{font-size:13px;font-weight:700;color:var(--t1);margin-bottom:4px}.workday-date{font-size:12px;color:var(--t3);margin-bottom:10px}
-.holiday-badge{display:inline-flex;margin:2px 0 8px;padding:3px 7px;border-radius:20px;background:var(--amb-d);color:var(--amb);font-size:10.5px;font-weight:700}
-.today-view{flex:1;overflow-y:auto;padding:16px;background:var(--bg)}
-.settings-hint{font-size:12px;color:var(--t3);line-height:1.5;margin-top:8px}
-@media(max-width:900px){.year-grid{grid-template-columns:1fr}.workweek-grid{grid-template-columns:1fr}}
-@media(max-width:700px){.view-toggle{display:flex!important;overflow-x:auto}.vbtn{padding:5px 8px}}
-
-/* ── CONTEST DETAIL ───────────────────── */
-.stat-strip{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 14px}
-.stat-box{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:12px}
-.stat-num{font-family:var(--mono);font-size:24px;font-weight:800;color:var(--acc);line-height:1}
-.stat-label{font-size:11px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-top:4px}
-
-/* ── LIVE DOT + PUSH ─────────────────── */
-.live-dot{width:8px;height:8px;border-radius:50%;background:var(--grn);display:inline-block;margin-left:5px;vertical-align:middle}
-.live-dot.off{background:var(--t4)}
-.push-box{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:14px;margin-bottom:12px}
-.push-status{font-size:12px;color:var(--t2);line-height:1.5;margin-top:6px}
-.push-ok{color:var(--grn)}.push-warn{color:var(--amb)}.push-err{color:var(--red)}
-
-/* ── TOGGLES ─────────────────────────── */
-.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:12px 14px;margin:12px 0}
-.toggle-copy{min-width:0}.toggle-title{font-size:13px;font-weight:700;color:var(--t1)}.toggle-sub{font-size:11.5px;color:var(--t3);line-height:1.45;margin-top:2px}
-.switch{position:relative;display:inline-block;width:48px;height:28px;flex-shrink:0}
-.switch input{opacity:0;width:0;height:0}
-.slider{position:absolute;cursor:pointer;inset:0;background:var(--b2);transition:.2s;border-radius:999px;border:1px solid var(--b1)}
-.slider:before{position:absolute;content:'';height:20px;width:20px;left:3px;top:3px;background:#fff;transition:.2s;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.15)}
-.switch input:checked + .slider{background:var(--acc);border-color:var(--acc)}
-.switch input:checked + .slider:before{transform:translateX(20px)}
-.status-pill{display:inline-flex;align-items:center;border-radius:999px;padding:3px 8px;font-size:11px;font-weight:700}
-.status-on{background:var(--grn-d);color:var(--grn)}.status-off{background:var(--s2);color:var(--t3)}.status-warn{background:var(--amb-d);color:var(--amb)}
-.logout-profile{display:flex;gap:12px;align-items:center;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:14px;margin-bottom:14px}
-.logout-avatar{width:48px;height:48px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;overflow:hidden;flex-shrink:0}
-.logout-avatar img{width:100%;height:100%;object-fit:cover}
-.logout-name{font-size:15px;font-weight:700;color:var(--t1)}.logout-mail{font-size:12px;color:var(--t3);margin-top:2px}
-.logout-warning{font-size:12px;color:var(--t2);line-height:1.5;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:12px;margin-bottom:12px}
-
-/* ── EXERCISE LINK ───────────────────── */
-.exercise-link{display:inline-flex;margin-top:5px;color:var(--acc);font-size:11.5px;font-weight:600;text-decoration:none}
-.exercise-link:hover{text-decoration:underline}
-.challenge-meta{white-space:normal!important;line-height:1.35}
-.inline-test-link{font-size:11.5px;color:var(--acc);text-decoration:underline;cursor:pointer;margin-left:6px}
-.inline-text-btn{margin-top:6px;padding:0;border:none;background:transparent;color:var(--acc);font:inherit;font-size:12px;font-weight:600;cursor:pointer}.inline-text-btn:hover{text-decoration:underline}
-.delete-completion{width:28px;height:28px;border-radius:50%;border:1px solid var(--b1);background:var(--red-d);color:var(--red);font-size:18px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.delete-completion:hover{background:rgba(220,38,38,.2)}
-.contest-done-list{max-height:55vh;overflow-y:auto}
-.help-steps{background:var(--amb-d);border:1px solid rgba(217,119,6,.2);border-radius:var(--r);padding:12px 14px;margin-bottom:12px;color:var(--t2);font-size:12px}
-.help-steps ol{padding-left:18px;margin-top:6px}
-
-/* ── WEEK POINTS CARD ────────────────── */
-.challenge-week-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rlg);overflow:hidden}
-.challenge-week-head{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--b1)}
-.challenge-week-title{font-size:14px;font-weight:700;color:var(--t1)}.challenge-week-sub{font-size:12px;color:var(--t3);margin-top:2px}
-.challenge-week-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
-.challenge-week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;padding:14px 16px}
-.challenge-week-day{min-height:70px;border:1px solid var(--b1);border-radius:12px;background:var(--bg);padding:9px 8px;display:flex;flex-direction:column;gap:5px;align-items:flex-start;justify-content:space-between}
-.challenge-week-day:hover{border-color:var(--b2);background:var(--s2)}
-.challenge-week-day.is-today{border-color:rgba(45,106,79,.5);box-shadow:0 0 0 1px rgba(45,106,79,.12);background:#F4F9F6}
-.challenge-week-day.has-points{background:#EEF7F2;border-color:rgba(22,163,74,.3)}
-.challenge-week-day-name{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--t4);letter-spacing:.5px}
-.challenge-week-day-date{font-size:13px;font-weight:800;color:var(--t1);font-family:var(--mono)}
-.challenge-week-day-points{font-size:12px;font-weight:700;color:var(--grn)}
-.challenge-week-day.empty .challenge-week-day-points{color:var(--t4);font-weight:500}
-#challenges-view .list-header .btn-primary{display:none!important}
-#fab.challenge-disabled{display:none!important}
-
-/* ── MOBILE ──────────────────────────── */
-@media(max-width:480px){
-  .day-cell{padding:3px 3px 2px}.day-num-wrap{width:22px;height:22px}.day-num{font-size:10.5px}.ev-chip{font-size:9px;padding:1px 4px}
-  .kpi-num{font-size:24px}.kpi-grid{grid-template-columns:repeat(2,1fr)!important}
-  #dashboard-view{padding:14px 14px 24px}.list-header,.challenge-layout{padding-left:14px;padding-right:14px}
-  .challenge-week-grid{grid-template-columns:repeat(7,minmax(42px,1fr));gap:5px;padding:10px}
-  .challenge-week-head{flex-direction:column;align-items:flex-start}.challenge-week-actions{width:100%;justify-content:space-between}
-  .challenge-layout{grid-template-columns:1fr!important}
-}
-</style>
-</style>
-<style id="range-google-style">
-.ev-chip.google-source,.ag-card.google-source{border-left:3px solid #4285F4!important}
-.ev-chip.synced-source,.ag-card.synced-source{border-left:3px solid var(--grn)!important}
-.source-pill{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;border-radius:999px;padding:2px 7px;margin-left:6px;background:rgba(79,125,255,.12);color:var(--acc);vertical-align:middle}
-.source-pill.synced{background:rgba(52,211,153,.12);color:var(--grn)}
-.range-pill{display:inline-flex;font-size:10px;font-weight:800;border-radius:999px;padding:2px 7px;margin-left:6px;background:rgba(139,92,246,.12);color:var(--pur);vertical-align:middle}
-</style>
-</head>
-<body>
-
-<!-- Loading -->
-<div id="loading">
-  <div class="ld-icon">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-      <rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/>
-      <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-    </svg>
-  </div>
-  <div class="ld-text">Change wird geladen…</div>
-</div>
-
-<!-- Setup Modal -->
-<div id="setup-modal">
-  <div class="modal-box">
-    <div class="modal-badge">⚙ Einmalige Einrichtung</div>
-    <div class="modal-h">Google API konfigurieren</div>
-    <div class="modal-sub">Für Google-Login und Kalender-Synchronisation bitte einmalig eine OAuth Client-ID eintragen. Challenges, Mitspieler und Punkte laufen über Firebase.</div>
-    <div class="setup-steps">
-      <div class="step"><div class="step-n">1</div><div class="step-t">Öffne <strong>console.cloud.google.com</strong> → Projekt erstellen</div></div>
-      <div class="step"><div class="step-n">2</div><div class="step-t">API aktivieren: <strong>Google Calendar API</strong></div></div>
-      <div class="step"><div class="step-n">3</div><div class="step-t">Anmeldedaten → OAuth 2.0 → <strong>Web-Anwendung</strong> → Ihre Domain eintragen</div></div>
-      <div class="step"><div class="step-n">4</div><div class="step-t">Client-ID kopieren (endet auf <code>.apps.googleusercontent.com</code>)</div></div>
-    </div>
-    <div class="fl-group">
-      <label class="fl-label">Google OAuth Client-ID</label>
-      <input type="text" class="fl-input" id="client-id-input" placeholder="1234567890-xxxx.apps.googleusercontent.com">
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-primary" style="flex:1" onclick="saveClientId()">Speichern &amp; Starten</button>
-    </div>
-  </div>
-</div>
 
 
-<!-- Panel overlay -->
-<div id="panel-overlay" onclick="closePanel()"></div>
 
-<!-- Side Panel -->
-<div id="side-panel">
-  <div class="panel-hd">
-    <div class="panel-title" id="panel-title">Panel</div>
-    <button class="panel-close-btn" onclick="closePanel()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
-  </div>
-  <div class="panel-body" id="panel-body"></div>
-</div>
 
-<!-- Toast -->
-<div id="toast-wrap"></div>
 
-<!-- ═══ APP ═══ -->
-<div id="app">
 
-  <!-- Login -->
-  <div id="login-screen">
-    <div class="login-card">
-      <div class="login-logo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <rect x="3" y="4" width="18" height="18" rx="3"/>
-          <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-          <line x1="3" y1="10" x2="21" y2="10"/>
-        </svg>
-      </div>
-      <div class="login-h">Change</div>
-      <div class="login-sub">Kalender &amp; Challenges — gemeinsam.</div>
-      <button class="google-btn" onclick="handleGoogleLogin()">
-        <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-        Mit Google anmelden
-      </button>
-      <div class="login-note">Kalender synchronisiert mit Google. Challenges, Mitspieler, Punkte und Push laufen über Firebase.</div>
-    </div>
-  </div>
 
-  <!-- Main App -->
-  <div id="main-app">
-
-    <!-- Header -->
-    <div id="header">
-      <div class="h-logo">
-        <div class="h-logo-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        </div>
-        <span class="h-logo-name">Change</span>
-      </div>
-      <div class="h-sep"></div>
-      <!-- Desktop Tabs -->
-      <div class="h-tabs">
-        <button class="h-tab active" id="htab-dashboard" onclick="setMainView('dashboard')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-          Dashboard
-        </button>
-        <button class="h-tab" id="htab-calendar" onclick="setMainView('calendar')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          Kalender
-        </button>
-      </div>
-
-      <!-- Cal controls (only shown in calendar) -->
-      <div id="cal-controls" style="display:none">
-        <button class="h-nav-btn" onclick="navigate(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="15 18 9 12 15 6"/></svg></button>
-        <span class="h-month" id="month-label" onclick="goToday()">Mai 2025</span>
-        <button class="h-nav-btn" onclick="navigate(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 18 15 12 9 6"/></svg></button>
-        <button class="h-today-btn" onclick="goToday()">Heute</button>
-        <div class="view-toggle">
-          <button class="vbtn" id="vbtn-year" onclick="setCalView('year')">Jahr</button>
-          <button class="vbtn active" id="vbtn-month" onclick="setCalView('month')">Monat</button>
-          <button class="vbtn" id="vbtn-workweek" onclick="setCalView('workweek')">Arbeitswoche</button>
-          <button class="vbtn" id="vbtn-today" onclick="setCalView('today')">Heute</button>
-        </div>
-      </div>
-
-      <div class="h-right">
-        <button class="icon-btn" onclick="openNotifPanel()" title="Benachrichtigungen">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          <div class="notif-dot" id="notif-dot"></div>
-        </button>
-        <button class="icon-btn" onclick="openCalendarSettings()" title="Kalender-Einstellungen">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.33 1.82V22a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1.82-.33H2a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-.6 1.65 1.65 0 0 0 .33-1.82V2a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.12.69.31 1 .6.31.29.51.64.6 1H22a2 2 0 1 1 0 4h-.09c-.37.09-.72.29-1 .6-.29.31-.48.64-.51 1z"/></svg>
-        </button>
-        <button class="icon-btn" onclick="openPushSettingsPanel()" title="Push & Live-Sync">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v4"/><path d="M12 18v4"/><path d="m4.93 4.93 2.83 2.83"/><path d="m16.24 16.24 2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="m4.93 19.07 2.83-2.83"/><path d="m16.24 7.76 2.83-2.83"/></svg>
-        </button>
-        <div class="avatar" id="user-avatar" onclick="confirmLogout()" title="Abmelden">
-          <span id="avatar-initials">?</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Content -->
-    <div id="content">
-
-      <!-- DASHBOARD -->
-      <div id="dashboard-view">
-        <div class="dash-hello">
-          <h1 id="dash-greeting">Guten Tag</h1>
-          <p id="dash-sub">Ihr persönlicher Überblick</p>
-        </div>
-        <div class="kpi-grid" id="kpi-grid"></div>
-        <div class="dash-grid" id="dash-grid"></div>
-      </div>
-
-      <!-- CALENDAR -->
-      <div id="cal-body" style="display:none">
-        <div class="wday-row" id="wday-row">
-          <div class="wday-cell">Mo</div><div class="wday-cell">Di</div>
-          <div class="wday-cell">Mi</div><div class="wday-cell">Do</div>
-          <div class="wday-cell">Fr</div>
-          <div class="wday-cell">Sa</div><div class="wday-cell">So</div>
-        </div>
-        <div id="month-grid"></div>
-        <div id="agenda-view"></div>
-      </div>
-
-    </div><!-- /content -->
-
-    <!-- Bottom Nav -->
-    <div id="bottom-nav">
-      <div class="bnav-inner">
-        <button class="bnav-item" id="bnav-dashboard" onclick="setMainView('dashboard')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-          <span class="bnav-label">Dashboard</span>
-        </button>
-        <button class="bnav-item" id="bnav-calendar" onclick="setMainView('calendar')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          <span class="bnav-label">Kalender</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- FAB (context-sensitive) -->
-    <button id="fab" onclick="fabAction()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    </button>
-
-  </div><!-- /main-app -->
-</div><!-- /app -->
-
-<script>
 'use strict';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2773,11 +1980,10 @@ document.addEventListener('touchend',e=>{
   setTimeout(()=>{stripNonSport(); if(typeof renderChallenges==='function')renderChallenges(); if(typeof buildDashboard==='function')buildDashboard();},600);
 })();
 
-</script>
-<script src="./change-pre.js"></script>
-<!-- Entfernt: historischer Alt-Patch-Block. Die aktiven/finalen Overrides liegen nach change-post.js. -->
-<script src="./change-post.js"></script>
-<script id="change-v3-text-cleanup">
+
+
+
+
 (function(){
   const bad=['Heute ist deutlich hervorgehoben','Maximal 7 offene Aufgaben pro Tag','Maximal 7 Pflichtaufgaben pro Tag · Optional immer sichtbar','Punkte & erledigte Challenges','Aktuelle Woche · Challenge-Punkte','maximal 7 Pflichtaufgaben pro Tag.','oder mache ein leichtes bis mittleres Workout.','Browser-Berechtigung:','Hinweis: Wenn der Browser blockiert ist','Echte Push-Benachrichtigung'];
   function clean(root=document){
@@ -2789,9 +1995,8 @@ document.addEventListener('touchend',e=>{
   document.addEventListener('DOMContentLoaded',()=>clean());
   if(document.body) new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType===1) clean(n);}))).observe(document.body,{childList:true,subtree:true});
 })();
-</script>
 
-<script id="change-v4-last-five-completed">
+
 (function(){
   'use strict';
   const PATCH='CHANGE_V4_LAST_FIVE_COMPLETED';
@@ -2815,9 +2020,8 @@ document.addEventListener('touchend',e=>{
   if(!document.getElementById('change-v4-last-five-style')){const st=document.createElement('style');st.id='change-v4-last-five-style';st.textContent='.leader-row.clickable{cursor:pointer}.leader-row.clickable:hover{background:var(--s2)}.last-completed-person{font-size:18px;font-weight:800;color:var(--t1);margin:4px 0 14px}.last-completed-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--b1)}.last-completed-row:last-child{border-bottom:none}.last-completed-icon{width:36px;height:36px;border-radius:10px;background:var(--acc-d);display:flex;align-items:center;justify-content:center;flex-shrink:0}.last-completed-main{min-width:0}.last-completed-title{font-size:14px;font-weight:800;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.last-completed-meta{font-size:12px;color:var(--t3);margin-top:2px}';document.head.appendChild(st);}
   window.addEventListener('load',function(){setTimeout(function(){try{if((window.currentMainView||'')==='challenges')enhanceLeaderboard();}catch(e){}},900);});
 })();
-</script>
 
-<script id="change-v5-remove-single-completed">
+
 (function(){
   'use strict';
   const $=id=>document.getElementById(id);
@@ -2840,8 +2044,112 @@ document.addEventListener('touchend',e=>{
   window.openPlayerRecentPanel=function(playerId,playerName){const a=account(); const id=norm(playerId)||a.id; const own=id===a.id||id===a.email||id===norm(a.uid); const initial=localRecent(id,5); const html='<div class="last-completed-panel"><div class="section-label">Letzte 5 erledigte Aufgaben</div><div class="last-completed-person">'+esc(playerName||id)+'</div><div id="last-completed-list">'+rowsHtml(initial,own,true)+'</div></div>'; if(typeof openPanel==='function')openPanel('Erledigte Aufgaben',html); fetchRemote(id).then(remote=>{const list=$('last-completed-list'); if(!list)return; const merged=[],seen=new Set(); remote.concat(initial).sort((x,y)=>timeVal(y)-timeVal(x)).forEach(c=>{const key=c.id||[c.challengeId,c.date,playerOf(c)].join('|'); if(c&&!seen.has(key)){seen.add(key);merged.push(c);}}); list.innerHTML=rowsHtml(merged.slice(0,5),own,false);});};
   if(!document.getElementById('change-v5-remove-style')){const st=document.createElement('style');st.id='change-v5-remove-style';st.textContent='.last-completed-main{flex:1}.last-remove-btn{margin-left:auto;white-space:nowrap}.last-completed-row{gap:10px}';document.head.appendChild(st);}
 })();
-</script>
-<script id="beautiful-calendar-range-final">
+
+
+(function(){
+  'use strict';
+  const STATE_LABELS={ALL:'Alle Bundesländer',BW:'Baden-Württemberg',BY:'Bayern','BY-AUGSBURG':'Bayern · Augsburg',BE:'Berlin',BB:'Brandenburg',HB:'Bremen',HH:'Hamburg',HE:'Hessen',MV:'Mecklenburg-Vorpommern',NI:'Niedersachsen',NW:'Nordrhein-Westfalen',RP:'Rheinland-Pfalz',SL:'Saarland',SN:'Sachsen',ST:'Sachsen-Anhalt',SH:'Schleswig-Holstein',TH:'Thüringen'};
+  const $=id=>document.getElementById(id);
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+  function key(d){try{return typeof dateKey==='function'?dateKey(d):d.toISOString().slice(0,10);}catch(e){return '';}}
+  function today(){return key(new Date());}
+  function dateOf(e){return String((e&&(e.date||e.startDate||e.dateKey||(e.start&&e.start.date)||''))||'').slice(0,10);}
+  function timeOf(e){return String((e&&(e.time||e.startTime||(e.start&&e.start.dateTime&&String(e.start.dateTime).slice(11,16))||''))||'');}
+  function titleOf(e){return (e&&(e.title||e.summary||e.name))||'Termin';}
+  function fmt(dk){try{return typeof fmtDate==='function'?fmtDate(dk):new Date(dk+'T12:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});}catch(e){return dk;}}
+  function days(dk){const a=new Date(today()+'T12:00:00'), b=new Date(String(dk).slice(0,10)+'T12:00:00'); return Math.round((b-a)/86400000);}
+  function accountId(){const u=(window.userInfo||{}); return String(u.email||u.uid||'local-user').toLowerCase();}
+  function holidayState(){return (window.calendarSettings&&calendarSettings.state)||localStorage.getItem('holiday_state')||'ALL';}
+  function holidaysFor(dk){try{return (typeof getHolidaysForDate==='function'?getHolidaysForDate(dk):[])||[];}catch(e){return [];}}
+  function eventRows(){const raw=(typeof getAllEvents==='function'?getAllEvents():(window.events||[])); return (raw||[]).map(e=>Object.assign({},e,{kind:'event',date:dateOf(e),time:timeOf(e),title:titleOf(e)})).filter(e=>e.date&&days(e.date)>=0&&days(e.date)<=14).sort((a,b)=>a.date.localeCompare(b.date)||(a.time||'99:99').localeCompare(b.time||'99:99')).slice(0,10);}
+  function holidayRows(){const out=[]; const base=new Date(today()+'T12:00:00'); for(let i=0;i<=14;i++){const d=new Date(base); d.setDate(base.getDate()+i); const dk=key(d); holidaysFor(dk).forEach(h=>out.push({kind:'holiday',date:dk,days:i,title:h.name,time:'',h}));} return out;}
+  function calendarRows(){return eventRows().concat(holidayRows()).sort((a,b)=>a.date.localeCompare(b.date)||(a.kind==='holiday'?-1:1)||(a.time||'99:99').localeCompare(b.time||'99:99')).slice(0,12);}
+  function challengeDue(){const td=today(), me=accountId(); const done=(window.challengeCompletions||[]).filter(c=>String(c.date||'').slice(0,10)===td && String(c.playerId||c.userEmail||c.email||me).toLowerCase()===me); const doneIds=new Set(done.map(c=>String(c.challengeId||''))); const active=(window.challenges||[]).filter(c=>c&&c.active!==false); const due=active.filter(c=>{const r=c.recurrence||''; const d=String(c.date||c.startDate||'').slice(0,10); return r==='daily'||!d||d===td;}); return {open:due.filter(c=>!doneIds.has(String(c.id))), done, points:done.reduce((s,c)=>s+(parseInt(c.points,10)||0),0)};}
+  function playerId(p){try{if(typeof playerKey==='function')return playerKey(p);}catch(e){} return String(p.email||p.id||p.uid||p.name||'').toLowerCase();}
+  function playerPoints(id,dk){try{if(typeof pointsFor==='function')return pointsFor(id,dk);}catch(e){} try{const st=typeof getPlayerPointSummary==='function'?getPlayerPointSummary(id):null; return st?(dk?st.todayPoints:st.totalPoints):0;}catch(e){return 0;}}
+  function playersHtml(){let players=[]; try{players=typeof visiblePlayers==='function'?visiblePlayers():(typeof getVisibleContestPlayers==='function'?getVisibleContestPlayers():(window.contestPlayers||window.players||[]));}catch(e){players=[];} players=(players||[]).slice().sort((a,b)=>playerPoints(playerId(b))-playerPoints(playerId(a))).slice(0,5); return players.length?players.map((p,i)=>{const id=playerId(p), medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1); return '<div class="dash-row" onclick="setMainView(\'challenges\');setTimeout(()=>{try{openContestUserDetails(\''+esc(id)+'\')}catch(e){}},80)"><div class="dash-row-icon" style="background:var(--amb-d)">'+medal+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(p.name||p.email||'Mitspieler')+'</div><div class="dash-row-sub">Gesamt '+playerPoints(id)+' P</div></div><span class="dash-row-badge badge-green">'+playerPoints(id)+' P</span></div>';}).join(''):'<div class="dash-empty">Noch keine Mitspieler.</div>';}
+  function cleanDashboardButtons(){const grid=$('dash-grid'); if(!grid) return; grid.querySelectorAll('.dash-card-head button,.dash-row-action').forEach(x=>x.remove());}
+  window.buildDashCards=function(){const grid=$('dash-grid'); if(!grid) return; const rows=calendarRows(); const calHtml=rows.length?rows.map(r=>{const n=days(r.date), isHol=r.kind==='holiday', icon=isHol?'🎉':(n===0?'⭐':'📅'), badge=n===0?'':(n===1?'Morgen':'in '+n+'T'); return '<div class="dash-row '+(n===0?'today-row-highlight':'')+'" onclick="setMainView(\'calendar\')"><div class="dash-row-icon" style="background:'+(isHol?'var(--amb-d)':'var(--acc-d)')+'">'+icon+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(r.title)+'</div><div class="dash-row-sub">'+esc(fmt(r.date))+(r.time?' · '+esc(r.time):'')+(isHol?' · '+esc(STATE_LABELS[holidayState()]||holidayState()):'')+'</div></div>'+(badge?'<span class="dash-row-badge '+(isHol?'badge-amber':'badge-blue')+'">'+badge+'</span>':'')+'</div>';}).join(''):'<div class="dash-empty">Keine Termine oder Feiertage gefunden</div>'; const ch=challengeDue(); const chHtml=ch.open.length?ch.open.slice(0,4).map(c=>'<div class="dash-row" onclick="setMainView(\'challenges\')"><div class="dash-row-icon" style="background:var(--pur-d)">'+esc(c.icon||'🏆')+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(c.title||c.name||'Challenge')+'</div><div class="dash-row-sub">'+(parseInt(c.points,10)||0)+' Punkte</div></div><span class="dash-row-badge badge-amber">offen</span></div>').join(''):'<div class="dash-empty">Keine offenen Aufgaben</div>'; grid.innerHTML='<div class="dash-card calendar-card"><div class="dash-card-head"><div><div class="dash-card-title">📅 Kalender</div><div class="dash-card-sub"></div></div></div><div class="dash-card-body">'+calHtml+'</div></div><div class="dash-card challenge-card-dashboard"><div class="dash-card-head"><div><div class="dash-card-title">🏆 Challenges</div><div class="dash-card-sub"></div></div></div><div class="dash-card-body">'+chHtml+'</div></div><div class="dash-card players-card-dashboard"><div class="dash-card-head"><div><div class="dash-card-title">👥 Mitspieler</div><div class="dash-card-sub"></div></div></div><div class="dash-card-body">'+playersHtml()+'</div></div>'; cleanDashboardButtons();};
+  window.buildDashboard=function(){try{if(typeof buildKPIs==='function')buildKPIs();}catch(e){} try{const n=(window.userInfo&&userInfo.name)||''; const h=$('dash-greeting'); if(h) h.textContent=(new Date().getHours()<12?'Guten Morgen':new Date().getHours()<17?'Guten Tag':'Guten Abend')+(n?', '+n.split(' ')[0]:''); const s=$('dash-sub'); if(s) s.textContent='Kalender, Challenges und Mitspieler auf einen Blick';}catch(e){} buildDashCards();};
+  if(!document.getElementById('dashboard-holiday-final-style')){const st=document.createElement('style');st.id='dashboard-holiday-final-style';st.textContent='.dash-row-action{display:none!important}.calendar-card{grid-column:1/-1}.players-card-dashboard .dash-row-icon{font-weight:800}';document.head.appendChild(st);}
+  if(document.body)new MutationObserver(cleanDashboardButtons).observe(document.body,{childList:true,subtree:true});
+  window.addEventListener('load',()=>setTimeout(()=>{try{if(typeof buildDashboard==='function')buildDashboard();}catch(e){}},300));
+})();
+
+
+/* FINAL FIX: ruhiges Dashboard, Zeitraum-Darstellung, Challenge-Dots, kein Dummy-„Du“ */
+(function(){
+  function $(id){return document.getElementById(id)}
+  function escS(s){return (typeof esc==='function')?esc(s):String(s||'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
+  function dk(d){return (typeof dateKey==='function')?dateKey(d):d.toISOString().substring(0,10)}
+  function addD(d,n){return (typeof addDays==='function')?addDays(d,n):new Date(d.getTime()+n*86400000)}
+  function todayKey(){return dk(new Date())}
+  function fmtS(d){return (typeof fmtDate==='function')?fmtDate(d):d}
+  function daysS(d){return (typeof daysUntil==='function')?daysUntil(d):Math.round((new Date(d+'T12:00:00')-new Date(new Date().toDateString()))/86400000)}
+  function lc(v){return String(v||'').trim().toLowerCase()}
+  function currentEmail(){return lc((window.userInfo&&(userInfo.email||userInfo.id))||localStorage.getItem('change_v1_user_email')||'')}
+  function currentName(){return (window.userInfo&&(userInfo.name||userInfo.email))||currentEmail()||'Ich'}
+  function isDummyDu(p){const v=lc(p&&(p.email||p.id||p.name||p.playerId||p.userEmail||p));return v==='du'||v==='ich'||v==='me'||v==='demo'||v==='demo@example.com'||v.includes('demo nutzer')||v.includes('demo-user')}
+  function normalizeMyData(){
+    const me=currentEmail(); if(!me) return;
+    try{
+      (window.challengeCompletions||[]).forEach(c=>{ if(isDummyDu(c)){ c.playerId=me; c.userEmail=me; c.email=me; c.playerName=currentName(); } });
+      if(typeof ls==='function') ls('challenge_completions',window.challengeCompletions||[]);
+    }catch(e){}
+    try{
+      window.challengePlayers=(window.challengePlayers||[]).filter(p=>!isDummyDu(p)||lc(p.email||p.id)===me);
+      const found=window.challengePlayers.some(p=>lc(p.email||p.id)===me);
+      if(!found) window.challengePlayers.push({id:me,email:me,name:currentName(),online:true});
+      if(typeof ls==='function') ls('challenge_players',window.challengePlayers);
+    }catch(e){}
+  }
+  function playerId(p){return lc((p&&(p.email||p.id||p.userEmail))||p)}
+  function playerName(p){const me=currentEmail(), id=playerId(p); if(id===me) return currentName(); const n=String((p&&(p.name||p.email||p.id))||'Mitspieler').trim(); return (lc(n)==='du'||lc(n)==='ich')?'Mitspieler':n;}
+  window.getCurrentPlayerId=function(){return currentEmail()||'local-user'};
+  const oldVisible=window.getVisibleContestPlayers||window.visiblePlayers;
+  window.getVisibleContestPlayers=window.visiblePlayers=function(){
+    normalizeMyData(); const me=currentEmail(); let arr=[];
+    try{arr=oldVisible?oldVisible():(window.challengePlayers||[])}catch(e){arr=window.challengePlayers||[]}
+    const seen=new Set(), out=[];
+    (arr||[]).forEach(p=>{let id=playerId(p); if(!id&&isDummyDu(p)&&me) id=me; if(!id) return; if(isDummyDu(p)&&id!==me) return; if(seen.has(id)) return; seen.add(id); out.push(Object.assign({},p,{id,email:id,name:id===me?currentName():playerName(p)}));});
+    if(me&&!seen.has(me)) out.push({id:me,email:me,name:currentName(),online:true});
+    return out;
+  };
+  function pointSummary(id){id=lc(id); const td=todayKey(); const out={totalPoints:0,totalCount:0,todayPoints:0,todayCount:0,todayItems:[]};
+    (window.challengeCompletions||[]).forEach(c=>{const cid=lc(c.playerId||c.userEmail||c.email); if(cid!==id) return; const ch=(window.challenges||[]).find(x=>x.id===c.challengeId)||{}; const pts=parseInt(c.points??ch.points??0,10)||0; out.totalPoints+=pts; out.totalCount++; if(c.date===td){out.todayPoints+=pts; out.todayCount++; out.todayItems.push({title:ch.title||c.challengeId||'Challenge',icon:ch.icon||'✅',points:pts});}}); return out;}
+  window.getPlayerPointSummary=pointSummary;
+
+  function rawEvents(){const a=[];(window.events||[]).forEach(e=>a.push(e)); if(window.googleCalendarSyncEnabled!==false&&(localStorage.getItem('change_v1_google_calendar_sync')!=='false')) (window.gEvents||[]).forEach(e=>a.push(Object.assign({},e,{source:'google'}))); return a;}
+  function startOf(ev){return ev.startDate||ev.date||ev.dateKey||(ev.start&&ev.start.date)||(ev.start&&ev.start.dateTime?String(ev.start.dateTime).substring(0,10):'')}
+  function endOf(ev){if(ev.endDate)return ev.endDate;if(ev.toDate)return ev.toDate;if(ev.untilDate)return ev.untilDate;if(ev.end&&ev.end.date)return dk(addD(new Date(ev.end.date+'T12:00:00'),-1));if(ev.end&&ev.end.dateTime)return String(ev.end.dateTime).substring(0,10);return startOf(ev)}
+  function titleOf(ev){return ev.title||ev.summary||ev.name||'(Kein Titel)'}
+  function timeOf(ev){if(ev.time)return ev.time;if(ev.start&&ev.start.dateTime)return new Date(ev.start.dateTime).toTimeString().substring(0,5);return ''}
+  function colorOf(ev){return ev.color||'blue'}
+  function sourceBadge(ev){if((ev.source==='google')||String(ev.id||'').startsWith('g_'))return '<span class="source-pill">von Google</span>'; if(ev.googleEventId||ev.syncedToGoogle)return '<span class="source-pill synced">Google ✓</span>'; return ''}
+  function rangeText(ev){const s=startOf(ev), e=endOf(ev); return e&&e!==s?fmtS(s)+' – '+fmtS(e):fmtS(s)}
+  function displayDateForRange(ev){const s=startOf(ev), e=endOf(ev)||s, t=todayKey(); if(s<=t&&e>=t) return t; return s;}
+  function dashCalendarRows(){const t=todayKey(), limit=dk(addD(new Date(),14)); const rows=[]; const seen=new Set();
+    rawEvents().forEach(ev=>{const s=startOf(ev), e=endOf(ev)||s; if(!s) return; if(e<t||s>limit) return; const key=(ev.id||titleOf(ev)+'_'+s+'_'+e); if(seen.has(key))return; seen.add(key); rows.push({kind:'event',ev,date:displayDateForRange(ev),sort:(s<t?t:s)});});
+    try{if(typeof getHolidaysForDate==='function'){let cur=new Date(t+'T12:00:00'), end=new Date(limit+'T12:00:00');while(cur<=end){const d=dk(cur);(getHolidaysForDate(d)||[]).forEach(h=>rows.push({kind:'holiday',holiday:h,date:d,sort:d}));cur=addD(cur,1);}}}catch(e){}
+    return rows.sort((a,b)=>String(a.sort).localeCompare(String(b.sort))).slice(0,8);
+  }
+  function challengeRows(){let ch=[]; try{ch=(typeof challengeDue==='function'?challengeDue().open:(window.challenges||[]).filter(c=>!(typeof isChallengeDoneToday==='function'&&isChallengeDoneToday(c.id))))}catch(e){ch=[]} return (ch||[]).slice(0,4);}
+  function playersHtml(){const players=(window.getVisibleContestPlayers?getVisibleContestPlayers():[]).slice().sort((a,b)=>pointSummary(playerId(b)).totalPoints-pointSummary(playerId(a)).totalPoints).slice(0,5); return players.length?players.map((p,i)=>{const id=playerId(p), st=pointSummary(id), medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1);return '<div class="dash-row"><div class="dash-row-icon" style="background:var(--amb-d)">'+medal+'</div><div class="dash-row-body"><div class="dash-row-title">'+escS(playerName(p))+(id===currentEmail()?'':'')+'</div><div class="dash-row-sub">Heute: '+st.todayPoints+' P · Gesamt: '+st.totalPoints+' P · '+st.totalCount+' erledigt</div></div><span class="dash-row-badge badge-green">'+st.totalPoints+' P</span></div>';}).join(''):'<div class="dash-empty">Noch keine Mitspieler.</div>';}
+  window.buildDashCards=function(){const grid=$('dash-grid'); if(!grid)return; normalizeMyData(); const cal=dashCalendarRows(); const calHtml=cal.length?cal.map(r=>{if(r.kind==='holiday'){const diff=daysS(r.date), badge=diff===0?'':(diff===1?'Morgen':'in '+diff+'T');return '<div class="dash-row" onclick="setMainView(\'calendar\')"><div class="dash-row-icon" style="background:var(--amb-d)">🎉</div><div class="dash-row-body"><div class="dash-row-title">'+escS(r.holiday.name)+'</div><div class="dash-row-sub">'+fmtS(r.date)+'</div></div>'+(badge?'<span class="dash-row-badge badge-amber">'+badge+'</span>':'')+'</div>';} const ev=r.ev, diff=daysS(r.date), badge=diff===0?'':(diff===1?'Morgen':'in '+diff+'T'), isRange=(endOf(ev)&&endOf(ev)!==startOf(ev)); return '<div class="dash-row" onclick="setMainView(\'calendar\')"><div class="dash-row-icon" style="background:var(--acc-d)">📅</div><div class="dash-row-body"><div class="dash-row-title">'+escS(titleOf(ev))+(isRange?'<span class="range-pill">'+escS(rangeText(ev))+'</span>':'')+sourceBadge(ev)+'</div><div class="dash-row-sub">'+fmtS(r.date)+(timeOf(ev)?' · '+timeOf(ev):'')+(isRange?' · Zeitraum: '+rangeText(ev):'')+'</div></div>'+(badge?'<span class="dash-row-badge badge-blue">'+badge+'</span>':'')+'</div>';}).join(''):'<div class="dash-empty">Keine Termine oder Feiertage gefunden</div>'; const ch=challengeRows(); const chHtml=ch.length?ch.map(c=>'<div class="dash-row" onclick="setMainView(\'challenges\')"><div class="dash-row-icon" style="background:var(--pur-d)">'+escS(c.icon||'🏆')+'</div><div class="dash-row-body"><div class="dash-row-title">'+escS(c.title||c.name||'Challenge')+'</div><div class="dash-row-sub">'+(parseInt(c.points,10)||0)+' Punkte</div></div><span class="dash-row-badge badge-amber">offen</span></div>').join(''):'<div class="dash-empty">Keine offenen Aufgaben</div>'; grid.innerHTML='<div class="dash-card calendar-card"><div class="dash-card-head"><div><div class="dash-card-title">📅 Kalender</div><div class="dash-card-sub"></div></div></div><div class="dash-card-body">'+calHtml+'</div></div><div class="dash-card challenge-card-dashboard"><div class="dash-card-head"><div><div class="dash-card-title">🏆 Challenges</div><div class="dash-card-sub"></div></div></div><div class="dash-card-body">'+chHtml+'</div></div><div class="dash-card players-card-dashboard"><div class="dash-card-head"><div><div class="dash-card-title">👥 Mitspieler</div><div class="dash-card-sub"></div></div></div><div class="dash-card-body">'+playersHtml()+'</div></div>';};
+  window.buildDashboard=function(){try{if(typeof buildKPIs==='function')buildKPIs()}catch(e){} try{const h=$('dash-greeting'); if(h)h.textContent=(new Date().getHours()<12?'Guten Morgen':new Date().getHours()<17?'Guten Tag':'Guten Abend')+((currentName()&&currentName()!=='Ich')?', '+currentName().split(' ')[0]:''); const s=$('dash-sub'); if(s)s.textContent='Kalender, Challenges und Mitspieler auf einen Blick';}catch(e){} buildDashCards();};
+
+  window.renderMonth=function(y,m){const grid=$('month-grid'); if(!grid)return; grid.className=''; grid.style.display='grid'; grid.style.gridTemplateRows='repeat(6,1fr)'; grid.innerHTML=''; let firstDay=new Date(y,m,1).getDay(); firstDay=firstDay===0?6:firstDay-1; const dim=new Date(y,m+1,0).getDate(), prevDim=new Date(y,m,0).getDate(), cells=[]; for(let i=0;i<firstDay;i++)cells.push({d:prevDim-firstDay+1+i,m:m===0?11:m-1,y:m===0?y-1:y,other:true}); for(let i=1;i<=dim;i++)cells.push({d:i,m,y,other:false}); while(cells.length<42){const ld=cells.length-firstDay-dim+1;cells.push({d:ld,m:m===11?0:m+1,y:m===11?y+1:y,other:true});}
+    for(let w=0;w<6;w++){const row=document.createElement('div'); row.className='week-row'; for(let d=0;d<7;d++){const c=cells[w*7+d], dt=new Date(c.y,c.m,c.d), day=dk(dt); const cell=document.createElement('div'); cell.className='day-cell'+(c.other?' other':'')+(d>=5?' weekend':'')+((typeof isToday==='function'&&isToday(dt))?' today':''); const dayEvs=rawEvents().filter(ev=>{const s=startOf(ev), e=endOf(ev)||s;return s&&s<=day&&e>=day;}).sort((a,b)=>(timeOf(a)||'99:99').localeCompare(timeOf(b)||'99:99')); cell.onclick=()=>onDayClick(dt,dayEvs); let html='<div class="day-num-wrap"><div class="day-num">'+c.d+'</div></div>'; try{if(typeof getHolidaysForDate==='function') html+=(getHolidaysForDate(day)||[]).slice(0,2).map(h=>'<div class="holiday-line">'+escS(h.name)+'</div>').join(''); if(typeof getChallengeDayStatus==='function'){const ch=getChallengeDayStatus(day); if(ch)html+='<span class="challenge-day-dot '+(ch.allDone?'done':'')+'"></span>';}}catch(e){}
+      const maxV=window.innerWidth<480?1:2; dayEvs.slice(0,maxV).forEach(ev=>{const s=startOf(ev), e=endOf(ev)||s, isRange=e>s, start=day===s, end=day===e, weekStart=d===0, weekEnd=d===6; const cls='ev-chip '+colorOf(ev)+(isRange?' range-event '+(start||weekStart?'range-start ':'')+(end||weekEnd?'range-end ':'range-mid '):''); const label=(!isRange||start||weekStart)?escS(titleOf(ev)):''; html+='<div class="'+cls+'" onclick="event.stopPropagation();openEventPanel(\''+escS(ev.id||'')+'\')">'+label+(start?sourceBadge(ev):'')+'</div>';}); if(dayEvs.length>maxV)html+='<div class="more-chip">+'+(dayEvs.length-maxV)+'</div>'; cell.innerHTML=html; row.appendChild(cell);} grid.appendChild(row);} applyCalOptionStyle();};
+
+  function applyCalOptionStyle(){let o={showHolidays:true,showChallengeDots:true,showWeekNumbers:false}; try{o=Object.assign(o,JSON.parse(localStorage.getItem('change_v1_calendar_view_options')||'{}'))}catch(e){} let st=$('final-calendar-options-style'); if(!st){st=document.createElement('style');st.id='final-calendar-options-style';document.head.appendChild(st)} st.textContent=(o.showChallengeDots?'':'.challenge-day-dot,.challenge-dot{display:none!important;}')+(o.showHolidays?'':'.holiday-line,.holiday-card,.holiday-chip{display:none!important;}')+'.ev-chip.range-event{display:block;margin-left:-4px;margin-right:-4px;border-radius:0;min-height:18px}.ev-chip.range-start{margin-left:0;border-top-left-radius:9px;border-bottom-left-radius:9px}.ev-chip.range-end{margin-right:0;border-top-right-radius:9px;border-bottom-right-radius:9px}.ev-chip.range-mid{color:transparent}.source-pill,.range-pill{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:999px;font-size:10px;font-weight:800;background:rgba(66,133,244,.12);color:#4285F4}.source-pill.synced{background:rgba(22,163,74,.12);color:var(--grn)}';}
+  const oldSaveCal=window.saveCalSettings; window.saveCalSettings=function(){try{const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked}; localStorage.setItem('change_v1_calendar_view_options',JSON.stringify(o)); window.changeCalendarViewOptions=o;}catch(e){} if(typeof oldSaveCal==='function')oldSaveCal(); applyCalOptionStyle(); if(typeof renderCalendar==='function')renderCalendar();};
+  document.addEventListener('change',function(e){if(e.target&&['toggle-holidays','toggle-dots','toggle-kw'].includes(e.target.id)){try{const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked}; localStorage.setItem('change_v1_calendar_view_options',JSON.stringify(o)); window.changeCalendarViewOptions=o; applyCalOptionStyle(); if(typeof renderCalendar==='function')renderCalendar();}catch(x){}}});
+  const oldOpenContest=window.openContestUserDetails; window.openContestUserDetails=function(id){id=lc(id); if(isDummyDu(id)) id=currentEmail(); if(!id)return; if(typeof oldOpenContest==='function')return oldOpenContest(id);};
+  applyCalOptionStyle(); setTimeout(()=>{normalizeMyData(); try{if(currentMainView==='dashboard')buildDashboard(); if(currentMainView==='calendar')renderCalendar();}catch(e){}},500);
+})();
+
+
 /* BEAUTIFUL CLEAN CALENDAR FINAL: echte Zeitraum-Balken, Von/Bis-Dialog, dezente Google-Quelle */
 (function(){
   const LS_OPTS='change_v1_calendar_view_options';
@@ -2982,10 +2290,8 @@ document.addEventListener('touchend',e=>{
   applyCleanCalendarStyle();
   setTimeout(()=>{try{if(window.currentMainView==='calendar')renderCalendar(); if(window.currentMainView==='dashboard'&&typeof buildDashboard==='function')buildDashboard();}catch(e){console.warn(e)}},300);
 })();
-</script>
 
 
-<script id="change-option-b-calendar-final">
 (function(){
   'use strict';
   const DAY = 86400000;
@@ -3284,9 +2590,8 @@ document.addEventListener('touchend',e=>{
   document.head.appendChild(style);
   setTimeout(() => { try{ window.renderCalendar(); }catch(e){ console.warn('Option-B calendar patch', e); } }, 80);
 })();
-</script>
 
-<script>
+
 /* FINAL CALENDAR REPAIR: readable month view, holidays inline, points bottom-right, settings fixed */
 (function(){
   const DAY=86400000;
@@ -3425,12 +2730,8 @@ document.addEventListener('touchend',e=>{
   `; document.head.appendChild(css);
   setTimeout(()=>{try{renderCalendar();}catch(e){console.warn('calendar repair',e)}},80);
 })();
-</script>
 
 
-
-<!-- USER FINAL CALENDAR FIX: no duplicate UI, compact points, holidays inline, settings stable -->
-<script id="user-final-calendar-fix">
 (function(){
 'use strict';
 const $=id=>document.getElementById(id);
@@ -3498,11 +2799,8 @@ const css=document.createElement('style'); css.id='user-final-calendar-fix-css';
 `; document.head.appendChild(css);
 setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calendar fix',e)}},0);
 })();
-</script>
 
 
-
-<script id="change-notification-style-de">
 (function(){
   function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
   function storedPushEnabled(){try{return localStorage.getItem('push_enabled')==='true' || localStorage.getItem('change_push_enabled')==='true';}catch(e){return false;}}
@@ -3563,30 +2861,8 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
     .notif-clean-top{display:flex;align-items:center;gap:12px}.notif-clean-icon{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:#e4f3ea;font-size:18px}.notif-clean-text{flex:1;min-width:0}.notif-clean-title{font-weight:850;color:var(--t1);font-size:15px;line-height:1.25}.notif-test-btn{width:100%;margin-top:14px;border:1px solid #d8e2dc;background:#fff;color:#1f3f31;border-radius:12px;height:38px;font-weight:750;cursor:pointer}.notif-test-btn:hover{background:#f7fbf8}.notif-clean-section{margin:12px 14px 0;padding:16px;border:1px solid #e0ded6;background:#faf9f5;border-radius:14px}.notif-clean-section-title{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#6f746f;font-weight:850;margin-bottom:16px}.notif-empty{text-align:center;color:#9ba19d;padding:18px 8px 22px}.bell-push-box{display:none!important}`;
   document.head.appendChild(st);
 })();
-</script>
 
 
-<style id="challenge-points-final-fix-style">
-  .cal-points,.challenge-points-badge{
-    position:absolute!important;
-    right:7px!important;
-    bottom:5px!important;
-    top:auto!important;
-    left:auto!important;
-    width:auto!important;
-    height:auto!important;
-    min-width:0!important;
-    max-width:48px!important;
-    padding:2px 6px!important;
-    border-radius:999px!important;
-    font-size:10px!important;
-    line-height:1!important;
-    font-weight:900!important;
-    z-index:8!important;
-    pointer-events:none!important;
-  }
-</style>
-<script>
 
 /* CHANGE CLEAN DASHBOARD FIX v2026-05-01-ROBUST
    Last loaded dashboard renderer. No extra files required.
@@ -3701,9 +2977,8 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
   setTimeout(run,50); setTimeout(run,400); setTimeout(run,1200);
 })();
 
-</script>
 
-<script id="daypanel-range-final-fix">
+
 /* ── final fix: day detail includes multi-day range events ── */
 (function(){
   'use strict';
@@ -3783,120 +3058,498 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
     if(typeof window.openPanel==='function') window.openPanel((evs.length===1?'1 Termin':evs.length+' Termine'),html);
   };
 })();
-</script>
 
-<script id="change-step9-clean-final">
+
+/* DASHBOARD FIX: Feiertage sichtbar, Datums-/Zeitraumblock weiter links, heutige Einträge immer oben */
 (function(){
   'use strict';
-  const q=(s,r=document)=>r.querySelector(s);
-  const qa=(s,r=document)=>Array.from(r.querySelectorAll(s));
+  const $=id=>document.getElementById(id);
+  const pad=n=>String(n).padStart(2,'0');
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const key=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  const parse=k=>new Date(String(k||'').slice(0,10)+'T12:00:00');
+  const today=()=>key(new Date());
+  const add=(k,n)=>{const d=parse(k);d.setDate(d.getDate()+n);return key(d)};
+  const diff=k=>Math.round((parse(k)-parse(today()))/86400000);
+  const fmt=k=>parse(k).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+  const fmtLong=k=>parse(k).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'}).replace('.', '');
+  function evTitle(e){return String(e?.title||e?.summary||e?.name||'Termin').trim()||'Termin'}
+  function evStart(e){return String(e?.date||e?.startDate||e?.dateKey||e?.fromDate||e?.start?.date||(e?.start?.dateTime?e.start.dateTime.slice(0,10):'')||'').slice(0,10)}
+  function evEnd(e){let x=String(e?.endDate||e?.dateEnd||e?.toDate||e?.untilDate||'').slice(0,10); if(!x && e?.end?.date){const d=parse(e.end.date);d.setDate(d.getDate()-1);x=key(d)} if(!x && e?.end?.dateTime)x=String(e.end.dateTime).slice(0,10); const s=evStart(e); return (!x||x<s)?s:x;}
+  function evTime(e){return e?.time||e?.startTime||(e?.start?.dateTime?new Date(e.start.dateTime).toTimeString().slice(0,5):'')||''}
+  function allEvents(){const out=[]; try{(window.events||[]).forEach(e=>out.push(e))}catch(e){} try{(window.gEvents||[]).forEach(g=>out.push(g))}catch(e){} try{if(!out.length && typeof getAllEvents==='function')(getAllEvents()||[]).forEach(e=>out.push(e))}catch(e){} return out;}
+  function holidayFallback(k){const d=parse(k), y=d.getFullYear(), md=pad(d.getMonth()+1)+'-'+pad(d.getDate()), out=[]; const fixed={'01-01':'Neujahr','05-01':'Tag der Arbeit','10-03':'Tag der Deutschen Einheit','12-25':'1. Weihnachtstag','12-26':'2. Weihnachtstag'}; if(fixed[md])out.push({name:fixed[md],states:['ALL']}); const a=y%19,b=Math.floor(y/100),c=y%100,dd=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-dd-g+15)%30,i=Math.floor(c/4),kk=c%4,l=(32+2*e+2*i-h-kk)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1,es=new Date(y,mo-1,da,12); [[-2,'Karfreitag'],[1,'Ostermontag'],[39,'Christi Himmelfahrt'],[50,'Pfingstmontag'],[60,'Fronleichnam']].forEach(([o,n])=>{const x=new Date(es);x.setDate(x.getDate()+o);if(key(x)===k)out.push({name:n,states:['ALL']})}); return out;}
+  function holidays(k){let hs=[]; try{if(typeof getHolidaysForDate==='function')hs=getHolidaysForDate(k)||[]}catch(e){} const seen=new Set(), out=[]; hs.concat(holidayFallback(k)).forEach(h=>{const n=h&&h.name; if(n&&!seen.has(n)){seen.add(n);out.push(h)}}); return out;}
+  function isActiveToday(r){const t=today();return r.start<=t&&r.end>=t}
+  function eventRows(){const t=today(), limit=add(t,14), seen=new Set(), rows=[]; allEvents().forEach(e=>{const s=evStart(e), en=evEnd(e); if(!s||en<t||s>limit)return; const display=s<t?t:s; const gid=e.googleEventId||(String(e.id||'').startsWith('g_')?String(e.id).slice(2):''); const sig=(gid?'g:'+gid:evTitle(e).toLowerCase()+'|'+s+'|'+en+'|'+evTime(e)); if(seen.has(sig))return; seen.add(sig); rows.push({kind:'event',ev:e,date:display,start:s,end:en,sort:(s<=t&&en>=t?'0:':'1:')+display+'|'+(evTime(e)||'99:99')});}); return rows;}
+  function holidayRows(){const t=today(), rows=[]; for(let i=0;i<=14;i++){const k=add(t,i); holidays(k).forEach(h=>rows.push({kind:'holiday',date:k,start:k,end:k,sort:(k===t?'0:':'1:')+k+'|00:00',holiday:h}))} return rows;}
+  function rows(){return holidayRows().concat(eventRows()).sort((a,b)=>a.sort.localeCompare(b.sort)||(a.kind==='holiday'?-1:1)).slice(0,9)}
+  function dateBlock(r){const active=isActiveToday(r), d=diff(r.date); const top=active?'Heute':(d===1?'Morgen':fmt(r.date)); const bot=active?fmt(r.date):fmtLong(r.date); return '<div class="dash-date-block dash-date-left '+(active?'is-today':'')+'"><div>'+esc(top)+'</div><span>'+esc(bot)+'</span></div>';}
+  function calHtml(){const rs=rows(); if(!rs.length)return '<div class="dash-empty compact-empty">Keine Termine oder Feiertage</div>'; return rs.map(r=>{if(r.kind==='holiday')return '<div class="dash-row compact-row dashboard-calendar-row holiday-row" onclick="setMainView(\'calendar\')">'+dateBlock(r)+'<div class="dash-row-icon" style="background:var(--amb-d)">🎉</div><div class="dash-row-body"><div class="dash-row-title">'+esc(r.holiday.name)+' <span class="holiday-mini-badge">Feiertag</span></div><div class="dash-row-sub">'+esc(fmtLong(r.date))+'</div></div></div>'; const range=r.end&&r.end!==r.start, active=isActiveToday(r), sub=range?(fmt(r.start)+' – '+fmt(r.end)):(fmtLong(r.start)+(evTime(r.ev)?' · '+esc(evTime(r.ev)):'')); return '<div class="dash-row compact-row dashboard-calendar-row '+(active?'dash-today-row':'')+'" onclick="setMainView(\'calendar\')">'+dateBlock(r)+'<div class="dash-row-icon" style="background:var(--acc-d)">📅</div><div class="dash-row-body"><div class="dash-row-title">'+esc(evTitle(r.ev))+'</div><div class="dash-row-sub">'+sub+'</div></div></div>';}).join('');}
+  function challengeHtml(){try{const td=today(),me=String(window.userInfo?.email||'').toLowerCase(),done=new Set((window.challengeCompletions||[]).filter(c=>String(c.date||'').slice(0,10)===td&&(!me||String(c.userEmail||c.playerId||c.email||'').toLowerCase()===me)).map(c=>String(c.challengeId||''))),chs=(window.challenges||[]).filter(c=>c&&c.active!==false&&(c.recurrence==='daily'||!c.date||String(c.date||c.startDate||'').slice(0,10)===td)).slice(0,4); if(!chs.length)return '<div class="dash-empty compact-empty">Heute keine Challenges</div>'; return chs.map(ch=>'<div class="dash-row compact-row" onclick="setMainView(\'challenges\')"><div class="dash-row-icon" style="background:var(--pur-d)">'+esc(ch.icon||'🏆')+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(ch.title||ch.name||'Challenge')+'</div><div class="dash-row-sub">'+(parseInt(ch.points,10)||0)+' Punkte</div></div><span class="dash-row-badge '+(done.has(String(ch.id))?'badge-green':'badge-amber')+'">'+(done.has(String(ch.id))?'✓':'offen')+'</span></div>').join('')}catch(e){return '<div class="dash-empty compact-empty">Heute keine Challenges</div>'}}
+  function playersHtml(){try{const ps=(typeof getVisibleContestPlayers==='function'?getVisibleContestPlayers():(window.challengePlayers||[])).slice(0,4),me=String(window.userInfo?.email||'').toLowerCase(); if(!ps.length)return '<div class="dash-empty compact-empty">Noch keine Mitspieler</div>'; return ps.map((p,i)=>{const id=String(p.email||p.id||'').toLowerCase(),st=typeof getPlayerPointSummary==='function'?getPlayerPointSummary(id):{totalPoints:0,todayPoints:0},medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1); return '<div class="dash-row compact-row" onclick="setMainView(\'challenges\')"><div class="dash-row-icon" style="background:var(--amb-d)">'+medal+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(p.name||p.email||'Mitspieler')+(id===me?' · Du':'')+'</div><div class="dash-row-sub">Heute '+(st.todayPoints||0)+' P · Gesamt '+(st.totalPoints||0)+' P</div></div><span class="dash-row-badge badge-green">'+(st.totalPoints||0)+' P</span></div>'}).join('')}catch(e){return '<div class="dash-empty compact-empty">Noch keine Mitspieler</div>'}}
+  function inject(){let st=$('dashboard-holiday-today-left-style'); if(!st){st=document.createElement('style');st.id='dashboard-holiday-today-left-style';document.head.appendChild(st)} st.textContent=`#kpi-grid{display:none!important}#dashboard-view{padding:18px 18px 24px!important}.dash-grid{display:grid!important;grid-template-columns:minmax(390px,.82fr) minmax(460px,1.18fr)!important;gap:16px!important;align-items:start!important}.calendar-card{grid-column:auto!important}.dash-card{border-radius:18px!important;box-shadow:0 2px 12px rgba(0,0,0,.05)!important}.dash-card-head{padding:12px 16px!important}.dash-card-body{max-height:360px!important;overflow:auto!important}.dashboard-combined-card .dash-card-body{max-height:360px!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:0!important;padding:0!important}.dashboard-section+.dashboard-section{border-left:1px solid var(--b1)!important}.dashboard-section-head{padding:10px 14px 7px!important;font-size:12px!important;font-weight:800!important;color:var(--t2)!important}.compact-row{padding:10px 12px 10px 8px!important;min-height:48px!important;gap:8px!important}.compact-row .dash-row-icon{width:30px!important;height:30px!important;border-radius:9px!important;font-size:13px!important}.compact-row .dash-row-title{font-size:13px!important}.compact-row .dash-row-sub{font-size:11px!important}.dashboard-calendar-row{align-items:center!important}.dash-date-left{width:42px!important;flex:0 0 42px!important;margin-left:0!important;text-align:left!important;font-size:11px!important;font-weight:850!important;color:var(--t2)!important;line-height:1.05!important}.dash-date-left span{display:block!important;margin-top:3px!important;font-size:9.5px!important;font-weight:700!important;color:var(--t5)!important}.dash-date-left.is-today div,.dash-date-left.is-today span{color:var(--acc)!important}.dash-today-row{background:rgba(45,106,79,.06)!important;box-shadow:inset 3px 0 0 var(--acc)!important}.holiday-row{background:rgba(245,158,11,.08)!important;box-shadow:inset 3px 0 0 var(--amb)!important}.holiday-mini-badge{display:inline-flex!important;margin-left:6px!important;padding:1px 6px!important;border-radius:999px!important;background:rgba(245,158,11,.14)!important;color:#b85f00!important;border:1px solid rgba(245,158,11,.22)!important;font-size:10px!important;font-weight:800!important}.compact-empty{padding:22px 14px!important;font-size:12px!important}@media(max-width:900px){.dash-grid{grid-template-columns:1fr!important}.dashboard-combined-card .dash-card-body{grid-template-columns:1fr!important}.dashboard-section+.dashboard-section{border-left:0!important;border-top:1px solid var(--b1)!important}.dash-card-body,.dashboard-combined-card .dash-card-body{max-height:none!important}}`;}
+  window.buildDashCards=function(){const grid=$('dash-grid'); if(!grid)return; inject(); grid.innerHTML='<div class="dash-card calendar-card"><div class="dash-card-head"><div><div class="dash-card-title">📅 Kalender</div><div class="dash-card-sub">Heute + nächste Tage</div></div></div><div class="dash-card-body">'+calHtml()+'</div></div><div class="dash-card dashboard-combined-card"><div class="dash-card-head"><div><div class="dash-card-title">🏆 Challenges & 👥 Mitspieler</div><div class="dash-card-sub">Heute und Rangliste</div></div></div><div class="dash-card-body"><div class="dashboard-section"><div class="dashboard-section-head"><span>Challenges</span></div>'+challengeHtml()+'</div><div class="dashboard-section"><div class="dashboard-section-head"><span>Mitspieler</span></div>'+playersHtml()+'</div></div></div>';};
+  window.buildDashboard=function(){try{const n=(window.userInfo&&userInfo.name)||'',h=$('dash-greeting'); if(h)h.textContent=(new Date().getHours()<12?'Guten Morgen':new Date().getHours()<17?'Guten Tag':'Guten Abend')+(n?', '+n.split(' ')[0]:''); const s=$('dash-sub'); if(s)s.textContent='Kalender, Challenges und Mitspieler auf einen Blick'}catch(e){} window.buildDashCards();};
+  setTimeout(()=>{try{if(window.currentMainView==='dashboard')window.buildDashboard()}catch(e){}},250);
+})();
+
+
+(function(){
+  'use strict';
+  const $=id=>document.getElementById(id);
+  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const pad=n=>String(n).padStart(2,'0');
+  const dayKey=d=>{try{if(typeof dateKey==='function')return dateKey(d)}catch(e){} const x=d instanceof Date?d:new Date(d); return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate())};
+  const today=()=>dayKey(new Date());
+  const getStore=(name,fallback)=>{try{ if(typeof eval(name)!=='undefined') return eval(name); }catch(e){} try{return window[name]??fallback}catch(e){return fallback}};
+  const setStore=(name,val)=>{try{ eval(name+' = val'); }catch(e){} try{window[name]=val}catch(e){}};
+  const readLS=(k,d)=>{try{const v=localStorage.getItem(k); if(v==null)return d; return JSON.parse(v)}catch(e){return d}};
+  const writeLS=(k,v)=>{try{ if(typeof ls==='function')ls(k,v); else localStorage.setItem(k,JSON.stringify(v)); }catch(e){try{localStorage.setItem(k,JSON.stringify(v))}catch(_){}}};
+  function account(){
+    let fu=null; try{fu=(window.firebase&&firebase.auth&&firebase.auth().currentUser)||null}catch(e){}
+    const u=getStore('userInfo',{})||{};
+    const email=String((fu&&fu.email)||u.email||u.mail||'').trim().toLowerCase();
+    const uid=String((fu&&fu.uid)||u.uid||'').trim();
+    const name=(fu&&fu.displayName)||u.name||email||'Du';
+    const picture=(fu&&fu.photoURL)||u.picture||u.photoURL||'';
+    return {id:email||uid||'local-user',email,uid,name,picture};
+  }
+  function syncArrays(){
+    let cps=getStore('challengePlayers',[]); if(!Array.isArray(cps)) cps=[];
+    let cms=getStore('challengeCompletions',[]); if(!Array.isArray(cms)) cms=[];
+    let chs=getStore('challenges',[]); if(!Array.isArray(chs)) chs=[];
+    if(!cms.length) cms=readLS('challenge_completions',[]);
+    if(!chs.length) chs=readLS('challenges',[]);
+    const a=account();
+    const by=new Map();
+    cps.forEach(p=>{const id=String(p?.email||p?.id||p?.uid||'').toLowerCase(); if(id && !['du','ich','me','local-user'].includes(id)) by.set(id,{...p,id,email:p.email||id});});
+    cms.forEach(c=>{let id=String(c?.playerId||c?.userEmail||c?.email||'').toLowerCase(); if(['du','ich','me','local-user',''].includes(id)) id=a.id; if(id) by.set(id,{...(by.get(id)||{}),id,email:id,name:(by.get(id)?.name)||c.playerName||c.userName||id});});
+    if(a.id) by.set(a.id,{...(by.get(a.id)||{}),id:a.id,email:a.email||a.id,uid:a.uid,name:a.name,picture:a.picture,online:true});
+    cps=[...by.values()].filter(p=>!String(p.name||p.email||p.id||'').toLowerCase().match(/^(du|ich|me)$/));
+    setStore('challengePlayers',cps); setStore('challengeCompletions',cms); setStore('challenges',chs);
+    return {players:cps,completions:cms,challenges:chs,account:a};
+  }
+  function playerIdOf(c){const a=account();let id=String(c?.playerId||c?.userEmail||c?.email||c?.userId||'').toLowerCase(); if(!id||['du','ich','me','local-user'].includes(id)) id=a.id; return id;}
+  function isDone(chId){const {completions,account:a}=syncArrays(), td=today(); return completions.some(c=>String(c.challengeId)===String(chId)&&String(c.date||'').slice(0,10)===td&&playerIdOf(c)===a.id);}
+  function persistChallenges(){const {players,completions,challenges}=syncArrays(); writeLS('challenge_players',players); writeLS('challenge_completions',completions); writeLS('challenges',challenges); try{persistChangeState&&persistChangeState()}catch(e){} }
+  function statsFor(id){const {completions}=syncArrays(); const td=today(); let totalPoints=0,todayPoints=0,totalCount=0; completions.forEach(c=>{if(playerIdOf(c)!==id)return; const p=parseInt(c.points,10)||0; totalPoints+=p; totalCount++; if(String(c.date||'').slice(0,10)===td)todayPoints+=p;}); return {totalPoints,todayPoints,totalCount};}
+
+  // 1) Navigation sauber: Kalender-Steuerung nur im Kalender; keine Sichtbarkeit in anderen Reitern.
+  window.setMainView=function(view){
+    const v=view||'dashboard';
+    try{window.currentMainView=currentMainView=v}catch(e){window.currentMainView=v}
+    ['dashboard-view','cal-body','challenges-view'].forEach(id=>{const el=$(id); if(el)el.style.display='none'});
+    const controls=$('cal-controls'); if(controls)controls.style.display='none';
+    if(v==='calendar'){
+      const cal=$('cal-body'); if(cal)cal.style.display='flex';
+      if(controls)controls.style.display='flex';
+      try{renderCalendar&&renderCalendar()}catch(e){}
+    }else if(v==='challenges'){
+      if(!$('challenges-view') && typeof installChallengeView==='function') installChallengeView();
+      const chv=$('challenges-view'); if(chv)chv.style.display='flex';
+      try{renderChallenges&&renderChallenges()}catch(e){}
+    }else{
+      const dash=$('dashboard-view'); if(dash)dash.style.display='block';
+      try{buildDashboard&&buildDashboard()}catch(e){}
+    }
+    document.querySelectorAll('.h-tab,.bnav-item').forEach(x=>x.classList.remove('active'));
+    $('htab-'+v)?.classList.add('active'); $('bnav-'+v)?.classList.add('active');
+  };
+
+  // 2) Unterste Kalender-Zeile „Demnächst“ entfernen.
+  function removeUpcoming(){const u=$('upcoming-strip'); if(u)u.remove();}
+  window.renderUpcoming=function(){removeUpcoming();};
+
+  // 3) Google-Sync nur in Kalender-Einstellungen; Sync-Panel nur Live-Sync.
+  const googleKey='change_google_calendar_sync_enabled';
+  const googleOn=()=>{try{return localStorage.getItem(googleKey)!=='0'&&localStorage.getItem(googleKey)!=='false'}catch(e){return true}};
+  const setGoogle=v=>{try{localStorage.setItem(googleKey,v?'1':'0')}catch(e){}};
+  window.openPushSettingsPanel=function(){
+    const liveOn=readLS('live_sync_enabled',true)!==false && readLS('change_v1_live_sync_enabled',true)!==false;
+    const online=liveOn?syncArrays().players.filter(p=>p.online).length:0;
+    const html='<div class="push-box"><div class="challenge-title">Live-Sync</div><div class="settings-hint" style="margin-top:8px">Push steuerst du über die Glocke. Live-Sync synchronisiert nur Mitspieler und Punkte.</div></div>'+ 
+      '<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">Live-Mitspieler <span class="status-pill '+(liveOn?'status-on':'status-off')+'">'+(liveOn?'VERBUNDEN':'DEAKTIVIERT')+'</span></div><div class="toggle-sub">Aktuell online: '+online+' · synchronisiert Mitspieler und erledigte Challenges.</div></div><label class="switch"><input type="checkbox" '+(liveOn?'checked':'')+' onchange="setLiveSyncEnabled&&setLiveSyncEnabled(this.checked)"><span class="slider"></span></label></div>';
+    openPanel&&openPanel('Live-Sync',html);
+  };
+  window.setGoogleCalendarSyncEnabled=async function(enabled){
+    setGoogle(!!enabled);
+    if(enabled){try{toast&&toast('Google-Kalender-Sync wird aktualisiert…','')}catch(e){} try{await loadGoogleEvents?.()}catch(e){} try{renderCalendar?.();buildDashboard?.()}catch(e){} try{toast&&toast('Google-Kalender-Sync aktualisiert ✓','ok')}catch(e){}}
+    else{try{setStore('gEvents',[]);renderCalendar?.();buildDashboard?.();toast&&toast('Google-Kalender-Sync deaktiviert','')}catch(e){}}
+    try{openCalendarSettings&&openCalendarSettings()}catch(e){}
+  };
+  const oldCalendarSettings=window.openCalendarSettings;
+  window.openCalendarSettings=function(){
+    const states=window.STATE_OPTIONS||{ALL:'Alle Bundesländer',BW:'Baden-Württemberg',BY:'Bayern','BY-AUGSBURG':'Bayern · Augsburg',BE:'Berlin',BB:'Brandenburg',HB:'Bremen',HH:'Hamburg',HE:'Hessen',MV:'Mecklenburg-Vorpommern',NI:'Niedersachsen',NW:'Nordrhein-Westfalen',RP:'Rheinland-Pfalz',SL:'Saarland',SN:'Sachsen',ST:'Sachsen-Anhalt',SH:'Schleswig-Holstein',TH:'Thüringen'};
+    const opt=readLS('change_v1_calendar_view_options',{showHolidays:true,showChallengeDots:true,showWeekNumbers:true});
+    const st=(getStore('calendarSettings',{})?.state)||localStorage.getItem('holiday_state')||'ALL';
+    const options=Object.entries(states).map(([k,v])=>'<option value="'+esc(k)+'" '+(k===st?'selected':'')+'>'+esc(v)+'</option>').join('');
+    const row=(title,id,on,sub)=>'<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">'+title+'</div><div class="toggle-sub">'+sub+'</div></div><label class="switch"><input type="checkbox" id="'+id+'" '+(on?'checked':'')+'><span class="slider"></span></label></div>';
+    const html='<div class="fg"><label class="flabel">Bundesland für Feiertage</label><select class="finput" id="holiday-state">'+options+'</select></div>'+row('Feiertage anzeigen','toggle-holidays',opt.showHolidays!==false,'Direkt im Kalender und Dashboard anzeigen.')+row('Challenge-Punkte anzeigen','toggle-dots',opt.showChallengeDots!==false,'Nur klein unten rechts im Kalendertag.')+row('Kalenderwochen anzeigen','toggle-kw',opt.showWeekNumbers!==false,'KW links unten je Woche.')+row('Google-Kalender-Sync','toggle-google-sync',googleOn(),'Beim Aktivieren wird neu synchronisiert.')+'<button class="btn btn-primary btn-full" onclick="saveCalSettings()">Speichern</button>';
+    openPanel&&openPanel('Kalender-Einstellungen',html);
+  };
+  window.saveCalSettings=function(){
+    const opts={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked};
+    writeLS('change_v1_calendar_view_options',opts);
+    try{ if(!window.calendarSettings)window.calendarSettings={}; calendarSettings.state=$('holiday-state')?.value||'ALL'; localStorage.setItem('holiday_state',calendarSettings.state); }catch(e){}
+    const desired=!!$('toggle-google-sync')?.checked;
+    const changed=desired!==googleOn(); setGoogle(desired);
+    closePanel&&closePanel();
+    if(changed&&desired){try{loadGoogleEvents?.()}catch(e){}}
+    try{renderCalendar?.();buildDashboard?.();toast&&toast('Kalender-Einstellungen gespeichert ✓','ok')}catch(e){}
+  };
+
+  // 4 + 5) Challenges: echte Mitspieler anzeigen, „Du“-Einzelzeile verhindern, Erledigen aktualisiert Punkte sofort.
+  window.getVisibleContestPlayers=function(){return syncArrays().players;};
+  window.getPlayerPointSummary=function(id){return statsFor(String(id||account().id).toLowerCase());};
+  window.renderChallenges=function(){
+    const data=syncArrays(), list=$('challenges-list'), board=$('leaderboard-list'); if(!list||!board)return;
+    const active=data.challenges.filter(c=>c&&c.active!==false);
+    list.innerHTML=active.length?active.map(ch=>{const done=isDone(ch.id); const url=ch.url||ch.video||ch.youtube||ch.youtubeUrl||ch.link||''; const link=url?'<a href="'+esc(url)+'" target="_blank" rel="noopener" class="challenge-meta" onclick="event.stopPropagation()">So geht die Übung</a>':''; return '<div class="challenge-item '+(done?'challenge-done':'')+'"><div class="challenge-icon">'+esc(ch.icon||'🏆')+'</div><div class="challenge-body"><div class="challenge-name">'+esc(ch.title||ch.name||'Challenge')+'</div><div class="challenge-meta">'+esc(ch.desc||'')+' · '+(parseInt(ch.points,10)||0)+' Punkte</div>'+link+'</div><span class="points-pill">+'+(parseInt(ch.points,10)||0)+'</span><button class="btn '+(done?'btn-success':'btn-primary')+' btn-sm" onclick="completeChallenge(\''+esc(ch.id)+'\')">'+(done?'Erledigt':'Erledigen')+'</button></div>';}).join(''):'<div class="empty-state"><div class="empty-title">Keine Challenges</div><div class="empty-sub">Aktiviere Auto-Challenges oder lege eine Aufgabe an.</div></div>';
+    const players=data.players.slice().sort((a,b)=>statsFor(String(b.email||b.id).toLowerCase()).totalPoints-statsFor(String(a.email||a.id).toLowerCase()).totalPoints);
+    board.innerHTML=players.length?players.map((p,i)=>{const id=String(p.email||p.id||'').toLowerCase(), st=statsFor(id), me=id===data.account.id, medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1); return '<div class="leader-row clickable" onclick="try{openPlayerRecentPanel(\''+esc(id)+'\',\''+esc(p.name||p.email||id)+'\')}catch(e){}"><div class="leader-rank">'+medal+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(p.online?'<span class="live-dot"></span>':'')+'</div><div class="leader-detail">Heute: '+st.todayPoints+' P · Gesamt: '+st.totalPoints+' P · '+st.totalCount+' erledigt</div></div><div class="leader-score">'+st.totalPoints+'</div></div>';}).join(''):'<div class="dash-empty">Noch keine Mitspieler.</div>';
+  };
+  window.completeChallenge=function(id){
+    const data=syncArrays(); const ch=data.challenges.find(c=>String(c.id)===String(id)); if(!ch)return;
+    if(isDone(id)){try{toast&&toast('Diese Challenge ist heute schon erledigt','')}catch(e){} return;}
+    const row={id:'cc_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),challengeId:String(id),playerId:data.account.id,userEmail:data.account.email,playerName:data.account.name,date:today(),points:parseInt(ch.points,10)||0,createdAt:new Date().toISOString()};
+    data.completions.push(row); setStore('challengeCompletions',data.completions); persistChallenges();
+    try{ if(typeof publishCompletionToFirestore==='function') publishCompletionToFirestore(row); }catch(e){}
+    try{renderChallenges(); buildDashboard(); renderCalendar(); toast&&toast('+'+row.points+' Punkte ✓','ok')}catch(e){}
+  };
+  window.resetTodayChallenges=function(){const data=syncArrays(),td=today(); data.completions=data.completions.filter(c=>!(String(c.date||'').slice(0,10)===td&&playerIdOf(c)===data.account.id)); setStore('challengeCompletions',data.completions); persistChallenges(); try{renderChallenges();buildDashboard();renderCalendar();toast&&toast('Heute zurückgesetzt','')}catch(e){}};
+
+  // 6) „Angemeldet bleiben“ entfernen.
+  window.confirmLogout=function(){
+    const u=account();
+    const html='<div class="logout-profile"><div class="logout-avatar">'+(u.picture?'<img src="'+esc(u.picture)+'" alt="">':esc((u.name||'?').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()))+'</div><div style="min-width:0"><div class="logout-name">'+esc(u.name)+'</div><div class="logout-mail">'+esc(u.email)+'</div></div></div><div class="logout-warning">Du meldest dich auf diesem Gerät ab.</div><button class="btn btn-danger btn-full" onclick="doLogout&&doLogout()">Abmelden</button>';
+    openPanel&&openPanel('Abmelden',html);
+  };
+
+  // UI-Schutz und Initialisierung.
+  function inject(){
+    if(!$('cleanup-regression-fix-style')){const st=document.createElement('style');st.id='cleanup-regression-fix-style';st.textContent='#upcoming-strip{display:none!important}body:not(.calendar-active) #cal-controls{display:none!important}.icon-btn[title="Sync"],.icon-btn[title="Live- & Kalender-Sync"],.icon-btn[title="Push & Live-Sync"]{pointer-events:auto!important}';document.head.appendChild(st)}
+    removeUpcoming(); document.querySelectorAll('button').forEach(b=>{if((b.textContent||'').trim()==='Angemeldet bleiben')b.remove()});
+  }
+  const oldOpenPanel=window.openPanel;
+  if(typeof oldOpenPanel==='function') window.openPanel=function(title,html){oldOpenPanel(title,html); setTimeout(inject,0)};
+  setInterval(()=>{document.body.classList.toggle('calendar-active',(window.currentMainView||'')==='calendar');inject()},500);
+  setTimeout(()=>{inject();syncArrays();try{if((window.currentMainView||'dashboard')==='challenges')renderChallenges(); if((window.currentMainView||'dashboard')==='dashboard')buildDashboard();}catch(e){}},150);
+})();
+
+
+(function(){
+  'use strict';
+  const $=id=>document.getElementById(id);
+  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const pad=n=>String(n).padStart(2,'0');
+  const today=()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+  function read(k,fb){try{const v=localStorage.getItem(k);return v==null?fb:JSON.parse(v)}catch(e){return fb}}
+  function write(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+  function raw(k,v){try{localStorage.setItem(k,String(v))}catch(e){}}
+  function me(){
+    const email=String((window.userInfo&&userInfo.email)||'').trim().toLowerCase();
+    const name=String((window.userInfo&&userInfo.name)||'').trim();
+    const id=email||'local-user';
+    return {id,email,name:name||email||'Mitspieler'};
+  }
+  function sportsDefaults(){return [
+    {id:'sport_knee_squats_10',title:'10 Kniebeugen',points:10,icon:'🏋️',desc:'Saubere Kniebeugen: Füße schulterbreit, Rücken gerade, langsam runter und stabil hoch.',url:'https://www.youtube.com/results?search_query=Kniebeugen+richtig+ausf%C3%BChren',active:true,category:'sport'},
+    {id:'sport_wall_pushups_10',title:'10 Wand-Liegestütze',points:10,icon:'💪',desc:'Leichte Liegestütze an der Wand oder am Tisch, Körper gerade halten.',url:'https://www.youtube.com/results?search_query=Wand+Liegest%C3%BCtze+richtig',active:true,category:'sport'},
+    {id:'sport_stretch_60',title:'60 Sekunden Dehnen',points:8,icon:'🧘',desc:'Dehne Schultern, Rücken oder Beine ruhig für 60 Sekunden.',url:'https://www.youtube.com/results?search_query=60+Sekunden+Dehnen+Anf%C3%A4nger',active:true,category:'sport'},
+    {id:'sport_walk_3',title:'3 Minuten gehen',points:8,icon:'🚶',desc:'Gehe 3 Minuten locker durch den Raum oder draußen.',url:'https://www.youtube.com/results?search_query=kurzes+Gehen+Bewegungspause',active:true,category:'sport'},
+    {id:'sport_plank_20',title:'20 Sekunden Plank',points:12,icon:'⏱️',desc:'Halte 20 Sekunden Unterarmstütz. Alternative: Knie am Boden.',url:'https://www.youtube.com/results?search_query=Plank+richtig+ausf%C3%BChren',active:true,category:'sport'},
+    {id:'sport_neck_relax',title:'Nacken lockern',points:6,icon:'🧠',desc:'Rolle die Schultern 10-mal und neige den Kopf sanft links/rechts.',url:'https://www.youtube.com/results?search_query=Nacken+lockern+%C3%9Cbungen',active:true,category:'sport'},
+    {id:'sport_forearm_20',title:'20 Sekunden Unterarmstütz',points:12,icon:'🧱',desc:'Halte den Unterarmstütz 20 Sekunden sauber und ruhig.',url:'https://www.youtube.com/results?search_query=Unterarmst%C3%BCtz+richtig',active:true,category:'sport'},
+    {id:'sport_lunges_10',title:'10 Ausfallschritte',points:12,icon:'🦵',desc:'Mache 10 kontrollierte Ausfallschritte, abwechselnd links und rechts.',url:'https://www.youtube.com/results?search_query=Ausfallschritte+richtig+ausf%C3%BChren',active:true,category:'sport'},
+    {id:'sport_calf_raises_20',title:'20 Wadenheben',points:8,icon:'🦶',desc:'Stelle dich aufrecht hin und hebe die Fersen 20-mal langsam an.',url:'https://www.youtube.com/results?search_query=Wadenheben+richtig',active:true,category:'sport'},
+    {id:'sport_arm_circles_30',title:'30 Sekunden Armkreisen',points:6,icon:'🔄',desc:'Kreise die Arme 30 Sekunden locker vorwärts und rückwärts.',url:'https://www.youtube.com/results?search_query=Armkreisen+%C3%9Cbung',active:true,category:'sport'},
+    {id:'sport_side_steps_30',title:'30 Sekunden Seitsteps',points:8,icon:'↔️',desc:'Mache 30 Sekunden lockere Seitsteps, Knie leicht gebeugt.',url:'https://www.youtube.com/results?search_query=Side+Steps+Fitness+%C3%9Cbung',active:true,category:'sport'},
+    {id:'sport_jumping_jacks_20',title:'20 Hampelmänner',points:12,icon:'⭐',desc:'Mache 20 Hampelmänner. Alternative: ohne Springen seitlich tippen.',url:'https://www.youtube.com/results?search_query=Hampelm%C3%A4nner+richtig',active:true,category:'sport'},
+    {id:'sport_glute_bridge_12',title:'12 Glute Bridges',points:10,icon:'🌉',desc:'Lege dich auf den Rücken und hebe das Becken 12-mal kontrolliert.',url:'https://www.youtube.com/results?search_query=Glute+Bridge+richtig',active:true,category:'sport'},
+    {id:'sport_bird_dog_10',title:'10 Bird Dogs',points:10,icon:'🐦',desc:'Im Vierfüßlerstand diagonal Arm und Bein strecken, 10 Wiederholungen.',url:'https://www.youtube.com/results?search_query=Bird+Dog+%C3%9Cbung+richtig',active:true,category:'sport'},
+    {id:'sport_dead_bug_10',title:'10 Dead Bugs',points:10,icon:'🐞',desc:'Rückenlage, diagonal Arm und Bein senken, Bauchspannung halten.',url:'https://www.youtube.com/results?search_query=Dead+Bug+%C3%9Cbung+richtig',active:true,category:'sport'},
+    {id:'sport_shoulder_blades_15',title:'15 Schulterblatt-Züge',points:8,icon:'🪽',desc:'Ziehe die Schulterblätter 15-mal bewusst nach hinten unten.',url:'https://www.youtube.com/results?search_query=Schulterbl%C3%A4tter+aktivieren+%C3%9Cbung',active:true,category:'sport'},
+    {id:'sport_hip_circles_30',title:'30 Sekunden Hüftkreisen',points:6,icon:'⭕',desc:'Kreise die Hüfte locker 30 Sekunden in beide Richtungen.',url:'https://www.youtube.com/results?search_query=H%C3%BCftkreisen+%C3%9Cbung',active:true,category:'sport'},
+    {id:'sport_standing_crunch_12',title:'12 Standing Crunches',points:10,icon:'🧍',desc:'Im Stand Knie und Ellenbogen diagonal zusammenführen.',url:'https://www.youtube.com/results?search_query=Standing+Crunches+richtig',active:true,category:'sport'},
+    {id:'sport_mountain_20',title:'20 Mountain Climbers',points:12,icon:'⛰️',desc:'Mache 20 kontrollierte Mountain Climbers. Langsame Variante erlaubt.',url:'https://www.youtube.com/results?search_query=Mountain+Climbers+richtig',active:true,category:'sport'},
+    {id:'sport_wall_sit_30',title:'30 Sekunden Wandsitz',points:12,icon:'🧱',desc:'Setze dich mit dem Rücken an die Wand und halte 30 Sekunden.',url:'https://www.youtube.com/results?search_query=Wandsitz+richtig',active:true,category:'sport'},
+    {id:'sport_superman_12',title:'12 Superman',points:10,icon:'🦸',desc:'Bauchlage, Arme und Beine leicht anheben, Rücken kontrolliert aktivieren.',url:'https://www.youtube.com/results?search_query=Superman+%C3%9Cbung+richtig',active:true,category:'sport'},
+    {id:'sport_cat_cow_60',title:'60 Sekunden Cat-Cow',points:8,icon:'🐈',desc:'Mobilisiere die Wirbelsäule langsam im Vierfüßlerstand.',url:'https://www.youtube.com/results?search_query=Cat+Cow+%C3%9Cbung',active:true,category:'sport'},
+    {id:'sport_chair_squats_12',title:'12 Stuhl-Kniebeugen',points:10,icon:'🪑',desc:'Setze dich kontrolliert auf einen Stuhl und stehe wieder auf.',url:'https://www.youtube.com/results?search_query=Stuhl+Kniebeugen+%C3%9Cbung',active:true,category:'sport'},
+    {id:'sport_step_touch_60',title:'60 Sekunden Step Touch',points:8,icon:'🎵',desc:'Leichter Step Touch im Stand, Arme locker mitnehmen.',url:'https://www.youtube.com/results?search_query=Step+Touch+Fitness',active:true,category:'sport'},
+    {id:'sport_pushup_knees_8',title:'8 Knie-Liegestütze',points:10,icon:'💪',desc:'Mache 8 Liegestütze auf den Knien, Körper stabil halten.',url:'https://www.youtube.com/results?search_query=Knie+Liegest%C3%BCtze+richtig',active:true,category:'sport'},
+    {id:'sport_sit_to_stand_15',title:'15 Aufstehen-Hinsetzen',points:10,icon:'⬆️',desc:'Stehe 15-mal kontrolliert vom Stuhl auf und setze dich wieder.',url:'https://www.youtube.com/results?search_query=Sit+to+Stand+%C3%9Cbung',active:true,category:'sport'},
+    {id:'sport_ankle_mobility_60',title:'60 Sekunden Fußgelenke mobilisieren',points:6,icon:'🦶',desc:'Kreise und bewege beide Fußgelenke für 60 Sekunden.',url:'https://www.youtube.com/results?search_query=Fu%C3%9Fgelenk+Mobilisation+%C3%9Cbung',active:true,category:'sport'},
+    {id:'sport_hamstring_stretch_60',title:'60 Sekunden Beinrückseite dehnen',points:8,icon:'🦵',desc:'Dehne die Beinrückseite sanft ohne Federn.',url:'https://www.youtube.com/results?search_query=Beinr%C3%BCckseite+dehnen',active:true,category:'sport'},
+    {id:'sport_chest_opener_60',title:'60 Sekunden Brust öffnen',points:8,icon:'👐',desc:'Öffne die Brust, ziehe Schultern nach hinten und atme ruhig.',url:'https://www.youtube.com/results?search_query=Brust%C3%B6ffner+Dehnung',active:true,category:'sport'},
+    {id:'sport_balance_30',title:'30 Sekunden Einbeinstand',points:8,icon:'⚖️',desc:'Stehe 30 Sekunden auf einem Bein, dann wechseln.',url:'https://www.youtube.com/results?search_query=Einbeinstand+%C3%9Cbung',active:true,category:'sport'},
+    {id:'sport_high_knees_30',title:'30 Sekunden Knieheben',points:10,icon:'🏃',desc:'Hebe die Knie im Stand 30 Sekunden kontrolliert an.',url:'https://www.youtube.com/results?search_query=High+Knees+richtig',active:true,category:'sport'},
+    {id:'sport_shadow_box_30',title:'30 Sekunden Schattenboxen',points:10,icon:'🥊',desc:'Boxe 30 Sekunden locker in die Luft, Schultern entspannt.',url:'https://www.youtube.com/results?search_query=Schattenboxen+Anf%C3%A4nger',active:true,category:'sport'},
+    {id:'sport_side_plank_15',title:'15 Sekunden Seitstütz je Seite',points:12,icon:'📐',desc:'Halte den Seitstütz 15 Sekunden je Seite. Knie-Variante erlaubt.',url:'https://www.youtube.com/results?search_query=Seitst%C3%BCtz+richtig',active:true,category:'sport'},
+    {id:'sport_reverse_fly_12',title:'12 Reverse Fly ohne Gewicht',points:8,icon:'🪽',desc:'Beuge dich leicht vor und ziehe die Arme kontrolliert nach außen.',url:'https://www.youtube.com/results?search_query=Reverse+Fly+ohne+Gewicht',active:true,category:'sport'},
+    {id:'sport_triceps_dips_8',title:'8 Trizeps-Dips am Stuhl',points:12,icon:'🪑',desc:'Mache 8 vorsichtige Dips am stabilen Stuhl.',url:'https://www.youtube.com/results?search_query=Trizeps+Dips+Stuhl+richtig',active:true,category:'sport'},
+    {id:'sport_good_morning_12',title:'12 Good Mornings',points:8,icon:'🙇',desc:'Hände an die Hüfte, Rücken gerade, aus der Hüfte nach vorne beugen.',url:'https://www.youtube.com/results?search_query=Good+Morning+%C3%9Cbung+richtig',active:true,category:'sport'},
+    {id:'sport_heel_taps_20',title:'20 Heel Taps',points:10,icon:'👟',desc:'Rückenlage, Fersen abwechselnd antippen, Bauchspannung halten.',url:'https://www.youtube.com/results?search_query=Heel+Taps+%C3%9Cbung',active:true,category:'sport'},
+    {id:'sport_world_greatest_2',title:'2 Minuten Mobility Flow',points:12,icon:'🌊',desc:'Mache einen ruhigen Ganzkörper-Mobility-Flow für 2 Minuten.',url:'https://www.youtube.com/results?search_query=Mobility+Flow+2+Minuten',active:true,category:'sport'},
+    {id:'sport_stairs_2',title:'2 Minuten Treppen gehen',points:12,icon:'🪜',desc:'Gehe 2 Minuten locker Treppen oder simuliere Step-ups.',url:'https://www.youtube.com/results?search_query=Step+Ups+Treppen+%C3%9Cbung',active:true,category:'sport'},
+    {id:'sport_fitness_30',title:'Fitness gehen für mind. 30 Min',points:20,icon:'🏃',desc:'Optional: Gehe mindestens 30 Minuten zum Sport/Fitness oder mache ein leichtes bis mittleres Workout.',url:'https://www.youtube.com/results?search_query=30+Minuten+Fitness+Workout+Anf%C3%A4nger',active:true,category:'sport',optional:true},
+    {id:'sport_walk_10',title:'Spazieren gehen für 10 Minuten',points:10,icon:'🌳',desc:'Optional: Gehe mindestens 10 Minuten spazieren.',url:'https://www.youtube.com/results?search_query=10+Minuten+Spaziergang+Gesundheit',active:true,category:'sport',optional:true},
+  ].map(x=>Object.assign({recurrence:'daily',createdAt:new Date().toISOString()},x));}
+  function similar(a,b){a=String(a||'').toLowerCase();b=String(b||'').toLowerCase();return a===b||a.includes(b)||b.includes(a)}
+  function seededDailySportList(list, count){
+    const d=today().replace(/-/g,''); let seed=parseInt(d,10)||Date.now();
+    const arr=(list||[]).slice();
+    function rnd(){seed=(seed*9301+49297)%233280;return seed/233280;}
+    for(let i=arr.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t;}
+    return arr.slice(0,count);
+  }
+  function migrateChallenges(){
+    const old=(window.challenges||read('challenges',[])||[]).filter(Boolean);
+    let all=sportsDefaults().map(def=>{
+      const prev=old.find(o=>similar(o.title||o.name,def.title)||String(o.id)===def.id);
+      return Object.assign({},def,prev?{url:prev.url||prev.video||prev.youtube||prev.youtubeUrl||prev.link||def.url,active:prev.active!==false}:{});
+    });
+    const required=seededDailySportList(all.filter(c=>!c.optional),7);
+    const optional=all.filter(c=>c.optional);
+    const out=required.concat(optional);
+    window.challenges=out; try{challenges=out}catch(e){} write('challenges',out);
+
+    const a=me();
+    let cps=(window.challengePlayers||read('challenge_players',[])||[]).filter(p=>{
+      const raw=String((p&&[p.id,p.email,p.name].join(' '))||'').toLowerCase().trim();
+      if(!p||!raw)return false;
+      if(/demo|demo@example\.com/.test(raw))return false;
+      const id=String(p.email||p.id||'').toLowerCase().trim();
+      const nm=String(p.name||'').toLowerCase().trim();
+      if((nm==='du'||nm==='ich'||id==='du'||id==='ich'||id==='local-user') && id!==a.id && id!==a.email)return false;
+      return true;
+    }).map(p=>{
+      const id=String(p.email||p.id||'').toLowerCase().trim();
+      if(id===a.id||id===a.email||String(p.name||'').toLowerCase().trim()==='ich'||String(p.name||'').toLowerCase().trim()==='du'){
+        return Object.assign({},p,{id:a.id,email:a.email||a.id,name:a.name||a.email||p.name||'Mitspieler',online:true});
+      }
+      return p;
+    });
+    if(a.email && !cps.some(p=>String(p.id||p.email||'').toLowerCase()===a.id)) cps.unshift({id:a.id,email:a.email,name:a.name||a.email,createdAt:new Date().toISOString(),online:true});
+    const seen=new Set(); cps=cps.filter(p=>{const id=String(p.email||p.id||'').toLowerCase(); if(!id||seen.has(id))return false; seen.add(id); return true;});
+    window.challengePlayers=cps; try{challengePlayers=cps}catch(e){} write('challenge_players',cps);
+
+    let comps=(window.challengeCompletions||read('challenge_completions',[])||[]).filter(c=>c&&all.some(ch=>String(ch.id)===String(c.challengeId)));
+    comps=comps.map(c=>Object.assign({},c,{playerId:String(c.playerId||c.userEmail||c.email||a.id).toLowerCase(),date:String(c.date||c.completedDate||c.createdAt||today()).slice(0,10)}));
+    window.challengeCompletions=comps; try{challengeCompletions=comps}catch(e){} write('challenge_completions',comps);
+    return {challenges:out,allChallenges:all,players:cps,completions:comps,account:a};
+  }
+  function currentIds(){const a=me();const ids=new Set([a.id]); if(a.email)ids.add(a.email); return ids;}
+  function isMine(c){const ids=currentIds();const who=String(c.playerId||c.userEmail||c.email||'').toLowerCase();return !who||ids.has(who)}
+  function isDone(chId){const td=today();return (window.challengeCompletions||[]).some(c=>String(c.challengeId)===String(chId)&&String(c.date).slice(0,10)===td&&isMine(c));}
+  function stats(id){id=String(id||'').toLowerCase();let total=0,todayPts=0,count=0;(window.challengeCompletions||[]).forEach(c=>{const who=String(c.playerId||c.userEmail||c.email||'').toLowerCase();if(who!==id)return;const p=parseInt(c.points,10)||0;total+=p;count++;if(String(c.date).slice(0,10)===today())todayPts+=p;});return{totalPoints:total,todayPoints:todayPts,totalCount:count};}
+  function cleanupChallengeCards(){
+    document.querySelectorAll('.challenge-week-card,.challenge-week-grid').forEach(el=>{const card=el.closest('.challenge-week-card')||el;card.remove();});
+    document.querySelectorAll('body *').forEach(el=>{if(el.children.length>8)return;const t=(el.textContent||'').trim();if(/^Punkte-Kalender\s*(Aktuelle Woche|Nur für Challenges|$)/i.test(t)){const card=el.closest('.challenge-card,.leader-card,.dash-card,.card')||el; if(card&&card.id!=='challenges-list')card.remove();}});
+  }
+  window.getVisibleContestPlayers=function(){return migrateChallenges().players.filter(p=>!String(p.name||p.email||p.id||'').toLowerCase().includes('demo'));};
+  window.getPlayerPointSummary=function(id){return stats(id||me().id);};
+  window.buildDefaultChallenges=sportsDefaults;
+  window.renderChallenges=function(){
+    const data=migrateChallenges(); const list=$('challenges-list'), board=$('leaderboard-list'); if(!list||!board)return;
+    const renderOne=ch=>{const done=isDone(ch.id),link=(ch.url||ch.video||ch.youtube||ch.youtubeUrl||ch.link||'');return '<div class="challenge-item '+(done?'challenge-done':'')+'"><div class="challenge-icon">'+esc(ch.icon||'🏆')+'</div><div class="challenge-body"><div class="challenge-name">'+esc(ch.title||ch.name||'Sportübung')+'</div><div class="challenge-meta">'+esc(ch.desc||'')+' · '+(parseInt(ch.points,10)||0)+' Punkte</div>'+(link?'<a class="challenge-meta" href="'+esc(link)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">So geht die Übung</a>':'')+'</div><span class="points-pill">+'+(parseInt(ch.points,10)||0)+'</span>'+(done?'<button class="btn btn-success btn-sm" disabled>Erledigt</button><button class="btn btn-undo btn-sm" title="Heute rückgängig machen" onclick="undoChallenge(\''+esc(ch.id)+'\')">↶</button>':'<button class="btn btn-primary btn-sm" onclick="completeChallenge(\''+esc(ch.id)+'\')">Erledigen</button>')+'</div>';};
+    const required=data.challenges.filter(c=>c.active!==false&&!c.optional), optional=data.challenges.filter(c=>c.active!==false&&c.optional);
+    list.innerHTML=required.map(renderOne).join('')+(optional.length?'<div class="section-label" style="padding:14px 16px 6px">Optionale Sportpunkte</div>'+optional.map(renderOne).join(''):'');
+    const players=data.players.slice().sort((a,b)=>stats(String(b.email||b.id).toLowerCase()).totalPoints-stats(String(a.email||a.id).toLowerCase()).totalPoints);
+    board.innerHTML=players.map((p,i)=>{const id=String(p.email||p.id||'').toLowerCase(),s=stats(id),mine=currentIds().has(id),med=i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);return '<div class="leader-row"><div class="leader-rank">'+med+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(p.online?'<span class="live-dot"></span>':'')+'</div><div class="leader-detail">Heute: '+s.todayPoints+' P · Gesamt: '+s.totalPoints+' P · '+s.totalCount+' erledigt</div></div><div class="leader-score">'+s.totalPoints+'</div></div>';}).join('')||'<div class="dash-empty">Noch keine Mitspieler</div>';
+    cleanupChallengeCards();
+  };
+  window.completeChallenge=function(id){
+    const data=migrateChallenges(), ch=data.challenges.find(c=>String(c.id)===String(id)); if(!ch)return;
+    if(isDone(id)){if(typeof toast==='function')toast('Bereits erledigt','');return;}
+    const a=me(); const c={id:'cc_'+(typeof uid==='function'?uid():Date.now()),challengeId:id,playerId:a.id,userEmail:a.email,email:a.email,playerName:a.name,date:today(),points:parseInt(ch.points,10)||0,createdAt:new Date().toISOString()};
+    const comps=(window.challengeCompletions||[]).concat(c); window.challengeCompletions=comps; try{challengeCompletions=comps}catch(e){} write('challenge_completions',comps);
+    try{persistChangeState&&persistChangeState()}catch(e){} try{renderChallenges()}catch(e){} try{renderCalendar()}catch(e){} try{buildDashboard()}catch(e){} if(typeof toast==='function')toast('+'+(c.points||0)+' Punkte ✓','ok');
+  };
+  window.undoChallenge=function(id){
+    const td=today(); let comps=(window.challengeCompletions||[]); const before=comps.length;
+    comps=comps.filter(c=>!(String(c.challengeId)===String(id)&&String(c.date).slice(0,10)===td&&isMine(c)));
+    window.challengeCompletions=comps; try{challengeCompletions=comps}catch(e){} write('challenge_completions',comps);
+    try{persistChangeState&&persistChangeState()}catch(e){} try{renderChallenges()}catch(e){} try{renderCalendar()}catch(e){} try{buildDashboard()}catch(e){} if(typeof toast==='function')toast(before!==comps.length?'Challenge zurückgesetzt':'Nichts zurückzusetzen','');
+  };
+  window.resetTodayChallenges=function(){const td=today();let comps=(window.challengeCompletions||[]).filter(c=>!(String(c.date).slice(0,10)===td&&isMine(c)));window.challengeCompletions=comps;try{challengeCompletions=comps}catch(e){}write('challenge_completions',comps);try{renderChallenges()}catch(e){}try{renderCalendar()}catch(e){}try{buildDashboard()}catch(e){}if(typeof toast==='function')toast('Heute zurückgesetzt','')};
+  window.getChallengePointsForDate=function(k){let sum=0;(window.challengeCompletions||[]).forEach(c=>{if(String(c.date||'').slice(0,10)===String(k).slice(0,10)&&isMine(c))sum+=parseInt(c.points,10)||0;});return sum;};
+  window.getChallengeDayStatus=function(k){const points=window.getChallengePointsForDate(k);return points>0?{points,done:true,planned:1,allDone:true}:null};
+
+  const googleKey='change_google_calendar_sync_enabled';
+  function googleOn(){try{return localStorage.getItem(googleKey)==='1'||localStorage.getItem('change_v1_google_calendar_sync')==='true'}catch(e){return false}}
+  function setGoogle(v){raw(googleKey,v?'1':'0');raw('change_v1_google_calendar_sync',v?'true':'false');window.googleCalendarSyncEnabled=!!v;}
+  window.openPushSettingsPanel=function(){const live=read('live_sync_enabled',true)!==false;const online=(window.getVisibleContestPlayers?window.getVisibleContestPlayers():[]).filter(p=>p.online).length;const html='<div class="push-box"><div class="challenge-title">Live-Sync</div><div class="settings-hint" style="margin-top:8px">Push steuerst du über die Glocke. Live-Sync synchronisiert nur Mitspieler und Punkte.</div></div><div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">Live-Mitspieler <span class="status-pill '+(live?'status-on':'status-off')+'">'+(live?'AKTIV':'AUS')+'</span></div><div class="toggle-sub">Online: '+online+' · synchronisiert Mitspieler und Punkte.</div></div><label class="switch"><input type="checkbox" '+(live?'checked':'')+' onchange="setLiveSyncEnabled&&setLiveSyncEnabled(this.checked)"><span class="slider"></span></label></div>';if(typeof openPanel==='function')openPanel('Live-Sync',html)};
+  window.openCalendarSettings=function(){const states=window.STATE_OPTIONS||{ALL:'Alle Bundesländer',BW:'Baden-Württemberg',BY:'Bayern','BY-AUGSBURG':'Bayern · Augsburg',BE:'Berlin',BB:'Brandenburg',HB:'Bremen',HH:'Hamburg',HE:'Hessen',MV:'Mecklenburg-Vorpommern',NI:'Niedersachsen',NW:'Nordrhein-Westfalen',RP:'Rheinland-Pfalz',SL:'Saarland',SN:'Sachsen',ST:'Sachsen-Anhalt',SH:'Schleswig-Holstein',TH:'Thüringen'};const o=read('change_v1_calendar_view_options',{showHolidays:true,showChallengeDots:true,showWeekNumbers:true});const st=(window.calendarSettings&&calendarSettings.state)||localStorage.getItem('holiday_state')||'ALL';const opts=Object.entries(states).map(([k,v])=>'<option value="'+esc(k)+'" '+(k===st?'selected':'')+'>'+esc(v)+'</option>').join('');const row=(t,id,on,sub)=>'<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">'+t+'</div><div class="toggle-sub">'+sub+'</div></div><label class="switch"><input type="checkbox" id="'+id+'" '+(on?'checked':'')+'><span class="slider"></span></label></div>';const html='<div class="fg"><label class="flabel">Bundesland für Feiertage</label><select class="finput" id="holiday-state">'+opts+'</select></div>'+row('Feiertage anzeigen','toggle-holidays',o.showHolidays!==false,'Direkt im Kalender und Dashboard.')+row('Challenge-Punkte anzeigen','toggle-dots',o.showChallengeDots!==false,'Nur erledigte Punkte klein unten rechts.')+row('Kalenderwochen anzeigen','toggle-kw',o.showWeekNumbers!==false,'KW links unten im Kalender.')+row('Google-Kalender-Sync','toggle-google-sync',googleOn(),'Beim Aktivieren wird neu synchronisiert.')+'<button class="btn btn-primary btn-full" onclick="saveCalSettings()">Speichern</button>';if(typeof openPanel==='function')openPanel('Kalender-Einstellungen',html)};
+  window.saveCalSettings=function(){const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked};write('change_v1_calendar_view_options',o);write('calendar_settings',o);try{if(!window.calendarSettings)window.calendarSettings={};calendarSettings.state=$('holiday-state')?.value||'ALL';localStorage.setItem('holiday_state',calendarSettings.state)}catch(e){}const g=!!$('toggle-google-sync')?.checked,changed=g!==googleOn();setGoogle(g);if(typeof closePanel==='function')closePanel();if(changed&&g){try{loadGoogleEvents&&loadGoogleEvents()}catch(e){}}try{renderCalendar()}catch(e){}try{buildDashboard()}catch(e){}if(typeof toast==='function')toast('Kalender-Einstellungen gespeichert ✓','ok')};
+
+  const oldSet=window.setMainView;
+  window.setMainView=function(v){
+    v=v||'dashboard'; document.body.classList.toggle('calendar-active',v==='calendar');
+    try{oldSet&&oldSet(v)}catch(e){
+      ['dashboard-view','cal-body','challenges-view'].forEach(id=>{const el=$(id);if(el)el.style.display='none'});
+      if(v==='calendar'){$('cal-body')&&( $('cal-body').style.display='flex');try{renderCalendar()}catch(_){}}
+      else if(v==='challenges'){$('challenges-view')&&($('challenges-view').style.display='flex');try{renderChallenges()}catch(_){}}
+      else {$('dashboard-view')&&($('dashboard-view').style.display='block');try{buildDashboard()}catch(_){}}
+    }
+    const controls=$('cal-controls'); if(controls)controls.style.display=v==='calendar'?'flex':'none';
+    document.querySelectorAll('[onclick="openCalendarSettings()"],[title="Kalender-Einstellungen"]').forEach(b=>{b.style.display=v==='calendar'?'inline-flex':'none'});
+    cleanupChallengeCards();
+  };
+  const oldRenderCalendar=window.renderCalendar;
+  window.renderCalendar=function(){try{oldRenderCalendar&&oldRenderCalendar()}catch(e){console.warn(e)}document.querySelectorAll('.cal-points').forEach(el=>{const m=(el.textContent||'').match(/\+(\d+)/);if(!m||parseInt(m[1],10)<=0)el.remove()});const up=$('upcoming-strip');if(up)up.remove();};
+  window.renderUpcoming=function(){const up=$('upcoming-strip');if(up)up.remove();};
+  const st=document.createElement('style');st.id='change-direct-cleanup-style';st.textContent='#upcoming-strip,.challenge-week-card,.challenge-week-grid{display:none!important}body:not(.calendar-active) #cal-controls,body:not(.calendar-active) [onclick="openCalendarSettings()"],body:not(.calendar-active) [title="Kalender-Einstellungen"]{display:none!important}.challenge-item .btn[disabled]{opacity:.85;cursor:default}.section-label{font-size:11px;font-weight:900;color:var(--t4);text-transform:uppercase;letter-spacing:.04em;background:var(--s2);border-top:1px solid var(--b1)}';document.head.appendChild(st);
+  function boot(){migrateChallenges();cleanupChallengeCards();try{if(window.currentMainView)window.setMainView(window.currentMainView);else window.setMainView('dashboard')}catch(e){}try{renderChallenges()}catch(e){}try{renderCalendar()}catch(e){}try{buildDashboard()}catch(e){}}
+  setTimeout(boot,100);setTimeout(boot,700);new MutationObserver(()=>cleanupChallengeCards()).observe(document.documentElement,{childList:true,subtree:true});
+})();
+
+
+(function(){
+  'use strict';
+  const $=id=>document.getElementById(id);
   const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const pad=n=>String(n).padStart(2,'0');
-  const key=d=>{if(typeof d==='string')return d.slice(0,10);const x=new Date(d);return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate())};
-  const today=()=>key(new Date());
-  const norm=s=>String(s||'').toLowerCase().trim();
-  const read=(k,def)=>{try{if(typeof window.ls==='function'){const v=window.ls(k);return v===undefined?def:v}const raw=localStorage.getItem(k);return raw==null?def:JSON.parse(raw)}catch(e){return def}};
-  const write=(k,v)=>{try{if(typeof window.ls==='function')window.ls(k,v);else localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
-  const toast=(m,t)=>{try{if(typeof window.toast==='function')window.toast(m,t||'');else console.log(m)}catch(e){}};
+  const today=()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+  const read=(k,f)=>{try{const v=localStorage.getItem(k);return v==null?f:JSON.parse(v)}catch(e){return f}};
+  const write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+  const raw=(k,v)=>{try{localStorage.setItem(k,String(v))}catch(e){}};
+  const norm=s=>String(s||'').trim().toLowerCase();
 
-  const SPORT_POOL=[
-    ['sport_squat_10','🏋️','10 Kniebeugen','Mache 10 saubere Kniebeugen. Füße schulterbreit, Rücken gerade.',10],
-    ['sport_wall_push_10','💪','10 Wand-Liegestütze','Hände auf Schulterhöhe an die Wand, Körper gerade, kontrolliert beugen.',10],
-    ['sport_plank_20','⏱️','20 Sekunden Plank','Halte einen stabilen Unterarmstütz. Knie am Boden ist okay.',12],
-    ['sport_calf_20','🦵','20 Wadenheben','Fersen langsam anheben und kontrolliert wieder absenken.',8],
-    ['sport_march_2','🚶','2 Minuten Marschieren','Marschieren auf der Stelle, Arme locker mitschwingen.',8],
-    ['sport_shoulder_30','🔄','30 Sekunden Schulterkreisen','Schultern langsam nach hinten und vorne kreisen.',6],
-    ['sport_wall_sit_30','🦵','30 Sekunden Wandsitz','Rücken an die Wand, Knie ungefähr 90 Grad, ruhig halten.',8],
-    ['sport_glute_12','🧘','12 Glute Bridges','Rückenlage, Hüfte kontrolliert anheben und senken.',8],
-    ['sport_lunge_10','🚶','10 Ausfallschritte','Je Seite 5 kontrollierte Ausfallschritte.',10],
-    ['sport_arm_circle_30','🌀','30 Sekunden Armkreisen','Arme seitlich ausstrecken und kleine Kreise machen.',6],
-    ['sport_superman_12','🦸','12 Superman','Bauchlage, Arme und Beine leicht anheben, Rücken kontrolliert aktivieren.',10],
-    ['sport_side_steps_30','↔️','30 Sekunden Seit Schritte','Seitlich nach links und rechts gehen, locker bleiben.',6],
-    ['sport_hip_mob_60','🧘','60 Sekunden Hüfte mobilisieren','Hüfte langsam kreisen und sanft bewegen.',6],
-    ['sport_ankle_60','🦶','60 Sekunden Fußgelenke mobilisieren','Beide Fußgelenke kreisen und locker bewegen.',6],
-    ['sport_knee_lift_20','🚶','20 Knieheben','Abwechselnd die Knie locker anheben.',8],
-    ['sport_good_morning_12','🙆','12 Good Mornings','Hände an die Hüfte, Rücken gerade, Oberkörper leicht vorbeugen.',8],
-    ['sport_reverse_fly_12','🪽','12 Reverse Fly ohne Gewicht','Oberkörper leicht vor, Arme kontrolliert nach außen führen.',8],
-    ['sport_dead_bug_12','🐞','12 Dead Bugs','Rückenlage, diagonal Arm und Bein langsam strecken.',10],
-    ['sport_bird_dog_12','🐕','12 Bird Dogs','Vierfüßlerstand, diagonal Arm und Bein strecken.',10],
-    ['sport_side_plank_15','⏱️','15 Sekunden Seitenstütz je Seite','Seitlich abstützen, Knievariante ist okay.',12],
-    ['sport_sit_to_stand_10','🪑','10 Aufstehen vom Stuhl','Ohne Schwung vom Stuhl aufstehen und wieder hinsetzen.',8],
-    ['sport_step_touch_45','🎵','45 Sekunden Step Touch','Seitliche Schritte im lockeren Rhythmus.',7],
-    ['sport_back_stretch_60','🧘','60 Sekunden Rücken dehnen','Rücken sanft rund machen und wieder lösen.',6],
-    ['sport_chest_open_45','🙆','45 Sekunden Brust öffnen','Schultern nach hinten, Brustkorb sanft öffnen.',6],
-    ['sport_hamstring_60','🦵','60 Sekunden Beinrückseite dehnen','Beinrückseite links und rechts sanft dehnen.',6],
-    ['sport_quad_60','🦵','60 Sekunden Oberschenkel dehnen','Oberschenkelvorderseite links und rechts dehnen.',6],
-    ['sport_neck_45','🙆','45 Sekunden Nacken lockern','Kopf langsam zur Seite neigen, nicht ziehen.',6],
-    ['sport_toe_taps_30','🦶','30 Toe Taps','Fußspitzen abwechselnd locker antippen.',7],
-    ['sport_punches_45','🥊','45 Sekunden lockere Punches','Arme locker nach vorne bewegen, Rumpf stabil.',8],
-    ['sport_mountain_slow_16','⛰️','16 langsame Mountain Climbers','Langsam und kontrolliert, je Seite 8.',10],
-    ['sport_half_squat_12','🏋️','12 halbe Kniebeugen','Nur halb tief gehen, sauber und kontrolliert.',8],
-    ['sport_balance_30','⚖️','30 Sekunden Balance je Seite','Auf einem Bein stehen, bei Bedarf festhalten.',8],
-    ['sport_stairs_2','🪜','2 Minuten Treppe oder Step','Locker Treppe gehen oder auf einen Step steigen.',10],
-    ['sport_high_reach_20','🙌','20 mal nach oben strecken','Arme nach oben strecken, lang machen, lösen.',6],
-    ['sport_wrist_45','✋','45 Sekunden Handgelenke mobilisieren','Handgelenke kreisen und sanft bewegen.',5],
-    ['sport_core_breathe_60','🌬️','60 Sekunden Rumpfspannung + Atmung','Bauch leicht anspannen und ruhig atmen.',6],
-    ['sport_floor_touch_12','🧘','12 langsame Vorbeugen','Langsam Richtung Boden, nur so weit angenehm.',8],
-    ['sport_seated_twist_12','🪑','12 Sitzende Rotationen','Aufrecht sitzen und Oberkörper sanft links/rechts drehen.',6],
-    ['sport_scaps_15','💪','15 Schulterblatt-Züge','Schulterblätter sanft zusammenziehen und lösen.',7],
-    ['sport_cool_walk_3','🚶','3 Minuten locker gehen','Gehe 3 Minuten locker durch den Raum oder draußen.',8]
-  ].map(x=>({id:x[0],icon:x[1],title:x[2],name:x[2],desc:x[3],points:x[4],active:true,category:'sport',type:'Sport',url:'https://www.youtube.com/results?search_query='+encodeURIComponent(x[2]+' richtig ausführen')}));
-  const OPTIONAL=[
-    {id:'sport_walk_10_optional',icon:'🚶',title:'10 Minuten spazieren gehen',name:'10 Minuten spazieren gehen',desc:'Gehe 10 Minuten locker spazieren.',points:15,active:true,category:'sport',type:'Sport',optional:true},
-    {id:'sport_fitness_30_optional',icon:'🏋️',title:'Fitness gehen · mindestens 30 Minuten',name:'Fitness gehen · mindestens 30 Minuten',desc:'Leichtes bis mittleres Training für mindestens 30 Minuten.',points:30,active:true,category:'sport',type:'Sport',optional:true}
-  ];
-  function user(){const u=window.userInfo||{};const email=norm(u.email||read('user_email','')||'');const name=String(u.name||read('user_name','')||email||'').trim();return {id:email,name,email,picture:u.picture||u.photoURL||''}}
-  function playerKey(p){return norm((p&& (p.email||p.id))||p||'')}
-  function isDemo(p){const s=norm((p&&((p.name||'')+' '+(p.email||'')+' '+(p.id||'')))||p);return !s||/demo|demo@example\.com|ohne anmeldung|gast|anonymous|mitspieler$/.test(s)}
-  function completions(){let a=[];try{a=Array.isArray(window.challengeCompletions)?window.challengeCompletions:read('challenge_completions',[])}catch(e){};return Array.isArray(a)?a:[]}
-  function saveCompletions(a){window.challengeCompletions=a;write('challenge_completions',a);try{write('change_completions',a)}catch(e){}}
-  function completionUser(c){return norm(c.userEmail||c.email||c.playerEmail||c.playerId||c.uid||'')}
-  function currentPlayers(){const me=user();let arr=[];try{arr=Array.isArray(window.challengePlayers)?window.challengePlayers:read('challenge_players',[])}catch(e){};arr=(Array.isArray(arr)?arr:[]).filter(p=>!isDemo(p));if(me.email&&!arr.some(p=>playerKey(p)===me.email))arr.push({id:me.email,email:me.email,name:me.name||me.email,picture:me.picture,online:true});const seen=new Set();arr=arr.filter(p=>{const k=playerKey(p);if(!k||seen.has(k))return false;seen.add(k);return true}).map(p=>({...p,name:String(p.name||p.email||p.id||'').replace(/^Mitspieler$/i,'').trim()||p.email||p.id}));window.challengePlayers=arr;write('challenge_players',arr);return arr}
-  function pointsForDate(k,id=user().id){return completions().filter(c=>String(c.date||'').slice(0,10)===k&&completionUser(c)===id).reduce((s,c)=>s+(parseInt(c.points,10)||0),0)}
-  function stats(id){const t=today();let totalPoints=0,todayPoints=0,totalCount=0;completions().forEach(c=>{if(completionUser(c)!==id)return;const p=parseInt(c.points,10)||0;totalPoints+=p;totalCount++;if(String(c.date||'').slice(0,10)===t)todayPoints+=p});return {totalPoints,todayPoints,totalCount}}
-  function seedShuffle(list,k){let seed=String(k).split('').reduce((a,c)=>a+c.charCodeAt(0),0)+17;const rnd=()=>{seed=(seed*9301+49297)%233280;return seed/233280};return list.slice().sort(()=>rnd()-.5)}
-  function daily(){const t=today();let saved=read('change_daily_sports_v2',null);if(!saved||saved.date!==t||!Array.isArray(saved.ids)||saved.ids.length!==7){saved={date:t,ids:seedShuffle(SPORT_POOL,t).slice(0,7).map(x=>x.id)};write('change_daily_sports_v2',saved)}const map=new Map(SPORT_POOL.map(x=>[x.id,x]));return saved.ids.map(id=>map.get(id)).filter(Boolean).concat(OPTIONAL)}
-  function challengeById(id){return daily().find(c=>String(c.id)===String(id))||SPORT_POOL.find(c=>String(c.id)===String(id))||OPTIONAL.find(c=>String(c.id)===String(id))}
-  function done(id){const me=user().id,t=today();return completions().some(c=>String(c.challengeId)===String(id)&&String(c.date||'').slice(0,10)===t&&completionUser(c)===me)}
+  try{localStorage.removeItem('change_v1_demo_mode');localStorage.removeItem('demo_mode');window.isDemoMode=false;}catch(e){}
 
-  window.getCurrentPlayerId=()=>user().id;
-  window.getVisibleContestPlayers=currentPlayers;
-  window.getPlayerPointSummary=id=>stats(norm(id||user().id));
-  window.getChallengePointsForDate=k=>pointsForDate(String(k).slice(0,10));
-  window.getChallengeDayStatus=k=>{const p=pointsForDate(String(k).slice(0,10));return p>0?{points:p,done:true,allDone:true}:null};
-  window.isChallengeDoneToday=(id)=>done(id);
-  window.buildDefaultChallenges=()=>SPORT_POOL.map(x=>({...x}));
-  window.ensureDailyAutoChallenges=()=>daily().filter(c=>!c.optional);
+  function account(){
+    const u=window.userInfo||{};
+    const email=norm(u.email);
+    return {id:email||'google-user',email,name:String(u.name||u.email||'Mitspieler').trim(),picture:u.picture||''};
+  }
+  function isBadPlayer(p){
+    const t=norm((p&&p.name||'')+' '+(p&&p.email||'')+' '+(p&&p.id||''));
+    return !t || /demo|demo@example\.com|local-user|unknown|ich\s*·\s*du|\bdu\b/.test(t);
+  }
+  function playerKey(p){return norm((p&&p.email)|| (p&&p.id));}
+  function allPlayers(){
+    const a=account(), map=new Map();
+    if(a.email) map.set(a.id,{id:a.id,email:a.email,name:a.name,picture:a.picture,online:true});
+    (window.challengePlayers||[]).forEach(p=>{if(!p||isBadPlayer(p))return;const k=playerKey(p);if(!k)return;map.set(k,Object.assign({},map.get(k)||{},p,{id:k,email:p.email||k,name:p.name||p.email||k}));});
+    const arr=[...map.values()];
+    window.challengePlayers=arr; try{challengePlayers=arr}catch(e){} write('challenge_players',arr);
+    return arr;
+  }
+  function compKey(c){return norm(c.playerId||c.userEmail||c.email||c.playerEmail)}
+  function stats(id){id=norm(id);let total=0,todayPts=0,totalCount=0,todayCount=0;const td=today();(window.challengeCompletions||[]).forEach(c=>{if(compKey(c)!==id)return;const p=parseInt(c.points,10)||0;total+=p;totalCount++;if(String(c.date||'').slice(0,10)===td){todayPts+=p;todayCount++;}});return{totalPoints:total,todayPoints:todayPts,totalCount,todayCount};}
+  window.getVisibleContestPlayers=allPlayers;
+  window.getCurrentPlayerId=function(){return account().id};
+  window.getPlayerPointSummary=function(id){return stats(id||account().id)};
 
-  function ensureChallengeCalendar(){const view=q('#challenges-view');if(!view)return null;q('#challenge-week-bar-clean')?.remove();qa('.challenge-mini-card',view).forEach(e=>e.remove());let card=q('#challenge-week-points-card');const layout=q('.challenge-layout',view);if(!card&&layout){card=document.createElement('div');card.id='challenge-week-points-card';card.className='challenge-week-card';card.innerHTML='<div class="challenge-week-head"><div><div class="challenge-week-title">Punkte-Kalender</div><div class="challenge-week-sub">Aktuelle Woche · nur Challenge-Punkte</div></div><div class="challenge-week-actions"><button class="btn btn-ghost btn-sm" data-dir="-1">← Letzte Woche</button><button class="btn btn-secondary btn-sm" data-dir="0">Heute</button><button class="btn btn-ghost btn-sm" data-dir="1">Nächste Woche →</button></div></div><div id="challenge-week-points-grid" class="challenge-week-grid"></div>';view.insertBefore(card,layout);card.querySelector('[data-dir="-1"]').onclick=()=>{window.__challengeWeekOffset=(window.__challengeWeekOffset||0)-1;renderChallengeMiniCalendar()};card.querySelector('[data-dir="0"]').onclick=()=>{window.__challengeWeekOffset=0;renderChallengeMiniCalendar()};card.querySelector('[data-dir="1"]').onclick=()=>{window.__challengeWeekOffset=(window.__challengeWeekOffset||0)+1;renderChallengeMiniCalendar()};}return card}
-  function monday(d){const x=new Date(d);x.setHours(12,0,0,0);x.setDate(x.getDate()-((x.getDay()+6)%7));return x}
-  function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
-  window.renderChallengeMiniCalendar=function(){const card=ensureChallengeCalendar();if(!card)return;const grid=q('#challenge-week-points-grid');if(!grid)return;const base=addDays(new Date(),(window.__challengeWeekOffset||0)*7),start=monday(base),days=Array.from({length:7},(_,i)=>addDays(start,i));const sub=q('.challenge-week-sub',card);if(sub)sub.textContent=((window.__challengeWeekOffset||0)===0?'Aktuelle Woche':(window.__challengeWeekOffset<0?'Letzte Woche':'Nächste Woche'))+' · nur Challenge-Punkte';grid.innerHTML=days.map((d,i)=>{const k=key(d),p=pointsForDate(k);return '<div class="challenge-week-day '+(k===today()?'is-today ':'')+(p?'has-points':'empty')+'"><div class="challenge-week-day-name">'+['MO','DI','MI','DO','FR','SA','SO'][i]+'</div><div class="challenge-week-day-date">'+pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.</div><div class="challenge-week-day-points">'+(p?p+' P':'0 P')+'</div></div>'}).join('')};
+  function allSports(){
+    let base=[]; try{base=(typeof window.buildDefaultChallenges==='function'?window.buildDefaultChallenges():[])||[]}catch(e){}
+    if(!base.length){base=[
+      ['sport_knee_squats_10','10 Kniebeugen',10,'🏋️','Saubere Kniebeugen: Füße schulterbreit, Rücken gerade, langsam runter und stabil hoch.'],
+      ['sport_wall_pushups_10','10 Wand-Liegestütze',10,'💪','Leichte Liegestütze an der Wand oder am Tisch, Körper gerade halten.'],
+      ['sport_walk_10_optional','10 Minuten spazieren gehen',15,'🚶','Gehe 10 Minuten locker spazieren.',true],
+      ['sport_fitness_30_optional','Fitness gehen · mindestens 30 Minuten',30,'🏋️','Leichtes bis mittleres Training für mindestens 30 Minuten.',true]
+    ].map(x=>({id:x[0],title:x[1],name:x[1],points:x[2],icon:x[3],desc:x[4],optional:!!x[5],url:'https://www.youtube.com/results?search_query='+encodeURIComponent(x[1]+' richtige Ausführung'),active:true,category:'sport'}));}
+    return base.filter(c=>c&&c.active!==false&&!/lesen|trinken|meditation|wasser|pause|haushalt|todo|email/i.test((c.title||c.name||'')+' '+(c.desc||''))).map(c=>Object.assign({},c,{category:'sport',url:c.url||c.video||c.youtube||('https://www.youtube.com/results?search_query='+encodeURIComponent((c.title||c.name||'Sportübung')+' richtige Ausführung'))}));
+  }
+  function dailySports(){
+    const td=today(); let saved=read('change_daily_sports',null);
+    const sports=allSports();
+    if(!saved||saved.date!==td||!Array.isArray(saved.ids)||saved.ids.length!==7){
+      const required=sports.filter(c=>!c.optional); let seed=Number(td.replace(/-/g,''));
+      const rnd=()=>{seed=(seed*9301+49297)%233280;return seed/233280};
+      const shuffled=required.slice().sort(()=>rnd()-.5).slice(0,7).map(c=>c.id);
+      saved={date:td,ids:shuffled}; write('change_daily_sports',saved);
+    }
+    const by=new Map(sports.map(c=>[String(c.id),c]));
+    const list=saved.ids.map(id=>by.get(String(id))).filter(Boolean);
+    const optional=sports.filter(c=>c.optional || /spazier|fitness/i.test(c.title||c.name||''));
+    return list.concat(optional.filter(o=>!list.some(x=>x.id===o.id)));
+  }
+  function challengeById(id){return dailySports().find(c=>String(c.id)===String(id)) || allSports().find(c=>String(c.id)===String(id));}
+  function isMine(c){return compKey(c)===account().id || (!compKey(c)&&account().id)}
+  function isDone(id){const td=today();return (window.challengeCompletions||[]).some(c=>String(c.challengeId)===String(id)&&String(c.date||'').slice(0,10)===td&&isMine(c));}
+  function persistComps(){write('challenge_completions',window.challengeCompletions||[]);try{challengeCompletions=window.challengeCompletions}catch(e){};try{persistChangeState&&persistChangeState()}catch(e){}}
 
-  window.renderChallenges=function(){currentPlayers();ensureChallengeCalendar();const list=q('#challenges-list'),board=q('#leaderboard-list');if(!list||!board)return;const rows=daily(),normal=rows.filter(c=>!c.optional),optional=rows.filter(c=>c.optional);const row=ch=>{const is=done(ch.id),pts=parseInt(ch.points,10)||0,url=ch.optional?'':ch.url;return '<div class="challenge-item '+(is?'challenge-done':'')+'"><div class="challenge-icon">'+esc(ch.icon||'🏃')+'</div><div class="challenge-body"><div class="challenge-name">'+esc(ch.title||ch.name)+'</div><div class="challenge-meta">'+esc(ch.desc||'')+' · '+pts+' Punkte</div>'+(url?'<a class="exercise-link" href="'+esc(url)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">So geht die Übung</a>':'')+'</div><span class="points-pill">+'+pts+'</span>'+(is?'<button class="btn btn-success btn-sm" disabled>Erledigt</button><button class="btn btn-undo btn-sm" title="Heute rückgängig machen" onclick="undoChallenge(\''+esc(ch.id)+'\')">↶</button>':'<button class="btn btn-primary btn-sm" onclick="completeChallenge(\''+esc(ch.id)+'\')">Erledigen</button>')+'</div>'};list.innerHTML=normal.map(row).join('')+'<div class="section-label" style="padding:14px 16px 6px">Optionale Sportpunkte</div>'+optional.map(row).join('');const players=currentPlayers().sort((a,b)=>stats(playerKey(b)).totalPoints-stats(playerKey(a)).totalPoints);board.innerHTML=players.length?players.map((p,i)=>{const id=playerKey(p),s=stats(id),med=i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);return '<div class="leader-row clickable" onclick="openPlayerRecentPanel&&openPlayerRecentPanel(\''+esc(id)+'\',\''+esc(p.name||p.email||id)+'\')"><div class="leader-rank">'+med+'</div><div><div class="leader-name">'+esc(p.name||p.email||id)+(p.online?'<span class="live-dot"></span>':'')+'</div><div class="leader-detail">Heute: '+s.todayPoints+' P · Gesamt: '+s.totalPoints+' P · '+s.totalCount+' erledigt</div></div><div class="leader-score">'+s.totalPoints+'</div></div>'}).join(''):'<div class="dash-empty">Noch keine Google-Mitspieler.</div>';renderChallengeMiniCalendar()};
-  window.completeChallenge=function(id){const me=user();if(!me.email){toast('Bitte zuerst mit Google anmelden.','err');return}const ch=challengeById(id);if(!ch){toast('Challenge nicht gefunden','err');return}if(done(id)){toast('Bereits erledigt','');return}const c={id:'cc_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7),challengeId:String(id),playerId:me.email,userEmail:me.email,email:me.email,playerName:me.name||me.email,date:today(),points:parseInt(ch.points,10)||0,createdAt:new Date().toISOString()};saveCompletions(completions().concat(c));currentPlayers();try{if(typeof window.publishCompletionToFirestore==='function')window.publishCompletionToFirestore(c)}catch(e){};try{renderChallenges();renderChallengeMiniCalendar();window.renderCalendar&&window.renderCalendar();window.buildDashboard&&window.buildDashboard()}catch(e){}toast('+'+c.points+' Punkte ✓','ok')};
-  window.undoChallenge=function(id){const me=user().id,t=today();let removed=0;saveCompletions(completions().filter(c=>{const hit=String(c.challengeId)===String(id)&&String(c.date||'').slice(0,10)===t&&completionUser(c)===me;if(hit)removed++;return !hit}));try{renderChallenges();renderChallengeMiniCalendar();window.renderCalendar&&window.renderCalendar();window.buildDashboard&&window.buildDashboard()}catch(e){}toast(removed?'Challenge zurückgesetzt':'Nichts zurückzusetzen','')};
-  window.resetTodayChallenges=function(){const me=user().id,t=today();saveCompletions(completions().filter(c=>!(String(c.date||'').slice(0,10)===t&&completionUser(c)===me)));try{renderChallenges();renderChallengeMiniCalendar();window.renderCalendar&&window.renderCalendar();window.buildDashboard&&window.buildDashboard()}catch(e){}toast('Heute zurückgesetzt','')};
+  window.renderChallenges=function(){
+    const list=$('challenges-list'), board=$('leaderboard-list'); if(!list||!board)return;
+    const items=dailySports();
+    const row=ch=>{const done=isDone(ch.id), pts=parseInt(ch.points,10)||0, link=ch.url||ch.video||ch.youtube||ch.youtubeUrl||ch.link||'';return '<div class="challenge-item '+(done?'challenge-done':'')+'"><div class="challenge-icon">'+esc(ch.icon||'🏆')+'</div><div class="challenge-body"><div class="challenge-name">'+esc(ch.title||ch.name||'Sportübung')+'</div><div class="challenge-meta">'+esc(ch.desc||'')+' · '+pts+' Punkte</div>'+(link?'<a class="challenge-meta" href="'+esc(link)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">So geht die Übung</a>':'')+'</div><span class="points-pill">+'+pts+'</span>'+(done?'<button class="btn btn-success btn-sm" disabled>Erledigt</button><button class="btn btn-undo btn-sm" title="Heute rückgängig machen" onclick="undoChallenge(\''+esc(ch.id)+'\')">↶</button>':'<button class="btn btn-primary btn-sm" onclick="completeChallenge(\''+esc(ch.id)+'\')">Erledigen</button>')+'</div>'};
+    const req=items.filter(c=>!c.optional), opt=items.filter(c=>c.optional);
+    list.innerHTML=req.map(row).join('')+(opt.length?'<div class="section-label" style="padding:14px 16px 6px">Optionale Sportpunkte</div>'+opt.map(row).join(''):'');
+    const players=allPlayers().sort((a,b)=>stats(playerKey(b)).totalPoints-stats(playerKey(a)).totalPoints);
+    board.innerHTML=players.map((p,i)=>{const id=playerKey(p),s=stats(id),med=i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1),live=p.online?'<span class="live-dot"></span>':'';return '<div class="leader-row clickable" onclick="openPlayerRecentPanel&&openPlayerRecentPanel(\''+esc(id)+'\',\''+esc(p.name||p.email||id)+'\')"><div class="leader-rank">'+med+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+live+'</div><div class="leader-detail">Heute: '+s.todayPoints+' P · Gesamt: '+s.totalPoints+' P · '+s.totalCount+' erledigt</div></div><div class="leader-score">'+s.totalPoints+'</div></div>'}).join('')||'<div class="dash-empty">Noch keine Mitspieler</div>';
+  };
+  window.completeChallenge=function(id){
+    const ch=challengeById(id); if(!ch)return; if(isDone(id)){toast&&toast('Bereits erledigt','');return;}
+    const a=account(), c={id:'cc_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7),challengeId:String(id),playerId:a.id,userEmail:a.email,email:a.email,playerName:a.name,date:today(),points:parseInt(ch.points,10)||0,createdAt:new Date().toISOString()};
+    window.challengeCompletions=(window.challengeCompletions||[]).concat(c); persistComps();
+    try{if(typeof publishCompletionToFirestore==='function')publishCompletionToFirestore(c)}catch(e){}
+    try{renderChallenges();renderCalendar();buildDashboard()}catch(e){} if(typeof toast==='function')toast('+'+c.points+' Punkte ✓','ok');
+  };
+  window.undoChallenge=function(id){
+    const a=account(),td=today(); let removed=[];
+    window.challengeCompletions=(window.challengeCompletions||[]).filter(c=>{const hit=String(c.challengeId)===String(id)&&String(c.date||'').slice(0,10)===td&&(compKey(c)===a.id||compKey(c)===a.email); if(hit)removed.push(c); return !hit;}); persistComps();
+    try{if(window.firebase&&firebase.firestore){const db=firebase.firestore();removed.forEach(c=>c.id&&db.collection('change_completions').doc(String(c.id)).delete().catch(()=>{}));}}catch(e){}
+    try{renderChallenges();renderCalendar();buildDashboard()}catch(e){} if(typeof toast==='function')toast(removed.length?'Challenge zurückgesetzt':'Nichts zurückzusetzen','');
+  };
+  window.resetTodayChallenges=function(){const td=today(),a=account();window.challengeCompletions=(window.challengeCompletions||[]).filter(c=>!(String(c.date||'').slice(0,10)===td&&(compKey(c)===a.id||compKey(c)===a.email)));persistComps();try{renderChallenges();renderCalendar();buildDashboard()}catch(e){};toast&&toast('Heute zurückgesetzt','')};
+  window.getChallengePointsForDate=function(k){const a=account();let sum=0;(window.challengeCompletions||[]).forEach(c=>{if(String(c.date||'').slice(0,10)===String(k).slice(0,10)&&(compKey(c)===a.id||compKey(c)===a.email))sum+=parseInt(c.points,10)||0});return sum};
+  window.getChallengeDayStatus=function(k){const p=window.getChallengePointsForDate(k);return p>0?{points:p,done:true,allDone:true}:null};
 
-  window.openPushSettingsPanel=function(){const push=read('push_enabled',false)===true||((window.Notification&&Notification.permission==='granted')&&!!read('fcm_token',''));const live=read('live_sync_enabled',false)===true;const html='<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">Push-Benachrichtigungen <span class="status-pill '+(push?'status-on':'status-off')+'">'+(push?'AKTIV':'INAKTIV')+'</span></div><div class="toggle-sub">Benachrichtigungen steuerst du über die Glocke.</div></div><label class="switch"><input type="checkbox" '+(push?'checked':'')+' onchange="setPushNotificationsEnabled(this.checked)"><span class="slider"></span></label></div><div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">Live-Mitspieler <span class="status-pill '+(live?'status-on':'status-off')+'">'+(live?'VERBUNDEN':'DEAKTIVIERT')+'</span></div><div class="toggle-sub">Synchronisiert Kontest-Teilnehmer und erledigte Übungen über Firebase.</div></div><label class="switch"><input type="checkbox" '+(live?'checked':'')+' onchange="setLiveSyncEnabled(this.checked)"><span class="slider"></span></label></div>';if(typeof openPanel==='function')openPanel('Push & Live-Sync',html)};
-  window.setLiveSyncEnabled=function(on){write('live_sync_enabled',!!on);try{if(on&&typeof window.initFirebaseLive==='function')window.initFirebaseLive()}catch(e){}toast(on?'Live-Mitspieler aktiviert':'Live-Mitspieler deaktiviert',on?'ok':'');openPushSettingsPanel()};
+  function googleOn(){try{return localStorage.getItem('change_google_calendar_sync_enabled')==='1'||localStorage.getItem('change_v1_google_calendar_sync')==='true'}catch(e){return false}}
+  window.setGoogleCalendarSyncEnabled=async function(on){raw('change_google_calendar_sync_enabled',on?'1':'0');raw('change_v1_google_calendar_sync',on?'true':'false');window.googleCalendarSyncEnabled=!!on;if(on){try{toast&&toast('Google-Kalender-Sync wird aktualisiert…','')}catch(e){};try{await loadGoogleEvents?.()}catch(e){};try{renderCalendar();buildDashboard()}catch(e){};try{toast&&toast('Google-Kalender-Sync aktualisiert ✓','ok')}catch(e){}}else{try{window.gEvents=[];write('gEvents',[]);renderCalendar();buildDashboard();toast&&toast('Google-Kalender-Sync deaktiviert','')}catch(e){}}};
+  window.openPushSettingsPanel=function(){const live=read('live_sync_enabled',true)!==false,online=allPlayers().filter(p=>p.online).length;const html='<div class="push-box"><div class="challenge-title">Live-Sync</div><div class="settings-hint" style="margin-top:8px">Push-Benachrichtigungen steuerst du nur über die Glocke.</div></div><div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">Live-Mitspieler <span class="status-pill '+(live?'status-on':'status-off')+'">'+(live?'VERBUNDEN':'AUS')+'</span></div><div class="toggle-sub">Aktuell online: '+online+' · synchronisiert Kontest-Daten im Dashboard und bei Challenges.</div></div><label class="switch"><input type="checkbox" '+(live?'checked':'')+' onchange="setLiveSyncEnabled&&setLiveSyncEnabled(this.checked)"><span class="slider"></span></label></div>';openPanel&&openPanel('Live-Sync',html)};
+  window.openCalendarSettings=function(){const states=window.STATE_OPTIONS||{ALL:'Alle Bundesländer'};const o=read('change_v1_calendar_view_options',{showHolidays:true,showChallengeDots:true,showWeekNumbers:true});const st=(window.calendarSettings&&calendarSettings.state)||localStorage.getItem('holiday_state')||'ALL';const opts=Object.entries(states).map(([k,v])=>'<option value="'+esc(k)+'" '+(k===st?'selected':'')+'>'+esc(v)+'</option>').join('');const row=(t,id,on,sub)=>'<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">'+t+'</div><div class="toggle-sub">'+sub+'</div></div><label class="switch"><input type="checkbox" id="'+id+'" '+(on?'checked':'')+'><span class="slider"></span></label></div>';const html='<div class="fg"><label class="flabel">Bundesland für Feiertage</label><select class="finput" id="holiday-state">'+opts+'</select></div>'+row('Feiertage anzeigen','toggle-holidays',o.showHolidays!==false,'Direkt neben der Tageszahl.')+row('Challenge-Punkte anzeigen','toggle-dots',o.showChallengeDots!==false,'Nur erledigte Punkte klein unten rechts.')+row('Kalenderwochen anzeigen','toggle-kw',o.showWeekNumbers!==false,'KW-Anzeige in der Monatsansicht.')+row('Google-Kalender-Sync','toggle-google-sync',googleOn(),'Beim Aktivieren wird neu synchronisiert.')+'<button class="btn btn-primary btn-full" onclick="saveCalSettings()">Speichern</button>';openPanel&&openPanel('Kalender-Einstellungen',html)};
+  window.saveCalSettings=function(){const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked};write('change_v1_calendar_view_options',o);write('calendar_settings',o);try{if(!window.calendarSettings)window.calendarSettings={};calendarSettings.state=$('holiday-state')?.value||'ALL';localStorage.setItem('holiday_state',calendarSettings.state)}catch(e){};setGoogleCalendarSyncEnabled(!!$('toggle-google-sync')?.checked);closePanel&&closePanel();try{renderCalendar();buildDashboard()}catch(e){};toast&&toast('Kalender-Einstellungen gespeichert ✓','ok')};
 
-  const oldOpenCal=window.openCalendarSettings;
-  window.openCalendarSettings=function(){try{if(typeof oldOpenCal==='function'){oldOpenCal();setTimeout(()=>{const body=q('#panel-body')||q('.panel-body')||document; if(body&&!q('#toggle-google-sync',body)){const row=document.createElement('div');row.className='toggle-row';const googleOn=read('google_calendar_sync_enabled',!!window.accessToken);row.innerHTML='<div class="toggle-copy"><div class="toggle-title">Google-Kalender-Sync</div><div class="toggle-sub">Google-Termine im Kalender/Dashboard anzeigen und lokale Termine übertragen.</div></div><label class="switch"><input type="checkbox" id="toggle-google-sync" '+(googleOn?'checked':'')+'><span class="slider"></span></label>';const save=q('button.btn-primary.btn-full',body);body.insertBefore(row,save||null)}},0);return}}catch(e){} };
-  const oldSaveCal=window.saveCalSettings;
-  window.saveCalSettings=function(){write('google_calendar_sync_enabled',!!q('#toggle-google-sync')?.checked);try{if(q('#toggle-google-sync')?.checked&&typeof window.loadGoogleEvents==='function')window.loadGoogleEvents()}catch(e){};if(typeof oldSaveCal==='function')return oldSaveCal();};
+  function dateOf(e){return String(e?.date||e?.startDate||e?.start?.date||e?.start?.dateTime||'').slice(0,10)}
+  function titleOf(e){return String(e?.title||e?.summary||e?.name||'Termin').replace(/\bZeitraum\b\s*:?/gi,'').trim()}
+  function allEvents(){let out=[];try{out=(typeof getAllEvents==='function'?getAllEvents():(window.events||[]))||[]}catch(e){};return out.filter(e=>dateOf(e)).sort((a,b)=>dateOf(a).localeCompare(dateOf(b))).slice(0,5)}
+  window.buildDashboard=function(){
+    const h=$('dash-greeting'),s=$('dash-sub'),grid=$('dash-grid'); if(h){const n=(window.userInfo&&userInfo.name)||'',hr=new Date().getHours();h.textContent=(hr<12?'Guten Morgen':hr<17?'Guten Tag':'Guten Abend')+(n?', '+n.split(' ')[0]:'')} if(s)s.textContent='Kalender, Challenges und Mitspieler auf einen Blick'; if(!grid)return;
+    const evRows=allEvents().map(e=>'<div class="dash-row compact-row" onclick="setMainView(\'calendar\')"><div class="dash-row-icon" style="background:var(--acc-d)">📅</div><div class="dash-row-body"><div class="dash-row-title">'+esc(titleOf(e))+'</div><div class="dash-row-sub">'+esc(dateOf(e).split('-').reverse().join('.'))+'</div></div></div>').join('')||'<div class="dash-empty compact-empty">Keine Termine</div>';
+    const chRows=dailySports().filter(c=>!isDone(c.id)).slice(0,4).map(c=>'<div class="dash-row compact-row" onclick="setMainView(\'challenges\')"><div class="dash-row-icon" style="background:var(--amb-d)">'+esc(c.icon||'🏆')+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(c.title||c.name)+'</div><div class="dash-row-sub">'+(parseInt(c.points,10)||0)+' Punkte</div></div><span class="dash-row-badge">offen</span></div>').join('')||'<div class="dash-empty compact-empty">Heute erledigt</div>';
+    const plRows=allPlayers().sort((a,b)=>stats(playerKey(b)).totalPoints-stats(playerKey(a)).totalPoints).slice(0,4).map((p,i)=>{const id=playerKey(p),st=stats(id),med=i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);return '<div class="dash-row compact-row" onclick="setMainView(\'challenges\')"><div class="dash-row-icon" style="background:var(--amb-d)">'+med+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(p.name||p.email||'Mitspieler')+'</div><div class="dash-row-sub">Heute '+st.todayPoints+' P · Gesamt '+st.totalPoints+' P</div></div></div>'}).join('')||'<div class="dash-empty compact-empty">Noch keine Mitspieler</div>';
+    grid.innerHTML='<div class="dash-card calendar-card"><div class="dash-card-head"><div><div class="dash-card-title">📅 Kalender</div><div class="dash-card-sub">Heute + nächste Tage</div></div></div><div class="dash-card-body">'+evRows+'</div></div><div class="dash-card dashboard-combined-card"><div class="dash-card-head"><div><div class="dash-card-title">🏆 Challenges & 👥 Mitspieler</div><div class="dash-card-sub">Heute und Rangliste</div></div></div><div class="dash-card-body"><div class="dashboard-section"><div class="dashboard-section-head"><span>Challenges</span></div>'+chRows+'</div><div class="dashboard-section"><div class="dashboard-section-head"><span>Mitspieler</span></div>'+plRows+'</div></div></div>';
+  };
 
-  function installStyle(){let st=q('#change-step9-clean-style');if(!st){st=document.createElement('style');st.id='change-step9-clean-style';document.head.appendChild(st)}st.textContent='#challenge-week-bar-clean,.challenge-mini-card{display:none!important}.btn-undo{background:rgba(239,68,68,.08)!important;border:1px solid rgba(239,68,68,.25)!important;color:#dc2626!important;min-width:36px!important}.challenge-week-card{margin:0 18px 14px;background:#fff;border:1px solid var(--b1);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}.challenge-week-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--b1)}.challenge-week-title{font-weight:900}.challenge-week-sub{font-size:12px;color:var(--t4);margin-top:2px}.challenge-week-actions{display:flex;gap:6px}.challenge-week-grid{display:grid!important;grid-template-columns:repeat(7,1fr)}.challenge-week-day{min-height:76px;padding:12px;border-right:1px solid var(--b1);background:#fff}.challenge-week-day:last-child{border-right:0}.challenge-week-day.is-today{background:rgba(45,106,79,.06);box-shadow:inset 0 0 0 1px rgba(45,106,79,.22)}.challenge-week-day-name{font-size:11px;font-weight:850;color:var(--t4)}.challenge-week-day-date{font-size:16px;font-weight:950;margin-top:4px}.challenge-week-day-points{font-size:12px;font-weight:950;color:var(--acc);margin-top:8px}.demo-btn,[onclick="startDemo()"],button[onclick="startDemo()"]{display:none!important}'}
-  function init(){installStyle();currentPlayers();q('#challenge-week-bar-clean')?.remove();if((window.currentMainView||'')==='challenges')renderChallenges();if((window.currentMainView||'')==='dashboard'&&window.buildDashboard)window.buildDashboard();}
-  const oldSet=window.setMainView;window.setMainView=function(v){if(typeof oldSet==='function')oldSet(v);setTimeout(()=>{if(v==='challenges')renderChallenges();if(v==='dashboard'&&window.buildDashboard)window.buildDashboard()},0)};
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,80));else setTimeout(init,80);
-  window.addEventListener('load',()=>[200,800,1800].forEach(ms=>setTimeout(init,ms)));
+  function css(){let st=$('change-canonical-clean-style');if(!st){st=document.createElement('style');st.id='change-canonical-clean-style';document.head.appendChild(st)}st.textContent='.demo-btn,[onclick="startDemo()"]{display:none!important}.challenge-mini-card,#challenge-mini-calendar,.challenge-week-card,.challenge-week-grid,#upcoming-strip{display:none!important}.btn-undo{background:rgba(239,68,68,.08)!important;border:1px solid rgba(239,68,68,.22)!important;color:#dc2626!important;min-width:36px!important}.leader-row.clickable{cursor:pointer}.leader-row.clickable:hover{background:var(--s2)}#vbtn-year,#vbtn-workweek,#vbtn-today{display:inline-flex!important}body.calendar-active #cal-controls{display:flex!important}body:not(.calendar-active) #cal-controls{display:none!important}body:not(.calendar-active) [onclick="openCalendarSettings()"]{display:none!important}';}
+  const oldSet=window.setMainView; window.setMainView=function(v){if(typeof oldSet==='function')oldSet(v);document.body.classList.toggle('calendar-active',v==='calendar');const cc=$('cal-controls');if(cc)cc.style.display=v==='calendar'?'flex':'none';if(v==='challenges')setTimeout(()=>renderChallenges(),0);if(v==='dashboard')setTimeout(()=>buildDashboard(),0)};
+
+  const oldToggle=window.togglePushFromBell;
+  window.togglePushFromBell=async function(on){
+    if(!on){try{localStorage.setItem('change_push_enabled','0');localStorage.setItem('push_enabled','false')}catch(e){};toast&&toast('Push-Benachrichtigungen deaktiviert','ok');openNotifPanel&&openNotifPanel();return;}
+    try{
+      if(typeof Notification==='undefined'){toast&&toast('Push wird von diesem Browser nicht unterstützt','err');return}
+      let p=Notification.permission;if(p!=='granted')p=await Notification.requestPermission(); if(p!=='granted'){toast&&toast('Push wurde im Browser nicht erlaubt','err');openNotifPanel&&openNotifPanel();return;}
+      if('serviceWorker' in navigator){await navigator.serviceWorker.register('./firebase-messaging-sw.js',{scope:'./'});}
+      try{if(typeof enablePushNotifications==='function')await enablePushNotifications();else if(typeof initFirebaseMessaging==='function')await initFirebaseMessaging()}catch(e){console.warn('FCM optional failed',e)}
+      localStorage.setItem('change_push_enabled','1');localStorage.setItem('push_enabled','true');toast&&toast('Push-Benachrichtigungen aktiviert ✓','ok');openNotifPanel&&openNotifPanel();
+    }catch(e){console.warn('push canonical',e);toast&&toast('Push konnte nicht aktiviert werden. Bitte Seite neu laden und erneut versuchen.','err');openNotifPanel&&openNotifPanel();}
+  };
+
+  function init(){css();allPlayers();try{if(window.currentMainView==='challenges')renderChallenges(); if(window.currentMainView==='dashboard')buildDashboard(); if(window.currentMainView==='calendar')renderCalendar();}catch(e){}}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,100));else setTimeout(init,100);
+  window.addEventListener('load',()=>{setTimeout(init,300);setTimeout(init,1500);});
 })();
-</script>
 
-</body>
-</html>
-<script id="range-google-final-fix">
+
+(function(){
+  'use strict';
+  const $=id=>document.getElementById(id);
+  const esc=s=>String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+  function setStoredPush(on){try{localStorage.setItem('change_push_enabled',on?'1':'0');localStorage.setItem('change_v2_push_enabled',on?'true':'false');localStorage.setItem('change_v1_push_enabled',on?'true':'false');if(typeof lsSet==='function')lsSet('push_enabled',!!on);}catch(e){}}
+  function storedPushEnabled(){let raw=null;try{raw=localStorage.getItem('change_push_enabled');}catch(e){} if(raw==='0')return false; if(raw==='1')return true; try{if(localStorage.getItem('change_v2_push_enabled')==='false'||localStorage.getItem('change_v1_push_enabled')==='false')return false; if(localStorage.getItem('change_v2_push_enabled')==='true'||localStorage.getItem('change_v1_push_enabled')==='true')return true;}catch(e){} try{if(typeof ls==='function'&&ls('push_enabled')===false)return false;}catch(e){} return (typeof Notification!=='undefined'&&Notification.permission==='granted');}
+  window.openNotifPanel=function(){const perm=(typeof Notification==='undefined')?'nicht unterstützt':Notification.permission; const enabled=storedPushEnabled()&&perm==='granted'; const html='<div class="push-box bell-push-box"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><div style="font-size:13px;font-weight:800;color:var(--t1)">🔔 Push-Benachrichtigungen</div><div class="push-status '+(enabled?'push-ok':'push-warn')+'" id="bell-push-status">Status: '+(enabled?'aktiv':'inaktiv')+' · Browser: '+esc(perm)+'</div></div><label class="switch"><input type="checkbox" id="bell-push-toggle" '+(enabled?'checked':'')+' onchange="togglePushFromBell(this.checked)"><span class="slider"></span></label></div><button class="btn btn-secondary btn-full" style="margin-top:12px" onclick="sendTestBellNotification()">Test-Benachrichtigung senden</button></div><div class="panel-notif-section"><div class="pns-title">Aktuelle Hinweise</div><div id="bell-notif-list">'+(((window.notifications||[]).length)?(window.notifications||[]).slice(0,8).map(n=>'<div class="nitem"><div class="nitem-icon" style="background:var(--acc-d)">🔔</div><div class="nitem-body"><div class="nitem-title">'+esc(n.title||'Benachrichtigung')+'</div><div class="nitem-sub">'+esc(n.body||n.text||'')+'</div></div></div>').join(''):'<div class="dash-empty">Keine neuen Benachrichtigungen</div>')+'</div></div>'; if(typeof openPanel==='function')openPanel('Benachrichtigungen',html); const dot=$('notif-dot'); if(dot)dot.style.display='none';};
+  window.togglePushFromBell=async function(on){try{if(!on){setStoredPush(false);const t=$('bell-push-toggle');if(t)t.checked=false;if(typeof updateBellPushStatus==='function')updateBellPushStatus('inaktiv');if(typeof toast==='function')toast('Push-Benachrichtigungen deaktiviert','ok');return;} if(typeof Notification==='undefined'){setStoredPush(false);if(typeof updateBellPushStatus==='function')updateBellPushStatus('nicht unterstützt');if(typeof toast==='function')toast('Push wird von diesem Browser nicht unterstützt','err');return;} let perm=Notification.permission;if(perm!=='granted')perm=await Notification.requestPermission(); if(perm==='granted'){setStoredPush(true);if(typeof updateBellPushStatus==='function')updateBellPushStatus('aktiv');try{if(typeof initFirebaseMessaging==='function')initFirebaseMessaging();}catch(e){} if(typeof toast==='function')toast('Push-Benachrichtigungen aktiviert','ok');}else{setStoredPush(false);const t=$('bell-push-toggle');if(t)t.checked=false;if(typeof updateBellPushStatus==='function')updateBellPushStatus('blockiert');if(typeof toast==='function')toast('Push wurde im Browser nicht erlaubt','err');}}catch(e){console.warn('change-final-user-fixes-3',e);if(typeof toast==='function')toast('Push konnte nicht geändert werden','err');}};
+  window.updateBellPushStatus=function(text){const s=$('bell-push-status');const perm=(typeof Notification==='undefined'?'nicht unterstützt':Notification.permission);if(s){s.textContent='Status: '+text+' · Browser: '+perm;s.className='push-status '+(text==='aktiv'?'push-ok':'push-warn');} const dot=$('notif-dot');if(dot)dot.style.display=(text==='aktiv')?'block':'none';};
+  window.sendTestBellNotification=function(){try{if(!storedPushEnabled()){if(typeof toast==='function')toast('Push ist deaktiviert','err');return;} if(typeof Notification!=='undefined'&&Notification.permission==='granted'){new Notification('Change',{body:'Test-Benachrichtigung funktioniert.'});if(typeof toast==='function')toast('Test gesendet ✓','ok');}else if(typeof toast==='function')toast('Bitte Push zuerst aktivieren','err');}catch(e){if(typeof toast==='function')toast('Test-Push nicht möglich','err');}};
+  const st=document.createElement('style');st.id='change-final-user-fixes-3-style';st.textContent='.last-remove-btn{display:none!important}.last-completed-main{flex:1}.bell-push-box .btn:empty::before{content:"Test-Benachrichtigung senden";}';document.head.appendChild(st);
+})();
+
+
 /* RANGE DATES + GOOGLE SOURCE MARKERS */
 (function(){
   function escX(s){return (typeof esc==='function')?esc(s):String(s||'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
@@ -3933,8 +3586,8 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
 
   setTimeout(()=>{try{if(typeof buildDashboard==='function')buildDashboard();if(typeof renderCalendar==='function')renderCalendar();}catch(e){}},300);
 })();
-</script>
-<script>
+
+
 /* FINAL UI CALENDAR FIX */
 (function(){
 const DAY=86400000,$=id=>document.getElementById(id),E=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),D=d=>typeof dateKey==='function'?dateKey(d):new Date(d).toISOString().slice(0,10),PD=s=>new Date(String(s).slice(0,10)+'T12:00:00'),AD=(d,n)=>typeof addDays==='function'?addDays(d,n):new Date(new Date(d).getTime()+n*DAY);
@@ -3959,9 +3612,8 @@ window.saveCalSettings=function(){let o={showHolidays:!!$('toggle-holidays')?.ch
 let css=document.createElement('style');css.textContent='.clean-range-row{position:relative;display:grid!important;grid-template-columns:repeat(7,1fr);grid-auto-rows:1fr;min-height:132px}.clean-range-row .day-cell{grid-row:1;min-width:0;overflow:hidden;padding-top:8px}.day-num-wrap{display:flex!important;align-items:center;gap:6px;min-height:22px;padding-right:44px}.holiday-inline{font-size:10px;font-weight:800;color:var(--amb);background:var(--amb-d);border-radius:999px;padding:2px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:72%}.challenge-points-badge{position:absolute;top:7px;right:6px;z-index:7;font-size:10px;font-weight:900;color:var(--amb);background:var(--amb-d);border-radius:999px;padding:2px 6px}.challenge-points-badge.done{color:var(--grn);background:var(--grn-d)}.kw-badge-left{position:absolute;left:8px;bottom:8px;z-index:6;font-size:11px;font-weight:900;color:var(--acc);background:rgba(45,106,79,.12);border:1px solid rgba(45,106,79,.2);border-radius:999px;padding:3px 7px}.range-bar{grid-row:1;align-self:start;margin-top:calc(36px + var(--lane)*24px);height:20px;line-height:20px;padding:0 8px!important;z-index:5;border-radius:0!important;display:flex!important;align-items:center;gap:4px;min-width:0;overflow:hidden}.range-start{border-top-left-radius:10px!important;border-bottom-left-radius:10px!important}.range-end{border-top-right-radius:10px!important;border-bottom-right-radius:10px!important}.range-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:700}.range-date{font-size:10px;font-weight:800;color:#3b82f6;background:rgba(59,130,246,.1);border-radius:999px;padding:0 5px}.gmark{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;font-size:9px;font-weight:900;color:#4285f4;background:rgba(66,133,244,.12);flex:0 0 auto}.gmark.synced{color:var(--grn);background:var(--grn-d)}.gmark.big{width:28px;height:28px;font-size:14px}.google-detail{display:flex;gap:10px;align-items:center;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:12px}.year-mini-day{position:relative}.year-mini-day i{position:absolute;bottom:1px;width:5px;height:5px;border-radius:50%;background:var(--acc)}.year-mini-day.has-holiday i{background:var(--amb)}.year-mini-day.has-event.has-holiday i{background:linear-gradient(90deg,var(--acc) 50%,var(--amb) 50%)}';document.head.appendChild(css);setTimeout(()=>{try{renderCalendar()}catch(e){console.warn(e)}},50);
 })();
 
-</script>
 
-<script id="FINAL-STABLE-CALENDAR-STACKED-FIX">
+
 (function(){
   const DAY=86400000;
   const $=id=>document.getElementById(id);
@@ -4038,8 +3690,8 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   document.addEventListener('click',function(e){const btn=e.target.closest('[title="Kalender-Einstellungen"], .icon-btn'); if(btn && (btn.getAttribute('title')||'').includes('Kalender')){e.preventDefault();e.stopPropagation();openCalendarSettings();}},true);
   setTimeout(()=>{try{renderCalendar()}catch(e){console.warn('final stacked calendar render failed',e)}},80);
 })();
-</script>
-<script>
+
+
 /* FINAL USER CALENDAR POLISH: ranges top, clean today, settings/sync split */
 (function(){
   const $=id=>document.getElementById(id);
@@ -4072,9 +3724,8 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   document.addEventListener('click',function(e){const btn=e.target.closest('[title="Kalender-Einstellungen"]');if(btn){e.preventDefault();e.stopImmediatePropagation();e.stopPropagation();openCalendarSettings()}},true);
   const style=document.createElement('style');style.id='calendar-polish-user-final-style';style.textContent=`.range-bar,.fx-range,.clean-range-row>.range-bar{display:none!important}.h-actions,.h-cal-controls{position:relative;z-index:80}.icon-btn{pointer-events:auto!important}.icon-btn[title="Kalender-Einstellungen"],.icon-btn[title="Sync"]{position:relative;z-index:90}#month-grid.month-grid-polished{overflow:hidden!important;background:#fff!important}.cal-week-polished{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr));min-height:122px;border-bottom:1px solid var(--b1);position:relative}.cal-day-polished{position:relative;min-width:0;padding:7px 8px 23px;background:#fff;border-right:1px solid var(--b1);overflow:hidden;cursor:pointer}.cal-day-polished.weekend{background:#fbfaf7}.cal-day-polished.other{opacity:.42}.cal-day-polished.today{box-shadow:inset 0 0 0 1px rgba(45,106,79,.25);background:#f7fbf9}.cal-day-head{display:flex;align-items:center;gap:6px;min-height:24px;padding-right:44px;min-width:0}.cal-day-num{font-size:13px;font-weight:850;color:var(--t2);line-height:1}.cal-day-polished.today .cal-day-num{display:inline-flex;align-items:center;justify-content:center;height:22px;min-width:22px;border-radius:999px;background:rgba(45,106,79,.12);border:1px solid rgba(45,106,79,.22);color:var(--acc);padding:0 6px}.cal-holiday-inline{font-size:10px;font-weight:850;color:#b85f00;background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.18);border-radius:999px;padding:2px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100% - 38px)}.cal-event-stack{display:flex;flex-direction:column;gap:3px;margin-top:5px}.cal-event-chip{height:20px;border:1px solid rgba(59,130,246,.17);background:rgba(59,130,246,.08);color:#2563eb;border-radius:7px;padding:0 6px;display:flex;align-items:center;gap:4px;min-width:0;text-align:left;font-size:11px;font-weight:760;line-height:18px;cursor:pointer}.cal-event-chip.is-range{order:-10;background:rgba(45,106,79,.09)!important;border-color:rgba(45,106,79,.18)!important;color:var(--acc)!important}.cal-event-chip.is-range:before{content:'↔';font-size:9px;font-weight:900;opacity:.65}.cal-event-chip.green{background:rgba(22,163,74,.10);border-color:rgba(22,163,74,.18);color:#15803d}.cal-event-chip.amber{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.20);color:#b45309}.cal-event-chip.red{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.18);color:#dc2626}.cal-event-chip.purple{background:rgba(124,58,237,.10);border-color:rgba(124,58,237,.18);color:#6d28d9}.cal-event-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}.cal-range-text{font-size:9px;font-weight:850;opacity:.8;white-space:nowrap}.cal-range-text.muted{opacity:.55}.cal-g{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;font-size:8px;font-weight:900;color:#4285f4;background:rgba(66,133,244,.13);flex:0 0 auto}.cal-g.ok{color:var(--grn);background:var(--grn-d)}.cal-more{font-size:10px;font-weight:800;color:var(--t3);padding:1px 6px}.cal-points{position:absolute;right:7px;bottom:5px;z-index:8;font-size:10px;font-weight:900;color:var(--grn);background:rgba(52,211,153,.14);border:1px solid rgba(52,211,153,.24);border-radius:999px;padding:2px 6px;line-height:1}.cal-points.done{background:rgba(45,106,79,.14);border-color:rgba(45,106,79,.24);color:var(--acc)}.cal-kw{position:absolute;left:7px;bottom:5px;z-index:8;font-size:10.5px;font-weight:900;color:var(--acc);background:rgba(45,106,79,.12);border:1px solid rgba(45,106,79,.20);border-radius:999px;padding:2px 7px}.year-grid-stacked{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important;padding:14px!important;overflow:auto!important}.year-card-stacked{background:#fff;border:1px solid var(--b1);border-radius:14px;padding:10px;text-align:left;cursor:pointer}.year-title-stacked{font-weight:850;font-size:13px;margin-bottom:7px}.year-days-stacked{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}.year-days-stacked b,.year-days-stacked span{height:18px;font-size:9px;color:var(--t4);display:flex;align-items:center;justify-content:center;position:relative}.year-days-stacked span.today{background:var(--acc);color:white;border-radius:50%}.year-days-stacked span i{position:absolute;bottom:0;width:5px;height:5px;border-radius:50%;background:var(--acc)}.year-days-stacked span.has-holiday i{background:#f59e0b}.year-days-stacked span.has-event.has-holiday i{background:linear-gradient(90deg,var(--acc) 50%,#f59e0b 50%)}@media(max-width:800px){.cal-week-polished{min-height:110px}.year-grid-stacked{grid-template-columns:1fr!important}.cal-holiday-inline{max-width:62px}.cal-event-chip{font-size:10px;padding:0 4px}}`;document.head.appendChild(style);setTimeout(()=>{try{fixToolbarTitles();renderCalendar()}catch(e){console.warn('calendar polish failed',e)}},120);
 })();
-</script>
 
-<script id="day-detail-panel-for-every-day-final">
+
 <!-- patched-daypanel-range-merge-2026-05-01 -->
 (function(){
   'use strict';
@@ -4150,8 +3801,8 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     .day-detail-time{font-size:12px;font-weight:700;color:var(--t3)}.day-detail-title{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:900;color:var(--t1);line-height:1.25}.day-detail-sub{font-size:12px;color:var(--t4);margin-top:3px}.day-google-dot{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:rgba(66,133,244,.13);color:#4285f4;font-size:9px;font-weight:950;line-height:1}.day-google-dot.synced{background:rgba(22,163,74,.13);color:var(--grn)}.day-detail-empty{padding:18px 14px;border:1px dashed var(--b2);border-radius:14px;color:var(--t5);font-size:13px;text-align:center;background:var(--s2)}.day-detail-add{margin-top:16px}
   `; document.head.appendChild(st);
 })();
-</script>
-<script id="calendar-range-connected-clean-final">
+
+
 (function(){
   'use strict';
   const $=id=>document.getElementById(id);
@@ -4200,9 +3851,8 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   st.textContent=`.cal-event-chip.is-range{order:-10;margin-left:-9px!important;margin-right:-9px!important;border-radius:0!important;background:rgba(45,106,79,.09)!important;border-color:rgba(45,106,79,.20)!important;color:var(--acc)!important;box-shadow:none!important}.cal-event-chip.is-range.range-start{margin-left:0!important;border-top-left-radius:8px!important;border-bottom-left-radius:8px!important}.cal-event-chip.is-range.range-end{margin-right:0!important;border-top-right-radius:8px!important;border-bottom-right-radius:8px!important}.cal-event-chip.is-range:not(.range-start) .cal-g{display:none}.cal-event-chip.is-range:not(.range-start) .cal-range-text{display:none}.cal-event-chip.is-range.range-mid .cal-event-title{color:transparent}.cal-event-chip.is-range.range-start .cal-event-title{color:var(--acc)}.cal-event-chip.is-range:before{content:none!important}.cal-range-text{font-size:9px;font-weight:850;opacity:.75;white-space:nowrap;margin-left:4px}`;
   setTimeout(()=>{try{if(typeof renderCalendar==='function')renderCalendar()}catch(e){console.warn('connected ranges failed',e)}},80);
 })();
-</script>
 
-<script id="change-user-fixes-4">
+
 (function(){
   'use strict';
   const $=id=>document.getElementById(id);
@@ -4245,9 +3895,8 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   st.textContent='#vbtn-year,#vbtn-workweek,#vbtn-today{display:none!important}.bell-push-box.visible{display:block!important}.cal-event-chip.is-range{order:-20;margin-left:-9px!important;margin-right:-9px!important;border-radius:0!important;background:rgba(45,106,79,.09)!important;border-color:rgba(45,106,79,.20)!important;color:var(--acc)!important}.cal-event-chip.is-range.range-start{margin-left:0!important;border-top-left-radius:8px!important;border-bottom-left-radius:8px!important}.cal-event-chip.is-range.range-end{margin-right:0!important;border-top-right-radius:8px!important;border-bottom-right-radius:8px!important}.cal-event-chip.is-range.range-mid .cal-event-title{color:transparent}.cal-points{position:absolute!important;right:7px!important;bottom:6px!important;top:auto!important;left:auto!important;max-width:56px!important;font-size:10px!important;line-height:1!important;font-weight:900!important;padding:3px 6px!important;border-radius:999px!important;color:var(--grn)!important;background:rgba(52,211,153,.13)!important;border:1px solid rgba(52,211,153,.22)!important;z-index:8!important;pointer-events:none!important}.month-picker{padding:4px 0}.mp-years{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:16px}.mp-years strong{font-size:18px}.mp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.mp-month{border:1px solid var(--b1);background:var(--s1);border-radius:12px;padding:12px 8px;font-weight:800;color:var(--t2);cursor:pointer}.mp-month.active,.mp-month:hover{background:var(--acc-d);color:var(--acc);border-color:rgba(45,106,79,.22)}';
   setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('change-user-fixes-4',e)}},120);
 })();
-</script>
 
-<script id="CHANGE-FINAL-MULTIDAY-BARS">
+
 /* ═══════════════════════════════════════════════════════════
    CHANGE · FINAL OVERRIDE
    Echte durchgehende Zeitraum-Balken im Monatskalender.
@@ -4584,8 +4233,42 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     try { if (window.currentMainView==='dashboard') window.buildDashboard(); } catch(e){}
   }, 200);
 })();
-</script>
-<script id="daypanel-dedupe-google-exclusive-final">
+
+
+(function(){
+  'use strict';
+  const $=id=>document.getElementById(id);
+  const pad=n=>String(n).padStart(2,'0');
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const key=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  const parse=k=>new Date(String(k).slice(0,10)+'T12:00:00');
+  const todayKey=()=>key(new Date());
+  const addDays=(k,n)=>{const d=parse(k);d.setDate(d.getDate()+n);return key(d)};
+  const diff=k=>Math.round((parse(k)-parse(todayKey()))/86400000);
+  const fmt=k=>parse(k).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+  const fmtLong=k=>parse(k).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
+  const evStart=e=>String(e?.date||e?.startDate||e?.dateKey||e?.start?.date||(e?.start?.dateTime?e.start.dateTime.slice(0,10):'')||'').slice(0,10);
+  const evEnd=e=>{let x=String(e?.endDate||e?.toDate||e?.untilDate||'').slice(0,10); if(!x&&e?.end?.date){const d=parse(e.end.date);d.setDate(d.getDate()-1);x=key(d)} if(!x&&e?.end?.dateTime)x=String(e.end.dateTime).slice(0,10); const s=evStart(e); return (!x||x<s)?s:x};
+  const evTitle=e=>e?.title||e?.summary||e?.name||'Termin';
+  const evTime=e=>e?.time||(e?.start?.dateTime?new Date(e.start.dateTime).toTimeString().slice(0,5):'');
+  function allEvents(){try{return typeof getAllEvents==='function'?getAllEvents():(window.events||[])}catch(e){return window.events||[]}}
+  function easter(y){const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;return new Date(y,mo-1,da,12)}
+  function fallbackHolidays(k){const d=parse(k),y=d.getFullYear(),md=pad(d.getMonth()+1)+'-'+pad(d.getDate()),out=[],fixed={'01-01':'Neujahr','05-01':'Tag der Arbeit','10-03':'Tag der Deutschen Einheit','12-25':'1. Weihnachtstag','12-26':'2. Weihnachtstag'}; if(fixed[md])out.push({name:fixed[md],states:['ALL']}); const es=easter(y); [[-2,'Karfreitag'],[1,'Ostermontag'],[39,'Christi Himmelfahrt'],[50,'Pfingstmontag']].forEach(([o,n])=>{const x=new Date(es);x.setDate(x.getDate()+o);if(key(x)===k)out.push({name:n,states:['ALL']})}); return out}
+  function holidays(k){let hs=[];try{if(typeof getHolidaysForDate==='function')hs=getHolidaysForDate(k)||[]}catch(e){} const m=new Map(); hs.concat(fallbackHolidays(k)).forEach(h=>{if(h?.name&&!m.has(h.name))m.set(h.name,h)}); return [...m.values()]}
+  function hRows(){const td=todayKey(),a=[];for(let i=0;i<=14;i++){const k=addDays(td,i);holidays(k).forEach(h=>a.push({kind:'holiday',date:k,start:k,end:k,sort:k,holiday:h}))}return a}
+  function eRows(){const td=todayKey(),lim=addDays(td,14),seen=new Set(),a=[];allEvents().forEach(e=>{const s=evStart(e),en=evEnd(e);if(!s||en<td||s>lim)return;const id=(e.googleEventId?'g:'+e.googleEventId:(e.id||evTitle(e)+s+en));if(seen.has(id))return;seen.add(id);a.push({kind:'event',ev:e,date:s<td?td:s,start:s,end:en,sort:s<td?td:s})});return a.sort((a,b)=>a.sort.localeCompare(b.sort)||String(evTime(a.ev)).localeCompare(String(evTime(b.ev)))).slice(0,6)}
+  function rows(){return hRows().concat(eRows()).sort((a,b)=>a.sort.localeCompare(b.sort)||(a.kind==='holiday'?-1:1)).slice(0,8)}
+  function dateBlock(r){const td=todayKey(),isT=(r.start<=td&&r.end>=td),d=diff(r.date),top=isT?'Heute':(d===1?'Morgen':fmt(r.date)),bot=isT?fmt(r.date):fmtLong(r.date).replace('.','');return '<div class="dash-date-block '+(isT?'is-today':'')+'"><div>'+esc(top)+'</div><span>'+esc(bot)+'</span></div>'}
+  function calHtml(){const rs=rows();if(!rs.length)return '<div class="dash-empty compact-empty">Keine Termine oder Feiertage</div>';return rs.map(r=>{if(r.kind==='holiday')return '<div class="dash-row compact-row dashboard-calendar-row holiday-row" onclick="setMainView(\'calendar\')">'+dateBlock(r)+'<div class="dash-row-icon" style="background:var(--amb-d)">🎉</div><div class="dash-row-body"><div class="dash-row-title">'+esc(r.holiday.name)+' <span class="holiday-mini-badge">Feiertag</span></div><div class="dash-row-sub">'+esc(fmtLong(r.date))+'</div></div></div>';const range=r.end&&r.end!==r.start,sub=range?fmt(r.start)+' – '+fmt(r.end):(fmtLong(r.start)+(evTime(r.ev)?' · '+esc(evTime(r.ev)):''));return '<div class="dash-row compact-row dashboard-calendar-row '+((r.start<=todayKey()&&r.end>=todayKey())?'dash-today-row':'')+'" onclick="setMainView(\'calendar\')">'+dateBlock(r)+'<div class="dash-row-icon" style="background:var(--acc-d)">📅</div><div class="dash-row-body"><div class="dash-row-title">'+esc(evTitle(r.ev))+'</div><div class="dash-row-sub">'+sub+'</div></div></div>'}).join('')}
+  function challengeHtml(){const td=todayKey();try{const me=String(window.userInfo?.email||'').toLowerCase(),done=new Set((window.challengeCompletions||[]).filter(c=>String(c.date||'')===td&&(!me||String(c.userEmail||c.playerId||c.email||'').toLowerCase()===me)).map(c=>c.challengeId)),chs=(window.challenges||[]).filter(c=>c&&c.active!==false&&(c.recurrence==='daily'||!c.date||String(c.date||c.startDate||'').slice(0,10)===td)).slice(0,4);if(!chs.length)return '<div class="dash-empty compact-empty">Heute keine Challenges</div>';return chs.map(ch=>'<div class="dash-row compact-row" onclick="setMainView(\'challenges\')"><div class="dash-row-icon" style="background:var(--pur-d)">'+esc(ch.icon||'🏆')+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(ch.title||ch.name||'Challenge')+'</div><div class="dash-row-sub">'+(parseInt(ch.points,10)||0)+' Punkte</div></div><span class="dash-row-badge '+(done.has(ch.id)?'badge-green':'badge-amber')+'">'+(done.has(ch.id)?'✓':'offen')+'</span></div>').join('')}catch(e){return '<div class="dash-empty compact-empty">Heute keine Challenges</div>'}}
+  function playersHtml(){try{const ps=(typeof getVisibleContestPlayers==='function'?getVisibleContestPlayers():(window.challengePlayers||[])).slice(0,4),me=String(window.userInfo?.email||'').toLowerCase();if(!ps.length)return '<div class="dash-empty compact-empty">Noch keine Mitspieler</div>';return ps.map((p,i)=>{const id=String(p.email||p.id||'').toLowerCase(),st=typeof getPlayerPointSummary==='function'?getPlayerPointSummary(id):{totalPoints:0,todayPoints:0},medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);return '<div class="dash-row compact-row" onclick="setMainView(\'challenges\')"><div class="dash-row-icon" style="background:var(--amb-d)">'+medal+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(p.name||p.email||'Mitspieler')+(id===me?' · Du':'')+'</div><div class="dash-row-sub">Heute '+(st.todayPoints||0)+' P · Gesamt '+(st.totalPoints||0)+' P</div></div><span class="dash-row-badge badge-green">'+(st.totalPoints||0)+' P</span></div>'}).join('')}catch(e){return '<div class="dash-empty compact-empty">Noch keine Mitspieler</div>'}}
+  function inject(){if($('dashboard-calm-compact-style'))return;const st=document.createElement('style');st.id='dashboard-calm-compact-style';st.textContent=`#kpi-grid{display:none!important}#dashboard-view{padding:18px 18px 24px!important}.dash-grid{display:grid!important;grid-template-columns:minmax(380px,.82fr) minmax(460px,1.18fr)!important;gap:16px!important;align-items:start!important}.calendar-card{grid-column:auto!important}.dash-card{border-radius:18px!important;box-shadow:0 2px 12px rgba(0,0,0,.05)!important}.dash-card-head{padding:12px 16px!important}.dash-card-body{max-height:340px!important;overflow:auto!important}.calendar-card .dash-card-body{max-height:340px!important}.dashboard-combined-card .dash-card-body{max-height:340px!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:0!important;padding:0!important}.dashboard-section{min-width:0!important}.dashboard-section+.dashboard-section{border-left:1px solid var(--b1)!important}.dashboard-section-head{padding:10px 14px 7px!important;font-size:12px!important;font-weight:800!important;color:var(--t2)!important}.compact-row{padding:10px 14px!important;min-height:48px!important;gap:10px!important}.compact-row .dash-row-icon{width:30px!important;height:30px!important;border-radius:9px!important;font-size:13px!important}.compact-row .dash-row-title{font-size:13px!important}.compact-row .dash-row-sub{font-size:11px!important}.compact-row .dash-row-badge{font-size:10.5px!important;padding:3px 7px!important}.dashboard-calendar-row{align-items:center!important}.dash-date-block{width:54px!important;flex:0 0 54px!important;text-align:left!important;font-size:11px!important;font-weight:850!important;color:var(--t2)!important;line-height:1.05!important}.dash-date-block span{display:block!important;margin-top:3px!important;font-size:9.5px!important;font-weight:700!important;color:var(--t5)!important}.dash-date-block.is-today div,.dash-date-block.is-today span{color:var(--acc)!important}.dash-today-row{background:rgba(45,106,79,.055)!important;box-shadow:inset 3px 0 0 var(--acc)!important}.holiday-row{background:rgba(245,158,11,.075)!important;box-shadow:inset 3px 0 0 var(--amb)!important}.holiday-mini-badge{display:inline-flex!important;margin-left:6px!important;padding:1px 6px!important;border-radius:999px!important;background:rgba(245,158,11,.14)!important;color:#b85f00!important;border:1px solid rgba(245,158,11,.22)!important;font-size:10px!important;font-weight:800!important}.compact-empty{padding:22px 14px!important;font-size:12px!important}@media(max-width:900px){.dash-grid{grid-template-columns:1fr!important}.dashboard-combined-card .dash-card-body{grid-template-columns:1fr!important}.dashboard-section+.dashboard-section{border-left:0!important;border-top:1px solid var(--b1)!important}.calendar-card .dash-card-body,.dashboard-combined-card .dash-card-body{max-height:none!important}}`;document.head.appendChild(st)}
+  window.buildDashCards=function(){const grid=$('dash-grid');if(!grid)return;inject();grid.innerHTML='<div class="dash-card calendar-card"><div class="dash-card-head"><div><div class="dash-card-title">📅 Kalender</div><div class="dash-card-sub">Heute + nächste Tage</div></div></div><div class="dash-card-body">'+calHtml()+'</div></div><div class="dash-card dashboard-combined-card"><div class="dash-card-head"><div><div class="dash-card-title">🏆 Challenges & 👥 Mitspieler</div><div class="dash-card-sub">Heute und Rangliste</div></div></div><div class="dash-card-body"><div class="dashboard-section"><div class="dashboard-section-head"><span>Challenges</span></div>'+challengeHtml()+'</div><div class="dashboard-section"><div class="dashboard-section-head"><span>Mitspieler</span></div>'+playersHtml()+'</div></div></div>'};
+  window.buildDashboard=function(){try{const n=(window.userInfo&&userInfo.name)||'',h=$('dash-greeting');if(h)h.textContent=(new Date().getHours()<12?'Guten Morgen':new Date().getHours()<17?'Guten Tag':'Guten Abend')+(n?', '+n.split(' ')[0]:'');const s=$('dash-sub');if(s)s.textContent='Kalender, Challenges und Mitspieler auf einen Blick'}catch(e){}window.buildDashCards()};
+  setTimeout(()=>{try{window.buildDashboard()}catch(e){}},150);
+})();
+
+
 (function(){
   'use strict';
   const pad=n=>String(n).padStart(2,'0');
@@ -4642,8 +4325,8 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   };
   window.onDayClick=function(dt,dayEvs){window.openDayPanel(dt,dayEvs||[]);};
 })();
-</script>
-<script id="CHANGE-CLEAN-STEP7-STABLE">
+
+
 (function(){
   'use strict';
   const $=id=>document.getElementById(id);
@@ -4665,20 +4348,19 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     const u=Object.assign({}, storedUser(), window.userInfo||{});
     const email=norm((fu&&fu.email)||u.email||u.mail||localStorage.getItem('change_v1_user_email')||localStorage.getItem('user_email')||'');
     const uid=(fu&&fu.uid)||u.uid||u.id||localStorage.getItem('change_v1_user_uid')||'';
-    const rawName=String((fu&&fu.displayName)||u.name||u.displayName||'').trim();
-    const name=rawName || (email ? email.split('@')[0] : '');
+    const name=String((fu&&fu.displayName)||u.name||u.displayName||email||'Mitspieler').trim();
     const picture=(fu&&fu.photoURL)||u.picture||u.photoURL||'';
-    return {id:email||uid,email,uid,name,picture};
+    return {id:email||uid||'local-authenticated-user',email,uid,name,picture};
   }
   function playerKey(p){return norm(p&&((p.email)||(p.userEmail)||(p.id)||(p.uid)))}
-  function badPlayer(p){const t=norm([p&&p.name,p&&p.email,p&&p.id].join(' '));return !t||/demo|demo@example|local-user|google-user|local-authenticated-user|mitspieler|ich\s*·\s*du|^du$|^ich$/.test(t)}
-  function completionKey(c){let k=norm(c&&((c.userEmail)||(c.email)||(c.playerEmail)||(c.playerId)||(c.userId))); if(!k||['du','ich','me','local-user','google-user','local-authenticated-user','mitspieler'].includes(k)) k=account().id; return k;}
+  function badPlayer(p){const t=norm([p&&p.name,p&&p.email,p&&p.id].join(' '));return !t||/demo|demo@example|local-user|google-user|ich\s*·\s*du|^du$|^ich$/.test(t)}
+  function completionKey(c){let k=norm(c&&((c.userEmail)||(c.email)||(c.playerEmail)||(c.playerId)||(c.userId))); if(!k||['du','ich','me','local-user','google-user'].includes(k)) k=account().id; return k;}
   function canonicalPlayers(){
     const a=account(), map=new Map();
-    if(a.id) map.set(a.id,{id:a.id,email:a.email||a.id,uid:a.uid,name:a.name||(a.email?a.email.split('@')[0]:a.id),picture:a.picture,online:true});
+    if(a.id) map.set(a.id,{id:a.id,email:a.email||a.id,uid:a.uid,name:a.name,picture:a.picture,online:true});
     [window.challengePlayers,read('challenge_players',[]),read('challengePlayers',[]),read('changePlayers',[]),read('players',[])].flat().forEach(p=>{if(!p||badPlayer(p))return;const k=playerKey(p);if(!k)return;map.set(k,Object.assign({},map.get(k)||{},p,{id:k,email:p.email||k,name:p.name||p.displayName||p.email||k}));});
     (window.challengeCompletions||read('challenge_completions',[])||read('challengeCompletions',[])||[]).forEach(c=>{const k=completionKey(c); if(!k||['du','ich','me','local-user','google-user'].includes(k))return; if(!map.has(k)) map.set(k,{id:k,email:k,name:c.playerName||c.userName||k});});
-    const arr=[...map.values()].filter(p=>!badPlayer(p) && playerKey(p));
+    const arr=[...map.values()].filter(p=>!badPlayer(p));
     window.challengePlayers=arr; try{challengePlayers=arr}catch(e){}; write('challenge_players',arr); write('challengePlayers',arr); return arr;
   }
   function completions(){
@@ -4709,7 +4391,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     const row=ch=>{const is=done(ch.id),pts=parseInt(ch.points,10)||0,opt=ch.optional||/spazier|fitness/i.test(ch.title||ch.name||''),url=opt?'':(ch.url||ch.video||ch.youtube||ch.youtubeUrl||ch.link||('https://www.youtube.com/results?search_query='+encodeURIComponent((ch.title||ch.name||'Sportübung')+' richtige Ausführung')));return '<div class="challenge-item '+(is?'challenge-done':'')+'"><div class="challenge-icon">'+esc(ch.icon||'🏆')+'</div><div class="challenge-body"><div class="challenge-name">'+esc(ch.title||ch.name||'Sportübung')+'</div><div class="challenge-meta">'+esc(ch.desc||'')+' · '+pts+' Punkte</div>'+(url?'<a class="challenge-meta" href="'+esc(url)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">So geht die Übung</a>':'')+'</div><span class="points-pill">+'+pts+'</span>'+(is?'<button class="btn btn-success btn-sm" disabled>Erledigt</button><button type="button" class="btn btn-undo btn-sm" title="Heute rückgängig machen" onclick="window.undoChallenge(\''+esc(ch.id)+'\')">↶</button>':'<button type="button" class="btn btn-primary btn-sm" onclick="window.completeChallenge(\''+esc(ch.id)+'\')">Erledigen</button>')+'</div>'};
     list.innerHTML=normal.map(row).join('')+(optional.length?'<div class="section-label" style="padding:14px 16px 6px">Optionale Sportpunkte</div>'+optional.map(row).join(''):'');
     const players=canonicalPlayers().sort((a,b)=>stats(playerKey(b)).totalPoints-stats(playerKey(a)).totalPoints);
-    board.innerHTML=players.length?players.map((p,i)=>{const id=playerKey(p),s=stats(id),med=i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);return '<div class="leader-row clickable" onclick="window.openPlayerRecentPanel&&window.openPlayerRecentPanel(\''+esc(id)+'\',\''+esc(p.name||p.email||id)+'\')"><div class="leader-rank">'+med+'</div><div><div class="leader-name">'+esc(p.name||p.email||id)+(p.online?'<span class="live-dot"></span>':'')+'</div><div class="leader-detail">Heute: '+s.todayPoints+' P · Gesamt: '+s.totalPoints+' P · '+s.totalCount+' erledigt</div></div><div class="leader-score">'+s.totalPoints+'</div></div>'}).join(''):'<div class="dash-empty">Noch keine Mitspieler</div>';
+    board.innerHTML=players.length?players.map((p,i)=>{const id=playerKey(p),s=stats(id),med=i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);return '<div class="leader-row clickable" onclick="window.openPlayerRecentPanel&&window.openPlayerRecentPanel(\''+esc(id)+'\',\''+esc(p.name||p.email||id)+'\')"><div class="leader-rank">'+med+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(p.online?'<span class="live-dot"></span>':'')+'</div><div class="leader-detail">Heute: '+s.todayPoints+' P · Gesamt: '+s.totalPoints+' P · '+s.totalCount+' erledigt</div></div><div class="leader-score">'+s.totalPoints+'</div></div>'}).join(''):'<div class="dash-empty">Noch keine Mitspieler</div>';
   };
   window.completeChallenge=function(id){
     const ch=challengeById(id),a=account(); if(!ch){notify('Challenge nicht gefunden','err');return;} if(done(id)){notify('Bereits erledigt','');return;}
@@ -4726,12 +4408,10 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   function eventRows(){let arr=[];try{arr=(typeof window.getAllEvents==='function'?window.getAllEvents():(window.events||[]).concat(window.gEvents||[]))||[]}catch(e){};return arr.filter(e=>dateKeyOf(e)).map(e=>({type:'event',date:dateKeyOf(e),title:titleOf(e)}));}
   function holidayRows(){const rows=[], base=new Date(today()+'T12:00:00'); for(let i=0;i<21;i++){const d=new Date(base);d.setDate(base.getDate()+i);const k=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());try{(window.getHolidaysForDate?window.getHolidaysForDate(k):[]).forEach(h=>rows.push({type:'holiday',date:k,title:h.name||h.title||String(h)}));}catch(e){}}return rows;}
   function dashRows(){const seen=new Set(); return eventRows().concat(holidayRows()).sort((a,b)=>a.date.localeCompare(b.date)||(a.type==='holiday'?-1:1)).filter(r=>{const k=r.type+'|'+r.date+'|'+r.title;if(seen.has(k))return false;seen.add(k);return true;}).slice(0,6)}
-  window.buildDashboard=function(){const h=$('dash-greeting'),s=$('dash-sub'),grid=$('dash-grid');if(h){const a=account(),hr=new Date().getHours();h.textContent=(hr<12?'Guten Morgen':hr<17?'Guten Tag':'Guten Abend')+(a.name&&a.name!=='Mitspieler'?', '+a.name.split(' ')[0]:'')}if(s)s.textContent='Kalender, Challenges und Mitspieler auf einen Blick';if(!grid)return;const ev=dashRows().map(r=>{const isH=r.type==='holiday';return '<div class="dash-row compact-row" onclick="setMainView(\'calendar\')"><div class="dash-row-icon" style="background:'+(isH?'var(--amb-d)':'var(--acc-d)')+'">'+(isH?'🎉':'📅')+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(r.title)+(isH?' <span class="dash-holiday-pill">Feiertag</span>':'')+'</div><div class="dash-row-sub">'+esc(r.date.split('-').reverse().join('.'))+'</div></div></div>'}).join('')||'<div class="dash-empty compact-empty">Keine Termine oder Feiertage</div>';const ch=dailyChallenges().filter(c=>!done(c.id)).slice(0,4).map(c=>'<div class="dash-row compact-row" onclick="setMainView(\'challenges\')"><div class="dash-row-icon" style="background:var(--amb-d)">'+esc(c.icon||'🏆')+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(c.title||c.name)+'</div><div class="dash-row-sub">'+(parseInt(c.points,10)||0)+' Punkte</div></div><span class="dash-row-badge">offen</span></div>').join('')||'<div class="dash-empty compact-empty">Heute erledigt</div>';const pl=canonicalPlayers().sort((a,b)=>stats(playerKey(b)).totalPoints-stats(playerKey(a)).totalPoints).slice(0,4).map((p,i)=>{const id=playerKey(p),st=stats(id),med=i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);return '<div class="dash-row compact-row" onclick="setMainView(\'challenges\')"><div class="dash-row-icon" style="background:var(--amb-d)">'+med+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(p.name||p.email||id)+'</div><div class="dash-row-sub">Heute '+st.todayPoints+' P · Gesamt '+st.totalPoints+' P</div></div></div>'}).join('')||'<div class="dash-empty compact-empty">Noch keine Mitspieler</div>';grid.innerHTML='<div class="dash-card calendar-card"><div class="dash-card-head"><div><div class="dash-card-title">📅 Kalender</div><div class="dash-card-sub">Heute · Feiertage · nächste Termine</div></div></div><div class="dash-card-body">'+ev+'</div></div><div class="dash-card dashboard-combined-card"><div class="dash-card-head"><div><div class="dash-card-title">🏆 Challenges & 👥 Mitspieler</div><div class="dash-card-sub">Heute und Rangliste</div></div></div><div class="dash-card-body"><div class="dashboard-section"><div class="dashboard-section-head"><span>Challenges</span></div>'+ch+'</div><div class="dashboard-section"><div class="dashboard-section-head"><span>Mitspieler</span></div>'+pl+'</div></div></div>'};
+  window.buildDashboard=function(){const h=$('dash-greeting'),s=$('dash-sub'),grid=$('dash-grid');if(h){const a=account(),hr=new Date().getHours();h.textContent=(hr<12?'Guten Morgen':hr<17?'Guten Tag':'Guten Abend')+(a.name&&a.name!=='Mitspieler'?', '+a.name.split(' ')[0]:'')}if(s)s.textContent='Kalender, Challenges und Mitspieler auf einen Blick';if(!grid)return;const ev=dashRows().map(r=>{const isH=r.type==='holiday';return '<div class="dash-row compact-row" onclick="setMainView(\'calendar\')"><div class="dash-row-icon" style="background:'+(isH?'var(--amb-d)':'var(--acc-d)')+'">'+(isH?'🎉':'📅')+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(r.title)+(isH?' <span class="dash-holiday-pill">Feiertag</span>':'')+'</div><div class="dash-row-sub">'+esc(r.date.split('-').reverse().join('.'))+'</div></div></div>'}).join('')||'<div class="dash-empty compact-empty">Keine Termine oder Feiertage</div>';const ch=dailyChallenges().filter(c=>!done(c.id)).slice(0,4).map(c=>'<div class="dash-row compact-row" onclick="setMainView(\'challenges\')"><div class="dash-row-icon" style="background:var(--amb-d)">'+esc(c.icon||'🏆')+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(c.title||c.name)+'</div><div class="dash-row-sub">'+(parseInt(c.points,10)||0)+' Punkte</div></div><span class="dash-row-badge">offen</span></div>').join('')||'<div class="dash-empty compact-empty">Heute erledigt</div>';const pl=canonicalPlayers().sort((a,b)=>stats(playerKey(b)).totalPoints-stats(playerKey(a)).totalPoints).slice(0,4).map((p,i)=>{const id=playerKey(p),st=stats(id),med=i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);return '<div class="dash-row compact-row" onclick="setMainView(\'challenges\')"><div class="dash-row-icon" style="background:var(--amb-d)">'+med+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(p.name||p.email||'Mitspieler')+'</div><div class="dash-row-sub">Heute '+st.todayPoints+' P · Gesamt '+st.totalPoints+' P</div></div></div>'}).join('')||'<div class="dash-empty compact-empty">Noch keine Mitspieler</div>';grid.innerHTML='<div class="dash-card calendar-card"><div class="dash-card-head"><div><div class="dash-card-title">📅 Kalender</div><div class="dash-card-sub">Heute · Feiertage · nächste Termine</div></div></div><div class="dash-card-body">'+ev+'</div></div><div class="dash-card dashboard-combined-card"><div class="dash-card-head"><div><div class="dash-card-title">🏆 Challenges & 👥 Mitspieler</div><div class="dash-card-sub">Heute und Rangliste</div></div></div><div class="dash-card-body"><div class="dashboard-section"><div class="dashboard-section-head"><span>Challenges</span></div>'+ch+'</div><div class="dashboard-section"><div class="dashboard-section-head"><span>Mitspieler</span></div>'+pl+'</div></div></div>'};
   function installStyle(){let st=$('change-step7-style');if(!st){st=document.createElement('style');st.id='change-step7-style';document.head.appendChild(st)}st.textContent='.demo-btn,[onclick="startDemo()"],button[onclick="startDemo()"]{display:none!important}#challenge-week-bar-clean{display:block!important;flex:0 0 auto;margin:0 18px 12px}.challenge-week-card{background:#fff;border:1px solid var(--b1);border-radius:var(--rlg);box-shadow:var(--shadow);overflow:hidden}.challenge-week-grid{display:grid!important;grid-template-columns:repeat(7,1fr);gap:0;border-top:1px solid var(--b1);padding:0}.challenge-week-day{padding:10px;text-align:center;border-right:1px solid var(--b1);background:#fff}.challenge-week-day:last-child{border-right:0}.challenge-week-day.today{background:rgba(45,106,79,.06)}.cwd-name{font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase}.cwd-date{font-size:15px;font-weight:900;color:var(--t1);margin-top:3px}.cwd-points{font-size:11px;font-weight:900;color:var(--acc);margin-top:3px}.btn-undo{background:rgba(239,68,68,.08)!important;border:1px solid rgba(239,68,68,.22)!important;color:#dc2626!important;min-width:36px!important}.dash-holiday-pill{font-size:10px;font-weight:800;color:#b85f00;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.20);border-radius:999px;padding:2px 6px;margin-left:6px}.leader-row.clickable{cursor:pointer}.leader-row.clickable:hover{background:var(--s2)}'}
   const oldSet=window.setMainView;window.setMainView=function(v){if(typeof oldSet==='function')oldSet(v);document.body.classList.toggle('calendar-active',v==='calendar');const cc=$('cal-controls');if(cc)cc.style.display=v==='calendar'?'flex':'none';setTimeout(()=>{if(v==='challenges')window.renderChallenges();if(v==='dashboard')window.buildDashboard();},0)};
   function init(){installStyle();canonicalPlayers();completions();try{if((window.currentMainView||'dashboard')==='challenges')window.renderChallenges();if((window.currentMainView||'dashboard')==='dashboard')window.buildDashboard();if((window.currentMainView||'')==='calendar')window.renderCalendar&&window.renderCalendar()}catch(e){console.warn('step7 init',e)}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,100));else setTimeout(init,100);
   window.addEventListener('load',()=>{[300,1200,2600,5200].forEach(ms=>setTimeout(init,ms));});
 })();
-</script>
-
