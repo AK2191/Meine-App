@@ -762,7 +762,6 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
           <h1 id="dash-greeting">Guten Tag</h1>
           <p id="dash-sub">Ihr persönlicher Überblick</p>
         </div>
-        <div class="kpi-grid" id="kpi-grid"></div>
         <div class="dash-grid" id="dash-grid"></div>
       </div>
 
@@ -4685,16 +4684,16 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
 
   /* ── INJECT FINAL CSS (overrides all previous style hacks) ── */
   function injectFinalStyle(){
-    /* Neutralize older scripts that hide kpi-grid */
+    /* Neutralize older scripts that show kpi-grid */
     const old=document.getElementById('change-clean-dashboard-style');
-    if(old) old.textContent='#kpi-grid{display:grid!important}';
+    if(old) old.textContent='#kpi-grid{display:none!important}';
 
     let st=document.getElementById('change-final-stable-style');
     if(!st){ st=document.createElement('style'); st.id='change-final-stable-style'; document.head.appendChild(st); }
     st.textContent=`
-      /* Show KPI grid — override older scripts that hide it */
-      #kpi-grid{display:grid!important}
-      /* Clean dash grid — 2 equal columns */
+      /* KPI grid removed - hide any leftover */
+      #kpi-grid{display:none!important}
+      /* Clean dash grid — 2 equal columns, fills viewport */
       #dash-grid,.dash-grid{
         display:grid!important;
         grid-template-columns:1fr 1fr!important;
@@ -4705,8 +4704,8 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       @media(max-width:800px){
         #dash-grid,.dash-grid{grid-template-columns:1fr!important}
       }
-      /* Dash card body scroll height */
-      .dash-card-body{max-height:300px!important;overflow-y:auto!important}
+      /* Dash card body — taller now that KPIs are gone */
+      .dash-card-body{max-height:calc(100vh - 200px)!important;overflow-y:auto!important}
       /* Disable old combined card forced layout */
       .dashboard-combined-card .dash-card-body{
         display:block!important;
@@ -4845,81 +4844,63 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       s$.textContent=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
     }
 
-    /* KPI cards */
-    const kpi=$('kpi-grid');
-    if(kpi){
-      const active=activeChallenges();
-      const done=active.filter(c=>isDoneToday(c.id)).length;
-      const total=active.length;
-      const st=playerStats().find(p=>p.id===myId())||{today:0,total:0};
-      const evs=allEvents();
-      const week7=evs.filter(e=>{const d=diffDays(e.date);return d>=0&&d<=7;}).length;
-      const allDone=done>=total&&total>0;
-
-      kpi.innerHTML=
-        `<div class="kpi-card ${allDone?'good':''}" onclick="setMainView('challenges')">
-          <div class="kpi-icon-wrap green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 6 9 17l-5-5"/></svg></div>
-          <div class="kpi-num ${allDone?'good-color':''}">${done}<span style="font-size:.45em;font-weight:600;color:var(--t4);letter-spacing:0">/${total}</span></div>
-          <div class="kpi-label">Challenges heute</div>
-        </div>
-        <div class="kpi-card" onclick="setMainView('challenges')">
-          <div class="kpi-icon-wrap amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg></div>
-          <div class="kpi-num">${st.today}</div>
-          <div class="kpi-label">Punkte heute</div>
-        </div>
-        <div class="kpi-card" onclick="setMainView('challenges')">
-          <div class="kpi-icon-wrap purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/></svg></div>
-          <div class="kpi-num">${st.total}</div>
-          <div class="kpi-label">Punkte gesamt</div>
-        </div>
-        <div class="kpi-card ${week7>0?'warn':''}" onclick="setMainView('calendar')">
-          <div class="kpi-icon-wrap blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
-          <div class="kpi-num ${week7>0?'warn-color':''}">${week7}</div>
-          <div class="kpi-label">Termine diese Woche</div>
-        </div>`;
-    }
-
     /* Dash grid */
     const grid=$('dash-grid');
     if(!grid) return;
 
-    /* — Calendar card rows — */
-    const holidays=upcomingHolidays(4);
+    /* — Calendar: merge holidays + events, sort chronologically — */
+    const td=todayStr();
+    const holidays=upcomingHolidays(6);
     const upcomingEvs=allEvents()
-      .filter(e=>diffDays(e.date)>=0&&diffDays(e.date)<=60)
-      .sort((a,b)=>(a.date+(a.time||'')).localeCompare(b.date+(b.time||'')))
-      .slice(0,6);
+      .filter(e=>diffDays(e.date)>=0&&diffDays(e.date)<=90)
+      .sort((a,b)=>(a.date+(a.time||'')).localeCompare(b.date+(b.time||'')));
+
+    /* Merge into one sorted list */
+    const combined=[];
+    holidays.forEach(h=>combined.push({type:'holiday',date:h.date,name:h.name}));
+    upcomingEvs.forEach(ev=>combined.push({type:'event',date:ev.date,ev}));
+    combined.sort((a,b)=>a.date.localeCompare(b.date));
+
+    /* Deduplicate and limit */
+    const seen=new Set();
+    const rows=combined.filter(r=>{
+      const k=r.type+'|'+r.date+'|'+(r.name||r.ev?.title||'');
+      if(seen.has(k))return false; seen.add(k); return true;
+    }).slice(0,8);
 
     let calRows='';
+    let lastDate='';
 
-    holidays.forEach(h=>{
-      const diff=diffDays(h.date);
-      const badge=diff===0?'Heute':diff===1?'Morgen':fmtShort(h.date);
-      const badgeClass=diff===0?'badge-red':diff===1?'badge-amber':'badge-amber';
-      calRows+=`<div class="dash-row" onclick="setMainView('calendar')">
-        <div class="dash-row-icon" style="background:var(--amb-d)">🎉</div>
-        <div class="dash-row-body">
-          <div class="dash-row-title">${esc(h.name)}</div>
-          <div class="dash-row-sub">Feiertag</div>
-        </div>
-        <span class="dash-row-badge ${badgeClass}">${esc(badge)}</span>
-      </div>`;
-    });
+    rows.forEach(r=>{
+      const diff=diffDays(r.date);
+      const isToday=r.date===td;
+      const badge=diff===0?'Heute':diff===1?'Morgen':fmtShort(r.date);
+      const todayStyle=isToday?'border-left:3px solid var(--acc);background:linear-gradient(90deg,rgba(45,106,79,.04),transparent);':'' ;
 
-    upcomingEvs.forEach(ev=>{
-      const diff=diffDays(ev.date);
-      const badge=diff===0?'Heute':diff===1?'Morgen':fmtShort(ev.date);
-      const badgeClass=diff===0?'badge-red':diff<=3?'badge-amber':'badge-blue';
-      const colBg=ev.color==='red'?'var(--red-d)':ev.color==='green'?'var(--grn-d)':ev.color==='amber'?'var(--amb-d)':ev.color==='purple'?'var(--pur-d)':'var(--acc-d)';
-      const title=esc(ev.title||ev.summary||'Termin').replace(/\bZeitraum\b\s*:?\s*/gi,'').trim();
-      calRows+=`<div class="dash-row" onclick="setMainView('calendar')">
-        <div class="dash-row-icon" style="background:${colBg}">📅</div>
-        <div class="dash-row-body">
-          <div class="dash-row-title">${title}</div>
-          <div class="dash-row-sub">${ev.time?ev.time+' Uhr':'Ganztägig'}</div>
-        </div>
-        <span class="dash-row-badge ${badgeClass}">${badge}</span>
-      </div>`;
+      if(r.type==='holiday'){
+        const badgeClass=isToday?'badge-green':diff<=1?'badge-amber':'badge-amber';
+        calRows+=`<div class="dash-row" style="${todayStyle}" onclick="setMainView('calendar')">
+          <div class="dash-row-icon" style="background:var(--amb-d)">🎉</div>
+          <div class="dash-row-body">
+            <div class="dash-row-title" style="${isToday?'font-weight:800;color:var(--acc)':''}">${esc(r.name)}</div>
+            <div class="dash-row-sub">Feiertag</div>
+          </div>
+          <span class="dash-row-badge ${badgeClass}">${esc(badge)}</span>
+        </div>`;
+      } else {
+        const ev=r.ev;
+        const badgeClass=isToday?'badge-green':diff<=1?'badge-red':diff<=3?'badge-amber':'badge-blue';
+        const colBg=ev.color==='red'?'var(--red-d)':ev.color==='green'?'var(--grn-d)':ev.color==='amber'?'var(--amb-d)':ev.color==='purple'?'var(--pur-d)':'var(--acc-d)';
+        const title=esc(ev.title||ev.summary||'Termin').replace(/\bZeitraum\b\s*:?\s*/gi,'').trim();
+        calRows+=`<div class="dash-row" style="${todayStyle}" onclick="setMainView('calendar')">
+          <div class="dash-row-icon" style="background:${colBg}">📅</div>
+          <div class="dash-row-body">
+            <div class="dash-row-title" style="${isToday?'font-weight:800;color:var(--acc)':''}">${title}</div>
+            <div class="dash-row-sub">${ev.time?ev.time+' Uhr':'Ganztägig'}</div>
+          </div>
+          <span class="dash-row-badge ${badgeClass}">${badge}</span>
+        </div>`;
+      }
     });
 
     if(!calRows) calRows='<div class="dash-empty">Keine Termine oder Feiertage</div>';
@@ -5020,7 +5001,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       <div class="leader-row clickable" onclick="window.openPlayerRecentPanel&&window.openPlayerRecentPanel('${esc(p.id)}','${esc(p.name||p.id)}')">
         <div class="leader-rank">${medals[i]||String(i+1)}</div>
         <div style="flex:1;min-width:0">
-          <div class="leader-name">${esc(p.name||p.id)}${p.id===me?' <span style=\"font-size:10px;color:var(--t4)\">· Du</span>':''}${p.online?'<span class="live-dot"></span>':''}</div>
+          <div class="leader-name">${esc(p.name||p.id)}${p.online?'<span class="live-dot"></span>':''}</div>
           <div class="leader-detail">Heute: ${p.today} P · Gesamt: ${p.total} P · ${p.count} erledigt</div>
         </div>
         <div class="leader-score">${p.total}</div>
