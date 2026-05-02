@@ -4668,72 +4668,51 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
 
 
 <!-- ═══════════════════════════════════════
-     CHANGE · FINAL STABLE OVERRIDE
-     Letztes Skript — gewinnt alle Konflikte.
-     Fixes: Dashboard-Design, Feiertage, Challenges.
+     CHANGE · FINAL STABLE OVERRIDE v2
+     Fixes: Dashboard, Feiertage, Challenges, Account-ID,
+            Datumsbereich, 7 Übungen, Optional-Sektion.
 ═══════════════════════════════════════ -->
 <script id="change-final-stable">
 (function(){
   'use strict';
 
-  /* ── UTILS ── */
   const $  = id => document.getElementById(id);
-  const pad = n  => String(n).padStart(2,'0');
-  const esc = s  => String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const esc = s => String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const pad2 = n => String(n).padStart(2,'0');
 
-  /* ── INJECT FINAL CSS (overrides all previous style hacks) ── */
+  /* ── INJECT FINAL CSS ── */
   function injectFinalStyle(){
-    /* Neutralize older scripts that show kpi-grid */
     const old=document.getElementById('change-clean-dashboard-style');
     if(old) old.textContent='#kpi-grid{display:none!important}';
-
     let st=document.getElementById('change-final-stable-style');
     if(!st){ st=document.createElement('style'); st.id='change-final-stable-style'; document.head.appendChild(st); }
     st.textContent=`
-      /* KPI grid removed - hide any leftover */
       #kpi-grid{display:none!important}
-      /* Clean dash grid — 2 equal columns, fills viewport */
       #dash-grid,.dash-grid{
-        display:grid!important;
-        grid-template-columns:1fr 1fr!important;
-        gap:14px!important;
-        margin-bottom:0!important;
-        align-items:start!important;
+        display:grid!important;grid-template-columns:1fr 1fr!important;gap:14px!important;
+        margin-bottom:0!important;align-items:start!important;
       }
-      @media(max-width:800px){
-        #dash-grid,.dash-grid{grid-template-columns:1fr!important}
-      }
-      /* Dash card body — taller now that KPIs are gone */
-      .dash-card-body{max-height:calc(100vh - 200px)!important;overflow-y:auto!important}
-      /* Disable old combined card forced layout */
-      .dashboard-combined-card .dash-card-body{
-        display:block!important;
-        grid-template-columns:unset!important;
-        padding:0!important;
-      }
-      /* Section labels in dash-card-body */
-      .dash-section-label{
-        padding:8px 16px 4px!important;
-        font-size:10.5px!important;
-        font-weight:700!important;
-        color:var(--t4)!important;
-        text-transform:uppercase!important;
-        letter-spacing:.4px!important;
-        border-bottom:1px solid var(--b1)!important;
-      }
-      /* Week bar — keep compact in challenges */
+      @media(max-width:800px){#dash-grid,.dash-grid{grid-template-columns:1fr!important}}
+      .dash-card-body{max-height:calc(100vh - 190px)!important;overflow-y:auto!important}
+      .dashboard-combined-card .dash-card-body{display:block!important;grid-template-columns:unset!important;padding:0!important}
+      .dash-section-label{padding:8px 16px 4px!important;font-size:10.5px!important;font-weight:700!important;
+        color:var(--t4)!important;text-transform:uppercase!important;letter-spacing:.4px!important;border-bottom:1px solid var(--b1)!important}
       #challenge-week-bar-clean{display:block!important;margin:0!important}
+      .ch-optional-badge{display:inline-block;margin-left:7px;padding:1px 6px;border-radius:999px;
+        font-size:9.5px;font-weight:700;color:var(--amb);background:rgba(245,158,11,.12);
+        border:1px solid rgba(245,158,11,.22);vertical-align:middle}
+      .ch-optional-section{padding:10px 16px 4px;font-size:11px;font-weight:700;color:var(--amb);
+        text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid rgba(245,158,11,.15);
+        background:rgba(245,158,11,.04)}
     `;
   }
 
+  /* ── DATE HELPERS ── */
   function todayStr(){
     const d=new Date();
     return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
   }
-  function dkOf(d){
-    return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
-  }
+  function dkOf(d){return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());}
   function diffDays(dk){
     if(!dk)return 999;
     const d=new Date(dk+'T12:00:00'),t=new Date();
@@ -4742,59 +4721,64 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   }
   function fmtShort(dk){
     if(!dk)return '';
-    const d=new Date(dk+'T12:00:00');
-    return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+    return new Date(dk+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
   }
 
-  /* ── HOLIDAYS: iterate days, call getHolidaysForDate ── */
-  function upcomingHolidays(limit){
-    const out=[];
-    if(typeof window.getHolidaysForDate!=='function') return out;
-    const today=new Date();
-    for(let i=0;i<120&&out.length<(limit||4);i++){
-      const d=new Date(today);d.setDate(today.getDate()+i);
-      const dk=dkOf(d);
-      try{
-        (window.getHolidaysForDate(dk)||[]).forEach(h=>{
-          if(out.length<(limit||4)) out.push({date:dk,name:h.name||h.title||'Feiertag'});
-        });
-      }catch(e){}
-    }
-    return out;
-  }
-
-  /* ── MY PLAYER ID ── */
+  /* ── ROBUST ACCOUNT ID ──
+     Tries multiple sources in order of reliability.
+     Never returns "local-user" if an email can be found. */
   function myId(){
+    const LSK='change_v1';
+    // 1. Firebase currentUser (freshest)
     try{
-      const fi=typeof firebase!=='undefined'&&firebase.auth&&firebase.auth().currentUser;
-      if(fi&&fi.email) return fi.email.toLowerCase();
+      const fu=typeof firebase!=='undefined'&&firebase.auth&&firebase.auth().currentUser;
+      if(fu&&fu.email) return fu.email.toLowerCase();
     }catch(e){}
-    const info=window.userInfo||{};
-    return ((info.email||info.uid||'')).toLowerCase()||'local-user';
+    // 2. window.userInfo (set from localStorage at boot)
+    try{
+      const info=window.userInfo||{};
+      const e=(info.email||'').toLowerCase();
+      if(e&&e.includes('@')) return e;
+    }catch(e){}
+    // 3. localStorage direct fallback
+    try{
+      const stored=JSON.parse(localStorage.getItem(LSK+'_user_info')||'{}');
+      if(stored.email&&stored.email.includes('@')) return stored.email.toLowerCase();
+    }catch(e){}
+    return 'local-user';
   }
 
-  /* ── ALL EVENTS (safe) ── */
+  /* ── ALL EVENTS ── */
   function allEvents(){
-    try{
-      if(typeof window.getAllEvents==='function'){
-        return (window.getAllEvents()||[]).filter(e=>e&&e.date);
-      }
-    }catch(e){}
+    try{ if(typeof window.getAllEvents==='function') return (window.getAllEvents()||[]).filter(e=>e&&e.date); }
+    catch(e){}
     return (window.events||[]).filter(e=>e&&e.date);
   }
 
-  /* ── ACTIVE CHALLENGES ── */
+  /* ── ACTIVE CHALLENGES: max 7 normal + optional ── */
+  const isOptional=c=>/spazier|fitness|gehen|walk/i.test(c.title||c.name||'')||!!c.optional;
+
   function activeChallenges(){
     const td=todayStr();
-    return (window.challenges||[]).filter(c=>
-      c&&c.active!==false&&
-      (!c.date||c.date===td||c.recurrence==='daily')
+    const all=(window.challenges||[]).filter(c=>
+      c&&c.active!==false&&(!c.date||c.date===td||c.recurrence==='daily')
     );
+    const normal=all.filter(c=>!isOptional(c));
+    const optional=all.filter(isOptional);
+    // Deterministic 7-pick based on date seed
+    const seed=td.replace(/-/g,'').split('').reduce((a,c)=>a*31+c.charCodeAt(0),0);
+    const sorted=[...normal].sort((a,b)=>String(a.id).localeCompare(String(b.id)));
+    // Rotate by seed to vary daily selection
+    const offset=seed%Math.max(sorted.length,1);
+    const rotated=[...sorted.slice(offset),...sorted.slice(0,offset)];
+    const picked=rotated.slice(0,7);
+    return [...picked.map(c=>({...c,_optional:false})),
+            ...optional.map(c=>({...c,_optional:true}))];
   }
 
   /* ── IS DONE TODAY ── */
-  function isDoneToday(chId,playerId){
-    const pid=(playerId||myId()).toLowerCase();
+  function isDoneToday(chId,pid){
+    pid=(pid||myId()).toLowerCase();
     const td=todayStr();
     return (window.challengeCompletions||[]).some(c=>
       String(c.challengeId)===String(chId)&&
@@ -4803,36 +4787,122 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     );
   }
 
+  /* ── COMPLETE / UNDO (own impl — uses myId() so IDs always match) ── */
+  function uid6(){return Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,6);}
+
+  window.completeChallenge=function(id){
+    const challenges=window.challenges||[];
+    const ch=challenges.find(c=>String(c.id)===String(id));
+    if(!ch){try{if(typeof toast==='function')toast('Challenge nicht gefunden','err');}catch(e){} return;}
+    const me=myId(), td=todayStr();
+    if(isDoneToday(id,me)){try{if(typeof toast==='function')toast('Bereits erledigt','');}catch(e){} return;}
+    const pts=parseInt(ch.points,10)||0;
+    const rec={
+      id:'cc_'+uid6(),
+      challengeId:String(id),
+      playerId:me,
+      userEmail:me,
+      email:me,
+      playerName:(window.userInfo&&window.userInfo.name)||me,
+      date:td,
+      points:pts,
+      createdAt:new Date().toISOString()
+    };
+    window.challengeCompletions=(window.challengeCompletions||[]).concat(rec);
+    try{if(typeof ls==='function')ls('challenge_completions',window.challengeCompletions);}catch(e){}
+    // Sync to Firestore if available
+    try{if(typeof window.publishCompletionToFirestore==='function')window.publishCompletionToFirestore(rec);}catch(e){}
+    try{renderChallenges();}catch(e){}
+    try{buildDashboard();}catch(e){}
+    try{if(typeof toast==='function')toast('+'+pts+' Punkte ✓','ok');}catch(e){}
+  };
+
+  window.undoChallenge=function(id){
+    const me=myId(), td=todayStr();
+    const removed=[];
+    window.challengeCompletions=(window.challengeCompletions||[]).filter(c=>{
+      const hit=String(c.challengeId)===String(id)&&
+        String(c.date||'').slice(0,10)===td&&
+        String(c.playerId||c.email||c.userEmail||'').toLowerCase()===me;
+      if(hit)removed.push(c);
+      return !hit;
+    });
+    try{if(typeof ls==='function')ls('challenge_completions',window.challengeCompletions);}catch(e){}
+    // Delete from Firestore
+    try{
+      if(typeof firebase!=='undefined'&&firebase.firestore){
+        const db=firebase.firestore();
+        removed.forEach(c=>c.id&&db.collection('change_completions').doc(String(c.id)).delete().catch(()=>{}));
+      }
+    }catch(e){}
+    try{renderChallenges();}catch(e){}
+    try{buildDashboard();}catch(e){}
+    try{if(typeof toast==='function')toast(removed.length?'Zurückgesetzt':'Nichts zurückzusetzen','');}catch(e){}
+  };
+
+  window.resetTodayChallenges=function(){
+    if(!confirm('Alle heutigen Erledigungen zurücksetzen?'))return;
+    const me=myId(), td=todayStr();
+    window.challengeCompletions=(window.challengeCompletions||[]).filter(c=>
+      !(String(c.date||'').slice(0,10)===td&&String(c.playerId||c.email||c.userEmail||'').toLowerCase()===me)
+    );
+    try{if(typeof ls==='function')ls('challenge_completions',window.challengeCompletions);}catch(e){}
+    try{renderChallenges();}catch(e){}
+    try{buildDashboard();}catch(e){}
+    try{if(typeof toast==='function')toast('Heute zurückgesetzt','');}catch(e){}
+  };
+
   /* ── PLAYER STATS ── */
   function playerStats(){
     const td=todayStr(), me=myId();
     const by={};
     (window.challengePlayers||[]).forEach(p=>{
       const id=String(p.email||p.id||'').toLowerCase();
-      if(!id||/^demo/.test(id)) return;
+      if(!id||id==='local-user'||/^demo/.test(id)) return;
       by[id]={id,name:p.name||p.email||id,total:0,today:0,count:0,online:!!p.online};
     });
     (window.challengeCompletions||[]).forEach(c=>{
       const id=String(c.playerId||c.userEmail||c.email||'').toLowerCase();
-      if(!id||/^demo/.test(id)) return;
+      if(!id||id==='local-user'||/^demo/.test(id)) return;
       if(!by[id]) by[id]={id,name:c.playerName||id,total:0,today:0,count:0,online:id===me};
       const pts=parseInt(c.points,10)||0;
       by[id].total+=pts; by[id].count++;
       if(String(c.date||'').slice(0,10)===td) by[id].today+=pts;
     });
-    if(!by[me]){
-      const info=window.userInfo||{};
-      by[me]={id:me,name:info.name||me,total:0,today:0,count:0,online:true};
+    // Always include current user with correct name
+    if(me!=='local-user'){
+      if(!by[me]){
+        const info=window.userInfo||{};
+        by[me]={id:me,name:info.name||me,total:0,today:0,count:0,online:true};
+      }
+      by[me].online=true;
+      // Ensure name is the display name, not the email
+      if(by[me].name===me&&window.userInfo&&window.userInfo.name){
+        by[me].name=window.userInfo.name;
+      }
     }
-    by[me].online=true;
     return Object.values(by).sort((a,b)=>b.total-a.total);
   }
 
+  /* ── UPCOMING HOLIDAYS ── */
+  function upcomingHolidays(limit){
+    const out=[];
+    if(typeof window.getHolidaysForDate!=='function') return out;
+    const today=new Date();
+    for(let i=0;i<120&&out.length<(limit||4);i++){
+      const d=new Date(today);d.setDate(today.getDate()+i);
+      const dk=dkOf(d);
+      try{(window.getHolidaysForDate(dk)||[]).forEach(h=>{
+        if(out.length<(limit||4)) out.push({date:dk,name:h.name||h.title||'Feiertag'});
+      });}catch(e){}
+    }
+    return out;
+  }
+
   /* ══════════════════════════════════════
-     BUILD DASHBOARD — definitive version
+     BUILD DASHBOARD
   ══════════════════════════════════════ */
   function buildDashboard(){
-    /* Greeting */
     const g$=$('dash-greeting'), s$=$('dash-sub');
     if(g$){
       const h=new Date().getHours();
@@ -4840,87 +4910,103 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       const name=(window.userInfo&&window.userInfo.name||'').split(' ')[0];
       g$.textContent=gr+(name?', '+name:'');
     }
-    if(s$){
-      s$.textContent=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-    }
+    if(s$) s$.textContent=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
-    /* Dash grid */
     const grid=$('dash-grid');
     if(!grid) return;
-
-    /* — Calendar: merge holidays + events, sort chronologically — */
     const td=todayStr();
-    const holidays=upcomingHolidays(6);
-    const upcomingEvs=allEvents()
-      .filter(e=>diffDays(e.date)>=0&&diffDays(e.date)<=90)
-      .sort((a,b)=>(a.date+(a.time||'')).localeCompare(b.date+(b.time||'')));
 
-    /* Merge into one sorted list */
+    /* ── Calendar rows: merged + chronological + range support ── */
+    const holidays=upcomingHolidays(6);
+    const eventsRaw=allEvents()
+      .filter(e=>{
+        // Show if startDate is upcoming OR event range overlaps with today–90d
+        const start=e.startDate||e.date;
+        const end=e.endDate||e.date;
+        return diffDays(start)<=90&&diffDays(end)>=0;
+      });
+
+    // Deduplicate events (Google + local may overlap)
+    const seen=new Set();
+    const events=eventsRaw.filter(e=>{
+      const k=(e.googleEventId?'g:'+e.googleEventId:'l:'+(e.id||e.title||''))+'|'+(e.startDate||e.date);
+      if(seen.has(k))return false; seen.add(k); return true;
+    });
+
+    // Merge holidays + events into one list
     const combined=[];
     holidays.forEach(h=>combined.push({type:'holiday',date:h.date,name:h.name}));
-    upcomingEvs.forEach(ev=>combined.push({type:'event',date:ev.date,ev}));
+    events.forEach(ev=>{
+      const start=ev.startDate||ev.date;
+      const end=ev.endDate||ev.date;
+      combined.push({type:'event',date:start,endDate:end,ev});
+    });
     combined.sort((a,b)=>a.date.localeCompare(b.date));
 
-    /* Deduplicate and limit */
-    const seen=new Set();
+    // Deduplicate and cap
+    const rowSeen=new Set();
     const rows=combined.filter(r=>{
       const k=r.type+'|'+r.date+'|'+(r.name||r.ev?.title||'');
-      if(seen.has(k))return false; seen.add(k); return true;
-    }).slice(0,8);
+      if(rowSeen.has(k))return false; rowSeen.add(k); return true;
+    }).slice(0,9);
 
     let calRows='';
-    let lastDate='';
-
     rows.forEach(r=>{
       const diff=diffDays(r.date);
       const isToday=r.date===td;
-      const badge=diff===0?'Heute':diff===1?'Morgen':fmtShort(r.date);
-      const todayStyle=isToday?'border-left:3px solid var(--acc);background:linear-gradient(90deg,rgba(45,106,79,.04),transparent);':'' ;
+      const rowStyle=isToday?'border-left:3px solid var(--acc);background:linear-gradient(90deg,rgba(45,106,79,.04),transparent);':'';
+      const titleStyle=isToday?'font-weight:800;color:var(--acc)':'';
 
       if(r.type==='holiday'){
-        const badgeClass=isToday?'badge-green':diff<=1?'badge-amber':'badge-amber';
-        calRows+=`<div class="dash-row" style="${todayStyle}" onclick="setMainView('calendar')">
+        const badge=diff===0?'Heute':diff===1?'Morgen':fmtShort(r.date);
+        const bClass=isToday?'badge-green':diff<=1?'badge-amber':'badge-amber';
+        calRows+=`<div class="dash-row" style="${rowStyle}" onclick="setMainView('calendar')">
           <div class="dash-row-icon" style="background:var(--amb-d)">🎉</div>
           <div class="dash-row-body">
-            <div class="dash-row-title" style="${isToday?'font-weight:800;color:var(--acc)':''}">${esc(r.name)}</div>
+            <div class="dash-row-title" style="${titleStyle}">${esc(r.name)}</div>
             <div class="dash-row-sub">Feiertag</div>
           </div>
-          <span class="dash-row-badge ${badgeClass}">${esc(badge)}</span>
+          <span class="dash-row-badge ${bClass}">${esc(badge)}</span>
         </div>`;
       } else {
         const ev=r.ev;
-        const badgeClass=isToday?'badge-green':diff<=1?'badge-red':diff<=3?'badge-amber':'badge-blue';
+        const start=r.date, end=r.endDate||r.date;
+        const hasRange=end&&end!==start;
+        // Badge: show date range if multi-day, otherwise relative
+        let badge;
+        if(hasRange){
+          badge=fmtShort(start)+' – '+fmtShort(end);
+        } else {
+          badge=diff===0?'Heute':diff===1?'Morgen':fmtShort(start);
+        }
+        const bClass=isToday?'badge-green':diff===0?'badge-green':diff<=1?'badge-red':diff<=3?'badge-amber':'badge-blue';
         const colBg=ev.color==='red'?'var(--red-d)':ev.color==='green'?'var(--grn-d)':ev.color==='amber'?'var(--amb-d)':ev.color==='purple'?'var(--pur-d)':'var(--acc-d)';
         const title=esc(ev.title||ev.summary||'Termin').replace(/\bZeitraum\b\s*:?\s*/gi,'').trim();
-        calRows+=`<div class="dash-row" style="${todayStyle}" onclick="setMainView('calendar')">
+        calRows+=`<div class="dash-row" style="${rowStyle}" onclick="setMainView('calendar')">
           <div class="dash-row-icon" style="background:${colBg}">📅</div>
           <div class="dash-row-body">
-            <div class="dash-row-title" style="${isToday?'font-weight:800;color:var(--acc)':''}">${title}</div>
+            <div class="dash-row-title" style="${titleStyle}">${title}${hasRange?'':''}</div>
             <div class="dash-row-sub">${ev.time?ev.time+' Uhr':'Ganztägig'}</div>
           </div>
-          <span class="dash-row-badge ${badgeClass}">${badge}</span>
+          <span class="dash-row-badge ${bClass}">${badge}</span>
         </div>`;
       }
     });
-
     if(!calRows) calRows='<div class="dash-empty">Keine Termine oder Feiertage</div>';
 
-    /* — Challenge card rows — */
+    /* ── Challenge + leaderboard rows ── */
     const active=activeChallenges();
     const pending=active.filter(c=>!isDoneToday(c.id)).slice(0,4);
-
     let chRows=pending.map(c=>`<div class="dash-row" onclick="setMainView('challenges')">
-      <div class="dash-row-icon" style="background:var(--amb-d)">${esc(c.icon||'🏆')}</div>
+      <div class="dash-row-icon" style="background:${c._optional?'var(--amb-d)':'var(--acc-d)'}">${esc(c.icon||'🏆')}</div>
       <div class="dash-row-body">
-        <div class="dash-row-title">${esc(c.title||c.name||'Challenge')}</div>
+        <div class="dash-row-title">${esc(c.title||c.name||'Challenge')}${c._optional?'<span class="ch-optional-badge">Optional</span>':''}</div>
         <div class="dash-row-sub">${parseInt(c.points,10)||0} Punkte</div>
       </div>
       <span class="dash-row-badge badge-amber">offen</span>
     </div>`).join('');
-
     if(!chRows) chRows='<div class="dash-empty">Alle Challenges heute erledigt ✓</div>';
 
-    /* — Leaderboard rows — */
     const players=playerStats().slice(0,4);
     const medals=['🥇','🥈','🥉'];
     let plRows=players.map((p,i)=>`<div class="dash-row" onclick="setMainView('challenges')">
@@ -4932,49 +5018,50 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     </div>`).join('');
     if(!plRows) plRows='<div class="dash-empty">Noch keine Mitspieler</div>';
 
-    /* — Render — */
     grid.innerHTML=
       `<div class="dash-card">
         <div class="dash-card-head">
-          <div>
-            <div class="dash-card-title">📅 Kalender</div>
-            <div class="dash-card-sub">Feiertage &amp; nächste Termine</div>
-          </div>
+          <div><div class="dash-card-title">📅 Kalender</div><div class="dash-card-sub">Feiertage &amp; nächste Termine</div></div>
           <button class="btn btn-ghost btn-sm" onclick="setMainView('calendar')">Öffnen →</button>
         </div>
         <div class="dash-card-body">${calRows}</div>
       </div>
       <div class="dash-card">
         <div class="dash-card-head">
-          <div>
-            <div class="dash-card-title">🏆 Challenges &amp; Mitspieler</div>
-            <div class="dash-card-sub">Heute &amp; Rangliste</div>
-          </div>
+          <div><div class="dash-card-title">🏆 Challenges &amp; Mitspieler</div><div class="dash-card-sub">Heute &amp; Rangliste</div></div>
           <button class="btn btn-ghost btn-sm" onclick="setMainView('challenges')">Öffnen →</button>
         </div>
         <div class="dash-card-body">
-          <div class="dash-section-label">Heute offen</div>
-          ${chRows}
-          <div class="dash-section-label" style="border-top:1px solid var(--b1)">Rangliste</div>
-          ${plRows}
+          <div class="dash-section-label">Heute offen</div>${chRows}
+          <div class="dash-section-label" style="border-top:1px solid var(--b1)">Rangliste</div>${plRows}
         </div>
       </div>`;
   }
 
   /* ══════════════════════════════════════
-     RENDER CHALLENGES — definitive version
+     RENDER CHALLENGES
   ══════════════════════════════════════ */
   function renderChallenges(){
     const list$=$('challenges-list'), board$=$('leaderboard-list');
     if(!list$||!board$) return;
 
-    /* Ensure daily auto challenges exist */
+    // Ensure today's auto challenges are generated
     try{ if(typeof window.ensureDailyAutoChallenges==='function') window.ensureDailyAutoChallenges(todayStr()); }catch(e){}
+
+    // Refresh week bar
+    try{
+      if(typeof window.renderWeekBar==='function'){
+        const bar=$('challenge-week-bar-clean');
+        if(bar) bar.outerHTML=window.renderWeekBar();
+      }
+    }catch(e){}
 
     const active=activeChallenges();
     const me=myId();
+    const normal=active.filter(c=>!c._optional);
+    const optional=active.filter(c=>!!c._optional);
 
-    list$.innerHTML=active.length?active.map(ch=>{
+    function chItem(ch){
       const done=isDoneToday(ch.id);
       const pts=parseInt(ch.points,10)||0;
       const url=ch.url||ch.video||ch.youtube||ch.youtubeUrl||ch.link||'';
@@ -4988,13 +5075,20 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
         <span class="points-pill">+${pts}</span>
         ${done
           ?`<button class="btn btn-success btn-sm" disabled>Erledigt ✓</button>
-             <button class="btn btn-undo btn-sm" title="Rückgängig" onclick="window.undoChallenge&&window.undoChallenge('${esc(ch.id)}')">↶</button>`
-          :`<button class="btn btn-primary btn-sm" onclick="window.completeChallenge&&window.completeChallenge('${esc(ch.id)}')">Erledigen</button>`
+             <button class="btn btn-undo btn-sm" title="Rückgängig" onclick="window.undoChallenge('${esc(ch.id)}')">↶</button>`
+          :`<button class="btn btn-primary btn-sm" onclick="window.completeChallenge('${esc(ch.id)}')">Erledigen</button>`
         }
       </div>`;
-    }).join(''):'<div class="dash-empty">Keine Challenges für heute</div>';
+    }
 
-    /* Leaderboard */
+    let html=normal.map(chItem).join('');
+    if(optional.length){
+      html+=`<div class="ch-optional-section">Optional · Spazieren &amp; Fitness</div>`;
+      html+=optional.map(chItem).join('');
+    }
+    list$.innerHTML=html||'<div class="dash-empty">Keine Challenges für heute</div>';
+
+    // Leaderboard
     const players=playerStats();
     const medals=['🥇','🥈','🥉'];
     board$.innerHTML=players.length?players.map((p,i)=>`
@@ -5009,98 +5103,72 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   }
 
   /* ══════════════════════════════════════
-     SET MAIN VIEW — definitive version
+     SET MAIN VIEW
   ══════════════════════════════════════ */
   function setMainView(v){
     if(!['dashboard','calendar','challenges'].includes(v)) v='dashboard';
     window.currentMainView=v;
-
-    const views={
-      'dashboard-view': v==='dashboard'?'block':'none',
-      'cal-body':        v==='calendar'?'flex':'none',
-      'challenges-view': v==='challenges'?'flex':'none',
-      'cal-controls':    v==='calendar'?'flex':'none',
-    };
-    Object.entries(views).forEach(([id,disp])=>{
-      const el=document.getElementById(id);
-      if(el) el.style.display=disp;
-    });
-
-    /* Tab highlights */
+    const views={'dashboard-view':v==='dashboard'?'block':'none','cal-body':v==='calendar'?'flex':'none','challenges-view':v==='challenges'?'flex':'none','cal-controls':v==='calendar'?'flex':'none'};
+    Object.entries(views).forEach(([id,disp])=>{const el=document.getElementById(id);if(el)el.style.display=disp;});
     document.querySelectorAll('.h-tab').forEach(t=>t.classList.remove('active'));
     document.querySelectorAll('.bnav-item').forEach(t=>t.classList.remove('active'));
     document.getElementById('htab-'+v)?.classList.add('active');
     document.getElementById('bnav-'+v)?.classList.add('active');
-
-    /* Renders */
     if(v==='dashboard') buildDashboard();
-    if(v==='calendar'){ window.renderCalendar&&window.renderCalendar(); window.renderUpcoming&&window.renderUpcoming(); }
+    if(v==='calendar'){window.renderCalendar&&window.renderCalendar();window.renderUpcoming&&window.renderUpcoming();}
     if(v==='challenges') renderChallenges();
-
-    /* URL */
-    try{ history.pushState({view:v},'','#/'+v); }catch(e){}
+    try{history.pushState({view:v},'','#/'+v);}catch(e){}
   }
 
   /* ── EXPOSE ── */
-  /* Mark __fix5=true so compactDashboard() wrapper is skipped */
-  buildDashboard.__fix5=true;
-  renderChallenges.__fix5=true;
-  window.buildDashboard=buildDashboard;
-  window.buildDashboard.__fix5=true;
-  window.buildDashCards=buildDashboard;  /* alias some callers use */
-  window.buildDashCards.__fix5=true;
+  buildDashboard.__fix5=true; renderChallenges.__fix5=true;
+  window.buildDashboard=buildDashboard; window.buildDashboard.__fix5=true;
+  window.buildDashCards=buildDashboard; window.buildDashCards.__fix5=true;
   window.buildKPIs=function(){buildDashboard();};
   window.renderChallenges=renderChallenges;
   window.setMainView=setMainView;
-
-  /* Refresh dashboard when google events or firebase completions arrive */
-  const _prevLoadGoogle=window.loadGoogleEvents;
-  window.loadGoogleEvents=async function(){
-    const r=_prevLoadGoogle?await _prevLoadGoogle.apply(this,arguments):[];
-    try{if(window.currentMainView==='dashboard') buildDashboard();}catch(e){}
-    return r;
-  };
-
-  /* ── INIT ── */
-  function init(){
-    injectFinalStyle();
-    /* routing */
-    const route=location.hash.replace('#/','').replace('#','')||'dashboard';
-    const view=['dashboard','calendar','challenges'].includes(route)?route:'dashboard';
-    setMainView(view);
-  }
 
   window.addEventListener('popstate',e=>{
     const v=(e.state&&e.state.view)||(location.hash.replace('#/',''))||'dashboard';
     setMainView(v);
   });
 
+  /* ── INIT ── */
+  function init(){
+    injectFinalStyle();
+    const route=location.hash.replace('#/','').replace('#','')||'dashboard';
+    setMainView(['dashboard','calendar','challenges'].includes(route)?route:'dashboard');
+  }
+
   if(document.readyState==='loading'){
     document.addEventListener('DOMContentLoaded',()=>setTimeout(init,200));
   } else {
     setTimeout(init,200);
   }
+
   window.addEventListener('load',()=>{
     setTimeout(init,500);
-    /* Retry buildDashboard after firebase completions may have loaded */
     setTimeout(()=>{
-      try{if(window.currentMainView==='dashboard'||!window.currentMainView) buildDashboard();}catch(e){}
-    },2000);
-    /* Final override: fires after step7's last timer (5200ms) to ensure we win */
-    setTimeout(()=>{
-      injectFinalStyle();
-      window.buildDashboard=buildDashboard;
-      window.buildDashboard.__fix5=true;
+      // Re-assert after firebase auth resolves (myId() will now return email)
+      window.buildDashboard=buildDashboard; window.buildDashboard.__fix5=true;
       window.renderChallenges=renderChallenges;
       window.setMainView=setMainView;
-      try{
-        const v=window.currentMainView||'dashboard';
-        if(v==='dashboard') buildDashboard();
-        if(v==='challenges') renderChallenges();
-      }catch(e){}
+      injectFinalStyle();
+      const v=window.currentMainView||'dashboard';
+      if(v==='dashboard') buildDashboard();
+      if(v==='challenges') renderChallenges();
+    },2000);
+    // Final override after step7 last timer (5200ms)
+    setTimeout(()=>{
+      window.buildDashboard=buildDashboard; window.buildDashboard.__fix5=true;
+      window.renderChallenges=renderChallenges;
+      window.setMainView=setMainView;
+      injectFinalStyle();
+      const v=window.currentMainView||'dashboard';
+      if(v==='dashboard') buildDashboard();
+      if(v==='challenges') renderChallenges();
     },5600);
   });
 
 })();
-
 </script>
