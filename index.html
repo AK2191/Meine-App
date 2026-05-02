@@ -783,7 +783,8 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
           <div class="list-title">Challenges</div>
           <button class="btn btn-ghost btn-sm" onclick="window.resetTodayChallenges&&window.resetTodayChallenges()">Heute zurücksetzen</button>
         </div>
-        <!-- Week bar injected here dynamically by ensureWeekBar() -->
+        <!-- Week bar: full-width, OUTSIDE the two-column grid -->
+        <div id="challenge-week-bar-clean" style="flex-shrink:0"></div>
         <!-- Two-column layout: challenges left, leaderboard right -->
         <div class="challenge-layout" style="flex:1;min-height:0;overflow-y:auto">
           <div class="challenge-card">
@@ -4697,10 +4698,8 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       .dash-section-label{padding:8px 16px 4px!important;font-size:10.5px!important;font-weight:700!important;
         color:var(--t4)!important;text-transform:uppercase!important;letter-spacing:.4px!important;border-bottom:1px solid var(--b1)!important}
       #challenge-week-bar-clean{display:block!important;flex-shrink:0!important;margin:0!important}
-      /* Safety net: hide any second/third week card that older scripts inject */
-      .challenge-week-card+.challenge-week-card{display:none!important}
-      /* Also hide week cards inside the two-column layout (wrong position) */
-      .challenge-layout .challenge-week-card{display:none!important}
+      /* Hide any duplicate week bar injected inside the layout grid */
+      .challenge-layout #challenge-week-bar-clean{display:none!important}
       .ch-optional-badge{display:inline-block;margin-left:7px;padding:1px 6px;border-radius:999px;
         font-size:9.5px;font-weight:700;color:var(--amb);background:rgba(245,158,11,.12);
         border:1px solid rgba(245,158,11,.22);vertical-align:middle}
@@ -5053,54 +5052,6 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       </div>`;
   }
 
-  /* ── OVERRIDE renderWeekBar: use myId() so points always match completeChallenge ── */
-  function buildWeekBar(offsetWeeks){
-    offsetWeeks=offsetWeeks||0;
-    const me=myId();
-    const today=new Date();
-    const day=(today.getDay()+6)%7;
-    const mon=new Date(today);
-    mon.setDate(today.getDate()-day+(offsetWeeks*7));
-    const days=Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d;});
-    const DE=['Mo','Di','Mi','Do','Fr','Sa','So'];
-    const td=todayStr();
-    function pts(dk){
-      return (window.challengeCompletions||[]).reduce((s,c)=>{
-        if(String(c.date||'').slice(0,10)===dk&&String(c.playerId||c.userEmail||c.email||'').toLowerCase()===me)
-          s+=parseInt(c.points,10)||0;
-        return s;
-      },0);
-    }
-    const cells=days.map((d,i)=>{
-      const k=dkOf(d), p=pts(k), isT=k===td;
-      return `<div class="challenge-week-day ${isT?'today is-today':''} ${p>0?'has-points':'empty'}">
-        <div class="cwd-name challenge-week-day-name">${DE[i]}</div>
-        <div class="cwd-date challenge-week-day-date">${d.getDate()}.</div>
-        <div class="cwd-points challenge-week-day-points">${p>0?p+' P':'–'}</div>
-      </div>`;
-    }).join('');
-    return `<div id="challenge-week-bar-clean" class="challenge-week-card">
-      <div class="challenge-card-head">
-        <div><div class="challenge-title">Punkte-Woche</div><div class="challenge-sub">Mo – So · Challenge-Punkte</div></div>
-      </div>
-      <div class="challenge-week-grid">${cells}</div>
-    </div>`;
-  }
-  window.renderWeekBar=()=>buildWeekBar(0);
-  // Also expose for navigation (routing script uses these)
-  window.prevWeek=function(){
-    const bar=$('challenge-week-bar-clean');
-    if(bar){const prev=parseInt(bar.dataset.offset||0)-1;bar.outerHTML=buildWeekBar(prev);$('challenge-week-bar-clean').dataset.offset=prev;}
-  };
-  window.nextWeek=function(){
-    const bar=$('challenge-week-bar-clean');
-    if(bar){const next=parseInt(bar.dataset.offset||0)+1;bar.outerHTML=buildWeekBar(next);$('challenge-week-bar-clean').dataset.offset=next;}
-  };
-  window.goToCurrentWeek=function(){
-    const bar=$('challenge-week-bar-clean');
-    if(bar){bar.outerHTML=buildWeekBar(0);}
-  };
-
   /* ══════════════════════════════════════
      RENDER CHALLENGES
   ══════════════════════════════════════ */
@@ -5111,30 +5062,9 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     // Ensure today's auto challenges are generated
     try{ if(typeof window.ensureDailyAutoChallenges==='function') window.ensureDailyAutoChallenges(todayStr()); }catch(e){}
 
-    // Render week bar — use ensureWeekBar (inserts before .challenge-layout if missing)
-    // then remove any duplicate .challenge-week-card elements
+    // Refresh week bar (let step7's ensureWeekBar handle it — avoids duplicates)
     try{
-      if(typeof window.ensureWeekBar==='function'){
-        window.ensureWeekBar();
-      } else {
-        // Fallback: inject directly
-        const view=$('challenges-view');
-        const layout=view&&view.querySelector('.challenge-layout');
-        let bar=$('challenge-week-bar-clean');
-        if(!bar&&view&&layout){
-          bar=document.createElement('div');
-          bar.id='challenge-week-bar-clean';
-          view.insertBefore(bar,layout);
-        }
-        if(bar) bar.outerHTML=buildWeekBar(0);
-      }
-      // Remove any duplicate week cards (keep only the first one)
-      setTimeout(()=>{
-        const view=$('challenges-view');
-        if(!view) return;
-        const cards=[...view.querySelectorAll('.challenge-week-card')];
-        if(cards.length>1) cards.slice(1).forEach(c=>c.remove());
-      },0);
+      if(typeof window.ensureWeekBar==='function') window.ensureWeekBar();
     }catch(e){}
 
     const active=activeChallenges();
@@ -5145,16 +5075,13 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     function chItem(ch){
       const done=isDoneToday(ch.id);
       const pts=parseInt(ch.points,10)||0;
-      // Always show a link: custom URL first, otherwise YouTube search
-      // Optional challenges (spazieren/fitness) skip the link
-      const customUrl=ch.url||ch.video||ch.youtube||ch.youtubeUrl||ch.link||'';
-      const ytSearch='https://www.youtube.com/results?search_query='+encodeURIComponent((ch.title||ch.name||'Sportübung')+' richtige Ausführung');
-      const url=ch._optional?'':(customUrl||ytSearch);
+      // Optional challenges (spazieren/fitness) never show a link
+      const url=ch._optional?'':(ch.url||ch.video||ch.youtube||ch.youtubeUrl||ch.link||'');
       return `<div class="challenge-item ${done?'challenge-done':''}">
         <div class="challenge-icon">${esc(ch.icon||'🏆')}</div>
         <div class="challenge-body">
           <div class="challenge-name">${esc(ch.title||ch.name||'Challenge')}</div>
-          ${ch.desc?`<div class="challenge-meta">${esc(ch.desc)}</div>`:''}
+          <div class="challenge-meta">${esc(ch.desc||'')}${ch.desc?' · ':''}${pts} Punkte</div>
           ${url?`<a class="challenge-meta" style="color:var(--acc);text-decoration:none;font-weight:600" href="${esc(url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Übung ansehen ↗</a>`:''}
         </div>
         <span class="points-pill">+${pts}</span>
@@ -5205,114 +5132,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     try{history.pushState({view:v},'','#/'+v);}catch(e){}
   }
 
-  /* ── CONSOLIDATED SETTINGS PANEL (Zahnrad ⚙) ── */
-  window.openCalendarSettings=function(){
-    const STATE_OPTIONS=window.calendarSettings&&typeof window.STATE_OPTIONS!=='undefined'
-      ?window.STATE_OPTIONS
-      :{ALL:'Alle Bundesländer',BW:'Baden-Württemberg',BY:'Bayern','BY-AUGSBURG':'Bayern · Augsburg',BE:'Berlin',BB:'Brandenburg',HB:'Bremen',HH:'Hamburg',HE:'Hessen',MV:'Mecklenburg-Vorpommern',NI:'Niedersachsen',NW:'Nordrhein-Westfalen',RP:'Rheinland-Pfalz',SL:'Saarland',SN:'Sachsen',ST:'Sachsen-Anhalt',SH:'Schleswig-Holstein',TH:'Thüringen'};
-    const cs=window.calendarSettings||{};
-    const curState=cs.state||'ALL';
-    const calOpts=window.changeCalendarViewOptions||{showHolidays:true,showChallengeDots:true,showWeekNumbers:false};
-    const hasGoogle=!!(window.accessToken&&window.accessToken!=='firebase-auth'&&!window.isDemoMode);
-    const liveOn=localStorage.getItem('change_live_sync_enabled')!=='false';
-
-    const stateSelect=Object.entries(STATE_OPTIONS)
-      .map(([k,v])=>`<option value="${k}" ${k===curState?'selected':''}>${esc(v)}</option>`)
-      .join('');
-
-    function tog(id,label,sub,checked){
-      return `<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">${label}</div>${sub?`<div class="toggle-sub">${sub}</div>`:''}</div><label class="switch"><input type="checkbox" id="${id}" ${checked?'checked':''}><span class="slider"></span></label></div>`;
-    }
-
-    const html=`
-      <div class="section-label" style="margin-top:0">Kalender</div>
-      <div class="fg"><label class="flabel">Bundesland für Feiertage</label>
-        <select class="finput" id="s-state">${stateSelect}</select>
-      </div>
-      ${tog('s-holidays','Feiertage anzeigen','',calOpts.showHolidays)}
-      ${tog('s-dots','Challenge-Punkte im Kalender','Kleine Punkte an Tagen mit erledigten Challenges',calOpts.showChallengeDots)}
-      ${tog('s-kw','Kalenderwochen anzeigen','KW-Nummern links in der Wochenzeile',calOpts.showWeekNumbers)}
-
-      <div class="section-label" style="margin-top:16px">Synchronisation</div>
-      ${tog('s-google','Google Kalender Sync','Termine aus Google Kalender laden und synchronisieren',hasGoogle)}
-      <button class="btn btn-secondary btn-full" id="s-google-sync-now" style="margin-top:6px;margin-bottom:4px">Jetzt synchronisieren</button>
-      ${tog('s-live','Live-Sync (Firebase)','Punkte und Mitspieler in Echtzeit aktualisieren',liveOn)}
-
-      <div class="section-label" style="margin-top:16px">Benachrichtigungen</div>
-      <div id="s-push-info" class="push-status" style="margin-bottom:8px"></div>
-      <button class="btn btn-secondary btn-full" id="s-push-enable">Push-Benachrichtigungen aktivieren</button>
-
-      <div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--b1)">
-        <button class="btn btn-primary btn-full" onclick="window._saveAllSettings()">Einstellungen speichern</button>
-      </div>`;
-
-    if(typeof openPanel==='function') openPanel('Einstellungen',html);
-
-    setTimeout(()=>{
-      // Google sync button
-      const syncNow=document.getElementById('s-google-sync-now');
-      if(syncNow) syncNow.onclick=()=>{
-        if(typeof window.loadGoogleEvents==='function') window.loadGoogleEvents();
-        if(typeof toast==='function') toast('Google Kalender wird synchronisiert…','');
-      };
-
-      // Google toggle
-      const gToggle=document.getElementById('s-google');
-      if(gToggle) gToggle.onchange=()=>{
-        if(gToggle.checked&&typeof window.loadGoogleEvents==='function'){
-          window.loadGoogleEvents();
-          if(typeof toast==='function') toast('Google Kalender wird geladen…','');
-        }
-      };
-
-      // Live sync toggle
-      const lToggle=document.getElementById('s-live');
-      if(lToggle) lToggle.onchange=()=>{
-        localStorage.setItem('change_live_sync_enabled', lToggle.checked?'true':'false');
-        if(lToggle.checked&&typeof window.initFirebaseLive==='function') window.initFirebaseLive();
-      };
-
-      // Push info
-      const pInfo=document.getElementById('s-push-info');
-      if(pInfo){
-        const p=Notification&&Notification.permission;
-        pInfo.textContent=p==='granted'?'✓ Push-Benachrichtigungen sind aktiv':p==='denied'?'✗ Im Browser blockiert — bitte in den Browser-Einstellungen erlauben':'Push noch nicht aktiviert';
-        pInfo.className='push-status '+(p==='granted'?'push-ok':p==='denied'?'push-err':'push-warn');
-      }
-      const pBtn=document.getElementById('s-push-enable');
-      if(pBtn){
-        if(Notification&&Notification.permission==='granted') pBtn.style.display='none';
-        else pBtn.onclick=()=>{
-          Notification&&Notification.requestPermission&&Notification.requestPermission().then(r=>{
-            if(pInfo) pInfo.textContent=r==='granted'?'✓ Aktiviert':'Nicht erlaubt';
-            if(typeof toast==='function') toast(r==='granted'?'Push aktiviert ✓':'Push nicht erlaubt','');
-          });
-        };
-      }
-    },80);
-
-    window._saveAllSettings=function(){
-      // Calendar state
-      const state=document.getElementById('s-state')?.value||'ALL';
-      if(!window.calendarSettings) window.calendarSettings={};
-      window.calendarSettings.state=state;
-      try{if(typeof ls==='function')ls('holiday_state',state);}catch(e){}
-      // View options
-      const opts={
-        showHolidays:!!document.getElementById('s-holidays')?.checked,
-        showChallengeDots:!!document.getElementById('s-dots')?.checked,
-        showWeekNumbers:!!document.getElementById('s-kw')?.checked
-      };
-      window.changeCalendarViewOptions=opts;
-      const KEY='change_calendar_options_v2';
-      localStorage.setItem(KEY,JSON.stringify(opts));
-      // Re-apply calendar styles
-      try{if(typeof window.applyCalendarOptions==='function')window.applyCalendarOptions();}catch(e){}
-      try{if(typeof window.renderCalendar==='function')window.renderCalendar();}catch(e){}
-      if(typeof closePanel==='function') closePanel();
-      if(typeof toast==='function') toast('Einstellungen gespeichert ✓','ok');
-    };
-  };
+  /* ── CALENDAR CHALLENGE DOTS: override to use myId() ──
      Ensures calendar dots and Punkte-Kalender use the same ID
      as completeChallenge. */
   function challengePointsForDate(dk){
