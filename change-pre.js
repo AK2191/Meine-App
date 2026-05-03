@@ -15,11 +15,11 @@
     squat:   'https://www.tk.de/techniker/magazin/sport/fitness/kniebeugen-2008836',
     pushup:  'https://www.aok.de/pk/magazin/sport/fitness/liegestuetze-richtig-ausfuehren/',
     plank:   'https://www.aok.de/pk/magazin/sport/fitness/plank-richtig-ausfuehren/',
-    lunge:   'https://www.aok.de/pk/magazin/sport/fitness/fitnessuebungen-fuer-zuhause/',
+    lunge:   'https://www.aok.de/pk/magazin/sport/fitness/fitnessuebungen-für-zuhause/',
     calf:    'https://www.tk.de/techniker/magazin/sport/fitness/krafttraining-zuhause-2008872',
     shoulder:'https://www.tk.de/techniker/magazin/sport/fitness/dehnen-2008902',
     balance: 'https://www.tk.de/techniker/magazin/sport/fitness/gleichgewicht-trainieren-2116034',
-    walk:    'https://www.aok.de/pk/magazin/sport/fitness/fitnessuebungen-fuer-zuhause/',
+    walk:    'https://www.aok.de/pk/magazin/sport/fitness/fitnessuebungen-für-zuhause/',
     stretch: 'https://www.tk.de/techniker/magazin/sport/fitness/dehnen-2008902'
   };
 
@@ -29,11 +29,11 @@
     {id:'sport_plank_25',    title:'25 Sekunden Plank',           points:9,  icon:'⏱️', desc:'Unterarmstütz mit stabilem Rumpf. 25 Sekunden halten.',                 url:TK.plank,    type:'Sport', active:true, recurrence:'daily'},
     {id:'sport_lunges_10',   title:'10 Ausfallschritte',          points:10, icon:'🚶', desc:'Je Seite 5 kontrollierte Ausfallschritte, Oberkörper aufrecht.',         url:TK.lunge,    type:'Sport', active:true, recurrence:'daily'},
     {id:'sport_calf_20',     title:'20 Wadenheben',               points:7,  icon:'🦵', desc:'Langsam hochdrücken und kontrolliert absenken.',                         url:TK.calf,     type:'Sport', active:true, recurrence:'daily'},
-    {id:'sport_pushups_6',   title:'6 leichte Liegestütze',       points:10, icon:'💪', desc:'Normal oder auf Knien. Saubere Bewegung zaehlt.',                        url:TK.pushup,   type:'Sport', active:true, recurrence:'daily'},
+    {id:'sport_pushups_6',   title:'6 leichte Liegestütze',       points:10, icon:'💪', desc:'Normal oder auf Knien. Saubere Bewegung zählt.',                        url:TK.pushup,   type:'Sport', active:true, recurrence:'daily'},
     {id:'sport_shoulder_60', title:'60 Sekunden Schulterkreisen', points:6,  icon:'🙆', desc:'Beide Schultern langsam nach hinten und vorne kreisen.',                 url:TK.shoulder, type:'Sport', active:true, recurrence:'daily'},
     {id:'sport_balance_30',  title:'30 Sekunden Balance',         points:7,  icon:'⚖️', desc:'15 Sekunden auf einem Bein, dann wechseln.',                            url:TK.balance,  type:'Sport', active:true, recurrence:'daily'},
-    {id:'sport_walk_3',      title:'3 Minuten gehen',             points:8,  icon:'🚶', desc:'Gehe 3 Minuten locker durch den Raum oder draussen.',                   url:TK.walk,     type:'Sport', active:true, recurrence:'daily'},
-    {id:'sport_stretch_60',  title:'60 Sekunden Dehnen',          points:8,  icon:'🧘', desc:'Dehne Schultern, Ruecken oder Beine fuer 60 Sekunden.',                  url:TK.stretch,  type:'Sport', active:true, recurrence:'daily'}
+    {id:'sport_walk_3',      title:'3 Minuten gehen',             points:8,  icon:'🚶', desc:'Gehe 3 Minuten locker durch den Raum oder draußen.',                   url:TK.walk,     type:'Sport', active:true, recurrence:'daily'},
+    {id:'sport_stretch_60',  title:'60 Sekunden Dehnen',          points:8,  icon:'🧘', desc:'Dehne Schultern, Rücken oder Beine für 60 Sekunden.',                  url:TK.stretch,  type:'Sport', active:true, recurrence:'daily'}
   ];
 
   const norm  = x => String(x||'').toLowerCase().trim();
@@ -154,7 +154,7 @@
       '<div class="challenge-week-actions">'+
         '<button class="btn btn-ghost btn-sm" id="cwp-prev">Letzte Woche</button>'+
         '<button class="btn btn-secondary btn-sm" id="cwp-today">Heute</button>'+
-        '<button class="btn btn-ghost btn-sm" id="cwp-next">Naechste Woche</button>'+
+        '<button class="btn btn-ghost btn-sm" id="cwp-next">Nächste Woche</button>'+
       '</div></div>'+
       '<div id="challenge-week-points-grid" class="challenge-week-grid"></div>';
     view.insertBefore(bar,layout);
@@ -171,7 +171,7 @@
     const title=document.querySelector('#challenge-week-points-card .challenge-week-title');
     const sub=document.querySelector('#challenge-week-points-card .challenge-week-sub');
     if(title)title.textContent='Punkte-Kalender - '+monthLabel(days);
-    if(sub)sub.textContent=(weekOffset===0?'Aktuelle Woche':weekOffset<0?'Letzte Woche':'Naechste Woche')+' - Challenge-Punkte';
+    if(sub)sub.textContent=(weekOffset===0?'Aktuelle Woche':weekOffset<0?'Letzte Woche':'Nächste Woche')+' - Challenge-Punkte';
     grid.innerHTML=days.map((d,i)=>{
       const k=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
       const pts=pointsForDate(k);

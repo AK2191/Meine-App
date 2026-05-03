@@ -5546,12 +5546,20 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     }catch(e){}
     renderDashboard();
   }
+  /* Sofort + nach Firebase-Load feuern — eliminiert die Race-Condition */
   myBuildDashboard.__eventFix = true;
   window.buildDashboard = myBuildDashboard;
   window.buildDashCards = myBuildDashboard;
 
-  /* Nach allen Timern sicherstellen dass dieser Fix gewinnt */
-  [200, 800, 2200, 6000].forEach(ms => setTimeout(() => {
+  // Sofortiger erster Aufruf (überschreibt STEP7's sofortige Zuweisung)
+  if (document.readyState !== 'loading') {
+    myBuildDashboard();
+  } else {
+    document.addEventListener('DOMContentLoaded', myBuildDashboard, {once: true});
+  }
+
+  // Erneut nach Firebase / Google-Kalender-Load
+  [300, 1500, 4000].forEach(ms => setTimeout(() => {
     window.buildDashboard = myBuildDashboard;
     window.buildDashCards = myBuildDashboard;
     if((window.currentMainView||'dashboard') === 'dashboard') myBuildDashboard();
