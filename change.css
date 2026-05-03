@@ -113,3 +113,68 @@
   .challenge-week-actions{display:grid;grid-template-columns:1fr;gap:6px}
   .challenge-week-day{min-height:52px}
 }
+
+/* ── 5. Mobile Challenge-Layout Fix ────────────────────── */
+/* Verhindert Überlappung von Kontest und Challenge-Liste auf kleinen Screens */
+@media(max-width:700px){
+  /* Challenges-View scrollt als Ganzes, kein overflow:hidden */
+  #challenges-view{
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    flex-direction:column!important;
+    padding-bottom:80px!important;
+  }
+  /* Layout stapelt vertikal, kein Grid-Overflow */
+  .challenge-layout{
+    display:flex!important;
+    flex-direction:column!important;
+    grid-template-columns:none!important;
+    overflow:visible!important;
+    overflow-y:visible!important;
+    height:auto!important;
+    gap:12px!important;
+    padding-bottom:16px!important;
+  }
+  /* Karten haben keine feste max-height — scrollen mit dem Inhalt */
+  .challenge-card,.leader-card{
+    max-height:none!important;
+    overflow:visible!important;
+    flex-shrink:0!important;
+  }
+  /* Listen scrollen intern nicht — Seite scrollt als Ganzes */
+  #challenges-list,#leaderboard-list{
+    max-height:none!important;
+    overflow:visible!important;
+  }
+  /* Wochenbalken volle Breite */
+  #challenge-week-points-card{
+    margin:12px 10px 0!important;
+  }
+  .challenge-week-grid{
+    grid-template-columns:repeat(7,1fr)!important;
+    gap:4px!important;
+    padding:10px 8px!important;
+    overflow-x:auto!important;
+  }
+  .challenge-week-day{
+    min-height:58px!important;
+    padding:6px 4px!important;
+  }
+  .challenge-week-day-name{font-size:9px!important}
+  .challenge-week-day-date{font-size:11px!important}
+  /* Challenge-Items: Button bleibt immer sichtbar */
+  .challenge-item{
+    flex-wrap:wrap!important;
+    padding:10px 12px!important;
+    gap:8px!important;
+    align-items:flex-start!important;
+  }
+  .challenge-item .btn.btn-sm{
+    width:100%!important;
+    justify-content:center!important;
+    margin-top:4px!important;
+  }
+  .challenge-item .points-pill{
+    margin-left:auto!important;
+  }
+}
