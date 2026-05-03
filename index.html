@@ -741,11 +741,8 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           <div class="notif-dot" id="notif-dot"></div>
         </button>
-        <button class="icon-btn" onclick="openCalendarSettings()" title="Kalender-Einstellungen">
+        <button class="icon-btn" onclick="openSettingsPanel()" title="Einstellungen">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.33 1.82V22a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1.82-.33H2a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-.6 1.65 1.65 0 0 0 .33-1.82V2a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.12.69.31 1 .6.31.29.51.64.6 1H22a2 2 0 1 1 0 4h-.09c-.37.09-.72.29-1 .6-.29.31-.48.64-.51 1z"/></svg>
-        </button>
-        <button class="icon-btn" onclick="openPushSettingsPanel()" title="Push & Live-Sync">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v4"/><path d="M12 18v4"/><path d="m4.93 4.93 2.83 2.83"/><path d="m16.24 16.24 2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="m4.93 19.07 2.83-2.83"/><path d="m16.24 7.76 2.83-2.83"/></svg>
         </button>
         <div class="avatar" id="user-avatar" onclick="confirmLogout()" title="Abmelden">
           <span id="avatar-initials">?</span>
@@ -3824,6 +3821,269 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
   };
 })();
 </script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     CHANGE · UNIFIED SETTINGS PANEL
+     Alle Einstellungen in einem einzigen ⚙-Icon.
+     Ersetzt openCalendarSettings() + openPushSettingsPanel() vollständig.
+═══════════════════════════════════════════════════════════════ -->
+<style id="unified-settings-style">
+  /* Tab-Navigation im Panel */
+  .settings-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 14px 18px 0;
+    border-bottom: 1px solid var(--b1);
+    background: var(--s1);
+    flex-shrink: 0;
+  }
+  .settings-tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: none;
+    border-radius: var(--rsm) var(--rsm) 0 0;
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--t3);
+    background: transparent;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color .15s;
+  }
+  .settings-tab:hover { color: var(--t1); }
+  .settings-tab.active { color: var(--acc); border-bottom-color: var(--acc); }
+  .settings-tab svg { width: 14px; height: 14px; stroke-width: 2; }
+  .settings-pane { display: none; }
+  .settings-pane.active { display: block; }
+  /* Sektion-Trennlinie */
+  .settings-section-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--t4);
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    padding: 12px 0 6px;
+  }
+</style>
+
+<script id="change-unified-settings">
+(function () {
+  'use strict';
+
+  /* ── Hilfsfunktionen ── */
+  function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function ls(k, v) {
+    if (v === undefined) { try { return JSON.parse(localStorage.getItem('change_v1_' + k)); } catch(e) { return null; } }
+    try { localStorage.setItem('change_v1_' + k, JSON.stringify(v)); } catch(e) {}
+  }
+  function readOpt() {
+    const def = { showHolidays: true, showChallengeDots: true, showWeekNumbers: true };
+    ['change_v1_calendar_view_options', 'calendar_settings'].forEach(k => {
+      try { Object.assign(def, JSON.parse(localStorage.getItem(k) || '{}')); } catch(e) {}
+    });
+    return def;
+  }
+  function saveOpt(o) {
+    localStorage.setItem('change_v1_calendar_view_options', JSON.stringify(o));
+    localStorage.setItem('calendar_settings', JSON.stringify(o));
+  }
+  function tog(id) { return document.getElementById(id); }
+
+  /* ── Einheitliches Panel öffnen ── */
+  window.openSettingsPanel = function (startTab) {
+    startTab = startTab || 'calendar';
+
+    /* ── Kalender-Abschnitt ── */
+    const o = readOpt();
+    const STATES = window.STATE_OPTIONS || (typeof STATE_OPTIONS !== 'undefined' ? STATE_OPTIONS : {
+      ALL: 'Alle Bundesländer', BW: 'Baden-Württemberg', BY: 'Bayern', 'BY-AUGSBURG': 'Bayern · Augsburg',
+      BE: 'Berlin', BB: 'Brandenburg', HB: 'Bremen', HH: 'Hamburg', HE: 'Hessen',
+      MV: 'Mecklenburg-Vorpommern', NI: 'Niedersachsen', NW: 'Nordrhein-Westfalen',
+      RP: 'Rheinland-Pfalz', SL: 'Saarland', SN: 'Sachsen', ST: 'Sachsen-Anhalt',
+      SH: 'Schleswig-Holstein', TH: 'Thüringen'
+    });
+    const currentState = (window.calendarSettings && window.calendarSettings.state)
+      || localStorage.getItem('change_v1_holiday_state')
+      || localStorage.getItem('holiday_state') || 'ALL';
+    const stateOptions = Object.entries(STATES)
+      .map(([k, v]) => `<option value="${esc(k)}" ${k === currentState ? 'selected' : ''}>${esc(v)}</option>`)
+      .join('');
+
+    const switchRow = (title, sub, id, checked) => `
+      <div class="toggle-row">
+        <div class="toggle-copy">
+          <div class="toggle-title">${title}</div>
+          ${sub ? `<div class="toggle-sub">${sub}</div>` : ''}
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="${id}" ${checked ? 'checked' : ''}>
+          <span class="slider"></span>
+        </label>
+      </div>`;
+
+    const calPane = `
+      <div class="fg" style="margin-bottom:14px">
+        <label class="flabel">Bundesland für Feiertage</label>
+        <select class="finput" id="us-holiday-state">${stateOptions}</select>
+        <div class="settings-hint">Wähle „Bayern · Augsburg" für lokale Feiertage.</div>
+      </div>
+      ${switchRow('Feiertage anzeigen', 'Direkt neben der Tageszahl.', 'us-toggle-holidays', o.showHolidays)}
+      ${switchRow('Challenge-Punkte anzeigen', 'Klein rechts unten im Tag.', 'us-toggle-dots', o.showChallengeDots)}
+      ${switchRow('Kalenderwochen anzeigen', 'Links unten pro Woche.', 'us-toggle-kw', o.showWeekNumbers)}
+      <button class="btn btn-primary btn-full" style="margin-top:18px" onclick="window._saveCalSettings()">Speichern</button>
+    `;
+
+    /* ── Push & Sync-Abschnitt ── */
+    const hasCfg = !!(window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey &&
+      !String(window.FIREBASE_CONFIG.apiKey).includes('HIER_') && window.FIREBASE_CONFIG.projectId);
+    const perm = (typeof Notification !== 'undefined') ? Notification.permission : 'nicht unterstützt';
+    const token = ls('fcm_token');
+    const pushEnabled = !!token && ls('push_enabled') !== false && perm === 'granted';
+    const liveEnabled = ls('live_sync_enabled') !== false;
+    const autoEnabled = ls('auto_challenges_enabled') !== false;
+    const online = liveEnabled ? (window.challengePlayers || []).filter(p => p.online).length : 0;
+    const installStatus = (typeof isStandaloneApp === 'function' && isStandaloneApp())
+      ? 'Installiert' : (typeof deferredInstallPrompt !== 'undefined' && deferredInstallPrompt ? 'Bereit' : 'Manuell');
+    const permCls = perm === 'granted' ? 'push-ok' : perm === 'denied' ? 'push-err' : 'push-warn';
+
+    const syncPane = `
+      <div class="push-box" style="margin-bottom:14px">
+        <div class="challenge-title" style="margin-bottom:8px">Status</div>
+        <div class="push-status ${hasCfg ? 'push-ok' : 'push-warn'}">${hasCfg ? 'Firebase-Konfiguration gefunden.' : 'Firebase nicht konfiguriert – firebase-config.js ausfüllen.'}</div>
+        <div class="push-status ${permCls}">Benachrichtigungsstatus: <strong>${esc(perm)}</strong></div>
+        <div class="push-status">Push-Token: <strong>${token ? 'vorhanden' : 'noch nicht erstellt'}</strong></div>
+        <div class="push-status">App-Installation: <strong>${esc(installStatus)}</strong></div>
+        <div class="push-status">Live-Mitspieler: <strong>${liveEnabled ? 'verbunden · ' + online + ' online' : 'deaktiviert'}</strong></div>
+      </div>
+      ${switchRow(
+        'Push-Benachrichtigungen <span class="status-pill ' + (pushEnabled ? 'status-on' : 'status-off') + '">' + (pushEnabled ? 'AKTIV' : 'INAKTIV') + '</span>',
+        'Benachrichtigt dich über offene Challenges.',
+        'us-toggle-push', pushEnabled
+      )}
+      ${switchRow(
+        'Live-Mitspieler <span class="status-pill ' + (liveEnabled ? 'status-on' : 'status-off') + '">' + (liveEnabled ? 'VERBUNDEN' : 'DEAKTIVIERT') + '</span>',
+        'Synchronisiert Kontest-Teilnehmer und erledigte Übungen live über Firebase.',
+        'us-toggle-live', liveEnabled
+      )}
+      ${switchRow(
+        'Tägliche Auto-Challenges <span class="status-pill ' + (autoEnabled ? 'status-on' : 'status-off') + '">' + (autoEnabled ? 'AKTIV' : 'INAKTIV') + '</span>',
+        'Erzeugt jeden Tag kleine Sportübungen.',
+        'us-toggle-auto', autoEnabled
+      )}
+      <button class="btn btn-secondary btn-full" style="margin-top:16px" onclick="if(typeof installChangeApp==='function')installChangeApp()">
+        Change als App installieren
+      </button>
+      <div class="settings-hint" style="margin-top:8px">Android: Push in Chrome/als PWA. iPhone: Change zum Home-Bildschirm hinzufügen und von dort starten.</div>
+    `;
+
+    /* ── Panel-HTML zusammenbauen ── */
+    const panelHtml = `
+      <div style="display:flex;gap:4px;padding:0 0 14px;border-bottom:1px solid var(--b1);margin-bottom:16px">
+        <button class="settings-tab ${startTab === 'calendar' ? 'active' : ''}" id="us-tab-calendar" onclick="window._switchSettingsTab('calendar')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Kalender
+        </button>
+        <button class="settings-tab ${startTab === 'sync' ? 'active' : ''}" id="us-tab-sync" onclick="window._switchSettingsTab('sync')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v4"/><path d="M12 18v4"/><path d="m4.93 4.93 2.83 2.83"/><path d="m16.24 16.24 2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="m4.93 19.07 2.83-2.83"/><path d="m16.24 7.76 2.83-2.83"/></svg>
+          Push & Sync
+        </button>
+      </div>
+      <div id="us-pane-calendar" class="settings-pane ${startTab === 'calendar' ? 'active' : ''}">${calPane}</div>
+      <div id="us-pane-sync" class="settings-pane ${startTab === 'sync' ? 'active' : ''}">${syncPane}</div>
+    `;
+
+    if (typeof openPanel === 'function') openPanel('Einstellungen', panelHtml);
+
+    /* Toggle-Listener nach Render */
+    setTimeout(() => {
+      const pushToggle = document.getElementById('us-toggle-push');
+      if (pushToggle) pushToggle.addEventListener('change', e => {
+        if (typeof setPushNotificationsEnabled === 'function') setPushNotificationsEnabled(e.target.checked);
+        else if (e.target.checked && typeof enablePushNotifications === 'function') enablePushNotifications();
+        else if (!e.target.checked && typeof disablePushNotifications === 'function') disablePushNotifications();
+        setTimeout(() => window.openSettingsPanel('sync'), 800);
+      });
+      const liveToggle = document.getElementById('us-toggle-live');
+      if (liveToggle) liveToggle.addEventListener('change', e => {
+        if (typeof setLiveSyncEnabled === 'function') setLiveSyncEnabled(e.target.checked);
+        setTimeout(() => window.openSettingsPanel('sync'), 800);
+      });
+      const autoToggle = document.getElementById('us-toggle-auto');
+      if (autoToggle) autoToggle.addEventListener('change', e => {
+        if (typeof setAutoChallengesEnabled === 'function') setAutoChallengesEnabled(e.target.checked);
+        setTimeout(() => window.openSettingsPanel('sync'), 400);
+      });
+    }, 80);
+  };
+
+  /* Tab-Umschalter */
+  window._switchSettingsTab = function (tab) {
+    ['calendar', 'sync'].forEach(t => {
+      const btn = document.getElementById('us-tab-' + t);
+      const pane = document.getElementById('us-pane-' + t);
+      if (btn) btn.classList.toggle('active', t === tab);
+      if (pane) pane.classList.toggle('active', t === tab);
+    });
+  };
+
+  /* Kalender speichern (aus dem Panel heraus) */
+  window._saveCalSettings = function () {
+    const o = {
+      showHolidays: !!(document.getElementById('us-toggle-holidays') || {}).checked,
+      showChallengeDots: !!(document.getElementById('us-toggle-dots') || {}).checked,
+      showWeekNumbers: !!(document.getElementById('us-toggle-kw') || {}).checked
+    };
+    // Prüfe ob Checkboxen wirklich im DOM sind
+    const h = document.getElementById('us-toggle-holidays');
+    const d = document.getElementById('us-toggle-dots');
+    const k = document.getElementById('us-toggle-kw');
+    if (h) o.showHolidays = h.checked;
+    if (d) o.showChallengeDots = d.checked;
+    if (k) o.showWeekNumbers = k.checked;
+    saveOpt(o);
+
+    const stateEl = document.getElementById('us-holiday-state');
+    if (stateEl) {
+      const state = stateEl.value || 'ALL';
+      localStorage.setItem('change_v1_holiday_state', state);
+      localStorage.setItem('holiday_state', state);
+      if (!window.calendarSettings) window.calendarSettings = {};
+      window.calendarSettings.state = state;
+    }
+
+    if (typeof closePanel === 'function') closePanel();
+    if (typeof renderCalendar === 'function') renderCalendar();
+    if (typeof toast === 'function') toast('Einstellungen gespeichert ✓', 'ok');
+  };
+
+  /* Redirect: alte Aufrufe leiten auf das neue Panel weiter */
+  window.openCalendarSettings = () => window.openSettingsPanel('calendar');
+  window.openPushSettingsPanel = () => window.openSettingsPanel('sync');
+
+  /* Toolbar-Fix: Buttons, die noch auf die alten Funktionen zeigen */
+  function fixToolbarClicks() {
+    document.querySelectorAll('[onclick="openCalendarSettings()"]').forEach(el =>
+      el.setAttribute('onclick', "openSettingsPanel('calendar')")
+    );
+    document.querySelectorAll('[onclick="openPushSettingsPanel()"]').forEach(el =>
+      el.setAttribute('onclick', "openSettingsPanel('sync')")
+    );
+    document.querySelectorAll('[title="Kalender-Einstellungen"],[title="Push & Live-Sync"]').forEach(el =>
+      el.setAttribute('title', 'Einstellungen')
+    );
+  }
+  document.addEventListener('DOMContentLoaded', () => { fixToolbarClicks(); });
+  window.addEventListener('load', () => { fixToolbarClicks(); });
+  setTimeout(fixToolbarClicks, 500);
+  setTimeout(fixToolbarClicks, 2000);
+
+})();
+</script>
+
 </body>
 </html>
 
