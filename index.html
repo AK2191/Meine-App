@@ -1656,8 +1656,19 @@ function checkNotifications(){
   });
   notifications.sort((a,b)=>a.diff-b.diff);
   const hasCrit=notifications.some(function(n){ return n.urgency==='crit'||n.urgency==='warn'; });
+  // Auch bei offenen Challenges Dot zeigen
+  var hasOpenChallenges=false;
+  try{
+    var _td=(typeof dateKey==='function')?dateKey(new Date()):new Date().toISOString().slice(0,10);
+    var _ui2=(typeof userInfo!=='undefined'?userInfo:window.userInfo)||{};
+    var _me2=String(_ui2.email||'').toLowerCase();
+    var _done2=new Set((window.challengeCompletions||[])
+      .filter(function(c){return String(c.date||'').slice(0,10)===_td&&(!_me2||String(c.playerId||c.email||c.userEmail||'').toLowerCase()===_me2);})
+      .map(function(c){return c.challengeId;}));
+    hasOpenChallenges=(window.challenges||[]).some(function(c){return c&&c.active!==false&&!c.optional&&(!c.date||c.date===_td||c.recurrence==='daily')&&!_done2.has(c.id);});
+  }catch(_){}
   const dot=document.getElementById('notif-dot');
-  if(dot) dot.style.display=(hasCrit&&notifications.length>0)?'block':'none';
+  if(dot) dot.style.display=(hasCrit||hasOpenChallenges)?'block':'none';
 }
 
 function fireNotification(ev,daysLeft){
@@ -4931,16 +4942,26 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     try{if(typeof toast==='function')toast(removed.length?'Zurückgesetzt':'Nichts zurückzusetzen','');}catch(e){}
   };
 
+  window._execResetToday=function(){
+    try{
+      const me2=myId(), td2=todayStr();
+      window.challengeCompletions=(window.challengeCompletions||[]).filter(c=>
+        !(String(c.date||'').slice(0,10)===td2&&String(c.playerId||c.email||c.userEmail||'').toLowerCase()===me2));
+      if(typeof ls==='function') ls('challenge_completions',window.challengeCompletions);
+      if(typeof renderChallenges==='function') renderChallenges();
+      if(typeof window.buildDashboard==='function') window.buildDashboard();
+      if(typeof renderWeekBar==='function') renderWeekBar();
+      if(typeof closePanel==='function') closePanel();
+      if(typeof toast==='function') toast('Heute zurückgesetzt ✓','ok');
+    }catch(err){console.warn('Reset:',err);}
+  };
   window.resetTodayChallenges=function(){
-    if(!confirm('Alle heutigen Erledigungen zurücksetzen?'))return;
-    const me=myId(), td=todayStr();
-    window.challengeCompletions=(window.challengeCompletions||[]).filter(c=>
-      !(String(c.date||'').slice(0,10)===td&&String(c.playerId||c.email||c.userEmail||'').toLowerCase()===me)
-    );
-    try{if(typeof ls==='function')ls('challenge_completions',window.challengeCompletions);}catch(e){}
-    try{renderChallenges();}catch(e){}
-    try{buildDashboard();}catch(e){}
-    try{if(typeof toast==='function')toast('Heute zurückgesetzt','');}catch(e){}
+    if(typeof openPanel==='function'){
+      openPanel('Heute zurücksetzen',
+        '<div class="push-box" style="margin-bottom:16px"><div class="push-status">Alle deine heutigen Erledigungen werden gelöscht und die Punkte abgezogen.</div></div>'+
+        '<button class="btn btn-danger btn-full" onclick="window._execResetToday()">Zurücksetzen</button>'+
+        '<button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="closePanel()">Abbrechen</button>');
+    }
   };
 
   /* ── PLAYER STATS ── */
@@ -5418,7 +5439,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   function evEndK(e)  { return String(e.endDate||e.date||evStartK(e)||'').slice(0,10); }
   function evTitle(e) { return String(e.title||e.summary||e.name||'Termin').replace(/\bZeitraum\b\s*:?/gi,'').replace(/\s{2,}/g,' ').trim(); }
   function evTime(e)  { if(e.allDay || (!e.time && !e.endTime)) return ''; return e.time ? (e.endTime && e.endTime!==e.time ? e.time+' – '+e.endTime+' Uhr' : e.time+' Uhr') : ''; }
-  function fmtShort(k){ try{ return new Date(k+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+'.'; }catch(e){ return k; } }
+  function fmtShort(k){ try{ const _s=new Date(k+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}); return _s.endsWith('.')?_s.slice(0,-1):_s; }catch(e){ return k; } }
   function diffDays(k){ return Math.round((new Date(k+'T12:00:00') - new Date(todayKey()+'T12:00:00'))/86400000); }
 
   /* Feiertage für nächste 90 Tage */
@@ -5573,7 +5594,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
         <div class="dash-card-body">${calCardBody}</div>
       </div>
       <div class="dash-card">
-        <div class="dash-card-head"><div><div class="dash-card-title">🏆 Challenges &amp; Mitspieler</div><div class="dash-card-sub">Heute &amp; Rangliste</div></div></div>
+        <div class="dash-card-head"><div><div class="dash-card-title">🏆 Challenges &amp; Mitspieler</div></div></div>
         <div class="dash-card-body">
           <div class="dash-section-label">Heute offen</div>${chHtml}
           <div class="dash-section-label" style="border-top:1px solid var(--b1)">Rangliste</div>${plHtml}
@@ -5659,41 +5680,126 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   /* ─── GLOCKE: nur Terminhinweise ────────────────────── */
   window.openNotifPanel=function(){
     try{if(typeof checkNotifications==='function')checkNotifications();}catch(e){}
-    const notes=(window.notifications||[]).slice(0,12);
-    const icons={deadline:'⚠️',meeting:'📅',reminder:'🔔',other:'📌'};
-    const bgs={crit:'var(--red-d)',warn:'var(--amb-d)',ok:'var(--s2)'};
-    let html='';
-    if(!notes.length){
-      html='<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><div class="empty-title">Alles im Griff</div><div class="empty-sub">Keine dringenden Termine</div></div>';
-    }else{
-      const crit=notes.filter(n=>n.urgency==='crit'),warn=notes.filter(n=>n.urgency==='warn'),ok=notes.filter(n=>n.urgency==='ok');
-      const mkI=n=>{const lbl=n.diff<0?'Überfällig':n.diff===0?'Heute':n.diff===1?'Morgen':`In ${n.diff}T`,bcls=n.urgency==='crit'?'ub-crit':n.urgency==='warn'?'ub-warn':'ub-ok';return `<div class="nitem" onclick="setMainView('calendar');setTimeout(()=>openEventPanel('${n.id}'),200);closePanel()"><div class="nitem-icon" style="background:${bgs[n.urgency]}">${icons[n.type]||'📅'}</div><div class="nitem-body"><div class="nitem-title">${esc(n.title||'')}</div><div class="nitem-sub">${n.date||''}</div></div><span class="nitem-badge urgency-badge ${bcls}">${lbl}</span></div>`;};
-      if(crit.length)html+=`<div class="panel-notif-section"><div class="pns-title" style="color:var(--red)">⚡ Dringend</div>${crit.map(mkI).join('')}</div>`;
-      if(warn.length)html+=`<div class="panel-notif-section"><div class="pns-title" style="color:var(--amb)">⚠ Diese Woche</div>${warn.map(mkI).join('')}</div>`;
-      if(ok.length)  html+=`<div class="panel-notif-section"><div class="pns-title">Demnächst</div>${ok.map(mkI).join('')}</div>`;
+    var esc2=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
+
+    /* Offene Challenges heute */
+    var chHtml='';
+    try{
+      var _today=(typeof dateKey==='function')?dateKey(new Date()):new Date().toISOString().slice(0,10);
+      var _ui=(typeof userInfo!=='undefined'?userInfo:window.userInfo)||{};
+      var _me=String(_ui.email||'').toLowerCase();
+      var _doneIds=new Set((window.challengeCompletions||[])
+        .filter(function(c){return String(c.date||'').slice(0,10)===_today&&(!_me||String(c.playerId||c.email||c.userEmail||'').toLowerCase()===_me);})
+        .map(function(c){return c.challengeId;}));
+      var _allCh=(window.challenges||[]).filter(function(c){return c&&c.active!==false&&!c.optional&&(!c.date||c.date===_today||c.recurrence==='daily');});
+      var _open=_allCh.filter(function(c){return !_doneIds.has(c.id);});
+      var _done=_allCh.filter(function(c){return _doneIds.has(c.id);});
+      if(_open.length){
+        chHtml+='<div class="panel-notif-section"><div class="pns-title" style="color:var(--acc)">🏆 Challenges heute ('+_open.length+' offen)</div>';
+        chHtml+=_open.slice(0,4).map(function(c){return '<div class="nitem" onclick="setMainView(\'challenges\');closePanel()">'
+          +'<div class="nitem-icon" style="background:var(--acc-d)">'+esc2(c.icon||'🏃')+'</div>'
+          +'<div class="nitem-body"><div class="nitem-title">'+esc2(c.title||'Challenge')+'</div>'
+          +'<div class="nitem-sub">'+(parseInt(c.points)||0)+' Punkte</div></div>'
+          +'<span class="nitem-badge" style="background:var(--amb-d);color:var(--amb);font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px">offen</span>'
+          +'</div>';}).join('');
+        if(_open.length>4) chHtml+='<div style="font-size:12px;color:var(--t4);padding:4px 0">+'+(_open.length-4)+' weitere</div>';
+        chHtml+='</div>';
+      }
+      if(_done.length){
+        chHtml+='<div class="panel-notif-section"><div class="pns-title" style="color:#22c55e">✅ Heute erledigt ('+_done.length+')</div>';
+        chHtml+=_done.slice(0,3).map(function(c){return '<div class="nitem">'
+          +'<div class="nitem-icon" style="background:#dcfce7">'+esc2(c.icon||'✅')+'</div>'
+          +'<div class="nitem-body"><div class="nitem-title" style="color:var(--t3);text-decoration:line-through">'+esc2(c.title||'Challenge')+'</div>'
+          +'<div class="nitem-sub">+'+( parseInt(c.points)||0)+' Punkte</div></div>'
+          +'<span class="nitem-badge" style="background:#dcfce7;color:#16a34a;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px">✓</span>'
+          +'</div>';}).join('');
+        chHtml+='</div>';
+      }
+    }catch(_){}
+
+    /* Kalender-Ereignisse */
+    var notes=(window.notifications||[]).slice(0,8);
+    var icons={deadline:'⚠️',meeting:'📅',reminder:'🔔',other:'📌'};
+    var bgs={crit:'var(--red-d)',warn:'var(--amb-d)',ok:'var(--s2)'};
+    var calHtml='';
+    if(notes.length){
+      var crit=notes.filter(function(n){return n.urgency==='crit';}),
+          warn=notes.filter(function(n){return n.urgency==='warn';}),
+          ok=notes.filter(function(n){return n.urgency==='ok';});
+      var mkI=function(n){
+        var lbl=n.diff<0?'Überfällig':n.diff===0?'Heute':n.diff===1?'Morgen':'In '+n.diff+'T';
+        var bcls=n.urgency==='crit'?'ub-crit':n.urgency==='warn'?'ub-warn':'ub-ok';
+        return '<div class="nitem" onclick="setMainView(\'calendar\');setTimeout(function(){openEventPanel(\''+n.id+'\');},200);closePanel()">'
+          +'<div class="nitem-icon" style="background:'+bgs[n.urgency]+'">'+(icons[n.type]||'📅')+'</div>'
+          +'<div class="nitem-body"><div class="nitem-title">'+esc2(n.title||'')+'</div>'
+          +'<div class="nitem-sub">'+(n.date||'')+'</div></div>'
+          +'<span class="nitem-badge urgency-badge '+bcls+'">'+lbl+'</span></div>';
+      };
+      if(crit.length) calHtml+='<div class="panel-notif-section"><div class="pns-title" style="color:var(--red)">⚡ Dringende Termine</div>'+crit.map(mkI).join('')+'</div>';
+      if(warn.length) calHtml+='<div class="panel-notif-section"><div class="pns-title" style="color:var(--amb)">📅 Diese Woche</div>'+warn.map(mkI).join('')+'</div>';
+      if(ok.length)   calHtml+='<div class="panel-notif-section"><div class="pns-title">Demnächst</div>'+ok.map(mkI).join('')+'</div>';
     }
-    if(typeof openPanel==='function') openPanel(notes.length?notes.length+' Hinweis'+(notes.length!==1?'e':''):'Benachrichtigungen',html);
-    const dot=$('notif-dot');if(dot)dot.style.display='none';
+
+    var html=chHtml+calHtml;
+    if(!html) html='<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><div class="empty-title">Alles erledigt ✓</div><div class="empty-sub">Keine offenen Challenges und keine Termine</div></div>';
+
+    var title=notes.length&&chHtml?'Challenges & Termine':chHtml?'Challenges':'Benachrichtigungen';
+    if(typeof openPanel==='function') openPanel(title, html);
+    var dot=$('notif-dot');if(dot)dot.style.display='none';
   };
 
   /* ─── GOOGLE ─────────────────────────────────────────── */
-  function isGoogleLoggedIn(){return !!(window.accessToken&&window.accessToken!=='firebase-auth'&&String(window.accessToken).length>10);}
+  function isGoogleLoggedIn(){
+    // accessToken is 'firebase-auth' when logged in via Firebase Google Sign-In
+    var at=window.accessToken||(typeof accessToken!=='undefined'?accessToken:'');
+    if(at&&at.length>0&&at!=='undefined') return true;
+    // userInfo is a global 'let' — check both window and direct
+    var ui=window.userInfo||(typeof userInfo!=='undefined'?userInfo:{});
+    return !!(ui&&ui.email&&!String(ui.email).includes('demo')&&!String(ui.email).includes('example'));
+  }
+  function canSyncGoogleCalendar(){
+    var at=window.accessToken||(typeof accessToken!=='undefined'?accessToken:'');
+    return !!(at&&at!=='firebase-auth'&&at.length>10&&at!=='undefined');
+  }
   function isGoogleSyncEnabled(){const v=localStorage.getItem('change_v1_google_calendar_sync');return v===null?true:v!=='false';}
   function setGoogleSyncEnabled(on){localStorage.setItem('change_v1_google_calendar_sync',on?'true':'false');window.googleCalendarSyncEnabled=on;}
 
   window.triggerGoogleCalendarSync=async function(){
     if(!isGoogleLoggedIn()){if(typeof toast==='function')toast('Bitte zuerst mit Google anmelden','err');return;}
-    try{if(typeof toast==='function')toast('Wird synchronisiert…','');if(typeof loadGoogleEvents==='function')await loadGoogleEvents();if(typeof renderCalendar==='function')renderCalendar();if(typeof buildDashboard==='function')buildDashboard();if(typeof toast==='function')toast('Google Kalender synchronisiert ✓','ok');}
-    catch(e){if(typeof toast==='function')toast('Sync fehlgeschlagen','err');}
+    try{
+      if(typeof toast==='function')toast('Wird synchronisiert…','');
+      if(typeof loadGoogleData==='function') await loadGoogleData();
+      else if(typeof loadGoogleEvents==='function') await loadGoogleEvents();
+      if(typeof renderCalendar==='function') renderCalendar();
+      if(typeof window.buildDashboard==='function') window.buildDashboard();
+      if(typeof toast==='function')toast('Google Kalender synchronisiert ✓','ok');
+    }catch(e){if(typeof toast==='function')toast('Sync fehlgeschlagen: '+(e.message||e),'err');}
   };
+  /* Kalender sofort nach dem Laden von Google-Events neu rendern */
+  (function(){
+    const _origLoadGD=window.loadGoogleData;
+    if(typeof _origLoadGD==='function'){
+      window.loadGoogleData=async function(){
+        const r=await _origLoadGD.apply(this,arguments);
+        setTimeout(()=>{
+          if(typeof renderCalendar==='function') renderCalendar();
+          if(typeof window.buildDashboard==='function') window.buildDashboard();
+        },200);
+        return r;
+      };
+    }
+  })();
 
   /* ─── AVATAR RING (Google-Status) ───────────────────── */
   function updateAvatarDot(){
     const av=$('user-avatar'); if(!av)return;
-    const loggedIn=isGoogleLoggedIn()||!!(window.currentUser||(window.userInfo&&window.userInfo.email));
+    const at=window.accessToken||(typeof accessToken!=='undefined'?accessToken:'');
+    const ui=window.userInfo||(typeof userInfo!=='undefined'?userInfo:{});
+    const loggedIn=!!(at&&at.length>0&&at!=='undefined')||
+                   !!(ui&&ui.email&&!String(ui.email).includes('demo')&&!String(ui.email).includes('example'));
     av.classList.toggle('google-on', loggedIn);
     av.classList.toggle('google-off',!loggedIn);
-    av.title=loggedIn?'Angemeldet – Abmelden':'Nicht mit Google angemeldet';
+    av.title=loggedIn?'Angemeldet · Klicken zum Abmelden':'Nicht angemeldet';
   }
   window.addEventListener('online',updateAvatarDot);
   window.addEventListener('offline',updateAvatarDot);
@@ -5726,6 +5832,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     const liveOn=lsRead('live_sync_enabled')!==false;
     const autoOn=lsRead('auto_challenges_enabled')!==false;
     const gIn=isGoogleLoggedIn();
+    const gSync=typeof canSyncGoogleCalendar==='function'?canSyncGoogleCalendar():gIn;
     const gOn=isGoogleSyncEnabled()&&gIn;
     const online=liveOn?(window.challengePlayers||[]).filter(p=>p.online).length:0;
     const permCls=perm==='granted'?'push-ok':perm==='denied'?'push-err':'push-warn';
@@ -5753,9 +5860,9 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
           <div class="toggle-sub">${gIn?'Termine aus Google Kalender werden angezeigt.':'Noch nicht angemeldet – bitte über den Google-Login verbinden.'}</div>
           <div class="settings-hint" style="color:${gIn?'#22c55e':'#ef4444'};font-weight:600;margin-top:4px">${gIn?'● Verbunden':'● Nicht angemeldet'}</div>
         </div>
-        <label class="switch"><input type="checkbox" id="us-toggle-gsync" ${gOn?'checked':''} ${!gIn?'disabled':''}><span class="slider"></span></label>
+        <label class="switch"><input type="checkbox" id="us-toggle-gsync" ${gOn?'checked':''} ${!gSync?'disabled':''}><span class="slider"></span></label>
       </div>
-      <button class="btn btn-secondary btn-full" style="margin:-6px 0 14px;font-size:12px" ${gIn?'':'disabled'} onclick="window.triggerGoogleCalendarSync()">
+      <button class="btn btn-secondary btn-full" style="margin:-6px 0 14px;font-size:12px" ${gSync?'':'disabled'} onclick="window.triggerGoogleCalendarSync()">
         <svg viewBox="0 0 24 24" width="13" height="13" style="vertical-align:middle;margin-right:5px"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/></svg>
         Jetzt synchronisieren
       </button>
