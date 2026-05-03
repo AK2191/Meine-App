@@ -3938,11 +3938,6 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
       if (warn.length) html += `<div class="panel-notif-section"><div class="pns-title" style="color:var(--amb)">⚠ Diese Woche</div>${warn.map(mkItem).join('')}</div>`;
       if (ok.length)   html += `<div class="panel-notif-section"><div class="pns-title">Demnächst</div>${ok.map(mkItem).join('')}</div>`;
     }
-    html += `<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--b1)">
-      <button class="btn btn-ghost btn-full" onclick="closePanel();setTimeout(()=>openSettingsPanel('sync'),80)">
-        Push &amp; Sync Einstellungen →
-      </button>
-    </div>`;
     if (typeof openPanel === 'function') openPanel(notes.length ? notes.length + ' Hinweis' + (notes.length !== 1 ? 'e' : '') : 'Benachrichtigungen', html);
     const dot = $('notif-dot'); if (dot) dot.style.display = 'none';
   };
@@ -5550,14 +5545,12 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       `<div class="dash-card">
         <div class="dash-card-head">
           <div><div class="dash-card-title">📅 Kalender</div></div>
-          <button class="btn btn-ghost btn-sm" onclick="setMainView('calendar')">Öffnen →</button>
         </div>
         <div class="dash-card-body">${calCardBody}</div>
       </div>
       <div class="dash-card">
         <div class="dash-card-head">
           <div><div class="dash-card-title">🏆 Challenges &amp; Mitspieler</div><div class="dash-card-sub">Heute &amp; Rangliste</div></div>
-          <button class="btn btn-ghost btn-sm" onclick="setMainView('challenges')">Öffnen →</button>
         </div>
         <div class="dash-card-body">
           <div class="dash-section-label">Heute offen</div>${chRows}
