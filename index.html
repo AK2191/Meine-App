@@ -3823,9 +3823,9 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
 </script>
 
 <!-- ═══════════════════════════════════════════════════════════════
-     CHANGE · UNIFIED SETTINGS PANEL
-     Alle Einstellungen in einem einzigen ⚙-Icon.
-     Ersetzt openCalendarSettings() + openPushSettingsPanel() vollständig.
+     CHANGE · UNIFIED SETTINGS PANEL v2
+     Glocke = nur Hinweise.
+     ⚙ = Kalender + Push/Sync/Test + Google-Kalender-Sync.
 ═══════════════════════════════════════════════════════════════ -->
 <style id="unified-settings-style">
   /* Tab-Navigation im Panel */
@@ -3875,11 +3875,11 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
   'use strict';
 
   /* ── Hilfsfunktionen ── */
-  function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-  function ls(k, v) {
-    if (v === undefined) { try { return JSON.parse(localStorage.getItem('change_v1_' + k)); } catch(e) { return null; } }
-    try { localStorage.setItem('change_v1_' + k, JSON.stringify(v)); } catch(e) {}
-  }
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const lsRead  = k => { try { return JSON.parse(localStorage.getItem('change_v1_' + k)); } catch(e) { return null; } };
+  const lsWrite = (k, v) => { try { localStorage.setItem('change_v1_' + k, JSON.stringify(v)); } catch(e) {} };
+  const $ = id => document.getElementById(id);
+
   function readOpt() {
     const def = { showHolidays: true, showChallengeDots: true, showWeekNumbers: true };
     ['change_v1_calendar_view_options', 'calendar_settings'].forEach(k => {
@@ -3891,9 +3891,97 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
     localStorage.setItem('change_v1_calendar_view_options', JSON.stringify(o));
     localStorage.setItem('calendar_settings', JSON.stringify(o));
   }
-  function tog(id) { return document.getElementById(id); }
+  const switchRow = (title, sub, id, checked) => `
+    <div class="toggle-row">
+      <div class="toggle-copy">
+        <div class="toggle-title">${title}</div>
+        ${sub ? `<div class="toggle-sub">${sub}</div>` : ''}
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="${id}" ${checked ? 'checked' : ''}>
+        <span class="slider"></span>
+      </label>
+    </div>`;
 
-  /* ── Einheitliches Panel öffnen ── */
+  /* ══════════════════════════════════════════════════════
+     GLOCKE: Nur Hinweise – kein Push-Toggle, kein Test
+  ══════════════════════════════════════════════════════ */
+  window.openNotifPanel = function () {
+    try { if (typeof checkNotifications === 'function') checkNotifications(); } catch(e) {}
+    const notes = (window.notifications || []).slice(0, 12);
+    const icons = { deadline: '⚠️', meeting: '📅', reminder: '🔔', other: '📌' };
+    const bgs   = { crit: 'var(--red-d)', warn: 'var(--amb-d)', ok: 'var(--s2)' };
+    let html = '';
+    if (!notes.length) {
+      html = `<div class="empty-state">
+        <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+        <div class="empty-title">Alles im Griff</div>
+        <div class="empty-sub">Keine dringenden Termine</div>
+      </div>`;
+    } else {
+      const crit = notes.filter(n => n.urgency === 'crit');
+      const warn = notes.filter(n => n.urgency === 'warn');
+      const ok   = notes.filter(n => n.urgency === 'ok');
+      const mkItem = n => {
+        const label = n.diff < 0 ? 'Überfällig' : n.diff === 0 ? 'Heute' : n.diff === 1 ? 'Morgen' : `In ${n.diff}T`;
+        const bcls  = n.urgency === 'crit' ? 'ub-crit' : n.urgency === 'warn' ? 'ub-warn' : 'ub-ok';
+        return `<div class="nitem" onclick="setMainView('calendar');setTimeout(()=>openEventPanel('${n.id}'),200);closePanel()">
+          <div class="nitem-icon" style="background:${bgs[n.urgency]}">${icons[n.type] || '📅'}</div>
+          <div class="nitem-body">
+            <div class="nitem-title">${esc(n.title)}</div>
+            <div class="nitem-sub">${typeof fmtDate === 'function' ? fmtDate(n.date) : n.date}</div>
+          </div>
+          <span class="nitem-badge urgency-badge ${bcls}">${label}</span>
+        </div>`;
+      };
+      if (crit.length) html += `<div class="panel-notif-section"><div class="pns-title" style="color:var(--red)">⚡ Dringend</div>${crit.map(mkItem).join('')}</div>`;
+      if (warn.length) html += `<div class="panel-notif-section"><div class="pns-title" style="color:var(--amb)">⚠ Diese Woche</div>${warn.map(mkItem).join('')}</div>`;
+      if (ok.length)   html += `<div class="panel-notif-section"><div class="pns-title">Demnächst</div>${ok.map(mkItem).join('')}</div>`;
+    }
+    html += `<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--b1)">
+      <button class="btn btn-ghost btn-full" onclick="closePanel();setTimeout(()=>openSettingsPanel('sync'),80)">
+        Push &amp; Sync Einstellungen →
+      </button>
+    </div>`;
+    if (typeof openPanel === 'function') openPanel(notes.length ? notes.length + ' Hinweis' + (notes.length !== 1 ? 'e' : '') : 'Benachrichtigungen', html);
+    const dot = $('notif-dot'); if (dot) dot.style.display = 'none';
+  };
+
+  /* ══════════════════════════════════════════════════════
+     GOOGLE KALENDER SYNC
+  ══════════════════════════════════════════════════════ */
+  function isGoogleSyncEnabled() {
+    const v = localStorage.getItem('change_v1_google_calendar_sync');
+    return v === null ? true : v !== 'false';
+  }
+  function setGoogleSyncEnabled(on) {
+    localStorage.setItem('change_v1_google_calendar_sync', on ? 'true' : 'false');
+    window.googleCalendarSyncEnabled = on;
+  }
+
+  window.triggerGoogleCalendarSync = async function () {
+    if (!window.accessToken) {
+      if (typeof toast === 'function') toast('Bitte zuerst mit Google anmelden', 'err');
+      return;
+    }
+    if (!isGoogleSyncEnabled()) {
+      if (typeof toast === 'function') toast('Google-Sync ist deaktiviert', '');
+      return;
+    }
+    try {
+      if (typeof toast === 'function') toast('Google Kalender wird synchronisiert…', '');
+      if (typeof loadGoogleEvents === 'function') await loadGoogleEvents();
+      if (typeof renderCalendar === 'function') renderCalendar();
+      if (typeof buildDashboard === 'function') buildDashboard();
+      if (typeof toast === 'function') toast('Google Kalender synchronisiert ✓', 'ok');
+    } catch(e) {
+      if (typeof toast === 'function') toast('Sync fehlgeschlagen: ' + (e.message || e), 'err');
+    }
+  };
+
+  /* ══════════════════════════════════════════════════════
+     EINHEITLICHES EINSTELLUNGS-PANEL ⚙
+  ══════════════════════════════════════════════════════ */
   window.openSettingsPanel = function (startTab) {
     startTab = startTab || 'calendar';
 
@@ -3937,50 +4025,75 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
       <button class="btn btn-primary btn-full" style="margin-top:18px" onclick="window._saveCalSettings()">Speichern</button>
     `;
 
-    /* ── Push & Sync-Abschnitt ── */
-    const hasCfg = !!(window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey &&
-      !String(window.FIREBASE_CONFIG.apiKey).includes('HIER_') && window.FIREBASE_CONFIG.projectId);
-    const perm = (typeof Notification !== 'undefined') ? Notification.permission : 'nicht unterstützt';
-    const token = ls('fcm_token');
-    const pushEnabled = !!token && ls('push_enabled') !== false && perm === 'granted';
-    const liveEnabled = ls('live_sync_enabled') !== false;
-    const autoEnabled = ls('auto_challenges_enabled') !== false;
-    const online = liveEnabled ? (window.challengePlayers || []).filter(p => p.online).length : 0;
-    const installStatus = (typeof isStandaloneApp === 'function' && isStandaloneApp())
-      ? 'Installiert' : (typeof deferredInstallPrompt !== 'undefined' && deferredInstallPrompt ? 'Bereit' : 'Manuell');
-    const permCls = perm === 'granted' ? 'push-ok' : perm === 'denied' ? 'push-err' : 'push-warn';
+    /* ─── TAB 2: Push & Sync ─── */
+    const hasCfg    = !!(window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey &&
+                        !String(window.FIREBASE_CONFIG.apiKey).includes('HIER_') &&
+                        window.FIREBASE_CONFIG.projectId);
+    const perm      = (typeof Notification !== 'undefined') ? Notification.permission : 'nicht unterstützt';
+    const token     = lsRead('fcm_token');
+    const pushOn    = !!token && lsRead('push_enabled') !== false && perm === 'granted';
+    const liveOn    = lsRead('live_sync_enabled') !== false;
+    const autoOn    = lsRead('auto_challenges_enabled') !== false;
+    const gSyncOn   = isGoogleSyncEnabled();
+    const isLoggedIn = !!window.accessToken;
+    const online    = liveOn ? (window.challengePlayers || []).filter(p => p.online).length : 0;
+    const permCls   = perm === 'granted' ? 'push-ok' : perm === 'denied' ? 'push-err' : 'push-warn';
+    const installOk = (typeof isStandaloneApp === 'function' && isStandaloneApp());
+    const installStatus = installOk ? 'Installiert' : (typeof deferredInstallPrompt !== 'undefined' && deferredInstallPrompt ? 'Bereit' : 'Manuell');
 
     const syncPane = `
-      <div class="push-box" style="margin-bottom:14px">
+      <div class="push-box" style="margin-bottom:4px">
         <div class="challenge-title" style="margin-bottom:8px">Status</div>
         <div class="push-status ${hasCfg ? 'push-ok' : 'push-warn'}">${hasCfg ? 'Firebase-Konfiguration gefunden.' : 'Firebase nicht konfiguriert – firebase-config.js ausfüllen.'}</div>
-        <div class="push-status ${permCls}">Benachrichtigungsstatus: <strong>${esc(perm)}</strong></div>
+        <div class="push-status ${permCls}">Browser-Berechtigungen: <strong>${esc(perm)}</strong></div>
         <div class="push-status">Push-Token: <strong>${token ? 'vorhanden' : 'noch nicht erstellt'}</strong></div>
+        <div class="push-status">Live-Mitspieler: <strong>${liveOn ? 'verbunden · ' + online + ' online' : 'deaktiviert'}</strong></div>
         <div class="push-status">App-Installation: <strong>${esc(installStatus)}</strong></div>
-        <div class="push-status">Live-Mitspieler: <strong>${liveEnabled ? 'verbunden · ' + online + ' online' : 'deaktiviert'}</strong></div>
       </div>
+
       ${switchRow(
-        'Push-Benachrichtigungen <span class="status-pill ' + (pushEnabled ? 'status-on' : 'status-off') + '">' + (pushEnabled ? 'AKTIV' : 'INAKTIV') + '</span>',
-        'Benachrichtigt dich über offene Challenges.',
-        'us-toggle-push', pushEnabled
+        'Push-Benachrichtigungen <span class="status-pill ' + (pushOn ? 'status-on' : 'status-off') + '">' + (pushOn ? 'AKTIV' : 'INAKTIV') + '</span>',
+        'Erinnerungen für offene Challenges und Termine.',
+        'us-toggle-push', pushOn
       )}
+      <button class="btn btn-secondary btn-full" style="margin:-6px 0 14px;font-size:12px" onclick="window._sendTestNotification()">
+        Test-Benachrichtigung senden
+      </button>
+
       ${switchRow(
-        'Live-Mitspieler <span class="status-pill ' + (liveEnabled ? 'status-on' : 'status-off') + '">' + (liveEnabled ? 'VERBUNDEN' : 'DEAKTIVIERT') + '</span>',
+        'Live-Mitspieler <span class="status-pill ' + (liveOn ? 'status-on' : 'status-off') + '">' + (liveOn ? 'VERBUNDEN' : 'DEAKTIVIERT') + '</span>',
         'Synchronisiert Kontest-Teilnehmer und erledigte Übungen live über Firebase.',
-        'us-toggle-live', liveEnabled
+        'us-toggle-live', liveOn
       )}
+
       ${switchRow(
-        'Tägliche Auto-Challenges <span class="status-pill ' + (autoEnabled ? 'status-on' : 'status-off') + '">' + (autoEnabled ? 'AKTIV' : 'INAKTIV') + '</span>',
-        'Erzeugt jeden Tag kleine Sportübungen.',
-        'us-toggle-auto', autoEnabled
+        'Tägliche Auto-Challenges <span class="status-pill ' + (autoOn ? 'status-on' : 'status-off') + '">' + (autoOn ? 'AKTIV' : 'INAKTIV') + '</span>',
+        'Erzeugt jeden Tag automatisch neue Sportübungen.',
+        'us-toggle-auto', autoOn
       )}
-      <button class="btn btn-secondary btn-full" style="margin-top:16px" onclick="if(typeof installChangeApp==='function')installChangeApp()">
+
+      <div style="height:1px;background:var(--b1);margin:16px 0"></div>
+
+      ${switchRow(
+        'Google Kalender <span class="status-pill ' + (gSyncOn && isLoggedIn ? 'status-on' : 'status-off') + '">' + (gSyncOn && isLoggedIn ? 'AKTIV' : isLoggedIn ? 'AUS' : 'NICHT ANGEMELDET') + '</span>',
+        isLoggedIn
+          ? 'Termine aus deinem Google Kalender werden automatisch angezeigt.'
+          : 'Melde dich mit Google an, um deinen Kalender einzubinden.',
+        'us-toggle-gsync', gSyncOn && isLoggedIn
+      )}
+      <button class="btn btn-secondary btn-full" style="margin:-6px 0 14px;font-size:12px" ${isLoggedIn ? '' : 'disabled'} onclick="window.triggerGoogleCalendarSync()">
+        <svg viewBox="0 0 24 24" width="13" height="13" style="vertical-align:middle;margin-right:5px"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/></svg>
+        Jetzt synchronisieren
+      </button>
+      ${!isLoggedIn ? '<div class="settings-hint" style="color:var(--amb);margin-top:-8px">Bitte zuerst mit Google anmelden.</div>' : ''}
+
+      <div style="height:1px;background:var(--b1);margin:16px 0"></div>
+      <button class="btn btn-secondary btn-full" style="font-size:13px" onclick="if(typeof installChangeApp==='function')installChangeApp()">
         Change als App installieren
       </button>
-      <div class="settings-hint" style="margin-top:8px">Android: Push in Chrome/als PWA. iPhone: Change zum Home-Bildschirm hinzufügen und von dort starten.</div>
-    `;
+      <div class="settings-hint" style="margin-top:6px">Android: Push in Chrome. iPhone: Zum Home-Bildschirm hinzufügen, dann Push aktivieren.</div>`;
 
-    /* ── Panel-HTML zusammenbauen ── */
+    /* ── Panel zusammensetzen ── */
     const panelHtml = `
       <div style="display:flex;gap:4px;padding:0 0 14px;border-bottom:1px solid var(--b1);margin-bottom:16px">
         <button class="settings-tab ${startTab === 'calendar' ? 'active' : ''}" id="us-tab-calendar" onclick="window._switchSettingsTab('calendar')">
@@ -3993,60 +4106,93 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
         </button>
       </div>
       <div id="us-pane-calendar" class="settings-pane ${startTab === 'calendar' ? 'active' : ''}">${calPane}</div>
-      <div id="us-pane-sync" class="settings-pane ${startTab === 'sync' ? 'active' : ''}">${syncPane}</div>
-    `;
+      <div id="us-pane-sync"     class="settings-pane ${startTab === 'sync'     ? 'active' : ''}">${syncPane}</div>`;
 
     if (typeof openPanel === 'function') openPanel('Einstellungen', panelHtml);
 
     /* Toggle-Listener nach Render */
     setTimeout(() => {
-      const pushToggle = document.getElementById('us-toggle-push');
-      if (pushToggle) pushToggle.addEventListener('change', e => {
-        if (typeof setPushNotificationsEnabled === 'function') setPushNotificationsEnabled(e.target.checked);
-        else if (e.target.checked && typeof enablePushNotifications === 'function') enablePushNotifications();
-        else if (!e.target.checked && typeof disablePushNotifications === 'function') disablePushNotifications();
-        setTimeout(() => window.openSettingsPanel('sync'), 800);
+
+      /* Push */
+      const pushToggle = $('us-toggle-push');
+      if (pushToggle) pushToggle.addEventListener('change', async e => {
+        const on = e.target.checked;
+        if (!on) {
+          if (typeof disablePushNotifications === 'function') await disablePushNotifications();
+          else { lsWrite('push_enabled', false); if (typeof toast === 'function') toast('Push deaktiviert', 'ok'); }
+        } else {
+          if (typeof enablePushNotifications === 'function') await enablePushNotifications();
+          else {
+            const p = typeof Notification !== 'undefined' ? await Notification.requestPermission() : 'denied';
+            if (p === 'granted') { lsWrite('push_enabled', true); if (typeof toast === 'function') toast('Push aktiviert ✓', 'ok'); }
+            else { e.target.checked = false; if (typeof toast === 'function') toast('Berechtigung verweigert', 'err'); }
+          }
+        }
+        setTimeout(() => window.openSettingsPanel('sync'), 900);
       });
-      const liveToggle = document.getElementById('us-toggle-live');
-      if (liveToggle) liveToggle.addEventListener('change', e => {
-        if (typeof setLiveSyncEnabled === 'function') setLiveSyncEnabled(e.target.checked);
-        setTimeout(() => window.openSettingsPanel('sync'), 800);
+
+      /* Live-Sync */
+      const liveToggle = $('us-toggle-live');
+      if (liveToggle) liveToggle.addEventListener('change', async e => {
+        if (typeof setLiveSyncEnabled === 'function') await setLiveSyncEnabled(e.target.checked);
+        else lsWrite('live_sync_enabled', e.target.checked);
+        setTimeout(() => window.openSettingsPanel('sync'), 700);
       });
-      const autoToggle = document.getElementById('us-toggle-auto');
+
+      /* Auto-Challenges */
+      const autoToggle = $('us-toggle-auto');
       if (autoToggle) autoToggle.addEventListener('change', e => {
         if (typeof setAutoChallengesEnabled === 'function') setAutoChallengesEnabled(e.target.checked);
+        else lsWrite('auto_challenges_enabled', e.target.checked);
         setTimeout(() => window.openSettingsPanel('sync'), 400);
       });
+
+      /* Google Kalender Sync */
+      const gSyncToggle = $('us-toggle-gsync');
+      if (gSyncToggle) gSyncToggle.addEventListener('change', async e => {
+        const on = e.target.checked;
+        setGoogleSyncEnabled(on);
+        window.googleCalendarSyncEnabled = on;
+        if (on) {
+          await window.triggerGoogleCalendarSync();
+        } else {
+          window.gEvents = [];
+          if (typeof renderCalendar === 'function') renderCalendar();
+          if (typeof buildDashboard === 'function') buildDashboard();
+          if (typeof toast === 'function') toast('Google Kalender getrennt', 'ok');
+        }
+        setTimeout(() => window.openSettingsPanel('sync'), 500);
+      });
+
     }, 80);
   };
 
-  /* Tab-Umschalter */
+  /* ── Test-Benachrichtigung ── */
+  window._sendTestNotification = function () {
+    if (typeof Notification === 'undefined') { if (typeof toast === 'function') toast('Benachrichtigungen werden nicht unterstützt', 'err'); return; }
+    if (Notification.permission !== 'granted') { if (typeof toast === 'function') toast('Bitte Push zuerst aktivieren', 'err'); return; }
+    try { new Notification('Change', { body: 'Push-Benachrichtigungen funktionieren ✓' }); if (typeof toast === 'function') toast('Test-Benachrichtigung gesendet ✓', 'ok'); }
+    catch(e) { if (typeof toast === 'function') toast('Test fehlgeschlagen', 'err'); }
+  };
+
+  /* ── Tab-Umschalter ── */
   window._switchSettingsTab = function (tab) {
     ['calendar', 'sync'].forEach(t => {
-      const btn = document.getElementById('us-tab-' + t);
-      const pane = document.getElementById('us-pane-' + t);
-      if (btn) btn.classList.toggle('active', t === tab);
+      const btn  = $('us-tab-' + t);
+      const pane = $('us-pane-' + t);
+      if (btn)  btn.classList.toggle('active', t === tab);
       if (pane) pane.classList.toggle('active', t === tab);
     });
   };
 
-  /* Kalender speichern (aus dem Panel heraus) */
+  /* ── Kalender speichern ── */
   window._saveCalSettings = function () {
-    const o = {
-      showHolidays: !!(document.getElementById('us-toggle-holidays') || {}).checked,
-      showChallengeDots: !!(document.getElementById('us-toggle-dots') || {}).checked,
-      showWeekNumbers: !!(document.getElementById('us-toggle-kw') || {}).checked
-    };
-    // Prüfe ob Checkboxen wirklich im DOM sind
-    const h = document.getElementById('us-toggle-holidays');
-    const d = document.getElementById('us-toggle-dots');
-    const k = document.getElementById('us-toggle-kw');
-    if (h) o.showHolidays = h.checked;
-    if (d) o.showChallengeDots = d.checked;
-    if (k) o.showWeekNumbers = k.checked;
+    const o = { showHolidays: true, showChallengeDots: true, showWeekNumbers: true };
+    const h = $('us-toggle-holidays'); if (h) o.showHolidays = h.checked;
+    const d = $('us-toggle-dots');     if (d) o.showChallengeDots = d.checked;
+    const k = $('us-toggle-kw');       if (k) o.showWeekNumbers = k.checked;
     saveOpt(o);
-
-    const stateEl = document.getElementById('us-holiday-state');
+    const stateEl = $('us-holiday-state');
     if (stateEl) {
       const state = stateEl.value || 'ALL';
       localStorage.setItem('change_v1_holiday_state', state);
@@ -4054,18 +4200,25 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
       if (!window.calendarSettings) window.calendarSettings = {};
       window.calendarSettings.state = state;
     }
-
     if (typeof closePanel === 'function') closePanel();
     if (typeof renderCalendar === 'function') renderCalendar();
-    if (typeof toast === 'function') toast('Einstellungen gespeichert ✓', 'ok');
+    if (typeof toast === 'function') toast('Kalender-Einstellungen gespeichert ✓', 'ok');
   };
 
-  /* Redirect: alte Aufrufe leiten auf das neue Panel weiter */
-  window.openCalendarSettings = () => window.openSettingsPanel('calendar');
+  /* ── Redirects für alte Aufrufe ── */
+  window.openCalendarSettings  = () => window.openSettingsPanel('calendar');
   window.openPushSettingsPanel = () => window.openSettingsPanel('sync');
+  window.saveCalSettings       = window._saveCalSettings;
 
-  /* Toolbar-Fix: Buttons, die noch auf die alten Funktionen zeigen */
-  function fixToolbarClicks() {
+  /* ── Google Sync beim Boot laden ── */
+  const _boot = window.bootMainApp;
+  window.bootMainApp = function () {
+    if (typeof _boot === 'function') _boot.apply(this, arguments);
+    window.googleCalendarSyncEnabled = isGoogleSyncEnabled();
+  };
+
+  /* ── Toolbar-Buttons korrigieren ── */
+  function fixToolbar() {
     document.querySelectorAll('[onclick="openCalendarSettings()"]').forEach(el =>
       el.setAttribute('onclick', "openSettingsPanel('calendar')")
     );
@@ -4076,10 +4229,9 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
       el.setAttribute('title', 'Einstellungen')
     );
   }
-  document.addEventListener('DOMContentLoaded', () => { fixToolbarClicks(); });
-  window.addEventListener('load', () => { fixToolbarClicks(); });
-  setTimeout(fixToolbarClicks, 500);
-  setTimeout(fixToolbarClicks, 2000);
+  document.addEventListener('DOMContentLoaded', fixToolbar);
+  window.addEventListener('load', fixToolbar);
+  [500, 2000].forEach(ms => setTimeout(fixToolbar, ms));
 
 })();
 </script>
