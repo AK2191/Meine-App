@@ -3823,6 +3823,7 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
 })();
 </script>
 
+
 </body>
 </html>
 
@@ -4686,13 +4687,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     let st=document.getElementById('change-final-stable-style');
     if(!st){ st=document.createElement('style'); st.id='change-final-stable-style'; document.head.appendChild(st); }
     st.textContent=`
-
-      /* Avatar Online/Offline Dot */
-      .avatar{position:relative!important}
-      #avatar-status-dot{position:absolute;bottom:1px;right:1px;width:9px;height:9px;border-radius:50%;border:2px solid var(--bg);background:var(--t4);transition:background .4s}
-      #avatar-status-dot.online{background:#22c55e}
-      #avatar-status-dot.offline{background:#ef4444}
-      /* Today-Header */
+      /* Today-Header in Kalender-Karte */
       .dash-today-header{
         display:flex;align-items:center;justify-content:space-between;
         padding:12px 16px 8px;border-bottom:1px solid var(--b1);
@@ -5043,7 +5038,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     });
 
     /* ── Heute-Streifen: immer sichtbar, egal ob Termine oder nicht ── */
-    /* Range-Events (z.B. 28.04–04.05) die heute noch aktiv sind → Heute-Block */
+    /* Range-Events die heute noch aktiv sind (start<=today<=end) → Heute-Block */
     const todayEvents=rows.filter(r=>r.type==='holiday'?r.date===td:(r.date<=td&&(r.endDate||r.date)>=td));
     const todayDateFmt=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
     const upcomingRows=rows.filter(r=>r.date>td);
@@ -5066,11 +5061,9 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
           </div>`;
         } else {
           const ev=r.ev, colBg=ev.color==='red'?'var(--red-d)':ev.color==='green'?'var(--grn-d)':ev.color==='amber'?'var(--amb-d)':ev.color==='purple'?'var(--pur-d)':'var(--acc-d)';
-          const isRange=(r.endDate&&r.endDate!==r.date);
-          const subText=isRange?(fmtShort(r.date)+' – '+fmtShort(r.endDate)):(ev.time?ev.time+' Uhr':'Ganztägig');
           todayItemsHtml+=`<div class="dash-row dash-today-row" onclick="setMainView('calendar')">
             <div class="dash-row-icon" style="background:${colBg}">📅</div>
-            <div class="dash-row-body"><div class="dash-row-title" style="font-weight:800;color:var(--acc)">${esc(ev.title||ev.summary||'Termin')}</div><div class="dash-row-sub">${subText}</div></div>
+            <div class="dash-row-body"><div class="dash-row-title" style="font-weight:800;color:var(--acc)">${esc(ev.title||'Termin')}</div><div class="dash-row-sub">${ev.time?ev.time+' Uhr':'Ganztägig'}</div></div>
             <span class="dash-row-badge badge-green">Heute</span>
           </div>`;
         }
@@ -5169,9 +5162,12 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     // Ensure today's auto challenges are generated
     try{ if(typeof window.ensureDailyAutoChallenges==='function') window.ensureDailyAutoChallenges(todayStr()); }catch(e){}
 
-    // Refresh week bar (let step7's ensureWeekBar handle it — avoids duplicates)
+    // Remove old Punkte-Woche bar, insert/fill Punkte-Kalender
     try{
+      const _old=document.getElementById('challenge-week-bar-clean');
+      if(_old) _old.remove();
       if(typeof window.ensureWeekBar==='function') window.ensureWeekBar();
+      if(typeof window.renderWeekBar==='function') window.renderWeekBar();
     }catch(e){}
 
     const active=activeChallenges();
@@ -5188,7 +5184,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
         <div class="challenge-icon">${esc(ch.icon||'🏆')}</div>
         <div class="challenge-body">
           <div class="challenge-name">${esc(ch.title||ch.name||'Challenge')}</div>
-          <div class="challenge-meta">${esc(ch.desc||\'\')}}</div>|${esc(ch.desc||\'\')}}</div>
+          <div class="challenge-meta">${esc(ch.desc||'')}</div>
           ${url?`<a class="challenge-meta" style="color:var(--acc);text-decoration:none;font-weight:600" href="${esc(url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Übung ansehen ↗</a>`:''}
         </div>
         <span class="points-pill">+${pts}</span>
@@ -5206,8 +5202,6 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       html+=optional.map(chItem).join('');
     }
     list$.innerHTML=html||'<div class="dash-empty">Keine Challenges für heute</div>';
-    // Wochenbalken sofort befüllen
-    try{ if(typeof window.renderWeekBar==='function') window.renderWeekBar(); }catch(e){}
 
     // Leaderboard
     const players=playerStats();
@@ -5289,38 +5283,300 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     setTimeout(init,500);
     setTimeout(()=>{
       // Re-assert after firebase auth resolves (myId() will now return email)
-      window.buildDashboard=buildDashboard; window.buildDashboard.__fix5=true;
+      // buildDashboard NOT reassigned here — patch version (today-section) must win
       window.renderChallenges=renderChallenges;
       window.setMainView=setMainView;
       window.getChallengeDayStatus=function(dk){const p=challengePointsForDate(dk);return p>0?{points:p,done:true,allDone:true}:null;};
       window.getChallengePointsForDate=challengePointsForDate;
       injectFinalStyle();
-      const v=window.currentMainView||'dashboard';
-      if(v==='dashboard') buildDashboard();
-      if(v==='challenges') renderChallenges();
+      if(window.currentMainView==='challenges') renderChallenges();
     },2000);
     // Final override after step7 last timer (5200ms)
     setTimeout(()=>{
-      window.buildDashboard=buildDashboard; window.buildDashboard.__fix5=true;
+      // buildDashboard NOT reassigned here — patch version (today-section) must win
       window.renderChallenges=renderChallenges;
       window.setMainView=setMainView;
       window.getChallengeDayStatus=function(dk){const p=challengePointsForDate(dk);return p>0?{points:p,done:true,allDone:true}:null;};
       window.getChallengePointsForDate=challengePointsForDate;
       injectFinalStyle();
-      const v=window.currentMainView||'dashboard';
-      if(v==='dashboard') buildDashboard();
-      if(v==='challenges') renderChallenges();
+      if(window.currentMainView==='challenges') renderChallenges();
     },5600);
   });
 
 })();
 </script>
+<!-- ═══════════════════════════════════════
+     CHANGE · DASHBOARD EVENT FIX
+     Fixes: endDate für Google-Termine, Zeitraum-Events erscheinen heute,
+            korrekte Uhrzeiten, Titel aus Google summary
+═══════════════════════════════════════ -->
+<script id="change-dashboard-event-fix">
+(function(){
+  'use strict';
+  const pad = n => String(n).padStart(2,'0');
+  const keyOf = d => { const x = d instanceof Date ? d : new Date(String(d)+'T12:00:00'); return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate()); };
+  const addDay = (k,n) => { const d = new Date(k+'T12:00:00'); d.setDate(d.getDate()+n); return keyOf(d); };
+  const todayKey = () => keyOf(new Date());
+
+  /* ── Vollständige getAllEvents mit endDate, startDate, title ── */
+  window.getAllEvents = function(){
+    const out = [], seen = new Set();
+    function add(ev){
+      if(!ev || !ev.date) return;
+      const k = ev.googleEventId ? 'g:'+ev.googleEventId : 'l:'+ev.id;
+      if(seen.has(k)) return; seen.add(k);
+      out.push(ev);
+    }
+    // Lokale Termine
+    try{ (Array.isArray(window.events) ? window.events : []).forEach(add); }catch(e){}
+    // Google-Termine mit vollständiger end-Date-Auflösung
+    try{
+      (Array.isArray(window.gEvents) ? window.gEvents : []).forEach(ge => {
+        if(!ge) return;
+        const title = ge.summary || ge.title || '(Kein Titel)';
+        let startDate = '', endDate = '', time = '', endTime = '', allDay = false;
+        if(ge.start && ge.start.date){
+          startDate = String(ge.start.date).slice(0,10);
+          allDay = true;
+        } else if(ge.start && ge.start.dateTime){
+          startDate = String(ge.start.dateTime).slice(0,10);
+          try{ time = new Date(ge.start.dateTime).toTimeString().slice(0,5); }catch(e){}
+        }
+        if(ge.end && ge.end.date){
+          // Google all-day end is exclusive → subtract 1 day
+          endDate = addDay(String(ge.end.date).slice(0,10), -1);
+          if(endDate < startDate) endDate = startDate;
+        } else if(ge.end && ge.end.dateTime){
+          endDate = String(ge.end.dateTime).slice(0,10);
+          try{ endTime = new Date(ge.end.dateTime).toTimeString().slice(0,5); }catch(e){}
+        } else {
+          endDate = startDate;
+        }
+        if(!startDate) return;
+        const id = String(ge.id||'');
+        add({
+          id: id.startsWith('g_') ? id : 'g_'+id,
+          googleEventId: id,
+          title, date: startDate, startDate, endDate,
+          time, endTime, allDay, color:'blue',
+          type:'meeting', desc: ge.description||'',
+          source:'google', notifDaysBefore: 1
+        });
+      });
+    }catch(e){}
+    return out;
+  };
+
+  /* ── Dashboard: Heute-Block berechnet korrekt aus startDate/endDate ── */
+  function evStartK(e){ return String(e.startDate||e.date||'').slice(0,10); }
+  function evEndK(e)  { return String(e.endDate||e.date||evStartK(e)||'').slice(0,10); }
+  function evTitle(e) { return String(e.title||e.summary||e.name||'Termin').replace(/\bZeitraum\b\s*:?/gi,'').replace(/\s{2,}/g,' ').trim(); }
+  function evTime(e)  { if(e.allDay || (!e.time && !e.endTime)) return ''; return e.time ? (e.endTime && e.endTime!==e.time ? e.time+' – '+e.endTime+' Uhr' : e.time+' Uhr') : ''; }
+  function fmtShort(k){ try{ return new Date(k+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+'.'; }catch(e){ return k; } }
+  function diffDays(k){ return Math.round((new Date(k+'T12:00:00') - new Date(todayKey()+'T12:00:00'))/86400000); }
+
+  /* Feiertage für nächste 90 Tage */
+  function upcomingHolidays(limitDays){
+    const out = [];
+    if(typeof window.getHolidaysForDate !== 'function') return out;
+    const td = todayKey();
+    for(let i=0; i<=limitDays; i++){
+      const k = addDay(td, i);
+      try{ (window.getHolidaysForDate(k)||[]).forEach(h => out.push({kind:'holiday',date:k,start:k,end:k,name:h.name||h.title||'Feiertag'})); }catch(e){}
+    }
+    return out;
+  }
+
+  function buildCalRows(){
+    const td = todayKey();
+    const limit = addDay(td, 90);
+
+    // Events die heute oder in Zukunft aktiv sind (end >= today, start <= limit)
+    const evs = window.getAllEvents()
+      .filter(e => evEndK(e) >= td && evStartK(e) <= limit)
+      .sort((a,b) => evStartK(a).localeCompare(evStartK(b)));
+
+    // Deduplizieren
+    const seen = new Set();
+    const uniqueEvs = evs.filter(e => {
+      const k = (e.googleEventId ? 'g:'+e.googleEventId : 'l:'+(e.id||'')) + '|' + evStartK(e) + '|' + evEndK(e);
+      if(seen.has(k)) return false; seen.add(k); return true;
+    });
+
+    // Feiertage
+    const holidays = upcomingHolidays(90);
+
+    // Alles zusammen sortieren
+    const combined = [];
+    uniqueEvs.forEach(e => combined.push({kind:'event', date: evStartK(e) < td ? td : evStartK(e), start: evStartK(e), end: evEndK(e), ev: e}));
+    holidays.forEach(h => combined.push(h));
+    combined.sort((a,b) => a.date.localeCompare(b.date) || (a.kind==='holiday' ? -1 : 1));
+
+    // Deduplizieren nach key
+    const rowSeen = new Set();
+    const rows = combined.filter(r => {
+      const k = r.kind+'|'+r.date+'|'+(r.name || evTitle(r.ev||{}));
+      if(rowSeen.has(k)) return false; rowSeen.add(k); return true;
+    }).slice(0, 12);
+
+    return {rows, td};
+  }
+
+  function renderDashboard(){
+    const grid = document.getElementById('dash-grid');
+    if(!grid) return;
+
+    const {rows, td} = buildCalRows();
+    const todayRows = rows.filter(r => r.kind === 'event' ? (r.start <= td && r.end >= td) : r.date === td);
+    const upcomingRows = rows.filter(r => r.kind === 'event' ? r.start > td : r.date > td);
+
+    /* Heute-Block */
+    const todayDateFmt = new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
+    let todayHtml = '';
+    if(!todayRows.length){
+      todayHtml = `<div class="dash-today-free">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:15px;height:15px;stroke-width:2;opacity:.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Heute frei — keine Termine
+      </div>`;
+    } else {
+      todayRows.forEach(r => {
+        if(r.kind === 'holiday'){
+          todayHtml += `<div class="dash-row dash-today-row" onclick="setMainView('calendar')">
+            <div class="dash-row-icon" style="background:var(--amb-d)">🎉</div>
+            <div class="dash-row-body"><div class="dash-row-title" style="font-weight:800;color:var(--acc)">${r.name}</div><div class="dash-row-sub">Feiertag</div></div>
+            <span class="dash-row-badge badge-green">Heute</span>
+          </div>`;
+        } else {
+          const ev = r.ev;
+          const isRange = r.start !== r.end;
+          const sub = isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : (evTime(ev) || 'Ganztägig');
+          const colBg = ev.color==='red'?'var(--red-d)':ev.color==='green'?'var(--grn-d)':ev.color==='amber'?'var(--amb-d)':ev.color==='purple'?'var(--pur-d)':'var(--acc-d)';
+          todayHtml += `<div class="dash-row dash-today-row" onclick="setMainView('calendar')">
+            <div class="dash-row-icon" style="background:${colBg}">📅</div>
+            <div class="dash-row-body"><div class="dash-row-title" style="font-weight:800;color:var(--acc)">${evTitle(ev)}</div><div class="dash-row-sub">${sub}</div></div>
+            <span class="dash-row-badge badge-green">${isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : 'Heute'}</span>
+          </div>`;
+        }
+      });
+    }
+
+    /* Demnächst-Block */
+    let upcomingHtml = '';
+    if(upcomingRows.length){
+      upcomingHtml = `<div class="dash-section-divider">Demnächst</div>`;
+      upcomingRows.slice(0,6).forEach(r => {
+        if(r.kind === 'holiday'){
+          const d = diffDays(r.date);
+          upcomingHtml += `<div class="dash-row" onclick="setMainView('calendar')">
+            <div class="dash-row-icon" style="background:var(--amb-d)">🎉</div>
+            <div class="dash-row-body"><div class="dash-row-title">${r.name}</div><div class="dash-row-sub">Feiertag</div></div>
+            <span class="dash-row-badge badge-amber">${d===1?'Morgen':fmtShort(r.date)}</span>
+          </div>`;
+        } else {
+          const ev = r.ev;
+          const isRange = r.start !== r.end;
+          const badge = isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : (diffDays(r.start)===1 ? 'Morgen' : fmtShort(r.start));
+          const bClass = diffDays(r.start)<=1 ? 'badge-red' : diffDays(r.start)<=3 ? 'badge-amber' : 'badge-blue';
+          const sub = isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : (evTime(ev) || 'Ganztägig');
+          const colBg = ev.color==='red'?'var(--red-d)':ev.color==='green'?'var(--grn-d)':ev.color==='amber'?'var(--amb-d)':ev.color==='purple'?'var(--pur-d)':'var(--acc-d)';
+          upcomingHtml += `<div class="dash-row" onclick="setMainView('calendar')">
+            <div class="dash-row-icon" style="background:${colBg}">📅</div>
+            <div class="dash-row-body"><div class="dash-row-title">${evTitle(ev)}</div><div class="dash-row-sub">${sub}</div></div>
+            <span class="dash-row-badge ${bClass}">${badge}</span>
+          </div>`;
+        }
+      });
+    }
+
+    /* Kalender-Karte zusammenbauen */
+    const calCardBody = `<div class="dash-today-header"><div class="dash-today-date">${todayDateFmt}</div></div>${todayHtml}${upcomingHtml || (!todayRows.length ? '<div class="dash-empty">Keine Termine in den nächsten 90 Tagen</div>' : '')}`;
+
+    /* Challenges & Mitspieler */
+    let chHtml = '';
+    try{
+      const td2 = todayKey();
+      const me = String((window.userInfo||{}).email||'').toLowerCase();
+      const doneIds = new Set((window.challengeCompletions||[]).filter(c=>String(c.date||'').slice(0,10)===td2&&String(c.playerId||c.userEmail||c.email||'').toLowerCase()===me).map(c=>String(c.challengeId)));
+      const pending = (window.challenges||[]).filter(c=>c&&c.active!==false&&!doneIds.has(String(c.id))).slice(0,4);
+      chHtml = pending.map(c=>`<div class="dash-row" onclick="setMainView('challenges')">
+        <div class="dash-row-icon" style="background:${c._optional?'var(--amb-d)':'var(--acc-d)'}">${c.icon||'🏆'}</div>
+        <div class="dash-row-body"><div class="dash-row-title">${c.title||c.name||'Challenge'}</div><div class="dash-row-sub">${parseInt(c.points,10)||0} Punkte</div></div>
+        <span class="dash-row-badge badge-amber">offen</span>
+      </div>`).join('') || '<div class="dash-empty">Alle Challenges heute erledigt ✓</div>';
+    }catch(e){ chHtml = '<div class="dash-empty">Keine Challenges</div>'; }
+
+    let plHtml = '';
+    try{
+      const players = (typeof window.getVisibleContestPlayers==='function' ? window.getVisibleContestPlayers() : (window.challengePlayers||[])).slice(0,4);
+      const me = String((window.userInfo||{}).email||'').toLowerCase();
+      plHtml = players.map((p,i) => {
+        const id = String(p.email||p.id||'').toLowerCase();
+        const st = typeof window.getPlayerPointSummary==='function' ? window.getPlayerPointSummary(id) : {todayPoints:0,totalPoints:0};
+        const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);
+        return `<div class="dash-row" onclick="setMainView('challenges')">
+          <div class="dash-row-icon" style="background:var(--amb-d)">${medal}</div>
+          <div class="dash-row-body"><div class="dash-row-title">${p.name||p.email||'Mitspieler'}${id===me?' · Du':''}</div><div class="dash-row-sub">Heute ${st.todayPoints||0} P · Gesamt ${st.totalPoints||0} P</div></div>
+          <span class="dash-row-badge badge-green">${st.totalPoints||0} P</span>
+        </div>`;
+      }).join('') || '<div class="dash-empty">Noch keine Mitspieler</div>';
+    }catch(e){ plHtml = '<div class="dash-empty">Noch keine Mitspieler</div>'; }
+
+    grid.innerHTML = `
+      <div class="dash-card">
+        <div class="dash-card-head"><div><div class="dash-card-title">📅 Kalender</div></div></div>
+        <div class="dash-card-body">${calCardBody}</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-head"><div><div class="dash-card-title">🏆 Challenges &amp; Mitspieler</div><div class="dash-card-sub">Heute &amp; Rangliste</div></div></div>
+        <div class="dash-card-body">
+          <div class="dash-section-label">Heute offen</div>${chHtml}
+          <div class="dash-section-label" style="border-top:1px solid var(--b1)">Rangliste</div>${plHtml}
+        </div>
+      </div>`;
+  }
+
+  /* Override buildDashboard mit eigenem Renderer */
+  const _buildDashboard = window.buildDashboard;
+  function myBuildDashboard(){
+    /* Greeting */
+    try{
+      const h = document.getElementById('dash-greeting'), s = document.getElementById('dash-sub');
+      if(h){ const hr=new Date().getHours(), name=((window.userInfo||{}).name||'').split(' ')[0]; h.textContent=(hr<12?'Guten Morgen':hr<17?'Guten Tag':'Guten Abend')+(name?', '+name:''); }
+      if(s) s.textContent = new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    }catch(e){}
+    renderDashboard();
+  }
+  myBuildDashboard.__eventFix = true;
+  window.buildDashboard = myBuildDashboard;
+  window.buildDashCards = myBuildDashboard;
+
+  /* Nach allen Timern sicherstellen dass dieser Fix gewinnt */
+  [200, 800, 2200, 6000].forEach(ms => setTimeout(() => {
+    window.buildDashboard = myBuildDashboard;
+    window.buildDashCards = myBuildDashboard;
+    if((window.currentMainView||'dashboard') === 'dashboard') myBuildDashboard();
+  }, ms));
+
+})();
+</script>
+
+<style id="change-settings-style">
+  /* Settings Tab Navigation */
+  .settings-tab{display:flex;align-items:center;gap:6px;padding:8px 16px;border:none;border-radius:999px;font-family:var(--font);font-size:13px;font-weight:600;color:var(--t3);background:var(--s2);cursor:pointer;transition:all .15s;white-space:nowrap}
+  .settings-tab svg{width:14px;height:14px;stroke-width:2;flex-shrink:0}
+  .settings-tab:hover{background:var(--s3);color:var(--t1)}
+  .settings-tab.active{background:var(--acc);color:#fff}
+  .settings-pane{display:none}
+  .settings-pane.active{display:block}
+  /* Avatar Online/Offline Dot */
+  .avatar{position:relative!important}
+  #avatar-status-dot{position:absolute;bottom:1px;right:1px;width:9px;height:9px;border-radius:50%;border:2px solid var(--bg);background:var(--t4);transition:background .4s}
+  #avatar-status-dot.online{background:#22c55e}
+  #avatar-status-dot.offline{background:#ef4444}
+</style>
 
 <!-- ═══════════════════════════════════════════════════════
-     CHANGE · UNIFIED SETTINGS + AVATAR DOT + OPTIONALS FIX
-     Glocke = nur Hinweise. Zahnrad = alle Einstellungen.
-     Enthält: Google-Status-Dot, Avatar-Dot, Optionals-Fix,
-              getAllEvents-Fix, Punkte-Kalender-Retry.
+     CHANGE · EINSTELLUNGEN + AVATAR DOT + FIXES
 ═══════════════════════════════════════════════════════ -->
 <script id="change-unified-settings">
 (function () {
@@ -5333,9 +5589,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
 
   function readOpt(){
     const def={showHolidays:true,showChallengeDots:true,showWeekNumbers:true};
-    ['change_v1_calendar_view_options','calendar_settings'].forEach(k=>{
-      try{ Object.assign(def,JSON.parse(localStorage.getItem(k)||'{}')); }catch(e){}
-    });
+    ['change_v1_calendar_view_options','calendar_settings'].forEach(k=>{try{Object.assign(def,JSON.parse(localStorage.getItem(k)||'{}'));}catch(e){}});
     return def;
   }
   function saveOpt(o){
@@ -5344,19 +5598,13 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   }
   const switchRow=(title,sub,id,checked,disabled)=>`
     <div class="toggle-row${disabled?' toggle-row-disabled':''}">
-      <div class="toggle-copy">
-        <div class="toggle-title">${title}</div>
-        ${sub?`<div class="toggle-sub">${sub}</div>`:''}
-      </div>
-      <label class="switch">
-        <input type="checkbox" id="${id}" ${checked?'checked':''} ${disabled?'disabled':''}>
-        <span class="slider"></span>
-      </label>
+      <div class="toggle-copy"><div class="toggle-title">${title}</div>${sub?`<div class="toggle-sub">${sub}</div>`:''}</div>
+      <label class="switch"><input type="checkbox" id="${id}" ${checked?'checked':''} ${disabled?'disabled':''}><span class="slider"></span></label>
     </div>`;
 
-  /* ─── GLOCKE: nur Termine-Hinweise ──────────────────── */
+  /* ─── GLOCKE: nur Terminhinweise ────────────────────── */
   window.openNotifPanel=function(){
-    try{ if(typeof checkNotifications==='function')checkNotifications(); }catch(e){}
+    try{if(typeof checkNotifications==='function')checkNotifications();}catch(e){}
     const notes=(window.notifications||[]).slice(0,12);
     const icons={deadline:'⚠️',meeting:'📅',reminder:'🔔',other:'📌'};
     const bgs={crit:'var(--red-d)',warn:'var(--amb-d)',ok:'var(--s2)'};
@@ -5365,70 +5613,47 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       html='<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><div class="empty-title">Alles im Griff</div><div class="empty-sub">Keine dringenden Termine</div></div>';
     }else{
       const crit=notes.filter(n=>n.urgency==='crit'),warn=notes.filter(n=>n.urgency==='warn'),ok=notes.filter(n=>n.urgency==='ok');
-      const mkItem=n=>{
-        const label=n.diff<0?'Überfällig':n.diff===0?'Heute':n.diff===1?'Morgen':`In ${n.diff}T`;
-        const bcls=n.urgency==='crit'?'ub-crit':n.urgency==='warn'?'ub-warn':'ub-ok';
-        return `<div class="nitem" onclick="setMainView('calendar');setTimeout(()=>openEventPanel('${n.id}'),200);closePanel()"><div class="nitem-icon" style="background:${bgs[n.urgency]}">${icons[n.type]||'📅'}</div><div class="nitem-body"><div class="nitem-title">${esc(n.title||'')}</div><div class="nitem-sub">${n.date||''}</div></div><span class="nitem-badge urgency-badge ${bcls}">${label}</span></div>`;
-      };
-      if(crit.length) html+=`<div class="panel-notif-section"><div class="pns-title" style="color:var(--red)">⚡ Dringend</div>${crit.map(mkItem).join('')}</div>`;
-      if(warn.length) html+=`<div class="panel-notif-section"><div class="pns-title" style="color:var(--amb)">⚠ Diese Woche</div>${warn.map(mkItem).join('')}</div>`;
-      if(ok.length)   html+=`<div class="panel-notif-section"><div class="pns-title">Demnächst</div>${ok.map(mkItem).join('')}</div>`;
+      const mkI=n=>{const lbl=n.diff<0?'Überfällig':n.diff===0?'Heute':n.diff===1?'Morgen':`In ${n.diff}T`,bcls=n.urgency==='crit'?'ub-crit':n.urgency==='warn'?'ub-warn':'ub-ok';return `<div class="nitem" onclick="setMainView('calendar');setTimeout(()=>openEventPanel('${n.id}'),200);closePanel()"><div class="nitem-icon" style="background:${bgs[n.urgency]}">${icons[n.type]||'📅'}</div><div class="nitem-body"><div class="nitem-title">${esc(n.title||'')}</div><div class="nitem-sub">${n.date||''}</div></div><span class="nitem-badge urgency-badge ${bcls}">${lbl}</span></div>`;};
+      if(crit.length)html+=`<div class="panel-notif-section"><div class="pns-title" style="color:var(--red)">⚡ Dringend</div>${crit.map(mkI).join('')}</div>`;
+      if(warn.length)html+=`<div class="panel-notif-section"><div class="pns-title" style="color:var(--amb)">⚠ Diese Woche</div>${warn.map(mkI).join('')}</div>`;
+      if(ok.length)  html+=`<div class="panel-notif-section"><div class="pns-title">Demnächst</div>${ok.map(mkI).join('')}</div>`;
     }
     if(typeof openPanel==='function') openPanel(notes.length?notes.length+' Hinweis'+(notes.length!==1?'e':''):'Benachrichtigungen',html);
-    const dot=$('notif-dot'); if(dot) dot.style.display='none';
+    const dot=$('notif-dot');if(dot)dot.style.display='none';
   };
 
-  /* ─── GOOGLE STATUS ──────────────────────────────────── */
-  function isGoogleLoggedIn(){
-    return !!(window.accessToken&&window.accessToken!=='firebase-auth'&&String(window.accessToken).length>10);
-  }
-  function isGoogleSyncEnabled(){
-    const v=localStorage.getItem('change_v1_google_calendar_sync');
-    return v===null?true:v!=='false';
-  }
-  function setGoogleSyncEnabled(on){
-    localStorage.setItem('change_v1_google_calendar_sync',on?'true':'false');
-    window.googleCalendarSyncEnabled=on;
-  }
+  /* ─── GOOGLE ─────────────────────────────────────────── */
+  function isGoogleLoggedIn(){return !!(window.accessToken&&window.accessToken!=='firebase-auth'&&String(window.accessToken).length>10);}
+  function isGoogleSyncEnabled(){const v=localStorage.getItem('change_v1_google_calendar_sync');return v===null?true:v!=='false';}
+  function setGoogleSyncEnabled(on){localStorage.setItem('change_v1_google_calendar_sync',on?'true':'false');window.googleCalendarSyncEnabled=on;}
+
   window.triggerGoogleCalendarSync=async function(){
-    if(!isGoogleLoggedIn()){ if(typeof toast==='function') toast('Bitte zuerst mit Google anmelden','err'); return; }
-    try{
-      if(typeof toast==='function') toast('Google Kalender wird synchronisiert…','');
-      if(typeof loadGoogleEvents==='function') await loadGoogleEvents();
-      if(typeof renderCalendar==='function') renderCalendar();
-      if(typeof buildDashboard==='function') buildDashboard();
-      if(typeof toast==='function') toast('Google Kalender synchronisiert ✓','ok');
-    }catch(e){ if(typeof toast==='function') toast('Sync fehlgeschlagen','err'); }
+    if(!isGoogleLoggedIn()){if(typeof toast==='function')toast('Bitte zuerst mit Google anmelden','err');return;}
+    try{if(typeof toast==='function')toast('Wird synchronisiert…','');if(typeof loadGoogleEvents==='function')await loadGoogleEvents();if(typeof renderCalendar==='function')renderCalendar();if(typeof buildDashboard==='function')buildDashboard();if(typeof toast==='function')toast('Google Kalender synchronisiert ✓','ok');}
+    catch(e){if(typeof toast==='function')toast('Sync fehlgeschlagen','err');}
   };
 
-  /* ─── AVATAR STATUS DOT ──────────────────────────────── */
+  /* ─── AVATAR DOT ─────────────────────────────────────── */
   function updateAvatarDot(){
-    const dot=$('avatar-status-dot'); if(!dot) return;
-    const loggedIn=isGoogleLoggedIn()||!!(window.currentUser||(window.userInfo&&window.userInfo.email));
-    const online=loggedIn&&navigator.onLine!==false;
-    dot.className=online?'online':(loggedIn?'offline':'');
-    dot.title=online?'Online':'Offline';
+    const dot=$('avatar-status-dot');if(!dot)return;
+    const in_=isGoogleLoggedIn()||!!(window.currentUser||(window.userInfo&&window.userInfo.email));
+    const on=in_&&navigator.onLine!==false;
+    dot.className=on?'online':(in_?'offline':'');
+    dot.title=on?'Online':'Offline';
   }
-  window.addEventListener('online', updateAvatarDot);
+  window.addEventListener('online',updateAvatarDot);
   window.addEventListener('offline',updateAvatarDot);
   setInterval(updateAvatarDot,8000);
   setTimeout(updateAvatarDot,1500);
 
-  /* ─── EINHEITLICHES EINSTELLUNGS-PANEL ──────────────── */
+  /* ─── EINSTELLUNGS-PANEL ─────────────────────────────── */
   window.openSettingsPanel=function(startTab){
     startTab=startTab||'calendar';
-
-    /* Kalender-Tab */
     const o=readOpt();
-    const STATES=window.STATE_OPTIONS||(typeof STATE_OPTIONS!=='undefined'?STATE_OPTIONS:{
-      ALL:'Alle Bundesländer',BW:'Baden-Württemberg',BY:'Bayern','BY-AUGSBURG':'Bayern · Augsburg',
-      BE:'Berlin',BB:'Brandenburg',HB:'Bremen',HH:'Hamburg',HE:'Hessen',
-      MV:'Mecklenburg-Vorpommern',NI:'Niedersachsen',NW:'Nordrhein-Westfalen',
-      RP:'Rheinland-Pfalz',SL:'Saarland',SN:'Sachsen',ST:'Sachsen-Anhalt',
-      SH:'Schleswig-Holstein',TH:'Thüringen'
-    });
+    const STATES=window.STATE_OPTIONS||(typeof STATE_OPTIONS!=='undefined'?STATE_OPTIONS:{ALL:'Alle Bundesländer',BW:'Baden-Württemberg',BY:'Bayern','BY-AUGSBURG':'Bayern · Augsburg',BE:'Berlin',BB:'Brandenburg',HB:'Bremen',HH:'Hamburg',HE:'Hessen',MV:'Mecklenburg-Vorpommern',NI:'Niedersachsen',NW:'Nordrhein-Westfalen',RP:'Rheinland-Pfalz',SL:'Saarland',SN:'Sachsen',ST:'Sachsen-Anhalt',SH:'Schleswig-Holstein',TH:'Thüringen'});
     const curState=(window.calendarSettings&&window.calendarSettings.state)||localStorage.getItem('change_v1_holiday_state')||'ALL';
     const stateOpts=Object.entries(STATES).map(([k,v])=>`<option value="${esc(k)}" ${k===curState?'selected':''}>${esc(v)}</option>`).join('');
+
     const calPane=`
       <div class="fg">
         <label class="flabel">Bundesland für Feiertage</label>
@@ -5440,7 +5665,6 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       ${switchRow('Kalenderwochen anzeigen','Links unten pro Woche.','us-toggle-kw',o.showWeekNumbers)}
       <button class="btn btn-primary btn-full" style="margin-top:18px" onclick="window._saveCalSettings()">Speichern</button>`;
 
-    /* Sync-Tab */
     const hasCfg=!!(window.FIREBASE_CONFIG&&window.FIREBASE_CONFIG.apiKey&&!String(window.FIREBASE_CONFIG.apiKey).includes('HIER_'));
     const perm=typeof Notification!=='undefined'?Notification.permission:'nicht unterstützt';
     const token=lsRead('fcm_token');
@@ -5464,16 +5688,16 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
         <div class="push-status">Live-Mitspieler: <strong>${liveOn?'verbunden · '+online+' online':'deaktiviert'}</strong></div>
         <div class="push-status">App-Installation: <strong>${esc(instSt)}</strong></div>
       </div>
-      ${switchRow('Push-Benachrichtigungen <span class="status-pill '+(pushOn?'status-on':'status-off')+'">'+(pushOn?'AKTIV':'INAKTIV')+'</span>','Erinnerungen für offene Challenges und Termine.','us-toggle-push',pushOn)}
+      ${switchRow('Push-Benachrichtigungen <span class="status-pill '+(pushOn?'status-on':'status-off')+'">'+(pushOn?'AKTIV':'INAKTIV')+'</span>','Erinnerungen für offene Challenges.','us-toggle-push',pushOn)}
       <button class="btn btn-secondary btn-full" style="margin:-6px 0 14px;font-size:12px" onclick="window._sendTestNotification()">Test-Benachrichtigung senden</button>
-      ${switchRow('Live-Mitspieler <span class="status-pill '+(liveOn?'status-on':'status-off')+'">'+(liveOn?'VERBUNDEN':'DEAKTIVIERT')+'</span>','Synchronisiert Mitspieler live.','us-toggle-live',liveOn)}
-      ${switchRow('Auto-Challenges <span class="status-pill '+(autoOn?'status-on':'status-off')+'">'+(autoOn?'AKTIV':'INAKTIV')+'</span>','Erzeugt täglich Sportübungen.','us-toggle-auto',autoOn)}
+      ${switchRow('Live-Mitspieler <span class="status-pill '+(liveOn?'status-on':'status-off')+'">'+(liveOn?'VERBUNDEN':'DEAKTIVIERT')+'</span>','Synchronisiert Mitspieler live über Firebase.','us-toggle-live',liveOn)}
+      ${switchRow('Auto-Challenges <span class="status-pill '+(autoOn?'status-on':'status-off')+'">'+(autoOn?'AKTIV':'INAKTIV')+'</span>','Erzeugt täglich neue Sportübungen.','us-toggle-auto',autoOn)}
       <div style="height:1px;background:var(--b1);margin:16px 0"></div>
       <div class="toggle-row">
         <div class="toggle-copy">
           <div class="toggle-title">${gDot}Google Kalender ${gPill}</div>
-          <div class="toggle-sub">${gIn?'Termine aus Google Kalender werden angezeigt.':'Nicht angemeldet – bitte über den Login verbinden.'}</div>
-          ${gIn?'<div class="settings-hint" style="color:#22c55e;font-weight:600">● Verbunden mit Google</div>':'<div class="settings-hint" style="color:#ef4444;font-weight:600">● Nicht angemeldet</div>'}
+          <div class="toggle-sub">${gIn?'Termine aus Google Kalender werden angezeigt.':'Noch nicht angemeldet – bitte über den Google-Login verbinden.'}</div>
+          <div class="settings-hint" style="color:${gIn?'#22c55e':'#ef4444'};font-weight:600;margin-top:4px">${gIn?'● Verbunden':'● Nicht angemeldet'}</div>
         </div>
         <label class="switch"><input type="checkbox" id="us-toggle-gsync" ${gOn?'checked':''} ${!gIn?'disabled':''}><span class="slider"></span></label>
       </div>
@@ -5486,12 +5710,12 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       <div class="settings-hint" style="margin-top:6px">Android: Push in Chrome. iPhone: Zum Home-Bildschirm hinzufügen.</div>`;
 
     const panelHtml=`
-      <div style="display:flex;gap:4px;padding:0 0 14px;border-bottom:1px solid var(--b1);margin-bottom:16px">
+      <div style="display:flex;gap:8px;padding:0 0 16px;border-bottom:1px solid var(--b1);margin-bottom:16px">
         <button class="settings-tab ${startTab==='calendar'?'active':''}" id="us-tab-calendar" onclick="window._switchSettingsTab('calendar')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Kalender
         </button>
         <button class="settings-tab ${startTab==='sync'?'active':''}" id="us-tab-sync" onclick="window._switchSettingsTab('sync')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v4"/><path d="M12 18v4"/><path d="m4.93 4.93 2.83 2.83"/><path d="m16.24 16.24 2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="m4.93 19.07 2.83-2.83"/><path d="m16.24 7.76 2.83-2.83"/></svg>Push & Sync
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Push & Sync
         </button>
       </div>
       <div id="us-pane-calendar" class="settings-pane ${startTab==='calendar'?'active':''}">${calPane}</div>
@@ -5502,100 +5726,78 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     setTimeout(()=>{
       const pT=$('us-toggle-push');
       if(pT) pT.addEventListener('change',async e=>{
-        if(!e.target.checked){ if(typeof disablePushNotifications==='function') await disablePushNotifications(); else lsWrite('push_enabled',false); }
-        else{ if(typeof enablePushNotifications==='function') await enablePushNotifications(); else{ const p=typeof Notification!=='undefined'?await Notification.requestPermission():'denied'; if(p==='granted') lsWrite('push_enabled',true); else{ e.target.checked=false; if(typeof toast==='function') toast('Berechtigung verweigert','err'); } } }
+        if(!e.target.checked){if(typeof disablePushNotifications==='function')await disablePushNotifications();else lsWrite('push_enabled',false);}
+        else{if(typeof enablePushNotifications==='function')await enablePushNotifications();else{const p=typeof Notification!=='undefined'?await Notification.requestPermission():'denied';if(p==='granted')lsWrite('push_enabled',true);else{e.target.checked=false;if(typeof toast==='function')toast('Berechtigung verweigert','err');}}}
         setTimeout(()=>window.openSettingsPanel('sync'),900);
       });
       const lT=$('us-toggle-live');
-      if(lT) lT.addEventListener('change',async e=>{ if(typeof setLiveSyncEnabled==='function') await setLiveSyncEnabled(e.target.checked); else lsWrite('live_sync_enabled',e.target.checked); setTimeout(()=>window.openSettingsPanel('sync'),700); });
+      if(lT) lT.addEventListener('change',async e=>{if(typeof setLiveSyncEnabled==='function')await setLiveSyncEnabled(e.target.checked);else lsWrite('live_sync_enabled',e.target.checked);setTimeout(()=>window.openSettingsPanel('sync'),700);});
       const aT=$('us-toggle-auto');
-      if(aT) aT.addEventListener('change',e=>{ if(typeof setAutoChallengesEnabled==='function') setAutoChallengesEnabled(e.target.checked); else lsWrite('auto_challenges_enabled',e.target.checked); setTimeout(()=>window.openSettingsPanel('sync'),400); });
+      if(aT) aT.addEventListener('change',e=>{if(typeof setAutoChallengesEnabled==='function')setAutoChallengesEnabled(e.target.checked);else lsWrite('auto_challenges_enabled',e.target.checked);setTimeout(()=>window.openSettingsPanel('sync'),400);});
       const gT=$('us-toggle-gsync');
-      if(gT) gT.addEventListener('change',async e=>{ setGoogleSyncEnabled(e.target.checked); if(e.target.checked){ await window.triggerGoogleCalendarSync(); }else{ window.gEvents=[]; if(typeof renderCalendar==='function') renderCalendar(); if(typeof buildDashboard==='function') buildDashboard(); if(typeof toast==='function') toast('Google Kalender getrennt','ok'); } setTimeout(()=>window.openSettingsPanel('sync'),500); });
+      if(gT) gT.addEventListener('change',async e=>{setGoogleSyncEnabled(e.target.checked);if(e.target.checked){await window.triggerGoogleCalendarSync();}else{window.gEvents=[];if(typeof renderCalendar==='function')renderCalendar();if(typeof buildDashboard==='function')buildDashboard();if(typeof toast==='function')toast('Google Kalender getrennt','ok');}setTimeout(()=>window.openSettingsPanel('sync'),500);});
     },80);
   };
 
-  window._sendTestNotification=function(){
-    if(typeof Notification==='undefined'||Notification.permission!=='granted'){ if(typeof toast==='function') toast('Push zuerst aktivieren','err'); return; }
-    try{ new Notification('Change',{body:'Push-Benachrichtigungen funktionieren ✓'}); if(typeof toast==='function') toast('Test gesendet ✓','ok'); }catch(e){ if(typeof toast==='function') toast('Test fehlgeschlagen','err'); }
-  };
-  window._switchSettingsTab=function(tab){
-    ['calendar','sync'].forEach(t=>{ const b=$('us-tab-'+t),p=$('us-pane-'+t); if(b) b.classList.toggle('active',t===tab); if(p) p.classList.toggle('active',t===tab); });
-  };
+  window._sendTestNotification=function(){if(typeof Notification==='undefined'||Notification.permission!=='granted'){if(typeof toast==='function')toast('Push zuerst aktivieren','err');return;}try{new Notification('Change',{body:'Push funktioniert ✓'});if(typeof toast==='function')toast('Test gesendet ✓','ok');}catch(e){if(typeof toast==='function')toast('Test fehlgeschlagen','err');}};
+  window._switchSettingsTab=function(tab){['calendar','sync'].forEach(t=>{const b=$('us-tab-'+t),p=$('us-pane-'+t);if(b)b.classList.toggle('active',t===tab);if(p)p.classList.toggle('active',t===tab);});};
   window._saveCalSettings=function(){
     const o={showHolidays:true,showChallengeDots:true,showWeekNumbers:true};
-    const h=$('us-toggle-holidays'); if(h) o.showHolidays=h.checked;
-    const d=$('us-toggle-dots');     if(d) o.showChallengeDots=d.checked;
-    const k=$('us-toggle-kw');       if(k) o.showWeekNumbers=k.checked;
+    const h=$('us-toggle-holidays');if(h)o.showHolidays=h.checked;
+    const d=$('us-toggle-dots');if(d)o.showChallengeDots=d.checked;
+    const k=$('us-toggle-kw');if(k)o.showWeekNumbers=k.checked;
     saveOpt(o);
     const se=$('us-holiday-state');
-    if(se){ const s=se.value||'ALL'; localStorage.setItem('change_v1_holiday_state',s); localStorage.setItem('holiday_state',s); if(!window.calendarSettings) window.calendarSettings={}; window.calendarSettings.state=s; }
-    if(typeof closePanel==='function') closePanel();
-    if(typeof renderCalendar==='function') renderCalendar();
-    if(typeof toast==='function') toast('Kalender-Einstellungen gespeichert ✓','ok');
+    if(se){const s=se.value||'ALL';localStorage.setItem('change_v1_holiday_state',s);localStorage.setItem('holiday_state',s);if(!window.calendarSettings)window.calendarSettings={};window.calendarSettings.state=s;}
+    if(typeof closePanel==='function')closePanel();
+    if(typeof renderCalendar==='function')renderCalendar();
+    if(typeof toast==='function')toast('Gespeichert ✓','ok');
   };
-  window.openCalendarSettings =()=>window.openSettingsPanel('calendar');
+  window.openCalendarSettings=()=>window.openSettingsPanel('calendar');
   window.openPushSettingsPanel=()=>window.openSettingsPanel('sync');
   window.saveCalSettings=window._saveCalSettings;
 
-  /* ─── PUNKTE-KALENDER: neu zeichnen wenn Firebase lädt ─ */
+  /* ─── PUNKTE-KALENDER RETRY NACH FIREBASE-LOAD ──────── */
   (function(){
-    function tryRenderWeekBar(){
-      if((window.challengeCompletions||[]).length>0&&window.currentMainView==='challenges'&&typeof window.renderWeekBar==='function')
-        window.renderWeekBar();
-    }
-    [1000,2500,5000,9000].forEach(ms=>setTimeout(tryRenderWeekBar,ms));
-    // Hook auf challengeCompletions-Änderungen
-    let _comps=window.challengeCompletions||[];
-    try{
-      Object.defineProperty(window,'challengeCompletions',{
-        get:()=>_comps,
-        set:v=>{ _comps=v; if(v&&v.length>0) setTimeout(()=>{ if(window.currentMainView==='challenges'&&typeof window.renderWeekBar==='function') window.renderWeekBar(); },50); },
-        configurable:true
-      });
-    }catch(e){}
+    let _done=false;
+    function tryWB(){if(_done)return;if((window.challengeCompletions||[]).length>0){_done=true;if(window.currentMainView==='challenges'&&typeof window.renderWeekBar==='function')window.renderWeekBar();}}
+    [1000,2500,5000,9000].forEach(ms=>setTimeout(tryWB,ms));
+    let _c=window.challengeCompletions||[];
+    try{Object.defineProperty(window,'challengeCompletions',{get:()=>_c,set:v=>{_c=v;if(v&&v.length>0){_done=true;setTimeout(()=>{if(window.currentMainView==='challenges'&&typeof window.renderWeekBar==='function')window.renderWeekBar();},50);}},configurable:true});}catch(e){}
   })();
 
-  /* ─── OPTIONALE CHALLENGES sicherstellen ────────────── */
+  /* ─── OPTIONALE CHALLENGES SICHERSTELLEN ────────────── */
   (function(){
     const OPTS=[
       {id:'sport_walk_10_optional',title:'10 Minuten spazieren gehen',points:15,icon:'🚶',desc:'Gehe 10 Minuten locker spazieren.',optional:true,active:true},
-      {id:'sport_fitness_30_optional',title:'Fitness · mind. 30 Minuten',points:30,icon:'🏋️',desc:'Leichtes bis mittleres Training für mindestens 30 Minuten.',optional:true,active:true}
+      {id:'sport_fitness_30_optional',title:'Fitness · mind. 30 Minuten',points:30,icon:'🏋️',desc:'Leichtes bis mittleres Training für mind. 30 Minuten.',optional:true,active:true}
     ];
-    function ensure(){ const chs=window.challenges||[]; OPTS.forEach(o=>{ if(!chs.find(c=>c.id===o.id)) chs.push({...o,createdAt:new Date().toISOString()}); }); window.challenges=chs; }
+    function ensure(){const chs=window.challenges||[];OPTS.forEach(o=>{if(!chs.find(c=>c.id===o.id))chs.push({...o,createdAt:new Date().toISOString()});});window.challenges=chs;}
     [400,1800,6800].forEach(ms=>setTimeout(ensure,ms));
-    // Wrap renderChallenges so optionals are always present
-    function wrapRC(){
-      const fn=window.renderChallenges;
-      if(typeof fn==='function'&&!fn.__optWrapped){
-        window.renderChallenges=function(){ ensure(); return fn.apply(this,arguments); };
-        window.renderChallenges.__optWrapped=true;
-      }
-    }
-    [200,500,3000,6600].forEach(ms=>setTimeout(wrapRC,ms));
+    function wrapRC(){const fn=window.renderChallenges;if(typeof fn==='function'&&!fn.__optW){window.renderChallenges=function(){ensure();return fn.apply(this,arguments);};window.renderChallenges.__optW=true;}}
+    [200,600,3100,6700].forEach(ms=>setTimeout(wrapRC,ms));
   })();
 
-  /* ─── getAllEvents: Google-Titel korrekt lesen ──────── */
+  /* ─── getAllEvents: Google-Titel korrekt ─────────────── */
   (function(){
     const pad=n=>String(n).padStart(2,'0');
     const keyOf=d=>{const x=d instanceof Date?d:new Date(String(d)+'T12:00:00');return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate());};
     const addDay=(k,n)=>{const d=new Date(k+'T12:00:00');d.setDate(d.getDate()+n);return keyOf(d);};
     function myGetAllEvents(){
       const out=[],seen=new Set();
-      function add(ev){ if(!ev||!ev.date)return; const k=(ev.googleEventId?'g:'+ev.googleEventId:'l:'+(ev.id||ev.title||''))+'|'+String(ev.startDate||ev.date).slice(0,10); if(seen.has(k))return; seen.add(k); out.push(ev); }
-      try{ (Array.isArray(window.events)?window.events:[]).forEach(ev=>{ const s=String(ev.startDate||ev.date||'').slice(0,10); const e=String(ev.endDate||ev.toDate||ev.untilDate||s).slice(0,10); add({...ev,date:s,startDate:s,endDate:e>=s?e:s,title:ev.title||ev.summary||ev.name||'Termin',source:ev.source||'local'}); }); }catch(e){}
-      try{ (Array.isArray(window.gEvents)?window.gEvents:[]).forEach(ge=>{ if(!ge)return; const title=ge.summary||ge.title||'Google-Termin'; let s='',e='',time=''; if(ge.start&&ge.start.date){s=String(ge.start.date).slice(0,10);}else if(ge.start&&ge.start.dateTime){s=String(ge.start.dateTime).slice(0,10);try{time=new Date(ge.start.dateTime).toTimeString().slice(0,5);}catch(ex){}} if(!s)return; if(ge.end&&ge.end.date){e=addDay(String(ge.end.date).slice(0,10),-1);if(e<s)e=s;}else if(ge.end&&ge.end.dateTime){e=String(ge.end.dateTime).slice(0,10);}else{e=s;} add({id:'g_'+(ge.id||''),googleEventId:ge.id||'',title,date:s,startDate:s,endDate:e,time,allDay:!ge.start?.dateTime,color:'blue',type:'meeting',desc:ge.description||'',source:'google'}); }); }catch(e){}
+      function add(ev){if(!ev||!ev.date)return;const k=(ev.googleEventId?'g:'+ev.googleEventId:'l:'+(ev.id||ev.title||''))+'|'+String(ev.startDate||ev.date).slice(0,10);if(seen.has(k))return;seen.add(k);out.push(ev);}
+      try{(Array.isArray(window.events)?window.events:[]).forEach(ev=>{const s=String(ev.startDate||ev.date||'').slice(0,10);const e=String(ev.endDate||ev.toDate||ev.untilDate||s).slice(0,10);add({...ev,date:s,startDate:s,endDate:e>=s?e:s,title:ev.title||ev.summary||ev.name||'Termin',source:ev.source||'local'});});}catch(e){}
+      try{(Array.isArray(window.gEvents)?window.gEvents:[]).forEach(ge=>{if(!ge)return;const title=ge.summary||ge.title||'Google-Termin';let s='',e='',time='';if(ge.start&&ge.start.date){s=String(ge.start.date).slice(0,10);}else if(ge.start&&ge.start.dateTime){s=String(ge.start.dateTime).slice(0,10);try{time=new Date(ge.start.dateTime).toTimeString().slice(0,5);}catch(ex){}}if(!s)return;if(ge.end&&ge.end.date){e=addDay(String(ge.end.date).slice(0,10),-1);if(e<s)e=s;}else if(ge.end&&ge.end.dateTime){e=String(ge.end.dateTime).slice(0,10);}else{e=s;}add({id:'g_'+(ge.id||''),googleEventId:ge.id||'',title,date:s,startDate:s,endDate:e,time,allDay:!ge.start?.dateTime,color:'blue',type:'meeting',desc:ge.description||'',source:'google'});});}catch(e){}
       return out;
     }
-    // Override after STEP7 timers settle
-    [300,6800].forEach(ms=>setTimeout(()=>{ window.getAllEvents=myGetAllEvents; },ms));
+    [300,7000].forEach(ms=>setTimeout(()=>{window.getAllEvents=myGetAllEvents;},ms));
   })();
 
   /* Toolbar redirects */
-  function fixToolbar(){ document.querySelectorAll('[onclick="openCalendarSettings()"]').forEach(el=>el.setAttribute('onclick',"openSettingsPanel('calendar')")); document.querySelectorAll('[onclick="openPushSettingsPanel()"]').forEach(el=>el.setAttribute('onclick',"openSettingsPanel('sync')")); }
-  document.addEventListener('DOMContentLoaded',()=>{ fixToolbar(); updateAvatarDot(); });
-  window.addEventListener('load',()=>{ fixToolbar(); updateAvatarDot(); });
-  setTimeout(fixToolbar,500);
+  function fixTB(){document.querySelectorAll('[onclick="openCalendarSettings()"]').forEach(el=>el.setAttribute('onclick',"openSettingsPanel('calendar')"));document.querySelectorAll('[onclick="openPushSettingsPanel()"]').forEach(el=>el.setAttribute('onclick',"openSettingsPanel('sync')"));}
+  document.addEventListener('DOMContentLoaded',()=>{fixTB();updateAvatarDot();});
+  window.addEventListener('load',()=>{fixTB();updateAvatarDot();});
+  setTimeout(fixTB,500);
 
 })();
 </script>
