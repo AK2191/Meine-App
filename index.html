@@ -5568,11 +5568,11 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   .settings-tab.active{background:var(--acc);color:#fff}
   .settings-pane{display:none}
   .settings-pane.active{display:block}
-  /* Avatar Online/Offline Dot */
-  .avatar{position:relative!important}
-  #avatar-status-dot{position:absolute;bottom:1px;right:1px;width:9px;height:9px;border-radius:50%;border:2px solid var(--bg);background:var(--t4);transition:background .4s}
-  #avatar-status-dot.online{background:#22c55e}
-  #avatar-status-dot.offline{background:#ef4444}
+  /* Avatar Google-Status Ring */
+  .avatar{position:relative!important;transition:box-shadow .4s!important}
+  .avatar.google-on { box-shadow:0 0 0 2.5px #22c55e!important }
+  .avatar.google-off{ box-shadow:0 0 0 2.5px #ef4444!important }
+  #avatar-status-dot{display:none}  /* Dot ausgeblendet, Ring reicht */
 </style>
 
 <!-- ═══════════════════════════════════════════════════════
@@ -5633,13 +5633,13 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     catch(e){if(typeof toast==='function')toast('Sync fehlgeschlagen','err');}
   };
 
-  /* ─── AVATAR DOT ─────────────────────────────────────── */
+  /* ─── AVATAR RING (Google-Status) ───────────────────── */
   function updateAvatarDot(){
-    const dot=$('avatar-status-dot');if(!dot)return;
-    const in_=isGoogleLoggedIn()||!!(window.currentUser||(window.userInfo&&window.userInfo.email));
-    const on=in_&&navigator.onLine!==false;
-    dot.className=on?'online':(in_?'offline':'');
-    dot.title=on?'Online':'Offline';
+    const av=$('user-avatar'); if(!av)return;
+    const loggedIn=isGoogleLoggedIn()||!!(window.currentUser||(window.userInfo&&window.userInfo.email));
+    av.classList.toggle('google-on', loggedIn);
+    av.classList.toggle('google-off',!loggedIn);
+    av.title=loggedIn?'Angemeldet – Abmelden':'Nicht mit Google angemeldet';
   }
   window.addEventListener('online',updateAvatarDot);
   window.addEventListener('offline',updateAvatarDot);
