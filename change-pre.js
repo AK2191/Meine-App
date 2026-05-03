@@ -178,7 +178,7 @@
     bar.innerHTML =
       '<div class="challenge-week-head"><div>'+
         '<div class="challenge-week-title">Punkte-Kalender</div>'+
-        '<div class="challenge-week-sub">Aktuelle Woche · Challenge-Punkte</div>'+
+        ''+
       '</div><div class="challenge-week-actions">'+
         '<button class="btn btn-ghost btn-sm" id="cwp-prev">← Letzte Woche</button>'+
         '<button class="btn btn-secondary btn-sm" id="cwp-today">Heute</button>'+
@@ -199,7 +199,7 @@
     const title = document.querySelector('#challenge-week-points-card .challenge-week-title');
     const sub   = document.querySelector('#challenge-week-points-card .challenge-week-sub');
     if(title) title.textContent = 'Punkte-Kalender · ' + monthLabel(days);
-    if(sub)   sub.textContent   = (weekOffset===0?'Aktuelle Woche':weekOffset<0?'Letzte Woche':'Nächste Woche') + ' · Challenge-Punkte';
+    if(sub)   sub.textContent   = '';
     grid.innerHTML = days.map((d,i) => {
       const k   = d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
       const pts = pointsForDate(k);

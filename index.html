@@ -789,7 +789,6 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
             <div class="challenge-card-head">
               <div>
                 <div class="challenge-title">Heute erledigen</div>
-                <div class="challenge-sub">Ein Klick erledigt eine Challenge und vergibt Punkte</div>
               </div>
             </div>
             <div id="challenges-list"></div>
@@ -1665,7 +1664,8 @@ function checkNotifications(){
     var _done2=new Set((window.challengeCompletions||[])
       .filter(function(c){return String(c.date||'').slice(0,10)===_td&&(!_me2||String(c.playerId||c.email||c.userEmail||'').toLowerCase()===_me2);})
       .map(function(c){return c.challengeId;}));
-    hasOpenChallenges=(window.challenges||[]).some(function(c){return c&&c.active!==false&&!c.optional&&(!c.date||c.date===_td||c.recurrence==='daily')&&!_done2.has(c.id);});
+    const _sportOnly=(window.challenges||[]).filter(function(c){return c&&c.active!==false&&!c.optional&&(!c.date||c.date===_td||c.recurrence==='daily')&&(c.type==='Sport'||/^sport_|^auto_.*_sport_|^opt_/.test(c.id||''));});
+    hasOpenChallenges=_sportOnly.some(function(c){return !_done2.has(c.id);});
   }catch(_){}
   const dot=document.getElementById('notif-dot');
   if(dot) dot.style.display=(hasCrit||hasOpenChallenges)?'block':'none';
@@ -4677,7 +4677,17 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   function persistCompletions(arr){window.challengeCompletions=arr;try{challengeCompletions=arr}catch(e){};write('challenge_completions',arr);write('challengeCompletions',arr);try{if(typeof window.persistChangeState==='function')window.persistChangeState()}catch(e){}}
   function stats(id){id=norm(id);const td=today();let totalPoints=0,todayPoints=0,totalCount=0,todayCount=0;completions().forEach(c=>{if(completionKey(c)!==id)return;const p=parseInt(c.points,10)||0;totalPoints+=p;totalCount++;if(String(c.date||'').slice(0,10)===td){todayPoints+=p;todayCount++;}});return{totalPoints,todayPoints,totalCount,todayCount};}
   function allChallenges(){let list=[];try{list=(typeof window.buildDefaultChallenges==='function'?window.buildDefaultChallenges():[])||[]}catch(e){}; if(!list.length) list=read('challenges',[])||[]; return list.filter(c=>c&&c.active!==false&&!/lesen|trinken|wasser|mail|haushalt|todo|meditation/i.test((c.title||c.name||'')+' '+(c.desc||''))).map(c=>Object.assign({},c,{category:'sport'}));}
-  function ensureOptional(list){const have=t=>list.some(c=>norm(c.title||c.name).includes(t)); const out=list.slice(); if(!have('spazieren'))out.push({id:'sport_walk_10_optional',title:'10 Minuten spazieren gehen',name:'10 Minuten spazieren gehen',points:15,icon:'🚶',desc:'Gehe 10 Minuten locker spazieren.',optional:true,active:true,category:'sport'}); if(!have('fitness'))out.push({id:'sport_fitness_30_optional',title:'Fitness gehen · mindestens 30 Minuten',name:'Fitness gehen · mindestens 30 Minuten',points:30,icon:'🏋️',desc:'Leichtes bis mittleres Training für mindestens 30 Minuten.',optional:true,active:true,category:'sport'}); return out;}
+  function ensureOptional(list){
+    // Dedupliziere anhand von ID und Titel-Keywords — verhindert doppelte spazieren/fitness
+    const hasId=id=>list.some(c=>c.id===id);
+    const hasKey=k=>list.some(c=>norm(c.title||c.name).includes(k));
+    const out=list.slice();
+    if(!hasId('opt_walk_10')&&!hasId('sport_walk_10_optional')&&!hasKey('spazieren'))
+      out.push({id:'opt_walk_10',title:'10 Minuten spazieren',points:15,icon:'🚶',desc:'Gehe mindestens 10 Minuten locker spazieren.',optional:true,active:true});
+    if(!hasId('opt_fitness_30')&&!hasId('sport_fitness_30_optional')&&!hasKey('fitness'))
+      out.push({id:'opt_fitness_30',title:'Fitness · mind. 30 Minuten',points:30,icon:'🏋️',desc:'Leichtes bis mittleres Training für mind. 30 Minuten.',optional:true,active:true});
+    return out;
+  }
   function dailyChallenges(){const all=ensureOptional(allChallenges()); const normal=all.filter(c=>!c.optional&&!/spazier|fitness/i.test(c.title||c.name||'')); const optional=all.filter(c=>c.optional||/spazier|fitness/i.test(c.title||c.name||'')); let saved=read('change_daily_sports',null); const td=today(); if(!saved||saved.date!==td){let seed=parseInt(td.replace(/-/g,''),10)||1; const rnd=()=>{seed=(seed*9301+49297)%233280;return seed/233280}; const ids=normal.slice().sort(()=>rnd()-.5).slice(0,7).map(c=>c.id); saved={date:td,ids}; write('change_daily_sports',saved);} const map=new Map(all.map(c=>[String(c.id),c])); const seven=(saved.ids||[]).map(id=>map.get(String(id))).filter(Boolean); return seven.concat(optional.filter(o=>!seven.some(x=>x.id===o.id)));}
   function challengeById(id){return dailyChallenges().find(c=>String(c.id)===String(id))||allChallenges().find(c=>String(c.id)===String(id));}
   function done(id){const a=account(),td=today();return completions().some(c=>String(c.challengeId)===String(id)&&String(c.date||'').slice(0,10)===td&&completionKey(c)===a.id)}
@@ -5743,6 +5753,12 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     var html=chHtml+calHtml;
     if(!html) html='<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><div class="empty-title">Alles erledigt ✓</div><div class="empty-sub">Keine offenen Challenges und keine Termine</div></div>';
 
+    // Mark-as-read button only if there are open challenges
+    if(chHtml){
+      html='<div style="display:flex;justify-content:flex-end;margin-bottom:8px">'+
+        '<button class="btn btn-ghost btn-sm" onclick="window._markChallengesRead()" style="font-size:11px;color:var(--t4)">Alle gelesen ✓</button>'+
+      '</div>'+html;
+    }
     var title=notes.length&&chHtml?'Challenges & Termine':chHtml?'Challenges':'Benachrichtigungen';
     if(typeof openPanel==='function') openPanel(title, html);
     var dot=$('notif-dot');if(dot)dot.style.display='none';
@@ -5918,6 +5934,28 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   window.openPushSettingsPanel=()=>window.openSettingsPanel('sync');
   window.saveCalSettings=window._saveCalSettings;
 
+  /* ── Benachrichtigungen als gelesen markieren ── */
+  window._markChallengesRead=function(){
+    try{
+      const td=(typeof dateKey==='function')?dateKey(new Date()):new Date().toISOString().slice(0,10);
+      localStorage.setItem('change_notif_read_'+td,'1');
+      const dot=document.getElementById('notif-dot');
+      if(dot) dot.style.display='none';
+      if(typeof closePanel==='function') closePanel();
+    }catch(e){}
+  };
+  // Dot ausgeblendet lassen wenn heute schon als gelesen markiert
+  function _isReadToday(){
+    const td=(typeof dateKey==='function')?dateKey(new Date()):new Date().toISOString().slice(0,10);
+    return localStorage.getItem('change_notif_read_'+td)==='1';
+  }
+  function _patchDotIfRead(){
+    if(_isReadToday()){const dot=document.getElementById('notif-dot');if(dot)dot.style.display='none';}
+  }
+  document.addEventListener('DOMContentLoaded',_patchDotIfRead);
+  window.addEventListener('load',_patchDotIfRead);
+  [800,2000].forEach(ms=>setTimeout(_patchDotIfRead,ms));
+
   /* ─── PUNKTE-KALENDER RETRY NACH FIREBASE-LOAD ──────── */
   (function(){
     let _done=false;
@@ -5930,7 +5968,6 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   /* ─── OPTIONALE CHALLENGES SICHERSTELLEN ────────────── */
   (function(){
     const OPTS=[
-      {id:'sport_walk_10_optional',title:'10 Minuten spazieren gehen',points:15,icon:'🚶',desc:'Gehe 10 Minuten locker spazieren.',optional:true,active:true},
       {id:'sport_fitness_30_optional',title:'Fitness · mind. 30 Minuten',points:30,icon:'🏋️',desc:'Leichtes bis mittleres Training für mind. 30 Minuten.',optional:true,active:true}
     ];
     function ensure(){const chs=window.challenges||[];OPTS.forEach(o=>{if(!chs.find(c=>c.id===o.id))chs.push({...o,createdAt:new Date().toISOString()});});window.challenges=chs;}
