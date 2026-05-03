@@ -910,6 +910,10 @@ window.addEventListener('load', async () => {
   accessToken = ls('access_token') || '';
   userInfo = ls('user_info') || {};
   events = ls('events') || [];
+  // Clean up demo events that may have been seeded at first boot
+  const _demoIds = new Set(['d1','d2','d3','d4']);
+  events = events.filter(e => !_demoIds.has(e.id) && e.source !== 'demo');
+  ls('events', events);
   challenges = ls('challenges') || [];
   challengeCompletions = ls('challenge_completions') || [];
   challengePlayers = ls('challenge_players') || [];
@@ -1104,6 +1108,17 @@ function buildDemoEvents(){
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━
    BOOT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function cleanDemoEvents(){
+  /* Entfernt Demo-Termine (d1,d2,d3,d4) die beim ersten Start geladen wurden */
+  const demoIds = new Set(['d1','d2','d3','d4']);
+  const before = events.length;
+  events = events.filter(e => !demoIds.has(e.id) && e.source !== 'demo');
+  if(events.length !== before){
+    ls('events', events);
+    console.log('[Change] Removed', before - events.length, 'demo event(s)');
+  }
+}
+
 function bootMainApp(){
   hideLd();
   document.getElementById('login-screen').style.display='none';
@@ -1515,15 +1530,34 @@ function saveEvent(existingId){
   toast(existingId?'Termin aktualisiert ✓':'Termin erstellt ✓','ok');
 }
 
-function deleteEvent(id){
-  if(!confirm('Termin wirklich löschen?'))return;
-  events=events.filter(e=>e.id!==id);
+/* Named helper for panel — avoids inline JS */
+window._doDeleteEvent = function(id){
+  events = events.filter(e=>e.id!==id);
   ls('events',events);
-  closePanel();
-  if(currentMainView==='calendar'){renderCalendar();renderUpcoming();}
-  checkNotifications();
-  if(currentMainView==='dashboard')buildDashboard();
-  toast('Termin gelöscht','');
+  if(typeof closePanel==='function') closePanel();
+  if(currentMainView==='calendar'){renderCalendar();if(typeof renderUpcoming==='function')renderUpcoming();}
+  if(typeof checkNotifications==='function') checkNotifications();
+  if(typeof window.buildDashboard==='function') window.buildDashboard();
+  if(typeof toast==='function') toast('Termin gelöscht','ok');
+};
+
+function deleteEvent(id){
+  const ev = (events||[]).find(e=>e.id===id);
+  const title = ev ? ev.title : 'Termin';
+  if(typeof openPanel==='function'){
+    openPanel('Termin löschen',
+      '<div class="push-box" style="margin-bottom:16px">'+
+        '<div class="push-status" style="font-weight:700">'+esc(title)+'</div>'+
+        '<div class="push-status" style="margin-top:4px">Diesen Termin wirklich löschen?</div>'+
+      '</div>'+
+      '<button class="btn btn-danger btn-full" onclick="window._doDeleteEvent(''+id.replace(/'/g,"\'")+'')">' +
+        'Termin löschen' +
+      '</button>'+
+      '<button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="closePanel()">Abbrechen</button>'
+    );
+  } else {
+    if(confirm('Termin wirklich löschen?')) window._doDeleteEvent(id);
+  }
 }
 
 function openDayPanel(dt,dayEvs){
@@ -1630,9 +1664,10 @@ function checkNotifications(){
     if(diff===threshold&&Notification.permission==='granted') fireNotification(ev,diff);
   });
   notifications.sort((a,b)=>a.diff-b.diff);
-  const hasCrit=notifications.some(n=>n.urgency!=='ok');
+  // Only show red dot if there are URGENT upcoming events (not just challenges)
+  const hasCrit=notifications.some(n=>n.urgency==='crit'||n.urgency==='warn');
   const dot=document.getElementById('notif-dot');
-  if(dot)dot.style.display=hasCrit?'block':'none';
+  if(dot) dot.style.display = (hasCrit && notifications.length > 0) ? 'block' : 'none';
 }
 
 function fireNotification(ev,daysLeft){
@@ -2440,13 +2475,16 @@ document.addEventListener('touchend',e=>{
     window._changeReminderLoop=setInterval(()=>{
       try{
         const today=dateKey(new Date());
-        const due=(typeof challengeScheduleForDate==='function'?challengeScheduleForDate(today):(challenges||[])).filter(ch=>ch.active!==false);
-        if(!due.length) return;
-        const open=due.filter(ch=>!(challengeCompletions||[]).some(c=>c.challengeId===ch.id&&c.playerId===currentEmail()&&c.date===today));
-        const key=today+'_'+open.map(x=>x.id).join(',');
+        const today2=today; // alias
+        const me2=(typeof currentEmail==='function'?currentEmail():String((window.userInfo||(typeof userInfo!=='undefined'?userInfo:{})).email||'')).toLowerCase();
+        const allCh=(typeof challengeScheduleForDate==='function'?challengeScheduleForDate(today2):(challenges||[])).filter(ch=>ch.active!==false&&(!ch.date||ch.date===today2||ch.recurrence==='daily'));
+        if(!allCh.length) return;
+        const doneIds=new Set((challengeCompletions||[]).filter(c=>String(c.date||'').slice(0,10)===today2&&String(c.playerId||c.email||c.userEmail||'').toLowerCase()===me2).map(c=>c.challengeId));
+        const open=allCh.filter(ch=>!doneIds.has(ch.id)&&!ch.optional);
+        const key=today2+'_'+open.map(x=>x.id).sort().join(',');
         if(open.length && key!==lastChallengeNotifyKey){
           lastChallengeNotifyKey=key;
-          openLocalNotification('Change: offene Challenges', open.length+' Challenge(s) warten heute auf dich.');
+          openLocalNotification('Change: offene Challenges', open.length+' Übung'+(open.length===1?'':' en')+' heute noch offen.');
         }
       }catch(e){}
     }, 15*60*1000);
@@ -4885,20 +4923,33 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     try{if(typeof toast==='function')toast(removed.length?'Zurückgesetzt':'Nichts zurückzusetzen','');}catch(e){}
   };
 
+  /* Named helper — kein Inline-JS im onclick */
+  window._doResetToday = function(){
+    try{
+      const ui = window.userInfo||(typeof userInfo!=='undefined'?userInfo:{});
+      const me = String(ui.email||'').toLowerCase();
+      const td = new Date().toISOString().slice(0,10);
+      window.challengeCompletions=(window.challengeCompletions||[]).filter(c=>{
+        const cDate=String(c.date||'').slice(0,10);
+        const cUser=String(c.playerId||c.email||c.userEmail||'').toLowerCase();
+        return !(cDate===td && (!me||cUser===me));
+      });
+      if(typeof ls==='function') ls('challenge_completions',window.challengeCompletions);
+      if(typeof renderChallenges==='function') renderChallenges();
+      if(typeof window.buildDashboard==='function') window.buildDashboard();
+      if(typeof renderWeekBar==='function') renderWeekBar();
+      if(typeof closePanel==='function') closePanel();
+      if(typeof toast==='function') toast('Heute zurückgesetzt ✓','ok');
+    }catch(e){ console.warn('Reset error:',e); }
+  };
+
   window.resetTodayChallenges=function(){
     if(typeof openPanel==='function'){
       openPanel('Heute zurücksetzen',
-        '<div class="push-box" style="margin-bottom:16px"><div class="push-status">Alle deine heutigen Erledigungen werden gelöscht. Die Punkte werden abgezogen.</div></div>'+
-        '<button class="btn btn-danger btn-full" onclick="(function(){'+
-          'const me=(window.userInfo&&window.userInfo.email||"").toLowerCase();'+
-          'const td=(new Date()).toISOString().slice(0,10);'+
-          'window.challengeCompletions=(window.challengeCompletions||[]).filter(c=>!(String(c.date||"").slice(0,10)===td&&String(c.playerId||c.email||c.userEmail||"").toLowerCase()===me));'+
-          'try{if(typeof ls==="function")ls("challenge_completions",window.challengeCompletions);}catch(e){}'+
-          'try{renderChallenges();}catch(e){}'+
-          'try{if(typeof buildDashboard==="function")buildDashboard();}catch(e){}'+
-          'if(typeof closePanel==="function")closePanel();'+
-          'if(typeof toast==="function")toast("Heute zurückgesetzt","ok");'+
-        '})()">Zurücksetzen</button>'+
+        '<div class="push-box" style="margin-bottom:16px">'+
+          '<div class="push-status">Alle deine heutigen Erledigungen werden gelöscht und die Punkte abgezogen.</div>'+
+        '</div>'+
+        '<button class="btn btn-danger btn-full" onclick="window._doResetToday()">Zurücksetzen</button>'+
         '<button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="closePanel()">Abbrechen</button>'
       );
     }
