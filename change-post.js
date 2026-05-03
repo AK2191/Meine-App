@@ -1282,7 +1282,7 @@
         <div class="dash-card-head">
           <div>
             <div class="dash-card-title">🏆 Challenges & Mitspieler</div>
-            <div class="dash-card-sub"></div>
+            <div class="dash-card-sub">Offene Aufgaben und Punkte</div>
           </div>
         </div>
         <div class="dash-card-body">
@@ -1422,7 +1422,7 @@
   window.buildDashCards=function(){
     const grid=$('dash-grid'); if(!grid) return;
     injectStyle();
-    grid.innerHTML='<div class="dash-card calendar-card"><div class="dash-card-head"><div><div class="dash-card-title">📅 Kalender</div><div class="dash-card-sub">Heute · Feiertage · nächste Termine</div></div></div><div class="dash-card-body">'+calendarHtml()+'</div></div><div class="dash-card dashboard-combined-card"><div class="dash-card-head"><div><div class="dash-card-title">🏆 Challenges & 👥 Mitspieler</div><div class="dash-card-sub"></div></div></div><div class="dash-card-body"><div class="dashboard-section"><div class="dashboard-section-head">Challenges</div>'+challengeHtml()+'</div><div class="dashboard-section"><div class="dashboard-section-head">Mitspieler</div>'+playersHtml()+'</div></div></div>';
+    grid.innerHTML='<div class="dash-card calendar-card"><div class="dash-card-head"><div><div class="dash-card-title">📅 Kalender</div><div class="dash-card-sub">Heute · Feiertage · nächste Termine</div></div></div><div class="dash-card-body">'+calendarHtml()+'</div></div><div class="dash-card dashboard-combined-card"><div class="dash-card-head"><div><div class="dash-card-title">🏆 Challenges & 👥 Mitspieler</div><div class="dash-card-sub">Heute und Rangliste</div></div></div><div class="dash-card-body"><div class="dashboard-section"><div class="dashboard-section-head">Challenges</div>'+challengeHtml()+'</div><div class="dashboard-section"><div class="dashboard-section-head">Mitspieler</div>'+playersHtml()+'</div></div></div>';
   };
   window.buildDashboard=function(){
     try{const n=(window.userInfo&&window.userInfo.name)||'', h=$('dash-greeting'); if(h) h.textContent=(new Date().getHours()<12?'Guten Morgen':new Date().getHours()<17?'Guten Tag':'Guten Abend')+(n?', '+n.split(' ')[0]:''); const s=$('dash-sub'); if(s) s.textContent='Kalender, Challenges und Mitspieler auf einen Blick';}catch(e){}
