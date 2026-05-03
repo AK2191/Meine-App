@@ -5099,7 +5099,38 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     let st=document.getElementById('change-final-stable-style');
     if(!st){ st=document.createElement('style'); st.id='change-final-stable-style'; document.head.appendChild(st); }
     st.textContent=`
-      #kpi-grid{display:none!important}
+      /* Today-Header in Kalender-Karte */
+      .dash-today-header{
+        display:flex;align-items:center;justify-content:space-between;
+        padding:12px 16px 8px;border-bottom:1px solid var(--b1);
+      }
+      .dash-today-date{
+        font-size:12px;font-weight:700;color:var(--t3);
+        text-transform:capitalize;
+      }
+      .dash-today-dot{
+        width:8px;height:8px;border-radius:50%;
+        background:var(--acc);flex-shrink:0;
+        box-shadow:0 0 0 3px var(--acc-d);
+      }
+      .dash-today-free{
+        display:flex;align-items:center;gap:7px;
+        padding:11px 16px;
+        font-size:13px;font-weight:600;color:var(--t4);
+        border-bottom:1px solid var(--b1);
+        background:var(--s2);
+      }
+      .dash-today-row{
+        border-left:3px solid var(--acc)!important;
+        background:linear-gradient(90deg,rgba(45,106,79,.04),transparent)!important;
+      }
+      .dash-section-divider{
+        padding:7px 16px 5px;
+        font-size:10px;font-weight:700;color:var(--t4);
+        text-transform:uppercase;letter-spacing:.6px;
+        border-top:1px solid var(--b1);border-bottom:1px solid var(--b1);
+        background:var(--s2);
+      }
       #dash-grid,.dash-grid{
         display:grid!important;grid-template-columns:1fr 1fr!important;gap:14px!important;
         margin-bottom:0!important;align-items:start!important;
@@ -5398,7 +5429,6 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
         const ev=r.ev;
         const start=r.date, end=r.endDate||r.date;
         const hasRange=end&&end!==start;
-        // Badge: show date range if multi-day, otherwise relative
         let badge;
         if(hasRange){
           badge=fmtShort(start)+' – '+fmtShort(end);
@@ -5411,13 +5441,85 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
         calRows+=`<div class="dash-row" style="${rowStyle}" onclick="setMainView('calendar')">
           <div class="dash-row-icon" style="background:${colBg}">📅</div>
           <div class="dash-row-body">
-            <div class="dash-row-title" style="${titleStyle}">${title}${hasRange?'':''}</div>
+            <div class="dash-row-title" style="${titleStyle}">${title}</div>
             <div class="dash-row-sub">${ev.time?ev.time+' Uhr':'Ganztägig'}</div>
           </div>
           <span class="dash-row-badge ${bClass}">${badge}</span>
         </div>`;
       }
     });
+
+    /* ── Heute-Streifen: immer sichtbar, egal ob Termine oder nicht ── */
+    const todayEvents=rows.filter(r=>r.date===td);
+    const todayDateFmt=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
+    const upcomingRows=rows.filter(r=>r.date!==td);
+
+    // Heute-Block
+    let todayHtml='';
+    if(todayEvents.length===0){
+      todayHtml=`<div class="dash-today-free">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:15px;height:15px;stroke-width:2;opacity:.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Heute frei — keine Termine
+      </div>`;
+    } else {
+      let todayItemsHtml='';
+      todayEvents.forEach(r=>{
+        if(r.type==='holiday'){
+          todayItemsHtml+=`<div class="dash-row dash-today-row" onclick="setMainView('calendar')">
+            <div class="dash-row-icon" style="background:var(--amb-d)">🎉</div>
+            <div class="dash-row-body"><div class="dash-row-title">${esc(r.name)}</div><div class="dash-row-sub">Feiertag</div></div>
+            <span class="dash-row-badge badge-green">Heute</span>
+          </div>`;
+        } else {
+          const ev=r.ev, colBg=ev.color==='red'?'var(--red-d)':ev.color==='green'?'var(--grn-d)':ev.color==='amber'?'var(--amb-d)':ev.color==='purple'?'var(--pur-d)':'var(--acc-d)';
+          todayItemsHtml+=`<div class="dash-row dash-today-row" onclick="setMainView('calendar')">
+            <div class="dash-row-icon" style="background:${colBg}">📅</div>
+            <div class="dash-row-body"><div class="dash-row-title" style="font-weight:800;color:var(--acc)">${esc(ev.title||'Termin')}</div><div class="dash-row-sub">${ev.time?ev.time+' Uhr':'Ganztägig'}</div></div>
+            <span class="dash-row-badge badge-green">Heute</span>
+          </div>`;
+        }
+      });
+      todayHtml=todayItemsHtml;
+    }
+
+    // Demnächst-Block (nur wenn noch Platz bleibt)
+    let upcomingHtml='';
+    if(upcomingRows.length>0){
+      // Trennlinie + Label
+      upcomingHtml=`<div class="dash-section-divider">Demnächst</div>`;
+      // Zeige max 5 weitere
+      upcomingRows.slice(0,5).forEach(r=>{
+        const diff=diffDays(r.date);
+        if(r.type==='holiday'){
+          const badge=diff===1?'Morgen':fmtShort(r.date);
+          upcomingHtml+=`<div class="dash-row" onclick="setMainView('calendar')">
+            <div class="dash-row-icon" style="background:var(--amb-d)">🎉</div>
+            <div class="dash-row-body"><div class="dash-row-title">${esc(r.name)}</div><div class="dash-row-sub">Feiertag</div></div>
+            <span class="dash-row-badge badge-amber">${badge}</span>
+          </div>`;
+        } else {
+          const ev=r.ev, start=r.date, end=r.endDate||r.date, hasRange=end&&end!==start;
+          const badge=hasRange?fmtShort(start)+' – '+fmtShort(end):(diff===1?'Morgen':fmtShort(start));
+          const bClass=diff<=1?'badge-red':diff<=3?'badge-amber':'badge-blue';
+          const colBg=ev.color==='red'?'var(--red-d)':ev.color==='green'?'var(--grn-d)':ev.color==='amber'?'var(--amb-d)':ev.color==='purple'?'var(--pur-d)':'var(--acc-d)';
+          upcomingHtml+=`<div class="dash-row" onclick="setMainView('calendar')">
+            <div class="dash-row-icon" style="background:${colBg}">📅</div>
+            <div class="dash-row-body"><div class="dash-row-title">${esc(ev.title||'Termin')}</div><div class="dash-row-sub">${ev.time?ev.time+' Uhr':'Ganztägig'}</div></div>
+            <span class="dash-row-badge ${bClass}">${badge}</span>
+          </div>`;
+        }
+      });
+    } else if(todayEvents.length===0){
+      upcomingHtml='<div class="dash-empty">Keine Termine in den nächsten 90 Tagen</div>';
+    }
+
+    const calCardBody=`<div class="dash-today-header">
+        <div class="dash-today-date">${todayDateFmt}</div>
+        <div class="dash-today-dot"></div>
+      </div>
+      ${todayHtml}
+      ${upcomingHtml}`;
+
     if(!calRows) calRows='<div class="dash-empty">Keine Termine oder Feiertage</div>';
 
     /* ── Challenge + leaderboard rows ── */
@@ -5447,10 +5549,10 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     grid.innerHTML=
       `<div class="dash-card">
         <div class="dash-card-head">
-          <div><div class="dash-card-title">📅 Kalender</div><div class="dash-card-sub">Feiertage &amp; nächste Termine</div></div>
+          <div><div class="dash-card-title">📅 Kalender</div></div>
           <button class="btn btn-ghost btn-sm" onclick="setMainView('calendar')">Öffnen →</button>
         </div>
-        <div class="dash-card-body">${calRows}</div>
+        <div class="dash-card-body">${calCardBody}</div>
       </div>
       <div class="dash-card">
         <div class="dash-card-head">
