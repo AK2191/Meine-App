@@ -5155,7 +5155,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       </div>
       <div class="dash-card">
         <div class="dash-card-head">
-          <div><div class="dash-card-title">🏆 Challenges &amp; Mitspieler</div><div class="dash-card-sub">Heute &amp; Rangliste</div></div>
+          <div><div class="dash-card-title">🏆 Challenges &amp; Mitspieler</div></div>
         </div>
         <div class="dash-card-body">
           <div class="dash-section-label">Heute offen</div>${chRows}
@@ -5384,7 +5384,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   function evEndK(e)  { return String(e.endDate||e.date||evStartK(e)||'').slice(0,10); }
   function evTitle(e) { return String(e.title||e.summary||e.name||'Termin').replace(/\bZeitraum\b\s*:?/gi,'').replace(/\s{2,}/g,' ').trim(); }
   function evTime(e)  { if(e.allDay || (!e.time && !e.endTime)) return ''; return e.time ? (e.endTime && e.endTime!==e.time ? e.time+' – '+e.endTime+' Uhr' : e.time+' Uhr') : ''; }
-  function fmtShort(k){ try{ return new Date(k+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+'.'; }catch(e){ return k; } }
+  function fmtShort(k){ try{ const s=new Date(k+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}); return s.endsWith('.')?s.slice(0,-1):s; }catch(e){ return k; } }
   function diffDays(k){ return Math.round((new Date(k+'T12:00:00') - new Date(todayKey()+'T12:00:00'))/86400000); }
 
   /* Feiertage für nächste 90 Tage */
@@ -5466,7 +5466,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
           todayHtml += `<div class="dash-row dash-today-row" onclick="setMainView('calendar')">
             <div class="dash-row-icon" style="background:${colBg}">📅</div>
             <div class="dash-row-body"><div class="dash-row-title" style="font-weight:800;color:var(--acc)">${evTitle(ev)}</div><div class="dash-row-sub">${sub}</div></div>
-            <span class="dash-row-badge badge-green">${isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : 'Heute'}</span>
+            <span class="dash-row-badge badge-green">Heute</span>
           </div>`;
         }
       });
@@ -5539,7 +5539,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
         <div class="dash-card-body">${calCardBody}</div>
       </div>
       <div class="dash-card">
-        <div class="dash-card-head"><div><div class="dash-card-title">🏆 Challenges &amp; Mitspieler</div><div class="dash-card-sub">Heute &amp; Rangliste</div></div></div>
+        <div class="dash-card-head"><div><div class="dash-card-title">🏆 Challenges &amp; Mitspieler</div></div></div>
         <div class="dash-card-body">
           <div class="dash-section-label">Heute offen</div>${chHtml}
           <div class="dash-section-label" style="border-top:1px solid var(--b1)">Rangliste</div>${plHtml}
@@ -5607,6 +5607,23 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   /* Danger button */
   .btn-danger{background:#ef4444;color:#fff;border:none;cursor:pointer;padding:10px 18px;border-radius:var(--r);font-weight:600;width:100%}
   .btn-danger:hover{background:#dc2626}
+  /* Mobile responsive — challenge layout stacks on small screens */
+  @media(max-width:700px){
+    .challenge-layout{flex-direction:column!important;gap:12px!important}
+    .challenge-card,.leader-card{width:100%!important;min-width:0!important}
+    .challenge-week-grid{grid-template-columns:repeat(7,1fr)!important;gap:4px!important}
+    .challenge-week-day{padding:6px 4px!important;font-size:10px!important}
+    .challenge-week-day-date{font-size:9px!important}
+    .challenge-item{flex-wrap:wrap!important;gap:6px!important;padding:10px 12px!important}
+    .challenge-item .btn{font-size:11px!important;padding:6px 10px!important}
+    .dash-grid{grid-template-columns:1fr!important}
+    .leader-row{flex-wrap:wrap!important}
+  }
+  @media(max-width:480px){
+    .challenge-week-head{flex-direction:column!important;gap:8px!important;align-items:flex-start!important}
+    .challenge-week-actions{width:100%!important;justify-content:space-between!important}
+    .h-right .icon-btn:not(:last-child){display:none!important}
+  }
 </style>
 
 <script id="change-unified-settings">
@@ -5620,11 +5637,18 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
 
   /* ─── Check ob Google-Login aktiv ─── */
   function isGoogleLoggedIn(){
-    // Firebase-Auth (über Google) gilt als angemeldet wenn currentUser existiert
-    if(window.firebaseUser || window.currentUser) return true;
-    if(window.userInfo && window.userInfo.email && !window.userInfo.email.includes('demo')) return true;
-    // accessToken von Google OAuth
-    return !!(window.accessToken && window.accessToken!=='firebase-auth' && String(window.accessToken).length>10);
+    // accessToken is set to either a real OAuth token or 'firebase-auth' when logged in via Firebase
+    const at = window.accessToken || (typeof accessToken !== 'undefined' ? accessToken : '');
+    if(at && at.length > 0 && at !== 'undefined') return true;
+    // userInfo may be a global let (not on window) — check window first, then try direct
+    const ui = window.userInfo || (typeof userInfo !== 'undefined' ? userInfo : {});
+    if(ui && ui.email && !String(ui.email).includes('demo') && !String(ui.email).includes('example')) return true;
+    return false;
+  }
+  function canSyncGoogleCalendar(){
+    // Only real OAuth token (not 'firebase-auth') allows Calendar API
+    const at = window.accessToken || (typeof accessToken !== 'undefined' ? accessToken : '');
+    return !!(at && at !== 'firebase-auth' && at.length > 10 && at !== 'undefined');
   }
   function isGoogleSyncEnabled(){
     const v=localStorage.getItem('change_v1_google_calendar_sync'); return v===null?true:v!=='false';
@@ -5637,8 +5661,12 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   /* ─── Avatar Ring ─── */
   function updateAvatarRing(){
     const av=$('user-avatar'); if(!av) return;
-    const loggedIn = isGoogleLoggedIn();
-    av.classList.toggle('google-on', loggedIn);
+    // Check accessToken AND userInfo (userInfo is a global let, not window.userInfo)
+    const at = window.accessToken || (typeof accessToken !== 'undefined' ? accessToken : '');
+    const ui = window.userInfo || (typeof userInfo !== 'undefined' ? userInfo : {});
+    const loggedIn = (at && at.length > 0 && at !== 'undefined') ||
+                     (ui && ui.email && !String(ui.email).includes('demo') && !String(ui.email).includes('example'));
+    av.classList.toggle('google-on', !!loggedIn);
     av.classList.toggle('google-off',!loggedIn);
     av.title = loggedIn ? 'Angemeldet · Klicken zum Abmelden' : 'Nicht angemeldet';
   }
@@ -5731,7 +5759,12 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     const liveOn=lsRead('live_sync_enabled')!==false;
     const autoOn=lsRead('auto_challenges_enabled')!==false;
     const gIn=isGoogleLoggedIn();
-    const gOn=isGoogleSyncEnabled()&&gIn;
+    const gSync=typeof canSyncGoogleCalendar==='function'?canSyncGoogleCalendar():gIn;
+    const gAuthMsg = gIn && !gSync
+      ? 'Angemeldet via Firebase — für Kalender-Sync bitte abmelden und erneut mit Google-OAuth anmelden.'
+      : gIn ? 'Termine aus Google Kalender werden in Change angezeigt.'
+             : 'Über Google-Login anmelden, dann hier aktivieren.';
+    const gOn=isGoogleSyncEnabled()&&gSync;
     const online=liveOn?(window.challengePlayers||[]).filter(p=>p.online).length:0;
     const permCls=perm==='granted'?'push-ok':perm==='denied'?'push-err':'push-warn';
     const instSt=(typeof isStandaloneApp==='function'&&isStandaloneApp())?'Installiert':(typeof deferredInstallPrompt!=='undefined'&&deferredInstallPrompt?'Bereit':'Manuell');
@@ -5756,11 +5789,11 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
             <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${gIn?'#22c55e':'#ef4444'};margin-right:5px;vertical-align:middle"></span>
             Google Kalender <span class="status-pill ${gOn?'status-on':'status-off'}">${gIn?(gOn?'AKTIV':'AUS'):'NICHT ANGEMELDET'}</span>
           </div>
-          <div class="toggle-sub">${gIn?'Termine aus Google Kalender werden in Change angezeigt.':'Über Google-Login anmelden, dann hier aktivieren.'}</div>
+          <div class="toggle-sub">${gAuthMsg}</div>
         </div>
-        <label class="switch"><input type="checkbox" id="us-toggle-gsync" ${gOn?'checked':''} ${!gIn?'disabled':''}><span class="slider"></span></label>
+        <label class="switch"><input type="checkbox" id="us-toggle-gsync" ${gOn?'checked':''} ${!gSync?'disabled':''}><span class="slider"></span></label>
       </div>
-      <button class="btn btn-secondary btn-full" style="margin:6px 0 14px;font-size:12px" ${gIn?'':'disabled'} onclick="window.triggerGoogleCalendarSync()">
+      <button class="btn btn-secondary btn-full" style="margin:6px 0 14px;font-size:12px" ${gSync?'':'disabled'} onclick="window.triggerGoogleCalendarSync()">
         <svg viewBox="0 0 24 24" width="13" height="13" style="vertical-align:middle;margin-right:4px"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/></svg>
         Jetzt synchronisieren
       </button>

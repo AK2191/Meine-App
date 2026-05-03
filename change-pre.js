@@ -121,7 +121,16 @@
   'use strict';
 
   const norm  = s => String(s||'').toLowerCase().trim();
-  const myId  = () => norm((window.userInfo&&window.userInfo.email)||'local-user');
+  function myId(){
+    // userInfo is a global 'let' — may not be on window
+    const ui = window.userInfo || (typeof userInfo !== 'undefined' ? userInfo : {});
+    if(ui && ui.email && !String(ui.email).includes('demo') && !String(ui.email).includes('example'))
+      return norm(ui.email);
+    // Fallback to localStorage
+    const stored = localStorage.getItem('change_v1_user_info') || localStorage.getItem('user_info') || '{}';
+    try{ const p = JSON.parse(stored); if(p.email) return norm(p.email); }catch(e){}
+    return 'local-user';
+  }
   const dk    = () => { try{ return typeof dateKey==='function'?dateKey(new Date()):new Date().toISOString().slice(0,10); }catch(e){ return new Date().toISOString().slice(0,10); } };
   const pad   = n => String(n).padStart(2,'0');
   const esc   = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -132,7 +141,13 @@
   function weekStart(d){ const x=new Date(d); x.setHours(12,0,0,0); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x; }
 
   function pointsForDate(k, player){
-    player = player || myId();
+    if(!player) player = myId();
+    // If still 'local-user', try to find any completions for the date (fallback)
+    if(player === 'local-user'){
+      return (window.challengeCompletions||[])
+        .filter(c => String(c.date)===k)
+        .reduce((a,c) => a+(parseInt(c.points)||0), 0);
+    }
     return (window.challengeCompletions||[])
       .filter(c => norm(c.playerId||c.email||c.userEmail)===norm(player) && String(c.date)===k)
       .reduce((a,c) => a+(parseInt(c.points)||0), 0);
@@ -202,11 +217,12 @@
   /* renderChallenges: zeigt alle Sport-Challenges inkl. Optionals */
   function isDoneToday(id){
     const me = myId(), td = dk();
-    return (window.challengeCompletions||[]).some(c =>
-      String(c.challengeId)===String(id) &&
-      norm(c.playerId||c.email||c.userEmail)===norm(me) &&
-      String(c.date)===td
-    );
+    return (window.challengeCompletions||[]).some(c => {
+      if(String(c.challengeId) !== String(id)) return false;
+      if(String(c.date) !== td) return false;
+      if(me === 'local-user') return true; // fallback: any completion counts
+      return norm(c.playerId||c.email||c.userEmail) === norm(me);
+    });
   }
 
   function allSportChallenges(){
