@@ -214,10 +214,10 @@ body{
   font-family:var(--font);font-size:12px;font-weight:600;color:var(--t3);cursor:pointer;transition:all .15s;
 }
 .vbtn.active{background:var(--acc);color:#fff}
-.h-right{display:flex;align-items:center;gap:4px;flex-shrink:0;position:relative;z-index:120}
+.h-right{display:flex;align-items:center;gap:4px;flex-shrink:0;position:relative;z-index:200;pointer-events:auto}
 .icon-btn{
   width:34px;height:34px;display:flex;align-items:center;justify-content:center;
-  border:none;background:transparent;border-radius:var(--rsm);cursor:pointer;color:var(--t3);transition:all .15s;position:relative;
+  border:none;background:transparent;border-radius:var(--rsm);cursor:pointer;color:var(--t3);transition:all .15s;position:relative;z-index:210;pointer-events:auto;
 }
 .icon-btn:hover{background:var(--s2);color:var(--t1)}
 .icon-btn svg{width:17px;height:17px;stroke-width:1.8}
@@ -741,7 +741,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           <div class="notif-dot" id="notif-dot"></div>
         </button>
-        <button class="icon-btn" id="settings-btn" type="button" onclick="window.openSettingsPanel&&window.openSettingsPanel('calendar')" title="Einstellungen">
+        <button class="icon-btn" id="change-settings-button" type="button" onclick="window.openSettingsPanel && window.openSettingsPanel('calendar')" title="Einstellungen" aria-label="Einstellungen">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.33 1.82V22a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1.82-.33H2a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-.6 1.65 1.65 0 0 0 .33-1.82V2a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.12.69.31 1 .6.31.29.51.64.6 1H22a2 2 0 1 1 0 4h-.09c-.37.09-.72.29-1 .6-.29.31-.48.64-.51 1z"/></svg>
         </button>
         <div class="avatar" id="user-avatar" onclick="confirmLogout()" title="Abmelden">
@@ -4098,8 +4098,6 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   }
   function titleOf(ev){ return ev?.title||ev?.summary||ev?.name||'Termin'; }
   function timeOf(ev){ return ev?.time||(ev?.start?.dateTime?new Date(ev.start.dateTime).toTimeString().slice(0,5):''); }
-  function endTimeOf(ev){ return ev?.endTime||(ev?.end?.dateTime?new Date(ev.end.dateTime).toTimeString().slice(0,5):''); }
-  function timeRangeOf(ev){ const a=timeOf(ev), b=endTimeOf(ev); return a?(a+(b&&b!==a?' – '+b:'')+' Uhr'):''; }
   function googleBadge(ev){
     if(ev?.source==='google' || String(ev?.id||'').startsWith('g_')) return '<span class="day-google-dot" title="von Google">G</span>';
     if(ev?.googleEventId || ev?.syncedToGoogle || ev?.googleSyncedAt) return '<span class="day-google-dot synced" title="an Google übertragen">✓</span>';
@@ -4134,7 +4132,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       html+='<div class="day-detail-holidays">'+hols.map(h=>'<div class="day-detail-holiday"><span>🎉</span><div><b>'+esc(h.name)+'</b><small>Feiertag</small></div></div>').join('')+'</div>';
     }
     if(evs.length){
-      html+='<div class="day-detail-list">'+evs.map(ev=>{ const r=rangeOf(ev); const isRange=r.start!==r.end; const sub=isRange?(fmt(r.start)+' – '+fmt(r.end)):(fmt(k)); return '<div class="day-detail-event" onclick="openEventPanel(\''+esc(ev.id||'')+'\')"><div class="day-detail-time">'+(timeRangeOf(ev)||'Ganztägig')+'</div><div class="day-detail-main"><div class="day-detail-title">'+esc(titleOf(ev))+googleBadge(ev)+'</div><div class="day-detail-sub">'+esc(sub)+'</div></div></div>'; }).join('')+'</div>';
+      html+='<div class="day-detail-list">'+evs.map(ev=>{ const r=rangeOf(ev); const isRange=r.start!==r.end; const sub=isRange?(fmt(r.start)+' – '+fmt(r.end)):(fmt(k)); return '<div class="day-detail-event" onclick="openEventPanel(\''+esc(ev.id||'')+'\')"><div class="day-detail-time">'+(timeOf(ev)||'Ganztägig')+'</div><div class="day-detail-main"><div class="day-detail-title">'+esc(titleOf(ev))+googleBadge(ev)+'</div><div class="day-detail-sub">'+esc(sub)+'</div></div></div>'; }).join('')+'</div>';
     }else{
       html+='<div class="day-detail-empty">Keine Termine für diesen Tag</div>';
     }
@@ -4227,8 +4225,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   function weekNo(dt){let d=new Date(Date.UTC(dt.getFullYear(),dt.getMonth(),dt.getDate())),day=d.getUTCDay()||7;d.setUTCDate(d.getUTCDate()+4-day);let y0=new Date(Date.UTC(d.getUTCFullYear(),0,1));return Math.ceil((((d-y0)/DAY)+1)/7)}
   function currentIds(){const ids=new Set(['me','ich']);try{const p=typeof getCurrentPlayerId==='function'?getCurrentPlayerId():'';if(p)ids.add(String(p).toLowerCase())}catch(e){}try{if(window.userInfo?.email)ids.add(String(userInfo.email).toLowerCase());if(window.userInfo?.name)ids.add(String(userInfo.name).toLowerCase())}catch(e){}try{const u=firebase?.auth?.().currentUser;if(u?.email)ids.add(String(u.email).toLowerCase());if(u?.uid)ids.add(String(u.uid).toLowerCase())}catch(e){}return ids}
   function points(k){const ids=currentIds();let sum=0;(window.challengeCompletions||[]).forEach(c=>{const d=String(c.date||c.completedDate||'').slice(0,10);if(d!==k)return;const who=String(c.playerId||c.userEmail||c.email||'').toLowerCase();if(who&&ids.size&&![...ids].includes(who))return;const p=Number.parseInt(c.points,10);if(Number.isFinite(p)&&p>0)sum+=p});return sum>0?sum:0}
-  function timeLabel(ev){if(!ev||!ev.time)return '';return ev.time+(ev.endTime&&ev.endTime!==ev.time?'–'+ev.endTime:'')+' ';}
-  function rangeLabel(ev,k,dow){const x=r(ev);if(!x.isRange)return esc(timeLabel(ev)+title(ev));const show=k===x.start||dow===0;return show?esc(title(ev)):''}
+  function rangeLabel(ev,k,dow){const x=r(ev);if(!x.isRange)return esc(title(ev));const show=k===x.start||dow===0;return show?esc(title(ev)):''}
   function rangeCls(ev,k,dow){const x=r(ev);if(!x.isRange)return '';const st=k===x.start||dow===0,en=k===x.end||dow===6;return ' is-range '+(st?'range-start ':'range-mid ')+(en?'range-end ':'')}
   window.getAllEvents=allEvents;
   window.getEventById=function(id){return (window.events||[]).find(e=>String(e.id)===String(id))||allEvents().find(e=>String(e.id)===String(id)||String(e.googleEventId)===String(id))||null};
@@ -4602,8 +4599,6 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   const dkey=v=>v instanceof Date?key(v):String(v||'').slice(0,10);
   const titleOf=e=>String(e?.title||e?.summary||e?.name||'Termin').replace(/\bZeitraum\b\s*:?/gi,'').replace(/\s{2,}/g,' ').trim();
   const timeOf=e=>{ if(e?.time) return e.time; if(e?.start?.dateTime) return new Date(e.start.dateTime).toTimeString().slice(0,5); return ''; };
-  const endTimeOf=e=>{ if(e?.endTime) return e.endTime; if(e?.end?.dateTime) return new Date(e.end.dateTime).toTimeString().slice(0,5); return ''; };
-  const timeRangeOf=e=>{ const a=timeOf(e), b=endTimeOf(e); return a?(a+(b&&b!==a?' – '+b:'')+' Uhr'):''; };
   function rangeOf(e){
     if(!e) return {start:'',end:'',isRange:false};
     let s='', en='';
@@ -4641,7 +4636,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     const title=evs.length?(evs.length+' '+(evs.length===1?'Termin':'Termine')):(hols.length?(hols.length===1?'Feiertag':'Feiertage'):'Tag');
     let html='<div class="day-detail-date">'+esc(weekday(k)+', '+fmt(k))+'</div>';
     if(hols.length) html+='<div class="day-detail-holidays">'+hols.map(h=>'<div class="day-detail-holiday"><span>🎉</span><div><b>'+esc(h.name)+'</b><small>Feiertag</small></div></div>').join('')+'</div>';
-    if(evs.length) html+='<div class="day-detail-list">'+evs.map(ev=>{const r=rangeOf(ev), sub=r.isRange?(fmt(r.start)+' – '+fmt(r.end)):fmt(k), id=esc(ev.id||ev.googleEventId||''), g=(ev.source==='google'||ev.googleEventId)?' <span class="cal-g" title="von Google">G</span>':''; return '<div class="day-detail-event" onclick="openEventPanel(\''+id+'\')"><div class="day-detail-time">'+(timeRangeOf(ev)||'Ganztägig')+'</div><div class="day-detail-main"><div class="day-detail-title">'+esc(titleOf(ev))+g+'</div><div class="day-detail-sub">'+esc(sub)+'</div></div></div>';}).join('')+'</div>'; else html+='<div class="day-detail-empty">Keine Termine für diesen Tag</div>';
+    if(evs.length) html+='<div class="day-detail-list">'+evs.map(ev=>{const r=rangeOf(ev), sub=r.isRange?(fmt(r.start)+' – '+fmt(r.end)):fmt(k), id=esc(ev.id||ev.googleEventId||''), g=(ev.source==='google'||ev.googleEventId)?' <span class="cal-g" title="von Google">G</span>':''; return '<div class="day-detail-event" onclick="openEventPanel(\''+id+'\')"><div class="day-detail-time">'+(timeOf(ev)||'Ganztägig')+'</div><div class="day-detail-main"><div class="day-detail-title">'+esc(titleOf(ev))+g+'</div><div class="day-detail-sub">'+esc(sub)+'</div></div></div>';}).join('')+'</div>'; else html+='<div class="day-detail-empty">Keine Termine für diesen Tag</div>';
     html+='<button class="btn btn-primary btn-full day-detail-add" onclick="window.__openNewEventForDay&&window.__openNewEventForDay(\''+k+'\')">+ Neuer Termin für diesen Tag</button>';
     window.__openNewEventForDay=function(day){if(typeof window.openEventPanel==='function')window.openEventPanel(null,parse(day));};
     if(typeof window.openPanel==='function')window.openPanel(title,html);
@@ -4840,10 +4835,6 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   function fmtShort(dk){
     if(!dk)return '';
     return new Date(dk+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
-  }
-  function fmtTimeRange(ev){
-    if(!ev||!ev.time) return ev&&ev.allDay?'Ganztägig':'';
-    return ev.time+(ev.endTime&&ev.endTime!==ev.time?' – '+ev.endTime:'')+' Uhr';
   }
 
   /* ── ROBUST ACCOUNT ID ──
@@ -5129,7 +5120,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
           <div class="dash-row-icon" style="background:${colBg}">📅</div>
           <div class="dash-row-body">
             <div class="dash-row-title" style="${titleStyle}">${title}</div>
-            <div class="dash-row-sub">${fmtTimeRange(ev)||'Ganztägig'}</div>
+            <div class="dash-row-sub">${ev.time?(ev.time+(ev.endTime&&ev.endTime!==ev.time?' – '+ev.endTime:'')+' Uhr'):'Ganztägig'}</div>
           </div>
           <span class="dash-row-badge ${bClass}">${badge}</span>
         </div>`;
@@ -5162,7 +5153,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
           const ev=r.ev, colBg=ev.color==='red'?'var(--red-d)':ev.color==='green'?'var(--grn-d)':ev.color==='amber'?'var(--amb-d)':ev.color==='purple'?'var(--pur-d)':'var(--acc-d)';
           todayItemsHtml+=`<div class="dash-row dash-today-row" onclick="setMainView('calendar')">
             <div class="dash-row-icon" style="background:${colBg}">📅</div>
-            <div class="dash-row-body"><div class="dash-row-title" style="font-weight:800;color:var(--acc)">${esc(ev.title||'Termin')}</div><div class="dash-row-sub">${fmtTimeRange(ev)||'Ganztägig'}</div></div>
+            <div class="dash-row-body"><div class="dash-row-title" style="font-weight:800;color:var(--acc)">${esc(ev.title||'Termin')}</div><div class="dash-row-sub">${ev.time?(ev.time+(ev.endTime&&ev.endTime!==ev.time?' – '+ev.endTime:'')+' Uhr'):'Ganztägig'}</div></div>
             <span class="dash-row-badge badge-green">Heute</span>
           </div>`;
         }
@@ -5192,7 +5183,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
           const colBg=ev.color==='red'?'var(--red-d)':ev.color==='green'?'var(--grn-d)':ev.color==='amber'?'var(--amb-d)':ev.color==='purple'?'var(--pur-d)':'var(--acc-d)';
           upcomingHtml+=`<div class="dash-row" onclick="setMainView('calendar')">
             <div class="dash-row-icon" style="background:${colBg}">📅</div>
-            <div class="dash-row-body"><div class="dash-row-title">${esc(ev.title||'Termin')}</div><div class="dash-row-sub">${fmtTimeRange(ev)||'Ganztägig'}</div></div>
+            <div class="dash-row-body"><div class="dash-row-title">${esc(ev.title||'Termin')}</div><div class="dash-row-sub">${ev.time?(ev.time+(ev.endTime&&ev.endTime!==ev.time?' – '+ev.endTime:'')+' Uhr'):'Ganztägig'}</div></div>
             <span class="dash-row-badge ${bClass}">${badge}</span>
           </div>`;
         }
@@ -6068,8 +6059,8 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     function myGetAllEvents(){
       const out=[],seen=new Set();
       function add(ev){if(!ev||!ev.date)return;const k=(ev.googleEventId?'g:'+ev.googleEventId:'l:'+(ev.id||ev.title||''))+'|'+String(ev.startDate||ev.date).slice(0,10);if(seen.has(k))return;seen.add(k);out.push(ev);}
-      try{(Array.isArray(window.events)?window.events:[]).forEach(ev=>{const s=String(ev.startDate||ev.date||'').slice(0,10);const e=String(ev.endDate||ev.toDate||ev.untilDate||s).slice(0,10);add({...ev,date:s,startDate:s,endDate:e>=s?e:s,title:ev.title||ev.summary||ev.name||'Termin',time:ev.time||'',endTime:ev.endTime||'',source:ev.source||'local'});});}catch(e){}
-      try{(Array.isArray(window.gEvents)?window.gEvents:[]).forEach(ge=>{if(!ge)return;const title=ge.summary||ge.title||'Google-Termin';let s='',e='',time='';if(ge.start&&ge.start.date){s=String(ge.start.date).slice(0,10);}else if(ge.start&&ge.start.dateTime){s=String(ge.start.dateTime).slice(0,10);try{time=new Date(ge.start.dateTime).toTimeString().slice(0,5);}catch(ex){}}if(!s)return;if(ge.end&&ge.end.date){e=addDay(String(ge.end.date).slice(0,10),-1);if(e<s)e=s;}else if(ge.end&&ge.end.dateTime){e=String(ge.end.dateTime).slice(0,10);}else{e=s;}let endTime='';if(ge.end&&ge.end.dateTime){try{endTime=new Date(ge.end.dateTime).toTimeString().slice(0,5);}catch(ex){}}add({id:'g_'+(ge.id||''),googleEventId:ge.id||'',title,date:s,startDate:s,endDate:e,time,endTime,allDay:!ge.start?.dateTime,color:'blue',type:'meeting',desc:ge.description||'',source:'google'});});}catch(e){}
+      try{(Array.isArray(window.events)?window.events:[]).forEach(ev=>{const s=String(ev.startDate||ev.date||'').slice(0,10);const e=String(ev.endDate||ev.toDate||ev.untilDate||s).slice(0,10);add({...ev,date:s,startDate:s,endDate:e>=s?e:s,title:ev.title||ev.summary||ev.name||'Termin',source:ev.source||'local'});});}catch(e){}
+      try{(Array.isArray(window.gEvents)?window.gEvents:[]).forEach(ge=>{if(!ge)return;const title=ge.summary||ge.title||'Google-Termin';let s='',e='',time='';if(ge.start&&ge.start.date){s=String(ge.start.date).slice(0,10);}else if(ge.start&&ge.start.dateTime){s=String(ge.start.dateTime).slice(0,10);try{time=new Date(ge.start.dateTime).toTimeString().slice(0,5);}catch(ex){}}if(!s)return;if(ge.end&&ge.end.date){e=addDay(String(ge.end.date).slice(0,10),-1);if(e<s)e=s;}else if(ge.end&&ge.end.dateTime){e=String(ge.end.dateTime).slice(0,10);}else{e=s;}add({id:'g_'+(ge.id||''),googleEventId:ge.id||'',title,date:s,startDate:s,endDate:e,time,allDay:!ge.start?.dateTime,color:'blue',type:'meeting',desc:ge.description||'',source:'google'});});}catch(e){}
       return out;
     }
     [300,7000].forEach(ms=>setTimeout(()=>{window.getAllEvents=myGetAllEvents;},ms));
@@ -6080,10 +6071,6 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   document.addEventListener('DOMContentLoaded',()=>{fixTB();updateAvatarDot();});
   window.addEventListener('load',()=>{fixTB();updateAvatarDot();});
   setTimeout(fixTB,500);
-  function bindSettingsButton(){const b=document.getElementById('settings-btn')||document.querySelector('[title="Einstellungen"]');if(b){b.onclick=function(e){if(e){e.preventDefault();e.stopPropagation();}window.openSettingsPanel&&window.openSettingsPanel('calendar');return false;};}}
-  document.addEventListener('DOMContentLoaded',bindSettingsButton);
-  window.addEventListener('load',bindSettingsButton);
-  setTimeout(bindSettingsButton,700);
 
 })();
 </script>
@@ -6105,9 +6092,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 
 <!-- ═══════════════════════════════════════
      CHANGE · FRISEUR-TRACKER
-     Zeigt im Dashboard wie lange der letzte
-     Friseur-Termin her ist + Benachrichtigung
-     nach X Wochen (Standard: 3)
+     Dashboard-Tracker mit sauberer nächster-Termin-Anzeige
 ═══════════════════════════════════════ -->
 <style id="friseur-tracker-style">
   #friseur-banner{
@@ -6118,30 +6103,80 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     border-radius:var(--r);
     overflow:hidden;
   }
-  .friseur-row{
-    display:flex;align-items:center;gap:10px;
-    padding:10px 14px;
+  .friseur-card{
+    display:grid;
+    grid-template-columns:minmax(220px,1fr) minmax(260px,auto);
+    gap:14px;
+    align-items:center;
+    padding:14px 16px;
   }
-  .friseur-icon{font-size:15px;flex-shrink:0}
-  .friseur-title{font-size:12px;font-weight:700;color:var(--t1)}
-  .friseur-sub{font-size:11px;color:var(--t4);margin-top:1px}
-  .friseur-days{font-size:15px;font-weight:800;color:var(--acc);white-space:nowrap}
-  .friseur-warn .friseur-days{color:#f59e0b}
-  .friseur-overdue .friseur-days{color:#ef4444}
-  .friseur-future .friseur-days{color:#22c55e}
-  .friseur-badge{
-    margin-left:auto;font-size:10px;font-weight:700;
-    padding:2px 8px;border-radius:999px;white-space:nowrap;
+  .friseur-left{display:flex;align-items:center;gap:12px;min-width:0}
+  .friseur-icon{
+    width:30px;height:30px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--s2);font-size:15px;flex:0 0 auto;
   }
-  .friseur-badge-ok{background:rgba(34,197,94,.15);color:#16a34a}
-  .friseur-badge-warn{background:rgba(245,158,11,.15);color:#d97706}
-  .friseur-badge-bad{background:rgba(239,68,68,.15);color:#dc2626}
-  .friseur-badge-future{background:rgba(59,130,246,.15);color:#2563eb}
+  .friseur-copy{min-width:0}
+  .friseur-title{font-size:12px;font-weight:800;color:var(--t1);letter-spacing:-.1px}
+  .friseur-days{font-size:15px;font-weight:900;color:var(--acc);line-height:1.15;margin-top:2px}
+  .friseur-sub{font-size:11px;color:var(--t4);margin-top:2px;line-height:1.35}
+  .friseur-next{
+    justify-self:end;
+    min-width:260px;
+    max-width:520px;
+    padding:9px 12px;
+    border-radius:12px;
+    background:rgba(59,130,246,.08);
+    border:1px solid rgba(59,130,246,.12);
+  }
+  .friseur-next-label{
+    font-size:10px;
+    font-weight:850;
+    color:#2563eb;
+    text-transform:uppercase;
+    letter-spacing:.35px;
+    margin-bottom:3px;
+  }
+  .friseur-next-title{
+    font-size:12px;
+    font-weight:800;
+    color:var(--t1);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .friseur-next-time{
+    font-size:11px;
+    font-weight:650;
+    color:#2563eb;
+    margin-top:2px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .friseur-status{
+    justify-self:end;
+    font-size:10px;
+    font-weight:800;
+    padding:4px 9px;
+    border-radius:999px;
+    white-space:nowrap;
+  }
+  .friseur-ok{background:rgba(34,197,94,.14);color:#16a34a}
+  .friseur-warn{background:rgba(245,158,11,.14);color:#d97706}
+  .friseur-bad{background:rgba(239,68,68,.14);color:#dc2626}
+  .friseur-card.warn .friseur-days{color:#d97706}
+  .friseur-card.overdue .friseur-days{color:#ef4444}
+  @media(max-width:800px){
+    .friseur-card{grid-template-columns:1fr;gap:10px}
+    .friseur-next,.friseur-status{justify-self:stretch;min-width:0;max-width:none}
+  }
 </style>
 
 <script id="friseur-tracker">
 (function(){
   'use strict';
+
   const LS_KEY = 'change_v1_friseur_enabled';
   const LS_WEEKS = 'change_v1_friseur_weeks';
   const KEYWORD = 'friseur';
@@ -6151,156 +6186,186 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     return v === null ? false : v === 'true';
   }
   function getWeeks(){
-    return parseInt(localStorage.getItem(LS_WEEKS)||'3')||3;
+    return parseInt(localStorage.getItem(LS_WEEKS)||'3',10)||3;
+  }
+  function esc(v){
+    return String(v==null?'':v).replace(/[&<>"']/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function parseDate(value){
+    if(!value) return null;
+    const d = new Date(String(value).length===10 ? String(value)+'T12:00:00' : value);
+    return isNaN(d) ? null : d;
+  }
+  function dateKey(d){
+    if(!d || isNaN(d)) return '';
+    const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+    return y+'-'+m+'-'+day;
   }
   function daysSince(dateStr){
-    const d = new Date(dateStr+'T12:00:00');
-    return Math.floor((Date.now()-d.getTime())/86400000);
+    const d = parseDate(dateStr);
+    if(!d) return 0;
+    const today = new Date(); today.setHours(12,0,0,0);
+    d.setHours(12,0,0,0);
+    return Math.floor((today.getTime()-d.getTime())/86400000);
+  }
+  function daysUntil(dateStr){
+    const d = parseDate(dateStr);
+    if(!d) return null;
+    const today = new Date(); today.setHours(12,0,0,0);
+    d.setHours(12,0,0,0);
+    return Math.max(0,Math.round((d.getTime()-today.getTime())/86400000));
+  }
+  function fmtD(k){
+    try{
+      return new Date(k+'T12:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'long'});
+    }catch(e){return k;}
+  }
+  function fmtTime(start,end){
+    const clean=function(v){return String(v||'').trim();};
+    start=clean(start); end=clean(end);
+    if(start && end) return start+' – '+end+' Uhr';
+    if(start) return start+' Uhr';
+    return '';
+  }
+  function normalizeEvent(raw,source){
+    if(!raw) return null;
+    const title = raw.title || raw.summary || raw.name || '';
+    const desc = raw.desc || raw.description || '';
+    const startRaw = source==='google'
+      ? ((raw.start&&(raw.start.dateTime||raw.start.date))||'')
+      : (raw.startDate||raw.date||raw.start||'');
+    const endRaw = source==='google'
+      ? ((raw.end&&(raw.end.dateTime||raw.end.date))||'')
+      : (raw.endDate||raw.date||raw.end||'');
+    const startDate = parseDate(startRaw);
+    if(!startDate) return null;
+    const startKey = dateKey(startDate);
+    const endDate = parseDate(endRaw);
+    const endKey = endDate ? dateKey(endDate) : startKey;
+    let startTime = raw.time || raw.startTime || '';
+    let endTime = raw.endTime || '';
+    if(source==='google'){
+      if(raw.start && raw.start.dateTime){
+        startTime = new Date(raw.start.dateTime).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+      }
+      if(raw.end && raw.end.dateTime){
+        endTime = new Date(raw.end.dateTime).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+      }
+    }
+    return {title:title,desc:desc,startKey:startKey,endKey:endKey,startTime:startTime,endTime:endTime};
+  }
+  function isFriseur(ev){
+    const kw=KEYWORD.toLowerCase();
+    return String(ev.title||'').toLowerCase().includes(kw) || String(ev.desc||'').toLowerCase().includes(kw);
+  }
+  function allFriseurEvents(){
+    const list=[];
+    (window.events||[]).forEach(function(e){const n=normalizeEvent(e,'local'); if(n&&isFriseur(n)) list.push(n);});
+    (window.gEvents||[]).forEach(function(g){const n=normalizeEvent(g,'google'); if(n&&isFriseur(n)) list.push(n);});
+    if(typeof window.getAllEvents==='function'){
+      (window.getAllEvents()||[]).forEach(function(e){const n=normalizeEvent(e,e&&e.source==='google'?'google':'local'); if(n&&isFriseur(n)) list.push(n);});
+    }
+    const seen=new Set();
+    return list.filter(function(e){
+      const key=[e.title,e.startKey,e.endKey,e.startTime,e.endTime].join('|');
+      if(seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   }
   function findLastFriseur(){
-    const kw = KEYWORD.toLowerCase();
     const today = new Date(); today.setHours(23,59,59,0);
     let best = null;
-    // Check local events
-    (window.events||[]).forEach(function(ev){
-      const title = String(ev.title||ev.summary||ev.name||'').toLowerCase();
-      const desc  = String(ev.desc||ev.description||'').toLowerCase();
-      if(!title.includes(kw)&&!desc.includes(kw)) return;
-      const d = new Date((ev.startDate||ev.date||'')+'T12:00:00');
-      if(isNaN(d)||d>today) return;
-      if(!best||d>new Date(best+'T12:00:00')) best = ev.startDate||ev.date||'';
+    allFriseurEvents().forEach(function(ev){
+      const d=parseDate(ev.startKey);
+      if(!d || d>today) return;
+      if(!best || d>parseDate(best.startKey)) best=ev;
     });
-    // Check Google events (gEvents raw)
-    (window.gEvents||[]).forEach(function(ge){
-      if(!ge) return;
-      const title = String(ge.summary||ge.title||'').toLowerCase();
-      const desc  = String(ge.description||'').toLowerCase();
-      if(!title.includes(kw)&&!desc.includes(kw)) return;
-      // Get start date from Google event
-      const startStr = (ge.start&&(ge.start.date||ge.start.dateTime||''))||'';
-      if(!startStr) return;
-      const d = new Date(startStr.length===10?startStr+'T12:00:00':startStr);
-      if(isNaN(d)||d>today) return;
-      const k = startStr.slice(0,10);
-      if(!best||d>new Date(best+'T12:00:00')) best = k;
-    });
-    // Also check via getAllEvents (normalized)
-    if(typeof window.getAllEvents==='function'){
-      (window.getAllEvents()||[]).forEach(function(ev){
-        const title = String(ev.title||ev.summary||'').toLowerCase();
-        const desc  = String(ev.desc||ev.description||'').toLowerCase();
-        if(!title.includes(kw)&&!desc.includes(kw)) return;
-        const d = new Date((ev.date||ev.startDate||'')+'T12:00:00');
-        if(isNaN(d)||d>today) return;
-        const k = (ev.date||ev.startDate||'').slice(0,10);
-        if(k&&(!best||d>new Date(best+'T12:00:00'))) best = k;
-      });
-    }
     return best;
   }
-
   function findNextFriseur(){
-    var info=findNextFriseurInfo();
-    return info&&info.date;
-  }
-
-  function findNextFriseurInfo(){
-    var kw=KEYWORD.toLowerCase(), today=new Date(); today.setHours(0,0,0,0);
-    var best=null;
-    function checkEvt(title,desc,dateStr,time,endTime){
-      var rawTitle=String(title||'Termin');
-      title=rawTitle.toLowerCase(); desc=String(desc||'').toLowerCase();
-      if(!title.includes(kw)&&!desc.includes(kw)) return;
-      var date=(dateStr||'').slice(0,10), d=new Date(date+'T12:00:00');
-      if(!date||isNaN(d)||d<today) return;
-      if(!best||d<new Date(best.date+'T12:00:00')) best={date:date,title:rawTitle,time:time||'',endTime:endTime||''};
-    }
-    (window.events||[]).forEach(function(e){checkEvt(e.title,e.desc,e.startDate||e.date,e.time,e.endTime);});
-    (window.gEvents||[]).forEach(function(g){
-      if(!g)return;
-      var s=(g.start&&(g.start.date||g.start.dateTime)||''), t='', et='';
-      if(g.start&&g.start.dateTime){try{t=new Date(g.start.dateTime).toTimeString().slice(0,5);}catch(e){}}
-      if(g.end&&g.end.dateTime){try{et=new Date(g.end.dateTime).toTimeString().slice(0,5);}catch(e){}}
-      checkEvt(g.summary,g.description,s,t,et);
+    const today = new Date(); today.setHours(0,0,0,0);
+    let best = null;
+    allFriseurEvents().forEach(function(ev){
+      const d=parseDate(ev.startKey);
+      if(!d || d<today) return;
+      if(!best || d<parseDate(best.startKey)) best=ev;
     });
-    if(typeof window.getAllEvents==='function')(window.getAllEvents()||[]).forEach(function(e){checkEvt(e.title,e.desc,e.date||e.startDate,e.time,e.endTime);});
     return best;
   }
-
   function renderFriseurBanner(){
+    const b0=document.getElementById('friseur-banner');
     if(!isEnabled()){
-      var b=document.getElementById('friseur-banner');
-      if(b) b.style.display='none';
+      if(b0) b0.style.display='none';
       return;
     }
-    // Anchor: inside the dash-grid (after both cards)
-    var grid=document.getElementById('dash-grid');
+
+    const grid=document.getElementById('dash-grid');
     if(!grid) return;
-    var banner=document.getElementById('friseur-banner');
+
+    let banner=document.getElementById('friseur-banner');
     if(!banner){
       banner=document.createElement('div');
       banner.id='friseur-banner';
-      grid.after(banner);   // UNTEN: nach den Karten
+      grid.after(banner);
     }
     banner.style.display='block';
 
-    var lastDate=findLastFriseur();
-    var nextInfo=findNextFriseurInfo();
-    var nextDate=nextInfo&&nextInfo.date;
-    var weeks=getWeeks();
-    var fmtD=function(k){try{return new Date(k+'T12:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'long'});}catch(e){return k;}};
+    const last=findLastFriseur();
+    const next=findNextFriseur();
+    const weeks=getWeeks();
 
-    if(!lastDate&&!nextDate){
-      banner.innerHTML='<div class="friseur-row"><span class="friseur-icon">✂️</span><div><div class="friseur-title">Friseur-Tracker</div><div class="friseur-sub">Kein Termin mit „Friseur" im Titel gefunden.</div></div></div>';
+    if(!last && !next){
+      banner.innerHTML='<div class="friseur-card"><div class="friseur-left"><span class="friseur-icon">✂️</span><div class="friseur-copy"><div class="friseur-title">Friseur-Tracker</div><div class="friseur-sub">Kein Termin mit „Friseur“ im Titel gefunden.</div></div></div></div>';
       return;
     }
 
-    var days=lastDate?daysSince(lastDate):null;
-    var warn=days!==null&&days>=weeks*7;
-    var overdue=days!==null&&days>=weeks*7+7;
-    var cls=overdue?'friseur-overdue':warn?'friseur-warn':nextDate?'friseur-future':'';
-    var daysUntilNext=nextDate?Math.round((new Date(nextDate+'T12:00:00')-Date.now())/86400000):null;
+    const days=last ? daysSince(last.startKey) : null;
+    const warn=days!==null && days>=weeks*7;
+    const overdue=days!==null && days>=weeks*7+7;
+    const cls=overdue?'overdue':warn?'warn':'';
 
-    var leftHtml='';
-    if(lastDate){
-      leftHtml='<div class="friseur-days">'+days+'d</div>'+
-        '<div class="friseur-sub">seit letztem Termin · '+fmtD(lastDate)+'</div>';
-    } else {
-      leftHtml='<div class="friseur-sub">Kein vergangener Termin gefunden</div>';
-    }
-    var badgeHtml='';
-    if(nextDate){
-      var dayWord=daysUntilNext===1?'Tag':'Tagen';
-      var termName=nextInfo&&nextInfo.title?(' · '+nextInfo.title):'';
-      var termTime=nextInfo&&nextInfo.time?(' · '+nextInfo.time+(nextInfo.endTime&&nextInfo.endTime!==nextInfo.time?' – '+nextInfo.endTime:'')+' Uhr'):'';
-      badgeHtml='<span class="friseur-badge friseur-badge-future">Nächster Termin in '+daysUntilNext+' '+dayWord+termName+termTime+' · '+fmtD(nextDate)+'</span>';
-    } else if(overdue){
-      badgeHtml='<span class="friseur-badge friseur-badge-bad">⚠ Überfällig!</span>';
-    } else if(warn){
-      badgeHtml='<span class="friseur-badge friseur-badge-warn">⏰ Bald fällig</span>';
-    } else if(lastDate){
-      badgeHtml='<span class="friseur-badge friseur-badge-ok">✓ Aktuell</span>';
+    let left = '<div class="friseur-title">Friseur-Tracker</div>';
+    if(last){
+      left += '<div class="friseur-days">'+days+'d</div>';
+      left += '<div class="friseur-sub">seit letztem Termin · '+esc(fmtD(last.startKey))+'</div>';
+    }else{
+      left += '<div class="friseur-sub">Kein vergangener Termin gefunden</div>';
     }
 
-    banner.innerHTML='<div class="friseur-row '+cls+'">'+
-      '<span class="friseur-icon">✂️</span>'+
-      '<div style="min-width:0;flex:1">'+
-        '<div class="friseur-title">Friseur-Tracker</div>'+
-        leftHtml+
-      '</div>'+
-      badgeHtml+
+    let right='';
+    if(next){
+      const until=daysUntil(next.startKey);
+      const when=fmtD(next.startKey)+(fmtTime(next.startTime,next.endTime)?' · '+fmtTime(next.startTime,next.endTime):'');
+      right='<div class="friseur-next">'+
+        '<div class="friseur-next-label">Nächster Termin in '+until+' '+(until===1?'Tag':'Tagen')+'</div>'+
+        '<div class="friseur-next-title">'+esc(next.title||'Friseur-Termin')+'</div>'+
+        '<div class="friseur-next-time">'+esc(when)+'</div>'+
+      '</div>';
+    }else if(overdue){
+      right='<div class="friseur-status friseur-bad">⚠ Überfällig</div>';
+    }else if(warn){
+      right='<div class="friseur-status friseur-warn">⏰ Bald fällig</div>';
+    }else{
+      right='<div class="friseur-status friseur-ok">✓ Aktuell</div>';
+    }
+
+    banner.innerHTML='<div class="friseur-card '+cls+'">'+
+      '<div class="friseur-left"><span class="friseur-icon">✂️</span><div class="friseur-copy">'+left+'</div></div>'+
+      right+
     '</div>';
   }
 
-  // Push notification after threshold
   function checkFriseurNotif(){
     if(!isEnabled()) return;
-    const lastDate = findLastFriseur();
-    if(!lastDate) return;
-    const days  = daysSince(lastDate);
+    const last = findLastFriseur();
+    if(!last) return;
+    const days  = daysSince(last.startKey);
     const weeks = getWeeks();
     if(days < weeks*7) return;
-    const key = 'friseur_notif_'+lastDate;
+    const key = 'friseur_notif_'+last.startKey;
     if(localStorage.getItem(key)) return;
     localStorage.setItem(key, '1');
     if(typeof Notification!=='undefined' && Notification.permission==='granted'){
@@ -6310,37 +6375,77 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     }
   }
 
-  // Public API
   window.renderFriseurBanner = renderFriseurBanner;
-  window.getFriseurEnabled   = isEnabled;
-  window.setFriseurEnabled   = function(on){
+  window.getFriseurEnabled = isEnabled;
+  window.setFriseurEnabled = function(on){
     localStorage.setItem(LS_KEY, on?'true':'false');
     renderFriseurBanner();
   };
   window.setFriseurWeeks = function(w){
-    localStorage.setItem(LS_WEEKS, String(parseInt(w)||3));
+    localStorage.setItem(LS_WEEKS, String(parseInt(w,10)||3));
     renderFriseurBanner();
   };
   window.getFriseurWeeks = getWeeks;
 
-  // Hook into buildDashboard
-  var _origBD = window.buildDashboard;
+  const _origBD = window.buildDashboard;
   function wrappedBD(){
     if(typeof _origBD==='function') _origBD.apply(this,arguments);
-    setTimeout(renderFriseurBanner, 50);
-    setTimeout(checkFriseurNotif, 2000);
+    setTimeout(renderFriseurBanner,50);
+    setTimeout(checkFriseurNotif,2000);
   }
-  wrappedBD.__eventFix = _origBD&&_origBD.__eventFix;
+  wrappedBD.__eventFix = _origBD && _origBD.__eventFix;
   window.buildDashboard = wrappedBD;
   window.buildDashCards = wrappedBD;
 
-  // Init
-  document.addEventListener('DOMContentLoaded', function(){
-    setTimeout(renderFriseurBanner, 1200);
-    setTimeout(checkFriseurNotif,   3000);
+  document.addEventListener('DOMContentLoaded',function(){
+    setTimeout(renderFriseurBanner,1200);
+    setTimeout(checkFriseurNotif,3000);
   });
 })();
 </script>
 
+<script id="settings-click-final-fix">
+(function(){
+  'use strict';
+
+  function openUnifiedSettings(e){
+    if(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if(typeof e.stopImmediatePropagation==='function') e.stopImmediatePropagation();
+    }
+    if(typeof window.openSettingsPanel==='function'){
+      window.openSettingsPanel('calendar');
+    }else if(typeof window.openCalendarSettings==='function'){
+      window.openCalendarSettings();
+    }
+  }
+
+  function bindSettingsButton(){
+    var btn=document.getElementById('change-settings-button') || document.querySelector('.h-right .icon-btn[title="Einstellungen"]');
+    if(!btn) return;
+    btn.id='change-settings-button';
+    btn.type='button';
+    btn.setAttribute('title','Einstellungen');
+    btn.setAttribute('aria-label','Einstellungen');
+    btn.onclick=openUnifiedSettings;
+  }
+
+  document.addEventListener('click',function(e){
+    var btn=e.target && e.target.closest ? e.target.closest('#change-settings-button, .h-right .icon-btn[title="Einstellungen"], button[aria-label="Einstellungen"]') : null;
+    if(btn) openUnifiedSettings(e);
+  },true);
+
+  document.addEventListener('DOMContentLoaded',bindSettingsButton);
+  window.addEventListener('load',bindSettingsButton);
+  setTimeout(bindSettingsButton,300);
+  setInterval(bindSettingsButton,1500);
+
+  var st=document.createElement('style');
+  st.id='settings-click-final-fix-style';
+  st.textContent='.h-right{position:relative!important;z-index:500!important;pointer-events:auto!important}.h-right .icon-btn,#change-settings-button{position:relative!important;z-index:510!important;pointer-events:auto!important;cursor:pointer!important}';
+  document.head.appendChild(st);
+})();
+</script>
 </body>
 </html>
