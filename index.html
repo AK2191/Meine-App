@@ -1325,7 +1325,7 @@ function renderAgenda(){
     evs.forEach(ev=>{
       const badge=getUrgencyBadge(ev.type,diff);
       html+=`<div class="ag-card ${ev.color}" onclick="openEventPanel('${ev.id}')">
-        <div class="ag-time">${ev.time||'Ganztägig'}</div>
+        <div class="ag-time">${ev.time?(ev.time+(ev.endTime&&ev.endTime!==ev.time?' – '+ev.endTime:'')):'Ganztägig'}</div>
         <div class="ag-body">
           <div class="ag-title">${esc(ev.title)}</div>
           ${ev.desc?`<div class="ag-desc">${esc(ev.desc)}</div>`:''}
@@ -1560,7 +1560,7 @@ function openDayPanel(dt,dayEvs){
   let html=`<div style="font-size:12px;color:var(--t4);margin-bottom:12px;font-weight:600">${ds}</div>`;
   dayEvs.forEach(ev=>{
     html+=`<div class="ag-card ${ev.color}" style="margin-bottom:8px" onclick="openEventPanel('${ev.id}')">
-      <div class="ag-time">${ev.time||'Ganztägig'}</div>
+      <div class="ag-time">${ev.time?(ev.time+(ev.endTime&&ev.endTime!==ev.time?' – '+ev.endTime:'')):'Ganztägig'}</div>
       <div class="ag-body"><div class="ag-title">${esc(ev.title)}</div>${ev.desc?`<div class="ag-desc">${esc(ev.desc)}</div>`:''}</div>
     </div>`;
   });
@@ -5554,7 +5554,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
         } else {
           const ev = r.ev;
           const isRange = r.start !== r.end;
-          const sub = isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : (evTime(ev) || 'Ganztägig');
+          const sub = isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : (ev.time ? (ev.time+(ev.endTime&&ev.endTime!==ev.time?' – '+ev.endTime:'')+' Uhr') : 'Ganztägig');
           const colBg = ev.color==='red'?'var(--red-d)':ev.color==='green'?'var(--grn-d)':ev.color==='amber'?'var(--amb-d)':ev.color==='purple'?'var(--pur-d)':'var(--acc-d)';
           todayHtml += `<div class="dash-row dash-today-row" onclick="setMainView('calendar')">
             <div class="dash-row-icon" style="background:${colBg}">📅</div>
@@ -5582,7 +5582,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
           const isRange = r.start !== r.end;
           const badge = isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : (diffDays(r.start)===1 ? 'Morgen' : fmtShort(r.start));
           const bClass = diffDays(r.start)<=1 ? 'badge-red' : diffDays(r.start)<=3 ? 'badge-amber' : 'badge-blue';
-          const sub = isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : (evTime(ev) || 'Ganztägig');
+          const sub = isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : (ev.time ? (ev.time+(ev.endTime&&ev.endTime!==ev.time?' – '+ev.endTime:'')+' Uhr') : 'Ganztägig');
           const colBg = ev.color==='red'?'var(--red-d)':ev.color==='green'?'var(--grn-d)':ev.color==='amber'?'var(--amb-d)':ev.color==='purple'?'var(--pur-d)':'var(--acc-d)';
           upcomingHtml += `<div class="dash-row" onclick="setMainView('calendar')">
             <div class="dash-row-icon" style="background:${colBg}">📅</div>
@@ -6099,25 +6099,31 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 <style id="friseur-tracker-style">
   #friseur-banner{
     display:none;
-    margin:0 0 12px;
+    margin:12px 0 0;
     background:var(--s1);
     border:1px solid var(--b1);
     border-radius:var(--r);
     overflow:hidden;
   }
-  .friseur-head{
+  .friseur-row{
     display:flex;align-items:center;gap:10px;
-    padding:12px 16px;border-bottom:1px solid var(--b1);
-    background:var(--s2);
+    padding:10px 14px;
   }
-  .friseur-icon{font-size:20px}
-  .friseur-title{font-size:13px;font-weight:700;color:var(--t1)}
-  .friseur-body{padding:12px 16px;display:flex;align-items:center;gap:12px}
-  .friseur-days{font-size:28px;font-weight:900;color:var(--acc);line-height:1}
-  .friseur-label{font-size:12px;color:var(--t4);margin-top:2px}
-  .friseur-warn{color:#f59e0b!important}
-  .friseur-overdue{color:#ef4444!important}
-  .friseur-next{font-size:11px;color:var(--t4);margin-left:auto}
+  .friseur-icon{font-size:15px;flex-shrink:0}
+  .friseur-title{font-size:12px;font-weight:700;color:var(--t1)}
+  .friseur-sub{font-size:11px;color:var(--t4);margin-top:1px}
+  .friseur-days{font-size:15px;font-weight:800;color:var(--acc);white-space:nowrap}
+  .friseur-warn .friseur-days{color:#f59e0b}
+  .friseur-overdue .friseur-days{color:#ef4444}
+  .friseur-future .friseur-days{color:#22c55e}
+  .friseur-badge{
+    margin-left:auto;font-size:10px;font-weight:700;
+    padding:2px 8px;border-radius:999px;white-space:nowrap;
+  }
+  .friseur-badge-ok{background:rgba(34,197,94,.15);color:#16a34a}
+  .friseur-badge-warn{background:rgba(245,158,11,.15);color:#d97706}
+  .friseur-badge-bad{background:rgba(239,68,68,.15);color:#dc2626}
+  .friseur-badge-future{background:rgba(59,130,246,.15);color:#2563eb}
 </style>
 
 <script id="friseur-tracker">
@@ -6180,60 +6186,81 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     return best;
   }
 
-  function renderFriseurBanner(){
-    var banner = document.getElementById('friseur-banner');
-    var grid   = document.getElementById('dash-grid');
-    if(!grid) return;
+  function findNextFriseur(){
+    var kw=KEYWORD.toLowerCase(), today=new Date(); today.setHours(0,0,0,0);
+    var best=null;
+    function checkEvt(title,desc,dateStr){
+      title=String(title||'').toLowerCase(); desc=String(desc||'').toLowerCase();
+      if(!title.includes(kw)&&!desc.includes(kw)) return;
+      var d=new Date((dateStr||'').slice(0,10)+'T12:00:00');
+      if(isNaN(d)||d<today) return;
+      if(!best||d<new Date(best+'T12:00:00')) best=(dateStr||'').slice(0,10);
+    }
+    (window.events||[]).forEach(function(e){checkEvt(e.title,e.desc,e.startDate||e.date);});
+    (window.gEvents||[]).forEach(function(g){if(!g)return;var s=(g.start&&(g.start.date||g.start.dateTime)||'');checkEvt(g.summary,g.description,s);});
+    if(typeof window.getAllEvents==='function')(window.getAllEvents()||[]).forEach(function(e){checkEvt(e.title,e.desc,e.date||e.startDate);});
+    return best;
+  }
 
+  function renderFriseurBanner(){
     if(!isEnabled()){
-      if(banner) banner.style.display='none';
+      var b=document.getElementById('friseur-banner');
+      if(b) b.style.display='none';
       return;
     }
-
-    const lastDate = findLastFriseur();
+    // Anchor: inside the dash-grid (after both cards)
+    var grid=document.getElementById('dash-grid');
+    if(!grid) return;
+    var banner=document.getElementById('friseur-banner');
     if(!banner){
-      banner = document.createElement('div');
-      banner.id = 'friseur-banner';
-      grid.parentNode.insertBefore(banner, grid);
+      banner=document.createElement('div');
+      banner.id='friseur-banner';
+      grid.after(banner);   // UNTEN: nach den Karten
     }
     banner.style.display='block';
 
-    if(!lastDate){
-      banner.innerHTML = '<div class="friseur-head"><span class="friseur-icon">✂️</span><span class="friseur-title">Friseur-Tracker</span></div>'+
-        '<div class="friseur-body" style="padding:12px 16px;color:var(--t4);font-size:13px">Kein Friseur-Termin mit dem Stichwort „Friseur" gefunden.</div>';
+    var lastDate=findLastFriseur();
+    var nextDate=findNextFriseur();
+    var weeks=getWeeks();
+    var fmtD=function(k){try{return new Date(k+'T12:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'long'});}catch(e){return k;}};
+
+    if(!lastDate&&!nextDate){
+      banner.innerHTML='<div class="friseur-row"><span class="friseur-icon">✂️</span><div><div class="friseur-title">Friseur-Tracker</div><div class="friseur-sub">Kein Termin mit „Friseur" im Titel gefunden.</div></div></div>';
       return;
     }
 
-    const days  = daysSince(lastDate);
-    const weeks = getWeeks();
-    const warn  = days >= weeks*7;
-    const overdue = days >= weeks*7+7;
-    const cls   = overdue?'friseur-overdue':warn?'friseur-warn':'';
-    const wochentag = ['So','Mo','Di','Mi','Do','Fr','Sa'][new Date(lastDate+'T12:00:00').getDay()];
-    const fmtDate = function(k){ try{return new Date(k+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'long'});}catch(e){return k;} };
+    var days=lastDate?daysSince(lastDate):null;
+    var warn=days!==null&&days>=weeks*7;
+    var overdue=days!==null&&days>=weeks*7+7;
+    var cls=overdue?'friseur-overdue':warn?'friseur-warn':nextDate?'friseur-future':'';
+    var daysUntilNext=nextDate?Math.round((new Date(nextDate+'T12:00:00')-Date.now())/86400000):null;
 
-    // Next estimated date
-    const nextDate = new Date(lastDate+'T12:00:00');
-    nextDate.setDate(nextDate.getDate()+weeks*7);
-    const nextStr = nextDate.toLocaleDateString('de-DE',{day:'2-digit',month:'long',year:'numeric'});
+    var leftHtml='';
+    if(lastDate){
+      leftHtml='<div class="friseur-days">'+days+'d</div>'+
+        '<div class="friseur-sub">seit letztem Termin · '+fmtD(lastDate)+'</div>';
+    } else {
+      leftHtml='<div class="friseur-sub">Kein vergangener Termin gefunden</div>';
+    }
+    var badgeHtml='';
+    if(nextDate){
+      badgeHtml='<span class="friseur-badge friseur-badge-future">Nächster in '+daysUntilNext+'d · '+fmtD(nextDate)+'</span>';
+    } else if(overdue){
+      badgeHtml='<span class="friseur-badge friseur-badge-bad">⚠ Überfällig!</span>';
+    } else if(warn){
+      badgeHtml='<span class="friseur-badge friseur-badge-warn">⏰ Bald fällig</span>';
+    } else if(lastDate){
+      badgeHtml='<span class="friseur-badge friseur-badge-ok">✓ Aktuell</span>';
+    }
 
-    banner.innerHTML =
-      '<div class="friseur-head">'+
-        '<span class="friseur-icon">✂️</span>'+
-        '<span class="friseur-title">Friseur-Tracker</span>'+
-        '<span class="friseur-next">Nächster Termin ca. '+nextStr+'</span>'+
+    banner.innerHTML='<div class="friseur-row '+cls+'">'+
+      '<span class="friseur-icon">✂️</span>'+
+      '<div style="min-width:0;flex:1">'+
+        '<div class="friseur-title">Friseur-Tracker</div>'+
+        leftHtml+
       '</div>'+
-      '<div class="friseur-body">'+
-        '<div>'+
-          '<div class="friseur-days '+cls+'">'+days+'</div>'+
-          '<div class="friseur-label">Tage seit dem letzten Friseur-Termin</div>'+
-          '<div style="font-size:11px;color:var(--t4);margin-top:4px">'+wochentag+', '+fmtDate(lastDate)+'</div>'+
-        '</div>'+
-        (warn?'<div style="margin-left:auto;background:'+(overdue?'rgba(239,68,68,.1)':'rgba(245,158,11,.1)')+';border:1px solid '+(overdue?'rgba(239,68,68,.3)':'rgba(245,158,11,.3)')+';border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700;color:'+(overdue?'#ef4444':'#f59e0b')+'">'+
-          (overdue?'⚠ Überfällig!':'⏰ Bald fällig!')+
-          '<div style="font-weight:500;font-size:11px;margin-top:2px">'+(overdue?'Mehr als '+weeks+' Wochen':'Fast '+weeks+' Wochen')+'</div>'+
-        '</div>':'')+
-      '</div>';
+      badgeHtml+
+    '</div>';
   }
 
   // Push notification after threshold
