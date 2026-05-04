@@ -5708,7 +5708,8 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     }
 
     /* Kalender-Karte zusammenbauen */
-    const calCardBody = `<div class="db-section">Heute &nbsp;·&nbsp; ${todayDateFmt}</div>${todayHtml}${upcomingHtml || (!todayRows.length ? '<div class="dash-empty">Keine Termine in den nächsten 90 Tagen</div>' : '')}`;
+    const friseurHtml = (typeof window.getFriseurRowHtml==='function') ? window.getFriseurRowHtml() : '';
+    const calCardBody = `<div class="db-section">Heute &nbsp;·&nbsp; ${todayDateFmt}</div>${todayHtml}${upcomingHtml || (!todayRows.length ? '<div class="dash-empty">Keine Termine in den nächsten 90 Tagen</div>' : '')}${friseurHtml}`;
 
     /* Challenges & Mitspieler */
     let chHtml = '';
