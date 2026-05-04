@@ -6430,15 +6430,15 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 
     var leftColor = overdue ? '#ef4444' : warn ? '#f59e0b' : 'var(--acc)';
     var leftText = lastDate
-      ? '<span style="font-weight:800;color:'+leftColor+'">'+days+'d</span>'
-        + '<span style="color:var(--t4);margin-left:5px">· seit '+fmtS(lastDate)+'</span>'
+      ? 'vor <span style="font-weight:800;color:'+leftColor+'">'+days+' Tagen</span>'
+        + '<span style="color:var(--t4)"> – zuletzt besucht am '+fmtS(lastDate)+'</span>'
       : '<span style="color:var(--t4)">Kein vergangener Termin</span>';
 
     var badge = '';
     if(nextDate){
       var urgCls = daysUntilNext <= 3 ? 'rgba(245,158,11,.15);color:#b45309' : 'rgba(45,106,79,.1);color:var(--acc)';
-      var timeStr = nextInfo && nextInfo.time ? ' · '+nextInfo.time+' Uhr' : '';
-      badge = '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:'+urgCls+'">→ '+fmtS(nextDate)+timeStr+'</span>';
+      var timeStr = nextInfo && nextInfo.time ? ' um '+nextInfo.time+' Uhr' : '';
+      badge = '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:'+urgCls+'">nächster Termin am '+fmtS(nextDate)+timeStr+'</span>';
     } else if(overdue){
       badge = '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:rgba(239,68,68,.12);color:#dc2626">⚠ Überfällig</span>';
     } else if(warn){
