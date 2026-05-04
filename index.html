@@ -2968,7 +2968,7 @@ if(currentMainView==='calendar'){renderCalendar();renderUpcoming();} syncEventTo
     const out=[];
     (window.events||[]).forEach(e=>{ if(e&&startOf(e)) out.push(Object.assign({},e,{startDate:startOf(e),endDate:endOf(e)})); });
     const syncOn=(window.googleCalendarSyncEnabled!==false && localStorage.getItem('change_v1_google_calendar_sync')!=='false');
-    if(syncOn){(window.gEvents||[]).forEach(ge=>{ const s=startOf(ge); if(!s)return; out.push({id:'g_'+(ge.id||s+'_'+titleOf(ge)),title:titleOf(ge),startDate:s,endDate:endOf(ge),date:s,time:timeOf(ge),color:'blue',type:'meeting',desc:ge.description||'',allDay:!!ge?.start?.date,source:'google',raw:ge}); });}
+    if(syncOn){(window.gEvents||[]).forEach(ge=>{ const s=startOf(ge); if(!s)return; const _et=ge?.end?.dateTime?new Date(ge.end.dateTime).toTimeString().slice(0,5):''; out.push({id:'g_'+(ge.id||s+'_'+titleOf(ge)),title:titleOf(ge),startDate:s,endDate:endOf(ge),date:s,time:timeOf(ge),endTime:_et,color:'blue',type:'meeting',desc:ge.description||'',allDay:!!ge?.start?.date,source:'google',raw:ge}); });}
     return out;
   }
   window.getAllEvents=function(){return allEvents().map(e=>Object.assign({},e,{date:e.startDate}));};
@@ -5192,7 +5192,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       upcomingHtml='<div class="dash-empty">Keine Termine in den nächsten 90 Tagen</div>';
     }
 
-    const calCardBody=`${todayHtml}${upcomingHtml}`;
+    const calCardBody=`<div class="dash-today-header"><span style="display:inline-flex;align-items:center;gap:8px"><span style="background:var(--acc);color:#fff;border-radius:999px;padding:2px 9px;font-size:10px;font-weight:700">Heute</span><span style="font-size:12px;font-weight:600;color:var(--t3)">${todayDateFmt}</span></span></div>${todayHtml}${upcomingHtml}`;
     setTimeout(()=>{const _s=document.getElementById('dash-today-sub');if(_s)_s.textContent=todayDateFmt;},0);
 
     if(!calRows) calRows='<div class="dash-empty">Keine Termine oder Feiertage</div>';
@@ -5576,7 +5576,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     }
 
     /* Kalender-Karte zusammenbauen */
-    const calCardBody = `<div class="dash-today-header"><div class="dash-today-date">${todayDateFmt}</div></div>${todayHtml}${upcomingHtml || (!todayRows.length ? '<div class="dash-empty">Keine Termine in den nächsten 90 Tagen</div>' : '')}`;
+    const calCardBody = `<div class="dash-today-header"><span style="display:inline-flex;align-items:center;gap:8px"><span style="background:var(--acc);color:#fff;border-radius:999px;padding:2px 9px;font-size:10px;font-weight:700">Heute</span><span style="font-size:12px;font-weight:600;color:var(--t3)">${todayDateFmt}</span></span></div>${todayHtml}${upcomingHtml || (!todayRows.length ? '<div class="dash-empty">Keine Termine in den nächsten 90 Tagen</div>' : '')}`;
 
     /* Challenges & Mitspieler */
     let chHtml = '';
@@ -5616,7 +5616,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       <div class="db-card">
         <div class="db-head">
           <div class="db-title">📅 Kalender</div>
-          <div class="db-sub"><span style="background:var(--acc);color:#fff;border-radius:999px;padding:1px 8px;font-size:10px;font-weight:700;margin-right:6px">Heute</span>${todayDateFmt}</div>
+
         </div>
         <div class="db-body">${calCardBody}</div>
       </div>
