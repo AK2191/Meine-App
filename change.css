@@ -178,3 +178,55 @@
     margin-left:auto!important;
   }
 }
+
+/* ── 6. Challenges Mobile: Kontest oben, Heute erledigen unten ─── */
+@media(max-width:700px){
+  #challenges-view{
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    flex-direction:column!important;
+    padding-bottom:80px!important;
+  }
+  .challenge-layout{
+    display:flex!important;
+    flex-direction:column-reverse!important; /* Kontest kommt zuerst (visually) */
+    grid-template-columns:none!important;
+    overflow:visible!important;
+    height:auto!important;
+    gap:12px!important;
+  }
+  .challenge-card,.leader-card{
+    max-height:none!important;
+    overflow:visible!important;
+    flex-shrink:0!important;
+  }
+  #challenges-list,#leaderboard-list{
+    max-height:none!important;
+    overflow:visible!important;
+  }
+  /* Challenge-Items: Button volle Breite */
+  .challenge-item{
+    flex-wrap:wrap!important;
+    padding:10px 12px!important;
+    gap:6px!important;
+  }
+  .challenge-item .btn.btn-sm{
+    flex:1 1 auto!important;
+    min-width:100px!important;
+  }
+  /* FAB immer ausblenden außer Kalender — per JS gesteuert */
+  #fab{ display:none!important; }
+}
+
+/* ── 7. Dashboard: gleicher Kartenstil ─── */
+.dash-card-head{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  padding:14px 18px 12px;border-bottom:1px solid var(--b1);
+}
+.dash-card-title{font-size:14px;font-weight:700;color:var(--t1)}
+.dash-card-sub{font-size:12px;color:var(--t4);margin-top:2px;font-weight:500}
+.dash-section-label{
+  padding:6px 18px 4px;font-size:10px;font-weight:700;
+  color:var(--t4);text-transform:uppercase;letter-spacing:.6px;
+  background:var(--s2);border-bottom:1px solid var(--b1);
+}

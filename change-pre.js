@@ -354,6 +354,9 @@
   window.setMainView = function(v, fromRoute){
     if(!['dashboard','calendar','challenges'].includes(v)) v='dashboard';
     window.currentMainView = v; showView(v);
+    // FAB nur auf Kalender-Seite
+    var _fab=document.getElementById('fab');
+    if(_fab) _fab.style.display=(v==='calendar')?'flex':'none';
     if(v==='dashboard'  && typeof window.buildDashboard==='function')   window.buildDashboard();
     if(v==='calendar'   && typeof window.renderCalendar==='function')   window.renderCalendar();
     if(v==='challenges' && typeof window.renderChallenges==='function') window.renderChallenges();
