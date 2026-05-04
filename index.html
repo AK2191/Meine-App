@@ -420,6 +420,9 @@ body{
 /* Wochenbar immer visuell ganz oben – unabhängig von DOM-Position */
 #challenges-view{display:flex;flex-direction:column}
 #challenge-week-bar-clean{order:-999!important;flex-shrink:0!important}
+/* Statischer Container immer oben, Original-Bar immer versteckt */
+#punkte-kalender-top{flex-shrink:0!important;order:-1000!important}
+#challenge-week-bar-clean{display:none!important}
 .challenge-card,.leader-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rlg);overflow:hidden;box-shadow:var(--sh)}
 .challenge-card-head,.leader-card-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--b1)}
 .challenge-title{font-size:14px;font-weight:700;color:var(--t1)}.challenge-sub{font-size:12px;color:var(--t3);margin-top:2px}
@@ -788,6 +791,8 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
           <div class="list-title">Challenges</div>
           <button class="btn btn-ghost btn-sm" onclick="window.resetTodayChallenges&&window.resetTodayChallenges()">Heute zurücksetzen</button>
         </div>
+        <!-- Statischer Wochenbar-Container: immer oben, nie von Scripts verschoben -->
+        <div id="punkte-kalender-top" style="flex-shrink:0;background:var(--bg)"></div>
         <!-- Wochenbar: immer ganz oben, sticky -->
         <div id="challenge-week-bar-clean" style="flex-shrink:0"></div>
         <!-- Layout: Rangliste oben, Aufgaben darunter (mobile: gestapelt) -->
@@ -4843,13 +4848,28 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     bar.className='challenge-week-card';
     bar.innerHTML=renderWeekBar().replace(/^<div[^>]*>/,'').replace(/<\/div>$/,'');
   }
-  // window.renderWeekBar überschreiben: jeder Aufruf korrigiert auch die Bar-Position
+  // Statischen Container oben befüllen – das ist der echte angezeigte Bar
+  function updateStaticWeekBar(){
+    var top=document.getElementById('punkte-kalender-top');
+    if(!top) return;
+    var html=renderWeekBar();
+    // Inneren Inhalt extrahieren
+    var tmp=document.createElement('div');
+    tmp.innerHTML=html;
+    var inner=tmp.firstElementChild;
+    if(inner){top.className=inner.className;top.innerHTML=inner.innerHTML;}
+    else{top.innerHTML=html;}
+  }
   window.renderWeekBar = function(){
     var html = renderWeekBar();
-    setTimeout(ensureWeekBar, 0);
+    updateStaticWeekBar();
     return html;
   };
-  window.ensureWeekBar = ensureWeekBar;
+  window.ensureWeekBar = function(){
+    ensureWeekBar();
+    updateStaticWeekBar();
+  };
+  window.ensureWeekBar = window.ensureWeekBar; // expose
   window.getVisibleContestPlayers=canonicalPlayers;
   window.getCurrentPlayerId=()=>account().id;
   window.getPlayerPointSummary=id=>stats(id||account().id);
@@ -4866,6 +4886,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   };
     // Bar-Position am Ende sicherstellen (Firebase-Updates können ihn verschieben)
     ensureWeekBar();
+    updateStaticWeekBar();
   };
   window.completeChallenge=function(id){
     const ch=challengeById(id),a=account(); if(!ch){notify('Challenge nicht gefunden','err');return;} if(done(id)){notify('Bereits erledigt','');return;}
@@ -4883,7 +4904,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   function holidayRows(){const rows=[], base=new Date(today()+'T12:00:00'); for(let i=0;i<21;i++){const d=new Date(base);d.setDate(base.getDate()+i);const k=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());try{(window.getHolidaysForDate?window.getHolidaysForDate(k):[]).forEach(h=>rows.push({type:'holiday',date:k,title:h.name||h.title||String(h)}));}catch(e){}}return rows;}
   function dashRows(){const seen=new Set(); return eventRows().concat(holidayRows()).sort((a,b)=>a.date.localeCompare(b.date)||(a.type==='holiday'?-1:1)).filter(r=>{const k=r.type+'|'+r.date+'|'+r.title;if(seen.has(k))return false;seen.add(k);return true;}).slice(0,6)}
   window.buildDashboard=function(){const h=$('dash-greeting'),s=$('dash-sub'),grid=$('dash-grid');if(h){const a=account(),hr=new Date().getHours();h.textContent=(hr<12?'Guten Morgen':hr<17?'Guten Tag':'Guten Abend')+(a.name&&a.name!=='Mitspieler'?', '+a.name.split(' ')[0]:'')}if(s)s.textContent='Kalender, Challenges und Mitspieler auf einen Blick';if(!grid)return;const ev=dashRows().map(r=>{const isH=r.type==='holiday';return '<div class="dash-row compact-row" onclick="setMainView(\'calendar\')"><div class="dash-row-icon" style="background:'+(isH?'var(--amb-d)':'var(--acc-d)')+'">'+(isH?'🎉':'📅')+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(r.title)+(isH?' <span class="dash-holiday-pill">Feiertag</span>':'')+'</div><div class="dash-row-sub">'+esc(r.date.split('-').reverse().join('.'))+'</div></div></div>'}).join('')||'<div class="dash-empty compact-empty">Keine Termine oder Feiertage</div>';const ch=dailyChallenges().filter(c=>!done(c.id)).slice(0,4).map(c=>'<div class="dash-row compact-row" onclick="setMainView(\'challenges\')"><div class="dash-row-icon" style="background:var(--amb-d)">'+esc(c.icon||'🏆')+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(c.title||c.name)+'</div><div class="dash-row-sub">'+(parseInt(c.points,10)||0)+' Punkte</div></div><span class="dash-row-badge">offen</span></div>').join('')||'<div class="dash-empty compact-empty">Heute erledigt</div>';const pl=canonicalPlayers().sort((a,b)=>stats(playerKey(b)).totalPoints-stats(playerKey(a)).totalPoints).slice(0,4).map((p,i)=>{const id=playerKey(p),st=stats(id),med=i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);return '<div class="dash-row compact-row" onclick="setMainView(\'challenges\')"><div class="dash-row-icon" style="background:var(--amb-d)">'+med+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(p.name||p.email||id)+'</div><div class="dash-row-sub">Heute '+st.todayPoints+' P · Gesamt '+st.totalPoints+' P</div></div></div>'}).join('')||'<div class="dash-empty compact-empty">Noch keine Mitspieler</div>';grid.innerHTML='<div class="dash-card calendar-card"><div class="dash-card-head"><div><div class="dash-card-title">📅 Kalender</div><div class="dash-card-sub">Heute · Feiertage · nächste Termine</div></div></div><div class="dash-card-body">'+ev+'</div></div><div class="dash-card dashboard-combined-card"><div class="dash-card-head"><div><div class="dash-card-title">🏆 Challenges & 👥 Mitspieler</div><div class="dash-card-sub">Heute und Rangliste</div></div></div><div class="dash-card-body"><div class="dashboard-section"><div class="dashboard-section-head"><span>Challenges</span></div>'+ch+'</div><div class="dashboard-section"><div class="dashboard-section-head"><span>Mitspieler</span></div>'+pl+'</div></div></div>'};
-  function installStyle(){let st=$('change-step7-style');if(!st){st=document.createElement('style');st.id='change-step7-style';document.head.appendChild(st)}st.textContent='.demo-btn,[onclick="startDemo()"],button[onclick="startDemo()"]{display:none!important}#challenge-week-bar-clean{display:block!important;flex:0 0 auto;margin:0 18px 12px}.challenge-week-card{background:#fff;border:1px solid var(--b1);border-radius:var(--rlg);box-shadow:var(--shadow);overflow:hidden}.challenge-week-grid{display:grid!important;grid-template-columns:repeat(7,1fr);gap:0;border-top:1px solid var(--b1);padding:0}.challenge-week-day{padding:10px;text-align:center;border-right:1px solid var(--b1);background:#fff}.challenge-week-day:last-child{border-right:0}.challenge-week-day.today{background:rgba(45,106,79,.06)}.cwd-name{font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase}.cwd-date{font-size:15px;font-weight:900;color:var(--t1);margin-top:3px}.cwd-points{font-size:11px;font-weight:900;color:var(--acc);margin-top:3px}.btn-undo{background:rgba(239,68,68,.08)!important;border:1px solid rgba(239,68,68,.22)!important;color:#dc2626!important;min-width:36px!important}.dash-holiday-pill{font-size:10px;font-weight:800;color:#b85f00;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.20);border-radius:999px;padding:2px 6px;margin-left:6px}.leader-row.clickable{cursor:pointer}.leader-row.clickable:hover{background:var(--s2)}'}
+  function installStyle(){let st=$('change-step7-style');if(!st){st=document.createElement('style');st.id='change-step7-style';document.head.appendChild(st)}st.textContent='.demo-btn,[onclick="startDemo()"],button[onclick="startDemo()"]{display:none!important}#challenge-week-bar-clean{display:none!important}#punkte-kalender-top{display:block!important;flex:0 0 auto;margin:0 18px 12px}.challenge-week-card{background:#fff;border:1px solid var(--b1);border-radius:var(--rlg);box-shadow:var(--shadow);overflow:hidden}.challenge-week-grid{display:grid!important;grid-template-columns:repeat(7,1fr);gap:0;border-top:1px solid var(--b1);padding:0}.challenge-week-day{padding:10px;text-align:center;border-right:1px solid var(--b1);background:#fff}.challenge-week-day:last-child{border-right:0}.challenge-week-day.today{background:rgba(45,106,79,.06)}.cwd-name{font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase}.cwd-date{font-size:15px;font-weight:900;color:var(--t1);margin-top:3px}.cwd-points{font-size:11px;font-weight:900;color:var(--acc);margin-top:3px}.btn-undo{background:rgba(239,68,68,.08)!important;border:1px solid rgba(239,68,68,.22)!important;color:#dc2626!important;min-width:36px!important}.dash-holiday-pill{font-size:10px;font-weight:800;color:#b85f00;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.20);border-radius:999px;padding:2px 6px;margin-left:6px}.leader-row.clickable{cursor:pointer}.leader-row.clickable:hover{background:var(--s2)}'}
   const oldSet=window.setMainView;window.setMainView=function(v){if(typeof oldSet==='function')oldSet(v);document.body.classList.toggle('calendar-active',v==='calendar');const cc=$('cal-controls');if(cc)cc.style.display=v==='calendar'?'flex':'none';setTimeout(()=>{if(v==='challenges')window.renderChallenges();if(v==='dashboard')window.buildDashboard();},0)};
   function init(){installStyle();canonicalPlayers();completions();try{if((window.currentMainView||'dashboard')==='challenges')window.renderChallenges();if((window.currentMainView||'dashboard')==='dashboard')window.buildDashboard();if((window.currentMainView||'')==='calendar')window.renderCalendar&&window.renderCalendar()}catch(e){console.warn('step7 init',e)}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,100));else setTimeout(init,100);
@@ -6504,6 +6525,8 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   // Init
   document.addEventListener('DOMContentLoaded', function(){
     setTimeout(checkFriseurNotif, 3000);
+    setTimeout(updateStaticWeekBar, 500);
+    setTimeout(updateStaticWeekBar, 2000);
   });
 })();
 </script>
