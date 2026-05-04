@@ -1182,10 +1182,6 @@ function fabAction(){
 function buildDashboard(){
   buildKPIs();
   buildDashCards();
-  // Friseur-Tracker Banner nach den Karten rendern
-  setTimeout(function(){
-    if(typeof window.renderFriseurBanner==='function') window.renderFriseurBanner();
-  }, 0);
 }
 
 function buildKPIs(){
@@ -6068,7 +6064,6 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     saveOpt(o);
     const se=$('us-holiday-state');
     if(se){const s=se.value||'ALL';localStorage.setItem('change_v1_holiday_state',s);localStorage.setItem('holiday_state',s);if(!window.calendarSettings)window.calendarSettings={};window.calendarSettings.state=s;}
-    if(typeof closePanel==='function')closePanel();
     if(typeof renderCalendar==='function')renderCalendar();
     if(typeof toast==='function')toast('Gespeichert ✓','ok');
   };
@@ -6412,7 +6407,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   }
   wrappedBD.__eventFix = _origBD&&_origBD.__eventFix;
   window.buildDashboard = wrappedBD;
-  window.buildDashCards = wrappedBD;
+  // KEIN buildDashCards = wrappedBD → würde Endlosrekursion auslösen
 
   // Init
   document.addEventListener('DOMContentLoaded', function(){
