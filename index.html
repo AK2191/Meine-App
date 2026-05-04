@@ -792,7 +792,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
           <div class="leader-card" style="order:1">
             <div class="leader-card-head">
               <div>
-                <div class="challenge-title">Kontest · Rangliste</div>
+                <div class="challenge-title">Rangliste</div>
                 <div class="challenge-sub"></div>
               </div>
               <button class="btn btn-secondary btn-sm" onclick="window.openParticipantPanel&&window.openParticipantPanel()">Mitspieler</button>
@@ -802,7 +802,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
           <div class="challenge-card" style="order:2">
             <div class="challenge-card-head">
               <div>
-                <div class="challenge-title">Heute erledigen</div>
+                <div class="challenge-title">Heutige Aufgaben</div>
               </div>
             </div>
             <div id="challenges-list"></div>
@@ -1894,7 +1894,7 @@ document.addEventListener('touchend',e=>{
     const content=document.getElementById('content');
     const div=document.createElement('div');
     div.id='challenges-view';
-    div.innerHTML='<div class="list-header"><div class="list-title">Challenges</div><button class="btn btn-primary btn-sm" onclick="openChallengePanel(null)">+ Neu</button></div><div class="challenge-layout"><div class="challenge-card"><div class="challenge-card-head"><div><div class="challenge-title">Heute erledigen</div><div class="challenge-sub">Ein Klick erledigt eine Challenge und vergibt Punkte</div></div><button class="btn btn-ghost btn-sm" onclick="resetTodayChallenges()">Heute zurücksetzen</button></div><div id="challenges-list"></div></div><div class="leader-card"><div class="leader-card-head"><div><div class="challenge-title">Kontest</div><div class="challenge-sub"></div></div><button class="btn btn-secondary btn-sm" onclick="openParticipantPanel()">Mitspieler</button></div><div id="leaderboard-list"></div></div></div>';
+    div.innerHTML='<div class="list-header"><div class="list-title">Challenges</div><button class="btn btn-primary btn-sm" onclick="openChallengePanel(null)">+ Neu</button></div><div class="challenge-layout"><div class="challenge-card"><div class="challenge-card-head"><div><div class="challenge-title">Heutige Aufgaben</div><div class="challenge-sub">Ein Klick erledigt eine Challenge und vergibt Punkte</div></div><button class="btn btn-ghost btn-sm" onclick="resetTodayChallenges()">Heute zurücksetzen</button></div><div id="challenges-list"></div></div><div class="leader-card"><div class="leader-card-head"><div><div class="challenge-title">Kontest</div><div class="challenge-sub"></div></div><button class="btn btn-secondary btn-sm" onclick="openParticipantPanel()">Mitspieler</button></div><div id="leaderboard-list"></div></div></div>';
     content.appendChild(div);
   }
   function installChallengeNav(){
@@ -5260,7 +5260,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       </div>
       <div class="dash-card">
         <div class="dash-card-head">
-          <div><div class="dash-card-title">🏆 Challenges &amp; Mitspieler</div></div>
+          <div><div class="dash-card-title">🏆 Challenges</div></div>
         </div>
         <div class="dash-card-body">
           <div class="dash-section-label">Heute offen</div>${chRows}
@@ -5670,7 +5670,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       </div>
       <div class="db-card">
         <div class="db-head">
-          <div class="db-title">🏆 Challenges &amp; Mitspieler</div>
+          <div class="db-title">🏆 Challenges</div>
         </div>
         <div class="db-body">
           <div class="db-section">Heute offen</div>${chHtml}
