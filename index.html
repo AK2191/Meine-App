@@ -2966,7 +2966,7 @@ if(currentMainView==='calendar'){renderCalendar();renderUpcoming();} syncEventTo
   function gIcon(ev){return isGoogle(ev)?'<span class="g-mini" title="Von Google Kalender">G</span>':(isSynced(ev)?'<span class="g-mini synced" title="An Google übertragen">✓</span>':'')}
   function allEvents(){
     const out=[];
-    (window.events||[]).forEach(e=>{ if(e&&startOf(e)) out.push(Object.assign({},e,{startDate:startOf(e),endDate:endOf(e)})); });
+    (window.events||[]).forEach(e=>{ if(e&&startOf(e)) out.push(Object.assign({},e,{startDate:startOf(e),endDate:endOf(e),time:e.time||'',endTime:e.endTime||''})); });
     const syncOn=(window.googleCalendarSyncEnabled!==false && localStorage.getItem('change_v1_google_calendar_sync')!=='false');
     if(syncOn){(window.gEvents||[]).forEach(ge=>{ const s=startOf(ge); if(!s)return; const _et=ge?.end?.dateTime?new Date(ge.end.dateTime).toTimeString().slice(0,5):''; out.push({id:'g_'+(ge.id||s+'_'+titleOf(ge)),title:titleOf(ge),startDate:s,endDate:endOf(ge),date:s,time:timeOf(ge),endTime:_et,color:'blue',type:'meeting',desc:ge.description||'',allDay:!!ge?.start?.date,source:'google',raw:ge}); });}
     return out;
@@ -5389,7 +5389,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       // Re-assert after firebase auth resolves (myId() will now return email)
       // buildDashboard NOT reassigned here — patch version (today-section) must win
       window.renderChallenges=renderChallenges;
-      window.setMainView=setMainView;
+      // setMainView NOT reassigned — our patched version stays
       window.getChallengeDayStatus=function(dk){const p=challengePointsForDate(dk);return p>0?{points:p,done:true,allDone:true}:null;};
       window.getChallengePointsForDate=challengePointsForDate;
       injectFinalStyle();
@@ -5399,7 +5399,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     setTimeout(()=>{
       // buildDashboard NOT reassigned here — patch version (today-section) must win
       window.renderChallenges=renderChallenges;
-      window.setMainView=setMainView;
+      // setMainView NOT reassigned — our patched version stays
       window.getChallengeDayStatus=function(dk){const p=challengePointsForDate(dk);return p>0?{points:p,done:true,allDone:true}:null;};
       window.getChallengePointsForDate=challengePointsForDate;
       injectFinalStyle();
@@ -5940,16 +5940,23 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
         <button class="settings-tab ${startTab==='calendar'?'active':''}" id="us-tab-calendar" onclick="window._switchSettingsTab('calendar')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Kalender
         </button>
+        <button class="settings-tab ${startTab==='dashboard'?'active':''}" id="us-tab-dashboard" onclick="window._switchSettingsTab('dashboard')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Dashboard
+        </button>
         <button class="settings-tab ${startTab==='sync'?'active':''}" id="us-tab-sync" onclick="window._switchSettingsTab('sync')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Push & Sync
         </button>
       </div>
-      <div id="us-pane-calendar" class="settings-pane ${startTab==='calendar'?'active':''}">${calPane}</div>
-      <div id="us-pane-sync"     class="settings-pane ${startTab==='sync'?'active':''}">${syncPane}</div>`;
+      <div id="us-pane-calendar"  class="settings-pane ${startTab==='calendar'?'active':''}">${calPane}</div>
+      <div id="us-pane-dashboard" class="settings-pane ${startTab==='dashboard'?'active':''}">${dashPane}</div>
+      <div id="us-pane-sync"      class="settings-pane ${startTab==='sync'?'active':''}">${syncPane}</div>`;
 
     if(typeof openPanel==='function') openPanel('Einstellungen',panelHtml);
 
     setTimeout(()=>{
+      // Friseur toggles
+      var frOn=$('us-friseur-on'); if(frOn&&!frOn._b){frOn._b=1;frOn.addEventListener('change',function(e){if(typeof window.setFriseurEnabled==='function')window.setFriseurEnabled(e.target.checked);});}
+      var frWk=$('us-friseur-weeks'); if(frWk&&!frWk._b){frWk._b=1;frWk.addEventListener('change',function(e){if(typeof window.setFriseurWeeks==='function')window.setFriseurWeeks(parseInt(e.target.value));});}
       // Calendar settings: auto-save on change
       ['us-toggle-holidays','us-toggle-dots','us-toggle-kw'].forEach(function(id){var el=document.getElementById(id);if(el&&!el._asBound){el._asBound=true;el.addEventListener('change',function(){window._saveCalSettings();});}});
       var _stEl=document.getElementById('us-holiday-state');if(_stEl&&!_stEl._asBound){_stEl._asBound=true;_stEl.addEventListener('change',function(){window._saveCalSettings();});}
@@ -5969,7 +5976,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   };
 
   window._sendTestNotification=function(){if(typeof Notification==='undefined'||Notification.permission!=='granted'){if(typeof toast==='function')toast('Push zuerst aktivieren','err');return;}try{new Notification('Change',{body:'Push funktioniert ✓'});if(typeof toast==='function')toast('Test gesendet ✓','ok');}catch(e){if(typeof toast==='function')toast('Test fehlgeschlagen','err');}};
-  window._switchSettingsTab=function(tab){['calendar','sync'].forEach(t=>{const b=$('us-tab-'+t),p=$('us-pane-'+t);if(b)b.classList.toggle('active',t===tab);if(p)p.classList.toggle('active',t===tab);});};
+  window._switchSettingsTab=function(tab){ ['calendar','dashboard','sync'].forEach(t=>{const b=$('us-tab-'+t),p=$('us-pane-'+t);if(b)b.classList.toggle('active',t===tab);if(p)p.classList.toggle('active',t===tab);});};
   window._saveCalSettings=function(){
     const o={showHolidays:true,showChallengeDots:true,showWeekNumbers:true};
     const h=$('us-toggle-holidays');if(h)o.showHolidays=h.checked;
@@ -5997,18 +6004,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
           [2,3,4,5,6,8].map(function(n){return '<option value="'+n+'" '+(n===w?'selected':'')+'>'+n+' Wochen</option>';}).join('')+
         '</select></div>';
   }
-  const _origOpen2=window.openSettingsPanel;
-  window.openSettingsPanel=function(tab){
-    if(typeof _origOpen2==='function')_origOpen2.apply(this,arguments);
-    setTimeout(function(){
-      const pane=document.getElementById('us-pane-calendar');
-      if(pane&&!document.getElementById('us-friseur-on')){
-        const tmp=document.createElement('div');
-        tmp.innerHTML=buildFriseurSection();
-        while(tmp.firstChild)pane.appendChild(tmp.firstChild);
-      }
-    },200);
-  };
+  // Friseur now in Dashboard tab of settings — no separate injection needed
   window.openCalendarSettings=()=>window.openSettingsPanel('calendar');
   window.openPushSettingsPanel=()=>window.openSettingsPanel('sync');
   window.saveCalSettings=window._saveCalSettings;
@@ -6144,18 +6140,43 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   }
   function findLastFriseur(){
     const kw = KEYWORD.toLowerCase();
-    const allEvs = window.events||[];
-    const gEvs   = window.gEvents||[];
-    const today  = new Date(); today.setHours(23,59,59,0);
+    const today = new Date(); today.setHours(23,59,59,0);
     let best = null;
-    [...allEvs,...gEvs].forEach(function(ev){
-      const title = String(ev.title||ev.summary||'').toLowerCase();
+    // Check local events
+    (window.events||[]).forEach(function(ev){
+      const title = String(ev.title||ev.summary||ev.name||'').toLowerCase();
       const desc  = String(ev.desc||ev.description||'').toLowerCase();
-      if(!title.includes(kw) && !desc.includes(kw)) return;
+      if(!title.includes(kw)&&!desc.includes(kw)) return;
       const d = new Date((ev.startDate||ev.date||'')+'T12:00:00');
       if(isNaN(d)||d>today) return;
-      if(!best||d>new Date(best+'T12:00:00')) best = ev.startDate||ev.date;
+      if(!best||d>new Date(best+'T12:00:00')) best = ev.startDate||ev.date||'';
     });
+    // Check Google events (gEvents raw)
+    (window.gEvents||[]).forEach(function(ge){
+      if(!ge) return;
+      const title = String(ge.summary||ge.title||'').toLowerCase();
+      const desc  = String(ge.description||'').toLowerCase();
+      if(!title.includes(kw)&&!desc.includes(kw)) return;
+      // Get start date from Google event
+      const startStr = (ge.start&&(ge.start.date||ge.start.dateTime||''))||'';
+      if(!startStr) return;
+      const d = new Date(startStr.length===10?startStr+'T12:00:00':startStr);
+      if(isNaN(d)||d>today) return;
+      const k = startStr.slice(0,10);
+      if(!best||d>new Date(best+'T12:00:00')) best = k;
+    });
+    // Also check via getAllEvents (normalized)
+    if(typeof window.getAllEvents==='function'){
+      (window.getAllEvents()||[]).forEach(function(ev){
+        const title = String(ev.title||ev.summary||'').toLowerCase();
+        const desc  = String(ev.desc||ev.description||'').toLowerCase();
+        if(!title.includes(kw)&&!desc.includes(kw)) return;
+        const d = new Date((ev.date||ev.startDate||'')+'T12:00:00');
+        if(isNaN(d)||d>today) return;
+        const k = (ev.date||ev.startDate||'').slice(0,10);
+        if(k&&(!best||d>new Date(best+'T12:00:00'))) best = k;
+      });
+    }
     return best;
   }
 
