@@ -417,12 +417,13 @@ body{
 @media(min-width:801px){.challenge-layout .challenge-card{order:1}.challenge-layout .leader-card{order:2}}
 /* Mobile: Rangliste oben, Aufgaben darunter */
 @media(max-width:800px){.challenge-layout{grid-template-columns:1fr;padding:14px}.challenge-layout .leader-card{order:1}.challenge-layout .challenge-card{order:2}}
-/* Wochenbar immer visuell ganz oben – unabhängig von DOM-Position */
-#challenges-view{display:flex;flex-direction:column}
-#challenge-week-bar-clean{order:-999!important;flex-shrink:0!important}
-/* Statischer Container immer oben, Original-Bar immer versteckt */
-#punkte-kalender-top{flex-shrink:0!important;order:-1000!important}
+/* challenges-view scrollt als Ganzes, Wochenbar klebt oben */
+#challenges-view{display:flex;flex-direction:column;overflow-y:auto!important}
+.challenge-layout{overflow-y:visible!important}
+/* Wochenbar-Duplikat immer verstecken */
 #challenge-week-bar-clean{display:none!important}
+/* Statischer Container: sticky-Header-Verhalten */
+#punkte-kalender-top{position:sticky!important;top:48px!important;z-index:20!important;background:var(--bg)!important}
 .challenge-card,.leader-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rlg);overflow:hidden;box-shadow:var(--sh)}
 .challenge-card-head,.leader-card-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--b1)}
 .challenge-title{font-size:14px;font-weight:700;color:var(--t1)}.challenge-sub{font-size:12px;color:var(--t3);margin-top:2px}
@@ -786,17 +787,17 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
       </div>
 
       <!-- CHALLENGES (static HTML, always in DOM) -->
-      <div id="challenges-view" style="display:none;flex:1;overflow:hidden;flex-direction:column">
-        <div class="list-header">
+      <div id="challenges-view" style="display:none;flex:1;overflow-y:auto;flex-direction:column">
+        <div class="list-header" style="position:sticky;top:0;z-index:21;background:var(--bg)">
           <div class="list-title">Challenges</div>
           <button class="btn btn-ghost btn-sm" onclick="window.resetTodayChallenges&&window.resetTodayChallenges()">Heute zurücksetzen</button>
         </div>
-        <!-- Statischer Wochenbar-Container: immer oben, nie von Scripts verschoben -->
-        <div id="punkte-kalender-top" style="flex-shrink:0;background:var(--bg)"></div>
-        <!-- Wochenbar: immer ganz oben, sticky -->
-        <div id="challenge-week-bar-clean" style="flex-shrink:0"></div>
-        <!-- Layout: Rangliste oben, Aufgaben darunter (mobile: gestapelt) -->
-        <div class="challenge-layout" style="flex:1;min-height:0;overflow-y:auto">
+        <!-- Wochenbar: sticky unter Header, Scripts dürfen ihn NICHT mehr verschieben -->
+        <div id="punkte-kalender-top" style="position:sticky;top:48px;z-index:20;background:var(--bg)"></div>
+        <!-- Original-Bar: immer unsichtbar -->
+        <div id="challenge-week-bar-clean" style="display:none"></div>
+        <!-- Layout ohne eigenes Scrollen: challenges-view scrollt alles -->
+        <div class="challenge-layout" style="overflow-y:visible">
           <div class="leader-card" style="order:1">
             <div class="leader-card-head">
               <div>
