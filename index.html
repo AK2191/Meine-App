@@ -507,7 +507,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 }
 #fab:hover{transform:scale(1.08)}
 #fab svg{width:22px;height:22px;stroke:white;stroke-width:2.2}
-@media(max-width:700px){#fab{display:none}}
+@media(max-width:700px){#fab{display:flex}}
 
 /* ── TOAST ───────────────────────────── */
 #toast-wrap{
@@ -1168,7 +1168,8 @@ function setMainView(v){
 
 function fabAction(){
   if(currentMainView==='calendar') openEventPanel(null);
-  // Nur Kalender hat FAB
+  else if(currentMainView==='challenges') openChallengePanel(null);
+  else openEventPanel(null);
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1513,23 +1514,18 @@ function saveEvent(existingId){
   if(existingId){const i=events.findIndex(e=>e.id===existingId);if(i>=0)events[i]=ev;else events.push(ev);}
   else events.push(ev);
   ls('events',events);
-  closePanel();
-  if(currentMainView==='calendar'){renderCalendar();renderUpcoming();}
+  /* no close */
+if(currentMainView==='calendar'){renderCalendar();renderUpcoming();}
   checkNotifications();
   if(currentMainView==='dashboard')buildDashboard();
   toast(existingId?'Termin aktualisiert ✓':'Termin erstellt ✓','ok');
 }
 
-/* Hook: Dashboard nach Event-Änderung aktualisieren */
-(function(){
-  var _orig=window.saveEvent;
-  if(typeof _orig==='function'){window.saveEvent=function(){var r=_orig.apply(this,arguments);setTimeout(function(){if(typeof window.buildDashboard==='function')window.buildDashboard();},200);return r;};}
-})();
 window._execDeleteEvent = function(id){
   events = (events||[]).filter(function(e){ return e.id!==id; });
   if(typeof ls==='function') ls('events', events);
-  if(typeof closePanel==='function') closePanel();
-  if(currentMainView==='calendar'){
+  if(typeof closePanel==='function') /* no close */
+if(currentMainView==='calendar'){
     if(typeof renderCalendar==='function') renderCalendar();
     if(typeof renderUpcoming==='function') renderUpcoming();
   }
@@ -1537,19 +1533,26 @@ window._execDeleteEvent = function(id){
   if(typeof window.buildDashboard==='function') window.buildDashboard();
   if(typeof toast==='function') toast('Termin gelöscht','ok');
 };
+function _doDelEvent(id){
+  events=(events||[]).filter(function(e){return e.id!==id;});
+  ls('events',events);
+  closePanel();
+  if(currentMainView==='calendar'){renderCalendar();if(typeof renderUpcoming==='function')renderUpcoming();}
+  if(typeof checkNotifications==='function')checkNotifications();
+  buildDashboard();
+  toast('Termin gelöscht ✓','ok');
+}
 function deleteEvent(id){
-  var ev = (events||[]).find(function(e){ return e.id===id; });
-  var title = (ev && ev.title) ? ev.title : 'Termin';
-  if(typeof openPanel==='function'){
-    openPanel('Termin löschen',
-      '<div class="push-box" style="margin-bottom:16px">' +
-        '<div class="push-status" style="font-weight:700">' + (title||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>' +
-        '<div class="push-status" style="margin-top:4px">Diesen Termin wirklich löschen?</div>' +
-      '</div>' +
-      '<button class="btn btn-danger btn-full" onclick="window._execDeleteEvent(' + JSON.stringify(id) + ')">Termin löschen</button>' +
-      '<button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="closePanel()">Abbrechen</button>'
-    );
-  }
+  var ev=(events||[]).find(function(e){return e.id===id;});
+  var t=esc((ev&&ev.title)?ev.title:'Termin');
+  openPanel('Termin löschen',
+    '<div class="push-box" style="margin-bottom:14px">'+
+      '<div class="toggle-title" style="font-weight:700">'+t+'</div>'+
+      '<div class="toggle-sub" style="margin-top:4px">Diesen Termin wirklich löschen?</div>'+
+    '</div>'+
+    '<button class="btn btn-danger btn-full" onclick="_doDelEvent('+JSON.stringify(id)+')">Löschen</button>'+
+    '<button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="closePanel()">Abbrechen</button>'
+  );
 }
 
 function openDayPanel(dt,dayEvs){
@@ -2200,7 +2203,8 @@ document.addEventListener('touchend',e=>{
   window.saveCalendarSettings=function(){
     calendarSettings.state=document.getElementById('holiday-state')?.value||'ALL';
     calendarSettings.holidayNotifications=document.getElementById('holiday-notifications')?.value==='1';
-    ls('holiday_state',calendarSettings.state); ls('holiday_notifications',calendarSettings.holidayNotifications); closePanel(); renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
+    ls('holiday_state',calendarSettings.state); ls('holiday_notifications',calendarSettings.holidayNotifications); /* no close */
+renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   };
   const originalOpenChallengePanel=window.openChallengePanel;
   window.openChallengePanel=function(id){
@@ -2735,12 +2739,14 @@ document.addEventListener('touchend',e=>{
   window.saveEvent=function(existingId){
     const old=existingId?events.find(e=>e.id===existingId):null; const title=document.getElementById('ev-title')?.value.trim(); const date=document.getElementById('ev-date')?.value; if(!title){toast('Bitte einen Titel eingeben','err');return;} if(!date){toast('Bitte ein Datum wählen','err');return;}
     const ev={id:existingId||'ev_'+uid(),title,date,time:document.getElementById('ev-time')?.value||'',endTime:document.getElementById('ev-end')?.value||'',type:document.getElementById('ev-type')?.value||'meeting',color:document.getElementById('ev-color')?.value||'blue',desc:document.getElementById('ev-desc')?.value.trim()||'',notifDaysBefore:parseInt(document.getElementById('ev-notif')?.value||'1'),allDay:!document.getElementById('ev-time')?.value,source:'local',googleEventId:old?.googleEventId||'',createdAt:old?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
-    const i=events.findIndex(e=>e.id===ev.id); if(i>=0)events[i]=ev; else events.push(ev); ls('events',events); closePanel(); if(currentMainView==='calendar'){renderCalendar();renderUpcoming();} checkNotifications(); if(currentMainView==='dashboard')buildDashboard(); if(typeof saveToDrive==='function') saveToDrive(); toast(existingId?'Termin aktualisiert ✓':'Termin erstellt ✓','ok'); if(accessToken&&!isDemoMode) syncEventToGoogleReliable(ev);
+    const i=events.findIndex(e=>e.id===ev.id); if(i>=0)events[i]=ev; else events.push(ev); ls('events',events); /* no close */
+if(currentMainView==='calendar'){renderCalendar();renderUpcoming();} checkNotifications(); if(currentMainView==='dashboard')buildDashboard(); if(typeof saveToDrive==='function') saveToDrive(); toast(existingId?'Termin aktualisiert ✓':'Termin erstellt ✓','ok'); if(accessToken&&!isDemoMode) syncEventToGoogleReliable(ev);
   };
   window.saveToGoogleCal=function(existingId){
     const title=document.getElementById('ev-title')?.value.trim(); const date=document.getElementById('ev-date')?.value; if(!title||!date){toast('Bitte Titel und Datum eingeben','err');return;}
     const old=existingId?events.find(e=>e.id===existingId):null; const ev={id:existingId||'ev_'+uid(),title,date,time:document.getElementById('ev-time')?.value||'',endTime:document.getElementById('ev-end')?.value||'',type:document.getElementById('ev-type')?.value||'meeting',color:document.getElementById('ev-color')?.value||'blue',desc:document.getElementById('ev-desc')?.value.trim()||'',notifDaysBefore:parseInt(document.getElementById('ev-notif')?.value||'1'),allDay:!document.getElementById('ev-time')?.value,source:'local',googleEventId:old?.googleEventId||'',createdAt:old?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
-    const i=events.findIndex(e=>e.id===ev.id); if(i>=0)events[i]=ev; else events.push(ev); ls('events',events); closePanel(); if(currentMainView==='calendar'){renderCalendar();renderUpcoming();} syncEventToGoogleReliable(ev);
+    const i=events.findIndex(e=>e.id===ev.id); if(i>=0)events[i]=ev; else events.push(ev); ls('events',events); /* no close */
+if(currentMainView==='calendar'){renderCalendar();renderUpcoming();} syncEventToGoogleReliable(ev);
   };
   setTimeout(()=>{normalizeSportChallenges(); if(typeof renderChallenges==='function') renderChallenges();},500);
 })();
@@ -3052,7 +3058,8 @@ document.addEventListener('touchend',e=>{
     const ev={id:existingId||('ev_'+Date.now()),title,startDate:s,endDate:e,date:s,time:$('ev-time')?.value||'',endTime:$('ev-end')?.value||'',type:$('ev-type')?.value||'meeting',color:$('ev-color')?.value||'blue',desc:$('ev-desc')?.value||'',notifDaysBefore:parseInt($('ev-notif')?.value||'1',10),createdAt:new Date().toISOString()};
     const arr=window.events||(window.events=[]); const old=existingId?arr.find(x=>x.id===existingId):null; if(old){Object.assign(old,ev,{googleEventId:old.googleEventId,syncedToGoogle:old.syncedToGoogle});} else arr.push(ev);
     if(typeof ls==='function')ls('events',arr); else localStorage.setItem('events',JSON.stringify(arr));
-    closePanel(); renderCalendar(); if(typeof renderUpcoming==='function')renderUpcoming(); if(typeof buildDashboard==='function')buildDashboard(); if(typeof checkNotifications==='function')checkNotifications(); if(typeof saveToDrive==='function')try{saveToDrive()}catch(_){ } if(typeof toast==='function')toast(existingId?'Termin aktualisiert ✓':'Termin erstellt ✓','ok');
+    /* no close */
+renderCalendar(); if(typeof renderUpcoming==='function')renderUpcoming(); if(typeof buildDashboard==='function')buildDashboard(); if(typeof checkNotifications==='function')checkNotifications(); if(typeof saveToDrive==='function')try{saveToDrive()}catch(_){ } if(typeof toast==='function')toast(existingId?'Termin aktualisiert ✓':'Termin erstellt ✓','ok');
     try{ if(window.accessToken&&!window.isDemoMode&&typeof syncEventToGoogleReliable==='function')syncEventToGoogleReliable(old||ev); }catch(_){ }
   };
 
@@ -3067,7 +3074,8 @@ document.addEventListener('touchend',e=>{
     const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked}; saveOpt(o);
     try{ if($('holiday-state')&&window.calendarSettings){calendarSettings.state=$('holiday-state').value; if(typeof ls==='function')ls('holiday_state',calendarSettings.state);}}
     catch(e){}
-    closePanel(); renderCalendar(); if(typeof buildDashboard==='function')buildDashboard(); if(typeof toast==='function')toast('Kalender-Einstellungen gespeichert ✓','ok');
+    /* no close */
+renderCalendar(); if(typeof buildDashboard==='function')buildDashboard(); if(typeof toast==='function')toast('Kalender-Einstellungen gespeichert ✓','ok');
   };
   document.addEventListener('change',function(e){ if(e.target&&['toggle-holidays','toggle-dots','toggle-kw'].includes(e.target.id)){ const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked}; saveOpt(o); renderCalendar(); }});
 
@@ -3284,7 +3292,7 @@ document.addEventListener('touchend',e=>{
     const html = '<div class="fg"><label class="flabel">Titel *</label><input class="finput" id="ev-title" placeholder="Termin" value="'+escB(ev?.title||'')+'"></div>'+
       '<div class="fr"><div class="fg"><label class="flabel">Von-Datum *</label><input type="date" class="finput" id="ev-date" value="'+start+'"></div><div class="fg"><label class="flabel">Bis-Datum</label><input type="date" class="finput" id="ev-end-date" value="'+end+'"></div></div>'+
       '<div class="fr"><div class="fg"><label class="flabel">Von Uhrzeit</label><input type="time" class="finput" id="ev-time" value="'+escB(ev?.time||'')+'"></div><div class="fg"><label class="flabel">Bis Uhrzeit</label><input type="time" class="finput" id="ev-end" value="'+escB(ev?.endTime||'')+'"></div></div>'+
-      '<div class="fr"><div class="fg"><label class="flabel">Art</label><select class="finput" id="ev-type"><option value="meeting">Termin</option><option value="deadline">Frist</option><option value="reminder">Erinnerung</option><option value="other">Sonstiges</option></select></div><div class="fg"><label class="flabel">Farbe</label><select class="finput" id="ev-color">'+[['blue','Blau','#3b82f6'],['green','Gruen','#22c55e'],['amber','Gelb','#f59e0b'],['red','Rot','#ef4444'],['purple','Lila','#a855f7']].map(function(x){return '<option value="'+x[0]+'" style="background:'+x[2]+'20" '+(color===x[0]?'selected':'')+'>'+x[1]+'</option>';}).join('')+'</select></div></div>'+
+      '<div class="fr"><div class="fg"><label class="flabel">Art</label><select class="finput" id="ev-type"><option value="meeting">Termin</option><option value="deadline">Frist</option><option value="reminder">Erinnerung</option><option value="other">Sonstiges</option></select></div><div class="fg"><label class="flabel">Farbe</label><select class="finput" id="ev-color">'+[['blue','Blau','#3b82f6'],['green','Grün','#22c55e'],['amber','Gelb','#f59e0b'],['red','Rot','#ef4444'],['purple','Lila','#a855f7']].map(function(x){return '<option value="'+x[0]+'" style="background:'+x[2]+'20;font-weight:600" '+(color===x[0]?'selected':'')+'>'+x[1]+'</option>';}).join('')+'</select></div></div>'+
       '<div class="fg"><label class="flabel">Beschreibung</label><textarea class="finput" id="ev-desc" rows="4" placeholder="Notiz">'+escB(ev?.desc||'')+'</textarea></div>'+
       '<div class="fa"><button class="btn btn-primary" style="flex:1" onclick="saveEvent(\''+(ev?.id||'')+'\')">Speichern</button>'+(ev?'<button class="btn btn-danger" onclick="deleteEvent(\''+ev.id+'\')">Löschen</button>':'')+'</div>';
     window.openPanel(ev ? 'Termin bearbeiten' : 'Neuer Termin', html);
@@ -3312,7 +3320,7 @@ document.addEventListener('touchend',e=>{
     try{ if(typeof ls === 'function') ls('events', arr); else localStorage.setItem('change_v1_events', JSON.stringify(arr)); }catch(e){}
     if(typeof closePanel === 'function') closePanel();
     window.renderCalendar(); try{ if(typeof buildDashboard === 'function') buildDashboard(); }catch(e){}
-    if(typeof toast === 'function') toast('Termin gespeichert ✓','ok');
+    if(typeof toast === 'function') toast('Termin gespeichert ✓','ok'); setTimeout(function(){if(typeof buildDashboard==='function')buildDashboard();},200);
   };
 
   window.openCalendarSettings = function(){
@@ -3502,7 +3510,8 @@ document.addEventListener('touchend',e=>{
     const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked};
     localStorage.setItem('change_v1_calendar_view_options',JSON.stringify(o)); localStorage.setItem('calendar_settings',JSON.stringify(o));
     try{ if(!window.calendarSettings) window.calendarSettings={}; calendarSettings.state=$('holiday-state')?.value||'ALL'; if(typeof ls==='function') ls('holiday_state',calendarSettings.state); else localStorage.setItem('holiday_state',calendarSettings.state); }catch(e){}
-    if(typeof closePanel==='function') closePanel(); renderCalendar(); if(typeof toast==='function') toast('Kalender-Einstellungen gespeichert ✓','ok');
+    if(typeof closePanel==='function') /* no close */
+renderCalendar(); if(typeof toast==='function') toast('Kalender-Einstellungen gespeichert ✓','ok');
   };
 
   const css=document.createElement('style'); css.id='calendar-repair-final-style'; css.textContent=`
@@ -3940,10 +3949,12 @@ window.renderMonth=function(y,m){let g=$('month-grid'),o=opt();if(!g)return;g.cl
 window.renderYear=function(y){let g=$('month-grid');if(!g)return;g.className='year-grid year-grid-clean';g.style.display='grid';g.style.gridTemplateRows='none';g.innerHTML='';for(let m=0;m<12;m++){let card=document.createElement('div');card.className='year-month-card';card.onclick=()=>{curDate=new Date(y,m,1);currentCalView='month';renderCalendar()};let f=new Date(y,m,1).getDay();f=f===0?6:f-1;let dim=new Date(y,m+1,0).getDate(),html='<div class="year-month-title">'+DE_MONTHS[m]+'</div><div class="year-mini-grid">';['M','D','M','D','F','S','S'].forEach(x=>html+='<div class="year-mini-day year-head">'+x+'</div>');for(let i=0;i<f;i++)html+='<div></div>';for(let d=1;d<=dim;d++){let dt=new Date(y,m,d),k=D(dt),he=evsOn(k).length,hh=hol(k).length;html+='<div class="year-mini-day '+(isToday(dt)?'today ':'')+(he?'has-event ':'')+(hh?'has-holiday ':'')+'"><span>'+d+'</span>'+(he||hh?'<i></i>':'')+'</div>'}card.innerHTML=html+'</div>';g.appendChild(card)}};
 window.renderCalendar=function(){let y=curDate.getFullYear(),m=curDate.getMonth(),ml=$('month-label'),g=$('month-grid'),a=$('agenda-view'),w=$('wday-row');if(ml)ml.textContent=currentCalView==='year'?String(y):(currentCalView==='workweek'?'Arbeitswoche · '+DE_MONTHS[m]+' '+y:DE_MONTHS[m]+' '+y);['year','month','workweek','today'].forEach(v=>$('vbtn-'+v)?.classList.toggle('active',currentCalView===v));if(currentCalView==='year'){a.style.display='none';w.style.display='none';renderYear(y)}else if(currentCalView==='workweek'){a.style.display='none';w.style.display='none';window.renderWorkweek&&window.renderWorkweek()}else{a.style.display='none';w.style.display='grid';renderMonth(y,m)}if(currentCalView!=='today')g.style.display='grid';try{renderUpcoming()}catch(e){}};
 window.setCalView=v=>{currentCalView=v;renderCalendar()};window.navigate=dir=>{if(currentCalView==='year')curDate=new Date(curDate.getFullYear()+dir,0,1);else if(currentCalView==='workweek')curDate=AD(curDate,dir*7);else curDate=new Date(curDate.getFullYear(),curDate.getMonth()+dir,1);renderCalendar()};window.goToday=()=>{curDate=new Date();currentCalView='month';renderCalendar()};
-window.openEventPanel=function(id,pre){let ev=id?getEventById(id):null;if(ev&&ev.source==='google'){let r=rng(ev);openPanel(ev.title,'<div class="google-detail"><span class="gmark big">G</span><div><div class="challenge-title">Von Google Kalender</div><div class="settings-hint">'+E(r.start===r.end?fmtDate(r.start):fmtDate(r.start)+' – '+fmtDate(r.end))+'</div></div></div><button class="btn btn-ghost btn-full" onclick="closePanel()">Schließen</button>');return}let dv=ev?.startDate||ev?.date||(pre?D(pre):D(new Date())),ed=ev?.endDate||ev?.date||dv;let html='<div class="fg"><label class="flabel">Titel *</label><input class="finput" id="ev-title" value="'+E(ev?.title||'')+'"></div><div class="fr"><div class="fg"><label class="flabel">Von-Datum *</label><input type="date" class="finput" id="ev-date" value="'+dv+'"></div><div class="fg"><label class="flabel">Bis-Datum</label><input type="date" class="finput" id="ev-end-date" value="'+ed+'"></div></div><div class="fr"><div class="fg"><label class="flabel">Von Uhrzeit</label><input type="time" class="finput" id="ev-time" value="'+(ev?.time||'')+'"></div><div class="fg"><label class="flabel">Bis Uhrzeit</label><input type="time" class="finput" id="ev-end" value="'+(ev?.endTime||'')+'"></div></div><div class="fg"><label class="flabel">Farbe</label><select class="finput" id="ev-color">'+[['blue','Blau','#3b82f6'],['green','Gruen','#22c55e'],['amber','Gelb','#f59e0b'],['red','Rot','#ef4444'],['purple','Lila','#a855f7']].map(function(x){return '<option value="'+x[0]+'" style="background:'+x[2]+'20" '+((ev?.color||'blue')===x[0]?'selected':'')+'>'+x[1]+'</option>';}).join('')+'</select></div><div class="fg"><label class="flabel">Beschreibung</label><textarea class="finput" id="ev-desc" rows="4">'+E(ev?.desc||'')+'</textarea></div><button class="btn btn-primary btn-full" onclick="saveEvent(\''+(ev?.id||'')+'\')">Speichern</button>';openPanel(ev?'Termin bearbeiten':'Neuer Termin',html)};
-window.saveEvent=function(id){let title=$('ev-title')?.value.trim(),date=$('ev-date')?.value,end=$('ev-end-date')?.value||date;if(!title||!date){toast('Titel und Von-Datum fehlen','err');return}if(end<date)end=date;let old=id?getEventById(id):{},ev={id:id||'ev_'+uid(),title,date,startDate:date,endDate:end,time:$('ev-time')?.value||'',endTime:$('ev-end')?.value||'',color:$('ev-color')?.value||'blue',type:old?.type||'meeting',desc:$('ev-desc')?.value.trim()||'',source:'local',createdAt:old?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};let arr=window.events||events,i=arr.findIndex(e=>e.id===ev.id);if(i>=0)arr[i]=Object.assign({},arr[i],ev);else arr.push(ev);try{events=arr;window.events=arr}catch(e){}ls('events',arr);closePanel();renderCalendar();try{buildDashboard()}catch(e){}toast('Termin gespeichert ✓','ok')};
+window.openEventPanel=function(id,pre){let ev=id?getEventById(id):null;if(ev&&ev.source==='google'){let r=rng(ev);openPanel(ev.title,'<div class="google-detail"><span class="gmark big">G</span><div><div class="challenge-title">Von Google Kalender</div><div class="settings-hint">'+E(r.start===r.end?fmtDate(r.start):fmtDate(r.start)+' – '+fmtDate(r.end))+'</div></div></div><button class="btn btn-ghost btn-full" onclick="closePanel()">Schließen</button>');return}let dv=ev?.startDate||ev?.date||(pre?D(pre):D(new Date())),ed=ev?.endDate||ev?.date||dv;let html='<div class="fg"><label class="flabel">Titel *</label><input class="finput" id="ev-title" value="'+E(ev?.title||'')+'"></div><div class="fr"><div class="fg"><label class="flabel">Von-Datum *</label><input type="date" class="finput" id="ev-date" value="'+dv+'"></div><div class="fg"><label class="flabel">Bis-Datum</label><input type="date" class="finput" id="ev-end-date" value="'+ed+'"></div></div><div class="fr"><div class="fg"><label class="flabel">Von Uhrzeit</label><input type="time" class="finput" id="ev-time" value="'+(ev?.time||'')+'"></div><div class="fg"><label class="flabel">Bis Uhrzeit</label><input type="time" class="finput" id="ev-end" value="'+(ev?.endTime||'')+'"></div></div><div class="fg"><label class="flabel">Farbe</label><select class="finput" id="ev-color">'+[['blue','Blau','#3b82f6'],['green','Grün','#22c55e'],['amber','Gelb','#f59e0b'],['red','Rot','#ef4444'],['purple','Lila','#a855f7']].map(function(x){return '<option value="'+x[0]+'" style="background:'+x[2]+'20;font-weight:600" '+((ev?.color||'blue')===x[0]?'selected':'')+'>'+x[1]+'</option>';}).join('')+'</select></div><div class="fg"><label class="flabel">Beschreibung</label><textarea class="finput" id="ev-desc" rows="4">'+E(ev?.desc||'')+'</textarea></div><button class="btn btn-primary btn-full" onclick="saveEvent(\''+(ev?.id||'')+'\')">Speichern</button>';openPanel(ev?'Termin bearbeiten':'Neuer Termin',html)};
+window.saveEvent=function(id){let title=$('ev-title')?.value.trim(),date=$('ev-date')?.value,end=$('ev-end-date')?.value||date;if(!title||!date){toast('Titel und Von-Datum fehlen','err');return}if(end<date)end=date;let old=id?getEventById(id):{},ev={id:id||'ev_'+uid(),title,date,startDate:date,endDate:end,time:$('ev-time')?.value||'',endTime:$('ev-end')?.value||'',color:$('ev-color')?.value||'blue',type:old?.type||'meeting',desc:$('ev-desc')?.value.trim()||'',source:'local',createdAt:old?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};let arr=window.events||events,i=arr.findIndex(e=>e.id===ev.id);if(i>=0)arr[i]=Object.assign({},arr[i],ev);else arr.push(ev);try{events=arr;window.events=arr}catch(e){}ls('events',arr);/* no close */
+renderCalendar();try{buildDashboard()}catch(e){}toast('Termin gespeichert ✓','ok')};
 window.openCalendarSettings=function(){let o=opt(),st=(window.calendarSettings?.state)||localStorage.getItem('holiday_state')||'ALL',opts=Object.entries(window.STATE_OPTIONS||STATE_OPTIONS||{}).map(([k,v])=>'<option value="'+k+'" '+(k===st?'selected':'')+'>'+v+'</option>').join('');openPanel('Kalender-Einstellungen','<div class="fg"><label class="flabel">Bundesland</label><select class="finput" id="holiday-state">'+opts+'</select></div>'+['Feiertage anzeigen|toggle-holidays|showHolidays','Challenge-Punkte|toggle-dots|showChallengeDots','Kalenderwochen|toggle-kw|showWeekNumbers'].map(x=>{let [t,id,k]=x.split('|');return '<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">'+t+'</div></div><label class="switch"><input type="checkbox" id="'+id+'" '+(o[k]?'checked':'')+'><span class="slider"></span></label></div>'}).join('')+'<button class="btn btn-primary btn-full" onclick="saveCalSettings()">Speichern</button>')};
-window.saveCalSettings=function(){let o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked};localStorage.setItem('change_v1_calendar_view_options',JSON.stringify(o));localStorage.setItem('calendar_settings',JSON.stringify(o));try{calendarSettings.state=$('holiday-state')?.value||'ALL';ls('holiday_state',calendarSettings.state)}catch(e){}closePanel();renderCalendar();toast('Kalender-Einstellungen gespeichert ✓','ok')};
+window.saveCalSettings=function(){let o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked};localStorage.setItem('change_v1_calendar_view_options',JSON.stringify(o));localStorage.setItem('calendar_settings',JSON.stringify(o));try{calendarSettings.state=$('holiday-state')?.value||'ALL';ls('holiday_state',calendarSettings.state)}catch(e){}/* no close */
+renderCalendar();toast('Kalender-Einstellungen gespeichert ✓','ok')};
 let css=document.createElement('style');css.textContent='.clean-range-row{position:relative;display:grid!important;grid-template-columns:repeat(7,1fr);grid-auto-rows:1fr;min-height:132px}.clean-range-row .day-cell{grid-row:1;min-width:0;overflow:hidden;padding-top:8px}.day-num-wrap{display:flex!important;align-items:center;gap:6px;min-height:22px;padding-right:44px}.holiday-inline{font-size:10px;font-weight:800;color:var(--amb);background:var(--amb-d);border-radius:999px;padding:2px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:72%}.challenge-points-badge{position:absolute;top:7px;right:6px;z-index:7;font-size:10px;font-weight:900;color:var(--amb);background:var(--amb-d);border-radius:999px;padding:2px 6px}.challenge-points-badge.done{color:var(--grn);background:var(--grn-d)}.kw-badge-left{position:absolute;left:8px;bottom:8px;z-index:6;font-size:11px;font-weight:900;color:var(--acc);background:rgba(45,106,79,.12);border:1px solid rgba(45,106,79,.2);border-radius:999px;padding:3px 7px}.range-bar{grid-row:1;align-self:start;margin-top:calc(36px + var(--lane)*24px);height:20px;line-height:20px;padding:0 8px!important;z-index:5;border-radius:0!important;display:flex!important;align-items:center;gap:4px;min-width:0;overflow:hidden}.range-start{border-top-left-radius:10px!important;border-bottom-left-radius:10px!important}.range-end{border-top-right-radius:10px!important;border-bottom-right-radius:10px!important}.range-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:700}.range-date{font-size:10px;font-weight:800;color:#3b82f6;background:rgba(59,130,246,.1);border-radius:999px;padding:0 5px}.gmark{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;font-size:9px;font-weight:900;color:#4285f4;background:rgba(66,133,244,.12);flex:0 0 auto}.gmark.synced{color:var(--grn);background:var(--grn-d)}.gmark.big{width:28px;height:28px;font-size:14px}.google-detail{display:flex;gap:10px;align-items:center;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:12px}.year-mini-day{position:relative}.year-mini-day i{position:absolute;bottom:1px;width:5px;height:5px;border-radius:50%;background:var(--acc)}.year-mini-day.has-holiday i{background:var(--amb)}.year-mini-day.has-event.has-holiday i{background:linear-gradient(90deg,var(--acc) 50%,var(--amb) 50%)}';document.head.appendChild(css);setTimeout(()=>{try{renderCalendar()}catch(e){console.warn(e)}},50);
 })();
 
@@ -4017,7 +4028,8 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   window.goToday=function(){window.curDate=curDate=new Date();window.currentCalView=currentCalView='month';renderCalendar();};
 
   window.openCalendarSettings=function(){const o=loadOpts(); const states=window.STATE_OPTIONS||(typeof STATE_OPTIONS!=='undefined'?STATE_OPTIONS:{ALL:'Alle Bundesländer'}); const st=(window.calendarSettings&&calendarSettings.state)||localStorage.getItem('holiday_state')||'ALL'; const opts=Object.entries(states).map(([k,v])=>'<option value="'+esc(k)+'" '+(k===st?'selected':'')+'>'+esc(v)+'</option>').join(''); const row=(title,id,on,sub)=>'<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">'+title+'</div>'+(sub?'<div class="toggle-sub">'+sub+'</div>':'')+'</div><label class="switch"><input type="checkbox" id="'+id+'" '+(on?'checked':'')+'><span class="slider"></span></label></div>'; const html='<div class="fg"><label class="flabel">Bundesland für Feiertage</label><select class="finput" id="holiday-state">'+opts+'</select></div>'+row('Feiertage anzeigen','toggle-holidays',o.showHolidays,'Neben der Tageszahl, ohne Terminüberlappung.')+row('Challenge-Punkte anzeigen','toggle-dots',o.showChallengeDots,'Nur klein rechts unten am jeweiligen Tag.')+row('Kalenderwochen anzeigen','toggle-kw',o.showWeekNumbers,'Deutlich links unten pro Woche.')+'<button class="btn btn-primary btn-full" onclick="saveCalSettings()">Speichern</button>'; if(typeof openPanel==='function')openPanel('Kalender-Einstellungen',html);};
-  window.saveCalSettings=function(){const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked}; saveOpts(o); try{if(!window.calendarSettings)window.calendarSettings={}; calendarSettings.state=$('holiday-state')?.value||'ALL'; if(typeof ls==='function')ls('holiday_state',calendarSettings.state); else localStorage.setItem('holiday_state',calendarSettings.state);}catch(e){} if(typeof closePanel==='function')closePanel(); renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen gespeichert ✓','ok');};
+  window.saveCalSettings=function(){const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked}; saveOpts(o); try{if(!window.calendarSettings)window.calendarSettings={}; calendarSettings.state=$('holiday-state')?.value||'ALL'; if(typeof ls==='function')ls('holiday_state',calendarSettings.state); else localStorage.setItem('holiday_state',calendarSettings.state);}catch(e){} if(typeof closePanel==='function')/* no close */
+renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen gespeichert ✓','ok');};
 
   const style=document.createElement('style'); style.id='final-stacked-calendar-style'; style.textContent=`
     .range-bar,.fx-range,.clean-range-row>.range-bar{display:none!important}.h-actions,.h-cal-controls{position:relative;z-index:50}.icon-btn[title*="Kalender"]{pointer-events:auto!important;position:relative;z-index:60}
@@ -4055,7 +4067,8 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   window.renderCalendar=function(){const y=curDate.getFullYear(),m=curDate.getMonth(),ml=$('month-label'),grid=$('month-grid'),ag=$('agenda-view'),wd=$('wday-row');if(ml)ml.textContent=currentCalView==='year'?String(y):monthName(m)+' '+y;['year','month','workweek','today'].forEach(v=>$('vbtn-'+v)?.classList.toggle('active',currentCalView===v));if(ag)ag.style.display='none';if(currentCalView==='year'){if(wd)wd.style.display='none';renderYear(y)}else{if(wd)wd.style.display='grid';renderMonth(y,m)}if(grid)grid.style.display='grid'};
   window.navigate=function(dir){if(currentCalView==='year')window.curDate=curDate=new Date(curDate.getFullYear()+dir,0,1);else window.curDate=curDate=new Date(curDate.getFullYear(),curDate.getMonth()+dir,1);renderCalendar()}; window.goToday=function(){window.curDate=curDate=new Date();window.currentCalView=currentCalView='month';renderCalendar()}; window.setCalView=function(v){window.currentCalView=currentCalView=v;renderCalendar()};
   window.openCalendarSettings=function(){const o=loadOpts(),st=(window.calendarSettings&&calendarSettings.state)||localStorage.getItem('holiday_state')||'ALL';const opts=Object.entries(window.STATE_OPTIONS).map(([k,v])=>'<option value="'+esc(k)+'" '+(k===st?'selected':'')+'>'+esc(v)+'</option>').join('');const row=(title,id,on,sub)=>'<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">'+title+'</div>'+(sub?'<div class="toggle-sub">'+sub+'</div>':'')+'</div><label class="switch"><input type="checkbox" id="'+id+'" '+(on?'checked':'')+'><span class="slider"></span></label></div>';const html='<div class="fg"><label class="flabel">Bundesland für Feiertage</label><select class="finput" id="holiday-state">'+opts+'</select></div>'+row('Feiertage anzeigen','toggle-holidays',o.showHolidays,'Direkt neben der Tageszahl.')+row('Challenge-Punkte anzeigen','toggle-dots',o.showChallengeDots,'Klein rechts unten im Tag.')+row('Kalenderwochen anzeigen','toggle-kw',o.showWeekNumbers,'Links unten pro Woche.')+'<button class="btn btn-primary btn-full" onclick="saveCalSettings()">Speichern</button>';if(typeof openPanel==='function')openPanel('Kalender-Einstellungen',html)};
-  window.saveCalSettings=function(){const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked};saveOpts(o);try{if(!window.calendarSettings)window.calendarSettings={};calendarSettings.state=$('holiday-state')?.value||'ALL';if(typeof ls==='function')ls('holiday_state',calendarSettings.state);else localStorage.setItem('holiday_state',calendarSettings.state)}catch(e){}if(typeof closePanel==='function')closePanel();renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gespeichert ✓','ok')};
+  window.saveCalSettings=function(){const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked};saveOpts(o);try{if(!window.calendarSettings)window.calendarSettings={};calendarSettings.state=$('holiday-state')?.value||'ALL';if(typeof ls==='function')ls('holiday_state',calendarSettings.state);else localStorage.setItem('holiday_state',calendarSettings.state)}catch(e){}if(typeof closePanel==='function')/* no close */
+renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gespeichert ✓','ok')};
   function fixToolbarTitles(){document.querySelectorAll('[onclick="openPushSettingsPanel()"], [title="Live- & Kalender-Sync"], [title="Push & Live-Sync"]').forEach(b=>b.setAttribute('title','Sync'));document.querySelectorAll('[onclick="openCalendarSettings()"]').forEach(b=>b.setAttribute('title','Kalender-Einstellungen'))}fixToolbarTitles();setInterval(fixToolbarTitles,1000);
   document.addEventListener('click',function(e){const btn=e.target.closest('[title="Kalender-Einstellungen"]');if(btn){e.preventDefault();e.stopImmediatePropagation();e.stopPropagation();openCalendarSettings()}},true);
   const style=document.createElement('style');style.id='calendar-polish-user-final-style';style.textContent=`.range-bar,.fx-range,.clean-range-row>.range-bar{display:none!important}.h-actions,.h-cal-controls{position:relative;z-index:80}.icon-btn{pointer-events:auto!important}.icon-btn[title="Kalender-Einstellungen"],.icon-btn[title="Sync"]{position:relative;z-index:90}#month-grid.month-grid-polished{overflow:hidden!important;background:#fff!important}.cal-week-polished{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr));min-height:122px;border-bottom:1px solid var(--b1);position:relative}.cal-day-polished{position:relative;min-width:0;padding:7px 8px 23px;background:#fff;border-right:1px solid var(--b1);overflow:hidden;cursor:pointer}.cal-day-polished.weekend{background:#fbfaf7}.cal-day-polished.other{opacity:.42}.cal-day-polished.today{box-shadow:inset 0 0 0 1px rgba(45,106,79,.25);background:#f7fbf9}.cal-day-head{display:flex;align-items:center;gap:6px;min-height:24px;padding-right:44px;min-width:0}.cal-day-num{font-size:13px;font-weight:850;color:var(--t2);line-height:1}.cal-day-polished.today .cal-day-num{display:inline-flex;align-items:center;justify-content:center;height:22px;min-width:22px;border-radius:999px;background:rgba(45,106,79,.12);border:1px solid rgba(45,106,79,.22);color:var(--acc);padding:0 6px}.cal-holiday-inline{font-size:10px;font-weight:850;color:#b85f00;background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.18);border-radius:999px;padding:2px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100% - 38px)}.cal-event-stack{display:flex;flex-direction:column;gap:3px;margin-top:5px}.cal-event-chip{height:20px;border:1px solid rgba(59,130,246,.17);background:rgba(59,130,246,.08);color:#2563eb;border-radius:7px;padding:0 6px;display:flex;align-items:center;gap:4px;min-width:0;text-align:left;font-size:11px;font-weight:760;line-height:18px;cursor:pointer}.cal-event-chip.is-range{order:-10;background:rgba(45,106,79,.09)!important;border-color:rgba(45,106,79,.18)!important;color:var(--acc)!important}.cal-event-chip.is-range:before{content:'↔';font-size:9px;font-weight:900;opacity:.65}.cal-event-chip.green{background:rgba(22,163,74,.10);border-color:rgba(22,163,74,.18);color:#15803d}.cal-event-chip.amber{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.20);color:#b45309}.cal-event-chip.red{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.18);color:#dc2626}.cal-event-chip.purple{background:rgba(124,58,237,.10);border-color:rgba(124,58,237,.18);color:#6d28d9}.cal-event-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}.cal-range-text{font-size:9px;font-weight:850;opacity:.8;white-space:nowrap}.cal-range-text.muted{opacity:.55}.cal-g{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;font-size:8px;font-weight:900;color:#4285f4;background:rgba(66,133,244,.13);flex:0 0 auto}.cal-g.ok{color:var(--grn);background:var(--grn-d)}.cal-more{font-size:10px;font-weight:800;color:var(--t3);padding:1px 6px}.cal-points{position:absolute;right:7px;bottom:5px;z-index:8;font-size:10px;font-weight:900;color:var(--grn);background:rgba(52,211,153,.14);border:1px solid rgba(52,211,153,.24);border-radius:999px;padding:2px 6px;line-height:1}.cal-points.done{background:rgba(45,106,79,.14);border-color:rgba(45,106,79,.24);color:var(--acc)}.cal-kw{position:absolute;left:7px;bottom:5px;z-index:8;font-size:10.5px;font-weight:900;color:var(--acc);background:rgba(45,106,79,.12);border:1px solid rgba(45,106,79,.20);border-radius:999px;padding:2px 7px}.year-grid-stacked{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important;padding:14px!important;overflow:auto!important}.year-card-stacked{background:#fff;border:1px solid var(--b1);border-radius:14px;padding:10px;text-align:left;cursor:pointer}.year-title-stacked{font-weight:850;font-size:13px;margin-bottom:7px}.year-days-stacked{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}.year-days-stacked b,.year-days-stacked span{height:18px;font-size:9px;color:var(--t4);display:flex;align-items:center;justify-content:center;position:relative}.year-days-stacked span.today{background:var(--acc);color:white;border-radius:50%}.year-days-stacked span i{position:absolute;bottom:0;width:5px;height:5px;border-radius:50%;background:var(--acc)}.year-days-stacked span.has-holiday i{background:#f59e0b}.year-days-stacked span.has-event.has-holiday i{background:linear-gradient(90deg,var(--acc) 50%,#f59e0b 50%)}@media(max-width:800px){.cal-week-polished{min-height:110px}.year-grid-stacked{grid-template-columns:1fr!important}.cal-holiday-inline{max-width:62px}.cal-event-chip{font-size:10px;padding:0 4px}}`;document.head.appendChild(style);setTimeout(()=>{try{fixToolbarTitles();renderCalendar()}catch(e){console.warn('calendar polish failed',e)}},120);
@@ -5107,7 +5120,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
           <div class="dash-row-icon" style="background:${colBg}">📅</div>
           <div class="dash-row-body">
             <div class="dash-row-title" style="${titleStyle}">${title}</div>
-            <div class="dash-row-sub">${ev.time?ev.time+' Uhr':'Ganztägig'}</div>
+            <div class="dash-row-sub">${ev.time?(ev.time+(ev.endTime&&ev.endTime!==ev.time?' – '+ev.endTime:'')+' Uhr'):'Ganztägig'}</div>
           </div>
           <span class="dash-row-badge ${bClass}">${badge}</span>
         </div>`;
@@ -5140,7 +5153,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
           const ev=r.ev, colBg=ev.color==='red'?'var(--red-d)':ev.color==='green'?'var(--grn-d)':ev.color==='amber'?'var(--amb-d)':ev.color==='purple'?'var(--pur-d)':'var(--acc-d)';
           todayItemsHtml+=`<div class="dash-row dash-today-row" onclick="setMainView('calendar')">
             <div class="dash-row-icon" style="background:${colBg}">📅</div>
-            <div class="dash-row-body"><div class="dash-row-title" style="font-weight:800;color:var(--acc)">${esc(ev.title||'Termin')}</div><div class="dash-row-sub">${ev.time?ev.time+' Uhr':'Ganztägig'}</div></div>
+            <div class="dash-row-body"><div class="dash-row-title" style="font-weight:800;color:var(--acc)">${esc(ev.title||'Termin')}</div><div class="dash-row-sub">${ev.time?(ev.time+(ev.endTime&&ev.endTime!==ev.time?' – '+ev.endTime:'')+' Uhr'):'Ganztägig'}</div></div>
             <span class="dash-row-badge badge-green">Heute</span>
           </div>`;
         }
@@ -5170,7 +5183,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
           const colBg=ev.color==='red'?'var(--red-d)':ev.color==='green'?'var(--grn-d)':ev.color==='amber'?'var(--amb-d)':ev.color==='purple'?'var(--pur-d)':'var(--acc-d)';
           upcomingHtml+=`<div class="dash-row" onclick="setMainView('calendar')">
             <div class="dash-row-icon" style="background:${colBg}">📅</div>
-            <div class="dash-row-body"><div class="dash-row-title">${esc(ev.title||'Termin')}</div><div class="dash-row-sub">${ev.time?(ev.time+(ev.endTime?' – '+ev.endTime:'')+' Uhr'):'Ganztägig'}</div></div>
+            <div class="dash-row-body"><div class="dash-row-title">${esc(ev.title||'Termin')}</div><div class="dash-row-sub">${ev.time?(ev.time+(ev.endTime&&ev.endTime!==ev.time?' – '+ev.endTime:'')+' Uhr'):'Ganztägig'}</div></div>
             <span class="dash-row-badge ${bClass}">${badge}</span>
           </div>`;
         }
@@ -5184,6 +5197,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       </div>
       ${todayHtml}
       ${upcomingHtml}`;
+    setTimeout(()=>{const _s=document.getElementById('dash-today-sub');if(_s)_s.textContent=todayDateFmt;},0);
 
     if(!calRows) calRows='<div class="dash-empty">Keine Termine oder Feiertage</div>';
 
@@ -5214,13 +5228,13 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     grid.innerHTML=
       `<div class="dash-card">
         <div class="dash-card-head">
-          <div><div class="dash-card-title">📅 Kalender</div></div>
+          <div><div class="dash-card-title">📅 Kalender</div><div id="dash-today-sub" style="font-size:11px;color:var(--acc);font-weight:600;margin-top:2px"></div></div>
         </div>
         <div class="dash-card-body">${calCardBody}</div>
       </div>
       <div class="dash-card">
         <div class="dash-card-head">
-          <div><div class="dash-card-title">🏆 Challenges &amp; Mitspieler</div><div class="dash-card-sub">Heute &amp; Rangliste</div></div>
+          <div><div class="dash-card-title">🏆 Challenges &amp; Mitspieler</div></div>
         </div>
         <div class="dash-card-body">
           <div class="dash-section-label">Heute offen</div>${chRows}
@@ -5405,7 +5419,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       out.push(ev);
     }
     // Lokale Termine
-    try{ const _evs=window.events||(typeof events!=='undefined'?events:[]); (Array.isArray(_evs)?_evs:[]).forEach(add); }catch(e){}
+    try{ const _localEvs=window.events||(typeof events!=='undefined'?events:[]); (Array.isArray(_localEvs)?_localEvs:[]).forEach(add); }catch(e){}
     // Google-Termine mit vollständiger end-Date-Auflösung
     try{
       (Array.isArray(window.gEvents) ? window.gEvents : []).forEach(ge => {
@@ -5526,7 +5540,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
         } else {
           const ev = r.ev;
           const isRange = r.start !== r.end;
-          const _t=ev.time||(typeof evTime==='function'?evTime(ev):''), _et=ev.endTime||''; const sub = isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : (_t?(_t+(_et&&_et!==_t?' – '+_et:'')+' Uhr'):'Ganztägig');
+          const sub = isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : (evTime(ev) || 'Ganztägig');
           const colBg = ev.color==='red'?'var(--red-d)':ev.color==='green'?'var(--grn-d)':ev.color==='amber'?'var(--amb-d)':ev.color==='purple'?'var(--pur-d)':'var(--acc-d)';
           todayHtml += `<div class="dash-row dash-today-row" onclick="setMainView('calendar')">
             <div class="dash-row-icon" style="background:${colBg}">📅</div>
@@ -5554,7 +5568,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
           const isRange = r.start !== r.end;
           const badge = isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : (diffDays(r.start)===1 ? 'Morgen' : fmtShort(r.start));
           const bClass = diffDays(r.start)<=1 ? 'badge-red' : diffDays(r.start)<=3 ? 'badge-amber' : 'badge-blue';
-          const _t=ev.time||(typeof evTime==='function'?evTime(ev):''), _et=ev.endTime||''; const sub = isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : (_t?(_t+(_et&&_et!==_t?' – '+_et:'')+' Uhr'):'Ganztägig');
+          const sub = isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : (evTime(ev) || 'Ganztägig');
           const colBg = ev.color==='red'?'var(--red-d)':ev.color==='green'?'var(--grn-d)':ev.color==='amber'?'var(--amb-d)':ev.color==='purple'?'var(--pur-d)':'var(--acc-d)';
           upcomingHtml += `<div class="dash-row" onclick="setMainView('calendar')">
             <div class="dash-row-icon" style="background:${colBg}">📅</div>
@@ -5567,8 +5581,6 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
 
     /* Kalender-Karte zusammenbauen */
     const calCardBody = `<div class="dash-today-header"><div class="dash-today-date">${todayDateFmt}</div></div>${todayHtml}${upcomingHtml || (!todayRows.length ? '<div class="dash-empty">Keine Termine in den nächsten 90 Tagen</div>' : '')}`;
-    // Heute-Label im Karten-Header
-    setTimeout(()=>{ const lbl=document.getElementById('dash-cal-today-label'); if(lbl) lbl.textContent=todayDateFmt; },0);
 
     /* Challenges & Mitspieler */
     let chHtml = '';
@@ -5602,11 +5614,11 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
 
     grid.innerHTML = `
       <div class="dash-card">
-        <div class="dash-card-head" style="background:var(--s2);border-bottom:1px solid var(--b1);padding:12px 16px"><div><div style="font-size:13px;font-weight:700;color:var(--t1)">📅 Kalender</div><div style="font-size:11px;color:var(--acc);font-weight:600;margin-top:1px" id="dash-cal-today-label"></div></div></div>
+        <div class="dash-card-head"><div><div class="dash-card-title">📅 Kalender</div></div></div>
         <div class="dash-card-body">${calCardBody}</div>
       </div>
       <div class="dash-card">
-        <div class="dash-card-head" style="background:var(--s2);border-bottom:1px solid var(--b1);padding:12px 16px"><div><div style="font-size:13px;font-weight:700;color:var(--t1)">🏆 Challenges &amp; Mitspieler</div></div></div>
+        <div class="dash-card-head"><div><div class="dash-card-title">🏆 Challenges &amp; Mitspieler</div></div></div>
         <div class="dash-card-body">
           <div class="dash-section-label">Heute offen</div>${chHtml}
           <div class="dash-section-label" style="border-top:1px solid var(--b1)">Rangliste</div>${plHtml}
@@ -5840,7 +5852,8 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       </div>
       ${switchRow('Feiertage anzeigen','Direkt neben der Tageszahl.','us-toggle-holidays',o.showHolidays)}
       ${switchRow('Challenge-Punkte anzeigen','Klein rechts unten im Tag.','us-toggle-dots',o.showChallengeDots)}
-      ${switchRow('Kalenderwochen anzeigen','Links unten pro Woche.','us-toggle-kw',o.showWeekNumbers)}`;
+      ${switchRow('Kalenderwochen anzeigen','Links unten pro Woche.','us-toggle-kw',o.showWeekNumbers)}
+      `; /* auto-save */
 
     const hasCfg=!!(window.FIREBASE_CONFIG&&window.FIREBASE_CONFIG.apiKey&&!String(window.FIREBASE_CONFIG.apiKey).includes('HIER_'));
     const perm=typeof Notification!=='undefined'?Notification.permission:'nicht unterstützt';
@@ -5902,9 +5915,9 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     if(typeof openPanel==='function') openPanel('Einstellungen',panelHtml);
 
     setTimeout(()=>{
-      // Kalender-Toggles: Auto-Save ohne Speichern-Button
-      ['us-toggle-holidays','us-toggle-dots','us-toggle-kw'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('change',function(){window._saveCalSettings();});});
-      var _se=document.getElementById('us-holiday-state');if(_se)_se.addEventListener('change',function(){window._saveCalSettings();});
+      // Calendar settings: auto-save on change
+      ['us-toggle-holidays','us-toggle-dots','us-toggle-kw'].forEach(function(id){var el=document.getElementById(id);if(el&&!el._asBound){el._asBound=true;el.addEventListener('change',function(){window._saveCalSettings();});}});
+      var _stEl=document.getElementById('us-holiday-state');if(_stEl&&!_stEl._asBound){_stEl._asBound=true;_stEl.addEventListener('change',function(){window._saveCalSettings();});}
       const pT=$('us-toggle-push');
       if(pT) pT.addEventListener('change',async e=>{
         if(!e.target.checked){if(typeof disablePushNotifications==='function')await disablePushNotifications();else lsWrite('push_enabled',false);}
@@ -5930,9 +5943,9 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     saveOpt(o);
     const se=$('us-holiday-state');
     if(se){const s=se.value||'ALL';localStorage.setItem('change_v1_holiday_state',s);localStorage.setItem('holiday_state',s);if(!window.calendarSettings)window.calendarSettings={};window.calendarSettings.state=s;}
-    // kein closePanel — Panel bleibt offen
+    if(typeof closePanel==='function')closePanel();
     if(typeof renderCalendar==='function')renderCalendar();
-    if(typeof toast==='function')toast('✓','ok');
+    if(typeof toast==='function')toast('Gespeichert ✓','ok');
   };
   window.openCalendarSettings=()=>window.openSettingsPanel('calendar');
   window.openPushSettingsPanel=()=>window.openSettingsPanel('sync');
