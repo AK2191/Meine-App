@@ -5917,7 +5917,6 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       <div class="fg">
         <label class="flabel">Bundesland für Feiertage</label>
         <select class="finput" id="us-holiday-state">${stateOpts}</select>
-        <div class="settings-hint">Wähle „Bayern · Augsburg" für lokale Feiertage.</div>
       </div>
       ${switchRow('Feiertage anzeigen','Direkt neben der Tageszahl.','us-toggle-holidays',o.showHolidays)}
       ${switchRow('Challenge-Punkte anzeigen','Klein rechts unten im Tag.','us-toggle-dots',o.showChallengeDots)}
@@ -5954,14 +5953,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     const gPill=gIn?(gOn?'<span class="status-pill status-on">AKTIV</span>':'<span class="status-pill status-off">AUS</span>'):'<span class="status-pill status-off">NICHT ANGEMELDET</span>';
 
     const syncPane=`
-      <div class="push-box" style="margin-bottom:4px">
-        <div class="challenge-title" style="margin-bottom:8px">Status</div>
-        <div class="push-status ${hasCfg?'push-ok':'push-warn'}">${hasCfg?'Firebase: verbunden':'Firebase nicht konfiguriert'}</div>
-        <div class="push-status ${permCls}">Browser-Berechtigungen: <strong>${esc(perm)}</strong></div>
-        <div class="push-status">Push-Token: <strong>${token?'vorhanden':'noch nicht erstellt'}</strong></div>
-        <div class="push-status">Live-Mitspieler: <strong>${liveOn?'verbunden · '+online+' online':'deaktiviert'}</strong></div>
-        <div class="push-status">App-Installation: <strong>${esc(instSt)}</strong></div>
-      </div>
+
       ${switchRow('Push-Benachrichtigungen <span class="status-pill '+(pushOn?'status-on':'status-off')+'">'+(pushOn?'AKTIV':'INAKTIV')+'</span>','Erinnerungen für offene Challenges.','us-toggle-push',pushOn)}
       <button class="btn btn-secondary btn-full" style="margin:-6px 0 14px;font-size:12px" onclick="window._sendTestNotification()">Test-Benachrichtigung senden</button>
       ${switchRow('Live-Mitspieler <span class="status-pill '+(liveOn?'status-on':'status-off')+'">'+(liveOn?'VERBUNDEN':'DEAKTIVIERT')+'</span>','Synchronisiert Mitspieler live über Firebase.','us-toggle-live',liveOn)}
@@ -5980,8 +5972,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
         Jetzt synchronisieren
       </button>
       <div style="height:1px;background:var(--b1);margin:16px 0"></div>
-      <button class="btn btn-secondary btn-full" onclick="if(typeof installChangeApp==='function')installChangeApp()">Change als App installieren</button>
-      <div class="settings-hint" style="margin-top:6px">Android: Push in Chrome. iPhone: Zum Home-Bildschirm hinzufügen.</div>`;
+      <button class="btn btn-secondary btn-full" onclick="if(typeof installChangeApp==='function')installChangeApp()">Change als App installieren</button>`;
 
     const panelHtml=`
       <div style="display:flex;gap:8px;padding:0 0 16px;border-bottom:1px solid var(--b1);margin-bottom:16px">
