@@ -412,8 +412,8 @@ body{
 .list-item-amount{font-size:15px;font-weight:800;color:var(--t1);font-family:var(--mono);flex-shrink:0;text-align:right}
 .list-item-amount-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
 .has-note-dot{width:6px;height:6px;border-radius:50%;background:var(--acc);display:inline-block;margin-left:4px;vertical-align:middle}
-.challenge-layout{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;padding:16px 18px;overflow-y:auto;background:var(--bg)}
-/* Desktop: Aufgaben links (order 2→ col 1 via auto-placement), Rangliste rechts (order 1→ col 2 via explicit) */
+.challenge-layout{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;padding:16px 18px;background:var(--bg)}
+/* Desktop: Aufgaben links, Rangliste rechts */
 @media(min-width:801px){.challenge-layout .challenge-card{order:1}.challenge-layout .leader-card{order:2}}
 /* Mobile: Rangliste oben, Aufgaben darunter */
 @media(max-width:800px){.challenge-layout{grid-template-columns:1fr;padding:14px}.challenge-layout .leader-card{order:1}.challenge-layout .challenge-card{order:2}}
@@ -797,7 +797,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
         <!-- Original-Bar: immer unsichtbar -->
         <div id="challenge-week-bar-clean" style="display:none"></div>
         <!-- Layout ohne eigenes Scrollen: challenges-view scrollt alles -->
-        <div class="challenge-layout" style="overflow-y:visible">
+        <div class="challenge-layout">
           <div class="leader-card" style="order:1">
             <div class="leader-card-head">
               <div>
@@ -1168,6 +1168,13 @@ function setMainView(v){
     if(v==='challenges'){
       document.getElementById('challenges-view')?.style.setProperty('display','flex');
       renderChallenges?.();
+      // Wochenbar mehrfach laden (Timing-Absicherung)
+      [50, 300, 800, 2000].forEach(function(ms){
+        setTimeout(function(){
+          if(typeof window.updateStaticWeekBar==='function') window.updateStaticWeekBar();
+          else if(typeof window.renderWeekBar==='function') window.renderWeekBar();
+        }, ms);
+      });
     } else {
       document.getElementById('dashboard-view').style.display='block';
       buildDashboard();
@@ -4870,7 +4877,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     ensureWeekBar();
     updateStaticWeekBar();
   };
-  window.ensureWeekBar = window.ensureWeekBar; // expose
+  window.updateStaticWeekBar = updateStaticWeekBar;
   window.getVisibleContestPlayers=canonicalPlayers;
   window.getCurrentPlayerId=()=>account().id;
   window.getPlayerPointSummary=id=>stats(id||account().id);
@@ -4884,9 +4891,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     list.innerHTML=normal.map(row).join('')+(optional.length?'<div class="section-label" style="padding:14px 16px 6px">Optionale Sportpunkte</div>'+optional.map(row).join(''):'');
     const players=canonicalPlayers().sort((a,b)=>stats(playerKey(b)).totalPoints-stats(playerKey(a)).totalPoints);
     board.innerHTML=players.length?players.map((p,i)=>{const id=playerKey(p),s=stats(id),med=i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);return '<div class="leader-row clickable" onclick="window.openPlayerRecentPanel&&window.openPlayerRecentPanel(\''+esc(id)+'\',\''+esc(p.name||p.email||id)+'\')"><div class="leader-rank">'+med+'</div><div><div class="leader-name">'+esc(p.name||p.email||id)+(p.online?'<span class="live-dot"></span>':'')+'</div><div class="leader-detail">Heute: '+s.todayPoints+' P · Gesamt: '+s.totalPoints+' P · '+s.totalCount+' erledigt</div></div><div class="leader-score">'+s.totalPoints+'</div></div>'}).join(''):'<div class="dash-empty">Noch keine Mitspieler</div>';
-  };
-    // Bar-Position am Ende sicherstellen (Firebase-Updates können ihn verschieben)
-    ensureWeekBar();
+    // Wochenbar nach Render aktualisieren
     updateStaticWeekBar();
   };
   window.completeChallenge=function(id){
