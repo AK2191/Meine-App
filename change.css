@@ -179,54 +179,62 @@
   }
 }
 
-/* ── 6. Challenges Mobile: Kontest oben, Heute erledigen unten ─── */
+/* ── Mobile: FAB nur Kalender, Challenges optimiert ──── */
+#fab{ display:none } /* JS-gesteuert — nur bei Kalender aktiv */
+
 @media(max-width:700px){
+  /* Challenges-View als scrollbare Seite */
   #challenges-view{
     overflow-y:auto!important;
     overflow-x:hidden!important;
     flex-direction:column!important;
     padding-bottom:80px!important;
   }
+  /* Layout: Kontest OBEN (column-reverse), Challenges unten */
   .challenge-layout{
     display:flex!important;
-    flex-direction:column-reverse!important; /* Kontest kommt zuerst (visually) */
+    flex-direction:column-reverse!important;
     grid-template-columns:none!important;
     overflow:visible!important;
     height:auto!important;
-    gap:12px!important;
+    gap:0!important;
   }
   .challenge-card,.leader-card{
     max-height:none!important;
     overflow:visible!important;
     flex-shrink:0!important;
+    border-radius:0!important;
+    border-left:none!important;
+    border-right:none!important;
   }
   #challenges-list,#leaderboard-list{
     max-height:none!important;
     overflow:visible!important;
   }
-  /* Challenge-Items: Button volle Breite */
+  /* Challenge-Item: sauberes Layout mit vollem Erledigen-Button */
   .challenge-item{
     flex-wrap:wrap!important;
-    padding:10px 12px!important;
-    gap:6px!important;
+    padding:12px 14px!important;
+    gap:8px!important;
+    align-items:center!important;
   }
-  .challenge-item .btn.btn-sm{
-    flex:1 1 auto!important;
-    min-width:100px!important;
+  .challenge-body{ flex:1 1 200px!important; }
+  .points-pill{ order:3; margin-left:auto; }
+  .challenge-item .btn{
+    order:4;
+    width:100%!important;
+    justify-content:center!important;
+    margin-top:2px!important;
   }
-  /* FAB immer ausblenden außer Kalender — per JS gesteuert */
-  #fab{ display:none!important; }
-}
-
-/* ── 7. Dashboard: gleicher Kartenstil ─── */
-.dash-card-head{
-  display:flex;align-items:flex-start;justify-content:space-between;
-  padding:14px 18px 12px;border-bottom:1px solid var(--b1);
-}
-.dash-card-title{font-size:14px;font-weight:700;color:var(--t1)}
-.dash-card-sub{font-size:12px;color:var(--t4);margin-top:2px;font-weight:500}
-.dash-section-label{
-  padding:6px 18px 4px;font-size:10px;font-weight:700;
-  color:var(--t4);text-transform:uppercase;letter-spacing:.6px;
-  background:var(--s2);border-bottom:1px solid var(--b1);
+  /* Wochenbalken kompakter */
+  #challenge-week-points-card{ margin:0!important; border-radius:0!important; border-left:none!important; border-right:none!important; }
+  .challenge-week-grid{ gap:3px!important; padding:10px 8px!important; }
+  .challenge-week-day{ min-height:56px!important; padding:6px 4px!important; }
+  .challenge-week-day-name{ font-size:9px!important }
+  .challenge-week-day-date{ font-size:11px!important }
+  .challenge-week-head{ padding:10px 14px!important }
+  .challenge-week-actions{ gap:4px!important }
+  .challenge-week-actions .btn{ font-size:11px!important; padding:5px 8px!important; }
+  /* Dashboard: Karten stapeln */
+  .dash-grid{ grid-template-columns:1fr!important }
 }
