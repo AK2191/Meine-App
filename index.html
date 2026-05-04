@@ -417,6 +417,9 @@ body{
 @media(min-width:801px){.challenge-layout .challenge-card{order:1}.challenge-layout .leader-card{order:2}}
 /* Mobile: Rangliste oben, Aufgaben darunter */
 @media(max-width:800px){.challenge-layout{grid-template-columns:1fr;padding:14px}.challenge-layout .leader-card{order:1}.challenge-layout .challenge-card{order:2}}
+/* Wochenbar immer visuell ganz oben – unabhängig von DOM-Position */
+#challenges-view{display:flex;flex-direction:column}
+#challenge-week-bar-clean{order:-999!important;flex-shrink:0!important}
 .challenge-card,.leader-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rlg);overflow:hidden;box-shadow:var(--sh)}
 .challenge-card-head,.leader-card-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--b1)}
 .challenge-title{font-size:14px;font-weight:700;color:var(--t1)}.challenge-sub{font-size:12px;color:var(--t3);margin-top:2px}
@@ -786,7 +789,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
           <button class="btn btn-ghost btn-sm" onclick="window.resetTodayChallenges&&window.resetTodayChallenges()">Heute zurücksetzen</button>
         </div>
         <!-- Wochenbar: immer ganz oben, sticky -->
-        <div id="challenge-week-bar-clean" style="flex-shrink:0;position:sticky;top:0;z-index:20;background:var(--bg)"></div>
+        <div id="challenge-week-bar-clean" style="flex-shrink:0"></div>
         <!-- Layout: Rangliste oben, Aufgaben darunter (mobile: gestapelt) -->
         <div class="challenge-layout" style="flex:1;min-height:0;overflow-y:auto">
           <div class="leader-card" style="order:1">
@@ -4817,7 +4820,29 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   function weekDates(){const d=new Date();const day=(d.getDay()+6)%7;const mon=new Date(d);mon.setDate(d.getDate()-day);return Array.from({length:7},(_,i)=>{const x=new Date(mon);x.setDate(mon.getDate()+i);return x;});}
   function pointsForDate(k){const a=account();let s=0;completions().forEach(c=>{if(String(c.date||'').slice(0,10)===k&&completionKey(c)===a.id)s+=parseInt(c.points,10)||0});return s;}
   function renderWeekBar(){return '<div id="challenge-week-bar-clean" class="challenge-week-card"><div class="challenge-card-head"><div><div class="challenge-title">Punkte-Woche</div><div class="challenge-sub">Mo–So · erledigte Challenge-Punkte</div></div></div><div class="challenge-week-grid">'+weekDates().map(d=>{const k=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()),p=pointsForDate(k),is=k===today();return '<div class="challenge-week-day '+(is?'today is-today':'')+' '+(p?'has-points':'empty')+'"><div class="cwd-name challenge-week-day-name">'+['Mo','Di','Mi','Do','Fr','Sa','So'][(d.getDay()+6)%7]+'</div><div class="cwd-date challenge-week-day-date">'+d.getDate()+'.</div><div class="cwd-points challenge-week-day-points">'+(p?p+' P':'–')+'</div></div>'}).join('')+'</div></div>';}
-  function ensureWeekBar(){const view=$('challenges-view'); if(!view)return; let bar=$('challenge-week-bar-clean'); if(!bar){bar=document.createElement('div');bar.id='challenge-week-bar-clean'; const layout=view.querySelector('.challenge-layout'); view.insertBefore(bar,layout||view.firstChild);} bar.outerHTML=renderWeekBar();}
+  function ensureWeekBar(){
+    var view=$('challenges-view'); if(!view) return;
+    var bar=$('challenge-week-bar-clean');
+    // Sicherstellen: Bar ist direktes Kind von challenges-view UND steht vor .challenge-layout
+    var layout=view.querySelector('.challenge-layout');
+    if(!bar){
+      bar=document.createElement('div');
+      bar.id='challenge-week-bar-clean';
+    } else if(bar.parentElement!==view || (layout && bar.compareDocumentPosition(layout)&Node.DOCUMENT_POSITION_PRECEDING)){
+      // Bar existiert aber ist am falschen Ort → herauslösen und neu positionieren
+      bar.parentElement && bar.parentElement.removeChild(bar);
+    }
+    // Bar vor .challenge-layout einfügen (oder als zweites Kind nach list-header)
+    if(!bar.parentElement){
+      var header=view.querySelector('.list-header');
+      if(layout) view.insertBefore(bar, layout);
+      else if(header && header.nextSibling) view.insertBefore(bar, header.nextSibling);
+      else view.appendChild(bar);
+    }
+    // Inhalt aktualisieren (innerHTML statt outerHTML → Element bleibt an Ort und Stelle)
+    bar.className='challenge-week-card';
+    bar.innerHTML=renderWeekBar().replace(/^<div[^>]*>/,'').replace(/<\/div>$/,'');
+  }
   window.getVisibleContestPlayers=canonicalPlayers;
   window.getCurrentPlayerId=()=>account().id;
   window.getPlayerPointSummary=id=>stats(id||account().id);
