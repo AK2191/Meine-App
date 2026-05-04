@@ -214,10 +214,10 @@ body{
   font-family:var(--font);font-size:12px;font-weight:600;color:var(--t3);cursor:pointer;transition:all .15s;
 }
 .vbtn.active{background:var(--acc);color:#fff}
-.h-right{display:flex;align-items:center;gap:4px;flex-shrink:0;position:relative;z-index:200;pointer-events:auto}
+.h-right{display:flex;align-items:center;gap:4px;flex-shrink:0}
 .icon-btn{
   width:34px;height:34px;display:flex;align-items:center;justify-content:center;
-  border:none;background:transparent;border-radius:var(--rsm);cursor:pointer;color:var(--t3);transition:all .15s;position:relative;z-index:210;pointer-events:auto;
+  border:none;background:transparent;border-radius:var(--rsm);cursor:pointer;color:var(--t3);transition:all .15s;position:relative;
 }
 .icon-btn:hover{background:var(--s2);color:var(--t1)}
 .icon-btn svg{width:17px;height:17px;stroke-width:1.8}
@@ -741,7 +741,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           <div class="notif-dot" id="notif-dot"></div>
         </button>
-        <button class="icon-btn" id="change-settings-button" type="button" onclick="window.openSettingsPanel && window.openSettingsPanel('calendar')" title="Einstellungen" aria-label="Einstellungen">
+        <button class="icon-btn" onclick="openSettingsPanel()" title="Einstellungen">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.33 1.82V22a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1.82-.33H2a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-.6 1.65 1.65 0 0 0 .33-1.82V2a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.12.69.31 1 .6.31.29.51.64.6 1H22a2 2 0 1 1 0 4h-.09c-.37.09-.72.29-1 .6-.29.31-.48.64-.51 1z"/></svg>
         </button>
         <div class="avatar" id="user-avatar" onclick="confirmLogout()" title="Abmelden">
@@ -6092,7 +6092,9 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 
 <!-- ═══════════════════════════════════════
      CHANGE · FRISEUR-TRACKER
-     Dashboard-Tracker mit sauberer nächster-Termin-Anzeige
+     Zeigt im Dashboard wie lange der letzte
+     Friseur-Termin her ist + Benachrichtigung
+     nach X Wochen (Standard: 3)
 ═══════════════════════════════════════ -->
 <style id="friseur-tracker-style">
   #friseur-banner{
@@ -6103,80 +6105,30 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     border-radius:var(--r);
     overflow:hidden;
   }
-  .friseur-card{
-    display:grid;
-    grid-template-columns:minmax(220px,1fr) minmax(260px,auto);
-    gap:14px;
-    align-items:center;
-    padding:14px 16px;
+  .friseur-row{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 14px;
   }
-  .friseur-left{display:flex;align-items:center;gap:12px;min-width:0}
-  .friseur-icon{
-    width:30px;height:30px;border-radius:10px;
-    display:flex;align-items:center;justify-content:center;
-    background:var(--s2);font-size:15px;flex:0 0 auto;
+  .friseur-icon{font-size:15px;flex-shrink:0}
+  .friseur-title{font-size:12px;font-weight:700;color:var(--t1)}
+  .friseur-sub{font-size:11px;color:var(--t4);margin-top:1px}
+  .friseur-days{font-size:15px;font-weight:800;color:var(--acc);white-space:nowrap}
+  .friseur-warn .friseur-days{color:#f59e0b}
+  .friseur-overdue .friseur-days{color:#ef4444}
+  .friseur-future .friseur-days{color:#22c55e}
+  .friseur-badge{
+    margin-left:auto;font-size:10px;font-weight:700;
+    padding:2px 8px;border-radius:999px;white-space:nowrap;
   }
-  .friseur-copy{min-width:0}
-  .friseur-title{font-size:12px;font-weight:800;color:var(--t1);letter-spacing:-.1px}
-  .friseur-days{font-size:15px;font-weight:900;color:var(--acc);line-height:1.15;margin-top:2px}
-  .friseur-sub{font-size:11px;color:var(--t4);margin-top:2px;line-height:1.35}
-  .friseur-next{
-    justify-self:end;
-    min-width:260px;
-    max-width:520px;
-    padding:9px 12px;
-    border-radius:12px;
-    background:rgba(59,130,246,.08);
-    border:1px solid rgba(59,130,246,.12);
-  }
-  .friseur-next-label{
-    font-size:10px;
-    font-weight:850;
-    color:#2563eb;
-    text-transform:uppercase;
-    letter-spacing:.35px;
-    margin-bottom:3px;
-  }
-  .friseur-next-title{
-    font-size:12px;
-    font-weight:800;
-    color:var(--t1);
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-  }
-  .friseur-next-time{
-    font-size:11px;
-    font-weight:650;
-    color:#2563eb;
-    margin-top:2px;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-  }
-  .friseur-status{
-    justify-self:end;
-    font-size:10px;
-    font-weight:800;
-    padding:4px 9px;
-    border-radius:999px;
-    white-space:nowrap;
-  }
-  .friseur-ok{background:rgba(34,197,94,.14);color:#16a34a}
-  .friseur-warn{background:rgba(245,158,11,.14);color:#d97706}
-  .friseur-bad{background:rgba(239,68,68,.14);color:#dc2626}
-  .friseur-card.warn .friseur-days{color:#d97706}
-  .friseur-card.overdue .friseur-days{color:#ef4444}
-  @media(max-width:800px){
-    .friseur-card{grid-template-columns:1fr;gap:10px}
-    .friseur-next,.friseur-status{justify-self:stretch;min-width:0;max-width:none}
-  }
+  .friseur-badge-ok{background:rgba(34,197,94,.15);color:#16a34a}
+  .friseur-badge-warn{background:rgba(245,158,11,.15);color:#d97706}
+  .friseur-badge-bad{background:rgba(239,68,68,.15);color:#dc2626}
+  .friseur-badge-future{background:rgba(59,130,246,.15);color:#2563eb}
 </style>
 
 <script id="friseur-tracker">
 (function(){
   'use strict';
-
   const LS_KEY = 'change_v1_friseur_enabled';
   const LS_WEEKS = 'change_v1_friseur_weeks';
   const KEYWORD = 'friseur';
@@ -6186,186 +6138,140 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     return v === null ? false : v === 'true';
   }
   function getWeeks(){
-    return parseInt(localStorage.getItem(LS_WEEKS)||'3',10)||3;
-  }
-  function esc(v){
-    return String(v==null?'':v).replace(/[&<>"']/g,function(c){
-      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
-    });
-  }
-  function parseDate(value){
-    if(!value) return null;
-    const d = new Date(String(value).length===10 ? String(value)+'T12:00:00' : value);
-    return isNaN(d) ? null : d;
-  }
-  function dateKey(d){
-    if(!d || isNaN(d)) return '';
-    const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
-    return y+'-'+m+'-'+day;
+    return parseInt(localStorage.getItem(LS_WEEKS)||'3')||3;
   }
   function daysSince(dateStr){
-    const d = parseDate(dateStr);
-    if(!d) return 0;
-    const today = new Date(); today.setHours(12,0,0,0);
-    d.setHours(12,0,0,0);
-    return Math.floor((today.getTime()-d.getTime())/86400000);
-  }
-  function daysUntil(dateStr){
-    const d = parseDate(dateStr);
-    if(!d) return null;
-    const today = new Date(); today.setHours(12,0,0,0);
-    d.setHours(12,0,0,0);
-    return Math.max(0,Math.round((d.getTime()-today.getTime())/86400000));
-  }
-  function fmtD(k){
-    try{
-      return new Date(k+'T12:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'long'});
-    }catch(e){return k;}
-  }
-  function fmtTime(start,end){
-    const clean=function(v){return String(v||'').trim();};
-    start=clean(start); end=clean(end);
-    if(start && end) return start+' – '+end+' Uhr';
-    if(start) return start+' Uhr';
-    return '';
-  }
-  function normalizeEvent(raw,source){
-    if(!raw) return null;
-    const title = raw.title || raw.summary || raw.name || '';
-    const desc = raw.desc || raw.description || '';
-    const startRaw = source==='google'
-      ? ((raw.start&&(raw.start.dateTime||raw.start.date))||'')
-      : (raw.startDate||raw.date||raw.start||'');
-    const endRaw = source==='google'
-      ? ((raw.end&&(raw.end.dateTime||raw.end.date))||'')
-      : (raw.endDate||raw.date||raw.end||'');
-    const startDate = parseDate(startRaw);
-    if(!startDate) return null;
-    const startKey = dateKey(startDate);
-    const endDate = parseDate(endRaw);
-    const endKey = endDate ? dateKey(endDate) : startKey;
-    let startTime = raw.time || raw.startTime || '';
-    let endTime = raw.endTime || '';
-    if(source==='google'){
-      if(raw.start && raw.start.dateTime){
-        startTime = new Date(raw.start.dateTime).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
-      }
-      if(raw.end && raw.end.dateTime){
-        endTime = new Date(raw.end.dateTime).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
-      }
-    }
-    return {title:title,desc:desc,startKey:startKey,endKey:endKey,startTime:startTime,endTime:endTime};
-  }
-  function isFriseur(ev){
-    const kw=KEYWORD.toLowerCase();
-    return String(ev.title||'').toLowerCase().includes(kw) || String(ev.desc||'').toLowerCase().includes(kw);
-  }
-  function allFriseurEvents(){
-    const list=[];
-    (window.events||[]).forEach(function(e){const n=normalizeEvent(e,'local'); if(n&&isFriseur(n)) list.push(n);});
-    (window.gEvents||[]).forEach(function(g){const n=normalizeEvent(g,'google'); if(n&&isFriseur(n)) list.push(n);});
-    if(typeof window.getAllEvents==='function'){
-      (window.getAllEvents()||[]).forEach(function(e){const n=normalizeEvent(e,e&&e.source==='google'?'google':'local'); if(n&&isFriseur(n)) list.push(n);});
-    }
-    const seen=new Set();
-    return list.filter(function(e){
-      const key=[e.title,e.startKey,e.endKey,e.startTime,e.endTime].join('|');
-      if(seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
+    const d = new Date(dateStr+'T12:00:00');
+    return Math.floor((Date.now()-d.getTime())/86400000);
   }
   function findLastFriseur(){
+    const kw = KEYWORD.toLowerCase();
     const today = new Date(); today.setHours(23,59,59,0);
     let best = null;
-    allFriseurEvents().forEach(function(ev){
-      const d=parseDate(ev.startKey);
-      if(!d || d>today) return;
-      if(!best || d>parseDate(best.startKey)) best=ev;
+    // Check local events
+    (window.events||[]).forEach(function(ev){
+      const title = String(ev.title||ev.summary||ev.name||'').toLowerCase();
+      const desc  = String(ev.desc||ev.description||'').toLowerCase();
+      if(!title.includes(kw)&&!desc.includes(kw)) return;
+      const d = new Date((ev.startDate||ev.date||'')+'T12:00:00');
+      if(isNaN(d)||d>today) return;
+      if(!best||d>new Date(best+'T12:00:00')) best = ev.startDate||ev.date||'';
     });
+    // Check Google events (gEvents raw)
+    (window.gEvents||[]).forEach(function(ge){
+      if(!ge) return;
+      const title = String(ge.summary||ge.title||'').toLowerCase();
+      const desc  = String(ge.description||'').toLowerCase();
+      if(!title.includes(kw)&&!desc.includes(kw)) return;
+      // Get start date from Google event
+      const startStr = (ge.start&&(ge.start.date||ge.start.dateTime||''))||'';
+      if(!startStr) return;
+      const d = new Date(startStr.length===10?startStr+'T12:00:00':startStr);
+      if(isNaN(d)||d>today) return;
+      const k = startStr.slice(0,10);
+      if(!best||d>new Date(best+'T12:00:00')) best = k;
+    });
+    // Also check via getAllEvents (normalized)
+    if(typeof window.getAllEvents==='function'){
+      (window.getAllEvents()||[]).forEach(function(ev){
+        const title = String(ev.title||ev.summary||'').toLowerCase();
+        const desc  = String(ev.desc||ev.description||'').toLowerCase();
+        if(!title.includes(kw)&&!desc.includes(kw)) return;
+        const d = new Date((ev.date||ev.startDate||'')+'T12:00:00');
+        if(isNaN(d)||d>today) return;
+        const k = (ev.date||ev.startDate||'').slice(0,10);
+        if(k&&(!best||d>new Date(best+'T12:00:00'))) best = k;
+      });
+    }
     return best;
   }
+
   function findNextFriseur(){
-    const today = new Date(); today.setHours(0,0,0,0);
-    let best = null;
-    allFriseurEvents().forEach(function(ev){
-      const d=parseDate(ev.startKey);
-      if(!d || d<today) return;
-      if(!best || d<parseDate(best.startKey)) best=ev;
-    });
+    var kw=KEYWORD.toLowerCase(), today=new Date(); today.setHours(0,0,0,0);
+    var best=null;
+    function checkEvt(title,desc,dateStr){
+      title=String(title||'').toLowerCase(); desc=String(desc||'').toLowerCase();
+      if(!title.includes(kw)&&!desc.includes(kw)) return;
+      var d=new Date((dateStr||'').slice(0,10)+'T12:00:00');
+      if(isNaN(d)||d<today) return;
+      if(!best||d<new Date(best+'T12:00:00')) best=(dateStr||'').slice(0,10);
+    }
+    (window.events||[]).forEach(function(e){checkEvt(e.title,e.desc,e.startDate||e.date);});
+    (window.gEvents||[]).forEach(function(g){if(!g)return;var s=(g.start&&(g.start.date||g.start.dateTime)||'');checkEvt(g.summary,g.description,s);});
+    if(typeof window.getAllEvents==='function')(window.getAllEvents()||[]).forEach(function(e){checkEvt(e.title,e.desc,e.date||e.startDate);});
     return best;
   }
+
   function renderFriseurBanner(){
-    const b0=document.getElementById('friseur-banner');
     if(!isEnabled()){
-      if(b0) b0.style.display='none';
+      var b=document.getElementById('friseur-banner');
+      if(b) b.style.display='none';
       return;
     }
-
-    const grid=document.getElementById('dash-grid');
+    // Anchor: inside the dash-grid (after both cards)
+    var grid=document.getElementById('dash-grid');
     if(!grid) return;
-
-    let banner=document.getElementById('friseur-banner');
+    var banner=document.getElementById('friseur-banner');
     if(!banner){
       banner=document.createElement('div');
       banner.id='friseur-banner';
-      grid.after(banner);
+      grid.after(banner);   // UNTEN: nach den Karten
     }
     banner.style.display='block';
 
-    const last=findLastFriseur();
-    const next=findNextFriseur();
-    const weeks=getWeeks();
+    var lastDate=findLastFriseur();
+    var nextDate=findNextFriseur();
+    var weeks=getWeeks();
+    var fmtD=function(k){try{return new Date(k+'T12:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'long'});}catch(e){return k;}};
 
-    if(!last && !next){
-      banner.innerHTML='<div class="friseur-card"><div class="friseur-left"><span class="friseur-icon">✂️</span><div class="friseur-copy"><div class="friseur-title">Friseur-Tracker</div><div class="friseur-sub">Kein Termin mit „Friseur“ im Titel gefunden.</div></div></div></div>';
+    if(!lastDate&&!nextDate){
+      banner.innerHTML='<div class="friseur-row"><span class="friseur-icon">✂️</span><div><div class="friseur-title">Friseur-Tracker</div><div class="friseur-sub">Kein Termin mit „Friseur" im Titel gefunden.</div></div></div>';
       return;
     }
 
-    const days=last ? daysSince(last.startKey) : null;
-    const warn=days!==null && days>=weeks*7;
-    const overdue=days!==null && days>=weeks*7+7;
-    const cls=overdue?'overdue':warn?'warn':'';
+    var days=lastDate?daysSince(lastDate):null;
+    var warn=days!==null&&days>=weeks*7;
+    var overdue=days!==null&&days>=weeks*7+7;
+    var cls=overdue?'friseur-overdue':warn?'friseur-warn':nextDate?'friseur-future':'';
+    var daysUntilNext=nextDate?Math.round((new Date(nextDate+'T12:00:00')-Date.now())/86400000):null;
 
-    let left = '<div class="friseur-title">Friseur-Tracker</div>';
-    if(last){
-      left += '<div class="friseur-days">'+days+'d</div>';
-      left += '<div class="friseur-sub">seit letztem Termin · '+esc(fmtD(last.startKey))+'</div>';
-    }else{
-      left += '<div class="friseur-sub">Kein vergangener Termin gefunden</div>';
+    var leftHtml='';
+    if(lastDate){
+      leftHtml='<div class="friseur-days">'+days+'d</div>'+
+        '<div class="friseur-sub">seit letztem Termin · '+fmtD(lastDate)+'</div>';
+    } else {
+      leftHtml='<div class="friseur-sub">Kein vergangener Termin gefunden</div>';
+    }
+    var badgeHtml='';
+    if(nextDate){
+      badgeHtml='<span class="friseur-badge friseur-badge-future">Nächster in '+daysUntilNext+'d · '+fmtD(nextDate)+'</span>';
+    } else if(overdue){
+      badgeHtml='<span class="friseur-badge friseur-badge-bad">⚠ Überfällig!</span>';
+    } else if(warn){
+      badgeHtml='<span class="friseur-badge friseur-badge-warn">⏰ Bald fällig</span>';
+    } else if(lastDate){
+      badgeHtml='<span class="friseur-badge friseur-badge-ok">✓ Aktuell</span>';
     }
 
-    let right='';
-    if(next){
-      const until=daysUntil(next.startKey);
-      const when=fmtD(next.startKey)+(fmtTime(next.startTime,next.endTime)?' · '+fmtTime(next.startTime,next.endTime):'');
-      right='<div class="friseur-next">'+
-        '<div class="friseur-next-label">Nächster Termin in '+until+' '+(until===1?'Tag':'Tagen')+'</div>'+
-        '<div class="friseur-next-title">'+esc(next.title||'Friseur-Termin')+'</div>'+
-        '<div class="friseur-next-time">'+esc(when)+'</div>'+
-      '</div>';
-    }else if(overdue){
-      right='<div class="friseur-status friseur-bad">⚠ Überfällig</div>';
-    }else if(warn){
-      right='<div class="friseur-status friseur-warn">⏰ Bald fällig</div>';
-    }else{
-      right='<div class="friseur-status friseur-ok">✓ Aktuell</div>';
-    }
-
-    banner.innerHTML='<div class="friseur-card '+cls+'">'+
-      '<div class="friseur-left"><span class="friseur-icon">✂️</span><div class="friseur-copy">'+left+'</div></div>'+
-      right+
+    banner.innerHTML='<div class="friseur-row '+cls+'">'+
+      '<span class="friseur-icon">✂️</span>'+
+      '<div style="min-width:0;flex:1">'+
+        '<div class="friseur-title">Friseur-Tracker</div>'+
+        leftHtml+
+      '</div>'+
+      badgeHtml+
     '</div>';
   }
 
+  // Push notification after threshold
   function checkFriseurNotif(){
     if(!isEnabled()) return;
-    const last = findLastFriseur();
-    if(!last) return;
-    const days  = daysSince(last.startKey);
+    const lastDate = findLastFriseur();
+    if(!lastDate) return;
+    const days  = daysSince(lastDate);
     const weeks = getWeeks();
     if(days < weeks*7) return;
-    const key = 'friseur_notif_'+last.startKey;
+    const key = 'friseur_notif_'+lastDate;
     if(localStorage.getItem(key)) return;
     localStorage.setItem(key, '1');
     if(typeof Notification!=='undefined' && Notification.permission==='granted'){
@@ -6375,77 +6281,37 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     }
   }
 
+  // Public API
   window.renderFriseurBanner = renderFriseurBanner;
-  window.getFriseurEnabled = isEnabled;
-  window.setFriseurEnabled = function(on){
+  window.getFriseurEnabled   = isEnabled;
+  window.setFriseurEnabled   = function(on){
     localStorage.setItem(LS_KEY, on?'true':'false');
     renderFriseurBanner();
   };
   window.setFriseurWeeks = function(w){
-    localStorage.setItem(LS_WEEKS, String(parseInt(w,10)||3));
+    localStorage.setItem(LS_WEEKS, String(parseInt(w)||3));
     renderFriseurBanner();
   };
   window.getFriseurWeeks = getWeeks;
 
-  const _origBD = window.buildDashboard;
+  // Hook into buildDashboard
+  var _origBD = window.buildDashboard;
   function wrappedBD(){
     if(typeof _origBD==='function') _origBD.apply(this,arguments);
-    setTimeout(renderFriseurBanner,50);
-    setTimeout(checkFriseurNotif,2000);
+    setTimeout(renderFriseurBanner, 50);
+    setTimeout(checkFriseurNotif, 2000);
   }
-  wrappedBD.__eventFix = _origBD && _origBD.__eventFix;
+  wrappedBD.__eventFix = _origBD&&_origBD.__eventFix;
   window.buildDashboard = wrappedBD;
   window.buildDashCards = wrappedBD;
 
-  document.addEventListener('DOMContentLoaded',function(){
-    setTimeout(renderFriseurBanner,1200);
-    setTimeout(checkFriseurNotif,3000);
+  // Init
+  document.addEventListener('DOMContentLoaded', function(){
+    setTimeout(renderFriseurBanner, 1200);
+    setTimeout(checkFriseurNotif,   3000);
   });
 })();
 </script>
 
-<script id="settings-click-final-fix">
-(function(){
-  'use strict';
-
-  function openUnifiedSettings(e){
-    if(e){
-      e.preventDefault();
-      e.stopPropagation();
-      if(typeof e.stopImmediatePropagation==='function') e.stopImmediatePropagation();
-    }
-    if(typeof window.openSettingsPanel==='function'){
-      window.openSettingsPanel('calendar');
-    }else if(typeof window.openCalendarSettings==='function'){
-      window.openCalendarSettings();
-    }
-  }
-
-  function bindSettingsButton(){
-    var btn=document.getElementById('change-settings-button') || document.querySelector('.h-right .icon-btn[title="Einstellungen"]');
-    if(!btn) return;
-    btn.id='change-settings-button';
-    btn.type='button';
-    btn.setAttribute('title','Einstellungen');
-    btn.setAttribute('aria-label','Einstellungen');
-    btn.onclick=openUnifiedSettings;
-  }
-
-  document.addEventListener('click',function(e){
-    var btn=e.target && e.target.closest ? e.target.closest('#change-settings-button, .h-right .icon-btn[title="Einstellungen"], button[aria-label="Einstellungen"]') : null;
-    if(btn) openUnifiedSettings(e);
-  },true);
-
-  document.addEventListener('DOMContentLoaded',bindSettingsButton);
-  window.addEventListener('load',bindSettingsButton);
-  setTimeout(bindSettingsButton,300);
-  setInterval(bindSettingsButton,1500);
-
-  var st=document.createElement('style');
-  st.id='settings-click-final-fix-style';
-  st.textContent='.h-right{position:relative!important;z-index:500!important;pointer-events:auto!important}.h-right .icon-btn,#change-settings-button{position:relative!important;z-index:510!important;pointer-events:auto!important;cursor:pointer!important}';
-  document.head.appendChild(st);
-})();
-</script>
 </body>
 </html>
