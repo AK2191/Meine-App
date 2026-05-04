@@ -4843,6 +4843,13 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     bar.className='challenge-week-card';
     bar.innerHTML=renderWeekBar().replace(/^<div[^>]*>/,'').replace(/<\/div>$/,'');
   }
+  // window.renderWeekBar überschreiben: jeder Aufruf korrigiert auch die Bar-Position
+  window.renderWeekBar = function(){
+    var html = renderWeekBar();
+    setTimeout(ensureWeekBar, 0);
+    return html;
+  };
+  window.ensureWeekBar = ensureWeekBar;
   window.getVisibleContestPlayers=canonicalPlayers;
   window.getCurrentPlayerId=()=>account().id;
   window.getPlayerPointSummary=id=>stats(id||account().id);
@@ -4856,6 +4863,9 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     list.innerHTML=normal.map(row).join('')+(optional.length?'<div class="section-label" style="padding:14px 16px 6px">Optionale Sportpunkte</div>'+optional.map(row).join(''):'');
     const players=canonicalPlayers().sort((a,b)=>stats(playerKey(b)).totalPoints-stats(playerKey(a)).totalPoints);
     board.innerHTML=players.length?players.map((p,i)=>{const id=playerKey(p),s=stats(id),med=i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);return '<div class="leader-row clickable" onclick="window.openPlayerRecentPanel&&window.openPlayerRecentPanel(\''+esc(id)+'\',\''+esc(p.name||p.email||id)+'\')"><div class="leader-rank">'+med+'</div><div><div class="leader-name">'+esc(p.name||p.email||id)+(p.online?'<span class="live-dot"></span>':'')+'</div><div class="leader-detail">Heute: '+s.todayPoints+' P · Gesamt: '+s.totalPoints+' P · '+s.totalCount+' erledigt</div></div><div class="leader-score">'+s.totalPoints+'</div></div>'}).join(''):'<div class="dash-empty">Noch keine Mitspieler</div>';
+  };
+    // Bar-Position am Ende sicherstellen (Firebase-Updates können ihn verschieben)
+    ensureWeekBar();
   };
   window.completeChallenge=function(id){
     const ch=challengeById(id),a=account(); if(!ch){notify('Challenge nicht gefunden','err');return;} if(done(id)){notify('Bereits erledigt','');return;}
