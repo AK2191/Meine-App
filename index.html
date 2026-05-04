@@ -413,7 +413,10 @@ body{
 .list-item-amount-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
 .has-note-dot{width:6px;height:6px;border-radius:50%;background:var(--acc);display:inline-block;margin-left:4px;vertical-align:middle}
 .challenge-layout{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;padding:16px 18px;overflow-y:auto;background:var(--bg)}
-@media(max-width:800px){.challenge-layout{grid-template-columns:1fr;padding:14px}}
+/* Desktop: Aufgaben links (order 2→ col 1 via auto-placement), Rangliste rechts (order 1→ col 2 via explicit) */
+@media(min-width:801px){.challenge-layout .challenge-card{order:1}.challenge-layout .leader-card{order:2}}
+/* Mobile: Rangliste oben, Aufgaben darunter */
+@media(max-width:800px){.challenge-layout{grid-template-columns:1fr;padding:14px}.challenge-layout .leader-card{order:1}.challenge-layout .challenge-card{order:2}}
 .challenge-card,.leader-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rlg);overflow:hidden;box-shadow:var(--sh)}
 .challenge-card-head,.leader-card-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--b1)}
 .challenge-title{font-size:14px;font-weight:700;color:var(--t1)}.challenge-sub{font-size:12px;color:var(--t3);margin-top:2px}
@@ -781,19 +784,11 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
           <div class="list-title">Challenges</div>
           <button class="btn btn-ghost btn-sm" onclick="window.resetTodayChallenges&&window.resetTodayChallenges()">Heute zurücksetzen</button>
         </div>
-        <!-- Week bar: full-width, OUTSIDE the two-column grid -->
-        <div id="challenge-week-bar-clean" style="flex-shrink:0"></div>
-        <!-- Two-column layout: challenges left, leaderboard right -->
+        <!-- Wochenbar: immer ganz oben, sticky -->
+        <div id="challenge-week-bar-clean" style="flex-shrink:0;position:sticky;top:0;z-index:20;background:var(--bg)"></div>
+        <!-- Layout: Rangliste oben, Aufgaben darunter (mobile: gestapelt) -->
         <div class="challenge-layout" style="flex:1;min-height:0;overflow-y:auto">
-          <div class="challenge-card">
-            <div class="challenge-card-head">
-              <div>
-                <div class="challenge-title">Heute erledigen</div>
-              </div>
-            </div>
-            <div id="challenges-list"></div>
-          </div>
-          <div class="leader-card">
+          <div class="leader-card" style="order:1">
             <div class="leader-card-head">
               <div>
                 <div class="challenge-title">Kontest · Rangliste</div>
@@ -802,6 +797,14 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
               <button class="btn btn-secondary btn-sm" onclick="window.openParticipantPanel&&window.openParticipantPanel()">Mitspieler</button>
             </div>
             <div id="leaderboard-list"></div>
+          </div>
+          <div class="challenge-card" style="order:2">
+            <div class="challenge-card-head">
+              <div>
+                <div class="challenge-title">Heute erledigen</div>
+              </div>
+            </div>
+            <div id="challenges-list"></div>
           </div>
         </div>
       </div>
@@ -1178,6 +1181,10 @@ function fabAction(){
 function buildDashboard(){
   buildKPIs();
   buildDashCards();
+  // Friseur-Tracker Banner nach den Karten rendern
+  setTimeout(function(){
+    if(typeof window.renderFriseurBanner==='function') window.renderFriseurBanner();
+  }, 0);
 }
 
 function buildKPIs(){
@@ -6004,19 +6011,50 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       if(pT) pT.addEventListener('change',async e=>{
         if(!e.target.checked){if(typeof disablePushNotifications==='function')await disablePushNotifications();else lsWrite('push_enabled',false);}
         else{if(typeof enablePushNotifications==='function')await enablePushNotifications();else{const p=typeof Notification!=='undefined'?await Notification.requestPermission():'denied';if(p==='granted')lsWrite('push_enabled',true);else{e.target.checked=false;if(typeof toast==='function')toast('Berechtigung verweigert','err');}}}
-        setTimeout(()=>window.openSettingsPanel('sync'),900);
+        window._refreshSyncPills();
       });
       const lT=$('us-toggle-live');
-      if(lT) lT.addEventListener('change',async e=>{if(typeof setLiveSyncEnabled==='function')await setLiveSyncEnabled(e.target.checked);else lsWrite('live_sync_enabled',e.target.checked);setTimeout(()=>window.openSettingsPanel('sync'),700);});
+      if(lT) lT.addEventListener('change',async e=>{if(typeof setLiveSyncEnabled==='function')await setLiveSyncEnabled(e.target.checked);else lsWrite('live_sync_enabled',e.target.checked);window._refreshSyncPills();});
       const aT=$('us-toggle-auto');
-      if(aT) aT.addEventListener('change',e=>{if(typeof setAutoChallengesEnabled==='function')setAutoChallengesEnabled(e.target.checked);else lsWrite('auto_challenges_enabled',e.target.checked);setTimeout(()=>window.openSettingsPanel('sync'),400);});
+      if(aT) aT.addEventListener('change',e=>{if(typeof setAutoChallengesEnabled==='function')setAutoChallengesEnabled(e.target.checked);else lsWrite('auto_challenges_enabled',e.target.checked);if(typeof toast==='function')toast(e.target.checked?'Auto-Challenges aktiviert':'Auto-Challenges deaktiviert','ok');});
       const gT=$('us-toggle-gsync');
-      if(gT) gT.addEventListener('change',async e=>{setGoogleSyncEnabled(e.target.checked);if(e.target.checked){await window.triggerGoogleCalendarSync();}else{window.gEvents=[];if(typeof renderCalendar==='function')renderCalendar();if(typeof buildDashboard==='function')buildDashboard();if(typeof toast==='function')toast('Google Kalender getrennt','ok');}setTimeout(()=>window.openSettingsPanel('sync'),500);});
+      if(gT) gT.addEventListener('change',async e=>{setGoogleSyncEnabled(e.target.checked);if(e.target.checked){await window.triggerGoogleCalendarSync();}else{window.gEvents=[];if(typeof renderCalendar==='function')renderCalendar();if(typeof buildDashboard==='function')buildDashboard();if(typeof toast==='function')toast('Google Kalender getrennt','ok');}window._refreshSyncPills();});
     },80);
   };
 
   window._sendTestNotification=function(){if(typeof Notification==='undefined'||Notification.permission!=='granted'){if(typeof toast==='function')toast('Push zuerst aktivieren','err');return;}try{new Notification('Change',{body:'Push funktioniert ✓'});if(typeof toast==='function')toast('Test gesendet ✓','ok');}catch(e){if(typeof toast==='function')toast('Test fehlgeschlagen','err');}};
   window._switchSettingsTab=function(tab){ ['calendar','dashboard','sync'].forEach(t=>{const b=$('us-tab-'+t),p=$('us-pane-'+t);if(b)b.classList.toggle('active',t===tab);if(p)p.classList.toggle('active',t===tab);});};
+
+  // In-Place Sync-Status aktualisieren ohne Panel zu schließen
+  window._refreshSyncPills=function(){
+    try{
+      const perm=typeof Notification!=='undefined'?Notification.permission:'nicht unterstützt';
+      const token=lsRead('fcm_token');
+      const pushOn=!!token&&lsRead('push_enabled')!==false&&perm==='granted';
+      const liveOn=lsRead('live_sync_enabled')!==false;
+      const gIn=typeof isGoogleLoggedIn==='function'?isGoogleLoggedIn():false;
+      const gOn=typeof isGoogleSyncEnabled==='function'&&isGoogleSyncEnabled()&&gIn;
+      // Update push pill
+      const pTog=$('us-toggle-push');
+      if(pTog) pTog.checked=pushOn;
+      // Update live pill
+      const lTog=$('us-toggle-live');
+      if(lTog) lTog.checked=liveOn;
+      // Update toggle title pills via label text
+      document.querySelectorAll('[id^="us-pane-sync"] .toggle-title, #us-pane-sync .toggle-title').forEach(function(el){
+        const txt=el.textContent||'';
+        if(txt.includes('Push')){
+          const sp=el.querySelector('.status-pill');
+          if(sp){sp.className='status-pill '+(pushOn?'status-on':'status-off');sp.textContent=pushOn?'AKTIV':'INAKTIV';}
+        }
+        if(txt.includes('Live')){
+          const sp=el.querySelector('.status-pill');
+          if(sp){sp.className='status-pill '+(liveOn?'status-on':'status-off');sp.textContent=liveOn?'VERBUNDEN':'DEAKTIVIERT';}
+        }
+      });
+      if(typeof toast==='function') toast('Einstellung gespeichert','ok');
+    }catch(e){}
+  };
   window._saveCalSettings=function(){
     const o={showHolidays:true,showChallengeDots:true,showWeekNumbers:true};
     const h=$('us-toggle-holidays');if(h)o.showHolidays=h.checked;
