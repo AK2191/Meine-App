@@ -5612,16 +5612,25 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       }).join('') || '<div class="dash-empty">Noch keine Mitspieler</div>';
     }catch(e){ plHtml = '<div class="dash-empty">Noch keine Mitspieler</div>'; }
 
+    // Fill Kalender sub-label
+    const _todaySub=document.getElementById('dash-today-sub');
+    if(_todaySub) _todaySub.textContent=todayDateFmt;
+
     grid.innerHTML = `
-      <div class="dash-card">
-        <div class="dash-card-head"><div><div class="dash-card-title">📅 Kalender</div></div></div>
-        <div class="dash-card-body">${calCardBody}</div>
+      <div class="db-card">
+        <div class="db-head">
+          <div class="db-title">📅 Kalender</div>
+          <div class="db-sub">${todayDateFmt}</div>
+        </div>
+        <div class="db-body">${calCardBody}</div>
       </div>
-      <div class="dash-card">
-        <div class="dash-card-head"><div><div class="dash-card-title">🏆 Challenges &amp; Mitspieler</div></div></div>
-        <div class="dash-card-body">
-          <div class="dash-section-label">Heute offen</div>${chHtml}
-          <div class="dash-section-label" style="border-top:1px solid var(--b1)">Rangliste</div>${plHtml}
+      <div class="db-card">
+        <div class="db-head">
+          <div class="db-title">🏆 Challenges &amp; Mitspieler</div>
+        </div>
+        <div class="db-body">
+          <div class="db-section">Heute offen</div>${chHtml}
+          <div class="db-section" style="border-top:1px solid var(--b1)">Rangliste</div>${plHtml}
         </div>
       </div>`;
   }
@@ -6016,6 +6025,21 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 
 })();
 </script>
+
+<style id="db-unified">
+/* ── Dashboard unified style ── */
+.db-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);overflow:hidden}
+.db-head{padding:14px 18px 12px;border-bottom:1px solid var(--b1)}
+.db-title{font-size:14px;font-weight:700;color:var(--t1)}
+.db-sub{font-size:12px;color:var(--acc);font-weight:600;margin-top:3px}
+.db-body{padding:0}
+.db-section{padding:7px 18px 5px;font-size:10px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.6px;background:var(--s2);border-bottom:1px solid var(--b1)}
+.dash-today-header{padding:10px 18px 8px;border-bottom:1px solid var(--b1)}
+.dash-today-date{font-size:12px;font-weight:700;color:var(--t3)}
+.dash-today-free{display:flex;align-items:center;gap:7px;padding:11px 18px;font-size:13px;font-weight:600;color:var(--t4);border-bottom:1px solid var(--b1);background:var(--s2)}
+.dash-section-divider{padding:7px 18px 5px;font-size:10px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.6px;background:var(--s2);border-top:1px solid var(--b1);border-bottom:1px solid var(--b1)}
+.dash-today-row{border-left:3px solid var(--acc)!important;background:linear-gradient(90deg,rgba(45,106,79,.04),transparent)!important}
+</style>
 
 </body>
 </html>
