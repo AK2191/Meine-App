@@ -2170,7 +2170,7 @@ document.addEventListener('touchend',e=>{
     let html='<div class="today-view"><div class="dash-hello"><h1>Heute</h1><p>'+fmtDate(dk)+'</p></div>';
     if(hs.length) html+='<div class="dash-card" style="margin-bottom:14px"><div class="dash-card-head"><div class="dash-card-title">Feiertage</div><div class="dash-card-sub">'+esc(STATE_OPTIONS[calendarSettings.state]||calendarSettings.state)+'</div></div><div class="dash-card-body">'+hs.map(h=>'<div class="dash-row"><div class="dash-row-icon" style="background:var(--amb-d)">🎉</div><div class="dash-row-body"><div class="dash-row-title">'+esc(h.name)+'</div><div class="dash-row-sub">'+esc(h.states.map(s=>STATE_OPTIONS[s]||s).join(', '))+'</div></div></div>').join('')+'</div></div>';
     html+='<div class="dash-card" style="margin-bottom:14px"><div class="dash-card-head"><div class="dash-card-title">Challenges</div><button class="btn btn-ghost btn-sm" onclick="setMainView(\'challenges\')">Öffnen</button></div><div class="dash-card-body">'+(chs.length?chs.map(ch=>'<div class="dash-row"><div class="dash-row-icon" style="background:var(--pur-d)">'+esc(ch.icon||'🏆')+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(ch.title)+'</div><div class="dash-row-sub">'+(ch.points||0)+' Punkte</div></div><button class="btn btn-primary btn-sm" onclick="completeChallenge(\''+ch.id+'\')">Erledigen</button></div>').join(''):'<div class="dash-empty">Heute keine Challenge geplant</div>')+'</div></div>';
-    html+='<div class="dash-card"><div class="dash-card-head"><div class="dash-card-title">Termine</div></div><div class="dash-card-body">'+(evs.length?evs.map(ev=>'<div class="dash-row" onclick="openEventPanel(\''+ev.id+'\')"><div class="dash-row-icon" style="background:var(--acc-d)">📅</div><div class="dash-row-body"><div class="dash-row-title">'+esc(ev.title)+'</div><div class="dash-row-sub">'+(ev.time||'Ganztägig')+'</div></div></div>').join(''):'<div class="dash-empty">Heute keine Termine</div>')+'</div></div></div>';
+    html+='<div class="dash-card"><div class="dash-card-head"><div class="dash-card-title">Termine</div></div><div class="dash-card-body">'+(evs.length?evs.map(ev=>'<div class="dash-row" onclick="openEventPanel(\''+ev.id+'\')"><div class="dash-row-icon" style="background:var(--acc-d)">📅</div><div class="dash-row-body"><div class="dash-row-title">'+esc(ev.title)+'</div><div class="dash-row-sub">'+(ev.time?(ev.time+(ev.endTime&&ev.endTime!==ev.time?' – '+ev.endTime:'')+' Uhr'):'Ganztägig')+'</div></div></div>').join(''):'<div class="dash-empty">Heute keine Termine</div>')+'</div></div></div>';
     ag.innerHTML=html;
   };
   window.renderCalendar=function(){
@@ -5192,11 +5192,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       upcomingHtml='<div class="dash-empty">Keine Termine in den nächsten 90 Tagen</div>';
     }
 
-    const calCardBody=`<div class="dash-today-header">
-        <div class="dash-today-date">${todayDateFmt}</div>
-      </div>
-      ${todayHtml}
-      ${upcomingHtml}`;
+    const calCardBody=`${todayHtml}${upcomingHtml}`;
     setTimeout(()=>{const _s=document.getElementById('dash-today-sub');if(_s)_s.textContent=todayDateFmt;},0);
 
     if(!calRows) calRows='<div class="dash-empty">Keine Termine oder Feiertage</div>';
@@ -5620,7 +5616,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       <div class="db-card">
         <div class="db-head">
           <div class="db-title">📅 Kalender</div>
-          <div class="db-sub">${todayDateFmt}</div>
+          <div class="db-sub"><span style="background:var(--acc);color:#fff;border-radius:999px;padding:1px 8px;font-size:10px;font-weight:700;margin-right:6px">Heute</span>${todayDateFmt}</div>
         </div>
         <div class="db-body">${calCardBody}</div>
       </div>
