@@ -1520,6 +1520,11 @@ function saveEvent(existingId){
   toast(existingId?'Termin aktualisiert ✓':'Termin erstellt ✓','ok');
 }
 
+/* Hook: Dashboard nach Event-Änderung aktualisieren */
+(function(){
+  var _orig=window.saveEvent;
+  if(typeof _orig==='function'){window.saveEvent=function(){var r=_orig.apply(this,arguments);setTimeout(function(){if(typeof window.buildDashboard==='function')window.buildDashboard();},200);return r;};}
+})();
 window._execDeleteEvent = function(id){
   events = (events||[]).filter(function(e){ return e.id!==id; });
   if(typeof ls==='function') ls('events', events);
@@ -1544,8 +1549,6 @@ function deleteEvent(id){
       '<button class="btn btn-danger btn-full" onclick="window._execDeleteEvent(' + JSON.stringify(id) + ')">Termin löschen</button>' +
       '<button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="closePanel()">Abbrechen</button>'
     );
-  } else {
-    if(confirm('Termin wirklich löschen?')) window._execDeleteEvent(id);
   }
 }
 
@@ -3880,8 +3883,6 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
 </script>
 
 
-</body>
-</html>
 
 <script id="range-google-final-fix">
 /* RANGE DATES + GOOGLE SOURCE MARKERS */
@@ -5404,7 +5405,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       out.push(ev);
     }
     // Lokale Termine
-    try{ (Array.isArray(window.events) ? window.events : []).forEach(add); }catch(e){}
+    try{ const _evs=window.events||(typeof events!=='undefined'?events:[]); (Array.isArray(_evs)?_evs:[]).forEach(add); }catch(e){}
     // Google-Termine mit vollständiger end-Date-Auflösung
     try{
       (Array.isArray(window.gEvents) ? window.gEvents : []).forEach(ge => {
@@ -5525,7 +5526,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
         } else {
           const ev = r.ev;
           const isRange = r.start !== r.end;
-          const sub = isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : (evTime(ev) || 'Ganztägig');
+          const _t=ev.time||(typeof evTime==='function'?evTime(ev):''), _et=ev.endTime||''; const sub = isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : (_t?(_t+(_et&&_et!==_t?' – '+_et:'')+' Uhr'):'Ganztägig');
           const colBg = ev.color==='red'?'var(--red-d)':ev.color==='green'?'var(--grn-d)':ev.color==='amber'?'var(--amb-d)':ev.color==='purple'?'var(--pur-d)':'var(--acc-d)';
           todayHtml += `<div class="dash-row dash-today-row" onclick="setMainView('calendar')">
             <div class="dash-row-icon" style="background:${colBg}">📅</div>
@@ -5553,7 +5554,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
           const isRange = r.start !== r.end;
           const badge = isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : (diffDays(r.start)===1 ? 'Morgen' : fmtShort(r.start));
           const bClass = diffDays(r.start)<=1 ? 'badge-red' : diffDays(r.start)<=3 ? 'badge-amber' : 'badge-blue';
-          const sub = isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : (evTime(ev) || 'Ganztägig');
+          const _t=ev.time||(typeof evTime==='function'?evTime(ev):''), _et=ev.endTime||''; const sub = isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : (_t?(_t+(_et&&_et!==_t?' – '+_et:'')+' Uhr'):'Ganztägig');
           const colBg = ev.color==='red'?'var(--red-d)':ev.color==='green'?'var(--grn-d)':ev.color==='amber'?'var(--amb-d)':ev.color==='purple'?'var(--pur-d)':'var(--acc-d)';
           upcomingHtml += `<div class="dash-row" onclick="setMainView('calendar')">
             <div class="dash-row-icon" style="background:${colBg}">📅</div>
@@ -5601,11 +5602,11 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
 
     grid.innerHTML = `
       <div class="dash-card">
-        <div class="dash-card-head"><div><div class="dash-card-title">📅 Kalender</div><div class="dash-card-sub" id="dash-cal-today-label"></div></div></div>
+        <div class="dash-card-head" style="background:var(--s2);border-bottom:1px solid var(--b1);padding:12px 16px"><div><div style="font-size:13px;font-weight:700;color:var(--t1)">📅 Kalender</div><div style="font-size:11px;color:var(--acc);font-weight:600;margin-top:1px" id="dash-cal-today-label"></div></div></div>
         <div class="dash-card-body">${calCardBody}</div>
       </div>
       <div class="dash-card">
-        <div class="dash-card-head"><div><div class="dash-card-title">🏆 Challenges &amp; Mitspieler</div></div></div>
+        <div class="dash-card-head" style="background:var(--s2);border-bottom:1px solid var(--b1);padding:12px 16px"><div><div style="font-size:13px;font-weight:700;color:var(--t1)">🏆 Challenges &amp; Mitspieler</div></div></div>
         <div class="dash-card-body">
           <div class="dash-section-label">Heute offen</div>${chHtml}
           <div class="dash-section-label" style="border-top:1px solid var(--b1)">Rangliste</div>${plHtml}
@@ -5929,9 +5930,9 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     saveOpt(o);
     const se=$('us-holiday-state');
     if(se){const s=se.value||'ALL';localStorage.setItem('change_v1_holiday_state',s);localStorage.setItem('holiday_state',s);if(!window.calendarSettings)window.calendarSettings={};window.calendarSettings.state=s;}
-    if(typeof closePanel==='function')closePanel();
+    // kein closePanel — Panel bleibt offen
     if(typeof renderCalendar==='function')renderCalendar();
-    if(typeof toast==='function')toast('Gespeichert ✓','ok');
+    if(typeof toast==='function')toast('✓','ok');
   };
   window.openCalendarSettings=()=>window.openSettingsPanel('calendar');
   window.openPushSettingsPanel=()=>window.openSettingsPanel('sync');
