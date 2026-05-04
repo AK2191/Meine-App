@@ -214,7 +214,7 @@ body{
   font-family:var(--font);font-size:12px;font-weight:600;color:var(--t3);cursor:pointer;transition:all .15s;
 }
 .vbtn.active{background:var(--acc);color:#fff}
-.h-right{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.h-right{display:flex;align-items:center;gap:4px;flex-shrink:0;position:relative;z-index:120}
 .icon-btn{
   width:34px;height:34px;display:flex;align-items:center;justify-content:center;
   border:none;background:transparent;border-radius:var(--rsm);cursor:pointer;color:var(--t3);transition:all .15s;position:relative;
@@ -741,7 +741,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           <div class="notif-dot" id="notif-dot"></div>
         </button>
-        <button class="icon-btn" onclick="openSettingsPanel()" title="Einstellungen">
+        <button class="icon-btn" id="settings-btn" type="button" onclick="window.openSettingsPanel&&window.openSettingsPanel('calendar')" title="Einstellungen">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.33 1.82V22a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1.82-.33H2a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-.6 1.65 1.65 0 0 0 .33-1.82V2a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.12.69.31 1 .6.31.29.51.64.6 1H22a2 2 0 1 1 0 4h-.09c-.37.09-.72.29-1 .6-.29.31-.48.64-.51 1z"/></svg>
         </button>
         <div class="avatar" id="user-avatar" onclick="confirmLogout()" title="Abmelden">
@@ -4098,6 +4098,8 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   }
   function titleOf(ev){ return ev?.title||ev?.summary||ev?.name||'Termin'; }
   function timeOf(ev){ return ev?.time||(ev?.start?.dateTime?new Date(ev.start.dateTime).toTimeString().slice(0,5):''); }
+  function endTimeOf(ev){ return ev?.endTime||(ev?.end?.dateTime?new Date(ev.end.dateTime).toTimeString().slice(0,5):''); }
+  function timeRangeOf(ev){ const a=timeOf(ev), b=endTimeOf(ev); return a?(a+(b&&b!==a?' – '+b:'')+' Uhr'):''; }
   function googleBadge(ev){
     if(ev?.source==='google' || String(ev?.id||'').startsWith('g_')) return '<span class="day-google-dot" title="von Google">G</span>';
     if(ev?.googleEventId || ev?.syncedToGoogle || ev?.googleSyncedAt) return '<span class="day-google-dot synced" title="an Google übertragen">✓</span>';
@@ -4132,7 +4134,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       html+='<div class="day-detail-holidays">'+hols.map(h=>'<div class="day-detail-holiday"><span>🎉</span><div><b>'+esc(h.name)+'</b><small>Feiertag</small></div></div>').join('')+'</div>';
     }
     if(evs.length){
-      html+='<div class="day-detail-list">'+evs.map(ev=>{ const r=rangeOf(ev); const isRange=r.start!==r.end; const sub=isRange?(fmt(r.start)+' – '+fmt(r.end)):(fmt(k)); return '<div class="day-detail-event" onclick="openEventPanel(\''+esc(ev.id||'')+'\')"><div class="day-detail-time">'+(timeOf(ev)||'Ganztägig')+'</div><div class="day-detail-main"><div class="day-detail-title">'+esc(titleOf(ev))+googleBadge(ev)+'</div><div class="day-detail-sub">'+esc(sub)+'</div></div></div>'; }).join('')+'</div>';
+      html+='<div class="day-detail-list">'+evs.map(ev=>{ const r=rangeOf(ev); const isRange=r.start!==r.end; const sub=isRange?(fmt(r.start)+' – '+fmt(r.end)):(fmt(k)); return '<div class="day-detail-event" onclick="openEventPanel(\''+esc(ev.id||'')+'\')"><div class="day-detail-time">'+(timeRangeOf(ev)||'Ganztägig')+'</div><div class="day-detail-main"><div class="day-detail-title">'+esc(titleOf(ev))+googleBadge(ev)+'</div><div class="day-detail-sub">'+esc(sub)+'</div></div></div>'; }).join('')+'</div>';
     }else{
       html+='<div class="day-detail-empty">Keine Termine für diesen Tag</div>';
     }
@@ -4225,7 +4227,8 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   function weekNo(dt){let d=new Date(Date.UTC(dt.getFullYear(),dt.getMonth(),dt.getDate())),day=d.getUTCDay()||7;d.setUTCDate(d.getUTCDate()+4-day);let y0=new Date(Date.UTC(d.getUTCFullYear(),0,1));return Math.ceil((((d-y0)/DAY)+1)/7)}
   function currentIds(){const ids=new Set(['me','ich']);try{const p=typeof getCurrentPlayerId==='function'?getCurrentPlayerId():'';if(p)ids.add(String(p).toLowerCase())}catch(e){}try{if(window.userInfo?.email)ids.add(String(userInfo.email).toLowerCase());if(window.userInfo?.name)ids.add(String(userInfo.name).toLowerCase())}catch(e){}try{const u=firebase?.auth?.().currentUser;if(u?.email)ids.add(String(u.email).toLowerCase());if(u?.uid)ids.add(String(u.uid).toLowerCase())}catch(e){}return ids}
   function points(k){const ids=currentIds();let sum=0;(window.challengeCompletions||[]).forEach(c=>{const d=String(c.date||c.completedDate||'').slice(0,10);if(d!==k)return;const who=String(c.playerId||c.userEmail||c.email||'').toLowerCase();if(who&&ids.size&&![...ids].includes(who))return;const p=Number.parseInt(c.points,10);if(Number.isFinite(p)&&p>0)sum+=p});return sum>0?sum:0}
-  function rangeLabel(ev,k,dow){const x=r(ev);if(!x.isRange)return esc(title(ev));const show=k===x.start||dow===0;return show?esc(title(ev)):''}
+  function timeLabel(ev){if(!ev||!ev.time)return '';return ev.time+(ev.endTime&&ev.endTime!==ev.time?'–'+ev.endTime:'')+' ';}
+  function rangeLabel(ev,k,dow){const x=r(ev);if(!x.isRange)return esc(timeLabel(ev)+title(ev));const show=k===x.start||dow===0;return show?esc(title(ev)):''}
   function rangeCls(ev,k,dow){const x=r(ev);if(!x.isRange)return '';const st=k===x.start||dow===0,en=k===x.end||dow===6;return ' is-range '+(st?'range-start ':'range-mid ')+(en?'range-end ':'')}
   window.getAllEvents=allEvents;
   window.getEventById=function(id){return (window.events||[]).find(e=>String(e.id)===String(id))||allEvents().find(e=>String(e.id)===String(id)||String(e.googleEventId)===String(id))||null};
@@ -4599,6 +4602,8 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   const dkey=v=>v instanceof Date?key(v):String(v||'').slice(0,10);
   const titleOf=e=>String(e?.title||e?.summary||e?.name||'Termin').replace(/\bZeitraum\b\s*:?/gi,'').replace(/\s{2,}/g,' ').trim();
   const timeOf=e=>{ if(e?.time) return e.time; if(e?.start?.dateTime) return new Date(e.start.dateTime).toTimeString().slice(0,5); return ''; };
+  const endTimeOf=e=>{ if(e?.endTime) return e.endTime; if(e?.end?.dateTime) return new Date(e.end.dateTime).toTimeString().slice(0,5); return ''; };
+  const timeRangeOf=e=>{ const a=timeOf(e), b=endTimeOf(e); return a?(a+(b&&b!==a?' – '+b:'')+' Uhr'):''; };
   function rangeOf(e){
     if(!e) return {start:'',end:'',isRange:false};
     let s='', en='';
@@ -4636,7 +4641,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     const title=evs.length?(evs.length+' '+(evs.length===1?'Termin':'Termine')):(hols.length?(hols.length===1?'Feiertag':'Feiertage'):'Tag');
     let html='<div class="day-detail-date">'+esc(weekday(k)+', '+fmt(k))+'</div>';
     if(hols.length) html+='<div class="day-detail-holidays">'+hols.map(h=>'<div class="day-detail-holiday"><span>🎉</span><div><b>'+esc(h.name)+'</b><small>Feiertag</small></div></div>').join('')+'</div>';
-    if(evs.length) html+='<div class="day-detail-list">'+evs.map(ev=>{const r=rangeOf(ev), sub=r.isRange?(fmt(r.start)+' – '+fmt(r.end)):fmt(k), id=esc(ev.id||ev.googleEventId||''), g=(ev.source==='google'||ev.googleEventId)?' <span class="cal-g" title="von Google">G</span>':''; return '<div class="day-detail-event" onclick="openEventPanel(\''+id+'\')"><div class="day-detail-time">'+(timeOf(ev)||'Ganztägig')+'</div><div class="day-detail-main"><div class="day-detail-title">'+esc(titleOf(ev))+g+'</div><div class="day-detail-sub">'+esc(sub)+'</div></div></div>';}).join('')+'</div>'; else html+='<div class="day-detail-empty">Keine Termine für diesen Tag</div>';
+    if(evs.length) html+='<div class="day-detail-list">'+evs.map(ev=>{const r=rangeOf(ev), sub=r.isRange?(fmt(r.start)+' – '+fmt(r.end)):fmt(k), id=esc(ev.id||ev.googleEventId||''), g=(ev.source==='google'||ev.googleEventId)?' <span class="cal-g" title="von Google">G</span>':''; return '<div class="day-detail-event" onclick="openEventPanel(\''+id+'\')"><div class="day-detail-time">'+(timeRangeOf(ev)||'Ganztägig')+'</div><div class="day-detail-main"><div class="day-detail-title">'+esc(titleOf(ev))+g+'</div><div class="day-detail-sub">'+esc(sub)+'</div></div></div>';}).join('')+'</div>'; else html+='<div class="day-detail-empty">Keine Termine für diesen Tag</div>';
     html+='<button class="btn btn-primary btn-full day-detail-add" onclick="window.__openNewEventForDay&&window.__openNewEventForDay(\''+k+'\')">+ Neuer Termin für diesen Tag</button>';
     window.__openNewEventForDay=function(day){if(typeof window.openEventPanel==='function')window.openEventPanel(null,parse(day));};
     if(typeof window.openPanel==='function')window.openPanel(title,html);
@@ -4835,6 +4840,10 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   function fmtShort(dk){
     if(!dk)return '';
     return new Date(dk+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+  }
+  function fmtTimeRange(ev){
+    if(!ev||!ev.time) return ev&&ev.allDay?'Ganztägig':'';
+    return ev.time+(ev.endTime&&ev.endTime!==ev.time?' – '+ev.endTime:'')+' Uhr';
   }
 
   /* ── ROBUST ACCOUNT ID ──
@@ -5120,7 +5129,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
           <div class="dash-row-icon" style="background:${colBg}">📅</div>
           <div class="dash-row-body">
             <div class="dash-row-title" style="${titleStyle}">${title}</div>
-            <div class="dash-row-sub">${ev.time?(ev.time+(ev.endTime&&ev.endTime!==ev.time?' – '+ev.endTime:'')+' Uhr'):'Ganztägig'}</div>
+            <div class="dash-row-sub">${fmtTimeRange(ev)||'Ganztägig'}</div>
           </div>
           <span class="dash-row-badge ${bClass}">${badge}</span>
         </div>`;
@@ -5153,7 +5162,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
           const ev=r.ev, colBg=ev.color==='red'?'var(--red-d)':ev.color==='green'?'var(--grn-d)':ev.color==='amber'?'var(--amb-d)':ev.color==='purple'?'var(--pur-d)':'var(--acc-d)';
           todayItemsHtml+=`<div class="dash-row dash-today-row" onclick="setMainView('calendar')">
             <div class="dash-row-icon" style="background:${colBg}">📅</div>
-            <div class="dash-row-body"><div class="dash-row-title" style="font-weight:800;color:var(--acc)">${esc(ev.title||'Termin')}</div><div class="dash-row-sub">${ev.time?(ev.time+(ev.endTime&&ev.endTime!==ev.time?' – '+ev.endTime:'')+' Uhr'):'Ganztägig'}</div></div>
+            <div class="dash-row-body"><div class="dash-row-title" style="font-weight:800;color:var(--acc)">${esc(ev.title||'Termin')}</div><div class="dash-row-sub">${fmtTimeRange(ev)||'Ganztägig'}</div></div>
             <span class="dash-row-badge badge-green">Heute</span>
           </div>`;
         }
@@ -5183,7 +5192,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
           const colBg=ev.color==='red'?'var(--red-d)':ev.color==='green'?'var(--grn-d)':ev.color==='amber'?'var(--amb-d)':ev.color==='purple'?'var(--pur-d)':'var(--acc-d)';
           upcomingHtml+=`<div class="dash-row" onclick="setMainView('calendar')">
             <div class="dash-row-icon" style="background:${colBg}">📅</div>
-            <div class="dash-row-body"><div class="dash-row-title">${esc(ev.title||'Termin')}</div><div class="dash-row-sub">${ev.time?(ev.time+(ev.endTime&&ev.endTime!==ev.time?' – '+ev.endTime:'')+' Uhr'):'Ganztägig'}</div></div>
+            <div class="dash-row-body"><div class="dash-row-title">${esc(ev.title||'Termin')}</div><div class="dash-row-sub">${fmtTimeRange(ev)||'Ganztägig'}</div></div>
             <span class="dash-row-badge ${bClass}">${badge}</span>
           </div>`;
         }
@@ -6059,8 +6068,8 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     function myGetAllEvents(){
       const out=[],seen=new Set();
       function add(ev){if(!ev||!ev.date)return;const k=(ev.googleEventId?'g:'+ev.googleEventId:'l:'+(ev.id||ev.title||''))+'|'+String(ev.startDate||ev.date).slice(0,10);if(seen.has(k))return;seen.add(k);out.push(ev);}
-      try{(Array.isArray(window.events)?window.events:[]).forEach(ev=>{const s=String(ev.startDate||ev.date||'').slice(0,10);const e=String(ev.endDate||ev.toDate||ev.untilDate||s).slice(0,10);add({...ev,date:s,startDate:s,endDate:e>=s?e:s,title:ev.title||ev.summary||ev.name||'Termin',source:ev.source||'local'});});}catch(e){}
-      try{(Array.isArray(window.gEvents)?window.gEvents:[]).forEach(ge=>{if(!ge)return;const title=ge.summary||ge.title||'Google-Termin';let s='',e='',time='';if(ge.start&&ge.start.date){s=String(ge.start.date).slice(0,10);}else if(ge.start&&ge.start.dateTime){s=String(ge.start.dateTime).slice(0,10);try{time=new Date(ge.start.dateTime).toTimeString().slice(0,5);}catch(ex){}}if(!s)return;if(ge.end&&ge.end.date){e=addDay(String(ge.end.date).slice(0,10),-1);if(e<s)e=s;}else if(ge.end&&ge.end.dateTime){e=String(ge.end.dateTime).slice(0,10);}else{e=s;}add({id:'g_'+(ge.id||''),googleEventId:ge.id||'',title,date:s,startDate:s,endDate:e,time,allDay:!ge.start?.dateTime,color:'blue',type:'meeting',desc:ge.description||'',source:'google'});});}catch(e){}
+      try{(Array.isArray(window.events)?window.events:[]).forEach(ev=>{const s=String(ev.startDate||ev.date||'').slice(0,10);const e=String(ev.endDate||ev.toDate||ev.untilDate||s).slice(0,10);add({...ev,date:s,startDate:s,endDate:e>=s?e:s,title:ev.title||ev.summary||ev.name||'Termin',time:ev.time||'',endTime:ev.endTime||'',source:ev.source||'local'});});}catch(e){}
+      try{(Array.isArray(window.gEvents)?window.gEvents:[]).forEach(ge=>{if(!ge)return;const title=ge.summary||ge.title||'Google-Termin';let s='',e='',time='';if(ge.start&&ge.start.date){s=String(ge.start.date).slice(0,10);}else if(ge.start&&ge.start.dateTime){s=String(ge.start.dateTime).slice(0,10);try{time=new Date(ge.start.dateTime).toTimeString().slice(0,5);}catch(ex){}}if(!s)return;if(ge.end&&ge.end.date){e=addDay(String(ge.end.date).slice(0,10),-1);if(e<s)e=s;}else if(ge.end&&ge.end.dateTime){e=String(ge.end.dateTime).slice(0,10);}else{e=s;}let endTime='';if(ge.end&&ge.end.dateTime){try{endTime=new Date(ge.end.dateTime).toTimeString().slice(0,5);}catch(ex){}}add({id:'g_'+(ge.id||''),googleEventId:ge.id||'',title,date:s,startDate:s,endDate:e,time,endTime,allDay:!ge.start?.dateTime,color:'blue',type:'meeting',desc:ge.description||'',source:'google'});});}catch(e){}
       return out;
     }
     [300,7000].forEach(ms=>setTimeout(()=>{window.getAllEvents=myGetAllEvents;},ms));
@@ -6071,6 +6080,10 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   document.addEventListener('DOMContentLoaded',()=>{fixTB();updateAvatarDot();});
   window.addEventListener('load',()=>{fixTB();updateAvatarDot();});
   setTimeout(fixTB,500);
+  function bindSettingsButton(){const b=document.getElementById('settings-btn')||document.querySelector('[title="Einstellungen"]');if(b){b.onclick=function(e){if(e){e.preventDefault();e.stopPropagation();}window.openSettingsPanel&&window.openSettingsPanel('calendar');return false;};}}
+  document.addEventListener('DOMContentLoaded',bindSettingsButton);
+  window.addEventListener('load',bindSettingsButton);
+  setTimeout(bindSettingsButton,700);
 
 })();
 </script>
@@ -6187,18 +6200,30 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   }
 
   function findNextFriseur(){
+    var info=findNextFriseurInfo();
+    return info&&info.date;
+  }
+
+  function findNextFriseurInfo(){
     var kw=KEYWORD.toLowerCase(), today=new Date(); today.setHours(0,0,0,0);
     var best=null;
-    function checkEvt(title,desc,dateStr){
-      title=String(title||'').toLowerCase(); desc=String(desc||'').toLowerCase();
+    function checkEvt(title,desc,dateStr,time,endTime){
+      var rawTitle=String(title||'Termin');
+      title=rawTitle.toLowerCase(); desc=String(desc||'').toLowerCase();
       if(!title.includes(kw)&&!desc.includes(kw)) return;
-      var d=new Date((dateStr||'').slice(0,10)+'T12:00:00');
-      if(isNaN(d)||d<today) return;
-      if(!best||d<new Date(best+'T12:00:00')) best=(dateStr||'').slice(0,10);
+      var date=(dateStr||'').slice(0,10), d=new Date(date+'T12:00:00');
+      if(!date||isNaN(d)||d<today) return;
+      if(!best||d<new Date(best.date+'T12:00:00')) best={date:date,title:rawTitle,time:time||'',endTime:endTime||''};
     }
-    (window.events||[]).forEach(function(e){checkEvt(e.title,e.desc,e.startDate||e.date);});
-    (window.gEvents||[]).forEach(function(g){if(!g)return;var s=(g.start&&(g.start.date||g.start.dateTime)||'');checkEvt(g.summary,g.description,s);});
-    if(typeof window.getAllEvents==='function')(window.getAllEvents()||[]).forEach(function(e){checkEvt(e.title,e.desc,e.date||e.startDate);});
+    (window.events||[]).forEach(function(e){checkEvt(e.title,e.desc,e.startDate||e.date,e.time,e.endTime);});
+    (window.gEvents||[]).forEach(function(g){
+      if(!g)return;
+      var s=(g.start&&(g.start.date||g.start.dateTime)||''), t='', et='';
+      if(g.start&&g.start.dateTime){try{t=new Date(g.start.dateTime).toTimeString().slice(0,5);}catch(e){}}
+      if(g.end&&g.end.dateTime){try{et=new Date(g.end.dateTime).toTimeString().slice(0,5);}catch(e){}}
+      checkEvt(g.summary,g.description,s,t,et);
+    });
+    if(typeof window.getAllEvents==='function')(window.getAllEvents()||[]).forEach(function(e){checkEvt(e.title,e.desc,e.date||e.startDate,e.time,e.endTime);});
     return best;
   }
 
@@ -6220,7 +6245,8 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     banner.style.display='block';
 
     var lastDate=findLastFriseur();
-    var nextDate=findNextFriseur();
+    var nextInfo=findNextFriseurInfo();
+    var nextDate=nextInfo&&nextInfo.date;
     var weeks=getWeeks();
     var fmtD=function(k){try{return new Date(k+'T12:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'long'});}catch(e){return k;}};
 
@@ -6244,7 +6270,10 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     }
     var badgeHtml='';
     if(nextDate){
-      badgeHtml='<span class="friseur-badge friseur-badge-future">Nächster in '+daysUntilNext+'d · '+fmtD(nextDate)+'</span>';
+      var dayWord=daysUntilNext===1?'Tag':'Tagen';
+      var termName=nextInfo&&nextInfo.title?(' · '+nextInfo.title):'';
+      var termTime=nextInfo&&nextInfo.time?(' · '+nextInfo.time+(nextInfo.endTime&&nextInfo.endTime!==nextInfo.time?' – '+nextInfo.endTime:'')+' Uhr'):'';
+      badgeHtml='<span class="friseur-badge friseur-badge-future">Nächster Termin in '+daysUntilNext+' '+dayWord+termName+termTime+' · '+fmtD(nextDate)+'</span>';
     } else if(overdue){
       badgeHtml='<span class="friseur-badge friseur-badge-bad">⚠ Überfällig!</span>';
     } else if(warn){
