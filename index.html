@@ -2158,7 +2158,7 @@ document.addEventListener('touchend',e=>{
   const STATE_OPTIONS={
     'ALL':'Alle Bundesländer anzeigen','BW':'Baden-Württemberg','BY':'Bayern','BY-AUGSBURG':'Bayern · Augsburg','BE':'Berlin','BB':'Brandenburg','HB':'Bremen','HH':'Hamburg','HE':'Hessen','MV':'Mecklenburg-Vorpommern','NI':'Niedersachsen','NW':'Nordrhein-Westfalen','RP':'Rheinland-Pfalz','SL':'Saarland','SN':'Sachsen','ST':'Sachsen-Anhalt','SH':'Schleswig-Holstein','TH':'Thüringen'
   };
-  if(!window.calendarSettings){window.calendarSettings={state:ls('holiday_state')||'ALL',holidayNotifications:ls('holiday_notifications')!==false};}
+  if(!window.calendarSettings){window.calendarSettings={state:(function(){try{return localStorage.getItem('change_v1_holiday_state')||JSON.parse(localStorage.getItem('holiday_state')||'null')||localStorage.getItem('holiday_state')||'ALL';}catch(e){return localStorage.getItem('change_v1_holiday_state')||localStorage.getItem('holiday_state')||'ALL';}})(),holidayNotifications:ls('holiday_notifications')!==false};}
   function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x;}
   function easterDate(year){
     const a=year%19,b=Math.floor(year/100),c=year%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),day=((h+l-7*m+114)%31)+1;
@@ -2311,7 +2311,7 @@ document.addEventListener('touchend',e=>{
   window.saveCalendarSettings=function(){
     calendarSettings.state=document.getElementById('holiday-state')?.value||'ALL';
     calendarSettings.holidayNotifications=document.getElementById('holiday-notifications')?.value==='1';
-    ls('holiday_state',calendarSettings.state); ls('holiday_notifications',calendarSettings.holidayNotifications); /* no close */
+    ls('holiday_state',calendarSettings.state); localStorage.setItem('change_v1_holiday_state',calendarSettings.state); ls('holiday_notifications',calendarSettings.holidayNotifications); /* no close */
 renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   };
   const originalOpenChallengePanel=window.openChallengePanel;
@@ -3189,7 +3189,7 @@ renderCalendar(); if(typeof renderUpcoming==='function')renderUpcoming(); if(typ
   };
   window.saveCalSettings=function(){
     const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked}; saveOpt(o);
-    try{ if($('holiday-state')&&window.calendarSettings){calendarSettings.state=$('holiday-state').value; if(typeof ls==='function')ls('holiday_state',calendarSettings.state);}}
+    try{ if($('holiday-state')&&window.calendarSettings){calendarSettings.state=$('holiday-state').value; if(typeof ls==='function')ls('holiday_state',calendarSettings.state); localStorage.setItem('change_v1_holiday_state',calendarSettings.state);}}
     catch(e){}
     /* no close */
 renderCalendar(); if(typeof buildDashboard==='function')buildDashboard(); if(typeof toast==='function')toast('Kalender-Einstellungen gespeichert ✓','ok');
@@ -3620,13 +3620,13 @@ renderCalendar(); if(typeof buildDashboard==='function')buildDashboard(); if(typ
     const cur=(window.calendarSettings&&calendarSettings.state)||localStorage.getItem('holiday_state')||'ALL';
     const opts=Object.entries(states).map(([k,v])=>'<option value="'+k+'" '+(k===cur?'selected':'')+'>'+esc(v)+'</option>').join('');
     const tog=(title,id,key,sub)=>'<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">'+title+'</div><div class="toggle-sub">'+sub+'</div></div><label class="switch"><input type="checkbox" id="'+id+'" '+(o[key]?'checked':'')+'><span class="slider"></span></label></div>';
-    const html='<div class="fg"><label class="flabel">Bundesland für Feiertage</label><select class="finput" id="holiday-state">'+opts+'</select></div>'+tog('Feiertage anzeigen','toggle-holidays','showHolidays','Feiertage stehen neben der Tageszahl.')+tog('Challenge-Punkte anzeigen','toggle-dots','showChallengeDots','Punkte erscheinen nur klein rechts unten am Tag.')+tog('Kalenderwochen anzeigen','toggle-kw','showWeekNumbers','KW wird links unten in der Woche angezeigt.')+'<button class="btn btn-primary btn-full" onclick="saveCalSettings()">Speichern</button>';
+    const html='<div class="fg"><label class="flabel">Bundesland für Feiertage</label><select class="finput" id="holiday-state">'+opts+'</select></div>'+tog('Feiertage anzeigen','toggle-holidays','showHolidays','')+tog('Challenge-Punkte anzeigen','toggle-dots','showChallengeDots','')+tog('Kalenderwochen anzeigen','toggle-kw','showWeekNumbers','')+'<button class="btn btn-primary btn-full" onclick="saveCalSettings()">Speichern</button>';
     if(typeof openPanel==='function') openPanel('Kalender-Einstellungen',html);
   };
   window.saveCalSettings=function(){
     const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked};
     localStorage.setItem('change_v1_calendar_view_options',JSON.stringify(o)); localStorage.setItem('calendar_settings',JSON.stringify(o));
-    try{ if(!window.calendarSettings) window.calendarSettings={}; calendarSettings.state=$('holiday-state')?.value||'ALL'; if(typeof ls==='function') ls('holiday_state',calendarSettings.state); else localStorage.setItem('holiday_state',calendarSettings.state); }catch(e){}
+    try{ if(!window.calendarSettings) window.calendarSettings={}; calendarSettings.state=$('holiday-state')?.value||'ALL'; if(typeof ls==='function') ls('holiday_state',calendarSettings.state); else localStorage.setItem('holiday_state',JSON.stringify(calendarSettings.state)); localStorage.setItem('change_v1_holiday_state',calendarSettings.state); }catch(e){}
     if(typeof closePanel==='function') /* no close */
 renderCalendar(); if(typeof toast==='function') toast('Kalender-Einstellungen gespeichert ✓','ok');
   };
@@ -3708,7 +3708,7 @@ window.setCalView=function(v){currentCalView=(v==='today')?'month':v; if(v==='to
 window.goToday=function(){curDate=new Date(); currentCalView='month'; window.renderCalendar();};
 window.navigate=function(dir){ if(currentCalView==='year')curDate=new Date(curDate.getFullYear()+dir,0,1); else curDate=new Date(curDate.getFullYear(),curDate.getMonth()+dir,1); window.renderCalendar();};
 window.openCalendarSettings=function(){const o=opts(); const states=window.STATE_OPTIONS||(typeof STATE_OPTIONS!=='undefined'?STATE_OPTIONS:{ALL:'Alle Bundesländer',BW:'Baden-Württemberg',BY:'Bayern','BY-AUGSBURG':'Bayern · Augsburg',BE:'Berlin',BB:'Brandenburg',HB:'Bremen',HH:'Hamburg',HE:'Hessen',MV:'Mecklenburg-Vorpommern',NI:'Niedersachsen',NW:'Nordrhein-Westfalen',RP:'Rheinland-Pfalz',SL:'Saarland',SN:'Sachsen',ST:'Sachsen-Anhalt',SH:'Schleswig-Holstein',TH:'Thüringen'}); const st=(window.calendarSettings&&calendarSettings.state)||localStorage.getItem('holiday_state')||'ALL'; const options=Object.entries(states).map(([k,v])=>'<option value="'+k+'" '+(k===st?'selected':'')+'>'+esc(v)+'</option>').join(''); const sw=(title,id,on)=>'<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">'+title+'</div></div><label class="switch"><input type="checkbox" id="'+id+'" '+(on?'checked':'')+'><span class="slider"></span></label></div>'; const html='<div class="fg"><label class="flabel">Bundesland für Feiertage</label><select class="finput" id="holiday-state">'+options+'</select></div>'+sw('Feiertage anzeigen','toggle-holidays',o.showHolidays)+sw('Challenge-Punkte anzeigen','toggle-dots',o.showChallengeDots)+sw('Kalenderwochen anzeigen','toggle-kw',o.showWeekNumbers)+'<button class="btn btn-primary btn-full" onclick="saveCalSettings()">Speichern</button>'; if(typeof openPanel==='function')openPanel('Kalender-Einstellungen',html);};
-window.saveCalSettings=function(){const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked}; saveOpts(o); try{if(!window.calendarSettings)window.calendarSettings={}; calendarSettings.state=$('holiday-state')?.value||'ALL'; if(typeof ls==='function')ls('holiday_state',calendarSettings.state); else localStorage.setItem('holiday_state',calendarSettings.state);}catch(e){} if(typeof closePanel==='function')closePanel(); window.renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen gespeichert ✓','ok');};
+window.saveCalSettings=function(){const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked}; saveOpts(o); try{if(!window.calendarSettings)window.calendarSettings={}; calendarSettings.state=$('holiday-state')?.value||'ALL'; if(typeof ls==='function'){ls('holiday_state',calendarSettings.state); localStorage.setItem('change_v1_holiday_state',calendarSettings.state);} else {localStorage.setItem('holiday_state',JSON.stringify(calendarSettings.state)); localStorage.setItem('change_v1_holiday_state',calendarSettings.state);}}catch(e){} if(typeof closePanel==='function')closePanel(); window.renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen gespeichert ✓','ok');};
 const css=document.createElement('style'); css.id='user-final-calendar-fix-css'; css.textContent=`
 #month-grid.fx-month{display:grid!important;grid-template-rows:repeat(6,minmax(112px,1fr))!important;background:var(--b1);gap:1px;overflow:hidden}
 .fx-week{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr));position:relative;min-height:112px;background:var(--bg)}
@@ -4145,7 +4145,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   window.goToday=function(){window.curDate=curDate=new Date();window.currentCalView=currentCalView='month';renderCalendar();};
 
   window.openCalendarSettings=function(){const o=loadOpts(); const states=window.STATE_OPTIONS||(typeof STATE_OPTIONS!=='undefined'?STATE_OPTIONS:{ALL:'Alle Bundesländer'}); const st=(window.calendarSettings&&calendarSettings.state)||localStorage.getItem('holiday_state')||'ALL'; const opts=Object.entries(states).map(([k,v])=>'<option value="'+esc(k)+'" '+(k===st?'selected':'')+'>'+esc(v)+'</option>').join(''); const row=(title,id,on,sub)=>'<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">'+title+'</div>'+(sub?'<div class="toggle-sub">'+sub+'</div>':'')+'</div><label class="switch"><input type="checkbox" id="'+id+'" '+(on?'checked':'')+'><span class="slider"></span></label></div>'; const html='<div class="fg"><label class="flabel">Bundesland für Feiertage</label><select class="finput" id="holiday-state">'+opts+'</select></div>'+row('Feiertage anzeigen','toggle-holidays',o.showHolidays,'Neben der Tageszahl, ohne Terminüberlappung.')+row('Challenge-Punkte anzeigen','toggle-dots',o.showChallengeDots,'Nur klein rechts unten am jeweiligen Tag.')+row('Kalenderwochen anzeigen','toggle-kw',o.showWeekNumbers,'Deutlich links unten pro Woche.')+'<button class="btn btn-primary btn-full" onclick="saveCalSettings()">Speichern</button>'; if(typeof openPanel==='function')openPanel('Kalender-Einstellungen',html);};
-  window.saveCalSettings=function(){const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked}; saveOpts(o); try{if(!window.calendarSettings)window.calendarSettings={}; calendarSettings.state=$('holiday-state')?.value||'ALL'; if(typeof ls==='function')ls('holiday_state',calendarSettings.state); else localStorage.setItem('holiday_state',calendarSettings.state);}catch(e){} if(typeof closePanel==='function')/* no close */
+  window.saveCalSettings=function(){const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked}; saveOpts(o); try{if(!window.calendarSettings)window.calendarSettings={}; calendarSettings.state=$('holiday-state')?.value||'ALL'; if(typeof ls==='function'){ls('holiday_state',calendarSettings.state); localStorage.setItem('change_v1_holiday_state',calendarSettings.state);} else {localStorage.setItem('holiday_state',JSON.stringify(calendarSettings.state)); localStorage.setItem('change_v1_holiday_state',calendarSettings.state);}}catch(e){} if(typeof closePanel==='function')/* no close */
 renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen gespeichert ✓','ok');};
 
   const style=document.createElement('style'); style.id='final-stacked-calendar-style'; style.textContent=`
@@ -4183,8 +4183,8 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
   window.renderYear=function(y){const grid=$('month-grid'),o=loadOpts();if(!grid)return;grid.className='year-grid-stacked';grid.style.display='grid';grid.style.gridTemplateRows='none';grid.innerHTML='';for(let m=0;m<12;m++){const card=document.createElement('button');card.type='button';card.className='year-card-stacked';card.onclick=()=>{window.curDate=curDate=new Date(y,m,1);window.currentCalView=currentCalView='month';renderCalendar()};let first=new Date(y,m,1).getDay();first=first===0?6:first-1;let html='<div class="year-title-stacked">'+monthName(m)+'</div><div class="year-days-stacked">';['M','D','M','D','F','S','S'].forEach(x=>html+='<b>'+x+'</b>');for(let i=0;i<first;i++)html+='<span></span>';const dim=new Date(y,m+1,0).getDate();for(let d=1;d<=dim;d++){const dt=new Date(y,m,d),k=key(dt),hasE=eventsOn(k).length>0,hasH=o.showHolidays&&holidays(k).length>0;html+='<span class="'+((typeof isToday==='function'&&isToday(dt))?'today ':'')+(hasE?'has-event ':'')+(hasH?'has-holiday ':'')+'">'+d+((hasE||hasH)?'<i></i>':'')+'</span>'}card.innerHTML=html+'</div>';grid.appendChild(card)}};
   window.renderCalendar=function(){const y=curDate.getFullYear(),m=curDate.getMonth(),ml=$('month-label'),grid=$('month-grid'),ag=$('agenda-view'),wd=$('wday-row');if(ml)ml.textContent=currentCalView==='year'?String(y):monthName(m)+' '+y;['year','month','workweek','today'].forEach(v=>$('vbtn-'+v)?.classList.toggle('active',currentCalView===v));if(ag)ag.style.display='none';if(currentCalView==='year'){if(wd)wd.style.display='none';renderYear(y)}else{if(wd)wd.style.display='grid';renderMonth(y,m)}if(grid)grid.style.display='grid'};
   window.navigate=function(dir){if(currentCalView==='year')window.curDate=curDate=new Date(curDate.getFullYear()+dir,0,1);else window.curDate=curDate=new Date(curDate.getFullYear(),curDate.getMonth()+dir,1);renderCalendar()}; window.goToday=function(){window.curDate=curDate=new Date();window.currentCalView=currentCalView='month';renderCalendar()}; window.setCalView=function(v){window.currentCalView=currentCalView=v;renderCalendar()};
-  window.openCalendarSettings=function(){const o=loadOpts(),st=(window.calendarSettings&&calendarSettings.state)||localStorage.getItem('holiday_state')||'ALL';const opts=Object.entries(window.STATE_OPTIONS).map(([k,v])=>'<option value="'+esc(k)+'" '+(k===st?'selected':'')+'>'+esc(v)+'</option>').join('');const row=(title,id,on,sub)=>'<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">'+title+'</div>'+(sub?'<div class="toggle-sub">'+sub+'</div>':'')+'</div><label class="switch"><input type="checkbox" id="'+id+'" '+(on?'checked':'')+'><span class="slider"></span></label></div>';const html='<div class="fg"><label class="flabel">Bundesland für Feiertage</label><select class="finput" id="holiday-state">'+opts+'</select></div>'+row('Feiertage anzeigen','toggle-holidays',o.showHolidays,'Direkt neben der Tageszahl.')+row('Challenge-Punkte anzeigen','toggle-dots',o.showChallengeDots,'Klein rechts unten im Tag.')+row('Kalenderwochen anzeigen','toggle-kw',o.showWeekNumbers,'Links unten pro Woche.')+'<button class="btn btn-primary btn-full" onclick="saveCalSettings()">Speichern</button>';if(typeof openPanel==='function')openPanel('Kalender-Einstellungen',html)};
-  window.saveCalSettings=function(){const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked};saveOpts(o);try{if(!window.calendarSettings)window.calendarSettings={};calendarSettings.state=$('holiday-state')?.value||'ALL';if(typeof ls==='function')ls('holiday_state',calendarSettings.state);else localStorage.setItem('holiday_state',calendarSettings.state)}catch(e){}if(typeof closePanel==='function')/* no close */
+  window.openCalendarSettings=function(){const o=loadOpts(),st=(window.calendarSettings&&calendarSettings.state)||localStorage.getItem('holiday_state')||'ALL';const opts=Object.entries(window.STATE_OPTIONS).map(([k,v])=>'<option value="'+esc(k)+'" '+(k===st?'selected':'')+'>'+esc(v)+'</option>').join('');const row=(title,id,on,sub)=>'<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">'+title+'</div>'+(sub?'<div class="toggle-sub">'+sub+'</div>':'')+'</div><label class="switch"><input type="checkbox" id="'+id+'" '+(on?'checked':'')+'><span class="slider"></span></label></div>';const html='<div class="fg"><label class="flabel">Bundesland für Feiertage</label><select class="finput" id="holiday-state">'+opts+'</select></div>'+row('Feiertage anzeigen','toggle-holidays',o.showHolidays,'')+row('Challenge-Punkte anzeigen','toggle-dots',o.showChallengeDots,'')+row('Kalenderwochen anzeigen','toggle-kw',o.showWeekNumbers,'')+'<button class="btn btn-primary btn-full" onclick="saveCalSettings()">Speichern</button>';if(typeof openPanel==='function')openPanel('Kalender-Einstellungen',html)};
+  window.saveCalSettings=function(){const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked};saveOpts(o);try{if(!window.calendarSettings)window.calendarSettings={};calendarSettings.state=$('holiday-state')?.value||'ALL';if(typeof ls==='function'){ls('holiday_state',calendarSettings.state); localStorage.setItem('change_v1_holiday_state',calendarSettings.state);}else{localStorage.setItem('holiday_state',JSON.stringify(calendarSettings.state)); localStorage.setItem('change_v1_holiday_state',calendarSettings.state);}}catch(e){}if(typeof closePanel==='function')/* no close */
 renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gespeichert ✓','ok')};
   function fixToolbarTitles(){document.querySelectorAll('[onclick="openPushSettingsPanel()"], [title="Live- & Kalender-Sync"], [title="Push & Live-Sync"]').forEach(b=>b.setAttribute('title','Sync'));document.querySelectorAll('[onclick="openCalendarSettings()"]').forEach(b=>b.setAttribute('title','Kalender-Einstellungen'))}fixToolbarTitles();setInterval(fixToolbarTitles,1000);
   document.addEventListener('click',function(e){const btn=e.target.closest('[title="Kalender-Einstellungen"]');if(btn){e.preventDefault();e.stopImmediatePropagation();e.stopPropagation();openCalendarSettings()}},true);
@@ -6006,7 +6006,17 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     startTab=startTab||'calendar';
     const o=readOpt();
     const STATES=window.STATE_OPTIONS||(typeof STATE_OPTIONS!=='undefined'?STATE_OPTIONS:{ALL:'Alle Bundesländer',BW:'Baden-Württemberg',BY:'Bayern','BY-AUGSBURG':'Bayern · Augsburg',BE:'Berlin',BB:'Brandenburg',HB:'Bremen',HH:'Hamburg',HE:'Hessen',MV:'Mecklenburg-Vorpommern',NI:'Niedersachsen',NW:'Nordrhein-Westfalen',RP:'Rheinland-Pfalz',SL:'Saarland',SN:'Sachsen',ST:'Sachsen-Anhalt',SH:'Schleswig-Holstein',TH:'Thüringen'});
-    const curState=(window.calendarSettings&&window.calendarSettings.state)||localStorage.getItem('change_v1_holiday_state')||'ALL';
+    const curState=(function(){
+      try{
+        const v1=localStorage.getItem('change_v1_holiday_state');
+        const raw=localStorage.getItem('holiday_state');
+        let legacy=null; try{legacy=JSON.parse(raw||'null');}catch(_){legacy=raw;}
+        const state=v1||legacy||(window.calendarSettings&&window.calendarSettings.state)||'ALL';
+        if(!window.calendarSettings)window.calendarSettings={};
+        window.calendarSettings.state=state;
+        return state;
+      }catch(e){return (window.calendarSettings&&window.calendarSettings.state)||'ALL';}
+    })();
     const stateOpts=Object.entries(STATES).map(([k,v])=>`<option value="${esc(k)}" ${k===curState?'selected':''}>${esc(v)}</option>`).join('');
 
     const calPane=`
@@ -6014,9 +6024,9 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
         <label class="flabel">Bundesland für Feiertage</label>
         <select class="finput" id="us-holiday-state">${stateOpts}</select>
       </div>
-      ${switchRow('Feiertage anzeigen','Direkt neben der Tageszahl.','us-toggle-holidays',o.showHolidays)}
-      ${switchRow('Challenge-Punkte anzeigen','Klein rechts unten im Tag.','us-toggle-dots',o.showChallengeDots)}
-      ${switchRow('Kalenderwochen anzeigen','Links unten pro Woche.','us-toggle-kw',o.showWeekNumbers)}
+      ${switchRow('Feiertage anzeigen','','us-toggle-holidays',o.showHolidays)}
+      ${switchRow('Challenge-Punkte anzeigen','','us-toggle-dots',o.showChallengeDots)}
+      ${switchRow('Kalenderwochen anzeigen','','us-toggle-kw',o.showWeekNumbers)}
       `; /* auto-save */
 
     const dashPane = (function(){
@@ -6191,7 +6201,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     const k=$('us-toggle-kw');if(k)o.showWeekNumbers=k.checked;
     saveOpt(o);
     const se=$('us-holiday-state');
-    if(se){const s=se.value||'ALL';localStorage.setItem('change_v1_holiday_state',s);localStorage.setItem('holiday_state',s);if(!window.calendarSettings)window.calendarSettings={};window.calendarSettings.state=s;}
+    if(se){const s=se.value||'ALL';localStorage.setItem('change_v1_holiday_state',s);if(typeof ls==='function')ls('holiday_state',s);else localStorage.setItem('holiday_state',JSON.stringify(s));if(!window.calendarSettings)window.calendarSettings={};window.calendarSettings.state=s;}
     if(typeof renderCalendar==='function')renderCalendar();
     if(typeof toast==='function')toast('Gespeichert ✓','ok');
   };
