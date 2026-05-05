@@ -7590,8 +7590,12 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     };
     saveLocal(rec);
     refresh();
-    window.publishCompletionToFirestore(rec);
-    try{ if(typeof toast === 'function') toast('+' + rec.points + ' Punkte ✓','ok'); }catch(e){}
+    const synced = await window.publishCompletionToFirestore(rec);
+    if(!synced){
+      try{ if(typeof toast === 'function') toast('Lokal gespeichert, aber nicht mit anderen Geräten synchronisiert. Firestore-Regeln prüfen.','err'); }catch(e){}
+      return;
+    }
+    try{ if(typeof toast === 'function') toast('+' + rec.points + ' Punkte ✓ synchronisiert','ok'); }catch(e){}
   };
 
   window.undoChallenge = async function(id){
@@ -7634,12 +7638,32 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     try{ if(typeof toast === 'function') toast('Heute zurückgesetzt',''); }catch(e){}
   };
 
+  async function loadAllRemoteCompletions(){
+    const db = await ensureDb();
+    if(!db) return false;
+    try{
+      const snap = await db.collection(COMPLETIONS).orderBy('createdAt','desc').limit(1000).get();
+      snap.forEach(doc => {
+        const row = toLocal(doc.id, doc.data() || {});
+        if(row) upsert(row);
+      });
+      sanitizeLocalCompletions();
+      refresh();
+      return true;
+    }catch(e){
+      console.warn('Challenge direct load:', e);
+      try{ if(typeof toast === 'function') toast('Punkte konnten nicht aus Firebase geladen werden. Firestore-Regeln prüfen.','err'); }catch(_e){}
+      return false;
+    }
+  }
+
   window.startGlobalChallengeSync = async function(){
     const db = await ensureDb();
     const me = account();
     if(db && me.ready) await registerPlayer(me);
     sanitizeLocalCompletions();
     if(!db) return false;
+    await loadAllRemoteCompletions();
     if(window.__changeChallengeUnsub){ try{ window.__changeChallengeUnsub(); }catch(e){} }
     window.__changeChallengeUnsub = db.collection(COMPLETIONS).orderBy('createdAt','desc').limit(1000).onSnapshot(snap => {
       snap.docChanges().forEach(change => {
@@ -7651,9 +7675,14 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       });
       sanitizeLocalCompletions();
       refresh();
-    }, err => console.warn('Challenge listener:', err));
+    }, err => {
+      console.warn('Challenge listener:', err);
+      try{ if(typeof toast === 'function') toast('Live-Punkte-Sync blockiert. Firestore-Regeln prüfen.','err'); }catch(_e){}
+    });
     return true;
   };
+
+  window.forceLoadChallengePoints = loadAllRemoteCompletions;
 
   function boot(){
     const run = () => {
