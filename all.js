@@ -1,4 +1,13 @@
 
+// HALF HOLIDAY FIX (year independent)
+window.isHalfHolidayDay = function(dateStr){
+  try{
+    const md = String(dateStr||'').slice(5,10);
+    return ['12-24','12-31'].includes(md);
+  }catch(e){return false;}
+};
+
+
 
 
 
