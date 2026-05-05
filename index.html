@@ -417,10 +417,8 @@ body{
 @media(min-width:801px){.challenge-layout .challenge-card{order:1}.challenge-layout .leader-card{order:2}}
 /* Mobile: Rangliste oben, Aufgaben darunter */
 @media(max-width:800px){.challenge-layout{grid-template-columns:1fr;padding:14px}.challenge-layout .leader-card{order:1}.challenge-layout .challenge-card{order:2}}
-/* challenges-view: flex column, bar vor layout */
+/* challenges-view layout */
 #challenges-view{display:flex;flex-direction:column}
-/* challenge-layout scrollt */
-.challenge-layout{overflow-y:auto}
 .challenge-card,.leader-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rlg);overflow:hidden;box-shadow:var(--sh)}
 .challenge-card-head,.leader-card-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--b1)}
 .challenge-title{font-size:14px;font-weight:700;color:var(--t1)}.challenge-sub{font-size:12px;color:var(--t3);margin-top:2px}
@@ -4820,37 +4818,12 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   function done(id){const a=account(),td=today();return completions().some(c=>String(c.challengeId)===String(id)&&String(c.date||'').slice(0,10)===td&&completionKey(c)===a.id)}
   function weekDates(){const d=new Date();const day=(d.getDay()+6)%7;const mon=new Date(d);mon.setDate(d.getDate()-day);return Array.from({length:7},(_,i)=>{const x=new Date(mon);x.setDate(mon.getDate()+i);return x;});}
   function pointsForDate(k){const a=account();let s=0;completions().forEach(c=>{if(String(c.date||'').slice(0,10)===k&&completionKey(c)===a.id)s+=parseInt(c.points,10)||0});return s;}
-  function renderWeekBar(){return '<div id="challenge-week-bar-clean" class="challenge-week-card"><div class="challenge-card-head"><div><div class="challenge-title">Punkte-Woche</div><div class="challenge-sub">Mo–So · erledigte Challenge-Punkte</div></div></div><div class="challenge-week-grid">'+weekDates().map(d=>{const k=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()),p=pointsForDate(k),is=k===today();return '<div class="challenge-week-day '+(is?'today is-today':'')+' '+(p?'has-points':'empty')+'"><div class="cwd-name challenge-week-day-name">'+['Mo','Di','Mi','Do','Fr','Sa','So'][(d.getDay()+6)%7]+'</div><div class="cwd-date challenge-week-day-date">'+d.getDate()+'.</div><div class="cwd-points challenge-week-day-points">'+(p?p+' P':'–')+'</div></div>'}).join('')+'</div></div>';}
+  // renderWeekBar: change-pre.js übernimmt dies
   function ensureWeekBar(){
-    var view=$('challenges-view'); if(!view) return;
-    var bar=$('challenge-week-bar-clean');
-    // Sicherstellen: Bar ist direktes Kind von challenges-view UND steht vor .challenge-layout
-    var layout=view.querySelector('.challenge-layout');
-    if(!bar){
-      bar=document.createElement('div');
-      bar.id='challenge-week-bar-clean';
-    } else if(bar.parentElement!==view || (layout && bar.compareDocumentPosition(layout)&Node.DOCUMENT_POSITION_PRECEDING)){
-      // Bar existiert aber ist am falschen Ort → herauslösen und neu positionieren
-      bar.parentElement && bar.parentElement.removeChild(bar);
-    }
-    // Bar vor .challenge-layout einfügen (oder als zweites Kind nach list-header)
-    if(!bar.parentElement){
-      var header=view.querySelector('.list-header');
-      if(layout) view.insertBefore(bar, layout);
-      else if(header && header.nextSibling) view.insertBefore(bar, header.nextSibling);
-      else view.appendChild(bar);
-    }
-    // Inhalt aktualisieren (innerHTML statt outerHTML → Element bleibt an Ort und Stelle)
-    bar.className='challenge-week-card';
-    bar.innerHTML=renderWeekBar().replace(/^<div[^>]*>/,'').replace(/<\/div>$/,'');
+    // change-pre.js übernimmt dies - keine eigene Implementierung nötig
   }
-  // Statischen Container oben befüllen – das ist der echte angezeigte Bar
-  function updateStaticWeekBar(){
-    // punkte-kalender-top nicht mehr genutzt
-    return;
-  }
-  window.ensureWeekBar = ensureWeekBar;
-  window.renderWeekBar  = renderWeekBar;
+
+  // ensureWeekBar/renderWeekBar: change-pre.js owns these, wir überschreiben sie NICHT
   window.getVisibleContestPlayers=canonicalPlayers;
   window.getCurrentPlayerId=()=>account().id;
   window.getPlayerPointSummary=id=>stats(id||account().id);
@@ -5386,11 +5359,8 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     // Ensure today's auto challenges are generated
     try{ if(typeof window.ensureDailyAutoChallenges==='function') window.ensureDailyAutoChallenges(todayStr()); }catch(e){}
 
-    // Remove old Punkte-Woche bar, insert/fill Punkte-Kalender
+    // Punkte-Kalender aktualisieren (change-pre.js übernimmt Positionierung)
     try{
-      const _old=document.getElementById('challenge-week-bar-clean');
-      if(_old) _old.remove();
-      if(typeof window.ensureWeekBar==='function') window.ensureWeekBar();
       if(typeof window.renderWeekBar==='function') window.renderWeekBar();
     }catch(e){}
 
