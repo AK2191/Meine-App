@@ -7051,5 +7051,105 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 })();
 </script>
 
+<script id="change-final-local-event-delete-google-sync-visible">
+(function(){
+  'use strict';
+  function $(id){return document.getElementById(id);}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function todayKey(){var d=new Date();return d.toISOString().slice(0,10);}
+  function dateKey(v){try{if(typeof D==='function')return D(v); if(v instanceof Date)return v.toISOString().slice(0,10); return String(v||'').slice(0,10)||todayKey();}catch(e){return todayKey();}}
+  function addDays(k,n){var d=new Date(String(k)+'T12:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+  function uidSafe(){try{return typeof uid==='function'?uid():Math.random().toString(36).slice(2)+Date.now().toString(36);}catch(e){return Math.random().toString(36).slice(2)+Date.now().toString(36);}}
+  function getToken(){try{if(typeof accessToken!=='undefined'&&accessToken)return accessToken;}catch(e){} return window.accessToken||'';}
+  function demo(){try{return !!isDemoMode;}catch(e){return !!window.isDemoMode;}}
+  function hasGoogle(){var t=getToken();return !!(t&&t!=='firebase-auth'&&!demo());}
+  function allLocalEvents(){var arr=[];try{arr=Array.isArray(window.events)?window.events:(Array.isArray(events)?events:[]);}catch(e){arr=Array.isArray(window.events)?window.events:[]}return arr;}
+  function persistEvents(arr){try{window.events=arr;events=arr;}catch(e){window.events=arr;}try{if(typeof ls==='function')ls('events',arr);else localStorage.setItem('change_v1_events',JSON.stringify(arr));}catch(e){try{localStorage.setItem('change_v1_events',JSON.stringify(arr));}catch(_){}}}
+  function refresh(){try{if(typeof renderCalendar==='function')renderCalendar();}catch(e){}try{if(typeof renderUpcoming==='function')renderUpcoming();}catch(e){}try{if(typeof buildDashboard==='function')buildDashboard();}catch(e){}try{if(typeof checkNotifications==='function')checkNotifications();}catch(e){}try{if(typeof saveToDrive==='function')saveToDrive();}catch(e){}}
+  function findEvent(id){try{if(typeof getEventById==='function')return getEventById(id);}catch(e){}return allLocalEvents().find(function(e){return String(e.id)===String(id);});}
+  function range(ev){var s=ev&&String(ev.startDate||ev.date||'').slice(0,10), e=ev&&String(ev.endDate||ev.date||s||'').slice(0,10); if(!s)s=todayKey(); if(!e||e<s)e=s; return {start:s,end:e};}
+  function addOneHour(time){var parts=String(time||'09:00').split(':');var h=(parseInt(parts[0],10)||9)+1,m=parseInt(parts[1],10)||0;if(h>23)h=23;return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');}
+
+  window.syncEventToGoogleReliable = async function(ev){
+    var token=getToken();
+    if(!token||token==='firebase-auth'||demo()){try{toast('Google-Kalenderzugriff fehlt. Bitte mit Google-Kalenderzugriff anmelden.','err');}catch(e){}return false;}
+    if(!ev||ev.source==='google')return false;
+    var r=range(ev), tz=(Intl.DateTimeFormat().resolvedOptions().timeZone||'Europe/Berlin');
+    var timed=!!ev.time;
+    var body={summary:ev.title||'Termin',description:ev.desc||''};
+    if(timed){
+      body.start={dateTime:r.start+'T'+ev.time+':00',timeZone:tz};
+      body.end={dateTime:r.end+'T'+(ev.endTime||addOneHour(ev.time))+':00',timeZone:tz};
+    }else{
+      body.start={date:r.start};
+      body.end={date:addDays(r.end,1)};
+    }
+    try{
+      var url='https://www.googleapis.com/calendar/v3/calendars/primary/events'+(ev.googleEventId?'/'+encodeURIComponent(ev.googleEventId):'');
+      var res=await fetch(url,{method:ev.googleEventId?'PATCH':'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if(res.status===401){try{if(typeof lsDel==='function')lsDel('access_token');}catch(e){}try{accessToken='';window.accessToken='';}catch(e){}try{toast('Google-Anmeldung abgelaufen. Bitte neu anmelden.','err');}catch(e){}return false;}
+      if(!res.ok){var txt=await res.text().catch(function(){return String(res.status);});throw new Error('Google Kalender '+res.status+' '+txt.slice(0,120));}
+      var saved=await res.json();
+      var arr=allLocalEvents(), i=arr.findIndex(function(x){return String(x.id)===String(ev.id);});
+      if(i>=0){arr[i].googleEventId=saved.id;arr[i].googleSyncedAt=new Date().toISOString();arr[i].googleSyncRequested=true;arr[i].syncedToGoogle=true;persistEvents(arr);}
+      try{if(typeof loadGoogleEvents==='function')loadGoogleEvents();}catch(e){}
+      refresh();
+      try{toast('Mit Google Kalender synchronisiert ✓','ok');}catch(e){}
+      return true;
+    }catch(err){console.warn('Google Sync Termin:',err);try{toast('Google-Sync fehlgeschlagen: '+(err.message||err),'err');}catch(e){}return false;}
+  };
+
+  window.deleteEvent=function(id){
+    var ev=allLocalEvents().find(function(e){return String(e.id)===String(id);});
+    if(!ev||ev.source==='google'){try{toast('Nur selbst erstellte lokale Termine können gelöscht werden.','err');}catch(e){}return;}
+    var msg=ev.googleEventId?'Diesen lokalen Termin löschen? Die Google-Kopie bleibt bestehen.':'Diesen lokalen Termin löschen?';
+    if(!confirm(msg))return;
+    persistEvents(allLocalEvents().filter(function(e){return String(e.id)!==String(id);}));
+    try{if(typeof closePanel==='function')closePanel();}catch(e){}
+    refresh();
+    try{toast('Termin gelöscht ✓','ok');}catch(e){}
+  };
+
+  window.openEventPanel=function(id,pre){
+    var ev=id?findEvent(id):null;
+    if(ev&&ev.source==='google'){
+      var gr=range(ev), txt=gr.start===gr.end?gr.start:(gr.start+' – '+gr.end);
+      try{if(typeof fmtDate==='function')txt=gr.start===gr.end?fmtDate(gr.start):(fmtDate(gr.start)+' – '+fmtDate(gr.end));}catch(e){}
+      openPanel(ev.title||'Google-Termin','<div class="google-detail"><span class="gmark big">G</span><div><div class="challenge-title">Von Google Kalender</div><div class="settings-hint">'+esc(txt)+'</div></div></div><button class="btn btn-ghost btn-full" onclick="closePanel()">Schließen</button>');
+      return;
+    }
+    var dv=ev?(ev.startDate||ev.date):dateKey(pre||new Date()), ed=ev?(ev.endDate||ev.date||dv):dv;
+    var syncOn=!!(ev&&(ev.googleSyncRequested||ev.googleEventId||ev.syncedToGoogle));
+    var googleState=hasGoogle()?'':'<div class="settings-hint" style="margin-top:6px">Google-Kalenderzugriff ist aktuell nicht aktiv. Der Schalter wird beim Speichern geprüft.</div>';
+    var html=''
+      +'<div class="fg"><label class="flabel">Titel *</label><input class="finput" id="ev-title" value="'+esc(ev&&ev.title||'')+'"></div>'
+      +'<div class="fr"><div class="fg"><label class="flabel">Von-Datum *</label><input type="date" class="finput" id="ev-date" value="'+esc(dv)+'"></div><div class="fg"><label class="flabel">Bis-Datum</label><input type="date" class="finput" id="ev-end-date" value="'+esc(ed)+'"></div></div>'
+      +'<div class="fr"><div class="fg"><label class="flabel">Von Uhrzeit</label><input type="time" class="finput" id="ev-time" value="'+esc(ev&&ev.time||'')+'"></div><div class="fg"><label class="flabel">Bis Uhrzeit</label><input type="time" class="finput" id="ev-end" value="'+esc(ev&&ev.endTime||'')+'"></div></div>'
+      +'<div class="fg"><label class="flabel">Farbe</label><select class="finput" id="ev-color">'+[['blue','Blau'],['green','Grün'],['amber','Gelb'],['red','Rot'],['purple','Lila']].map(function(x){return '<option value="'+x[0]+'" '+(((ev&&ev.color)||'blue')===x[0]?'selected':'')+'>'+x[1]+'</option>';}).join('')+'</select></div>'
+      +'<div class="fg"><label class="flabel">Beschreibung</label><textarea class="finput" id="ev-desc" rows="4">'+esc(ev&&ev.desc||'')+'</textarea></div>'
+      +'<div class="toggle-row" style="margin:8px 0 12px"><div class="toggle-copy"><div class="toggle-title">Mit Google Kalender synchronisieren</div><div class="settings-hint">Nur für diesen selbst erstellten Termin.</div></div><label class="switch"><input type="checkbox" id="ev-google-sync" '+(syncOn?'checked':'')+'><span class="slider"></span></label></div>'+googleState
+      +'<div class="fa"><button class="btn btn-primary" style="flex:1" onclick="saveEvent(\''+esc(ev&&ev.id||'')+'\')">Speichern</button>'+(ev?'<button class="btn btn-danger" onclick="deleteEvent(\''+esc(ev.id)+'\')">Löschen</button>':'')+'</div>';
+    openPanel(ev?'Termin bearbeiten':'Neuer Termin',html);
+  };
+
+  window.saveEvent=function(id){
+    var title=($('ev-title')&&$('ev-title').value||'').trim(), date=$('ev-date')&&$('ev-date').value, end=($('ev-end-date')&&$('ev-end-date').value)||date;
+    if(!title||!date){try{toast('Titel und Von-Datum fehlen','err');}catch(e){}return;}
+    if(end<date)end=date;
+    var arr=allLocalEvents(), old=id?arr.find(function(e){return String(e.id)===String(id);}):null, syncWanted=!!($('ev-google-sync')&&$('ev-google-sync').checked);
+    var ev=Object.assign({},old||{}, {id:old?old.id:'ev_'+uidSafe(),title:title,date:date,startDate:date,endDate:end,time:($('ev-time')&&$('ev-time').value)||'',endTime:($('ev-end')&&$('ev-end').value)||'',color:($('ev-color')&&$('ev-color').value)||'blue',type:(old&&old.type)||'meeting',desc:(($('ev-desc')&&$('ev-desc').value)||'').trim(),source:'local',googleEventId:(old&&old.googleEventId)||'',googleSyncRequested:syncWanted,createdAt:(old&&old.createdAt)||new Date().toISOString(),updatedAt:new Date().toISOString()});
+    var i=arr.findIndex(function(e){return String(e.id)===String(ev.id);}); if(i>=0)arr[i]=ev;else arr.push(ev); persistEvents(arr);
+    try{if(typeof closePanel==='function')closePanel();}catch(e){}
+    refresh();
+    try{toast(old?'Termin aktualisiert ✓':'Termin gespeichert ✓','ok');}catch(e){}
+    if(syncWanted){
+      if(hasGoogle()) setTimeout(function(){window.syncEventToGoogleReliable(ev);},150);
+      else try{toast('Google-Sync nicht möglich: Bitte mit Google-Kalenderzugriff anmelden.','err');}catch(e){}
+    }
+    return ev;
+  };
+})();
+</script>
+
 </body>
 </html>
