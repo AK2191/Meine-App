@@ -75,7 +75,7 @@ const uid = () => Math.random().toString(36).substring(2,10)+Date.now().toString
 window.addEventListener('load', async () => {
   await new Promise(r => setTimeout(r,700));
 
-  CLIENT_ID = ls('client_id') || '';
+  CLIENT_ID = (ls('client_id') || '').replace(/^https?:\/\//,'');
   accessToken = ls('access_token') || '';
   userInfo = ls('user_info') || {};
   events = ls('events') || [];
@@ -186,7 +186,7 @@ function handleGoogleLogin(){
   if(!window.google){toast('Google-Bibliothek wird geladen…','');return;}
   try{
     const tc=google.accounts.oauth2.initTokenClient({
-      client_id:CLIENT_ID,
+      client_id:(CLIENT_ID||'').replace(/^https?:\/\//,''),
       scope:GCAL_SCOPE,
       callback: async resp => {
         if(resp.error){toast('Anmeldung fehlgeschlagen: '+resp.error,'err');return;}
