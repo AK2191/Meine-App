@@ -119,7 +119,7 @@
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,200));
   else setTimeout(init,200);
-  window.addEventListener('load',()=>setTimeout(init,900));
+  window.addEventListener('load',()=>setTimeout(init,120));
 })();
 
 /* ── 2. change-google-calendar-final-fix.js ────────────── */
@@ -349,7 +349,7 @@
   const oldRenderCalendarC=window.renderCalendar;
   window.renderCalendar=function(){if(typeof oldRenderCalendarC==='function')oldRenderCalendarC.apply(this,arguments);setTimeout(polishDom,0);};
   document.addEventListener('DOMContentLoaded',()=>{injectCss();setTimeout(()=>{try{refreshViews();polishDom();}catch(e){}},500);});
-  window.addEventListener('load',()=>{injectCss();setTimeout(()=>{try{refreshViews();polishDom();}catch(e){}},900);});
+  window.addEventListener('load',()=>{injectCss();setTimeout(()=>{try{refreshViews();polishDom();}catch(e){}},120);});
   if(document.body)new MutationObserver(()=>polishDom()).observe(document.body,{childList:true,subtree:true});
 })();
 
@@ -517,11 +517,17 @@
   function gTime(ge){const dt=ge&&ge.start&&ge.start.dateTime;if(!dt)return '';try{return new Date(dt).toTimeString().slice(0,5);}catch(e){return '';}}
 
   window.getAllEvents=function(){
-    const out=[],seen=new Set();
-    function add(ev){if(!ev||!ev.date)return;const key=ev.googleEventId?'g:'+ev.googleEventId:'l:'+ev.id;if(seen.has(key))return;seen.add(key);out.push(ev);}
-    (Array.isArray(window.events)?window.events:[]).forEach(add);
-    (Array.isArray(window.gEvents)?window.gEvents:[]).forEach(ge=>{if(!ge)return;const date=gDate(ge);if(!date)return;const id=String(ge.id||'');add({id:id.startsWith('g_')?id:'g_'+id,googleEventId:id,title:ge.summary||'(Kein Titel)',date,time:gTime(ge),endTime:'',color:'blue',type:'meeting',desc:ge.description||'',allDay:!!(ge.start&&ge.start.date),source:'google',notifDaysBefore:1});});
-    return out;
+    const locals=[],googles=[];
+    const rangeOf=ev=>{let s=String(ev&&((ev.startDate)||(ev.date)||(ev.start&&ev.start.date)||((ev.start&&ev.start.dateTime)||'').slice(0,10))||'').slice(0,10);let e=String(ev&&((ev.endDate)||(ev.date)||'')||s).slice(0,10);if(ev&&ev.end&&ev.end.date){const d=new Date(String(ev.end.date).slice(0,10)+'T12:00:00');d.setDate(d.getDate()-1);e=d.toISOString().slice(0,10);}else if(ev&&ev.end&&ev.end.dateTime)e=String(ev.end.dateTime).slice(0,10);if(!e||e<s)e=s;return{start:s,end:e};};
+    const title=ev=>String((ev&&(ev.title||ev.summary||ev.name))||'Termin').trim().toLowerCase();
+    const time=ev=>String((ev&&(ev.time||(ev.start&&ev.start.dateTime?new Date(ev.start.dateTime).toTimeString().slice(0,5):'')))||'');
+    (Array.isArray(window.events)?window.events:[]).forEach(ev=>{if(!ev)return;const r=rangeOf(ev);if(!r.start)return;locals.push(Object.assign({},ev,{date:r.start,startDate:r.start,endDate:r.end,source:ev.source||'local'}));});
+    (Array.isArray(window.gEvents)?window.gEvents:[]).forEach(ge=>{if(!ge)return;const r=rangeOf(ge);if(!r.start)return;const id=String(ge.id||'');googles.push({id:id.startsWith('g_')?id:'g_'+id,googleEventId:id,title:ge.summary||'(Kein Titel)',date:r.start,startDate:r.start,endDate:r.end,time:gTime(ge),endTime:'',color:'blue',type:'meeting',desc:ge.description||'',allDay:!!(ge.start&&ge.start.date),source:'google',notifDaysBefore:1});});
+    const byGoogle=new Map(), bySoft=new Map(), byDay=new Map();
+    locals.forEach(ev=>{const r=rangeOf(ev);if(ev.googleEventId)byGoogle.set(String(ev.googleEventId),ev);const soft=title(ev)+'|'+r.start+'|'+r.end+'|'+time(ev);if(!bySoft.has(soft))bySoft.set(soft,ev);const day=title(ev)+'|'+r.start;if(!byDay.has(day))byDay.set(day,ev);});
+    const out=locals.slice();
+    googles.forEach(ge=>{const r=rangeOf(ge), soft=title(ge)+'|'+r.start+'|'+r.end+'|'+time(ge), day=title(ge)+'|'+r.start;const local=byGoogle.get(String(ge.googleEventId))||bySoft.get(soft)||byDay.get(day);if(local){if(ge.googleEventId&&!local.googleEventId){local.googleEventId=ge.googleEventId;local.googleSyncRequested=true;local.syncedToGoogle=true;}return;}out.push(ge);});
+    const seen=new Set();return out.filter(ev=>{const r=rangeOf(ev);const k=(ev.googleEventId?'g:'+ev.googleEventId:'l:'+(ev.id||title(ev)+'|'+r.start+'|'+r.end));if(seen.has(k))return false;seen.add(k);return true;});
   };
   window.getEventById=id=>{const all=window.getAllEvents();return all.find(e=>e.id===id)||all.find(e=>e.googleEventId===id)||null;};
 
@@ -619,7 +625,7 @@
   window.openCalendarSettings=function(){const has=!!(window.accessToken&&window.accessToken!=='firebase-auth'&&!window.isDemoMode);const html='<div class="settings-section"><div class="settings-row"><div><div class="settings-title">Google Kalender</div><div class="settings-hint">Termine zentral mit Google synchronisieren.</div></div><label class="switch"><input id="google-sync-toggle" type="checkbox" '+(has?'checked':'')+'><span></span></label></div><button class="btn btn-secondary btn-full" id="google-sync-now" style="margin-top:12px">Jetzt synchronisieren</button></div>';if(typeof openPanel==='function')openPanel('Kalendereinstellungen',html);setTimeout(()=>{const sync=()=>{if(typeof window.loadGoogleEvents==='function')window.loadGoogleEvents()};const b=$('google-sync-now');if(b)b.onclick=sync;const t=$('google-sync-toggle');if(t)t.onchange=()=>{if(t.checked)sync()}},0)};
   function centralizeGoogleSync(){document.querySelectorAll('button,a').forEach(el=>{const txt=(el.textContent||'').toLowerCase();if(txt.includes('google')&&txt.includes('sync')&&!el.closest('#side-panel'))el.classList.add('google-sync-duplicate')})}
   function init(){injectCss();patchDashboard();centralizeGoogleSync();compactDashboard();scrubText()}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,250));else setTimeout(init,250);window.addEventListener('load',()=>setTimeout(init,900));setInterval(()=>{centralizeGoogleSync();scrubText()},1200);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,120));else setTimeout(init,120);window.addEventListener('load',()=>setTimeout(init,120));setInterval(()=>{centralizeGoogleSync();scrubText()},2000);
 })();
 
 /* ── 6. continuous multi-day calendar bars ───────────────── */
@@ -1505,7 +1511,7 @@
     window.buildDashCards();
   };
   function run(){ try{ if(!$('change-clean-dashboard-style')) injectStyle(); window.buildDashboard(); }catch(e){ console.warn('clean dashboard fix failed', e); } }
-  setTimeout(run,50); setTimeout(run,400); setTimeout(run,1200);
+  setTimeout(run,80);
 })();
 
 /* ── final fix: day detail includes multi-day range events ── */
@@ -1565,8 +1571,10 @@
     if(Array.isArray(extra)) list.push(...extra);
     const byId=new Map();
     list.filter(ev=>{const s=startOf(ev),e=endOf(ev);return s&&e&&s<=k&&e>=k;}).forEach(ev=>{
-      const id=ev.googleEventId?'g:'+ev.googleEventId:(ev.id?'l:'+ev.id:titleOf(ev)+'|'+startOf(ev)+'|'+endOf(ev));
-      if(!byId.has(id)) byId.set(id,ev);
+      const local=ev.source!=='google';
+      const id=ev.googleEventId?'g:'+ev.googleEventId:(titleOf(ev).toLowerCase()+'|'+startOf(ev)+'|'+endOf(ev)+'|'+(ev.time||''));
+      const prev=byId.get(id);
+      if(!prev || (local && prev.source==='google')) byId.set(id,ev);
     });
     return Array.from(byId.values()).sort((a,b)=>{
       const ar=isRange(a), br=isRange(b); if(ar!==br) return ar?-1:1;
@@ -1603,7 +1611,18 @@
   function hasGoogle(){var t=getToken();return !!(t&&t!=='firebase-auth'&&!demo());}
   function allLocalEvents(){var arr=[];try{arr=Array.isArray(window.events)?window.events:(Array.isArray(events)?events:[]);}catch(e){arr=Array.isArray(window.events)?window.events:[]}return arr;}
   function persistEvents(arr){try{window.events=arr;events=arr;}catch(e){window.events=arr;}try{if(typeof ls==='function')ls('events',arr);else localStorage.setItem('change_v1_events',JSON.stringify(arr));}catch(e){try{localStorage.setItem('change_v1_events',JSON.stringify(arr));}catch(_){}}}
-  function refresh(){try{if(typeof renderCalendar==='function')renderCalendar();}catch(e){}try{if(typeof renderUpcoming==='function')renderUpcoming();}catch(e){}try{if(typeof buildDashboard==='function')buildDashboard();}catch(e){}try{if(typeof checkNotifications==='function')checkNotifications();}catch(e){}try{if(typeof saveToDrive==='function')saveToDrive();}catch(e){}}
+  var refreshTimer=0;
+  function refresh(){
+    if(refreshTimer)return;
+    refreshTimer=setTimeout(function(){
+      refreshTimer=0;
+      try{if(typeof renderCalendar==='function'&&(window.currentMainView||'dashboard')==='calendar')renderCalendar();}catch(e){}
+      try{if(typeof renderUpcoming==='function'&&(window.currentMainView||'dashboard')==='calendar')renderUpcoming();}catch(e){}
+      try{if(typeof buildDashboard==='function'&&(window.currentMainView||'dashboard')==='dashboard')buildDashboard();}catch(e){}
+      try{if(typeof checkNotifications==='function')checkNotifications();}catch(e){}
+      try{if(typeof saveToDrive==='function')saveToDrive();}catch(e){}
+    },30);
+  }
   function findEvent(id){try{if(typeof getEventById==='function')return getEventById(id);}catch(e){}return allLocalEvents().find(function(e){return String(e.id)===String(id);});}
   function range(ev){var s=ev&&String(ev.startDate||ev.date||'').slice(0,10), e=ev&&String(ev.endDate||ev.date||s||'').slice(0,10); if(!s)s=todayKey(); if(!e||e<s)e=s; return {start:s,end:e};}
   function addOneHour(time){var parts=String(time||'09:00').split(':');var h=(parseInt(parts[0],10)||9)+1,m=parseInt(parts[1],10)||0;if(h>23)h=23;return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');}

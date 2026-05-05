@@ -73,7 +73,7 @@ const uid = () => Math.random().toString(36).substring(2,10)+Date.now().toString
    INIT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 window.addEventListener('load', async () => {
-  await new Promise(r => setTimeout(r,700));
+  await new Promise(r => setTimeout(r,80));
 
   CLIENT_ID = ls('client_id') || '';
   accessToken = ls('access_token') || '';
@@ -2974,7 +2974,7 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
     window.buildDashCards();
   };
   function run(){ try{ if(!$('change-clean-dashboard-style')) injectStyle(); window.buildDashboard(); }catch(e){ console.warn('clean dashboard fix failed', e); } }
-  setTimeout(run,50); setTimeout(run,400); setTimeout(run,1200);
+  setTimeout(run,80);
 })();
 
 
@@ -3532,7 +3532,7 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
 
   function init(){css();allPlayers();try{if(window.currentMainView==='challenges')renderChallenges(); if(window.currentMainView==='dashboard')buildDashboard(); if(window.currentMainView==='calendar')renderCalendar();}catch(e){}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,100));else setTimeout(init,100);
-  window.addEventListener('load',()=>{setTimeout(init,300);setTimeout(init,1500);});
+  window.addEventListener('load',()=>{setTimeout(init,120);});
 })();
 
 
@@ -3945,27 +3945,108 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     return '';
   }
 
-  /* ── ALLE EVENTS (dedupliziert, mit startDate/endDate) ── */
+  /* ── ALLE EVENTS (dedupliziert, mit startDate/endDate) ──
+     Wichtig: Lokale Termine, die mit Google synchronisiert wurden, werden NICHT
+     zusätzlich als Google-Termin angezeigt. Die lokale Zeile bleibt führend und
+     bekommt nur die Marker ✓ + G. */
   function allEvents() {
-    const out = [], seen = new Set();
-    function add(ev, src) {
-      const r = getRange(ev); if (!r.start) return;
+    const normalized = [];
+
+    function normalize(ev, src) {
+      const r = getRange(ev); if (!r.start) return null;
       const rawId = String(ev.id || ev.googleEventId || '');
-      const googleId = ev.googleEventId || (src === 'google' ? rawId.replace(/^g_/, '') : '');
+      const googleId = String(ev.googleEventId || (src === 'google' ? rawId.replace(/^g_/, '') : '') || '').trim();
       const titleKey = String(getTitle(ev) || '').trim().toLowerCase();
       const timeKey = ev.time || (ev.start?.dateTime ? new Date(ev.start.dateTime).toTimeString().slice(0,5) : '');
-      const key = googleId ? ('g:' + googleId) : ('l:' + (ev.id || (titleKey + '|' + r.start + '|' + r.end + '|' + timeKey)));
-      if (seen.has(key)) return; seen.add(key);
+      const endTimeKey = ev.endTime || (ev.end?.dateTime ? new Date(ev.end.dateTime).toTimeString().slice(0,5) : '');
       const id = src === 'google' ? (rawId.startsWith('g_') ? rawId : 'g_' + rawId) : ev.id;
-      out.push(Object.assign({}, ev, { id, googleEventId: googleId || ev.googleEventId || '', date: r.start, startDate: r.start, endDate: r.end, source: src,
-        time: ev.time || (ev.start?.dateTime ? new Date(ev.start.dateTime).toTimeString().slice(0,5) : '') }));
+      return Object.assign({}, ev, {
+        id,
+        googleEventId: googleId || ev.googleEventId || '',
+        date: r.start,
+        startDate: r.start,
+        endDate: r.end,
+        source: src,
+        time: timeKey,
+        endTime: endTimeKey,
+        __titleKey: titleKey,
+        __matchKey: titleKey + '|' + r.start + '|' + r.end + '|' + timeKey + '|' + endTimeKey
+      });
     }
-    try { (window.events || []).forEach(ev => add(ev, ev.source || 'local')); } catch (e) {}
+
+    try { (window.events || []).forEach(ev => { const n = normalize(ev, ev.source || 'local'); if (n) normalized.push(n); }); } catch (e) {}
     try {
-      if (window.googleCalendarSyncEnabled !== false && localStorage.getItem('change_v1_google_calendar_sync') !== 'false')
-        (window.gEvents || []).forEach(ge => add(ge, 'google'));
+      if (window.googleCalendarSyncEnabled !== false && localStorage.getItem('change_v1_google_calendar_sync') !== 'false') {
+        (window.gEvents || []).forEach(ge => { const n = normalize(ge, 'google'); if (n) normalized.push(n); });
+      }
     } catch (e) {}
-    return out.sort((a, b) => a.startDate.localeCompare(b.startDate) || daysFrom(b.startDate, b.endDate) - daysFrom(a.startDate, a.endDate));
+
+    const localByGoogleId = new Map();
+    const localByExact = new Map();
+    const localBySoft = new Map();
+    const localByDayTitle = new Map();
+    const localKey = ev => ({
+      exact: ev.__matchKey,
+      soft: ev.__titleKey + '|' + ev.startDate + '|' + ev.endDate + '|' + (ev.time || ''),
+      dayTitle: ev.__titleKey + '|' + ev.startDate
+    });
+    normalized.filter(ev => ev.source !== 'google').forEach(ev => {
+      if (ev.googleEventId) localByGoogleId.set(String(ev.googleEventId), ev);
+      const k = localKey(ev);
+      localByExact.set(k.exact, ev);
+      if (!localBySoft.has(k.soft)) localBySoft.set(k.soft, ev);
+      if (!localByDayTitle.has(k.dayTitle)) localByDayTitle.set(k.dayTitle, ev);
+    });
+
+    let changed = false;
+    const out = [];
+    const used = new Set();
+
+    // Erst lokale Termine übernehmen. Bei synchronisierten lokalen Terminen bleibt
+    // die lokale Identität erhalten, damit Bearbeiten/Löschen weiterhin korrekt ist.
+    normalized.filter(ev => ev.source !== 'google').forEach(ev => {
+      const key = ev.googleEventId ? 'g:' + ev.googleEventId : 'l:' + (ev.id || ev.__matchKey);
+      if (used.has(key)) return;
+      used.add(key);
+      out.push(ev);
+    });
+
+    function attachGoogleId(local, googleId) {
+      if (!local || !googleId || local.googleEventId === googleId) return;
+      local.googleEventId = googleId;
+      local.syncedToGoogle = true;
+      local.googleSyncRequested = true;
+      local.googleSyncedAt = local.googleSyncedAt || new Date().toISOString();
+      try {
+        const arr = window.events || [];
+        const idx = arr.findIndex(e => String(e.id) === String(local.id));
+        if (idx >= 0) {
+          arr[idx].googleEventId = googleId;
+          arr[idx].syncedToGoogle = true;
+          arr[idx].googleSyncRequested = true;
+          arr[idx].googleSyncedAt = local.googleSyncedAt;
+          if (typeof ls === 'function') ls('events', arr); else localStorage.setItem('change_v1_events', JSON.stringify(arr));
+          changed = true;
+        }
+      } catch(e) {}
+    }
+
+    // Dann Google-Termine ergänzen. Wenn Google denselben selbst erstellten Termin
+    // zurückliefert, bleibt es eine lokale Zeile mit ✓ + G statt zwei Zeilen.
+    normalized.filter(ev => ev.source === 'google').forEach(gev => {
+      const k = localKey(gev);
+      let local = gev.googleEventId ? localByGoogleId.get(String(gev.googleEventId)) : null;
+      if (!local) local = localByExact.get(k.exact) || localBySoft.get(k.soft) || localByDayTitle.get(k.dayTitle) || null;
+      if (local) { attachGoogleId(local, gev.googleEventId); return; }
+      const key = gev.googleEventId ? 'g:' + gev.googleEventId : 'google:' + (gev.id || gev.__matchKey);
+      if (used.has(key)) return;
+      used.add(key);
+      out.push(gev);
+    });
+
+    if (changed) { try { if (typeof persistChangeState === 'function') persistChangeState(); } catch(e) {} }
+    return out.map(ev => { const x = Object.assign({}, ev); delete x.__titleKey; delete x.__matchKey; return x; })
+      .sort((a, b) => a.startDate.localeCompare(b.startDate) || daysFrom(b.startDate, b.endDate) - daysFrom(a.startDate, a.endDate));
   }
 
   window.getAllEvents = allEvents;
@@ -4314,7 +4395,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     const byG=new Map(), other=[];
     candidates.forEach(e=>{const r=rangeOf(e); if(!r.start) return; const gid=e.googleEventId||(String(e.id||'').startsWith('g_')?String(e.id).slice(2):''); if(gid){const k='g:'+gid, p=byG.get(k); if(!p || r.end<rangeOf(p).end) byG.set(k,e);} else other.push(e);});
     const semantic=new Map();
-    [...byG.values(),...other].forEach(e=>{const r=rangeOf(e); if(!r.start) return; const sig=titleOf(e).toLowerCase()+'|'+r.start+'|'+(timeOf(e)||'')+'|'+(e.source==='google'||e.googleEventId?'google':'local'); const p=semantic.get(sig); if(!p || r.end<rangeOf(p).end) semantic.set(sig,e);});
+    [...byG.values(),...other].forEach(e=>{const r=rangeOf(e); if(!r.start) return; const sig=titleOf(e).toLowerCase()+'|'+r.start+'|'+r.end+'|'+(timeOf(e)||''); const p=semantic.get(sig); const eLocal=e.source!=='google', pLocal=p&&p.source!=='google'; if(!p || (eLocal&&!pLocal) || (eLocal===pLocal && r.end<rangeOf(p).end)) semantic.set(sig,e);});
     return [...semantic.values()];
   }
   function eventsForDay(k,pre){return allPanelEvents(pre).filter(e=>{const r=rangeOf(e);return r.start<=k&&r.end>=k;}).sort((a,b)=>{const ar=rangeOf(a),br=rangeOf(b);if(ar.isRange!==br.isRange)return ar.isRange?-1:1;return (timeOf(a)||'99:99').localeCompare(timeOf(b)||'99:99')||titleOf(a).localeCompare(titleOf(b));});}
@@ -4419,7 +4500,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   const oldSet=window.setMainView;window.setMainView=function(v){if(typeof oldSet==='function')oldSet(v);document.body.classList.toggle('calendar-active',v==='calendar');const cc=$('cal-controls');if(cc)cc.style.display=v==='calendar'?'flex':'none';setTimeout(()=>{if(v==='challenges')window.renderChallenges();if(v==='dashboard')window.buildDashboard();},0)};
   function init(){installStyle();canonicalPlayers();completions();try{if((window.currentMainView||'dashboard')==='challenges')window.renderChallenges();if((window.currentMainView||'dashboard')==='dashboard')window.buildDashboard();if((window.currentMainView||'')==='calendar')window.renderCalendar&&window.renderCalendar()}catch(e){console.warn('step7 init',e)}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,100));else setTimeout(init,100);
-  window.addEventListener('load',()=>{[300,1200,2600,5200].forEach(ms=>setTimeout(init,ms));});
+  window.addEventListener('load',()=>{setTimeout(init,120);});
 })();
 
 
@@ -4530,7 +4611,18 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   function hasGoogle(){var t=getToken();return !!(t&&t!=='firebase-auth'&&!demo());}
   function allLocalEvents(){var arr=[];try{arr=Array.isArray(window.events)?window.events:(Array.isArray(events)?events:[]);}catch(e){arr=Array.isArray(window.events)?window.events:[]}return arr;}
   function persistEvents(arr){try{window.events=arr;events=arr;}catch(e){window.events=arr;}try{if(typeof ls==='function')ls('events',arr);else localStorage.setItem('change_v1_events',JSON.stringify(arr));}catch(e){try{localStorage.setItem('change_v1_events',JSON.stringify(arr));}catch(_){}}}
-  function refresh(){try{if(typeof renderCalendar==='function')renderCalendar();}catch(e){}try{if(typeof renderUpcoming==='function')renderUpcoming();}catch(e){}try{if(typeof buildDashboard==='function')buildDashboard();}catch(e){}try{if(typeof checkNotifications==='function')checkNotifications();}catch(e){}try{if(typeof saveToDrive==='function')saveToDrive();}catch(e){}}
+  var refreshTimer=0;
+  function refresh(){
+    if(refreshTimer)return;
+    refreshTimer=setTimeout(function(){
+      refreshTimer=0;
+      try{if(typeof renderCalendar==='function' && (window.currentMainView||'dashboard')==='calendar')renderCalendar();}catch(e){}
+      try{if(typeof renderUpcoming==='function' && (window.currentMainView||'dashboard')==='calendar')renderUpcoming();}catch(e){}
+      try{if(typeof buildDashboard==='function' && (window.currentMainView||'dashboard')==='dashboard')buildDashboard();}catch(e){}
+      try{if(typeof checkNotifications==='function')checkNotifications();}catch(e){}
+      try{if(typeof saveToDrive==='function')saveToDrive();}catch(e){}
+    },30);
+  }
   function findEvent(id){try{if(typeof getEventById==='function')return getEventById(id);}catch(e){}return allLocalEvents().find(function(e){return String(e.id)===String(id);});}
   function range(ev){var s=ev&&String(ev.startDate||ev.date||'').slice(0,10), e=ev&&String(ev.endDate||ev.date||s||'').slice(0,10); if(!s)s=todayKey(); if(!e||e<s)e=s; return {start:s,end:e};}
   function addOneHour(time){var parts=String(time||'09:00').split(':');var h=(parseInt(parts[0],10)||9)+1,m=parseInt(parts[1],10)||0;if(h>23)h=23;return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');}
@@ -4557,7 +4649,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       var saved=await res.json();
       var arr=allLocalEvents(), i=arr.findIndex(function(x){return String(x.id)===String(ev.id);});
       if(i>=0){arr[i].googleEventId=saved.id;arr[i].googleSyncedAt=new Date().toISOString();arr[i].googleSyncRequested=true;arr[i].syncedToGoogle=true;persistEvents(arr);}
-      try{if(typeof loadGoogleEvents==='function')loadGoogleEvents();}catch(e){}
+      try{if(typeof loadGoogleEvents==='function')await loadGoogleEvents();}catch(e){}
       refresh();
       try{toast('Mit Google Kalender synchronisiert ✓','ok');}catch(e){}
       return true;
@@ -4615,3 +4707,44 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   };
 })();
 
+
+
+
+/* Final: zentrale Render-Bündelung gegen Flackern */
+(function(){
+  'use strict';
+  if(window.__changeRenderSchedulerInstalled)return;
+  window.__changeRenderSchedulerInstalled=true;
+  const rawRenderCalendar=window.renderCalendar;
+  const rawBuildDashboard=window.buildDashboard;
+  const rawRenderChallenges=window.renderChallenges;
+  let pending={calendar:false,dashboard:false,challenges:false};
+  let scheduled=false;
+  let last={calendar:0,dashboard:0,challenges:0};
+  function now(){return Date.now?Date.now():(new Date()).getTime();}
+  function flush(){
+    scheduled=false;
+    const p=pending; pending={calendar:false,dashboard:false,challenges:false};
+    const view=window.currentMainView||'dashboard';
+    const t=now();
+    if(p.calendar && view==='calendar' && t-last.calendar>80){last.calendar=t;try{rawRenderCalendar&&rawRenderCalendar.call(window)}catch(e){console.warn('renderCalendar',e)}}
+    if(p.dashboard && view==='dashboard' && t-last.dashboard>80){last.dashboard=t;try{rawBuildDashboard&&rawBuildDashboard.call(window)}catch(e){console.warn('buildDashboard',e)}}
+    if(p.challenges && view==='challenges' && t-last.challenges>80){last.challenges=t;try{rawRenderChallenges&&rawRenderChallenges.call(window)}catch(e){console.warn('renderChallenges',e)}}
+  }
+  function schedule(part){pending[part]=true;if(!scheduled){scheduled=true;(window.requestAnimationFrame||function(fn){return setTimeout(fn,16)})(flush);}}
+  window.requestAppRefresh=function(parts){parts=parts||{};if(parts.calendar!==false)schedule('calendar');if(parts.dashboard!==false)schedule('dashboard');if(parts.challenges)schedule('challenges');};
+  window.renderCalendar=function(){schedule('calendar')};
+  window.buildDashboard=function(){schedule('dashboard')};
+  if(rawRenderChallenges)window.renderChallenges=function(){schedule('challenges')};
+  const oldSetMain=window.setMainView;
+  if(typeof oldSetMain==='function'){
+    window.setMainView=function(v){
+      const r=oldSetMain.apply(this,arguments);
+      last.calendar=last.dashboard=last.challenges=0;
+      if(v==='calendar')schedule('calendar');
+      else if(v==='challenges')schedule('challenges');
+      else schedule('dashboard');
+      return r;
+    };
+  }
+})();

@@ -908,7 +908,7 @@ const uid = () => Math.random().toString(36).substring(2,10)+Date.now().toString
    INIT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 window.addEventListener('load', async () => {
-  await new Promise(r => setTimeout(r,700));
+  await new Promise(r => setTimeout(r,80));
 
   CLIENT_ID = ls('client_id') || '';
   accessToken = ls('access_token') || '';
@@ -3921,7 +3921,7 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
     window.buildDashCards();
   };
   function run(){ try{ if(!$('change-clean-dashboard-style')) injectStyle(); window.buildDashboard(); }catch(e){ console.warn('clean dashboard fix failed', e); } }
-  setTimeout(run,50); setTimeout(run,400); setTimeout(run,1200);
+  setTimeout(run,80);
 })();
 
 </script>
@@ -4417,21 +4417,43 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 
   /* ── ALLE EVENTS (dedupliziert, mit startDate/endDate) ── */
   function allEvents() {
-    const out = [], seen = new Set();
-    function add(ev, src) {
-      const r = getRange(ev); if (!r.start) return;
-      const key = (ev.googleEventId ? 'g:' + ev.googleEventId : 'l:' + ev.id) + ':' + r.start + ':' + r.end;
-      if (seen.has(key)) return; seen.add(key);
-      const id = src === 'google' ? (String(ev.id || '').startsWith('g_') ? ev.id : 'g_' + (ev.id || ev.googleEventId || '')) : ev.id;
-      out.push(Object.assign({}, ev, { id, date: r.start, startDate: r.start, endDate: r.end, source: src,
-        time: ev.time || (ev.start?.dateTime ? new Date(ev.start.dateTime).toTimeString().slice(0,5) : '') }));
+    const locals = [], googles = [];
+    function normalize(ev, src) {
+      const r = getRange(ev); if (!r.start) return null;
+      const rawId = String(ev.id || ev.googleEventId || '');
+      const id = src === 'google' ? (rawId.startsWith('g_') ? rawId : 'g_' + rawId) : ev.id;
+      const googleEventId = String(ev.googleEventId || (src === 'google' ? rawId.replace(/^g_/, '') : '') || '').trim();
+      const time = ev.time || (ev.start?.dateTime ? new Date(ev.start.dateTime).toTimeString().slice(0,5) : '');
+      const endTime = ev.endTime || (ev.end?.dateTime ? new Date(ev.end.dateTime).toTimeString().slice(0,5) : '');
+      const titleKey = String(getTitle(ev) || '').trim().toLowerCase();
+      return Object.assign({}, ev, { id, googleEventId, date: r.start, startDate: r.start, endDate: r.end, source: src, time, endTime,
+        __exact: titleKey + '|' + r.start + '|' + r.end + '|' + time + '|' + endTime,
+        __soft: titleKey + '|' + r.start + '|' + r.end + '|' + time,
+        __dayTitle: titleKey + '|' + r.start });
     }
-    try { (window.events || []).forEach(ev => add(ev, ev.source || 'local')); } catch (e) {}
+    try { (window.events || []).forEach(ev => { const n = normalize(ev, ev.source || 'local'); if (n) locals.push(n); }); } catch (e) {}
     try {
       if (window.googleCalendarSyncEnabled !== false && localStorage.getItem('change_v1_google_calendar_sync') !== 'false')
-        (window.gEvents || []).forEach(ge => add(ge, 'google'));
+        (window.gEvents || []).forEach(ge => { const n = normalize(ge, 'google'); if (n) googles.push(n); });
     } catch (e) {}
-    return out.sort((a, b) => a.startDate.localeCompare(b.startDate) || daysFrom(b.startDate, b.endDate) - daysFrom(a.startDate, a.endDate));
+    const byGoogle = new Map(), byExact = new Map(), bySoft = new Map(), byDay = new Map();
+    locals.forEach(ev => { if (ev.googleEventId) byGoogle.set(String(ev.googleEventId), ev); byExact.set(ev.__exact, ev); if(!bySoft.has(ev.__soft)) bySoft.set(ev.__soft, ev); if(!byDay.has(ev.__dayTitle)) byDay.set(ev.__dayTitle, ev); });
+    const out = locals.slice();
+    googles.forEach(gev => {
+      const local = (gev.googleEventId ? byGoogle.get(String(gev.googleEventId)) : null) || byExact.get(gev.__exact) || bySoft.get(gev.__soft) || byDay.get(gev.__dayTitle);
+      if (local) {
+        if (gev.googleEventId && !local.googleEventId) {
+          local.googleEventId = gev.googleEventId; local.syncedToGoogle = true; local.googleSyncRequested = true; local.googleSyncedAt = local.googleSyncedAt || new Date().toISOString();
+          try { const arr = window.events || [], idx = arr.findIndex(e => String(e.id) === String(local.id)); if (idx >= 0) { arr[idx].googleEventId = gev.googleEventId; arr[idx].syncedToGoogle = true; arr[idx].googleSyncRequested = true; arr[idx].googleSyncedAt = local.googleSyncedAt; if (typeof ls === 'function') ls('events', arr); else localStorage.setItem('change_v1_events', JSON.stringify(arr)); } } catch(e) {}
+        }
+        return;
+      }
+      out.push(gev);
+    });
+    const seen = new Set();
+    return out.filter(ev => { const k = ev.googleEventId ? 'g:'+ev.googleEventId : 'l:'+(ev.id || ev.__exact); if(seen.has(k)) return false; seen.add(k); return true; })
+      .map(ev => { const x = Object.assign({}, ev); delete x.__exact; delete x.__soft; delete x.__dayTitle; return x; })
+      .sort((a, b) => a.startDate.localeCompare(b.startDate) || daysFrom(b.startDate, b.endDate) - daysFrom(a.startDate, a.endDate));
   }
 
   window.getAllEvents = allEvents;
@@ -4751,7 +4773,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     const byG=new Map(), other=[];
     candidates.forEach(e=>{const r=rangeOf(e); if(!r.start) return; const gid=e.googleEventId||(String(e.id||'').startsWith('g_')?String(e.id).slice(2):''); if(gid){const k='g:'+gid, p=byG.get(k); if(!p || r.end<rangeOf(p).end) byG.set(k,e);} else other.push(e);});
     const semantic=new Map();
-    [...byG.values(),...other].forEach(e=>{const r=rangeOf(e); if(!r.start) return; const sig=titleOf(e).toLowerCase()+'|'+r.start+'|'+(timeOf(e)||'')+'|'+(e.source==='google'||e.googleEventId?'google':'local'); const p=semantic.get(sig); if(!p || r.end<rangeOf(p).end) semantic.set(sig,e);});
+    [...byG.values(),...other].forEach(e=>{const r=rangeOf(e); if(!r.start) return; const sig=titleOf(e).toLowerCase()+'|'+r.start+'|'+r.end+'|'+(timeOf(e)||''); const p=semantic.get(sig); const eLocal=e.source!=='google', pLocal=p&&p.source!=='google'; if(!p || (eLocal&&!pLocal) || (eLocal===pLocal && r.end<rangeOf(p).end)) semantic.set(sig,e);});
     return [...semantic.values()];
   }
   function eventsForDay(k,pre){return allPanelEvents(pre).filter(e=>{const r=rangeOf(e);return r.start<=k&&r.end>=k;}).sort((a,b)=>{const ar=rangeOf(a),br=rangeOf(b);if(ar.isRange!==br.isRange)return ar.isRange?-1:1;return (timeOf(a)||'99:99').localeCompare(timeOf(b)||'99:99')||titleOf(a).localeCompare(titleOf(b));});}
@@ -4862,7 +4884,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   const oldSet=window.setMainView;window.setMainView=function(v){if(typeof oldSet==='function')oldSet(v);document.body.classList.toggle('calendar-active',v==='calendar');const cc=$('cal-controls');if(cc)cc.style.display=v==='calendar'?'flex':'none';setTimeout(()=>{if(v==='challenges')window.renderChallenges();if(v==='dashboard')window.buildDashboard();},0)};
   function init(){installStyle();canonicalPlayers();completions();try{if((window.currentMainView||'dashboard')==='challenges')window.renderChallenges();if((window.currentMainView||'dashboard')==='dashboard')window.buildDashboard();if((window.currentMainView||'')==='calendar')window.renderCalendar&&window.renderCalendar()}catch(e){console.warn('step7 init',e)}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,100));else setTimeout(init,100);
-  window.addEventListener('load',()=>{[300,1200,2600,5200].forEach(ms=>setTimeout(init,ms));});
+  window.addEventListener('load',()=>{setTimeout(init,120);});
 })();
 </script>
 
