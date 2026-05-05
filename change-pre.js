@@ -185,7 +185,7 @@
         '<button class="btn btn-ghost btn-sm" id="cwp-next">Nächste Woche →</button>'+
       '</div></div>'+
       '<div id="challenge-week-points-grid" class="challenge-week-grid"></div>';
-    view.insertBefore(bar, layout);
+    layout.insertBefore(bar, layout.firstChild);
     document.getElementById('cwp-prev').onclick  = () => { weekOffset = Math.max(-4, weekOffset-1); renderWeekBar(); };
     document.getElementById('cwp-today').onclick = () => { weekOffset = 0; renderWeekBar(); };
     document.getElementById('cwp-next').onclick  = () => { weekOffset = Math.min(4, weekOffset+1); renderWeekBar(); };
