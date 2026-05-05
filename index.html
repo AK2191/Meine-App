@@ -6032,7 +6032,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
           try{ label = new Date(d+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}); }catch(e){ label = d; }
           return '<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(245,158,11,.1);color:#b45309;border:1px solid rgba(245,158,11,.25);border-radius:999px;padding:2px 8px;font-size:11px;font-weight:600">'
             +label
-            +'<button onclick="window.removeUrlaubHalfDay&&window.removeUrlaubHalfDay(''+d+'');this.closest('[data-half-list]').parentElement.querySelector('input[type=date]').dispatchEvent(new Event('change'))" style="background:none;border:none;cursor:pointer;color:#b45309;font-size:10px;padding:0;line-height:1;margin-left:2px">✕</button>'
+            +'<button data-half-date="'+esc(d)+'" onclick="window.removeUrlaubHalfDay&&window.removeUrlaubHalfDay(this.dataset.halfDate);window.renderUrlaubHalfDayList&&window.renderUrlaubHalfDayList()" style="background:none;border:none;cursor:pointer;color:#b45309;font-size:10px;padding:0;line-height:1;margin-left:2px">✕</button>'
             +'</span>';
         }).join(' ');
 
@@ -6052,7 +6052,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
         +'<div style="font-size:12px;color:var(--t3);font-weight:600;margin-bottom:6px">Halbe Urlaubstage</div>'
         +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">'
         +'<input type="date" class="finput" id="us-half-date" style="max-width:160px">'
-        +'<button class="btn btn-secondary btn-sm" onclick="(function(){ var v=document.getElementById('us-half-date').value; if(!v)return; window.addUrlaubHalfDay&&window.addUrlaubHalfDay(v); document.getElementById('us-half-date').value=''; })()">'
+        +'<button class="btn btn-secondary btn-sm" onclick="(function(){ var el=document.getElementById(&quot;us-half-date&quot;); var v=el&&el.value; if(!v)return; window.addUrlaubHalfDay&&window.addUrlaubHalfDay(v); if(el)el.value=&quot;&quot;; })()">'
         +'+ Hinzufügen</button>'
         +'</div>'
         +'<div data-half-list style="display:flex;flex-wrap:wrap;gap:6px;min-height:16px">'+halfDayChips+'</div>'
@@ -6730,43 +6730,66 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     return count;
   }
 
-  // Liefert Urlaub-Events aus dem aktuellen Kalenderjahr
+  function normalizeDateKey(v){
+    if(!v) return '';
+    if(v instanceof Date){
+      return v.getFullYear() + '-' + String(v.getMonth()+1).padStart(2,'0') + '-' + String(v.getDate()).padStart(2,'0');
+    }
+    return String(v).slice(0,10);
+  }
+
+  function addDaysKey(dateStr, offset){
+    var d = new Date(dateStr + 'T12:00:00');
+    d.setDate(d.getDate() + offset);
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  function getEventRange(e){
+    var start = normalizeDateKey(e.startDate || e.fromDate || e.date || (e.start && (e.start.date || e.start.dateTime)));
+    if(!start) return null;
+
+    var end = normalizeDateKey(e.endDate || e.toDate || e.untilDate || (e.end && (e.end.date || e.end.dateTime)) || start);
+
+    // Google-Ganztagstermine liefern end.date exklusiv. Ein Urlaub 05.–07. kommt von Google als 05.–08.
+    // Lokale Change-Termine speichern endDate dagegen inklusiv. Deshalb nur bei rohem Google-Enddatum korrigieren.
+    var isGoogleAllDayExclusive = !!(e.source === 'google' && e.end && e.end.date && !e.end.dateTime);
+    if(isGoogleAllDayExclusive && end > start) end = addDaysKey(end, -1);
+
+    if(end < start) end = start;
+    return { start:start, end:end };
+  }
+
+  // Liefert Urlaub-Events, die das aktuelle Kalenderjahr berühren.
   function getUrlaubEvents(){
     var year = new Date().getFullYear();
+    var yearStart = year + '-01-01';
+    var yearEnd   = year + '-12-31';
     var allEvs = typeof window.getAllEvents === 'function' ? window.getAllEvents() : (window.events || []);
+
     return allEvs.filter(function(e){
       var title = (e.title || e.summary || '').toLowerCase();
       if(!title.includes('urlaub')) return false;
-      // Startdatum im aktuellen Jahr
-      var start = (e.startDate || e.date || '').slice(0, 10);
-      if(!start) return false;
-      return start.slice(0, 4) === String(year);
+      var r = getEventRange(e);
+      if(!r) return false;
+      return r.end >= yearStart && r.start <= yearEnd;
     });
   }
 
-  // Berechnet verbrauchte Urlaubstage im aktuellen Jahr
+  // Berechnet verbrauchte Urlaubstage im aktuellen Jahr.
   function calcUsedDays(){
-    var year  = new Date().getFullYear();
-    var yearEnd = year + '-12-31';
-    var events  = getUrlaubEvents();
-    var total   = 0;
+    var year = new Date().getFullYear();
+    var yearStart = year + '-01-01';
+    var yearEnd   = year + '-12-31';
+    var total = 0;
 
-    events.forEach(function(e){
-      var start = (e.startDate || e.date || '').slice(0, 10);
-      var end   = (e.endDate || e.endDate || start).slice(0, 10);
-      // Mehrtägige Einträge: endDate kann einen Tag über den letzten Tag hinausgehen (Google Kalender-Stil)
-      if(end > start){
-        // Google gibt endDate als exklusiv, eigene Events oft inklusiv → prüfe ob end > yearEnd
-        var endD = new Date(end + 'T12:00:00');
-        var adjustedEnd = end;
-        // Wenn end am Tag nach dem letzten Urlaubstag liegt (Mitternacht), korrigiere
-        // Konservativ: zähle inklusiv bis end (wenn end im Jahr liegt)
-        if(adjustedEnd > yearEnd) adjustedEnd = yearEnd;
-        total += countWorkdays(start, adjustedEnd);
-      } else {
-        if(!isWeekend(start) && !isHoliday(start)) total++;
-      }
+    getUrlaubEvents().forEach(function(e){
+      var r = getEventRange(e);
+      if(!r) return;
+      var start = r.start < yearStart ? yearStart : r.start;
+      var end   = r.end   > yearEnd   ? yearEnd   : r.end;
+      total += countWorkdays(start, end);
     });
+
     return total;
   }
 
@@ -6788,12 +6811,13 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 
     // Arbeitstage pro Event berechnen
     var rows = events.map(function(e){
-      var start   = (e.startDate || e.date || '').slice(0,10);
-      var end     = (e.endDate   || start).slice(0,10);
-      var yearEnd = year + '-12-31';
-      if(end > yearEnd) end = yearEnd;
-      var days    = (end > start) ? countWorkdays(start, end) : (!isWeekend(start) && !isHoliday(start) ? (isHalfDay(start) ? 0.5 : 1) : 0);
-      var range   = (end === start || !end) ? fmtD(start) : fmtD(start) + ' – ' + fmtD(end);
+      var r = getEventRange(e);
+      var yearStart = year + '-01-01';
+      var yearEnd   = year + '-12-31';
+      var start = r.start < yearStart ? yearStart : r.start;
+      var end   = r.end   > yearEnd   ? yearEnd   : r.end;
+      var days  = countWorkdays(start, end);
+      var range = (end === start || !end) ? fmtD(start) : fmtD(start) + ' – ' + fmtD(end);
       return { title: e.title || e.summary || 'Urlaub', range: range, days: days, start: start };
     }).sort(function(a,b){ return a.start.localeCompare(b.start); });
 
