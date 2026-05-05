@@ -914,6 +914,11 @@ window.addEventListener('load', async () => {
   accessToken = ls('access_token') || '';
   userInfo = ls('user_info') || {};
   events = ls('events') || [];
+  gEvents = Array.isArray(gEvents) ? gEvents : [];
+  // Global spiegeln: spätere modulare Patches lesen bewusst über window.*
+  // So sind Dashboard, Urlaub- und Friseur-Tracker bereits in der ersten Ansicht konsistent.
+  window.events = events;
+  window.gEvents = gEvents;
   challenges = ls('challenges') || [];
   challengeCompletions = ls('challenge_completions') || [];
   challengePlayers = ls('challenge_players') || [];
@@ -1676,16 +1681,23 @@ async function loadGoogleData(){
 async function loadGoogleEvents(){
   if(!accessToken)return;
   try{
-    const start=new Date(curDate.getFullYear(),curDate.getMonth()-1,1).toISOString();
-    const end=new Date(curDate.getFullYear(),curDate.getMonth()+4,0).toISOString();
+    // Wichtig für die erste Ansicht:
+    // Urlaub und Friseur werden im Dashboard jahresbezogen ausgewertet.
+    // Der alte Abruf holte nur curDate -1 bis +4 Monate; dadurch fehlten beim Start z. B. Februar-Termine,
+    // bis man im Kalender in diesen Monat navigiert hatte. Deshalb laden wir den kompletten relevanten Zeitraum.
+    const baseYear=(curDate instanceof Date&&!isNaN(curDate))?curDate.getFullYear():new Date().getFullYear();
+    const start=new Date(baseYear-1,11,1,0,0,0).toISOString();
+    const end=new Date(baseYear+1,0,31,23,59,59).toISOString();
     const r=await fetch(
-      `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${encodeURIComponent(start)}&timeMax=${encodeURIComponent(end)}&singleEvents=true&orderBy=startTime&maxResults=500`,
+      `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${encodeURIComponent(start)}&timeMax=${encodeURIComponent(end)}&singleEvents=true&orderBy=startTime&maxResults=2500`,
       {headers:{'Authorization':'Bearer '+accessToken}}
     );
-    if(r.status===401){lsDel('access_token');accessToken='';return;}
+    if(r.status===401){lsDel('access_token');accessToken='';window.accessToken='';return;}
     if(!r.ok)return;
     const data=await r.json();
     gEvents=data.items||[];
+    window.gEvents=gEvents;
+    window.events=events;
     if(currentMainView==='calendar'){renderCalendar();renderUpcoming();}
     if(currentMainView==='dashboard')buildDashboard();
   }catch(e){console.warn('GCal:',e);}
