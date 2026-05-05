@@ -397,6 +397,8 @@
     window.events=Array.isArray(window.events)?window.events:[];
     const oldIndex=existingId?window.events.findIndex(e=>e.id===existingId||e.googleEventId===existingId):-1;
     const old=oldIndex>=0?window.events[oldIndex]:null;
+    const syncToggle=document.getElementById('ev-google-sync');
+    const syncWanted=!!(syncToggle&&syncToggle.checked);
 
     const ev={
       id:old?old.id:('ev_'+uid()), title, date,
@@ -406,6 +408,7 @@
       notifDaysBefore:parseInt(val('ev-notif')||'1',10)||1,
       allDay:!val('ev-time'), source:'local',
       googleEventId:old?(old.googleEventId||''):'',
+      googleSyncRequested:syncWanted,
       createdAt:old?(old.createdAt||new Date().toISOString()):new Date().toISOString(),
       updatedAt:new Date().toISOString(),
     };
@@ -420,22 +423,66 @@
     refreshCalendar();
     try{if(typeof toast==='function')toast(existingId?'Termin aktualisiert ✓':'Termin gespeichert ✓','ok');}catch(e){}
 
-    if(window.accessToken&&window.accessToken!=='firebase-auth'&&!window.isDemoMode){
+    if(syncWanted&&window.accessToken&&window.accessToken!=='firebase-auth'&&!window.isDemoMode){
       setTimeout(()=>{try{if(typeof syncEventToGoogleReliable==='function')syncEventToGoogleReliable(ev);else if(typeof syncLocalEventToGoogle==='function')syncLocalEventToGoogle(ev);}catch(e){}},300);
     }
     return ev;
   };
 
-  window.saveToGoogleCal=existingId=>window.saveEvent(existingId);
+  window.saveToGoogleCal=function(existingId){
+    const cb=document.getElementById('ev-google-sync');
+    if(cb) cb.checked=true;
+    return window.saveEvent(existingId);
+  };
 
   window.deleteEvent=function(id){
-    if(!confirm('Termin wirklich löschen?'))return;
-    window.events=(window.events||[]).filter(e=>e.id!==id);
+    window.events=Array.isArray(window.events)?window.events:[];
+    const local=window.events.find(e=>String(e.id)===String(id));
+    if(!local){try{toast('Nur selbst erstellte lokale Termine können hier gelöscht werden.','err');}catch(e){}return;}
+    const msg=local.googleEventId?'Diesen selbst erstellten Termin lokal löschen? Die bereits synchronisierte Google-Kopie bleibt erhalten.':'Diesen selbst erstellten Termin löschen?';
+    if(!confirm(msg))return;
+    window.events=window.events.filter(e=>String(e.id)!==String(id));
     persist();
     try{closePanel();}catch(e){}
     refreshCalendar();
-    try{toast('Termin gelöscht','');}catch(e){}
+    try{toast('Termin gelöscht ✓','ok');}catch(e){}
   };
+
+  function canSyncGoogle(){
+    return !!(window.accessToken&&window.accessToken!=='firebase-auth'&&!window.isDemoMode);
+  }
+
+  function injectLocalEventOptions(existingId){
+    setTimeout(()=>{
+      const body=document.getElementById('panel-body');
+      if(!body) return;
+      const ev=existingId&&typeof window.getEventById==='function'?window.getEventById(existingId):null;
+      const isGoogle=!!(ev&&(ev.source==='google'||String(ev.id||'').startsWith('g_')));
+      const saveBtn=document.getElementById('event-save-button')||Array.from(body.querySelectorAll('button')).find(b=>/^(Speichern|Aktualisieren)$/.test((b.textContent||'').trim()));
+      if(isGoogle){
+        Array.from(body.querySelectorAll('button')).forEach(b=>{
+          const txt=(b.textContent||'').trim();
+          if(txt==='Löschen'||txt==='Speichern'||txt==='Aktualisieren') b.remove();
+        });
+        if(!document.getElementById('google-event-readonly-note')&&body.firstChild){
+          const note=document.createElement('div');
+          note.id='google-event-readonly-note';
+          note.className='settings-hint';
+          note.textContent='Dieser Termin kommt aus Google. Löschen ist hier nur für selbst erstellte lokale Termine möglich.';
+          body.insertBefore(note,body.firstChild);
+        }
+        return;
+      }
+      if(canSyncGoogle()&&!document.getElementById('ev-google-sync')&&saveBtn){
+        const oldSynced=!!(ev&&ev.googleEventId);
+        const wrap=document.createElement('div');
+        wrap.className='toggle-row';
+        wrap.style.margin='8px 0 12px';
+        wrap.innerHTML='<div class="toggle-copy"><div class="toggle-title">Mit Google Kalender synchronisieren</div><div class="toggle-sub">'+(oldSynced?'Änderungen werden im bestehenden Google-Termin aktualisiert.':'Beim Speichern zusätzlich in Google Kalender anlegen.')+'</div></div><label class="switch"><input type="checkbox" id="ev-google-sync" '+(oldSynced?'checked':'')+'><span class="slider"></span></label>';
+        saveBtn.parentNode.insertBefore(wrap,saveBtn);
+      }
+    },25);
+  }
 
   /* Speichern-Button korrekt verdrahten (einmal, ohne Doppel-Fire) */
   function patchSaveButton(existingId){
@@ -461,6 +508,7 @@
   const _openEventPanel=window.openEventPanel;
   window.openEventPanel=function(id,preDate){
     if(typeof _openEventPanel==='function')_openEventPanel.apply(this,arguments);
+    injectLocalEventOptions(id);
     patchSaveButton(id);
   };
 

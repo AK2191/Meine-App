@@ -6734,21 +6734,36 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     }catch(e){ return false; }
   }
 
-  // Zählt Arbeitstage in einem Zeitraum [startStr, endStr] (inklusive)
-  // Halbtage zählen als 0.5
-  function countWorkdays(startStr, endStr){
+  function formatVacationDays(value){
+    var n = Math.round((Number(value) || 0) * 2) / 2;
+    return Number.isInteger(n) ? String(n) : String(n).replace('.', ',');
+  }
+
+  function getVacationDayValue(dateStr){
+    return isHalfDay(dateStr) ? 0.5 : 1;
+  }
+
+  function forEachWorkday(startStr, endStr, cb){
     var d   = new Date(startStr + 'T12:00:00');
     var end = new Date(endStr   + 'T12:00:00');
-    var count = 0;
     while(d <= end){
       var dk = d.getFullYear() + '-'
         + String(d.getMonth()+1).padStart(2,'0') + '-'
         + String(d.getDate()).padStart(2,'0');
       if(!isWeekend(dk) && !isHoliday(dk)){
-        count += isHalfDay(dk) ? 0.5 : 1;
+        cb(dk);
       }
       d.setDate(d.getDate() + 1);
     }
+  }
+
+  // Zählt Arbeitstage in einem Zeitraum [startStr, endStr] (inklusive)
+  // Halbtage zählen als 0,5.
+  function countWorkdays(startStr, endStr){
+    var count = 0;
+    forEachWorkday(startStr, endStr, function(dk){
+      count += getVacationDayValue(dk);
+    });
     return count;
   }
 
@@ -6798,21 +6813,34 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   }
 
   // Berechnet verbrauchte Urlaubstage im aktuellen Jahr.
+  // Dashboard und Detailpanel nutzen dieselbe datumsgestützte Berechnung:
+  // - Halbtage zählen immer als 0,5
+  // - überlappende Urlaubseinträge zählen denselben Tag nicht doppelt
+  // - manuell gepflegte Halbtage zählen auch ohne separaten Google-Urlaubstermin
   function calcUsedDays(){
     var year = new Date().getFullYear();
     var yearStart = year + '-01-01';
     var yearEnd   = year + '-12-31';
-    var total = 0;
+    var dayValues = {};
 
     getUrlaubEvents().forEach(function(e){
       var r = getEventRange(e);
       if(!r) return;
       var start = r.start < yearStart ? yearStart : r.start;
       var end   = r.end   > yearEnd   ? yearEnd   : r.end;
-      total += countWorkdays(start, end);
+      forEachWorkday(start, end, function(dk){
+        dayValues[dk] = getVacationDayValue(dk);
+      });
     });
 
-    return total;
+    getHalfDays().forEach(function(dk){
+      if(typeof dk !== 'string' || dk.slice(0,4) !== String(year)) return;
+      if(dk < yearStart || dk > yearEnd) return;
+      if(isWeekend(dk) || isHoliday(dk)) return;
+      dayValues[dk] = 0.5;
+    });
+
+    return Object.keys(dayValues).reduce(function(sum, dk){ return sum + dayValues[dk]; }, 0);
   }
 
   // HTML-Zeile für Dashboard (gleicher Stil wie Friseur-Tracker)
@@ -6875,8 +6903,8 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 
     // Kacheln
     var remainColor = remaining <= 0 ? '#ef4444' : remaining <= 5 ? '#f59e0b' : 'var(--acc)';
-    var usedDisp    = Number.isInteger(used) ? used : used.toFixed(1);
-    var remDisp     = Number.isInteger(remaining) ? remaining : remaining.toFixed(1);
+    var usedDisp    = formatVacationDays(used);
+    var remDisp     = formatVacationDays(remaining);
     var summaryHtml = '<div style="display:flex;gap:0;margin-bottom:16px;border-radius:var(--r);overflow:hidden;border:1px solid var(--b1)">'
       + '<div style="flex:1;text-align:center;padding:12px 8px;background:var(--s1);border-right:1px solid var(--b1)">'
       +   '<div style="font-size:20px;font-weight:900;color:var(--acc)">'+usedDisp+'</div>'
@@ -6909,7 +6937,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     var pct       = Math.min(100, Math.round((used / totalDays) * 100));
 
     var usedColor = remaining <= 0 ? '#ef4444' : remaining <= 5 ? '#f59e0b' : 'var(--acc)';
-    var leftText  = '<span style="font-weight:800;color:'+usedColor+'">'+used+' von '+totalDays+'</span>'
+    var leftText  = '<span style="font-weight:800;color:'+usedColor+'">'+formatVacationDays(used)+' von '+formatVacationDays(totalDays)+'</span>'
                   + '<span style="color:var(--t4)"> Tagen verbraucht</span>';
 
     var barColor    = remaining <= 0 ? '#ef4444' : remaining <= 5 ? '#f59e0b' : 'var(--acc)';
@@ -6919,7 +6947,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 
     var badge = remaining <= 0
       ? '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:rgba(239,68,68,.12);color:#dc2626">⚠ Kein Urlaub mehr</span>'
-      : '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:'+(remaining<=5?'rgba(245,158,11,.12);color:#b45309':'rgba(45,106,79,.1);color:var(--acc)')+'">'+(remaining)+' Tage übrig</span>';
+      : '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:'+(remaining<=5?'rgba(245,158,11,.12);color:#b45309':'rgba(45,106,79,.1);color:var(--acc)')+'">'+formatVacationDays(remaining)+' Tage übrig</span>';
 
     return '<div onclick="window.openUrlaubPanel&&window.openUrlaubPanel()" style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--b1);cursor:pointer" onmouseover="this.style.background=\'var(--s2)\'" onmouseout="this.style.background=\'\'">'
       + '<span style="font-size:12px;flex-shrink:0">🏖️</span>'
