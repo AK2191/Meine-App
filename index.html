@@ -6576,6 +6576,72 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   }
 
   // HTML-Zeile für Dashboard (gleicher Stil wie Friseur-Tracker)
+  // Detail-Panel: zeigt alle Urlaubs-Einträge mit Arbeitstagen
+  window.openUrlaubPanel = function(){
+    var totalDays = getTotalDays();
+    var used      = calcUsedDays();
+    var remaining = totalDays - used;
+    var events    = getUrlaubEvents();
+    var year      = new Date().getFullYear();
+
+    var fmtDate = function(str){
+      try{ return new Date(str+'T12:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'short'}); }
+      catch(e){ return str; }
+    };
+
+    // Berechne Arbeitstage pro Event
+    var rows = events.map(function(e){
+      var start = (e.startDate || e.date || '').slice(0,10);
+      var end   = (e.endDate   || start).slice(0,10);
+      var yearEnd = year + '-12-31';
+      if(end > yearEnd) end = yearEnd;
+      var days = (end > start) ? countWorkdays(start, end) : (!isWeekend(start) && !isHoliday(start) ? 1 : 0);
+      var rangeText = (end === start || end === '')
+        ? fmtDate(start)
+        : fmtDate(start) + ' – ' + fmtDate(end);
+      return { title: e.title || e.summary || 'Urlaub', range: rangeText, days: days, start: start };
+    }).sort(function(a,b){ return a.start.localeCompare(b.start); });
+
+    var today = new Date().toISOString().slice(0,10);
+    var listHtml = rows.length ? rows.map(function(r){
+      var isPast    = r.start < today;
+      var isUpcoming = r.start > today;
+      var dotColor  = isPast ? 'var(--acc)' : isUpcoming ? 'var(--t3)' : '#f59e0b';
+      var dayLabel  = r.days === 1 ? '1 Arbeitstag' : r.days + ' Arbeitstage';
+      return '<div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--b1)">'
+        + '<div style="width:8px;height:8px;border-radius:50%;background:'+dotColor+';flex-shrink:0"></div>'
+        + '<div style="flex:1;min-width:0">'
+        +   '<div style="font-size:13px;font-weight:600;color:var(--t1)">'+r.title+'</div>'
+        +   '<div style="font-size:11px;color:var(--t3);margin-top:1px">'+r.range+'</div>'
+        + '</div>'
+        + '<div style="font-size:12px;font-weight:700;color:'+(isPast?'var(--acc)':'var(--t3)')+'">'+dayLabel+'</div>'
+        + '</div>';
+    }).join('') : '<div style="color:var(--t4);font-size:13px;padding:16px 0">Keine Urlaubs-Einträge in '+year+' gefunden.<br><span style="font-size:11px">Tipp: Kalendereinträge müssen „Urlaub" im Titel enthalten.</span></div>';
+
+    var remainColor = remaining <= 0 ? '#ef4444' : remaining <= 5 ? '#f59e0b' : 'var(--acc)';
+    var summaryHtml = '<div style="display:flex;gap:0;margin-bottom:16px;border-radius:var(--r);overflow:hidden;border:1px solid var(--b1)">'
+      + '<div style="flex:1;text-align:center;padding:12px 8px;background:var(--s1);border-right:1px solid var(--b1)">'
+      +   '<div style="font-size:20px;font-weight:900;color:var(--acc)">'+used+'</div>'
+      +   '<div style="font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.4px">Verbraucht</div>'
+      + '</div>'
+      + '<div style="flex:1;text-align:center;padding:12px 8px;background:var(--s1);border-right:1px solid var(--b1)">'
+      +   '<div style="font-size:20px;font-weight:900;color:'+remainColor+'">'+remaining+'</div>'
+      +   '<div style="font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.4px">Verbleibend</div>'
+      + '</div>'
+      + '<div style="flex:1;text-align:center;padding:12px 8px;background:var(--s1)">'
+      +   '<div style="font-size:20px;font-weight:900;color:var(--t2)">'+totalDays+'</div>'
+      +   '<div style="font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.4px">Gesamt</div>'
+      + '</div>'
+      + '</div>';
+
+    var noteHtml = '<div style="font-size:10.5px;color:var(--t4);margin-top:12px;padding-top:10px;border-top:1px solid var(--b1)">'
+      + '⚠ Wochenenden &amp; gesetzliche Feiertage (Bundesland-Einstellung) werden nicht gezählt.</div>';
+
+    if(typeof openPanel === 'function'){
+      openPanel('🏖️ Urlaubsübersicht ' + year, summaryHtml + listHtml + noteHtml);
+    }
+  };
+
   window.getUrlaubRowHtml = function(){
     if(!isOn()) return '';
 
@@ -6584,25 +6650,20 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     var remaining = totalDays - used;
     var pct       = Math.min(100, Math.round((used / totalDays) * 100));
 
-    // Farbe je nach Verbrauch
-    var usedColor = remaining <= 0 ? '#ef4444'
-                  : remaining <= 5 ? '#f59e0b'
-                  : 'var(--acc)';
+    var usedColor = remaining <= 0 ? '#ef4444' : remaining <= 5 ? '#f59e0b' : 'var(--acc)';
+    var leftText  = '<span style="font-weight:800;color:'+usedColor+'">'+used+' von '+totalDays+'</span>'
+                  + '<span style="color:var(--t4)"> Tagen verbraucht</span>';
 
-    var leftText = '<span style="font-weight:800;color:'+usedColor+'">'+used+' von '+totalDays+'</span>'
-                 + '<span style="color:var(--t4)"> Tagen verbraucht</span>';
-
-    // Fortschrittsbalken
-    var barColor = remaining <= 0 ? '#ef4444' : remaining <= 5 ? '#f59e0b' : 'var(--acc)';
+    var barColor    = remaining <= 0 ? '#ef4444' : remaining <= 5 ? '#f59e0b' : 'var(--acc)';
     var progressBar = '<div style="flex:1;max-width:80px;height:4px;background:var(--b1);border-radius:2px;overflow:hidden;margin:0 8px">'
       + '<div style="width:'+pct+'%;height:100%;background:'+barColor+';border-radius:2px"></div>'
       + '</div>';
 
     var badge = remaining <= 0
       ? '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:rgba(239,68,68,.12);color:#dc2626">⚠ Kein Urlaub mehr</span>'
-      : '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:'+(remaining<=5?'rgba(245,158,11,.12);color:#b45309':'rgba(45,106,79,.1);color:var(--acc)')+'">'+remaining+' Tage übrig</span>';
+      : '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:'+(remaining<=5?'rgba(245,158,11,.12);color:#b45309':'rgba(45,106,79,.1);color:var(--acc)')+'">'+(remaining)+' Tage übrig</span>';
 
-    return '<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--b1)">'
+    return '<div onclick="window.openUrlaubPanel&&window.openUrlaubPanel()" style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--b1);cursor:pointer" onmouseover="this.style.background=\'var(--s2)\'" onmouseout="this.style.background=\'\'">'
       + '<span style="font-size:12px;flex-shrink:0">🏖️</span>'
       + '<span style="font-size:11px;font-weight:700;color:var(--t2);white-space:nowrap;margin-right:2px">Urlaub</span>'
       + '<span style="font-size:11px;min-width:0">'+leftText+'</span>'
