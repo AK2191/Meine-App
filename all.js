@@ -4415,3 +4415,96 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,100));else setTimeout(init,100);
   window.addEventListener('load',()=>{[300,1200,2600,5200].forEach(ms=>setTimeout(init,ms));});
 })();
+
+
+
+
+(function(){
+  'use strict';
+  const STATES={ALL:1,BW:1,BY:1,'BY-AUGSBURG':1,BE:1,BB:1,HB:1,HH:1,HE:1,MV:1,NI:1,NW:1,RP:1,SL:1,SN:1,ST:1,SH:1,TH:1};
+  const LABEL_TO_STATE={
+    'alle bundesländer':'ALL','alle bundeslaender':'ALL','baden-württemberg':'BW','baden-wuerttemberg':'BW','bayern':'BY','bayern · augsburg':'BY-AUGSBURG','bayern augsburg':'BY-AUGSBURG','augsburg':'BY-AUGSBURG','berlin':'BE','brandenburg':'BB','bremen':'HB','hamburg':'HH','hessen':'HE','mecklenburg-vorpommern':'MV','niedersachsen':'NI','nordrhein-westfalen':'NW','rheinland-pfalz':'RP','saarland':'SL','sachsen':'SN','sachsen-anhalt':'ST','schleswig-holstein':'SH','thüringen':'TH','thueringen':'TH'
+  };
+  function cleanState(v){
+    if(v==null||v==='') return '';
+    let s=String(v).trim();
+    for(let i=0;i<3;i++){
+      if((s[0]==='"'&&s[s.length-1]==='"')||(s[0]==="'"&&s[s.length-1]==="'")){
+        try{s=JSON.parse(s);}catch(e){s=s.slice(1,-1);} s=String(s).trim();
+      }
+    }
+    s=s.replace(/^BY_AUGSBURG$/i,'BY-AUGSBURG').toUpperCase();
+    if(STATES[s]) return s;
+    const low=String(v).trim().replace(/^"|"$/g,'').toLowerCase();
+    return LABEL_TO_STATE[low]||'';
+  }
+  function readLegacyState(){
+    const keys=['change_v1_holiday_state','holiday_state'];
+    for(const k of keys){
+      const raw=localStorage.getItem(k);
+      let s=cleanState(raw); if(s) return s;
+      try{s=cleanState(JSON.parse(raw||'null')); if(s) return s;}catch(e){}
+    }
+    return cleanState(window.calendarSettings&&window.calendarSettings.state)||'ALL';
+  }
+  function writeHolidayState(v){
+    const s=cleanState(v)||'ALL';
+    // Raw speichern: mehrere ältere Stellen lesen diesen Key ohne JSON.parse.
+    localStorage.setItem('change_v1_holiday_state',s);
+    localStorage.setItem('holiday_state',s);
+    if(!window.calendarSettings) window.calendarSettings={};
+    window.calendarSettings.state=s;
+    return s;
+  }
+  window.getHolidayState=readLegacyState;
+  window.setHolidayState=writeHolidayState;
+  writeHolidayState(readLegacyState());
+
+  if(typeof window.getGermanHolidays==='function'){
+    window.getHolidaysForDate=function(dk){
+      const y=parseInt(String(dk).slice(0,4),10), state=readLegacyState();
+      return window.getGermanHolidays(y).filter(h=>h.date===dk&&(state==='ALL'||h.states.includes('ALL')||h.states.includes(state)));
+    };
+  }
+
+  const _openSettings=window.openSettingsPanel;
+  if(typeof _openSettings==='function'){
+    window.openSettingsPanel=function(startTab){
+      writeHolidayState(readLegacyState());
+      const r=_openSettings.apply(this,arguments);
+      setTimeout(function(){
+        const el=document.getElementById('us-holiday-state')||document.getElementById('holiday-state');
+        if(el){
+          el.value=readLegacyState();
+          if(!el._holidayPersistFix){
+            el._holidayPersistFix=true;
+            el.addEventListener('change',function(){
+              writeHolidayState(el.value);
+              if(typeof renderCalendar==='function') renderCalendar();
+              if(typeof buildDashboard==='function') buildDashboard();
+              if(typeof toast==='function') toast('Bundesland gespeichert ✓','ok');
+            });
+          }
+        }
+      },120);
+      return r;
+    };
+  }
+
+  window._saveCalSettings=function(){
+    const o={showHolidays:true,showChallengeDots:true,showWeekNumbers:true};
+    const h=document.getElementById('us-toggle-holidays')||document.getElementById('toggle-holidays'); if(h)o.showHolidays=h.checked;
+    const d=document.getElementById('us-toggle-dots')||document.getElementById('toggle-dots'); if(d)o.showChallengeDots=d.checked;
+    const k=document.getElementById('us-toggle-kw')||document.getElementById('toggle-kw'); if(k)o.showWeekNumbers=k.checked;
+    try{localStorage.setItem('change_v1_calendar_view_options',JSON.stringify(o));localStorage.setItem('calendar_settings',JSON.stringify(o));}catch(e){}
+    const se=document.getElementById('us-holiday-state')||document.getElementById('holiday-state');
+    writeHolidayState(se?se.value:readLegacyState());
+    if(typeof renderCalendar==='function') renderCalendar();
+    if(typeof buildDashboard==='function') buildDashboard();
+    if(typeof toast==='function') toast('Gespeichert ✓','ok');
+  };
+  window.saveCalSettings=window._saveCalSettings;
+  window.openCalendarSettings=function(){return window.openSettingsPanel?window.openSettingsPanel('calendar'):undefined;};
+})();
+
+
