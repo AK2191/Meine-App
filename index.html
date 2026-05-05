@@ -4629,6 +4629,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 
     // Friseur-Zeile am Ende der Kalender-Kachel
     const friseurRow = (typeof window.getFriseurRowHtml==='function') ? window.getFriseurRowHtml() : '';
+    const urlaubRow  = (typeof window.getUrlaubRowHtml==='function')  ? window.getUrlaubRowHtml()  : '';
     /* Challenges */
     let chHtml = '<div class="dash-empty">Keine aktiven Challenges</div>';
     try {
@@ -4666,7 +4667,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       <div class="dash-card calendar-card">
         <div class="dash-card-head"><div><div class="dash-card-title">📅 Kalender</div><div class="dash-card-sub">Heute + nächste 30 Tage</div></div>
           <button class="btn btn-ghost btn-sm" onclick="setMainView('calendar')">Öffnen →</button></div>
-        <div class="dash-card-body">${calHtml}${friseurRow}</div>
+        <div class="dash-card-body">${calHtml}${friseurRow}${urlaubRow}</div>
       </div>
       <div class="dash-card challenge-card-dashboard">
         <div class="dash-card-head"><div><div class="dash-card-title">🏆 Challenges</div><div class="dash-card-sub">Heute</div></div>
@@ -5702,7 +5703,8 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 
     /* Kalender-Karte zusammenbauen */
     const friseurHtml = (typeof window.getFriseurRowHtml==='function') ? window.getFriseurRowHtml() : '';
-    const calCardBody = `<div class="db-section">Heute &nbsp;·&nbsp; ${todayDateFmt}</div>${todayHtml}${upcomingHtml || (!todayRows.length ? '<div class="dash-empty">Keine Termine in den nächsten 90 Tagen</div>' : '')}${friseurHtml}`;
+    const urlaubHtml  = (typeof window.getUrlaubRowHtml==='function')  ? window.getUrlaubRowHtml()  : '';
+    const calCardBody = `<div class="db-section">Heute &nbsp;·&nbsp; ${todayDateFmt}</div>${todayHtml}${upcomingHtml || (!todayRows.length ? '<div class="dash-empty">Keine Termine in den nächsten 90 Tagen</div>' : '')}${friseurHtml}${urlaubHtml}`;
 
     /* Challenges & Mitspieler */
     let chHtml = '';
@@ -6006,17 +6008,34 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       `; /* auto-save */
 
     const dashPane = (function(){
-      const on=typeof window.getFriseurEnabled==='function'?window.getFriseurEnabled():false;
-      const w=typeof window.getFriseurWeeks==='function'?window.getFriseurWeeks():3;
-      return '<div class=\"toggle-row\"><div class=\"toggle-copy\">'+
-        '<div class=\"toggle-title\">✂️ Friseur-Tracker <span class=\"status-pill '+(on?'status-on':'status-off')+'\">'+(on?'AKTIV':'AUS')+'</span></div>'+
-        '<div class=\"toggle-sub\">Zeigt im Dashboard wann der letzte &amp; nächste Friseur-Termin war/ist. Termin muss „Friseur" im Titel enthalten.</div>'+
-      '</div><label class=\"switch\"><input type=\"checkbox\" id=\"us-friseur-on\" '+(on?'checked':'')+' onchange=\"window.setFriseurEnabled&&window.setFriseurEnabled(this.checked)\"><span class=\"slider\"></span></label></div>'+
-      '<div style=\"margin-top:10px;display:flex;align-items:center;gap:10px\">'+
-        '<label style=\"font-size:12px;color:var(--t3);font-weight:600;white-space:nowrap\">Erinnerung nach</label>'+
-        '<select class=\"finput\" id=\"us-friseur-weeks\" style=\"max-width:120px\" onchange=\"window.setFriseurWeeks&&window.setFriseurWeeks(parseInt(this.value))\">'+
-          [2,3,4,5,6,8].map(function(n){return '<option value=\"'+n+'\" '+(n===w?'selected':'')+'>'+n+' Wochen</option>';}).join('')+
-        '</select></div>';
+      var on  = typeof window.getFriseurEnabled==='function'  ? window.getFriseurEnabled()  : false;
+      var w   = typeof window.getFriseurWeeks==='function'    ? window.getFriseurWeeks()    : 3;
+      var uOn = typeof window.getUrlaubEnabled==='function'   ? window.getUrlaubEnabled()   : false;
+      var uDy = typeof window.getUrlaubTotalDays==='function' ? window.getUrlaubTotalDays() : 30;
+
+      var friseurSection =
+        '<div class="toggle-row"><div class="toggle-copy">'
+        +'<div class="toggle-title">✂️ Friseur-Tracker <span class="status-pill '+(on?'status-on':'status-off')+'">'+(on?'AKTIV':'AUS')+'</span></div>'
+        +'<div class="toggle-sub">Zeigt im Dashboard wann der letzte &amp; nächste Friseur-Termin war/ist. Termin muss „Friseur" im Titel enthalten.</div>'
+        +'</div><label class="switch"><input type="checkbox" id="us-friseur-on" '+(on?'checked':'')+' onchange="window.setFriseurEnabled&&window.setFriseurEnabled(this.checked)"><span class="slider"></span></label></div>'
+        +'<div style="margin-top:10px;display:flex;align-items:center;gap:10px">'
+        +'<label style="font-size:12px;color:var(--t3);font-weight:600;white-space:nowrap">Erinnerung nach</label>'
+        +'<select class="finput" id="us-friseur-weeks" style="max-width:120px" onchange="window.setFriseurWeeks&&window.setFriseurWeeks(parseInt(this.value))">'
+        +[2,3,4,5,6,8].map(function(n){return '<option value="'+n+'" '+(n===w?'selected':'')+'>'+n+' Wochen</option>';}).join('')
+        +'</select></div>';
+
+      var urlaubSection =
+        '<div class="toggle-row" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--b1)"><div class="toggle-copy">'
+        +'<div class="toggle-title">🏖️ Urlaubs-Tracker <span class="status-pill '+(uOn?'status-on':'status-off')+'">'+(uOn?'AKTIV':'AUS')+'</span></div>'
+        +'<div class="toggle-sub">Zeigt verbrauchte &amp; verbleibende Urlaubstage. Kalendereinträge mit „Urlaub" im Titel – Wochenenden &amp; Feiertage (gem. Bundesland) werden herausgerechnet.</div>'
+        +'</div><label class="switch"><input type="checkbox" id="us-urlaub-on" '+(uOn?'checked':'')+' onchange="window.setUrlaubEnabled&&window.setUrlaubEnabled(this.checked)"><span class="slider"></span></label></div>'
+        +'<div style="margin-top:10px;display:flex;align-items:center;gap:10px">'
+        +'<label style="font-size:12px;color:var(--t3);font-weight:600;white-space:nowrap">Jahresurlaub</label>'
+        +'<input type="number" class="finput" id="us-urlaub-days" min="1" max="365" value="'+uDy+'" style="max-width:80px" onchange="window.setUrlaubDays&&window.setUrlaubDays(parseInt(this.value)||30)">'
+        +'<span style="font-size:12px;color:var(--t4)"> Tage</span>'
+        +'</div>';
+
+      return friseurSection + urlaubSection;
     }());
 
     const hasCfg=!!(window.FIREBASE_CONFIG&&window.FIREBASE_CONFIG.apiKey&&!String(window.FIREBASE_CONFIG.apiKey).includes('HIER_'));
@@ -6463,6 +6482,134 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   document.addEventListener('DOMContentLoaded', function(){
     setTimeout(checkFriseurNotif, 3000);
   });
+})();
+</script>
+
+<script>
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   URLAUBS-TRACKER
+   Zeigt im Dashboard verbrauchte / verbleibende Urlaubstage
+   Berechnung: Kalendereinträge mit "Urlaub" im Titel,
+               minus Wochenenden, minus Feiertage (gem. Bundesland)
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+(function(){
+  var LS_ON    = 'urlaub_tracker_on';
+  var LS_DAYS  = 'urlaub_tracker_days';   // Urlaubstage pro Jahr
+
+  function isOn(){ return localStorage.getItem(LS_ON) !== 'false'; }
+  function getTotalDays(){ return parseInt(localStorage.getItem(LS_DAYS) || '30', 10) || 30; }
+
+  window.setUrlaubEnabled  = function(v){ localStorage.setItem(LS_ON, v ? 'true' : 'false'); if(typeof window.buildDashCards==='function') window.buildDashCards(); };
+  window.setUrlaubDays     = function(d){ localStorage.setItem(LS_DAYS, String(parseInt(d)||30)); if(typeof window.buildDashCards==='function') window.buildDashCards(); };
+  window.getUrlaubEnabled  = isOn;
+  window.getUrlaubTotalDays = getTotalDays;
+
+  // Prüft ob ein Datum ein Wochenende ist
+  function isWeekend(dateStr){
+    var d = new Date(dateStr + 'T12:00:00');
+    var dow = d.getDay(); // 0=So, 6=Sa
+    return dow === 0 || dow === 6;
+  }
+
+  // Prüft ob ein Datum ein Feiertag ist (gem. Bundesland-Einstellung)
+  function isHoliday(dateStr){
+    if(typeof window.getHolidaysForDate !== 'function') return false;
+    try{
+      var holidays = window.getHolidaysForDate(dateStr);
+      return holidays && holidays.length > 0;
+    }catch(e){ return false; }
+  }
+
+  // Zählt Arbeitstage in einem Zeitraum [startStr, endStr] (inklusive)
+  function countWorkdays(startStr, endStr){
+    var d   = new Date(startStr + 'T12:00:00');
+    var end = new Date(endStr   + 'T12:00:00');
+    var count = 0;
+    while(d <= end){
+      var dk = d.getFullYear() + '-'
+        + String(d.getMonth()+1).padStart(2,'0') + '-'
+        + String(d.getDate()).padStart(2,'0');
+      if(!isWeekend(dk) && !isHoliday(dk)) count++;
+      d.setDate(d.getDate() + 1);
+    }
+    return count;
+  }
+
+  // Liefert Urlaub-Events aus dem aktuellen Kalenderjahr
+  function getUrlaubEvents(){
+    var year = new Date().getFullYear();
+    var allEvs = typeof window.getAllEvents === 'function' ? window.getAllEvents() : (window.events || []);
+    return allEvs.filter(function(e){
+      var title = (e.title || e.summary || '').toLowerCase();
+      if(!title.includes('urlaub')) return false;
+      // Startdatum im aktuellen Jahr
+      var start = (e.startDate || e.date || '').slice(0, 10);
+      if(!start) return false;
+      return start.slice(0, 4) === String(year);
+    });
+  }
+
+  // Berechnet verbrauchte Urlaubstage im aktuellen Jahr
+  function calcUsedDays(){
+    var year  = new Date().getFullYear();
+    var yearEnd = year + '-12-31';
+    var events  = getUrlaubEvents();
+    var total   = 0;
+
+    events.forEach(function(e){
+      var start = (e.startDate || e.date || '').slice(0, 10);
+      var end   = (e.endDate || e.endDate || start).slice(0, 10);
+      // Mehrtägige Einträge: endDate kann einen Tag über den letzten Tag hinausgehen (Google Kalender-Stil)
+      if(end > start){
+        // Google gibt endDate als exklusiv, eigene Events oft inklusiv → prüfe ob end > yearEnd
+        var endD = new Date(end + 'T12:00:00');
+        var adjustedEnd = end;
+        // Wenn end am Tag nach dem letzten Urlaubstag liegt (Mitternacht), korrigiere
+        // Konservativ: zähle inklusiv bis end (wenn end im Jahr liegt)
+        if(adjustedEnd > yearEnd) adjustedEnd = yearEnd;
+        total += countWorkdays(start, adjustedEnd);
+      } else {
+        if(!isWeekend(start) && !isHoliday(start)) total++;
+      }
+    });
+    return total;
+  }
+
+  // HTML-Zeile für Dashboard (gleicher Stil wie Friseur-Tracker)
+  window.getUrlaubRowHtml = function(){
+    if(!isOn()) return '';
+
+    var totalDays = getTotalDays();
+    var used      = calcUsedDays();
+    var remaining = totalDays - used;
+    var pct       = Math.min(100, Math.round((used / totalDays) * 100));
+
+    // Farbe je nach Verbrauch
+    var usedColor = remaining <= 0 ? '#ef4444'
+                  : remaining <= 5 ? '#f59e0b'
+                  : 'var(--acc)';
+
+    var leftText = '<span style="font-weight:800;color:'+usedColor+'">'+used+' von '+totalDays+'</span>'
+                 + '<span style="color:var(--t4)"> Tagen verbraucht</span>';
+
+    // Fortschrittsbalken
+    var barColor = remaining <= 0 ? '#ef4444' : remaining <= 5 ? '#f59e0b' : 'var(--acc)';
+    var progressBar = '<div style="flex:1;max-width:80px;height:4px;background:var(--b1);border-radius:2px;overflow:hidden;margin:0 8px">'
+      + '<div style="width:'+pct+'%;height:100%;background:'+barColor+';border-radius:2px"></div>'
+      + '</div>';
+
+    var badge = remaining <= 0
+      ? '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:rgba(239,68,68,.12);color:#dc2626">⚠ Kein Urlaub mehr</span>'
+      : '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:'+(remaining<=5?'rgba(245,158,11,.12);color:#b45309':'rgba(45,106,79,.1);color:var(--acc)')+'">'+remaining+' Tage übrig</span>';
+
+    return '<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--b1)">'
+      + '<span style="font-size:12px;flex-shrink:0">🏖️</span>'
+      + '<span style="font-size:11px;font-weight:700;color:var(--t2);white-space:nowrap;margin-right:2px">Urlaub</span>'
+      + '<span style="font-size:11px;min-width:0">'+leftText+'</span>'
+      + progressBar
+      + '<span style="margin-left:auto">'+badge+'</span>'
+      + '</div>';
+  };
 })();
 </script>
 
