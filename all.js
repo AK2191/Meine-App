@@ -4625,3 +4625,241 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   };
 })();
 
+
+/* CHANGE · GLOBAL CHALLENGE POINT SYNC */
+(function(){
+  'use strict';
+
+  const COMPLETIONS = 'change_completions';
+  const PLAYERS = 'change_players';
+  let db = null;
+  let unsubscribe = null;
+  let initStarted = false;
+
+  const norm = v => String(v || '').trim().toLowerCase();
+  const pad2 = n => String(n).padStart(2, '0');
+  const today = () => {
+    const d = new Date();
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+  };
+  const safeDocId = id => norm(id || 'unknown').replace(/[^a-z0-9._-]/g, '_');
+  const uid = () => 'cc_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+
+  function readLs(key, fallback){
+    try{
+      const raw = localStorage.getItem(key);
+      if(raw == null) return fallback;
+      return JSON.parse(raw);
+    }catch(e){ return fallback; }
+  }
+  function writeCompletions(){
+    try{ if(typeof ls === 'function') ls('challenge_completions', window.challengeCompletions || []); }
+    catch(e){ try{ localStorage.setItem('challenge_completions', JSON.stringify(window.challengeCompletions || [])); }catch(_){} }
+    try{ localStorage.setItem('challengeCompletions', JSON.stringify(window.challengeCompletions || [])); }catch(e){}
+  }
+  function refreshViews(){
+    try{ if(typeof renderChallenges === 'function') renderChallenges(); }catch(e){}
+    try{ if(typeof buildDashboard === 'function') buildDashboard(); }catch(e){}
+    try{ if(window.currentMainView === 'calendar' && typeof renderCalendar === 'function') renderCalendar(); }catch(e){}
+    try{ if(typeof renderWeekBar === 'function') renderWeekBar(); }catch(e){}
+  }
+  function account(){
+    let fu = null;
+    try{ fu = window.firebase && firebase.auth && firebase.auth().currentUser; }catch(e){}
+    const info = window.userInfo || readLs('user_info', {}) || {};
+    const email = norm((fu && fu.email) || info.email || info.mail || localStorage.getItem('change_v1_user_email') || '');
+    const uidVal = (fu && fu.uid) || info.uid || info.id || '';
+    const id = email || uidVal || 'local-user';
+    const name = String((fu && fu.displayName) || info.name || info.displayName || email || 'Mitspieler').trim();
+    const picture = (fu && fu.photoURL) || info.picture || info.photoURL || '';
+    return { id: norm(id), email, uid: uidVal, name, picture };
+  }
+  function playerOf(c){ return norm(c && (c.playerId || c.userEmail || c.email || c.userId)); }
+  function isOwnCompletion(c){ return playerOf(c) === account().id; }
+  function toLocalCompletion(id, data){
+    const who = norm(data.playerId || data.userEmail || data.email || data.userId);
+    return {
+      id: String(id || data.id || uid()),
+      challengeId: String(data.challengeId || ''),
+      playerId: who,
+      userEmail: norm(data.userEmail || data.email || who),
+      email: norm(data.email || data.userEmail || who),
+      userId: norm(data.userId || who),
+      playerName: data.playerName || data.userName || data.name || data.email || 'Mitspieler',
+      date: String(data.date || data.completedDate || '').slice(0, 10),
+      points: parseInt(data.points, 10) || 0,
+      createdAt: data.createdAtLocal || data.createdAt?.toDate?.().toISOString?.() || data.createdAt || new Date().toISOString(),
+      source: 'firestore'
+    };
+  }
+  function upsertCompletion(row){
+    if(!row || !row.id || !row.challengeId || !row.date) return;
+    window.challengeCompletions = Array.isArray(window.challengeCompletions) ? window.challengeCompletions : [];
+    const i = window.challengeCompletions.findIndex(c => String(c.id) === String(row.id));
+    if(i >= 0) window.challengeCompletions[i] = Object.assign({}, window.challengeCompletions[i], row);
+    else window.challengeCompletions.push(row);
+  }
+  function removeCompletion(id){
+    window.challengeCompletions = (window.challengeCompletions || []).filter(c => String(c.id) !== String(id));
+  }
+  async function ensureFirebase(){
+    if(db) return db;
+    if(!window.firebase || !window.FIREBASE_CONFIG) return null;
+    const cfg = window.FIREBASE_CONFIG || {};
+    if(!cfg.apiKey || String(cfg.apiKey).includes('HIER_') || !cfg.projectId) return null;
+    try{
+      if(!firebase.apps.length) firebase.initializeApp(cfg);
+      db = firebase.firestore();
+      return db;
+    }catch(e){ console.warn('Challenge Sync Firebase:', e); return null; }
+  }
+  async function registerPlayer(){
+    const database = await ensureFirebase();
+    const me = account();
+    if(!database || !me.id || me.id === 'local-user') return;
+    try{
+      await database.collection(PLAYERS).doc(safeDocId(me.id)).set({
+        id: me.id,
+        email: me.email || me.id,
+        name: me.name || me.email || 'Mitspieler',
+        picture: me.picture || '',
+        online: true,
+        app: 'Change',
+        lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    }catch(e){ console.warn('Challenge Player Sync:', e); }
+  }
+
+  window.publishCompletionToFirestore = async function(completion){
+    const database = await ensureFirebase();
+    const me = account();
+    if(!database || !completion || !completion.id || !me.id || me.id === 'local-user') return false;
+    const row = Object.assign({}, completion, {
+      playerId: me.id,
+      userEmail: me.email || me.id,
+      email: me.email || me.id,
+      userId: me.uid || me.id,
+      playerName: me.name || me.email || 'Mitspieler',
+      date: String(completion.date || today()).slice(0, 10),
+      points: parseInt(completion.points, 10) || 0,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdAtLocal: completion.createdAt || new Date().toISOString()
+    });
+    try{
+      await registerPlayer();
+      await database.collection(COMPLETIONS).doc(String(row.id)).set(row, { merge: true });
+      upsertCompletion(toLocalCompletion(row.id, row));
+      writeCompletions();
+      refreshViews();
+      return true;
+    }catch(e){ console.warn('Completion Firestore Sync:', e); return false; }
+  };
+
+  window.startGlobalChallengeSync = async function(){
+    if(readLs('live_sync_enabled', true) === false) return false;
+    const database = await ensureFirebase();
+    if(!database || unsubscribe) return !!database;
+    await registerPlayer();
+    unsubscribe = database.collection(COMPLETIONS).orderBy('createdAt', 'desc').limit(1000).onSnapshot(snap => {
+      snap.docChanges().forEach(change => {
+        if(change.type === 'removed') removeCompletion(change.doc.id);
+        else upsertCompletion(toLocalCompletion(change.doc.id, change.doc.data() || {}));
+      });
+      writeCompletions();
+      refreshViews();
+    }, err => console.warn('Global Challenge Sync Listener:', err));
+    return true;
+  };
+
+  window.stopGlobalChallengeSync = function(){
+    try{ if(unsubscribe) unsubscribe(); }catch(e){}
+    unsubscribe = null;
+  };
+
+  const oldSetLive = window.setLiveSyncEnabled;
+  window.setLiveSyncEnabled = async function(enabled){
+    try{ localStorage.setItem('live_sync_enabled', JSON.stringify(!!enabled)); }catch(e){}
+    if(typeof oldSetLive === 'function'){
+      try{ await oldSetLive.apply(this, arguments); }catch(e){ console.warn('Live Sync Toggle:', e); }
+    }
+    if(enabled) window.startGlobalChallengeSync();
+    else window.stopGlobalChallengeSync();
+  };
+
+  function findChallenge(id){
+    return (window.challenges || []).find(c => String(c.id) === String(id));
+  }
+  function doneToday(challengeId){
+    const me = account().id, td = today();
+    return (window.challengeCompletions || []).some(c =>
+      String(c.challengeId) === String(challengeId) &&
+      String(c.date || '').slice(0, 10) === td &&
+      playerOf(c) === me
+    );
+  }
+
+  window.completeChallenge = function(id){
+    const ch = findChallenge(id);
+    if(!ch){ try{ toast('Challenge nicht gefunden', 'err'); }catch(e){} return; }
+    const me = account(), td = today();
+    if(doneToday(id)){ try{ toast('Bereits erledigt', ''); }catch(e){} return; }
+    const points = parseInt(ch.points, 10) || 0;
+    const rec = {
+      id: uid(),
+      challengeId: String(id),
+      playerId: me.id,
+      userEmail: me.email || me.id,
+      email: me.email || me.id,
+      userId: me.uid || me.id,
+      playerName: me.name || me.email || 'Mitspieler',
+      date: td,
+      points,
+      createdAt: new Date().toISOString()
+    };
+    upsertCompletion(rec);
+    writeCompletions();
+    refreshViews();
+    window.publishCompletionToFirestore(rec);
+    try{ toast('+' + points + ' Punkte ✓', 'ok'); }catch(e){}
+  };
+
+  window.undoChallenge = async function(id){
+    const me = account().id, td = today();
+    const removed = [];
+    (window.challengeCompletions || []).forEach(c => {
+      if(String(c.challengeId) === String(id) && String(c.date || '').slice(0, 10) === td && playerOf(c) === me) removed.push(c);
+    });
+    window.challengeCompletions = (window.challengeCompletions || []).filter(c => !removed.some(r => String(r.id) === String(c.id)));
+    writeCompletions();
+    const database = await ensureFirebase();
+    if(database){
+      removed.forEach(c => c.id && database.collection(COMPLETIONS).doc(String(c.id)).delete().catch(err => console.warn('Undo Firestore:', err)));
+    }
+    refreshViews();
+    try{ toast(removed.length ? 'Zurückgesetzt' : 'Nichts zurückzusetzen', ''); }catch(e){}
+  };
+
+  window._execResetToday = async function(){
+    const me = account().id, td = today();
+    const removed = (window.challengeCompletions || []).filter(c => String(c.date || '').slice(0, 10) === td && playerOf(c) === me);
+    window.challengeCompletions = (window.challengeCompletions || []).filter(c => !(String(c.date || '').slice(0, 10) === td && playerOf(c) === me));
+    writeCompletions();
+    const database = await ensureFirebase();
+    if(database){
+      removed.forEach(c => c.id && database.collection(COMPLETIONS).doc(String(c.id)).delete().catch(err => console.warn('Reset Firestore:', err)));
+    }
+    refreshViews();
+    try{ if(typeof closePanel === 'function') closePanel(); }catch(e){}
+    try{ toast('Heute zurückgesetzt ✓', 'ok'); }catch(e){}
+  };
+
+  function boot(){
+    if(initStarted) return;
+    initStarted = true;
+    window.challengeCompletions = Array.isArray(window.challengeCompletions) ? window.challengeCompletions : readLs('challenge_completions', []);
+    window.startGlobalChallengeSync();
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(boot, 600));
+  else setTimeout(boot, 600);
+  window.addEventListener('load', () => setTimeout(boot, 1200));
+})();
