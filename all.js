@@ -5103,3 +5103,206 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
   window.addEventListener('load', boot);
 })();
+
+
+
+/* CHANGE · FINAL TWO-WAY CHALLENGE SYNC
+   Ziel:
+   - Desktop-lokale gültige Punkte beim Start nach Firestore spiegeln
+   - Handy lädt globale Punkte direkt aus Firestore
+   - keine Termine/Dashboard-Daten global speichern
+*/
+(function(){
+  'use strict';
+
+  const COMPLETIONS='change_completions';
+  const PLAYERS='change_players';
+  const BAD=new Set(['','du','ich','me','local-user','google-user','local-authenticated-user','mitspieler','unknown']);
+  const norm=v=>String(v||'').trim().toLowerCase();
+  const isEmail=v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v||'').trim());
+  const pad=n=>String(n).padStart(2,'0');
+  const today=()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+  const safe=id=>norm(id||'unknown').replace(/[^a-z0-9._-]/g,'_');
+  const bad=id=>BAD.has(norm(id))||norm(id).startsWith('local-');
+  let db=null, unsub=null, syncing=false;
+
+  function toastMsg(m,t){try{if(typeof toast==='function')toast(m,t||'')}catch(e){}}
+  function read(key,fallback){try{const raw=localStorage.getItem(key);return raw==null?fallback:JSON.parse(raw)}catch(e){return fallback}}
+  function write(key,val){try{localStorage.setItem(key,JSON.stringify(val))}catch(e){}}
+  function appRead(k,fallback){try{if(typeof ls==='function'){const v=ls(k);return v==null?fallback:v}}catch(e){} return read('change_v1_'+k,fallback)}
+  function appWrite(k,val){try{if(typeof ls==='function')ls(k,val)}catch(e){} write('change_v1_'+k,val)}
+
+  function getUserInfo(){
+    const out={};
+    try{Object.assign(out, read('change_v1_user_info',{})||{})}catch(e){}
+    try{Object.assign(out, read('user_info',{})||{})}catch(e){}
+    try{Object.assign(out, window.userInfo||{})}catch(e){}
+    try{if(typeof userInfo!=='undefined')Object.assign(out,userInfo||{})}catch(e){}
+    return out;
+  }
+  function setUserInfo(info){
+    if(!info||!isEmail(info.email))return;
+    try{window.userInfo=Object.assign({},window.userInfo||{},info)}catch(e){}
+    try{if(typeof userInfo!=='undefined')userInfo=Object.assign({},userInfo||{},info)}catch(e){}
+    write('change_v1_user_info',info); write('user_info',info);
+    try{localStorage.setItem('change_v1_user_email',norm(info.email));localStorage.setItem('user_email',norm(info.email));}catch(e){}
+  }
+  function account(){
+    let fu=null;try{fu=window.firebase&&firebase.auth&&firebase.auth().currentUser}catch(e){}
+    const info=getUserInfo();
+    const email=norm((fu&&fu.email)||info.email||info.mail||localStorage.getItem('change_v1_user_email')||localStorage.getItem('user_email')||'');
+    const uid=(fu&&fu.uid)||info.uid||info.id||localStorage.getItem('change_v1_user_uid')||'';
+    const name=String((fu&&fu.displayName)||info.name||info.displayName||email.split('@')[0]||'').trim();
+    const picture=(fu&&fu.photoURL)||info.picture||info.photoURL||'';
+    if(isEmail(email))setUserInfo({email,name:name||email.split('@')[0],picture,uid});
+    return {ready:isEmail(email),id:email,email,uid,name:name||email.split('@')[0],picture};
+  }
+
+  async function ensureDb(){
+    if(db)return db;
+    try{
+      if(!window.firebase||!window.FIREBASE_CONFIG||!firebase.firestore)return null;
+      if(!firebase.apps.length)firebase.initializeApp(window.FIREBASE_CONFIG);
+      db=firebase.firestore();
+      return db;
+    }catch(e){console.warn('Final Challenge Sync Firebase init:',e);toastMsg('Firebase konnte nicht gestartet werden.','err');return null;}
+  }
+
+  function allLocalCompletions(){
+    const out=[], seen=new Set();
+    const sources=[
+      Array.isArray(window.challengeCompletions)?window.challengeCompletions:[],
+      (function(){try{return typeof challengeCompletions!=='undefined'&&Array.isArray(challengeCompletions)?challengeCompletions:[]}catch(e){return[]}})(),
+      appRead('challenge_completions',[]),
+      read('challenge_completions',[]),
+      read('challengeCompletions',[])
+    ];
+    sources.flat().forEach(c=>{
+      if(!c||typeof c!=='object')return;
+      const key=String(c.id||'')+'|'+String(c.challengeId||'')+'|'+String(c.date||'')+'|'+String(c.playerId||c.userEmail||c.email||'');
+      if(seen.has(key))return;seen.add(key);out.push(c);
+    });
+    return out;
+  }
+  function normalizeCompletion(c, owner){
+    if(!c||!c.challengeId)return null;
+    const me=owner||account();
+    let email=norm(c.userEmail||c.email||c.playerEmail||c.playerId||'');
+    // Alte lokale Einträge ohne echte E-Mail gehören dem aktuell eingeloggten Nutzer.
+    if(!isEmail(email)||bad(email)) email=me.ready?me.email:'';
+    if(!isEmail(email))return null;
+    const id=String(c.id||('cc_'+String(c.challengeId)+'_'+String(c.date||today())+'_'+safe(email))).replace(/[^a-zA-Z0-9._-]/g,'_');
+    return {
+      id,
+      challengeId:String(c.challengeId),
+      playerId:email,
+      userEmail:email,
+      email,
+      userId:String(c.userId||c.uid||(email)),
+      playerName:String(c.playerName||c.userName||c.name||(email.split('@')[0])),
+      date:String(c.date||today()).slice(0,10),
+      points:parseInt(c.points,10)||0,
+      createdAtLocal:String(c.createdAtLocal||c.createdAt||new Date().toISOString()),
+      syncedFrom:'change-final-two-way'
+    };
+  }
+  function mergeLocal(row){
+    if(!row||!row.id||!row.challengeId||!isEmail(row.email))return;
+    window.challengeCompletions=Array.isArray(window.challengeCompletions)?window.challengeCompletions:[];
+    const i=window.challengeCompletions.findIndex(c=>String(c.id)===String(row.id));
+    if(i>=0)window.challengeCompletions[i]=Object.assign({},window.challengeCompletions[i],row);
+    else window.challengeCompletions.push(row);
+  }
+  function persistCompletions(){
+    const arr=(window.challengeCompletions||[]).map(c=>normalizeCompletion(c,account())).filter(Boolean);
+    window.challengeCompletions=arr;
+    try{if(typeof challengeCompletions!=='undefined')challengeCompletions=arr}catch(e){}
+    appWrite('challenge_completions',arr);write('challenge_completions',arr);write('challengeCompletions',arr);
+  }
+  function refresh(){
+    try{if(typeof renderChallenges==='function')renderChallenges()}catch(e){}
+    try{if(typeof buildDashboard==='function')buildDashboard()}catch(e){}
+    try{if(typeof renderWeekBar==='function')renderWeekBar()}catch(e){}
+    try{if(window.currentMainView==='calendar'&&typeof renderCalendar==='function')renderCalendar()}catch(e){}
+  }
+  async function registerPlayer(me){
+    const database=await ensureDb(); if(!database||!me.ready)return false;
+    try{await database.collection(PLAYERS).doc(safe(me.email)).set({id:me.email,email:me.email,name:me.name||me.email.split('@')[0],picture:me.picture||'',online:true,app:'Change',lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});return true;}
+    catch(e){console.warn('Final Player Sync:',e);return false;}
+  }
+  async function uploadLocalCompletions(){
+    const database=await ensureDb(); const me=account();
+    if(!database||!me.ready)return false;
+    const locals=allLocalCompletions().map(c=>normalizeCompletion(c,me)).filter(Boolean);
+    if(!locals.length){persistCompletions();return true;}
+    try{
+      await registerPlayer(me);
+      for(const row of locals){
+        await database.collection(COMPLETIONS).doc(String(row.id)).set(Object.assign({},row,{createdAt:firebase.firestore.FieldValue.serverTimestamp()}),{merge:true});
+        mergeLocal(row);
+      }
+      persistCompletions();
+      return true;
+    }catch(e){console.warn('Final Challenge upload failed:',e);toastMsg('Punkte konnten nicht online gespeichert werden: '+(e.message||e),'err');return false;}
+  }
+  async function loadRemoteCompletions(){
+    const database=await ensureDb(); if(!database)return false;
+    try{
+      const snap=await database.collection(COMPLETIONS).limit(1000).get();
+      snap.forEach(doc=>{const row=normalizeCompletion(Object.assign({id:doc.id},doc.data()||{}),account());if(row)mergeLocal(row)});
+      persistCompletions();refresh();return true;
+    }catch(e){console.warn('Final Challenge remote load failed:',e);toastMsg('Punkte konnten nicht aus Firebase geladen werden: '+(e.message||e),'err');return false;}
+  }
+  async function startSync(){
+    if(syncing)return; syncing=true;
+    const database=await ensureDb(); const me=account();
+    if(!database){syncing=false;return false;}
+    if(me.ready)await registerPlayer(me);
+    await uploadLocalCompletions();
+    await loadRemoteCompletions();
+    if(unsub){try{unsub()}catch(e){}unsub=null;}
+    try{
+      unsub=database.collection(COMPLETIONS).limit(1000).onSnapshot(snap=>{
+        snap.docChanges().forEach(ch=>{
+          if(ch.type==='removed') window.challengeCompletions=(window.challengeCompletions||[]).filter(c=>String(c.id)!==String(ch.doc.id));
+          else {const row=normalizeCompletion(Object.assign({id:ch.doc.id},ch.doc.data()||{}),account());if(row)mergeLocal(row);}
+        });
+        persistCompletions();refresh();
+      },err=>{console.warn('Final Challenge listener failed:',err);toastMsg('Live-Punkte-Sync blockiert: '+(err.message||err),'err');});
+    }catch(e){console.warn('Final Challenge listener setup failed:',e);}
+    syncing=false;return true;
+  }
+
+  const oldPublish=window.publishCompletionToFirestore;
+  window.publishCompletionToFirestore=async function(completion){
+    const me=account();
+    const row=normalizeCompletion(completion,me);
+    if(!row){toastMsg('Bitte erst mit Google anmelden – Punkte werden sonst keinem Konto zugeordnet.','err');return false;}
+    mergeLocal(row);persistCompletions();
+    const ok=await uploadLocalCompletions();
+    setTimeout(loadRemoteCompletions,400);
+    return ok;
+  };
+
+  const oldComplete=window.completeChallenge;
+  window.completeChallenge=async function(id){
+    const before=(window.challengeCompletions||[]).length;
+    let res;
+    if(typeof oldComplete==='function') res=await oldComplete.apply(this,arguments);
+    setTimeout(async()=>{
+      await uploadLocalCompletions();
+      await loadRemoteCompletions();
+      if((window.challengeCompletions||[]).length>before) refresh();
+    },150);
+    return res;
+  };
+
+  window.startGlobalChallengeSync=startSync;
+  window.forceLoadChallengePoints=async function(){await uploadLocalCompletions();return loadRemoteCompletions();};
+  window.debugChallengeSync=async function(){const me=account();const database=await ensureDb();let remote=-1;try{if(database){const s=await database.collection(COMPLETIONS).limit(1000).get();remote=s.size;}}catch(e){remote='Fehler: '+(e.message||e)};const local=allLocalCompletions().length;toastMsg('Sync-Status: lokal '+local+' · online '+remote+' · '+(me.email||'kein Konto'), remote===0?'err':'ok');return {account:me,local,remote};};
+
+  function boot(){[200,800,1800,3500,7000].forEach(ms=>setTimeout(startSync,ms));}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot); else boot();
+  window.addEventListener('load',boot);
+})();
+
