@@ -131,3 +131,43 @@
   /* Dashboard */
   .dash-grid{grid-template-columns:1fr!important}
 }
+
+/* ── Mobile erzwingen, falls Browser trotz Smartphone Desktop-Breite meldet ── */
+body.change-mobile{overflow:hidden!important;max-width:100vw!important}
+body.change-mobile #app,body.change-mobile #content{width:100vw!important;max-width:100vw!important;overflow:hidden!important}
+body.change-mobile .h-sep,
+body.change-mobile .h-logo-name,
+body.change-mobile .h-today-btn,
+body.change-mobile .view-toggle,
+body.change-mobile .h-tabs,
+body.change-mobile .desktop-only{display:none!important}
+body.change-mobile #bottom-nav{display:block!important}
+body.change-mobile #header{padding:0 12px!important;gap:8px!important}
+body.change-mobile #cal-controls{flex:1!important;min-width:0!important}
+body.change-mobile .h-month{font-size:15px!important;flex:1!important;text-align:center!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+body.change-mobile .dash-grid,body.change-mobile #dash-grid{grid-template-columns:1fr!important;gap:12px!important}
+body.change-mobile #dashboard-view{overflow-y:auto!important;padding:12px 12px calc(var(--nav-h) + 22px)!important}
+body.change-mobile #challenges-view{overflow-y:auto!important;overflow-x:hidden!important;padding-bottom:calc(var(--nav-h) + 16px)!important}
+body.change-mobile .challenge-layout{display:flex!important;flex-direction:column!important;grid-template-columns:none!important;gap:12px!important;padding:12px!important;overflow:visible!important;height:auto!important}
+body.change-mobile .challenge-layout > #challenge-week-points-card{order:1!important;width:100%!important;margin:0!important;border-radius:var(--rlg)!important;border:1px solid var(--b1)!important;overflow:hidden!important}
+body.change-mobile .challenge-layout > .leader-card{order:2!important;width:100%!important;margin:0!important;border-radius:var(--rlg)!important}
+body.change-mobile .challenge-layout > .challenge-card{order:3!important;width:100%!important;margin:0!important;border-radius:var(--rlg)!important}
+body.change-mobile .challenge-card,body.change-mobile .leader-card{max-height:none!important;overflow:visible!important;border-left:1px solid var(--b1)!important;border-right:1px solid var(--b1)!important}
+body.change-mobile #challenges-list,body.change-mobile #leaderboard-list{max-height:none!important;overflow:visible!important}
+body.change-mobile .challenge-week-head{padding:12px 14px!important;flex-direction:column!important;align-items:flex-start!important;gap:10px!important}
+body.change-mobile .challenge-week-actions{width:100%!important;display:grid!important;grid-template-columns:1fr 1fr 1fr!important;gap:6px!important}
+body.change-mobile .challenge-week-actions .btn{width:100%!important;justify-content:center!important;font-size:11px!important;padding:6px 6px!important}
+body.change-mobile .challenge-week-grid{grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:4px!important;padding:8px!important;border-top:0!important;overflow-x:visible!important}
+body.change-mobile .challenge-week-day{min-height:62px!important;padding:7px 4px!important;border-radius:12px!important;border:1px solid var(--b1)!important;text-align:left!important}
+body.change-mobile .challenge-week-day-name{font-size:9px!important}
+body.change-mobile .challenge-week-day-date{font-size:11px!important}
+body.change-mobile .challenge-week-day-points{font-size:10.5px!important}
+body.change-mobile .challenge-item{flex-wrap:wrap!important;align-items:flex-start!important;padding:12px 14px!important;gap:8px!important}
+body.change-mobile .challenge-body{flex:1 1 calc(100% - 48px)!important;min-width:calc(100% - 48px)!important}
+body.change-mobile .challenge-name{white-space:normal!important}
+body.change-mobile .points-pill{margin-left:auto!important}
+body.change-mobile .challenge-item > .btn{margin-left:auto!important}
+body.change-mobile .month-grid-polished .cal-week-polished,
+body.change-mobile .cfx-week-row{min-height:98px!important}
+body.change-mobile .year-grid-stacked{grid-template-columns:1fr!important}
+body.change-mobile #fab{display:flex!important}

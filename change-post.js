@@ -1688,3 +1688,20 @@
   };
 })();
 
+
+/* ── Mobile View Detection ──────────────────────────────── */
+(function(){
+  'use strict';
+  function isMobileLike(){
+    var ua = navigator.userAgent || '';
+    var touch = (navigator.maxTouchPoints || 0) > 0;
+    var w = Math.min(window.innerWidth || 9999, window.screen && window.screen.width || 9999);
+    return w <= 820 || (touch && /Android|iPhone|iPad|iPod|Mobile/i.test(ua));
+  }
+  function apply(){
+    if(document.body) document.body.classList.toggle('change-mobile', isMobileLike());
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', apply); else apply();
+  window.addEventListener('resize', apply, {passive:true});
+  window.addEventListener('orientationchange', function(){ setTimeout(apply, 120); }, {passive:true});
+})();
