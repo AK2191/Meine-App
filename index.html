@@ -7415,19 +7415,31 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   function completionOwner(c){ return norm(c && (c.playerId || c.userEmail || c.email || c.userId)); }
   function validCompletion(c){ return c && c.id && c.challengeId && c.date && !isBadId(completionOwner(c)) && isEmail(c.userEmail || c.email || c.playerId); }
   function sanitizeLocalCompletions(){
-    const before = Array.isArray(window.challengeCompletions) ? window.challengeCompletions : (readJson('challenge_completions', []) || []);
+    // Wichtig: beim Reload ist window.challengeCompletions oft zuerst []
+    // obwohl localStorage/Firestore bereits Punkte enthält. Deshalb Quellen MERGEN,
+    // niemals eine leere Runtime-Liste über gespeicherte Daten schreiben.
+    const sources = [
+      Array.isArray(window.challengeCompletions) ? window.challengeCompletions : [],
+      Array.isArray(readJson('challenge_completions', [])) ? readJson('challenge_completions', []) : [],
+      Array.isArray(readJson('challengeCompletions', [])) ? readJson('challengeCompletions', []) : []
+    ];
+    try{ if(typeof ls === 'function'){
+      const a = ls('challenge_completions'); if(Array.isArray(a)) sources.push(a);
+      const b = ls('challengeCompletions'); if(Array.isArray(b)) sources.push(b);
+    }}catch(e){}
     const clean = [];
     const seen = new Set();
-    before.forEach(c => {
+    sources.flat().forEach(c => {
       if(!validCompletion(c)) return;
       const id = String(c.id);
       if(seen.has(id)) return;
       seen.add(id);
+      const email = norm(c.userEmail || c.email || c.playerId);
       clean.push(Object.assign({}, c, {
-        playerId: norm(c.playerId || c.userEmail || c.email),
-        userEmail: norm(c.userEmail || c.email || c.playerId),
-        email: norm(c.email || c.userEmail || c.playerId),
-        playerName: c.playerName && !/^mitspieler$/i.test(c.playerName) ? c.playerName : norm(c.email || c.userEmail || c.playerId).split('@')[0]
+        playerId: email,
+        userEmail: email,
+        email,
+        playerName: c.playerName && !/^mitspieler$/i.test(c.playerName) ? c.playerName : email.split('@')[0]
       }));
     });
     window.challengeCompletions = clean;
@@ -7644,16 +7656,17 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   };
 
   function boot(){
-    setTimeout(() => {
+    const run = () => {
       account();
       sanitizeLocalCompletions();
       cleanupBadRemote();
       window.startGlobalChallengeSync();
       refresh();
-    }, 900);
+    };
+    [250, 900, 1800, 3500, 6500].forEach(ms => setTimeout(run, ms));
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
-  window.addEventListener('load', () => setTimeout(boot, 1200));
+  window.addEventListener('load', boot);
 })();
 
 </script>
