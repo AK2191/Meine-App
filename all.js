@@ -3939,7 +3939,9 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   function isGoog(ev) { return ev?.source === 'google' || String(ev?.id || '').startsWith('g_'); }
   function gMark(ev) {
     if (isGoog(ev)) return '<span class="cfx-gmark" title="von Google">G</span>';
-    if (ev?.googleEventId || ev?.syncedToGoogle) return '<span class="cfx-gmark ok" title="an Google übertragen">✓</span>';
+    if (ev?.googleEventId || ev?.syncedToGoogle || ev?.googleSyncedAt) {
+      return '<span class="cfx-gmark ok" title="lokal vorhanden">✓</span><span class="cfx-gmark" title="mit Google Kalender verbunden">G</span>';
+    }
     return '';
   }
 
@@ -3948,10 +3950,14 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     const out = [], seen = new Set();
     function add(ev, src) {
       const r = getRange(ev); if (!r.start) return;
-      const key = (ev.googleEventId ? 'g:' + ev.googleEventId : 'l:' + ev.id) + ':' + r.start + ':' + r.end;
+      const rawId = String(ev.id || ev.googleEventId || '');
+      const googleId = ev.googleEventId || (src === 'google' ? rawId.replace(/^g_/, '') : '');
+      const titleKey = String(getTitle(ev) || '').trim().toLowerCase();
+      const timeKey = ev.time || (ev.start?.dateTime ? new Date(ev.start.dateTime).toTimeString().slice(0,5) : '');
+      const key = googleId ? ('g:' + googleId) : ('l:' + (ev.id || (titleKey + '|' + r.start + '|' + r.end + '|' + timeKey)));
       if (seen.has(key)) return; seen.add(key);
-      const id = src === 'google' ? (String(ev.id || '').startsWith('g_') ? ev.id : 'g_' + (ev.id || ev.googleEventId || '')) : ev.id;
-      out.push(Object.assign({}, ev, { id, date: r.start, startDate: r.start, endDate: r.end, source: src,
+      const id = src === 'google' ? (rawId.startsWith('g_') ? rawId : 'g_' + rawId) : ev.id;
+      out.push(Object.assign({}, ev, { id, googleEventId: googleId || ev.googleEventId || '', date: r.start, startDate: r.start, endDate: r.end, source: src,
         time: ev.time || (ev.start?.dateTime ? new Date(ev.start.dateTime).toTimeString().slice(0,5) : '') }));
     }
     try { (window.events || []).forEach(ev => add(ev, ev.source || 'local')); } catch (e) {}
@@ -4318,7 +4324,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
     const title=evs.length?(evs.length+' '+(evs.length===1?'Termin':'Termine')):(hols.length?(hols.length===1?'Feiertag':'Feiertage'):'Tag');
     let html='<div class="day-detail-date">'+esc(weekday(k)+', '+fmt(k))+'</div>';
     if(hols.length) html+='<div class="day-detail-holidays">'+hols.map(h=>'<div class="day-detail-holiday"><span>🎉</span><div><b>'+esc(h.name)+'</b><small>Feiertag</small></div></div>').join('')+'</div>';
-    if(evs.length) html+='<div class="day-detail-list">'+evs.map(ev=>{const r=rangeOf(ev), sub=r.isRange?(fmt(r.start)+' – '+fmt(r.end)):fmt(k), id=esc(ev.id||ev.googleEventId||''), g=(ev.source==='google'||ev.googleEventId)?' <span class="cal-g" title="von Google">G</span>':''; return '<div class="day-detail-event" onclick="openEventPanel(\''+id+'\')"><div class="day-detail-time">'+(timeOf(ev)||'Ganztägig')+'</div><div class="day-detail-main"><div class="day-detail-title">'+esc(titleOf(ev))+g+'</div><div class="day-detail-sub">'+esc(sub)+'</div></div></div>';}).join('')+'</div>'; else html+='<div class="day-detail-empty">Keine Termine für diesen Tag</div>';
+    if(evs.length) html+='<div class="day-detail-list">'+evs.map(ev=>{const r=rangeOf(ev), sub=r.isRange?(fmt(r.start)+' – '+fmt(r.end)):fmt(k), id=esc(ev.id||ev.googleEventId||''), g=(ev.source==='google')?' <span class="cal-g" title="von Google">G</span>':(ev.googleEventId||ev.syncedToGoogle||ev.googleSyncedAt)?' <span class="cal-g ok" title="lokal vorhanden">✓</span> <span class="cal-g" title="mit Google Kalender verbunden">G</span>':''; return '<div class="day-detail-event" onclick="openEventPanel(\''+id+'\')"><div class="day-detail-time">'+(timeOf(ev)||'Ganztägig')+'</div><div class="day-detail-main"><div class="day-detail-title">'+esc(titleOf(ev))+g+'</div><div class="day-detail-sub">'+esc(sub)+'</div></div></div>';}).join('')+'</div>'; else html+='<div class="day-detail-empty">Keine Termine für diesen Tag</div>';
     html+='<button class="btn btn-primary btn-full day-detail-add" onclick="window.__openNewEventForDay&&window.__openNewEventForDay(\''+k+'\')">+ Neuer Termin für diesen Tag</button>';
     window.__openNewEventForDay=function(day){if(typeof window.openEventPanel==='function')window.openEventPanel(null,parse(day));};
     if(typeof window.openPanel==='function')window.openPanel(title,html);
