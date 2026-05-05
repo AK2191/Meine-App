@@ -4784,3 +4784,309 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   window.addEventListener('resize', apply, {passive:true});
   window.addEventListener('orientationchange', function(){ setTimeout(apply, 120); }, {passive:true});
 })();
+
+
+/* ── Account-sicherer Challenge Sync Fix ───────────────────
+   Verhindert falsche Spieler wie "Mitspieler" / local-user.
+   Challenge-Punkte werden nur mit echtem Google-Konto gespeichert.
+────────────────────────────────────────────────────────── */
+(function(){
+  'use strict';
+
+  const COMPLETIONS = 'change_completions';
+  const PLAYERS = 'change_players';
+  const BAD_IDS = new Set(['', 'du', 'ich', 'me', 'local-user', 'google-user', 'local-authenticated-user', 'mitspieler', 'unknown']);
+  const norm = v => String(v || '').trim().toLowerCase();
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const pad2 = n => String(n).padStart(2, '0');
+  const today = () => { const d = new Date(); return d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate()); };
+  const safeDocId = id => norm(id || 'unknown').replace(/[^a-z0-9._-]/g, '_');
+  const isEmail = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || '').trim());
+  const isBadId = id => BAD_IDS.has(norm(id)) || !norm(id) || norm(id).startsWith('local-');
+
+  function readJson(key, fallback){ try{ const raw = localStorage.getItem(key); return raw == null ? fallback : JSON.parse(raw); }catch(e){ return fallback; } }
+  function writeJson(key, value){ try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){} }
+  function getGlobalUserInfo(){
+    try{ if(typeof userInfo !== 'undefined' && userInfo && typeof userInfo === 'object') return userInfo; }catch(e){}
+    return {};
+  }
+  function setGlobalUserInfo(info){
+    if(!info || !info.email) return;
+    try{ window.userInfo = Object.assign({}, window.userInfo || {}, info); }catch(e){}
+    try{ if(typeof userInfo !== 'undefined') userInfo = Object.assign({}, userInfo || {}, info); }catch(e){}
+    writeJson('change_v1_user_info', info);
+    writeJson('user_info', info);
+    try{ localStorage.setItem('change_v1_user_email', info.email); }catch(e){}
+    try{ localStorage.setItem('user_email', info.email); }catch(e){}
+  }
+  function account(){
+    let fu = null;
+    try{ fu = window.firebase && firebase.auth && firebase.auth().currentUser; }catch(e){}
+    const candidates = [
+      fu || {},
+      getGlobalUserInfo(),
+      window.userInfo || {},
+      readJson('change_v1_user_info', {}) || {},
+      readJson('user_info', {}) || {},
+      readJson('google_user', {}) || {},
+      readJson('current_user', {}) || {}
+    ];
+    let email = '';
+    for(const c of candidates){
+      const e = norm(c && (c.email || c.mail));
+      if(isEmail(e)){ email = e; break; }
+    }
+    const uid = String((fu && fu.uid) || candidates.find(c => c && (c.uid || c.id))?.uid || '').trim();
+    let name = '';
+    for(const c of candidates){
+      const n = String(c && (c.displayName || c.name || '')).trim();
+      if(n && !/^mitspieler$/i.test(n)){ name = n; break; }
+    }
+    if(!name && email) name = email.split('@')[0];
+    const picture = (fu && fu.photoURL) || candidates.find(c => c && (c.picture || c.photoURL))?.picture || candidates.find(c => c && (c.picture || c.photoURL))?.photoURL || '';
+    if(email) setGlobalUserInfo({ email, name: name || email, picture, uid });
+    return { id: email || uid || '', email, uid, name: name || email || '', picture, ready: !!email };
+  }
+  function completionOwner(c){ return norm(c && (c.playerId || c.userEmail || c.email || c.userId)); }
+  function validCompletion(c){ return c && c.id && c.challengeId && c.date && !isBadId(completionOwner(c)) && isEmail(c.userEmail || c.email || c.playerId); }
+  function sanitizeLocalCompletions(){
+    const before = Array.isArray(window.challengeCompletions) ? window.challengeCompletions : (readJson('challenge_completions', []) || []);
+    const clean = [];
+    const seen = new Set();
+    before.forEach(c => {
+      if(!validCompletion(c)) return;
+      const id = String(c.id);
+      if(seen.has(id)) return;
+      seen.add(id);
+      clean.push(Object.assign({}, c, {
+        playerId: norm(c.playerId || c.userEmail || c.email),
+        userEmail: norm(c.userEmail || c.email || c.playerId),
+        email: norm(c.email || c.userEmail || c.playerId),
+        playerName: c.playerName && !/^mitspieler$/i.test(c.playerName) ? c.playerName : norm(c.email || c.userEmail || c.playerId).split('@')[0]
+      }));
+    });
+    window.challengeCompletions = clean;
+    try{ if(typeof challengeCompletions !== 'undefined') challengeCompletions = clean; }catch(e){}
+    try{ if(typeof ls === 'function') ls('challenge_completions', clean); else writeJson('challenge_completions', clean); }catch(e){ writeJson('challenge_completions', clean); }
+    writeJson('challengeCompletions', clean);
+    return clean;
+  }
+  function refresh(){
+    try{ if(typeof renderChallenges === 'function') renderChallenges(); }catch(e){}
+    try{ if(typeof buildDashboard === 'function') buildDashboard(); }catch(e){}
+    try{ if(window.currentMainView === 'calendar' && typeof renderCalendar === 'function') renderCalendar(); }catch(e){}
+    try{ if(typeof renderWeekBar === 'function') renderWeekBar(); }catch(e){}
+  }
+  function getChallenges(){
+    if(Array.isArray(window.challenges)) return window.challenges;
+    try{ return readJson('challenges', []) || []; }catch(e){ return []; }
+  }
+  function findChallenge(id){ return getChallenges().find(c => String(c.id) === String(id)); }
+  function isDoneToday(id, me){
+    const td = today();
+    return (window.challengeCompletions || []).some(c => String(c.challengeId) === String(id) && String(c.date || '').slice(0,10) === td && norm(c.playerId || c.userEmail || c.email) === me.id);
+  }
+  function saveLocal(rec){
+    sanitizeLocalCompletions();
+    if((window.challengeCompletions || []).some(c => String(c.id) === String(rec.id))) return;
+    window.challengeCompletions.push(rec);
+    try{ if(typeof challengeCompletions !== 'undefined') challengeCompletions = window.challengeCompletions; }catch(e){}
+    try{ if(typeof ls === 'function') ls('challenge_completions', window.challengeCompletions); else writeJson('challenge_completions', window.challengeCompletions); }catch(e){ writeJson('challenge_completions', window.challengeCompletions); }
+    writeJson('challengeCompletions', window.challengeCompletions);
+  }
+  async function ensureDb(){
+    try{
+      if(!window.firebase || !window.FIREBASE_CONFIG || !firebase.firestore) return null;
+      if(!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
+      return firebase.firestore();
+    }catch(e){ console.warn('Challenge Firebase init:', e); return null; }
+  }
+  async function cleanupBadRemote(){
+    const db = await ensureDb();
+    if(!db) return;
+    try{
+      const bad = ['local-user','local-authenticated-user','google-user','mitspieler','unknown',''];
+      for(const id of bad){
+        const snap = await db.collection(COMPLETIONS).where('playerId','==',id).limit(50).get();
+        snap.forEach(doc => doc.ref.delete().catch(()=>{}));
+      }
+      const ps = await db.collection(PLAYERS).limit(200).get();
+      ps.forEach(doc => {
+        const d = doc.data() || {}, id = norm(d.id || doc.id), email = norm(d.email || '');
+        if(isBadId(id) || !isEmail(email)) doc.ref.delete().catch(()=>{});
+      });
+    }catch(e){ console.warn('Challenge cleanup:', e); }
+  }
+  async function registerPlayer(me){
+    const db = await ensureDb();
+    if(!db || !me.ready) return false;
+    try{
+      await db.collection(PLAYERS).doc(safeDocId(me.id)).set({
+        id: me.id,
+        email: me.email,
+        name: me.name || me.email.split('@')[0],
+        picture: me.picture || '',
+        online: true,
+        app: 'Change',
+        lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge:true });
+      return true;
+    }catch(e){ console.warn('Player sync:', e); return false; }
+  }
+  function toLocal(id, data){
+    const owner = norm(data.playerId || data.userEmail || data.email || data.userId);
+    if(isBadId(owner) || !isEmail(data.userEmail || data.email || owner)) return null;
+    const email = norm(data.userEmail || data.email || owner);
+    return {
+      id: String(id || data.id || ''),
+      challengeId: String(data.challengeId || ''),
+      playerId: email,
+      userEmail: email,
+      email,
+      userId: String(data.userId || email),
+      playerName: data.playerName && !/^mitspieler$/i.test(data.playerName) ? data.playerName : email.split('@')[0],
+      date: String(data.date || today()).slice(0,10),
+      points: parseInt(data.points,10) || 0,
+      createdAt: data.createdAtLocal || data.createdAt?.toDate?.().toISOString?.() || data.createdAt || new Date().toISOString(),
+      source: 'firestore'
+    };
+  }
+  function upsert(row){
+    if(!validCompletion(row)) return;
+    window.challengeCompletions = Array.isArray(window.challengeCompletions) ? window.challengeCompletions : [];
+    const i = window.challengeCompletions.findIndex(c => String(c.id) === String(row.id));
+    if(i >= 0) window.challengeCompletions[i] = Object.assign({}, window.challengeCompletions[i], row);
+    else window.challengeCompletions.push(row);
+  }
+
+  window.getCurrentChallengeAccount = account;
+
+  window.publishCompletionToFirestore = async function(completion){
+    const me = account();
+    if(!me.ready){
+      try{ if(typeof toast === 'function') toast('Bitte erst mit Google anmelden – Punkte werden sonst keinem Konto zugeordnet.','err'); }catch(e){}
+      return false;
+    }
+    const db = await ensureDb();
+    if(!db || !completion || !completion.id) return false;
+    const rec = Object.assign({}, completion, {
+      playerId: me.id,
+      userEmail: me.email,
+      email: me.email,
+      userId: me.uid || me.email,
+      playerName: me.name || me.email.split('@')[0],
+      date: String(completion.date || today()).slice(0,10),
+      points: parseInt(completion.points,10) || 0,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdAtLocal: completion.createdAt || new Date().toISOString()
+    });
+    try{
+      await registerPlayer(me);
+      await db.collection(COMPLETIONS).doc(String(rec.id)).set(rec, { merge:true });
+      const local = toLocal(rec.id, rec);
+      if(local){ upsert(local); sanitizeLocalCompletions(); refresh(); }
+      return true;
+    }catch(e){ console.warn('Completion sync:', e); return false; }
+  };
+
+  window.completeChallenge = async function(id){
+    const me = account();
+    if(!me.ready){
+      try{ if(typeof toast === 'function') toast('Bitte zuerst mit Google anmelden. Dann werden Punkte korrekt gespeichert.','err'); }catch(e){}
+      return;
+    }
+    const ch = findChallenge(id);
+    if(!ch){ try{ if(typeof toast === 'function') toast('Challenge nicht gefunden','err'); }catch(e){} return; }
+    sanitizeLocalCompletions();
+    if(isDoneToday(id, me)){ try{ if(typeof toast === 'function') toast('Bereits erledigt',''); }catch(e){} return; }
+    const rec = {
+      id: 'cc_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,7),
+      challengeId: String(id),
+      playerId: me.id,
+      userEmail: me.email,
+      email: me.email,
+      userId: me.uid || me.email,
+      playerName: me.name || me.email.split('@')[0],
+      date: today(),
+      points: parseInt(ch.points,10) || 0,
+      createdAt: new Date().toISOString()
+    };
+    saveLocal(rec);
+    refresh();
+    window.publishCompletionToFirestore(rec);
+    try{ if(typeof toast === 'function') toast('+' + rec.points + ' Punkte ✓','ok'); }catch(e){}
+  };
+
+  window.undoChallenge = async function(id){
+    const me = account();
+    if(!me.ready){ try{ if(typeof toast === 'function') toast('Bitte zuerst mit Google anmelden.','err'); }catch(e){} return; }
+    const td = today();
+    const removed = [];
+    sanitizeLocalCompletions();
+    window.challengeCompletions = (window.challengeCompletions || []).filter(c => {
+      const hit = String(c.challengeId) === String(id) && String(c.date || '').slice(0,10) === td && norm(c.playerId || c.userEmail || c.email) === me.id;
+      if(hit) removed.push(c);
+      return !hit;
+    });
+    try{ if(typeof challengeCompletions !== 'undefined') challengeCompletions = window.challengeCompletions; }catch(e){}
+    try{ if(typeof ls === 'function') ls('challenge_completions', window.challengeCompletions); else writeJson('challenge_completions', window.challengeCompletions); }catch(e){ writeJson('challenge_completions', window.challengeCompletions); }
+    writeJson('challengeCompletions', window.challengeCompletions);
+    const db = await ensureDb();
+    if(db){ removed.forEach(c => c.id && db.collection(COMPLETIONS).doc(String(c.id)).delete().catch(()=>{})); }
+    refresh();
+    try{ if(typeof toast === 'function') toast(removed.length ? 'Challenge zurückgesetzt' : 'Nichts zurückzusetzen',''); }catch(e){}
+  };
+
+  window.resetTodayChallenges = async function(){
+    const me = account();
+    if(!me.ready){ try{ if(typeof toast === 'function') toast('Bitte zuerst mit Google anmelden.','err'); }catch(e){} return; }
+    const td = today();
+    const removed = [];
+    sanitizeLocalCompletions();
+    window.challengeCompletions = (window.challengeCompletions || []).filter(c => {
+      const hit = String(c.date || '').slice(0,10) === td && norm(c.playerId || c.userEmail || c.email) === me.id;
+      if(hit) removed.push(c);
+      return !hit;
+    });
+    try{ if(typeof challengeCompletions !== 'undefined') challengeCompletions = window.challengeCompletions; }catch(e){}
+    try{ if(typeof ls === 'function') ls('challenge_completions', window.challengeCompletions); else writeJson('challenge_completions', window.challengeCompletions); }catch(e){ writeJson('challenge_completions', window.challengeCompletions); }
+    writeJson('challengeCompletions', window.challengeCompletions);
+    const db = await ensureDb();
+    if(db){ removed.forEach(c => c.id && db.collection(COMPLETIONS).doc(String(c.id)).delete().catch(()=>{})); }
+    refresh();
+    try{ if(typeof toast === 'function') toast('Heute zurückgesetzt',''); }catch(e){}
+  };
+
+  window.startGlobalChallengeSync = async function(){
+    const db = await ensureDb();
+    const me = account();
+    if(db && me.ready) await registerPlayer(me);
+    sanitizeLocalCompletions();
+    if(!db) return false;
+    if(window.__changeChallengeUnsub){ try{ window.__changeChallengeUnsub(); }catch(e){} }
+    window.__changeChallengeUnsub = db.collection(COMPLETIONS).orderBy('createdAt','desc').limit(1000).onSnapshot(snap => {
+      snap.docChanges().forEach(change => {
+        if(change.type === 'removed') window.challengeCompletions = (window.challengeCompletions || []).filter(c => String(c.id) !== String(change.doc.id));
+        else {
+          const row = toLocal(change.doc.id, change.doc.data() || {});
+          if(row) upsert(row);
+        }
+      });
+      sanitizeLocalCompletions();
+      refresh();
+    }, err => console.warn('Challenge listener:', err));
+    return true;
+  };
+
+  function boot(){
+    setTimeout(() => {
+      account();
+      sanitizeLocalCompletions();
+      cleanupBadRemote();
+      window.startGlobalChallengeSync();
+      refresh();
+    }, 900);
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  window.addEventListener('load', () => setTimeout(boot, 1200));
+})();
