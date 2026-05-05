@@ -6425,6 +6425,135 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   };
   window.getFriseurWeeks = getWeeks;
 
+  // Alle Friseur-Termine des aktuellen Jahres (vergangen + zukünftig)
+  function findAllFriseurThisYear(){
+    var kw   = KEYWORD.toLowerCase();
+    var year = String(new Date().getFullYear());
+    var seen = {};
+    var all  = [];
+
+    function addEvent(title, dateStr, time, endTime){
+      var date = (dateStr||'').slice(0,10);
+      if(!date || date.slice(0,4) !== year) return;
+      var key  = date + '|' + String(title||'');
+      if(seen[key]) return;
+      seen[key] = true;
+      var rawTitle = String(title||'Friseur-Termin');
+      var t = rawTitle.toLowerCase();
+      if(!t.includes(kw)) return;
+      all.push({ date: date, title: rawTitle, time: time||'', endTime: endTime||'' });
+    }
+
+    (window.events||[]).forEach(function(e){
+      addEvent(e.title, e.startDate||e.date, e.time, e.endTime);
+    });
+    (window.gEvents||[]).forEach(function(g){
+      if(!g) return;
+      var s = (g.start&&(g.start.date||g.start.dateTime)||'');
+      var t='', et='';
+      if(g.start&&g.start.dateTime){try{t=new Date(g.start.dateTime).toTimeString().slice(0,5);}catch(e){}}
+      if(g.end  &&g.end.dateTime  ){try{et=new Date(g.end.dateTime  ).toTimeString().slice(0,5);}catch(e){}}
+      addEvent(g.summary||g.title, s, t, et);
+    });
+    if(typeof window.getAllEvents==='function'){
+      (window.getAllEvents()||[]).forEach(function(e){
+        addEvent(e.title, e.date||e.startDate, e.time, e.endTime);
+      });
+    }
+
+    return all.sort(function(a,b){ return a.date.localeCompare(b.date); });
+  }
+
+  // Detail-Panel: Jahresübersicht aller Friseur-Besuche
+  window.openFriseurPanel = function(){
+    var year     = new Date().getFullYear();
+    var today    = new Date().toISOString().slice(0,10);
+    var weeks    = getWeeks();
+    var lastDate = findLastFriseur();
+    var nextInfo = findNextFriseurInfo();
+    var allAppts = findAllFriseurThisYear();
+    var past     = allAppts.filter(function(a){ return a.date <= today; });
+    var future   = allAppts.filter(function(a){ return a.date >  today; });
+
+    var fmtDate  = function(str){
+      try{ return new Date(str+'T12:00:00').toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long'}); }
+      catch(e){ return str; }
+    };
+    var fmtShort = function(str){
+      try{ return new Date(str+'T12:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'short'}); }
+      catch(e){ return str; }
+    };
+
+    // Durchschnittlicher Abstand zwischen vergangenen Terminen
+    var avgDays = '';
+    if(past.length >= 2){
+      var diffs = [];
+      for(var i=1; i<past.length; i++){
+        var a = new Date(past[i-1].date+'T12:00:00');
+        var b = new Date(past[i  ].date+'T12:00:00');
+        diffs.push(Math.round((b-a)/86400000));
+      }
+      var sum = diffs.reduce(function(s,d){ return s+d; }, 0);
+      avgDays = Math.round(sum/diffs.length);
+    }
+
+    // Zusammenfassungs-Kacheln
+    var summaryHtml = '<div style="display:flex;gap:0;margin-bottom:16px;border-radius:var(--r);overflow:hidden;border:1px solid var(--b1)">'
+      + '<div style="flex:1;text-align:center;padding:12px 8px;background:var(--s1);border-right:1px solid var(--b1)">'
+      +   '<div style="font-size:20px;font-weight:900;color:var(--acc)">'+past.length+'</div>'
+      +   '<div style="font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.4px">Besuche '+year+'</div>'
+      + '</div>'
+      + (avgDays ? '<div style="flex:1;text-align:center;padding:12px 8px;background:var(--s1);border-right:1px solid var(--b1)">'
+      +   '<div style="font-size:20px;font-weight:900;color:var(--t2)">'+avgDays+'d</div>'
+      +   '<div style="font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.4px">Ø Abstand</div>'
+      + '</div>' : '')
+      + '<div style="flex:1;text-align:center;padding:12px 8px;background:var(--s1)">'
+      +   '<div style="font-size:20px;font-weight:900;color:var(--t2)">'+weeks+'W</div>'
+      +   '<div style="font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.4px">Erinnerung</div>'
+      + '</div>'
+      + '</div>';
+
+    // Nächster Termin-Box
+    var nextBox = '';
+    if(nextInfo){
+      var nt = nextInfo.time ? nextInfo.time+' Uhr' : '';
+      var ntEnd = nextInfo.endTime && nextInfo.endTime !== nextInfo.time ? ' – '+nextInfo.endTime+' Uhr' : '';
+      nextBox = '<div style="background:rgba(45,106,79,.07);border:1px solid rgba(45,106,79,.15);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px">'
+        + '<span style="font-size:16px">📅</span>'
+        + '<div><div style="font-size:12px;font-weight:700;color:var(--acc)">Nächster Termin</div>'
+        + '<div style="font-size:13px;font-weight:600;color:var(--t1);margin-top:2px">'+fmtDate(nextInfo.date)+(nt?' · '+nt+ntEnd:'')+'</div>'
+        + (nextInfo.title !== KEYWORD ? '<div style="font-size:11px;color:var(--t3);margin-top:1px">'+nextInfo.title+'</div>' : '')
+        + '</div></div>';
+    }
+
+    // Liste vergangener Termine (neueste zuerst)
+    var pastRows = past.slice().reverse().map(function(a, i){
+      var isLast = i === 0;
+      var days   = Math.round((Date.now() - new Date(a.date+'T12:00:00').getTime()) / 86400000);
+      var timeStr = a.time ? a.time + (a.endTime && a.endTime !== a.time ? ' – '+a.endTime : '') + ' Uhr' : 'Ganztägig';
+      return '<div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--b1)">'
+        + '<div style="width:8px;height:8px;border-radius:50%;background:'+(isLast?'var(--acc)':'var(--b1)')+';border:2px solid '+(isLast?'var(--acc)':'var(--t4)')+';flex-shrink:0"></div>'
+        + '<div style="flex:1;min-width:0">'
+        +   '<div style="font-size:13px;font-weight:600;color:var(--t1)">'+fmtDate(a.date)+'</div>'
+        +   '<div style="font-size:11px;color:var(--t3);margin-top:1px">'+timeStr
+        +   (a.title.toLowerCase() !== KEYWORD.toLowerCase() ? ' · '+a.title : '')+'</div>'
+        + '</div>'
+        + '<div style="font-size:11px;font-weight:700;color:'+(isLast?'var(--acc)':'var(--t3)')+'">'+
+          (isLast ? 'letzter' : 'vor '+days+'d') +'</div>'
+        + '</div>';
+    }).join('');
+
+    var emptyHtml = past.length === 0
+      ? '<div style="color:var(--t4);font-size:13px;padding:16px 0">Noch kein Friseur-Termin in '+year+' gefunden.<br><span style="font-size:11px">Tipp: Termin muss „Friseur" im Titel enthalten.</span></div>'
+      : '';
+
+    var sectionLabel = '<div style="font-size:10px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.5px;padding-bottom:6px;border-bottom:1px solid var(--b1);margin-bottom:4px">Besuche in '+year+'</div>';
+
+    if(typeof openPanel === 'function'){
+      openPanel('✂️ Friseur-Besuche '+year, summaryHtml + nextBox + sectionLabel + pastRows + emptyHtml);
+    }
+  };
+
   // Gibt fertiges HTML für die Friseur-Zeile zurück (für buildDashCards)
   window.getFriseurRowHtml = function(){
     if(!isEnabled()) return '';
@@ -6459,7 +6588,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       badge = '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:rgba(156,163,175,.12);color:var(--t3)">Kein Termin geplant</span>';
     }
 
-    return '<div style="display:flex;align-items:center;gap:8px;padding:10px 14px 10px;border-top:1px solid var(--b1);margin-top:4px">'
+    return '<div onclick="window.openFriseurPanel&&window.openFriseurPanel()" style="display:flex;align-items:center;gap:8px;padding:10px 14px 10px;border-top:1px solid var(--b1);margin-top:4px;cursor:pointer" onmouseover="this.style.background=\'var(--s2)\'" onmouseout="this.style.background=\'\'">'
       + '<span style="font-size:12px;flex-shrink:0">✂️</span>'
       + '<span style="font-size:11px;font-weight:700;color:var(--t2);white-space:nowrap;margin-right:2px">Friseur</span>'
       + '<span style="font-size:11px;min-width:0">'+leftText+'</span>'
