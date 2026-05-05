@@ -132,7 +132,23 @@
   function hasCalendarToken(){try{return !!accessToken&&accessToken!=='firebase-auth'&&!isDemoMode;}catch(e){return false;}}
   function googleDate(ge){const s=ge&&ge.start;if(!s)return '';if(s.date)return s.date;if(s.dateTime){try{return dk(new Date(s.dateTime));}catch(e){return String(s.dateTime).slice(0,10);}}return '';}
   function googleTime(ge){const dt=ge&&ge.start&&ge.start.dateTime;if(!dt)return '';try{return new Date(dt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});}catch(e){return String(dt).slice(11,16);}}
-  function normalizedGoogle(ge){const date=googleDate(ge);return {id:'g_'+String(ge.id||''),googleEventId:ge.id||'',title:ge.summary||'(Kein Titel)',date,time:googleTime(ge),endTime:ge.end&&ge.end.dateTime?googleTime({start:{dateTime:ge.end.dateTime}}):'',color:'blue',type:'meeting',desc:ge.description||'',allDay:!!(ge.start&&ge.start.date),source:'google',notifDaysBefore:1};}
+  function addDaysKey(dateStr, offset){const d=new Date(String(dateStr).slice(0,10)+'T12:00:00');d.setDate(d.getDate()+offset);return dk(d);}
+  function googleRange(ge){
+    const start=googleDate(ge);
+    if(!start)return {start:'',end:''};
+    let end=start;
+    if(ge&&ge.end&&ge.end.date){
+      end=String(ge.end.date).slice(0,10);
+      // Google speichert Ganztagstermine mit exklusivem Enddatum.
+      // Für Change muss der Zeitraum inklusiv sein, damit Urlaub korrekt gezählt wird.
+      if(end>start)end=addDaysKey(end,-1);
+    }else if(ge&&ge.end&&ge.end.dateTime){
+      end=dk(new Date(ge.end.dateTime));
+    }
+    if(!end||end<start)end=start;
+    return {start:start,end:end};
+  }
+  function normalizedGoogle(ge){const range=googleRange(ge);const date=range.start;return {id:'g_'+String(ge.id||''),googleEventId:ge.id||'',title:ge.summary||'(Kein Titel)',date,startDate:range.start,endDate:range.end,time:googleTime(ge),endTime:ge.end&&ge.end.dateTime?googleTime({start:{dateTime:ge.end.dateTime}}):'',color:'blue',type:'meeting',desc:ge.description||'',allDay:!!(ge.start&&ge.start.date),source:'google',notifDaysBefore:1};}
 
   window.getAllEvents=function(){
     const out=[];
@@ -150,15 +166,27 @@
     }
     try{
       const center=(typeof curDate!=='undefined'&&curDate)?curDate:new Date();
-      const start=new Date(center.getFullYear(),center.getMonth()-2,1,0,0,0).toISOString();
-      const end=new Date(center.getFullYear(),center.getMonth()+14,0,23,59,59).toISOString();
-      const url='https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin='+encodeURIComponent(start)+'&timeMax='+encodeURIComponent(end)+'&singleEvents=true&orderBy=startTime&maxResults=2500';
-      const r=await fetch(url,{headers:{Authorization:'Bearer '+accessToken}});
-      if(r.status===401){try{lsDel('access_token');}catch(e){}accessToken='';toastX('Google-Anmeldung abgelaufen. Bitte neu anmelden.','err');return [];}
-      if(!r.ok){const txt=await r.text().catch(()=>String(r.status));console.warn('Google Calendar load:',r.status,txt);toastX('Google-Termine konnten nicht geladen werden ('+r.status+').','err');return [];}
-      const data=await r.json();
-      gEvents=data.items||[];
+      const baseYear=center.getFullYear();
+      // Dashboard-Tracker brauchen beim ersten Laden auch vergangene Termine.
+      // Deshalb nicht mehr vom sichtbaren Monat aus -2/+14 Monate laden,
+      // sondern den kompletten relevanten Jahresbereich inkl. Vor-/Folgejahr.
+      const start=new Date(baseYear-1,0,1,0,0,0).toISOString();
+      const end=new Date(baseYear+1,11,31,23,59,59).toISOString();
+      const items=[];
+      let pageToken='';
+      do{
+        let url='https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin='+encodeURIComponent(start)+'&timeMax='+encodeURIComponent(end)+'&singleEvents=true&orderBy=startTime&maxResults=2500';
+        if(pageToken)url+='&pageToken='+encodeURIComponent(pageToken);
+        const r=await fetch(url,{headers:{Authorization:'Bearer '+accessToken}});
+        if(r.status===401){try{lsDel('access_token');}catch(e){}accessToken='';toastX('Google-Anmeldung abgelaufen. Bitte neu anmelden.','err');return [];}
+        if(!r.ok){const txt=await r.text().catch(()=>String(r.status));console.warn('Google Calendar load:',r.status,txt);toastX('Google-Termine konnten nicht geladen werden ('+r.status+').','err');return [];}
+        const data=await r.json();
+        if(Array.isArray(data.items))items.push.apply(items,data.items);
+        pageToken=data.nextPageToken||'';
+      }while(pageToken&&items.length<10000);
+      gEvents=items;
       try{window.gEvents=gEvents;}catch(e){}
+      try{window.events=Array.isArray(events)?events:[];}catch(e){}
       try{if(currentMainView==='calendar'){renderCalendar();renderUpcoming&&renderUpcoming();}}catch(e){}
       try{if(currentMainView==='dashboard'&&typeof buildDashboard==='function')buildDashboard();}catch(e){}
       return gEvents;
