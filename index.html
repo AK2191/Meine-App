@@ -858,6 +858,20 @@ const DE_MONTHS_S = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt
 const DE_DAYS_F = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
 
 let CLIENT_ID = '';
+const DEFAULT_GOOGLE_CLIENT_ID = '357338141580-5m8f668fiih2pkuu6umj3j5hc2dsi78q.apps.googleusercontent.com';
+function cleanGoogleClientId(value){
+  return String(value || '')
+    .trim()
+    .replace(/^https?:\/\//i, '')
+    .replace(/^\/+/, '')
+    .split(/[/?#]/)[0];
+}
+function getGoogleClientId(){
+  const stored = cleanGoogleClientId(typeof ls === 'function' ? ls('client_id') : '');
+  const id = stored || DEFAULT_GOOGLE_CLIENT_ID;
+  try{ if(stored !== id) ls('client_id', id); }catch(e){}
+  return id;
+}
 let accessToken = '';
 let userInfo = {};
 let isDemoMode = false;
@@ -910,7 +924,7 @@ const uid = () => Math.random().toString(36).substring(2,10)+Date.now().toString
 window.addEventListener('load', async () => {
   await new Promise(r => setTimeout(r,700));
 
-  CLIENT_ID = ls('client_id') || '';
+  CLIENT_ID = getGoogleClientId();
   accessToken = ls('access_token') || '';
   userInfo = ls('user_info') || {};
   events = ls('events') || [];
@@ -998,7 +1012,7 @@ function installChangeApp(){
    SETUP & AUTH
 ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function saveClientId(){
-  const v=document.getElementById('client-id-input').value.trim();
+  const v=cleanGoogleClientId(document.getElementById('client-id-input').value);
   if(!v||!v.includes('.apps.googleusercontent.com')){toast('Bitte eine gültige Client-ID eingeben','err');return;}
   CLIENT_ID=v; ls('client_id',v);
   document.getElementById('setup-modal').classList.remove('show');
@@ -1017,16 +1031,12 @@ function showLogin(){
 }
 
 function handleGoogleLogin(){
-  const isMobile=/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  if(isMobile){
-    firebaseMobileLoginFallback();
-    return;
-  }
+  CLIENT_ID = getGoogleClientId();
   if(!CLIENT_ID){document.getElementById('setup-modal').classList.add('show');return;}
   if(!window.google){toast('Google-Bibliothek wird geladen…','');return;}
   try{
     const tc=google.accounts.oauth2.initTokenClient({
-      client_id:CLIENT_ID,
+      client_id:cleanGoogleClientId(CLIENT_ID),
       scope:GCAL_SCOPE,
       callback: async resp => {
         if(resp.error){toast('Anmeldung fehlgeschlagen: '+resp.error,'err');return;}
