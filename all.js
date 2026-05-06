@@ -5315,3 +5315,396 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   window.addEventListener('load',boot);
 })();
 
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   CHANGE SETTINGS SYNC
+   Zentrale Speicherung aller Einstellungspunkte über Firebase.
+   Es werden nur Präferenzen gespeichert – keine Tokens und keine Access-Keys.
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+(function(){
+  'use strict';
+
+  const COLLECTION = 'change_settings';
+  const STAMP_KEY = 'change_v1_settings_updated_at';
+  const LAST_SYNC_KEY = 'change_v1_settings_synced_at';
+  const LISTENER_KEY = '__changeSettingsSyncListener';
+  const SAVE_DELAY = 650;
+  const CONTROL_IDS = new Set([
+    'us-holiday-state','holiday-state','us-toggle-holidays','toggle-holidays','us-toggle-dots','toggle-dots','us-toggle-kw','toggle-kw',
+    'holiday-notifications','us-friseur-on','us-friseur-weeks','us-urlaub-on','us-urlaub-days','us-half-date',
+    'us-toggle-push','us-toggle-live','us-toggle-auto','us-toggle-gsync','client-id-input'
+  ]);
+
+  let saveTimer = null;
+  let isApplyingRemote = false;
+  let isSaving = false;
+
+  const nowIso = () => new Date().toISOString();
+  const norm = v => String(v || '').trim().toLowerCase();
+  const isEmail = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || '').trim());
+  const safeDocId = id => norm(id || 'unknown').replace(/[^a-z0-9._-]/g, '_');
+
+  function readRaw(key){ try{ return localStorage.getItem(key); }catch(e){ return null; } }
+  function writeRaw(key, value){ try{ localStorage.setItem(key, value); }catch(e){} }
+  function readStored(key, fallback){
+    const raw = readRaw(key);
+    if(raw === null || raw === undefined) return fallback;
+    try{ return JSON.parse(raw); }catch(e){ return raw; }
+  }
+  function writeJson(key, value){ try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){} }
+  function writeString(key, value){ try{ localStorage.setItem(key, String(value)); }catch(e){} }
+  function readFirst(keys, fallback){
+    for(const key of keys){
+      const raw = readRaw(key);
+      if(raw === null || raw === undefined) continue;
+      const parsed = readStored(key, raw);
+      if(parsed !== null && parsed !== undefined && parsed !== '') return parsed;
+    }
+    return fallback;
+  }
+  function readBool(keys, fallback){
+    for(const key of keys){
+      const v = readStored(key, undefined);
+      if(v === undefined || v === null || v === '') continue;
+      if(typeof v === 'boolean') return v;
+      if(typeof v === 'number') return v !== 0;
+      const s = String(v).trim().toLowerCase();
+      if(['true','1','yes','ja','on'].includes(s)) return true;
+      if(['false','0','no','nein','off'].includes(s)) return false;
+    }
+    return fallback;
+  }
+  function readNumber(keys, fallback){
+    for(const key of keys){
+      const n = parseInt(readStored(key, ''), 10);
+      if(Number.isFinite(n)) return n;
+    }
+    return fallback;
+  }
+  function readObject(keys, fallback){
+    for(const key of keys){
+      const v = readStored(key, undefined);
+      if(v && typeof v === 'object' && !Array.isArray(v)) return Object.assign({}, fallback || {}, v);
+    }
+    return Object.assign({}, fallback || {});
+  }
+  function readArray(keys, fallback){
+    for(const key of keys){
+      const v = readStored(key, undefined);
+      if(Array.isArray(v)) return v.slice();
+    }
+    return Array.isArray(fallback) ? fallback.slice() : [];
+  }
+  function timeValue(value){
+    if(!value) return 0;
+    if(typeof value.toMillis === 'function') return value.toMillis();
+    if(typeof value.toDate === 'function') return value.toDate().getTime();
+    const t = Date.parse(String(value));
+    return Number.isFinite(t) ? t : 0;
+  }
+
+  function globalUserInfo(){
+    try{ if(typeof userInfo !== 'undefined' && userInfo && typeof userInfo === 'object') return userInfo; }catch(e){}
+    return window.userInfo || {};
+  }
+  function settingsAccount(){
+    let fu = null;
+    try{ fu = window.firebase && firebase.auth && firebase.auth().currentUser; }catch(e){}
+    const candidates = [
+      fu || {},
+      globalUserInfo(),
+      readStored('change_v1_user_info', {}) || {},
+      readStored('user_info', {}) || {},
+      readStored('google_user', {}) || {},
+      readStored('current_user', {}) || {}
+    ];
+    let email = '';
+    for(const c of candidates){
+      const e = norm(c && (c.email || c.mail));
+      if(isEmail(e)){ email = e; break; }
+    }
+    const uid = String((fu && fu.uid) || candidates.find(c => c && (c.uid || c.id))?.uid || candidates.find(c => c && (c.uid || c.id))?.id || '').trim();
+    let name = '';
+    for(const c of candidates){
+      const n = String(c && (c.displayName || c.name || '')).trim();
+      if(n && !/^mitspieler$/i.test(n)){ name = n; break; }
+    }
+    return { id: email || uid || '', email, uid, name: name || email || '', ready: !!email || !!uid };
+  }
+  async function ensureSettingsDb(){
+    if(!window.firebase || !window.FIREBASE_CONFIG) return null;
+    const cfg = window.FIREBASE_CONFIG || {};
+    if(!cfg.apiKey || String(cfg.apiKey).includes('HIER_') || !cfg.projectId) return null;
+    try{ if(!firebase.apps.length) firebase.initializeApp(cfg); return firebase.firestore(); }
+    catch(e){ console.warn('Settings Sync Firebase:', e); return null; }
+  }
+
+  function readHolidayState(){
+    try{ if(typeof window.getHolidayState === 'function') return window.getHolidayState() || 'ALL'; }catch(e){}
+    const raw = readFirst(['change_v1_holiday_state','holiday_state'], 'ALL');
+    return String(raw || 'ALL').replace(/^"|"$/g, '') || 'ALL';
+  }
+  function readCalendarOptions(){
+    return readObject(['change_v1_calendar_view_options','calendar_settings'], { showHolidays:true, showChallengeDots:true, showWeekNumbers:true });
+  }
+  function readClientId(){
+    try{ if(typeof window.getGoogleClientId === 'function') return window.getGoogleClientId() || ''; }catch(e){}
+    return String(readFirst(['change_v1_client_id','client_id'], '') || '').trim();
+  }
+
+  function collectSettings(){
+    const calendarOptions = readCalendarOptions();
+    return {
+      schema: 1,
+      owner: settingsAccount(),
+      calendar: {
+        holidayState: readHolidayState(),
+        holidayNotifications: readBool(['change_v1_holiday_notifications','holiday_notifications'], true),
+        showHolidays: calendarOptions.showHolidays !== false,
+        showChallengeDots: calendarOptions.showChallengeDots !== false,
+        showWeekNumbers: calendarOptions.showWeekNumbers === true
+      },
+      dashboard: {
+        friseurEnabled: typeof window.getFriseurEnabled === 'function' ? !!window.getFriseurEnabled() : readBool(['change_v1_friseur_enabled'], false),
+        friseurWeeks: typeof window.getFriseurWeeks === 'function' ? parseInt(window.getFriseurWeeks(), 10) || 3 : readNumber(['change_v1_friseur_weeks'], 3),
+        urlaubEnabled: typeof window.getUrlaubEnabled === 'function' ? !!window.getUrlaubEnabled() : readBool(['urlaub_tracker_on'], true),
+        urlaubTotalDays: typeof window.getUrlaubTotalDays === 'function' ? parseInt(window.getUrlaubTotalDays(), 10) || 30 : readNumber(['urlaub_tracker_days'], 30),
+        urlaubHalfDays: typeof window.getUrlaubHalfDays === 'function' ? (window.getUrlaubHalfDays() || []) : readArray(['urlaub_half_days'], [])
+      },
+      sync: {
+        pushPreferenceEnabled: readBool(['change_v1_push_enabled'], false),
+        liveSyncEnabled: readBool(['change_v1_live_sync_enabled','live_sync_enabled'], true),
+        autoChallengesEnabled: readBool(['change_v1_auto_challenges_enabled'], true),
+        googleCalendarSyncEnabled: readBool(['change_v1_google_calendar_sync'], true)
+      },
+      google: {
+        clientId: readClientId()
+      },
+      updatedAtLocal: readRaw(STAMP_KEY) || nowIso()
+    };
+  }
+
+  function applySettings(settings){
+    if(!settings || typeof settings !== 'object') return;
+    isApplyingRemote = true;
+    try{
+      const cal = settings.calendar || {};
+      const dash = settings.dashboard || {};
+      const sync = settings.sync || {};
+      const google = settings.google || {};
+      const opts = {
+        showHolidays: cal.showHolidays !== false,
+        showChallengeDots: cal.showChallengeDots !== false,
+        showWeekNumbers: cal.showWeekNumbers === true
+      };
+
+      if(cal.holidayState){
+        if(typeof window.setHolidayState === 'function') window.setHolidayState(cal.holidayState);
+        else { writeRaw('change_v1_holiday_state', cal.holidayState); writeRaw('holiday_state', cal.holidayState); }
+        if(!window.calendarSettings) window.calendarSettings = {};
+        window.calendarSettings.state = cal.holidayState;
+      }
+      if(typeof cal.holidayNotifications === 'boolean'){
+        writeJson('change_v1_holiday_notifications', cal.holidayNotifications);
+        writeJson('holiday_notifications', cal.holidayNotifications);
+        if(!window.calendarSettings) window.calendarSettings = {};
+        window.calendarSettings.holidayNotifications = cal.holidayNotifications;
+      }
+      writeJson('change_v1_calendar_view_options', opts);
+      writeJson('calendar_settings', opts);
+
+      if(typeof dash.friseurEnabled === 'boolean') writeString('change_v1_friseur_enabled', dash.friseurEnabled ? 'true' : 'false');
+      if(dash.friseurWeeks) writeString('change_v1_friseur_weeks', parseInt(dash.friseurWeeks, 10) || 3);
+      if(typeof dash.urlaubEnabled === 'boolean') writeString('urlaub_tracker_on', dash.urlaubEnabled ? 'true' : 'false');
+      if(dash.urlaubTotalDays) writeString('urlaub_tracker_days', parseInt(dash.urlaubTotalDays, 10) || 30);
+      if(Array.isArray(dash.urlaubHalfDays)) writeJson('urlaub_half_days', dash.urlaubHalfDays.slice().sort());
+
+      if(typeof sync.pushPreferenceEnabled === 'boolean') writeJson('change_v1_push_enabled', sync.pushPreferenceEnabled);
+      if(typeof sync.liveSyncEnabled === 'boolean'){
+        writeJson('change_v1_live_sync_enabled', sync.liveSyncEnabled);
+        writeJson('live_sync_enabled', sync.liveSyncEnabled);
+      }
+      if(typeof sync.autoChallengesEnabled === 'boolean') writeJson('change_v1_auto_challenges_enabled', sync.autoChallengesEnabled);
+      if(typeof sync.googleCalendarSyncEnabled === 'boolean'){
+        writeRaw('change_v1_google_calendar_sync', sync.googleCalendarSyncEnabled ? 'true' : 'false');
+        window.googleCalendarSyncEnabled = sync.googleCalendarSyncEnabled;
+      }
+      if(google.clientId) writeJson('change_v1_client_id', google.clientId);
+
+      const stamp = settings.updatedAtLocal || settings.updatedAt?.toDate?.().toISOString?.() || nowIso();
+      writeRaw(STAMP_KEY, stamp);
+      writeRaw(LAST_SYNC_KEY, stamp);
+
+      updateOpenControls(settings);
+      refreshSettingsDependentViews();
+    }finally{
+      setTimeout(() => { isApplyingRemote = false; }, 0);
+    }
+  }
+
+  function updateOpenControls(settings){
+    try{
+      const cal = settings.calendar || {}, dash = settings.dashboard || {}, sync = settings.sync || {};
+      const setChecked = (id, val) => { const el = document.getElementById(id); if(el && typeof val === 'boolean') el.checked = val; };
+      const setValue = (id, val) => { const el = document.getElementById(id); if(el && val !== undefined && val !== null) el.value = String(val); };
+      setValue('us-holiday-state', cal.holidayState);
+      setChecked('us-toggle-holidays', cal.showHolidays !== false);
+      setChecked('us-toggle-dots', cal.showChallengeDots !== false);
+      setChecked('us-toggle-kw', cal.showWeekNumbers === true);
+      setChecked('us-friseur-on', dash.friseurEnabled);
+      setValue('us-friseur-weeks', dash.friseurWeeks);
+      setChecked('us-urlaub-on', dash.urlaubEnabled);
+      setValue('us-urlaub-days', dash.urlaubTotalDays);
+      setChecked('us-toggle-live', sync.liveSyncEnabled);
+      setChecked('us-toggle-auto', sync.autoChallengesEnabled);
+      setChecked('us-toggle-gsync', sync.googleCalendarSyncEnabled);
+      if(typeof window.renderUrlaubHalfDayList === 'function') window.renderUrlaubHalfDayList();
+    }catch(e){}
+  }
+  function refreshSettingsDependentViews(){
+    try{ if(typeof renderCalendar === 'function') renderCalendar(); }catch(e){}
+    try{ if(typeof buildDashboard === 'function') buildDashboard(); }catch(e){}
+    try{ if(typeof window.buildDashCards === 'function') window.buildDashCards(); }catch(e){}
+    try{ if(typeof renderChallenges === 'function') renderChallenges(); }catch(e){}
+  }
+
+  function markSettingsChanged(){
+    if(isApplyingRemote) return;
+    writeRaw(STAMP_KEY, nowIso());
+    scheduleSettingsSave();
+  }
+  function scheduleSettingsSave(){
+    if(isApplyingRemote) return;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => { window.saveChangeSettings(true); }, SAVE_DELAY);
+  }
+
+  window.getChangeSettings = collectSettings;
+  window.saveChangeSettings = async function(silent){
+    if(isApplyingRemote || isSaving) return false;
+    const database = await ensureSettingsDb();
+    const me = settingsAccount();
+    if(!database || !me.ready) return false;
+    isSaving = true;
+    try{
+      const data = collectSettings();
+      data.owner = me;
+      data.updatedAtLocal = readRaw(STAMP_KEY) || nowIso();
+      const payload = Object.assign({}, data, {
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      await database.collection(COLLECTION).doc(safeDocId(me.email || me.id)).set(payload, { merge:true });
+      writeRaw(LAST_SYNC_KEY, data.updatedAtLocal);
+      if(!silent && typeof toast === 'function') toast('Einstellungen gespeichert ✓','ok');
+      return true;
+    }catch(e){
+      console.warn('Settings Sync save:', e);
+      if(!silent && typeof toast === 'function') toast('Einstellungen konnten nicht gespeichert werden','err');
+      return false;
+    }finally{
+      isSaving = false;
+    }
+  };
+
+  window.forceLoadChangeSettings = async function(silent){
+    const database = await ensureSettingsDb();
+    const me = settingsAccount();
+    if(!database || !me.ready) return false;
+    try{
+      const snap = await database.collection(COLLECTION).doc(safeDocId(me.email || me.id)).get();
+      if(!snap.exists){
+        await window.saveChangeSettings(true);
+        if(!silent && typeof toast === 'function') toast('Einstellungen erstmals gespeichert ✓','ok');
+        return true;
+      }
+      applySettings(Object.assign({id:snap.id}, snap.data() || {}));
+      if(!silent && typeof toast === 'function') toast('Einstellungen geladen ✓','ok');
+      return true;
+    }catch(e){
+      console.warn('Settings Sync load:', e);
+      if(!silent && typeof toast === 'function') toast('Einstellungen konnten nicht geladen werden','err');
+      return false;
+    }
+  };
+
+  window.startChangeSettingsSync = async function(){
+    const database = await ensureSettingsDb();
+    const me = settingsAccount();
+    if(!database || !me.ready) return false;
+    const ref = database.collection(COLLECTION).doc(safeDocId(me.email || me.id));
+    try{
+      const snap = await ref.get();
+      const localStamp = timeValue(readRaw(STAMP_KEY));
+      if(snap.exists){
+        const data = Object.assign({id:snap.id}, snap.data() || {});
+        const remoteStamp = timeValue(data.updatedAtLocal) || timeValue(data.updatedAt);
+        if(remoteStamp && (!localStamp || remoteStamp > localStamp)) applySettings(data);
+        else await window.saveChangeSettings(true);
+      }else{
+        writeRaw(STAMP_KEY, readRaw(STAMP_KEY) || nowIso());
+        await window.saveChangeSettings(true);
+      }
+      if(window[LISTENER_KEY]){ try{ window[LISTENER_KEY](); }catch(e){} window[LISTENER_KEY] = null; }
+      window[LISTENER_KEY] = ref.onSnapshot(doc => {
+        if(!doc.exists || isSaving) return;
+        const data = Object.assign({id:doc.id}, doc.data() || {});
+        const remoteStamp = timeValue(data.updatedAtLocal) || timeValue(data.updatedAt);
+        const localStamp2 = timeValue(readRaw(STAMP_KEY));
+        if(remoteStamp && remoteStamp > localStamp2) applySettings(data);
+      }, err => console.warn('Settings Sync listener:', err));
+      return true;
+    }catch(e){
+      console.warn('Settings Sync start:', e);
+      return false;
+    }
+  };
+
+  function wrapSettingFunction(name){
+    const fn = window[name];
+    if(typeof fn !== 'function' || fn.__settingsSyncWrapped) return;
+    const wrapped = function(){
+      const result = fn.apply(this, arguments);
+      Promise.resolve(result).finally(markSettingsChanged);
+      return result;
+    };
+    wrapped.__settingsSyncWrapped = true;
+    window[name] = wrapped;
+  }
+  function installHooks(){
+    [
+      '_saveCalSettings','saveCalSettings','setHolidayState','saveCalendarSettings',
+      'setPushNotificationsEnabled','enablePushNotifications','disablePushNotifications','setLiveSyncEnabled','setAutoChallengesEnabled',
+      'setFriseurEnabled','setFriseurWeeks','setUrlaubEnabled','setUrlaubDays','addUrlaubHalfDay','removeUrlaubHalfDay'
+    ].forEach(wrapSettingFunction);
+
+    if(!window.__changeSettingsDomHook){
+      window.__changeSettingsDomHook = true;
+      document.addEventListener('change', function(e){
+        const el = e.target;
+        if(el && CONTROL_IDS.has(el.id)) setTimeout(markSettingsChanged, 80);
+      }, true);
+      document.addEventListener('click', function(e){
+        const el = e.target;
+        if(el && (el.dataset?.halfDate || el.closest?.('[data-half-list]'))) setTimeout(markSettingsChanged, 120);
+      }, true);
+    }
+
+    const oldInit = window.initFirebaseLive;
+    if(typeof oldInit === 'function' && !oldInit.__settingsSyncWrapped){
+      const wrappedInit = async function(){
+        const res = await oldInit.apply(this, arguments);
+        setTimeout(() => window.startChangeSettingsSync(), 350);
+        return res;
+      };
+      wrappedInit.__settingsSyncWrapped = true;
+      window.initFirebaseLive = wrappedInit;
+    }
+  }
+
+  function boot(){
+    installHooks();
+    [500, 1500, 3500, 7000].forEach(ms => setTimeout(() => { installHooks(); window.startChangeSettingsSync(); }, ms));
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+  window.addEventListener('load', boot);
+})();

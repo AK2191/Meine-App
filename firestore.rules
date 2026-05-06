@@ -4,5 +4,6 @@ service cloud.firestore {
     match /change_players/{id} { allow read, write: if true; }
     match /change_completions/{id} { allow read, write: if true; }
     match /change_challenges/{id} { allow read, write: if true; }
+    match /change_settings/{id} { allow read, write: if true; }
   }
 }
