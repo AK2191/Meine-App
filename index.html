@@ -1005,6 +1005,20 @@ function trySilentGoogleTokenRefresh(){
   } catch(e){ /* silent — kein Fehler wenn nicht möglich */ }
 }
 
+// [AUTO-REFRESH] Google Token alle 50 Min still erneuern
+// Token läuft nach 60 Min ab — 50 Min Intervall = immer gültig
+let _tokenRefreshTimer = null;
+function startTokenAutoRefresh(){
+  if(_tokenRefreshTimer) clearInterval(_tokenRefreshTimer);
+  _tokenRefreshTimer = setInterval(() => {
+    const fbUser = (typeof firebase !== 'undefined' && firebase.auth)
+      ? firebase.auth().currentUser : null;
+    if(fbUser && CLIENT_ID){
+      trySilentGoogleTokenRefresh();
+    }
+  }, 50 * 60 * 1000); // 50 Minuten
+}
+
 window.addEventListener('load', async () => {
   await new Promise(r => setTimeout(r,700));
 
@@ -1046,6 +1060,8 @@ window.addEventListener('load', async () => {
         }
         // Google Calendar Token still neu anfordern (läuft im Hintergrund)
         setTimeout(trySilentGoogleTokenRefresh, 1500);
+        // Auto-Refresh alle 50 Min starten
+        startTokenAutoRefresh();
         initPWA(); scheduleNotifCheck();
         return;
       }
@@ -1188,6 +1204,7 @@ function handleGoogleLogin(){
         } catch(authErr) {
           console.warn('[Firebase Auth]', authErr.code, authErr.message);
         }
+        startTokenAutoRefresh(); // Auto-Refresh starten
         bootMainApp();
         loadGoogleData();
       }
