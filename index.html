@@ -1047,7 +1047,11 @@ window.addEventListener('load', async () => {
   if(wasPreviouslyLoggedIn){
     // Nutzerdaten aus sicherem localStorage-Cache wiederherstellen
     const cached = ls('user_info_safe');
-    userInfo = { name: cached.name || '', email: cached.email || '', picture: '' };
+    userInfo = { 
+      name:    cached.name    || cached.email || '', 
+      email:   cached.email   || '', 
+      picture: cached.picture || ''
+    };
     SecureTokenStore.setUser(userInfo);
     isDemoMode = false;
     bootMainApp(); // App sofort zeigen — kein Warten auf Firebase
@@ -1213,6 +1217,7 @@ function showLogin(){
 }
 
 function handleGoogleLogin(){
+  // Original GSI-Login (bewährt) + signInAnonymously für Firestore-Auth
   CLIENT_ID = getGoogleClientId();
   if(!CLIENT_ID){document.getElementById('setup-modal').classList.add('show');return;}
   if(!window.google){toast('Google-Bibliothek wird geladen…','');return;}
@@ -1227,21 +1232,34 @@ function handleGoogleLogin(){
         isDemoMode=false; lsDel('demo_mode');
         await fetchUserInfo();
         SecureTokenStore.setUser(userInfo);
-        ls('user_info_safe', {name: userInfo.name||'', email: userInfo.email||''});
+        ls('user_info_safe', {name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''});
         ls('was_logged_in', true);
-        // [FIRESTORE FIX] Anonymous Auth → currentUser != null → Rules greifen
-        // Erfordert: Firebase Console → Authentication → Anonymous → Aktivieren
+        // signInAnonymously → firebase.auth().currentUser != null
+        // → Firestore Rules isAuth() greifen → Schreiben erlaubt
         try{
           if(window.firebase && firebase.auth && firebase.apps.length){
             await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
             if(!firebase.auth().currentUser){
               await firebase.auth().signInAnonymously();
             }
+            // userInfo nach Login im Firebase-User-Profil speichern
+            // → damit Name auch nach F5 korrekt bleibt
+            const fbU = firebase.auth().currentUser;
+            if(fbU && userInfo.name){
+              fbU.updateProfile({displayName: userInfo.name, photoURL: userInfo.picture||''})
+                .catch(()=>{});
+            }
           }
-        }catch(e){ console.warn('[Anon Auth]', e.message); }
+        }catch(ae){ console.warn('[Anon Auth]', ae.code, ae.message); }
         startTokenAutoRefresh();
         bootMainApp();
         loadGoogleData();
+        // Settings nach Login aus Firestore laden
+        setTimeout(async () => {
+          if(typeof loadSettingsFromFirestore === 'function') {
+            await loadSettingsFromFirestore();
+          }
+        }, 2000);
       }
     });
     tc.requestAccessToken({prompt:'consent'});
@@ -1270,7 +1288,7 @@ async function handleFirebaseRedirectLogin(){
     if(result && result.user){
       const u=result.user;
       userInfo={name:u.displayName||u.email,email:u.email,picture:u.photoURL||''};
-      SecureTokenStore.setUser(userInfo); ls('user_info_safe', {name:userInfo.name||'',email:userInfo.email||''}); // [FIX CRIT-3]
+      SecureTokenStore.setUser(userInfo); ls('user_info_safe', {name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''}); // [FIX CRIT-3]
       let oauthToken='';
       try{
         const cred=firebase.auth.GoogleAuthProvider.credentialFromResult(result);
@@ -1295,7 +1313,7 @@ async function fetchUserInfo(){
     if(!r.ok)return;
     const u=await r.json();
     userInfo={name:u.name||u.email,email:u.email,picture:u.picture||''};
-    SecureTokenStore.setUser(userInfo); ls('user_info_safe', {name:userInfo.name||'',email:userInfo.email||''}); // [FIX CRIT-3]
+    SecureTokenStore.setUser(userInfo); ls('user_info_safe', {name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''}); // [FIX CRIT-3]
   }catch{}
 }
 
