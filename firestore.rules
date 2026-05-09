@@ -1,112 +1,96 @@
 rules_version = '2';
 
 // ═══════════════════════════════════════════════════════════════
-// CHANGE APP — Sichere Firestore Security Rules
-// Fixes: CRIT-1 (offene Regeln), MED-1 (keine Validierung)
+// CHANGE APP — Firestore Security Rules v4 (FINAL)
+// - Email-basierte Prüfung (App nutzt Email, nicht Firebase UID)
+// - Defensive Feldprüfung (in request.resource.data)
+// - Robuste Fallbacks für fehlende Felder
 // ═══════════════════════════════════════════════════════════════
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── HILFSFUNKTIONEN ──────────────────────────────────────────
-
-    // Ist der Nutzer eingeloggt?
+    // Eingeloggt?
     function isAuth() {
       return request.auth != null;
     }
 
-    // Ist der Nutzer der Eigentümer des Dokuments?
-    function isOwner(uid) {
-      return isAuth() && request.auth.uid == uid;
+    // Eigene E-Mail (lowercase)
+    function myEmail() {
+      return request.auth.token.email.lower();
     }
 
-    // Ist der Nutzer ein bekannter Spieler (hat ein Profil)?
-    function isKnownPlayer() {
-      return isAuth() &&
-        exists(/databases/$(database)/documents/change_players/$(request.auth.uid));
+    // Prüft ob ein Feld existiert UND zur eigenen Email passt
+    function fieldMatchesMe(data, field) {
+      return field in data && data[field].lower() == myEmail();
     }
 
-    // Schreibdaten-Validierung: Maximale String-Länge
-    function validString(field, maxLen) {
-      return field is string && field.size() <= maxLen;
+    // ── SPIELER-PROFILE ─────────────────────────────────────────
+    // Doc-ID = safeDocId(email), z.B. "ak2191_gmx.de"
+    // Lesen: offen (Rangliste für alle)
+    // Schreiben: nur wenn email-Feld zur eigenen Email passt
+    match /change_players/{docId} {
+      allow read: if true;
+
+      allow create: if isAuth()
+        && 'email' in request.resource.data
+        && request.resource.data.email.lower() == myEmail();
+
+      allow update: if isAuth()
+        && 'email' in resource.data
+        && resource.data.email.lower() == myEmail();
+
+      allow delete: if isAuth()
+        && 'email' in resource.data
+        && resource.data.email.lower() == myEmail();
     }
 
-    // ── SPIELER-PROFILE ──────────────────────────────────────────
-    // Jeder authentifizierte Nutzer kann Profile lesen (für Rangliste/Mitspieler).
-    // Schreiben nur auf das eigene Profil erlaubt.
-    match /change_players/{userId} {
-
-      allow read: if isAuth();
-
-      allow create: if isOwner(userId)
-        && validString(request.resource.data.name, 80)
-        && validString(request.resource.data.email, 200);
-
-      allow update: if isOwner(userId)
-        && validString(request.resource.data.name, 80);
-
-      // Löschen: nur eigenes Profil
-      allow delete: if isOwner(userId);
-    }
-
-    // ── CHALLENGE-COMPLETIONS ─────────────────────────────────────
-    // Spieler können alle Completions lesen (für Rangliste).
-    // Anlegen/Ändern nur für eigene Completions.
+    // ── CHALLENGE-COMPLETIONS ────────────────────────────────────
+    // Lesen: offen (Rangliste/Punkte für alle sichtbar)
+    // Erstellen: email ODER playerId muss zur eigenen Email passen
     match /change_completions/{docId} {
+      allow read: if true;
 
-      allow read: if isAuth();
+      allow create: if isAuth() && (
+        fieldMatchesMe(request.resource.data, 'email') ||
+        fieldMatchesMe(request.resource.data, 'playerId') ||
+        fieldMatchesMe(request.resource.data, 'userId')
+      );
 
-      allow create: if isAuth()
-        && request.resource.data.userId == request.auth.uid
-        && request.resource.data.keys().hasAll(['userId', 'challengeId', 'completedAt'])
-        && request.resource.data.keys().size() <= 10;
+      allow update: if isAuth() && (
+        fieldMatchesMe(resource.data, 'email') ||
+        fieldMatchesMe(resource.data, 'playerId') ||
+        fieldMatchesMe(resource.data, 'userId')
+      );
 
-      allow update: if isAuth()
-        && resource.data.userId == request.auth.uid;
-
-      allow delete: if isAuth()
-        && resource.data.userId == request.auth.uid;
+      allow delete: if isAuth() && (
+        fieldMatchesMe(resource.data, 'email') ||
+        fieldMatchesMe(resource.data, 'playerId') ||
+        fieldMatchesMe(resource.data, 'userId')
+      );
     }
 
-    // ── CHALLENGES (Aufgaben-Definitionen) ────────────────────────
-    // Alle angemeldeten Spieler können Challenges lesen.
-    // Erstellen/Ändern nur für den Ersteller.
+    // ── CHALLENGES ───────────────────────────────────────────────
+    // Lesen: offen
+    // Schreiben: nur eingeloggte Nutzer
+    // (Auto-Challenges kommen von Cloud Functions mit Admin-Rechten)
     match /change_challenges/{challengeId} {
-
-      allow read: if isAuth();
-
-      allow create: if isAuth()
-        && request.resource.data.createdBy == request.auth.uid
-        && validString(request.resource.data.title, 120)
-        && request.resource.data.points is number
-        && request.resource.data.points >= 1
-        && request.resource.data.points <= 1000;
-
-      allow update: if isAuth()
-        && resource.data.createdBy == request.auth.uid
-        && validString(request.resource.data.title, 120);
-
-      allow delete: if isAuth()
-        && resource.data.createdBy == request.auth.uid;
+      allow read: if true;
+      allow write: if isAuth();
     }
 
-    // ── SETTINGS ──────────────────────────────────────────────────
-    // Nur der Eigentümer kann seine eigenen Einstellungen lesen/schreiben.
-    match /change_settings/{userId} {
-
-      allow read, write: if isOwner(userId);
+    // ── SETTINGS ────────────────────────────────────────────────
+    // Einstellungen: nur eingeloggte Nutzer
+    match /change_settings/{docId} {
+      allow read, write: if isAuth();
     }
 
-    // ── FCM PUSH TOKENS ───────────────────────────────────────────
-    // Neue Sammlung für Push-Tokens — nur eigene Tokens verwaltbar.
-    match /change_push_tokens/{userId} {
-
-      allow read: if isOwner(userId);
-      allow write: if isOwner(userId);
+    // ── FCM PUSH TOKENS ─────────────────────────────────────────
+    match /change_push_tokens/{docId} {
+      allow read, write: if isAuth();
     }
 
-    // ── FALLBACK: Alles andere verbieten ─────────────────────────
-    // Wichtig: Kein implizites Erlauben!
+    // ── FALLBACK: alles andere sperren ──────────────────────────
     match /{document=**} {
       allow read, write: if false;
     }
