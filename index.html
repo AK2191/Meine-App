@@ -1212,40 +1212,59 @@ function showLogin(){
   document.getElementById('login-screen').style.display='flex';
 }
 
-function handleGoogleLogin(){
-  CLIENT_ID = getGoogleClientId();
-  if(!CLIENT_ID){document.getElementById('setup-modal').classList.add('show');return;}
-  if(!window.google){toast('Google-Bibliothek wird geladen…','');return;}
+async function handleGoogleLogin(){
+  // [FIX AUTH v2] Firebase signInWithPopup als primärer Login
+  // → Firebase nutzt automatisch die richtige Web-Client-ID
+  // → currentUser wird korrekt gesetzt → Firestore Rules greifen
+  // → accessToken für Google Calendar aus dem Ergebnis
+  if(!window.firebase || !firebase.auth || !firebase.apps.length){
+    toast('Firebase wird geladen…',''); return;
+  }
   try{
-    const tc=google.accounts.oauth2.initTokenClient({
-      client_id:cleanGoogleClientId(CLIENT_ID),
-      scope:GCAL_SCOPE,
-      callback: async resp => {
-        if(resp.error){toast('Anmeldung fehlgeschlagen: '+resp.error,'err');return;}
-        accessToken=resp.access_token;
-        SecureTokenStore.setToken(accessToken);
-        isDemoMode=false; lsDel('demo_mode');
-        await fetchUserInfo();
-        // [FIX AUTH] Firebase mit Google-Token einloggen
-        // → firebase.auth().currentUser != null → Firestore Rules greifen
-        try {
-          if(window.firebase && firebase.auth && firebase.apps.length){
-            // [FIX PERSISTENZ] LOCAL = bleibt nach F5 und Browser-Neustart erhalten
-            await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-            const cred = firebase.auth.GoogleAuthProvider.credential(null, resp.access_token);
-            await firebase.auth().signInWithCredential(cred);
-            ls('was_logged_in', true); // Merker für nächsten Seitenaufruf
-          }
-        } catch(authErr) {
-          console.warn('[Firebase Auth]', authErr.code, authErr.message);
-        }
-        startTokenAutoRefresh(); // Auto-Refresh starten
-        bootMainApp();
-        loadGoogleData();
-      }
-    });
-    tc.requestAccessToken({prompt:'consent'});
-  }catch(e){toast('Google-Anmeldung konnte nicht gestartet werden','err');}
+    await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+    const provider = new firebase.auth.GoogleAuthProvider();
+    // Google Calendar Scopes für den Kalender-Sync
+    provider.addScope('https://www.googleapis.com/auth/calendar');
+    provider.addScope('https://www.googleapis.com/auth/calendar.events');
+    provider.addScope('profile');
+    provider.addScope('email');
+    // signInWithPopup: ein einziger Popup für alles
+    const result = await firebase.auth().signInWithPopup(provider);
+    const fbUser = result.user;
+    const cred   = result.credential;
+
+    // Google Calendar Access Token aus Firebase Auth Ergebnis
+    accessToken = cred.accessToken || '';
+    SecureTokenStore.setToken(accessToken, 3600);
+
+    // Nutzerinfo direkt aus Firebase Auth
+    userInfo = {
+      name:    fbUser.displayName || fbUser.email || '',
+      email:   fbUser.email       || '',
+      picture: fbUser.photoURL    || ''
+    };
+    SecureTokenStore.setUser(userInfo);
+    ls('user_info_safe', {name: userInfo.name, email: userInfo.email});
+    ls('was_logged_in', true);
+    isDemoMode = false; lsDel('demo_mode');
+
+    startTokenAutoRefresh();
+    bootMainApp();
+    loadGoogleData();
+  } catch(e){
+    if(e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') return;
+    console.warn('[Firebase Login Fehler]', e.code, e.message);
+    // Fallback: Redirect (für Browser die Popups blockieren)
+    if(e.code === 'auth/popup-blocked'){
+      toast('Popup blockiert — versuche Redirect…','');
+      const provider2 = new firebase.auth.GoogleAuthProvider();
+      provider2.addScope('https://www.googleapis.com/auth/calendar');
+      provider2.addScope('https://www.googleapis.com/auth/calendar.events');
+      await firebase.auth().signInWithRedirect(provider2);
+      return;
+    }
+    toast('Anmeldung fehlgeschlagen: '+(e.message||e.code||e),'err');
+  }
 }
 
 
@@ -1276,9 +1295,11 @@ async function handleFirebaseRedirectLogin(){
         const cred=firebase.auth.GoogleAuthProvider.credentialFromResult(result);
         oauthToken=cred && cred.accessToken ? cred.accessToken : '';
       }catch(_e){}
-      accessToken=oauthToken || 'firebase-auth';
-      SecureTokenStore.setToken(accessToken); // [FIX CRIT-3] kein localStorage
+      accessToken = oauthToken || ''; // [FIX] echter Token oder leer
+      if(accessToken) SecureTokenStore.setToken(accessToken, 3600); // [FIX CRIT-3] kein localStorage
       isDemoMode=false; lsDel('demo_mode');
+      ls('was_logged_in', true);
+      startTokenAutoRefresh();
       bootMainApp();
       initFirebaseLive && initFirebaseLive();
       if(oauthToken) loadGoogleData();
