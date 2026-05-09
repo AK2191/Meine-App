@@ -985,29 +985,89 @@ const SecureTokenStore = (() => {
   };
 })();
 
+// [FIX PERSISTENZ] Stille Google-Neuanmeldung nach F5 (kein Popup)
+function trySilentGoogleTokenRefresh(){
+  if(!CLIENT_ID || !window.google || !google.accounts) return;
+  try {
+    const tc = google.accounts.oauth2.initTokenClient({
+      client_id: cleanGoogleClientId(CLIENT_ID),
+      scope: GCAL_SCOPE,
+      prompt: '',          // kein Popup — still im Hintergrund
+      callback: resp => {
+        if(resp && resp.access_token){
+          accessToken = resp.access_token;
+          SecureTokenStore.setToken(accessToken, 3600);
+          if(typeof loadGoogleData === 'function') loadGoogleData();
+        }
+      }
+    });
+    tc.requestAccessToken({prompt: ''});
+  } catch(e){ /* silent — kein Fehler wenn nicht möglich */ }
+}
+
 window.addEventListener('load', async () => {
   await new Promise(r => setTimeout(r,700));
 
   CLIENT_ID = getGoogleClientId();
-  // [FIX CRIT-3] Tokens kommen aus SecureTokenStore (RAM), nicht localStorage
+  // Token aus RAM — leer nach F5, wird unten per Firebase Auth wiederhergestellt
   accessToken = SecureTokenStore.getToken() || '';
-  // [FIX AUTH-GUARD] user_info_safe nur laden wenn auch ein Token vorhanden
-  // Ohne Token: kein Firestore-Zugriff möglich → userInfo leer lassen
-  userInfo = accessToken ? (SecureTokenStore.getUser() || ls('user_info_safe') || {}) : {};
-  events = ls('events') || [];
-  gEvents = Array.isArray(gEvents) ? gEvents : [];
-  // Global spiegeln: spätere modulare Patches lesen bewusst über window.*
-  // So sind Dashboard, Urlaub- und Friseur-Tracker bereits in der ersten Ansicht konsistent.
-  window.events = events;
-  window.gEvents = gEvents;
-  challenges = ls('challenges') || [];
-  challengeCompletions = ls('challenge_completions') || [];
-  challengePlayers = ls('challenge_players') || [];
+  userInfo    = SecureTokenStore.getUser()  || {};
+
+  // Lokale Daten laden
+  events              = ls('events')               || [];
+  gEvents             = Array.isArray(gEvents) ? gEvents : [];
+  window.events       = events;
+  window.gEvents      = gEvents;
+  challenges          = ls('challenges')           || [];
+  challengeCompletions= ls('challenge_completions')|| [];
+  challengePlayers    = ls('challenge_players')    || [];
 
   await handleFirebaseRedirectLogin();
   if(document.getElementById('main-app').style.display==='flex') { initPWA(); scheduleNotifCheck(); return; }
 
-  lsDel('demo_mode'); isDemoMode=false;
+  // [FIX PERSISTENZ] Firebase Auth State prüfen
+  // Firebase speichert Session in IndexedDB → überlebt F5, bleibt 2+ Tage aktiv
+  if(window.firebase && firebase.auth && firebase.apps.length){
+    firebase.auth().onAuthStateChanged(async (fbUser) => {
+      if(fbUser && !isDemoMode){
+        // ✅ Noch eingeloggt — Session aus Firebase Auth wiederherstellen
+        userInfo = {
+          name:    fbUser.displayName || fbUser.email || '',
+          email:   fbUser.email       || '',
+          picture: fbUser.photoURL    || ''
+        };
+        SecureTokenStore.setUser(userInfo);
+        ls('user_info_safe', {name: userInfo.name, email: userInfo.email});
+        isDemoMode = false;
+        lsDel('demo_mode');
+
+        if(document.getElementById('main-app').style.display !== 'flex'){
+          bootMainApp();
+        }
+        // Google Calendar Token still neu anfordern (läuft im Hintergrund)
+        setTimeout(trySilentGoogleTokenRefresh, 1500);
+        initPWA(); scheduleNotifCheck();
+        return;
+      }
+
+      // Nicht eingeloggt → Login anzeigen
+      lsDel('demo_mode'); isDemoMode = false;
+      if(ls('demo_mode')){
+        startDemoInternal();
+      } else if(CLIENT_ID){
+        showLogin();
+      } else {
+        hideLd();
+        document.getElementById('setup-modal').classList.add('show');
+      }
+      initPWA();
+      scheduleNotifCheck();
+    }); // end onAuthStateChanged
+    return; // Firebase Auth übernimmt — fertig
+  }
+
+  // Fallback: kein Firebase → klassischer Pfad
+  lsDel('demo_mode'); isDemoMode = false;
   if(accessToken && userInfo.email){
     bootMainApp();
     loadGoogleData();
