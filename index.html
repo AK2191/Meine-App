@@ -751,6 +751,26 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 [data-theme="dark"] .settings-group-label{background:var(--s3)!important;}
 [data-theme="dark"] .toggle-row{background:transparent!important;}
 
+
+/* ── NUDGE / ANSTUPSEN BUTTON ──────────────────── */
+.nudge-btn{
+  width:30px;height:30px;border-radius:50%;border:none;
+  background:var(--acc-d);color:var(--acc);font-size:14px;
+  cursor:pointer;transition:all .15s;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+}
+.nudge-btn:hover{background:var(--acc);transform:scale(1.1)}
+.nudge-btn:active{transform:scale(.95)}
+.nudge-btn.sent{background:var(--grn-d);color:var(--grn);pointer-events:none}
+/* Nudge-Inbox Panel */
+.nudge-inbox-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;border-bottom:1px solid var(--b1);
+}
+.nudge-inbox-item:last-child{border-bottom:none}
+.nudge-avatar{width:36px;height:36px;border-radius:50%;background:var(--acc-d);
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+
 </style>
 </style>
 <style id="range-google-style">
@@ -3238,7 +3258,8 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     const active=(challenges||[]).filter(c=>c.active!==false);
     list.innerHTML=active.length?active.map(ch=>{const done=isChallengeDoneToday(ch.id); return '<div class="challenge-item '+(done?'challenge-done':'')+'"><div class="challenge-icon">'+esc(ch.icon||'🏃')+'</div><div class="challenge-body"><div class="challenge-name">'+esc(ch.title)+'</div><div class="challenge-meta">'+esc(ch.desc||'')+' · '+(ch.points||0)+' Punkte</div></div><span class="points-pill">+'+(ch.points||0)+'</span><button class="btn '+(done?'btn-success':'btn-primary')+' btn-sm" onclick="completeChallenge(\''+ch.id+'\')">'+(done?'Erledigt':'Erledigen')+'</button></div>';}).join(''):'<div class="empty-state"><div class="empty-title">Keine Sportübungen</div><div class="empty-sub">Auto-Challenges aktivieren oder Sportübung anlegen.</div></div>';
     const players=getVisibleContestPlayers(); players.sort((a,b)=>getPlayerPointSummary(playerKey(b)).totalPoints-getPlayerPointSummary(playerKey(a)).totalPoints);
-    board.innerHTML=players.length?players.map((p,idx)=>{const id=playerKey(p); const st=getPlayerPointSummary(id); const me=id===getCurrentPlayerId(); const medal=idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':(idx+1); const live=p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>'; return '<div class="leader-row clickable" onclick="openContestUserDetails(\''+esc(id)+'\')"><div class="leader-rank">'+medal+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+live+'</div><div class="leader-detail">Heute: '+st.todayPoints+' Punkte · Gesamt: '+st.totalPoints+' Punkte · '+st.totalCount+' erledigt</div></div><div class="leader-score">'+st.totalPoints+'</div></div>';}).join(''):'<div class="dash-empty">Noch keine Mitspieler. Sobald sich jemand mit Google anmeldet, erscheint er hier automatisch.</div>';
+    board.innerHTML=players.length?players.map((p,idx)=>{const id=playerKey(p); const st=getPlayerPointSummary(id); const me=id===getCurrentPlayerId(); const medal=idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':(idx+1); const live=p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>'; const nudgeBtn = me ? '' : '<button class="nudge-btn" onclick="event.stopPropagation();window.sendNudge(\''+esc(id)+'\',\''+esc(p.name||p.email||'Mitspieler')+'\')" title="Anfeuern">💪</button>';
+      return '<div class="leader-row clickable" onclick="openContestUserDetails(\''+esc(id)+'\')"><div class="leader-rank">'+medal+'</div><div style="flex:1"><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+live+'</div><div class="leader-detail">Heute: '+st.todayPoints+' Punkte · Gesamt: '+st.totalPoints+' Punkte · '+st.totalCount+' erledigt</div></div><div style="display:flex;align-items:center;gap:8px">'+nudgeBtn+'<div class="leader-score">'+st.totalPoints+'</div></div></div>';}).join(''):'<div class="dash-empty">Noch keine Mitspieler. Sobald sich jemand mit Google anmeldet, erscheint er hier automatisch.</div>';
   };
   function addOneHour(date,time){const d=new Date(date+'T'+(time||'09:00')+':00'); d.setHours(d.getHours()+1); return d.toTimeString().substring(0,5);}
   function nextDate(date){const d=new Date(date+'T12:00:00'); d.setDate(d.getDate()+1); return dateKey(d);}
@@ -3353,7 +3374,7 @@ if(currentMainView==='calendar'){renderCalendar();renderUpcoming();} syncEventTo
     const active=(challenges||[]).filter(c=>c.active!==false && (c.type==='Sport' || /^sport_|^auto_.*_sport_/.test(c.id||'')));
     list.innerHTML=active.length?active.map(ch=>{const done=isChallengeDoneToday(ch.id); const link=ch.url?'<a href="'+safeUrl(ch.url)+'" target="_blank" rel="noopener" class="challenge-meta" onclick="event.stopPropagation()">So geht die Übung</a>':''; return '<div class="challenge-item '+(done?'challenge-done':'')+'"><div class="challenge-icon">'+esc(ch.icon||'🏃')+'</div><div class="challenge-body"><div class="challenge-name">'+esc(ch.title)+'</div><div class="challenge-meta">'+esc(ch.desc||'')+' · '+esc(ch.level||'leicht')+' · '+(ch.points||0)+' Punkte</div>'+link+'</div><span class="points-pill">+'+(ch.points||0)+'</span><button class="btn '+(done?'btn-success':'btn-primary')+' btn-sm" onclick="completeChallenge(\''+ch.id+'\')">'+(done?'Erledigt':'Erledigen')+'</button></div>';}).join(''):'<div class="empty-state"><div class="empty-title">Keine Sportübungen</div><div class="empty-sub">Aktiviere Auto-Challenges oder lege eine Sportübung an.</div></div>';
     const players=getVisibleContestPlayers(); players.sort((a,b)=>getPlayerPointSummary(String(b.email||b.id).toLowerCase()).totalPoints-getPlayerPointSummary(String(a.email||a.id).toLowerCase()).totalPoints);
-    board.innerHTML=players.length?players.map((p,idx)=>{const id=String(p.email||p.id||'').toLowerCase(); const st=getPlayerPointSummary(id); const me=id===getCurrentPlayerId(); const medal=idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':(idx+1); const live=p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>'; return '<div class="leader-row clickable" onclick="openContestUserDetails(\''+esc(id)+'\')"><div class="leader-rank">'+medal+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+live+'</div><div class="leader-detail">Heute: '+st.todayPoints+' P · Gesamt: '+st.totalPoints+' P · '+st.totalCount+' erledigt</div></div><div class="leader-score">'+st.totalPoints+'</div></div>';}).join(''):'<div class="dash-empty">Noch keine Mitspieler. Sobald sich jemand mit Google anmeldet, erscheint er hier automatisch.</div>';
+    board.innerHTML=players.length?players.map((p,idx)=>{const id=String(p.email||p.id||'').toLowerCase(); const st=getPlayerPointSummary(id); const me=id===getCurrentPlayerId(); const medal=idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':(idx+1); const live=p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>'; const nudgeBtn=me?'':'<button class="nudge-btn" onclick="event.stopPropagation();window.sendNudge(\''+esc(id)+'\',\''+esc(p.name||p.email||'Mitspieler')+'\')" title="Anfeuern">💪</button>'; return '<div class="leader-row clickable" onclick="openContestUserDetails(\''+esc(id)+'\')"><div class="leader-rank">'+medal+'</div><div style="flex:1"><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+live+'</div><div class="leader-detail">Heute: '+st.todayPoints+' P · Gesamt: '+st.totalPoints+' P · '+st.totalCount+' erledigt</div></div><div style="display:flex;align-items:center;gap:8px">'+nudgeBtn+'<div class="leader-score">'+st.totalPoints+'</div></div></div>';}).join(''):'<div class="dash-empty">Noch keine Mitspieler. Sobald sich jemand mit Google anmeldet, erscheint er hier automatisch.</div>';
   };
   const oldRegister=window.registerLivePlayer;
   if(oldRegister){
@@ -9524,6 +9545,205 @@ window.setMainView = function(view){
   if(view === 'challenges') setTimeout(window.renderGroupGoal, 400);
 };
 
+})();
+</script>
+
+
+<script>
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ANFEUERN / ANSTUPSEN — Firebase Nudge System
+   Ablauf: Klick → Firestore change_nudges → Empfänger
+   sieht Benachrichtigung beim nächsten App-Öffnen
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+(function(){
+
+const NUDGE_MESSAGES = [
+  'feuert dich an! 💪',
+  'glaubt an dich! 🔥',
+  'schickt dir Energie! ⚡',
+  'sagt: Du schaffst das! 🎯',
+  'ist stolz auf dich! 🌟',
+  'schickt dir einen Schubs! 👊',
+];
+
+function randomMessage(){
+  return NUDGE_MESSAGES[Math.floor(Math.random()*NUDGE_MESSAGES.length)];
+}
+
+function getDb(){
+  try{ return window.firebase && firebase.firestore ? firebase.firestore() : null; }
+  catch(e){ return null; }
+}
+
+function myEmail(){
+  return ((typeof userInfo!=='undefined' && userInfo.email) || '').toLowerCase();
+}
+
+function myName(){
+  return (typeof userInfo!=='undefined' && userInfo.name) ? userInfo.name : 'Jemand';
+}
+
+// ── NUDGE SENDEN ─────────────────────────────────
+window.sendNudge = async function(toEmail, toName){
+  const from = myEmail();
+  if(!from || from === toEmail){
+    if(typeof toast==='function') toast('Kannst du dir nicht selbst schicken 😄','');
+    return;
+  }
+
+  // Button kurz deaktivieren (visuelles Feedback)
+  const btns = document.querySelectorAll('.nudge-btn');
+  btns.forEach(b => { if(b.title==='Anfeuern') b.classList.add('sent'); });
+  setTimeout(()=>btns.forEach(b=>b.classList.remove('sent')), 3000);
+
+  const msg = randomMessage();
+  const nudge = {
+    from:      from,
+    fromName:  myName(),
+    to:        toEmail,
+    toName:    toName,
+    message:   msg,
+    sentAt:    new Date().toISOString(),
+    seen:      false
+  };
+
+  const db = getDb();
+  if(db){
+    try{
+      await db.collection('change_nudges').add(nudge);
+      if(typeof toast==='function')
+        toast('💪 Anfeuern gesendet an '+toName+'!','ok');
+    }catch(e){
+      console.warn('[Nudge]', e.message);
+      // Fallback: lokal speichern
+      _saveLocalNudge(nudge);
+      if(typeof toast==='function')
+        toast('💪 Anfeuern gesendet!','ok');
+    }
+  } else {
+    _saveLocalNudge(nudge);
+    if(typeof toast==='function')
+      toast('💪 Anfeuern gespeichert!','ok');
+  }
+};
+
+function _saveLocalNudge(nudge){
+  try{
+    const arr = JSON.parse(localStorage.getItem('change_nudges_out')||'[]');
+    arr.push(nudge);
+    localStorage.setItem('change_nudges_out', JSON.stringify(arr.slice(-20)));
+  }catch(e){}
+}
+
+// ── NUDGES EMPFANGEN ─────────────────────────────
+window.checkIncomingNudges = async function(){
+  const me = myEmail();
+  if(!me) return;
+  const db = getDb();
+  if(!db) return;
+
+  try{
+    const snap = await db.collection('change_nudges')
+      .where('to','==',me)
+      .where('seen','==',false)
+      .get();
+
+    if(snap.empty) return;
+
+    // Alle als gesehen markieren
+    const batch = db.batch();
+    snap.docs.forEach(doc => batch.update(doc.ref, {seen: true}));
+    await batch.commit();
+
+    // Neueste zuerst
+    const nudges = snap.docs
+      .map(d => d.data())
+      .sort((a,b) => b.sentAt.localeCompare(a.sentAt));
+
+    // Toast für jede neue Nachricht
+    nudges.forEach((n, i) => {
+      setTimeout(()=>{
+        if(typeof toast==='function')
+          toast('💪 '+esc(n.fromName)+' '+n.message,'ok');
+      }, i * 1500);
+    });
+
+    // In Benachrichtigungs-Panel eintragen
+    _storeNudgesForPanel(nudges);
+
+    // Glocke anzeigen
+    const dot = document.getElementById('notif-dot');
+    if(dot) dot.style.display = 'block';
+    const badge = document.getElementById('notif-count-badge');
+    if(badge){
+      const cur = parseInt(badge.textContent)||0;
+      badge.textContent = cur + nudges.length > 9 ? '9+' : String(cur + nudges.length);
+      badge.style.display = 'block';
+    }
+
+  }catch(e){ console.warn('[Nudge check]', e.message); }
+};
+
+function _storeNudgesForPanel(nudges){
+  try{
+    const arr = JSON.parse(sessionStorage.getItem('change_nudges_in')||'[]');
+    nudges.forEach(n => arr.unshift(n));
+    sessionStorage.setItem('change_nudges_in', JSON.stringify(arr.slice(-10)));
+  }catch(e){}
+}
+
+// ── NUDGE-VERLAUF IM BENACHRICHTIGUNGS-PANEL ────
+window.getNudgesPanelHtml = function(){
+  try{
+    const arr = JSON.parse(sessionStorage.getItem('change_nudges_in')||'[]');
+    if(!arr.length) return '';
+
+    const items = arr.slice(0,5).map(n=>{
+      const when = n.sentAt ? new Date(n.sentAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}) : '';
+      return `<div class="nudge-inbox-item">
+        <div class="nudge-avatar">💪</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;color:var(--t1)">${esc(n.fromName||n.from)} ${n.message||'feuert dich an!'}</div>
+          <div style="font-size:11px;color:var(--t4);margin-top:2px">${when}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    return `<div style="margin-bottom:14px">
+      <div style="font-size:10px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.06em;padding:0 16px 6px">Anfeuern</div>
+      ${items}
+    </div>`;
+  }catch(e){ return ''; }
+};
+
+// ── HOOKS ────────────────────────────────────────
+// Nach Login: Nudges prüfen
+const _nudgeBoot = window.bootMainApp;
+window.bootMainApp = function(){
+  if(typeof _nudgeBoot === 'function') _nudgeBoot.apply(this, arguments);
+  setTimeout(window.checkIncomingNudges, 2000);
+  // Alle 5 Minuten prüfen
+  setInterval(window.checkIncomingNudges, 5 * 60 * 1000);
+};
+
+// Nudges im Notif-Panel anzeigen
+const _nudgeNotif = window.openNotifPanel;
+window.openNotifPanel = function(){
+  if(typeof _nudgeNotif === 'function') _nudgeNotif.apply(this, arguments);
+  // Nudge-HTML oben ins Panel einfügen
+  setTimeout(()=>{
+    const panelBody = document.getElementById('panel-body');
+    if(!panelBody) return;
+    const nudgeHtml = window.getNudgesPanelHtml();
+    if(nudgeHtml && !panelBody.querySelector('.nudge-inbox-item')){
+      const div = document.createElement('div');
+      div.innerHTML = nudgeHtml;
+      panelBody.insertBefore(div, panelBody.firstChild);
+    }
+  }, 50);
+};
+
+console.warn('[Nudge] Anfeuern-System geladen ✓');
 })();
 </script>
 
