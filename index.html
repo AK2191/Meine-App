@@ -9010,43 +9010,68 @@ function checkNewBadges(){
    STREAK & BADGE DISPLAY IM DASHBOARD
 ══════════════════════════════════════════════════ */
 function injectStreakCard(){
-  // Streak als dezente Zeile in der Challenge-Karte (wie Friseur/Urlaub)
-  const existing = document.getElementById('streak-row');
-  if(existing) existing.remove();
+  // Alte Zeilen entfernen
+  document.querySelectorAll('#streak-row, #streak-row-dash').forEach(el => el.remove());
 
   const streak = window.getCurrentStreak();
   const badges = window.getEarnedBadges();
   if(streak === 0 && badges.length === 0) return;
 
-  // Ziel: challenge-card-body oder challenges-list Container
-  const chCard = document.querySelector('.challenge-card') ||
-                 document.querySelector('[id="challenges-list"]')?.closest('.challenge-card') ||
-                 document.querySelector('.challenge-card-head')?.parentElement;
-  if(!chCard) return;
-
-  const row = document.createElement('div');
-  row.id = 'streak-row';
-  row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 14px;border-top:1px solid var(--b1);cursor:pointer';
-  row.onclick = () => window.openBadgePanel && window.openBadgePanel();
-
-  // Streak Flamme
+  // ── Streak-Inhalt ──
   const streakPart = streak > 0
-    ? `<span style="font-size:13px">🔥</span>
-       <span style="font-size:11px;font-weight:700;color:var(--t2)">Streak</span>
-       <span style="font-size:13px;font-weight:800;color:var(--acc)">${streak} Tag${streak!==1?'e':''}</span>`
+    ? `<span style="font-size:16px;line-height:1">🔥</span>
+       <div style="display:flex;flex-direction:column;line-height:1.2">
+         <span style="font-size:15px;font-weight:800;color:var(--acc)">${streak} Tag${streak!==1?'e':''}</span>
+         <span style="font-size:10px;font-weight:600;color:var(--t4);text-transform:uppercase;letter-spacing:.05em">Streak</span>
+       </div>`
     : '';
 
-  // Abzeichen
   const badgePart = badges.length > 0
-    ? `<span style="font-size:11px;color:var(--t4);margin-left:4px">·</span>
-       ${badges.slice(-4).map(b=>`<span title="${b.name}" style="font-size:14px">${b.icon}</span>`).join('')}
-       ${badges.length > 4 ? `<span style="font-size:10px;color:var(--t4);font-weight:600">+${badges.length-4}</span>` : ''}`
+    ? `<div style="display:flex;align-items:center;gap:3px;margin-left:8px">
+         ${badges.slice(-5).map(b=>`<span title="${b.name}" style="font-size:15px">${b.icon}</span>`).join('')}
+         ${badges.length > 5 ? `<span style="font-size:10px;color:var(--t4);font-weight:600">+${badges.length-5}</span>` : ''}
+       </div>`
     : '';
 
-  row.innerHTML = streakPart + badgePart +
-    `<span style="font-size:10px;color:var(--t4);margin-left:auto">Details →</span>`;
+  // ── 1. In Challenges-Karte: direkt unter dem Header (oben) ──
+  const chHead = document.querySelector('.challenge-card-head');
+  if(chHead && chHead.parentElement){
+    const row = document.createElement('div');
+    row.id = 'streak-row';
+    row.style.cssText = [
+      'display:flex;align-items:center;gap:10px',
+      'padding:10px 16px',
+      'border-bottom:1px solid var(--b1)',
+      'background:var(--acc-d2)',
+      'cursor:pointer'
+    ].join(';');
+    row.onclick = () => window.openBadgePanel && window.openBadgePanel();
+    row.innerHTML = streakPart + badgePart +
+      `<span style="font-size:11px;color:var(--t4);margin-left:auto;font-weight:500">Abzeichen →</span>`;
+    // Nach dem Header einfügen (vor challenges-list)
+    const list = chHead.parentElement.querySelector('#challenges-list');
+    if(list){
+      chHead.parentElement.insertBefore(row, list);
+    } else {
+      chHead.insertAdjacentElement('afterend', row);
+    }
+  }
 
-  chCard.appendChild(row);
+  // ── 2. Im Dashboard-Challenges-Block ──
+  const dashChHead = document.querySelector('.dash-card-body');
+  // KPI-Karte für Challenges im Dashboard
+  const kpiCh = document.getElementById('kpi-challenges');
+  if(kpiCh && streak > 0){
+    // Streak-Badge auf KPI-Karte
+    let streakBadge = kpiCh.querySelector('.kpi-streak-badge');
+    if(!streakBadge){
+      streakBadge = document.createElement('div');
+      streakBadge.className = 'kpi-streak-badge';
+      streakBadge.style.cssText = 'font-size:11px;font-weight:700;color:var(--acc);margin-top:2px';
+      kpiCh.appendChild(streakBadge);
+    }
+    streakBadge.textContent = '🔥 '+streak+' Tage Streak';
+  }
 }
 
 /* ══════════════════════════════════════════════════
