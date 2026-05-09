@@ -638,6 +638,25 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
   .challenge-week-head{flex-direction:column;align-items:flex-start}.challenge-week-actions{width:100%;justify-content:space-between}
   .challenge-layout{grid-template-columns:1fr!important}
 }
+
+/* ── SETTINGS GRUPPEN ──────────────────────────────── */
+.settings-group{
+  background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);
+  overflow:hidden;margin:0 0 12px;
+}
+.settings-group-label{
+  font-size:10px;font-weight:700;color:var(--t4);letter-spacing:.08em;
+  text-transform:uppercase;padding:10px 14px 6px;
+  border-bottom:1px solid var(--b1);background:var(--s3);
+}
+.settings-group .toggle-row{
+  margin:0;border:none;border-radius:0;background:transparent;
+  border-bottom:1px solid var(--b1);
+}
+.settings-group .toggle-row:last-child{border-bottom:none;}
+.settings-group .btn{margin:10px 14px;width:calc(100% - 28px);}
+.settings-group .fg{padding:12px 14px 0;}
+.settings-spacer{height:8px;}
 </style>
 </style>
 <style id="range-google-style">
@@ -6308,13 +6327,20 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     const stateOpts=Object.entries(STATES).map(([k,v])=>`<option value="${esc(k)}" ${k===curState?'selected':''}>${esc(v)}</option>`).join('');
 
     const calPane=`
-      <div class="fg">
-        <label class="flabel">Bundesland für Feiertage</label>
-        <select class="finput" id="us-holiday-state">${stateOpts}</select>
+      <div class="settings-group">
+        <div class="settings-group-label">Region</div>
+        <div class="fg">
+          <label class="flabel">Bundesland für Feiertage</label>
+          <select class="finput" id="us-holiday-state">${stateOpts}</select>
+        </div>
+        <div style="height:10px"></div>
       </div>
-      ${switchRow('Feiertage anzeigen','','us-toggle-holidays',o.showHolidays)}
-      ${switchRow('Challenge-Punkte anzeigen','','us-toggle-dots',o.showChallengeDots)}
-      ${switchRow('Kalenderwochen anzeigen','','us-toggle-kw',o.showWeekNumbers)}
+      <div class="settings-group">
+        <div class="settings-group-label">Kalenderansicht</div>
+        ${switchRow('Feiertage anzeigen','Wird neben dem Datum klein angezeigt','us-toggle-holidays',o.showHolidays)}
+        ${switchRow('Challenge-Punkte anzeigen','Badge unten rechts pro Tag','us-toggle-dots',o.showChallengeDots)}
+        ${switchRow('Kalenderwochen anzeigen','KW-Nummer links pro Woche','us-toggle-kw',o.showWeekNumbers)}
+      </div>
       `; /* auto-save */
 
     const dashPane = (function(){
@@ -6388,26 +6414,41 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     const gPill=gIn?(gOn?'<span class="status-pill status-on">AKTIV</span>':'<span class="status-pill status-off">AUS</span>'):'<span class="status-pill status-off">NICHT ANGEMELDET</span>';
 
     const syncPane=`
-
-      ${switchRow('Push-Benachrichtigungen <span class="status-pill '+(pushOn?'status-on':'status-off')+'">'+(pushOn?'AKTIV':'INAKTIV')+'</span>','Erinnerungen für offene Challenges.','us-toggle-push',pushOn)}
-      <button class="btn btn-secondary btn-full" style="margin:-6px 0 14px;font-size:12px" onclick="window._sendTestNotification()">Test-Benachrichtigung senden</button>
-      ${switchRow('Live-Mitspieler <span class="status-pill '+(liveOn?'status-on':'status-off')+'">'+(liveOn?'VERBUNDEN':'DEAKTIVIERT')+'</span>','Synchronisiert Mitspieler live über Firebase.','us-toggle-live',liveOn)}
-      ${switchRow('Auto-Challenges <span class="status-pill '+(autoOn?'status-on':'status-off')+'">'+(autoOn?'AKTIV':'INAKTIV')+'</span>','Erzeugt täglich neue Sportübungen.','us-toggle-auto',autoOn)}
-      <div style="height:1px;background:var(--b1);margin:16px 0"></div>
-      <div class="toggle-row">
-        <div class="toggle-copy">
-          <div class="toggle-title">${gDot}Google Kalender ${gPill}</div>
-          <div class="toggle-sub">${gIn?'Termine aus Google Kalender werden angezeigt.':'Noch nicht angemeldet – bitte über den Google-Login verbinden.'}</div>
-          <div class="settings-hint" style="color:${gIn?'#22c55e':'#ef4444'};font-weight:600;margin-top:4px">${gIn?'● Verbunden':'● Nicht angemeldet'}</div>
+      <div class="settings-group">
+        <div class="settings-group-label">Benachrichtigungen</div>
+        ${switchRow('Push-Benachrichtigungen <span class="status-pill '+(pushOn?'status-on':'status-off')+'">'+(pushOn?'AKTIV':'INAKTIV')+'</span>','Erinnerungen für offene Challenges.','us-toggle-push',pushOn)}
+        <div style="padding:0 14px 12px">
+          <button class="btn btn-secondary btn-full" style="font-size:12px" onclick="window._sendTestNotification()">Test-Benachrichtigung senden</button>
         </div>
-        <label class="switch"><input type="checkbox" id="us-toggle-gsync" ${gOn?'checked':''} ${!gSync?'disabled':''}><span class="slider"></span></label>
       </div>
-      <button class="btn btn-secondary btn-full" style="margin:-6px 0 14px;font-size:12px" ${gSync?'':'disabled'} onclick="window.triggerGoogleCalendarSync()">
-        <svg viewBox="0 0 24 24" width="13" height="13" style="vertical-align:middle;margin-right:5px"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/></svg>
-        Jetzt synchronisieren
-      </button>
-      <div style="height:1px;background:var(--b1);margin:16px 0"></div>
-      <button class="btn btn-secondary btn-full" onclick="if(typeof installChangeApp==='function')installChangeApp()">Change als App installieren</button>`;
+      <div class="settings-group">
+        <div class="settings-group-label">Synchronisierung</div>
+        ${switchRow('Live-Mitspieler <span class="status-pill '+(liveOn?'status-on':'status-off')+'">'+(liveOn?'VERBUNDEN':'DEAKTIVIERT')+'</span>','Mitspieler-Status live über Firebase.','us-toggle-live',liveOn)}
+        ${switchRow('Auto-Challenges <span class="status-pill '+(autoOn?'status-on':'status-off')+'">'+(autoOn?'AKTIV':'INAKTIV')+'</span>','Erzeugt täglich neue Sportübungen.','us-toggle-auto',autoOn)}
+      </div>
+      <div class="settings-group">
+        <div class="settings-group-label">Google Kalender</div>
+        <div class="toggle-row">
+          <div class="toggle-copy">
+            <div class="toggle-title">${gDot}Google Kalender ${gPill}</div>
+            <div class="toggle-sub">${gIn?'Termine aus Google Kalender werden angezeigt.':'Bitte über den Google-Login verbinden.'}</div>
+            <div style="color:${gIn?'#22c55e':'#ef4444'};font-weight:600;font-size:11px;margin-top:4px">${gIn?'● Verbunden':'● Nicht angemeldet'}</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="us-toggle-gsync" ${gOn?'checked':''} ${!gSync?'disabled':''}><span class="slider"></span></label>
+        </div>
+        <div style="padding:0 14px 12px">
+          <button class="btn btn-secondary btn-full" style="font-size:12px" ${gSync?'':'disabled'} onclick="window.triggerGoogleCalendarSync()">
+            <svg viewBox="0 0 24 24" width="13" height="13" style="vertical-align:middle;margin-right:5px"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/></svg>
+            Jetzt synchronisieren
+          </button>
+        </div>
+      </div>
+      <div class="settings-group">
+        <div class="settings-group-label">App</div>
+        <div style="padding:12px 14px">
+          <button class="btn btn-secondary btn-full" onclick="if(typeof installChangeApp==='function')installChangeApp()">Change als App installieren</button>
+        </div>
+      </div>`;
 
     const panelHtml=`
       <div style="display:flex;gap:8px;padding:0 0 16px;border-bottom:1px solid var(--b1);margin-bottom:16px">
@@ -6491,6 +6532,8 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     const se=$('us-holiday-state');
     if(se){const s=se.value||'ALL';localStorage.setItem('change_v1_holiday_state',s);if(typeof ls==='function')ls('holiday_state',s);else localStorage.setItem('holiday_state',JSON.stringify(s));if(!window.calendarSettings)window.calendarSettings={};window.calendarSettings.state=s;}
     if(typeof renderCalendar==='function')renderCalendar();
+    // [FIREBASE SYNC] Einstellungen in Firestore speichern
+    setTimeout(()=>{ if(typeof window.saveSettingsToFirestore==='function') window.saveSettingsToFirestore(); }, 300);
     if(typeof toast==='function')toast('Gespeichert ✓','ok');
   };
   // Friseur-Tracker Settings
