@@ -3327,7 +3327,7 @@ renderCalendar(); if(typeof buildDashboard==='function')buildDashboard(); if(typ
   'use strict';
   const DAY = 86400000;
   const $ = (id) => document.getElementById(id);
-  const escB = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const escB = (s) => String(s ?? '').replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c])); // [FIX: +backtick]
   const toKeyB = (d) => {
     if (typeof d === 'string') return d.slice(0,10);
     const x = new Date(d); x.setHours(12,0,0,0);
@@ -3628,7 +3628,7 @@ renderCalendar(); if(typeof buildDashboard==='function')buildDashboard(); if(typ
 (function(){
   const DAY=86400000;
   const $=id=>document.getElementById(id);
-  const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const esc = s => String(s??'').replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c])); // [FIX: +backtick]
   const dk=d=>{ try{ if(typeof dateKey==='function') return dateKey(d); }catch(e){} const x=new Date(d); return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0'); };
   const pd=s=>new Date(String(s).slice(0,10)+'T12:00:00');
   const add=(d,n)=>{ const x=new Date(d); x.setHours(12,0,0,0); x.setDate(x.getDate()+n); return x; };
@@ -3933,7 +3933,7 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
   'use strict';
   const $ = (id)=>document.getElementById(id);
   const pad = (n)=>String(n).padStart(2,'0');
-  const esc = (v)=>String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const esc = s => String(s??'').replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c])); // [FIX: +backtick]
   const toDate = (v)=>{ const d = v instanceof Date ? new Date(v) : new Date(String(v||'').slice(0,10)+'T12:00:00'); return isNaN(d) ? null : d; };
   const key = (d)=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
   const today = ()=>key(new Date());
@@ -4196,7 +4196,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
 (function(){
   const DAY=86400000;
   const $=id=>document.getElementById(id);
-  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const esc = s => String(s??'').replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c])); // [FIX: +backtick]
   const key=d=>{try{return typeof dateKey==='function'?dateKey(d):new Date(d).toISOString().slice(0,10)}catch(e){return ''}};
   const parse=k=>new Date(String(k).slice(0,10)+'T12:00:00');
   const add=(d,n)=>new Date(d.getTime()+n*DAY);
@@ -4275,7 +4275,7 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
 /* FINAL USER CALENDAR POLISH: ranges top, clean today, settings/sync split */
 (function(){
   const $=id=>document.getElementById(id);
-  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const esc = s => String(s??'').replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c])); // [FIX: +backtick]
   const DAY=86400000;
   const key=d=>typeof dateKey==='function'?dateKey(d):new Date(d).toISOString().slice(0,10);
   const parse=s=>new Date(String(s).slice(0,10)+'T12:00:00');
@@ -4390,7 +4390,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 (function(){
   'use strict';
   const $=id=>document.getElementById(id);
-  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const esc = s => String(s??'').replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c])); // [FIX: +backtick]
   const DAY=86400000;
   const pad=n=>String(n).padStart(2,'0');
   const key=d=>{try{if(typeof dateKey==='function')return dateKey(d)}catch(e){} const x=new Date(d);return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate())};
@@ -4443,7 +4443,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   const $=id=>document.getElementById(id);
   const DAY=86400000;
   const pad=n=>String(n).padStart(2,'0');
-  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const esc = s => String(s??'').replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c])); // [FIX: +backtick]
   const key=d=>{try{if(typeof dateKey==='function')return dateKey(d)}catch(e){} const x=new Date(d);return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate())};
   const parse=s=>new Date(String(s).slice(0,10)+'T12:00:00');
   const add=(d,n)=>new Date(new Date(d).getTime()+n*DAY);
@@ -4828,7 +4828,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 (function(){
   'use strict';
   const pad=n=>String(n).padStart(2,'0');
-  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const esc = s => String(s??'').replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c])); // [FIX: +backtick]
   const parse=k=>new Date(String(k).slice(0,10)+'T12:00:00');
   const key=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
   const add=(k,n)=>{const d=parse(k);d.setDate(d.getDate()+n);return key(d);};
