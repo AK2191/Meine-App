@@ -1254,14 +1254,19 @@ async function handleGoogleLogin(){
   } catch(e){
     if(e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') return;
     console.warn('[Firebase Login Fehler]', e.code, e.message);
-    // Fallback: Redirect (für Browser die Popups blockieren)
-    if(e.code === 'auth/popup-blocked'){
-      toast('Popup blockiert — versuche Redirect…','');
-      const provider2 = new firebase.auth.GoogleAuthProvider();
-      provider2.addScope('https://www.googleapis.com/auth/calendar');
-      provider2.addScope('https://www.googleapis.com/auth/calendar.events');
-      await firebase.auth().signInWithRedirect(provider2);
-      return;
+    // Fallback: Redirect für alle Fehler (kein Popup-Abhängigkeit)
+    const redirectCodes = ['auth/popup-blocked','auth/internal-error',
+      'auth/operation-not-supported-in-this-environment','auth/popup-request-cancelled'];
+    if(redirectCodes.includes(e.code) || e.code?.includes('internal')){
+      toast('Versuche alternative Anmeldung…','');
+      try {
+        const provider2 = new firebase.auth.GoogleAuthProvider();
+        provider2.addScope('https://www.googleapis.com/auth/calendar');
+        provider2.addScope('https://www.googleapis.com/auth/calendar.events');
+        await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        await firebase.auth().signInWithRedirect(provider2);
+        return;
+      } catch(e2){ console.warn('[Redirect Fehler]', e2); }
     }
     toast('Anmeldung fehlgeschlagen: '+(e.message||e.code||e),'err');
   }
