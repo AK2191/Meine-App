@@ -1,96 +1,55 @@
 rules_version = '2';
 
 // ═══════════════════════════════════════════════════════════════
-// CHANGE APP — Firestore Security Rules v4 (FINAL)
-// - Email-basierte Prüfung (App nutzt Email, nicht Firebase UID)
-// - Defensive Feldprüfung (in request.resource.data)
-// - Robuste Fallbacks für fehlende Felder
+// CHANGE APP — Firestore Rules v5
+// Vereinfacht: isAuth() reicht — kein Email-Matching
+// Grund: signInWithCredential kann scheitern → currentUser=null
+// Sicherheit: Anonym = kein Schreiben. Eingeloggt = erlaubt.
 // ═══════════════════════════════════════════════════════════════
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Eingeloggt?
     function isAuth() {
       return request.auth != null;
     }
 
-    // Eigene E-Mail (lowercase)
-    function myEmail() {
-      return request.auth.token.email.lower();
-    }
-
-    // Prüft ob ein Feld existiert UND zur eigenen Email passt
-    function fieldMatchesMe(data, field) {
-      return field in data && data[field].lower() == myEmail();
-    }
-
-    // ── SPIELER-PROFILE ─────────────────────────────────────────
-    // Doc-ID = safeDocId(email), z.B. "ak2191_gmx.de"
-    // Lesen: offen (Rangliste für alle)
-    // Schreiben: nur wenn email-Feld zur eigenen Email passt
+    // Spieler-Profile
+    // Lesen: offen (Rangliste)
+    // Schreiben: nur eingeloggte Nutzer
     match /change_players/{docId} {
       allow read: if true;
-
-      allow create: if isAuth()
-        && 'email' in request.resource.data
-        && request.resource.data.email.lower() == myEmail();
-
-      allow update: if isAuth()
-        && 'email' in resource.data
-        && resource.data.email.lower() == myEmail();
-
-      allow delete: if isAuth()
-        && 'email' in resource.data
-        && resource.data.email.lower() == myEmail();
+      allow write: if isAuth();
     }
 
-    // ── CHALLENGE-COMPLETIONS ────────────────────────────────────
-    // Lesen: offen (Rangliste/Punkte für alle sichtbar)
-    // Erstellen: email ODER playerId muss zur eigenen Email passen
+    // Challenge-Completions (Punkte)
+    // Lesen: offen (Rangliste/Punkte)
+    // Schreiben: nur eingeloggte Nutzer
     match /change_completions/{docId} {
       allow read: if true;
-
-      allow create: if isAuth() && (
-        fieldMatchesMe(request.resource.data, 'email') ||
-        fieldMatchesMe(request.resource.data, 'playerId') ||
-        fieldMatchesMe(request.resource.data, 'userId')
-      );
-
-      allow update: if isAuth() && (
-        fieldMatchesMe(resource.data, 'email') ||
-        fieldMatchesMe(resource.data, 'playerId') ||
-        fieldMatchesMe(resource.data, 'userId')
-      );
-
-      allow delete: if isAuth() && (
-        fieldMatchesMe(resource.data, 'email') ||
-        fieldMatchesMe(resource.data, 'playerId') ||
-        fieldMatchesMe(resource.data, 'userId')
-      );
+      allow write: if isAuth();
     }
 
-    // ── CHALLENGES ───────────────────────────────────────────────
+    // Challenges (Aufgaben)
     // Lesen: offen
     // Schreiben: nur eingeloggte Nutzer
-    // (Auto-Challenges kommen von Cloud Functions mit Admin-Rechten)
     match /change_challenges/{challengeId} {
       allow read: if true;
       allow write: if isAuth();
     }
 
-    // ── SETTINGS ────────────────────────────────────────────────
-    // Einstellungen: nur eingeloggte Nutzer
+    // Settings (Einstellungen)
+    // Nur eingeloggte Nutzer
     match /change_settings/{docId} {
       allow read, write: if isAuth();
     }
 
-    // ── FCM PUSH TOKENS ─────────────────────────────────────────
+    // FCM Push Tokens
     match /change_push_tokens/{docId} {
       allow read, write: if isAuth();
     }
 
-    // ── FALLBACK: alles andere sperren ──────────────────────────
+    // Fallback: alles andere sperren
     match /{document=**} {
       allow read, write: if false;
     }
