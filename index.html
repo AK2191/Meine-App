@@ -8405,5 +8405,160 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 })();
 </script>
 
+
+<script>
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SETTINGS SYNC — Einstellungen ↔ Firestore change_settings
+   Synct: Kalender-Optionen, Bundesland, Push, Live-Sync
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+(function(){
+
+  // ── Firestore-Dokument-ID für Settings ──
+  function settingsDocId(){
+    const email = (typeof userInfo !== 'undefined' && userInfo.email)
+      ? String(userInfo.email).toLowerCase()
+      : null;
+    if(!email) return null;
+    return email.replace(/[^a-z0-9._-]/g, '_');
+  }
+
+  function getDb(){
+    try {
+      if(typeof firebase !== 'undefined' && firebase.firestore) return firebase.firestore();
+    } catch(e){}
+    return null;
+  }
+
+  // ── Alle Einstellungen sammeln ──
+  function collectSettings(){
+    const s = {};
+    // Kalender-Optionen
+    try {
+      const calKeys = ['change_v1_calendar_view_options','calendar_settings'];
+      calKeys.forEach(k => {
+        const v = localStorage.getItem(k);
+        if(v) Object.assign(s, JSON.parse(v));
+      });
+    } catch(e){}
+    // Bundesland
+    try {
+      s.holidayState = localStorage.getItem('holiday_state')
+        || localStorage.getItem('change_v1_holiday_state') || 'ALL';
+    } catch(e){ s.holidayState = 'ALL'; }
+    // Live-Sync
+    try {
+      const lv = localStorage.getItem('change_v1_live_sync_enabled');
+      s.liveSyncEnabled = lv === null ? true : lv !== 'false';
+    } catch(e){ s.liveSyncEnabled = true; }
+    // Push
+    try {
+      const pv = localStorage.getItem('change_push_enabled');
+      s.pushEnabled = pv === null ? false : pv === '1' || pv === 'true';
+    } catch(e){ s.pushEnabled = false; }
+    // Kalender-Ansicht
+    try {
+      s.calView = typeof currentCalView !== 'undefined' ? currentCalView : 'month';
+    } catch(e){ s.calView = 'month'; }
+
+    s.updatedAt = new Date().toISOString();
+    s.email = (typeof userInfo !== 'undefined') ? (userInfo.email || '') : '';
+    return s;
+  }
+
+  // ── Einstellungen in Firestore speichern ──
+  window.saveSettingsToFirestore = async function(){
+    const db = getDb();
+    const docId = settingsDocId();
+    if(!db || !docId) return;
+    const fbUser = (typeof firebase !== 'undefined' && firebase.auth)
+      ? firebase.auth().currentUser : null;
+    if(!fbUser) return;
+    try {
+      await db.collection('change_settings').doc(docId).set(collectSettings(), {merge: true});
+    } catch(e){ console.warn('[Settings Sync] Speichern fehlgeschlagen:', e.message); }
+  };
+
+  // ── Einstellungen aus Firestore laden & anwenden ──
+  window.loadSettingsFromFirestore = async function(){
+    const db = getDb();
+    const docId = settingsDocId();
+    if(!db || !docId) return;
+    try {
+      const snap = await db.collection('change_settings').doc(docId).get();
+      if(!snap.exists) return;
+      const s = snap.data();
+
+      // Kalender-Optionen anwenden
+      const calOpts = {};
+      if(typeof s.showHolidays === 'boolean')    calOpts.showHolidays    = s.showHolidays;
+      if(typeof s.showChallengeDots === 'boolean') calOpts.showChallengeDots = s.showChallengeDots;
+      if(typeof s.showWeekNumbers === 'boolean')  calOpts.showWeekNumbers  = s.showWeekNumbers;
+      if(Object.keys(calOpts).length){
+        localStorage.setItem('change_v1_calendar_view_options', JSON.stringify(calOpts));
+        localStorage.setItem('calendar_settings', JSON.stringify(calOpts));
+      }
+
+      // Bundesland
+      if(s.holidayState){
+        localStorage.setItem('holiday_state', s.holidayState);
+        localStorage.setItem('change_v1_holiday_state', s.holidayState);
+        if(typeof calendarSettings !== 'undefined') calendarSettings.state = s.holidayState;
+      }
+
+      // Live-Sync
+      if(typeof s.liveSyncEnabled === 'boolean'){
+        localStorage.setItem('change_v1_live_sync_enabled', s.liveSyncEnabled ? 'true' : 'false');
+        try { if(typeof ls === 'function') ls('live_sync_enabled', s.liveSyncEnabled); } catch(e){}
+      }
+
+      // Push
+      if(typeof s.pushEnabled === 'boolean'){
+        localStorage.setItem('change_push_enabled', s.pushEnabled ? '1' : '0');
+      }
+
+      // Kalender neu rendern falls nötig
+      try { if(typeof renderCalendar === 'function') renderCalendar(); } catch(e){}
+      console.warn('[Settings Sync] Einstellungen geladen ✓');
+    } catch(e){ console.warn('[Settings Sync] Laden fehlgeschlagen:', e.message); }
+  };
+
+  // ── In saveCalSettings() einhängen ──
+  const _origSaveCal = window.saveCalSettings;
+  window.saveCalSettings = function(){
+    if(typeof _origSaveCal === 'function') _origSaveCal.apply(this, arguments);
+    // Async speichern ohne await (kein UI-Block)
+    setTimeout(() => window.saveSettingsToFirestore(), 300);
+  };
+
+  // ── In setLiveSyncEnabled() einhängen ──
+  const _origSetLive = window.setLiveSyncEnabled;
+  window.setLiveSyncEnabled = function(enabled){
+    if(typeof _origSetLive === 'function') _origSetLive.apply(this, arguments);
+    setTimeout(() => window.saveSettingsToFirestore(), 300);
+  };
+
+  // ── Nach Login: Settings laden ──
+  const _origBoot = window.bootMainApp;
+  window.bootMainApp = function(){
+    if(typeof _origBoot === 'function') _origBoot.apply(this, arguments);
+    // Kurz warten bis Firebase Auth bereit ist
+    setTimeout(async () => {
+      await window.loadSettingsFromFirestore();
+    }, 1500);
+  };
+
+  // ── Beim Speichern von Push-Einstellungen auch synchen ──
+  // Beobachte localStorage-Änderungen (Polling alle 2s nach bootMainApp)
+  let _settingsSyncTimer = null;
+  const _origReqNotif = window.reqNotifPermission;
+  window.reqNotifPermission = async function(){
+    if(typeof _origReqNotif === 'function') await _origReqNotif.apply(this, arguments);
+    setTimeout(() => window.saveSettingsToFirestore(), 1000);
+  };
+
+  console.warn('[Settings Sync] Modul geladen ✓');
+})();
+</script>
+
 </body>
 </html>
