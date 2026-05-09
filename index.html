@@ -47,29 +47,35 @@
    Minimalistisch · Warm · Klar
 ═══════════════════════════════════════ */
 :root{
-  /* Surfaces */
   --bg:#F8F7F3; --bg2:#FFFFFF; --bg3:#F1F0EB;
   --s1:#FFFFFF; --s2:#F5F4EF; --s3:#EDECEA;
-  /* Borders */
   --b1:rgba(0,0,0,.07); --b2:rgba(0,0,0,.12); --b3:rgba(0,0,0,.20);
-  /* Accent — Forest Green */
   --acc:#2D6A4F; --acc-h:#245C43; --acc-d:rgba(45,106,79,.09); --acc-d2:rgba(45,106,79,.05);
-  /* Status */
   --grn:#16A34A; --grn-d:rgba(22,163,74,.09);
   --amb:#D97706; --amb-d:rgba(217,119,6,.09);
   --red:#DC2626; --red-d:rgba(220,38,38,.09);
   --pur:#7C3AED; --pur-d:rgba(124,58,237,.09);
-  /* Text */
   --t1:#18181B; --t2:#3F3F46; --t3:#71717A; --t4:#A1A1AA; --t5:#D4D4D8;
-  /* Type */
   --font:'Plus Jakarta Sans',system-ui,sans-serif;
   --mono:'JetBrains Mono',ui-monospace,monospace;
-  /* Shape */
   --r:10px; --rsm:6px; --rlg:16px; --rxl:24px;
-  /* Shadows — warm, subtle */
   --sh:0 1px 3px rgba(0,0,0,.05),0 4px 12px rgba(0,0,0,.06);
   --sh-lg:0 2px 8px rgba(0,0,0,.06),0 16px 40px rgba(0,0,0,.10);
   --nav-h:58px;
+}
+/* ── DARK MODE ──────────────────────────────────── */
+[data-theme="dark"]{
+  --bg:#0F0F0F; --bg2:#1A1A1A; --bg3:#141414;
+  --s1:#1A1A1A; --s2:#222222; --s3:#2A2A2A;
+  --b1:rgba(255,255,255,.07); --b2:rgba(255,255,255,.12); --b3:rgba(255,255,255,.20);
+  --acc:#4ADE80; --acc-h:#22C55E; --acc-d:rgba(74,222,128,.12); --acc-d2:rgba(74,222,128,.06);
+  --grn:#4ADE80; --grn-d:rgba(74,222,128,.12);
+  --amb:#FCD34D; --amb-d:rgba(252,211,77,.12);
+  --red:#F87171; --red-d:rgba(248,113,113,.12);
+  --pur:#A78BFA; --pur-d:rgba(167,139,250,.12);
+  --t1:#F4F4F5; --t2:#D4D4D8; --t3:#A1A1AA; --t4:#71717A; --t5:#52525B;
+  --sh:0 1px 3px rgba(0,0,0,.3),0 4px 12px rgba(0,0,0,.4);
+  --sh-lg:0 2px 8px rgba(0,0,0,.3),0 16px 40px rgba(0,0,0,.5);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{height:100%;height:-webkit-fill-available}
@@ -804,9 +810,14 @@ if(window.location.hostname !== 'localhost' && window.location.hostname !== '127
       </div>
 
       <div class="h-right">
-        <button class="icon-btn" onclick="openNotifPanel()" title="Benachrichtigungen">
+        <button class="icon-btn" id="dark-mode-btn" onclick="toggleDarkMode()" title="Dark Mode">
+          <svg id="dm-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg id="dm-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
+        <button class="icon-btn" onclick="openNotifPanel()" title="Benachrichtigungen" id="notif-bell-btn" style="position:relative">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           <div class="notif-dot" id="notif-dot"></div>
+          <div id="notif-count-badge" style="display:none;position:absolute;top:3px;right:3px;min-width:16px;height:16px;background:var(--red);color:#fff;border-radius:999px;font-size:10px;font-weight:700;line-height:16px;text-align:center;padding:0 3px;border:1.5px solid var(--s1)"></div>
         </button>
         <button class="icon-btn" id="settings-btn" type="button" onclick="window.openSettingsPanel&&window.openSettingsPanel('calendar')" title="Einstellungen">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.33 1.82V22a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1.82-.33H2a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-.6 1.65 1.65 0 0 0 .33-1.82V2a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.12.69.31 1 .6.31.29.51.64.6 1H22a2 2 0 1 1 0 4h-.09c-.37.09-.72.29-1 .6-.29.31-.48.64-.51 1z"/></svg>
@@ -2047,6 +2058,33 @@ function checkNotifications(){
   }catch(_){}
   const dot=document.getElementById('notif-dot');
   if(dot) dot.style.display=(hasCrit||hasOpenChallenges)?'block':'none';
+
+  // [FIX] Glocken-Badge: zeigt korrekte Anzahl offener Challenges heute
+  const badge=document.getElementById('notif-count-badge');
+  if(badge){
+    try{
+      const _td2=(typeof dateKey==='function')?dateKey(new Date()):new Date().toISOString().slice(0,10);
+      const _ui3=(typeof userInfo!=='undefined'?userInfo:window.userInfo)||{};
+      const _me3=String(_ui3.email||'').toLowerCase();
+      const _done3=new Set((window.challengeCompletions||[])
+        .filter(function(c){return String(c.date||'').slice(0,10)===_td2&&(!_me3||String(c.playerId||c.email||c.userEmail||'').toLowerCase()===_me3);})
+        .map(function(c){return c.challengeId;}));
+      const _active=(window.challenges||[]).filter(function(c){return c&&c.active!==false&&!c.optional;});
+      const openCount=_active.filter(function(c){return !_done3.has(c.id);}).length;
+      const critCount=notifications.filter(function(n){return n.urgency==='crit';}).length;
+
+      // Streak-Info für Badge
+      const streakVal=(typeof window.getCurrentStreak==='function')?window.getCurrentStreak():0;
+
+      if(openCount>0||critCount>0){
+        const total=openCount+critCount;
+        badge.textContent=total>9?'9+':String(total);
+        badge.style.display='block';
+      } else {
+        badge.style.display='none';
+      }
+    }catch(_){}
+  }
 }
 
 function fireNotification(ev,daysLeft){
@@ -8745,6 +8783,408 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   };
 
   console.warn('[Settings Sync] Modul geladen ✓');
+})();
+</script>
+
+
+<script>
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   CHANGE APP — STREAK · BADGES · DARK MODE · NOTIF
+   Firebase-Sync für alle Features
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+(function(){
+
+/* ══════════════════════════════════════════════════
+   DARK MODE
+══════════════════════════════════════════════════ */
+const DM_KEY = 'change_v1_dark_mode';
+
+function applyTheme(dark){
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  const moon = document.getElementById('dm-moon');
+  const sun  = document.getElementById('dm-sun');
+  if(moon) moon.style.display = dark ? 'none' : '';
+  if(sun)  sun.style.display  = dark ? '' : 'none';
+}
+
+window.toggleDarkMode = function(){
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const next = !isDark;
+  localStorage.setItem(DM_KEY, next ? '1' : '0');
+  applyTheme(next);
+  // Firebase sync
+  setTimeout(() => window.saveSettingsToFirestore && window.saveSettingsToFirestore(), 300);
+};
+
+// Init on load
+(function initDark(){
+  const stored = localStorage.getItem(DM_KEY);
+  if(stored !== null){
+    applyTheme(stored === '1');
+  } else {
+    // Systemeinstellung respektieren
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(prefersDark);
+  }
+})();
+
+/* ══════════════════════════════════════════════════
+   STREAK BERECHNUNG
+══════════════════════════════════════════════════ */
+window.getCurrentStreak = function(email){
+  try{
+    const me = email || (typeof userInfo !== 'undefined' ? userInfo.email : '') || '';
+    const completions = window.challengeCompletions || [];
+    if(!completions.length) return 0;
+
+    // Alle Tage an denen ich etwas erledigt habe
+    const doneDays = new Set(
+      completions
+        .filter(c => !me || String(c.playerId||c.email||'').toLowerCase() === me.toLowerCase())
+        .map(c => String(c.date||'').slice(0,10))
+        .filter(Boolean)
+    );
+
+    // Rückwärts von heute zählen
+    let streak = 0;
+    const d = new Date();
+    const today = d.toISOString().slice(0,10);
+
+    // Wenn heute noch nichts erledigt → ab gestern starten
+    let start = doneDays.has(today) ? 0 : 1;
+
+    for(let i = start; i < 365; i++){
+      const dd = new Date();
+      dd.setDate(dd.getDate() - i);
+      const key = dd.toISOString().slice(0,10);
+      if(doneDays.has(key)){
+        streak++;
+      } else {
+        break;
+      }
+    }
+    return streak;
+  } catch(e){ return 0; }
+};
+
+/* ══════════════════════════════════════════════════
+   MEILENSTEINE & ABZEICHEN
+══════════════════════════════════════════════════ */
+const BADGES = [
+  { id:'first_done',   icon:'🎯', name:'Erster Schritt',    desc:'Erste Challenge erledigt',        check: (s,p) => p.totalDone >= 1 },
+  { id:'streak3',      icon:'🔥', name:'3 Tage dabei',      desc:'3 Tage Streak',                   check: (s,p) => s >= 3 },
+  { id:'streak7',      icon:'⚡', name:'Eine Woche Feuer',   desc:'7 Tage Streak',                   check: (s,p) => s >= 7 },
+  { id:'streak30',     icon:'🌟', name:'Unaufhaltsam',       desc:'30 Tage Streak',                  check: (s,p) => s >= 30 },
+  { id:'points100',    icon:'💯', name:'100 Punkte',         desc:'100 Punkte gesammelt',            check: (s,p) => (p.totalPoints||0) >= 100 },
+  { id:'points500',    icon:'🏆', name:'500 Punkte',         desc:'500 Punkte gesammelt',            check: (s,p) => (p.totalPoints||0) >= 500 },
+  { id:'points1000',   icon:'👑', name:'1000 Punkte',        desc:'1000 Punkte gesammelt',           check: (s,p) => (p.totalPoints||0) >= 1000 },
+  { id:'done10',       icon:'💪', name:'Fleißig',            desc:'10 Challenges erledigt',          check: (s,p) => p.totalDone >= 10 },
+  { id:'done50',       icon:'🎖️', name:'Durchhalter',        desc:'50 Challenges erledigt',          check: (s,p) => p.totalDone >= 50 },
+  { id:'done100',      icon:'🦁', name:'Legende',            desc:'100 Challenges erledigt',         check: (s,p) => p.totalDone >= 100 },
+];
+
+function getMyStats(){
+  const me = (typeof userInfo !== 'undefined' ? userInfo.email : '') || '';
+  const completions = (window.challengeCompletions||[])
+    .filter(c => !me || String(c.playerId||c.email||'').toLowerCase() === me.toLowerCase());
+  const totalPoints = completions.reduce((s,c) => s + (parseInt(c.points)||0), 0);
+  const totalDone   = completions.length;
+  return { totalPoints, totalDone, email: me };
+}
+
+window.getEarnedBadges = function(){
+  const streak = window.getCurrentStreak();
+  const stats  = getMyStats();
+  return BADGES.filter(b => {
+    try{ return b.check(streak, stats); } catch(e){ return false; }
+  });
+};
+
+window.getNewBadges = function(){
+  const earned = window.getEarnedBadges().map(b=>b.id);
+  const seen   = JSON.parse(localStorage.getItem('change_seen_badges')||'[]');
+  return earned.filter(id => !seen.includes(id));
+};
+
+window.markBadgesSeen = function(){
+  const earned = window.getEarnedBadges().map(b=>b.id);
+  localStorage.setItem('change_seen_badges', JSON.stringify(earned));
+};
+
+function checkNewBadges(){
+  const newBadges = window.getNewBadges();
+  if(!newBadges.length) return;
+  newBadges.forEach(id => {
+    const b = BADGES.find(x=>x.id===id);
+    if(!b) return;
+    // Toast für neues Abzeichen
+    if(typeof toast === 'function'){
+      setTimeout(()=> toast(b.icon+' Abzeichen freigeschaltet: '+b.name, 'ok'), 500);
+    }
+  });
+  window.markBadgesSeen();
+  if(typeof checkNotifications === 'function') checkNotifications();
+}
+
+/* ══════════════════════════════════════════════════
+   STREAK & BADGE DISPLAY IM DASHBOARD
+══════════════════════════════════════════════════ */
+function injectStreakCard(){
+  // Nur wenn noch nicht vorhanden
+  if(document.getElementById('streak-card')) return;
+  const streak = window.getCurrentStreak();
+  const badges = window.getEarnedBadges();
+  const newBadges = window.getNewBadges();
+  if(streak === 0 && badges.length === 0) return;
+
+  const card = document.createElement('div');
+  card.id = 'streak-card';
+  card.style.cssText = 'background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:14px 16px;margin:0 0 14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap';
+
+  // Streak
+  if(streak > 0){
+    card.innerHTML += `
+      <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:120px">
+        <div style="font-size:28px;line-height:1">🔥</div>
+        <div>
+          <div style="font-size:20px;font-weight:800;color:var(--t1);line-height:1">${streak} Tag${streak!==1?'e':''}</div>
+          <div style="font-size:11px;color:var(--t3);font-weight:500;margin-top:1px">STREAK</div>
+        </div>
+      </div>`;
+  }
+
+  // Badges
+  if(badges.length > 0){
+    const badgeHtml = badges.slice(-5).map(b =>
+      `<span title="${b.name}: ${b.desc}" style="font-size:18px;cursor:default">${b.icon}</span>`
+    ).join('');
+    card.innerHTML += `
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0" onclick="openBadgePanel()">
+        ${badgeHtml}
+        ${badges.length > 5 ? `<span style="font-size:12px;color:var(--t3);font-weight:600">+${badges.length-5}</span>` : ''}
+      </div>`;
+  }
+
+  // Einfügen über dem Dashboard
+  const dash = document.getElementById('dashboard-view');
+  if(dash && dash.firstChild){
+    dash.insertBefore(card, dash.firstChild);
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   BENACHRICHTIGUNGS-PANEL — Streak + Badges
+══════════════════════════════════════════════════ */
+window.openBadgePanel = function(){
+  const badges   = window.getEarnedBadges();
+  const allBadges= BADGES;
+  const streak   = window.getCurrentStreak();
+  const stats    = getMyStats();
+
+  const rows = allBadges.map(b => {
+    const earned = badges.find(x=>x.id===b.id);
+    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--b1);opacity:${earned?1:0.35}">
+      <div style="font-size:26px;width:36px;text-align:center">${b.icon}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600;color:var(--t1)">${b.name}</div>
+        <div style="font-size:11px;color:var(--t3)">${b.desc}</div>
+      </div>
+      ${earned?'<div style="font-size:18px">✅</div>':'<div style="font-size:11px;color:var(--t4)">gesperrt</div>'}
+    </div>`;
+  }).join('');
+
+  const html = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
+      <div style="background:var(--s2);border-radius:var(--r);padding:12px;text-align:center">
+        <div style="font-size:22px;font-weight:800;color:var(--t1)">${streak}</div>
+        <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Streak</div>
+      </div>
+      <div style="background:var(--s2);border-radius:var(--r);padding:12px;text-align:center">
+        <div style="font-size:22px;font-weight:800;color:var(--t1)">${stats.totalPoints}</div>
+        <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Punkte</div>
+      </div>
+      <div style="background:var(--s2);border-radius:var(--r);padding:12px;text-align:center">
+        <div style="font-size:22px;font-weight:800;color:var(--t1)">${badges.length}/${allBadges.length}</div>
+        <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Abzeichen</div>
+      </div>
+    </div>
+    ${rows}`;
+
+  if(typeof openPanel === 'function') openPanel('Meine Abzeichen', html);
+};
+
+/* ══════════════════════════════════════════════════
+   BENACHRICHTIGUNGS-PANEL — Mit Streaks + Badges
+══════════════════════════════════════════════════ */
+const _origOpenNotif = window.openNotifPanel;
+window.openNotifPanel = function(){
+  try{
+    if(typeof checkNotifications === 'function') checkNotifications();
+    const notes = (window.notifications||[]).slice(0,12);
+    const streak = window.getCurrentStreak();
+    const newBadges = window.getNewBadges();
+    const earnedBadges = window.getEarnedBadges();
+
+    const td = (typeof dateKey==='function')?dateKey(new Date()):new Date().toISOString().slice(0,10);
+    const me = (typeof userInfo!=='undefined'?userInfo.email:'') || '';
+    const done = new Set((window.challengeCompletions||[])
+      .filter(c => String(c.date||'').slice(0,10)===td && (!me||String(c.playerId||c.email||'').toLowerCase()===me.toLowerCase()))
+      .map(c=>c.challengeId));
+    const active = (window.challenges||[]).filter(c=>c&&c.active!==false&&!c.optional);
+    const openCount = active.filter(c=>!done.has(c.id)).length;
+    const doneCount = active.filter(c=>done.has(c.id)).length;
+
+    let html = '';
+
+    // Streak + Abzeichen Sektion
+    if(streak > 0 || earnedBadges.length > 0){
+      html += `<div style="background:var(--s2);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:16px;cursor:pointer" onclick="openBadgePanel()">`;
+      if(streak > 0) html += `<div style="text-align:center"><div style="font-size:22px;font-weight:800;color:var(--t1)">🔥 ${streak}</div><div style="font-size:10px;color:var(--t3);text-transform:uppercase">Streak</div></div>`;
+      if(earnedBadges.length > 0){
+        html += `<div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:4px">${earnedBadges.length} Abzeichen</div>`;
+        html += `<div style="display:flex;gap:4px;flex-wrap:wrap">${earnedBadges.slice(-6).map(b=>`<span style="font-size:16px">${b.icon}</span>`).join('')}</div></div>`;
+      }
+      html += `<div style="font-size:11px;color:var(--t4)">Details →</div></div>`;
+    }
+
+    // Neue Abzeichen
+    if(newBadges.length > 0){
+      const badge = BADGES.find(b=>b.id===newBadges[0]);
+      if(badge) html += `<div style="background:var(--grn-d);border:1px solid var(--grn);border-radius:var(--r);padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px"><span style="font-size:22px">${badge.icon}</span><div><div style="font-size:13px;font-weight:600;color:var(--t1)">Neues Abzeichen: ${badge.name}</div><div style="font-size:11px;color:var(--t3)">${badge.desc}</div></div></div>`;
+      window.markBadgesSeen();
+    }
+
+    // Challenges heute
+    html += `<div style="background:var(--s2);border-radius:var(--r);padding:12px 14px;margin-bottom:14px">
+      <div style="font-size:10px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Challenges heute</div>
+      <div style="display:flex;gap:16px">
+        <div style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--grn)">${doneCount}</div><div style="font-size:10px;color:var(--t3)">erledigt</div></div>
+        <div style="text-align:center"><div style="font-size:20px;font-weight:800;color:${openCount>0?'var(--amb)':'var(--t3)'}">${openCount}</div><div style="font-size:10px;color:var(--t3)">offen</div></div>
+        <div style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--t2)">${active.length}</div><div style="font-size:10px;color:var(--t3)">gesamt</div></div>
+      </div>
+    </div>`;
+
+    // Termine
+    if(notes.length > 0){
+      const icons={deadline:'⚠️',meeting:'📅',reminder:'🔔',other:'📌'};
+      const bgs={crit:'var(--red-d)',warn:'var(--amb-d)',ok:'var(--s2)'};
+      const crit=notes.filter(n=>n.urgency==='crit');
+      const warn=notes.filter(n=>n.urgency==='warn');
+      const ok=notes.filter(n=>n.urgency==='ok');
+      const mkItem=n=>{const label=n.diff<0?'Überfällig':n.diff===0?'Heute':n.diff===1?'Morgen':`In ${n.diff}T`;const bcls=n.urgency==='crit'?'ub-crit':n.urgency==='warn'?'ub-warn':'ub-ok';return `<div class="nitem" onclick="setMainView('calendar');setTimeout(()=>openEventPanel('${n.id}'),200);closePanel()"><div class="nitem-icon" style="background:${bgs[n.urgency]}">${icons[n.type]||'📅'}</div><div class="nitem-body"><div class="nitem-title">${n.title||''}</div><div class="nitem-sub">${n.date||''}</div></div><span class="nitem-badge urgency-badge ${bcls}">${label}</span></div>`;};
+      if(crit.length) html+=`<div class="panel-notif-section"><div class="pns-title" style="color:var(--red)">⚡ Dringend</div>${crit.map(mkItem).join('')}</div>`;
+      if(warn.length) html+=`<div class="panel-notif-section"><div class="pns-title" style="color:var(--amb)">⚠ Diese Woche</div>${warn.map(mkItem).join('')}</div>`;
+      if(ok.length) html+=`<div class="panel-notif-section"><div class="pns-title">Demnächst</div>${ok.map(mkItem).join('')}</div>`;
+    } else if(openCount===0){
+      html += `<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><div class="empty-title">Alles erledigt</div><div class="empty-sub">Keine offenen Challenges & Termine</div></div>`;
+    }
+
+    const title = openCount > 0 ? openCount+' offene Challenge'+(openCount!==1?'s':'') : 'Alles im Griff';
+    if(typeof openPanel === 'function') openPanel(title, html);
+    const dot = document.getElementById('notif-dot');
+    if(dot) dot.style.display='none';
+    const badge2 = document.getElementById('notif-count-badge');
+    if(badge2) badge2.style.display='none';
+  }catch(e){ if(typeof _origOpenNotif==='function') _origOpenNotif(); }
+};
+
+/* ══════════════════════════════════════════════════
+   FIREBASE SYNC — Streak + Badges in change_players
+══════════════════════════════════════════════════ */
+window.syncStreakToFirestore = async function(){
+  try{
+    const db = window.firebase && firebase.firestore ? firebase.firestore() : null;
+    if(!db) return;
+    const fbUser = firebase.auth ? firebase.auth().currentUser : null;
+    if(!fbUser) return;
+    const email = (typeof userInfo!=='undefined'?userInfo.email:'') || '';
+    if(!email) return;
+    const docId = email.toLowerCase().replace(/[^a-z0-9._-]/g,'_');
+    const streak = window.getCurrentStreak();
+    const badges = window.getEarnedBadges().map(b=>b.id);
+    const stats  = getMyStats();
+    await db.collection('change_players').doc(docId).set({
+      streak,
+      badges,
+      totalPoints: stats.totalPoints,
+      totalDone:   stats.totalDone,
+      streakUpdatedAt: new Date().toISOString()
+    },{merge:true});
+  }catch(e){ console.warn('[Streak Sync]', e.message); }
+};
+
+/* ══════════════════════════════════════════════════
+   HOOKS — nach Challenge-Erledigung
+══════════════════════════════════════════════════ */
+const _origComplete = window.completeChallenge;
+window.completeChallenge = function(id){
+  if(typeof _origComplete === 'function') _origComplete.call(this, id);
+  setTimeout(()=>{
+    checkNewBadges();
+    window.syncStreakToFirestore && window.syncStreakToFirestore();
+    // Streak-Karte neu rendern
+    const old = document.getElementById('streak-card');
+    if(old) old.remove();
+    setTimeout(injectStreakCard, 500);
+    if(typeof checkNotifications === 'function') checkNotifications();
+  }, 800);
+};
+
+// Dashboard-Hook
+const _origBuildDash = window.buildDashboard;
+window.buildDashboard = function(){
+  if(typeof _origBuildDash === 'function') _origBuildDash.apply(this, arguments);
+  setTimeout(injectStreakCard, 400);
+};
+
+// Nach Login
+const _origBoot2 = window.bootMainApp;
+window.bootMainApp = function(){
+  if(typeof _origBoot2 === 'function') _origBoot2.apply(this, arguments);
+  setTimeout(()=>{
+    injectStreakCard();
+    checkNewBadges();
+    if(typeof checkNotifications === 'function') checkNotifications();
+  }, 1200);
+};
+
+// Dark Mode in Settings-Sync einbinden
+const _origSaveSettings = window.saveSettingsToFirestore;
+window.saveSettingsToFirestore = async function(){
+  if(typeof _origSaveSettings === 'function') await _origSaveSettings.call(this);
+  // Dark Mode in Settings mitschicken
+  try{
+    const db = window.firebase && firebase.firestore ? firebase.firestore() : null;
+    const fbUser = db && firebase.auth ? firebase.auth().currentUser : null;
+    const email = (typeof userInfo!=='undefined'?userInfo.email:'') || '';
+    if(db && fbUser && email){
+      const docId = email.toLowerCase().replace(/[^a-z0-9._-]/g,'_');
+      const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+      await db.collection('change_settings').doc(docId).set({darkMode:dark},{merge:true});
+    }
+  }catch(e){}
+};
+
+// Dark Mode aus Firebase laden
+const _origLoadSettings = window.loadSettingsFromFirestore;
+window.loadSettingsFromFirestore = async function(){
+  if(typeof _origLoadSettings === 'function') await _origLoadSettings.call(this);
+  try{
+    const db = window.firebase && firebase.firestore ? firebase.firestore() : null;
+    const email = (typeof userInfo!=='undefined'?userInfo.email:'') || '';
+    if(db && email){
+      const docId = email.toLowerCase().replace(/[^a-z0-9._-]/g,'_');
+      const snap = await db.collection('change_settings').doc(docId).get();
+      if(snap.exists && typeof snap.data().darkMode === 'boolean'){
+        const dark = snap.data().darkMode;
+        localStorage.setItem(DM_KEY, dark ? '1' : '0');
+        applyTheme(dark);
+      }
+    }
+  }catch(e){}
+};
+
+console.warn('[Change] Streak · Badges · Dark Mode · Notif geladen ✓');
 })();
 </script>
 
