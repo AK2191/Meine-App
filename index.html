@@ -9305,5 +9305,227 @@ console.warn('[Change] Streak · Badges · Dark Mode · Notif geladen ✓');
 })();
 </script>
 
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+<script>
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   KONFETTI + GRUPPEN-ZIEL DER WOCHE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+(function(){
+
+/* ══════════════════════════════════════════════════
+   KONFETTI — wenn alle Tages-Challenges erledigt
+══════════════════════════════════════════════════ */
+let _konfettiDone = false;
+
+function checkAllDone(){
+  try{
+    const td = (typeof dateKey==='function') ? dateKey(new Date()) : new Date().toISOString().slice(0,10);
+    const me = (typeof userInfo!=='undefined' ? userInfo.email : '') || '';
+    const done = new Set((window.challengeCompletions||[])
+      .filter(c => String(c.date||'').slice(0,10)===td &&
+        (!me || String(c.playerId||c.email||'').toLowerCase()===me.toLowerCase()))
+      .map(c => c.challengeId));
+    const active = (window.challenges||[]).filter(c =>
+      c && c.active!==false && !c.optional &&
+      (c.recurrence==='daily' || !c.date || String(c.date||'').slice(0,10)===td)
+    );
+    return active.length > 0 && active.every(c => done.has(c.id));
+  } catch(e){ return false; }
+}
+
+function launchKonfetti(){
+  if(!window.confetti) return;
+  // Erstes Feuerwerk von links
+  confetti({
+    particleCount: 80,
+    spread: 60,
+    origin: { x: 0.2, y: 0.7 },
+    colors: ['#2D6A4F','#4ADE80','#FFD700','#FF6B6B','#6366F1']
+  });
+  // Zweites Feuerwerk von rechts
+  setTimeout(() => confetti({
+    particleCount: 80,
+    spread: 60,
+    origin: { x: 0.8, y: 0.7 },
+    colors: ['#2D6A4F','#4ADE80','#FFD700','#FF6B6B','#6366F1']
+  }), 200);
+  // Kleiner Regen von oben
+  setTimeout(() => confetti({
+    particleCount: 50,
+    angle: 90,
+    spread: 120,
+    origin: { x: 0.5, y: 0 },
+    colors: ['#2D6A4F','#4ADE80','#FFD700']
+  }), 400);
+}
+
+// Hook in completeChallenge
+const _confOrig = window.completeChallenge;
+window.completeChallenge = function(id){
+  if(typeof _confOrig === 'function') _confOrig.call(this, id);
+  setTimeout(() => {
+    const allDone = checkAllDone();
+    if(allDone && !_konfettiDone){
+      _konfettiDone = true;
+      launchKonfetti();
+      if(typeof toast === 'function')
+        toast('🎉 Alle Challenges erledigt! Fantastisch!', 'ok');
+    }
+  }, 600);
+};
+
+// Reset Konfetti-Flag täglich
+const _today = new Date().toISOString().slice(0,10);
+if(localStorage.getItem('change_konfetti_date') !== _today){
+  localStorage.setItem('change_konfetti_date', _today);
+  _konfettiDone = false;
+}
+
+/* ══════════════════════════════════════════════════
+   GRUPPEN-ZIEL DER WOCHE
+══════════════════════════════════════════════════ */
+const GOAL_KEY = 'change_group_goal';
+const DEFAULT_GOAL = 200; // Standard-Punkteziel
+
+function getWeekStart(){
+  const d = new Date();
+  const day = d.getDay() || 7; // Mo=1
+  d.setDate(d.getDate() - (day - 1));
+  return d.toISOString().slice(0,10);
+}
+
+function getGroupGoal(){
+  try{
+    const saved = JSON.parse(localStorage.getItem(GOAL_KEY) || 'null');
+    if(saved && saved.week === getWeekStart()) return saved;
+    return { week: getWeekStart(), target: DEFAULT_GOAL };
+  }catch(e){ return { week: getWeekStart(), target: DEFAULT_GOAL }; }
+}
+
+function saveGroupGoal(target){
+  const goal = { week: getWeekStart(), target: parseInt(target)||DEFAULT_GOAL };
+  localStorage.setItem(GOAL_KEY, JSON.stringify(goal));
+  // Firebase sync
+  try{
+    const db = window.firebase && firebase.firestore ? firebase.firestore() : null;
+    const email = (typeof userInfo!=='undefined'?userInfo.email:'') || '';
+    if(db && email && email.includes('@')){
+      db.collection('change_settings').doc(
+        email.toLowerCase().replace(/[^a-z0-9._-]/g,'_')
+      ).set({ groupGoalTarget: goal.target, groupGoalWeek: goal.week }, {merge:true});
+    }
+  }catch(e){}
+  renderGroupGoal();
+}
+
+function getGroupPoints(){
+  const weekStart = getWeekStart();
+  const d = new Date(weekStart);
+  const days = [];
+  for(let i=0;i<7;i++){
+    days.push(new Date(d.getTime()+i*86400000).toISOString().slice(0,10));
+  }
+  return (window.challengeCompletions||[])
+    .filter(c => days.includes(String(c.date||'').slice(0,10)))
+    .reduce((s,c) => s + (parseInt(c.points)||0), 0);
+}
+
+window.renderGroupGoal = function(){
+  const existing = document.getElementById('group-goal-card');
+  if(existing) existing.remove();
+
+  const goal = getGroupGoal();
+  const points = getGroupPoints();
+  const pct = Math.min(100, Math.round((points / goal.target) * 100));
+  const done = points >= goal.target;
+
+  // Ziel-Karte ins Dashboard einfügen
+  const dashBoard = document.querySelector('.challenge-card-head')?.parentElement ||
+                    document.querySelector('.dash-card-body');
+  if(!dashBoard) return;
+
+  const card = document.createElement('div');
+  card.id = 'group-goal-card';
+  card.style.cssText = 'background:var(--s1);border:1px solid var(--b1);border-radius:var(--rlg,12px);padding:14px 16px;margin-bottom:14px;box-shadow:var(--sh)';
+
+  card.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:18px">🎯</span>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--t1)">Gruppen-Ziel · KW ${getWeekNumber()}</div>
+          <div style="font-size:11px;color:var(--t3)">Gemeinsam ${goal.target} Punkte diese Woche</div>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:18px;font-weight:800;color:${done?'var(--grn)':'var(--acc)'}">${points}</div>
+        <div style="font-size:10px;color:var(--t4)">von ${goal.target} P</div>
+      </div>
+    </div>
+    <div style="background:var(--s3);border-radius:999px;height:8px;overflow:hidden">
+      <div style="height:8px;border-radius:999px;background:${done?'var(--grn)':'var(--acc)'};width:${pct}%;transition:width .4s ease"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:6px">
+      <span style="font-size:11px;color:var(--t3)">${pct}% erreicht</span>
+      <button style="font-size:11px;color:var(--t4);background:none;border:none;cursor:pointer;padding:0" onclick="openGoalSettings()">Ziel ändern</button>
+    </div>
+    ${done ? '<div style="font-size:12px;font-weight:600;color:var(--grn);margin-top:8px;text-align:center">🎉 Ziel erreicht! Ihr seid großartig!</div>' : ''}
+  `;
+
+  // Vor der Challenge-Karte einfügen
+  const challengeLayout = document.querySelector('.challenge-layout');
+  if(challengeLayout){
+    challengeLayout.parentElement.insertBefore(card, challengeLayout);
+  }
+};
+
+window.openGoalSettings = function(){
+  const goal = getGroupGoal();
+  const html = `
+    <div style="text-align:center;font-size:32px;margin-bottom:16px">🎯</div>
+    <div class="fg">
+      <label class="flabel">Punkte-Ziel diese Woche (für alle zusammen)</label>
+      <input class="finput" id="goal-input" type="number" min="50" max="5000" step="50" value="${goal.target}">
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0">
+      ${[100,200,300,500].map(v=>`<button class="btn btn-secondary btn-sm" onclick="document.getElementById('goal-input').value=${v}">${v}P</button>`).join('')}
+    </div>
+    <button class="btn btn-primary btn-full" onclick="saveGroupGoal(document.getElementById('goal-input').value);closePanel();toast('Ziel gespeichert ✓','ok')">Ziel setzen</button>
+  `;
+  if(typeof openPanel==='function') openPanel('Gruppen-Ziel', html);
+};
+
+function getWeekNumber(){
+  const d = new Date();
+  d.setHours(0,0,0,0);
+  d.setDate(d.getDate() + 3 - (d.getDay()+6)%7);
+  const week1 = new Date(d.getFullYear(),0,4);
+  return 1 + Math.round(((d.getTime()-week1.getTime())/86400000 - 3 + (week1.getDay()+6)%7)/7);
+}
+
+// Nach Login und Challenge-Erledigungen rendern
+const _origBoot3 = window.bootMainApp;
+window.bootMainApp = function(){
+  if(typeof _origBoot3 === 'function') _origBoot3.apply(this, arguments);
+  setTimeout(window.renderGroupGoal, 800);
+};
+
+const _origComplete2 = window.completeChallenge;
+const _prevComplete = _origComplete2;
+window.completeChallenge = function(id){
+  if(typeof _prevComplete === 'function') _prevComplete.call(this, id);
+  setTimeout(window.renderGroupGoal, 1000);
+};
+
+const _origSetView2 = window.setMainView;
+window.setMainView = function(view){
+  if(typeof _origSetView2 === 'function') _origSetView2.apply(this, arguments);
+  if(view === 'challenges') setTimeout(window.renderGroupGoal, 400);
+};
+
+})();
+</script>
+
 </body>
 </html>
