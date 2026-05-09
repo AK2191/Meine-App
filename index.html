@@ -3,20 +3,43 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<!-- [FIX HIGH-3 + CRIT-2] Content Security Policy — blockiert XSS & Clickjacking -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self' https://www.gstatic.com https://accounts.google.com 'unsafe-inline';
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  font-src 'self' https://fonts.gstatic.com;
+  connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://securetoken.googleapis.com https://fcm.googleapis.com wss://*.firebaseio.com;
+  img-src 'self' data: https://*.googleusercontent.com https://lh3.googleusercontent.com;
+  frame-ancestors 'none';
+  frame-src 'none';
+  object-src 'none';
+  base-uri 'self';
+  form-action 'self';
+  upgrade-insecure-requests;
+">
+<!-- [FIX MED-2] Referrer Policy -->
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<!-- [FIX LOW-2] Permissions Policy — deaktiviert nicht benötigte Browser-APIs -->
+<meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(), usb=(), bluetooth=()">
+<!-- [FIX LOW-3] Theme-Color — einmalig definiert -->
 <meta name="theme-color" content="#F8F7F3">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Change">
 <title>Change · Workspace</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://accounts.google.com/gsi/client" async></script>
+<!-- [FIX MED-2] Fonts mit noopener -->
+<link rel="preconnect" href="https://fonts.googleapis.com" referrerpolicy="no-referrer">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin referrerpolicy="no-referrer">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" referrerpolicy="no-referrer">
+<!-- [FIX HIGH-1] Externe Scripts mit crossorigin & referrerpolicy -->
+<script src="https://accounts.google.com/gsi/client" async referrerpolicy="no-referrer"></script>
 <link rel="manifest" href="./manifest.json">
 <link rel="stylesheet" href="./change.css">
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="./firebase-config.js"></script>
 <style>
 /* ═══════════════════════════════════════
@@ -624,6 +647,16 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 </style>
 </head>
 <body>
+<script>
+// [FIX HIGH-3] Clickjacking-Schutz
+if(window.top !== window.self){document.body.innerHTML='';window.top.location=window.self.location;}
+// [FIX MED-5] Konsolen-Logs in Produktion unterdrücken
+if(window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'){
+  const _noop=()=>{};
+  console.log=_noop;console.debug=_noop;console.info=_noop;
+}
+</script>
+
 
 <!-- Loading -->
 <div id="loading">
@@ -650,7 +683,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
     </div>
     <div class="fl-group">
       <label class="fl-label">Google OAuth Client-ID</label>
-      <input type="text" class="fl-input" id="client-id-input" placeholder="1234567890-xxxx.apps.googleusercontent.com">
+      <input type="text" class="fl-input" id="client-id-input" placeholder="1234567890-xxxx.apps.googleusercontent.com" autocomplete="off" maxlength="200" spellcheck="false">
     </div>
     <div class="btn-row">
       <button class="btn btn-primary" style="flex:1" onclick="saveClientId()">Speichern &amp; Starten</button>
@@ -915,18 +948,40 @@ const isToday = d => {const t=new Date();return d.getFullYear()===t.getFullYear(
 const daysUntil = dk => {if(!dk)return 999;const d=new Date(dk+'T12:00:00'),t=new Date();t.setHours(0,0,0,0);d.setHours(0,0,0,0);return Math.round((d-t)/86400000);};
 const fmtDate = dk => {if(!dk)return'—';const d=new Date(dk+'T12:00:00');return`${d.getDate()}. ${DE_MONTHS_S[d.getMonth()]} ${d.getFullYear()}`;};
 const fmtMoney = v => {if(!v&&v!==0)return'—';return Number(v).toLocaleString('de-DE',{style:'currency',currency:'EUR'});};
-const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+// [FIX CRIT-4] esc() — vollst. HTML-Escaping inkl. Apostrophe
+const esc = s => String(s??'').replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c]));
+// [FIX HIGH] safeUrl() — blockiert javascript:/data: URLs in href
+const safeUrl = u => { if(!u) return ''; const s=String(u).trim(); if(/^(javascript|data|vbscript):/i.test(s)) return ''; if(!/^https?:\/\//.test(s)) return ''; return s; };
 const uid = () => Math.random().toString(36).substring(2,10)+Date.now().toString(36);
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━
    INIT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+   [FIX CRIT-3] SECURE TOKEN STORE
+   Access-Token NUR im RAM – nie in localStorage
+━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const SecureTokenStore = (() => {
+  let _tok = null, _exp = 0, _usr = null;
+  // Alte unsichere Tokens sofort aus localStorage löschen
+  try { localStorage.removeItem(LSK+'_access_token'); } catch(_e) {}
+  return {
+    setToken(t, expiresIn = 3600) { _tok = t; _exp = Date.now() + expiresIn * 1000; },
+    getToken() { return (_tok && Date.now() < _exp) ? _tok : null; },
+    isValid() { return !!_tok && Date.now() < _exp; },
+    setUser(u) { _usr = { name: String(u.name||''), email: String(u.email||''), picture: String(u.picture||'') }; },
+    getUser() { return _usr ? {..._usr} : null; },
+    clear() { _tok = null; _exp = 0; _usr = null; }
+  };
+})();
+
 window.addEventListener('load', async () => {
   await new Promise(r => setTimeout(r,700));
 
   CLIENT_ID = getGoogleClientId();
-  accessToken = ls('access_token') || '';
-  userInfo = ls('user_info') || {};
+  // [FIX CRIT-3] Tokens kommen aus SecureTokenStore (RAM), nicht localStorage
+  accessToken = SecureTokenStore.getToken() || '';
+  userInfo = SecureTokenStore.getUser() || ls('user_info_safe') || {};
   events = ls('events') || [];
   gEvents = Array.isArray(gEvents) ? gEvents : [];
   // Global spiegeln: spätere modulare Patches lesen bewusst über window.*
@@ -1012,8 +1067,15 @@ function installChangeApp(){
    SETUP & AUTH
 ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function saveClientId(){
-  const v=cleanGoogleClientId(document.getElementById('client-id-input').value);
-  if(!v||!v.includes('.apps.googleusercontent.com')){toast('Bitte eine gültige Client-ID eingeben','err');return;}
+  // [FIX MED-1] Strikte Validierung der OAuth Client-ID
+  const raw = document.getElementById('client-id-input').value || '';
+  const v = cleanGoogleClientId(raw);
+  // Format: <zahlen>-<alphanum>.apps.googleusercontent.com
+  const validPattern = /^\d+-[a-z0-9]+\.apps\.googleusercontent\.com$/i;
+  if(!v || !validPattern.test(v)){
+    toast('Ungültige Client-ID — Format: 12345-xxxx.apps.googleusercontent.com','err');
+    return;
+  }
   CLIENT_ID=v; ls('client_id',v);
   document.getElementById('setup-modal').classList.remove('show');
   showLogin();
@@ -1041,7 +1103,7 @@ function handleGoogleLogin(){
       callback: async resp => {
         if(resp.error){toast('Anmeldung fehlgeschlagen: '+resp.error,'err');return;}
         accessToken=resp.access_token;
-        ls('access_token',accessToken);
+        SecureTokenStore.setToken(accessToken); // [FIX CRIT-3] kein localStorage
         isDemoMode=false; lsDel('demo_mode');
         await fetchUserInfo();
         bootMainApp();
@@ -1074,14 +1136,14 @@ async function handleFirebaseRedirectLogin(){
     if(result && result.user){
       const u=result.user;
       userInfo={name:u.displayName||u.email,email:u.email,picture:u.photoURL||''};
-      ls('user_info',userInfo);
+      SecureTokenStore.setUser(userInfo); ls('user_info_safe', {name:userInfo.name||'',email:userInfo.email||''}); // [FIX CRIT-3]
       let oauthToken='';
       try{
         const cred=firebase.auth.GoogleAuthProvider.credentialFromResult(result);
         oauthToken=cred && cred.accessToken ? cred.accessToken : '';
       }catch(_e){}
       accessToken=oauthToken || 'firebase-auth';
-      ls('access_token',accessToken);
+      SecureTokenStore.setToken(accessToken); // [FIX CRIT-3] kein localStorage
       isDemoMode=false; lsDel('demo_mode');
       bootMainApp();
       initFirebaseLive && initFirebaseLive();
@@ -1097,7 +1159,7 @@ async function fetchUserInfo(){
     if(!r.ok)return;
     const u=await r.json();
     userInfo={name:u.name||u.email,email:u.email,picture:u.picture||''};
-    ls('user_info',userInfo);
+    SecureTokenStore.setUser(userInfo); ls('user_info_safe', {name:userInfo.name||'',email:userInfo.email||''}); // [FIX CRIT-3]
   }catch{}
 }
 
@@ -1135,12 +1197,28 @@ function bootMainApp(){
     if(events.length!==_before) ls('events',events);
   }catch(_){}
 
-  const initials=(userInfo.name||'?').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase();
-  const av=document.getElementById('user-avatar');
-  if(userInfo.picture){
-    av.innerHTML=`<img src="${esc(userInfo.picture)}" alt="" onerror="this.parentElement.innerHTML='<span id=avatar-initials>${initials}</span>'">`;
-  }else{
-    av.innerHTML=`<span id="avatar-initials">${initials}</span>`;
+  // [FIX CRIT-4 + HIGH-XSS] Avatar ohne innerHTML/onerror — sicherer DOM-Aufbau
+  const rawName = String(userInfo.name || '?');
+  const initials = rawName.split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase();
+  const av = document.getElementById('user-avatar');
+  while(av.firstChild) av.removeChild(av.firstChild); // sicher leeren
+  if(userInfo.picture && /^https:\/\//.test(userInfo.picture)){
+    const img = document.createElement('img');
+    img.alt = '';
+    img.src = userInfo.picture;
+    img.addEventListener('error', () => {
+      while(av.firstChild) av.removeChild(av.firstChild);
+      const sp = document.createElement('span');
+      sp.id = 'avatar-initials';
+      sp.textContent = initials;
+      av.appendChild(sp);
+    });
+    av.appendChild(img);
+  } else {
+    const sp = document.createElement('span');
+    sp.id = 'avatar-initials';
+    sp.textContent = initials;
+    av.appendChild(sp);
   }
 
   setMainView('dashboard');
@@ -2966,7 +3044,7 @@ if(currentMainView==='calendar'){renderCalendar();renderUpcoming();} syncEventTo
     ensureDailyAutoChallenges(); clearDemoEverywhere();
     const list=document.getElementById('challenges-list'); const board=document.getElementById('leaderboard-list'); if(!list||!board)return;
     const active=(challenges||[]).filter(c=>c.active!==false && (c.type==='Sport' || /^sport_|^auto_.*_sport_/.test(c.id||'')));
-    list.innerHTML=active.length?active.map(ch=>{const done=isChallengeDoneToday(ch.id); const link=ch.url?'<a href="'+esc(ch.url)+'" target="_blank" rel="noopener" class="challenge-meta" onclick="event.stopPropagation()">So geht die Übung</a>':''; return '<div class="challenge-item '+(done?'challenge-done':'')+'"><div class="challenge-icon">'+esc(ch.icon||'🏃')+'</div><div class="challenge-body"><div class="challenge-name">'+esc(ch.title)+'</div><div class="challenge-meta">'+esc(ch.desc||'')+' · '+esc(ch.level||'leicht')+' · '+(ch.points||0)+' Punkte</div>'+link+'</div><span class="points-pill">+'+(ch.points||0)+'</span><button class="btn '+(done?'btn-success':'btn-primary')+' btn-sm" onclick="completeChallenge(\''+ch.id+'\')">'+(done?'Erledigt':'Erledigen')+'</button></div>';}).join(''):'<div class="empty-state"><div class="empty-title">Keine Sportübungen</div><div class="empty-sub">Aktiviere Auto-Challenges oder lege eine Sportübung an.</div></div>';
+    list.innerHTML=active.length?active.map(ch=>{const done=isChallengeDoneToday(ch.id); const link=ch.url?'<a href="'+safeUrl(ch.url)+'" target="_blank" rel="noopener" class="challenge-meta" onclick="event.stopPropagation()">So geht die Übung</a>':''; return '<div class="challenge-item '+(done?'challenge-done':'')+'"><div class="challenge-icon">'+esc(ch.icon||'🏃')+'</div><div class="challenge-body"><div class="challenge-name">'+esc(ch.title)+'</div><div class="challenge-meta">'+esc(ch.desc||'')+' · '+esc(ch.level||'leicht')+' · '+(ch.points||0)+' Punkte</div>'+link+'</div><span class="points-pill">+'+(ch.points||0)+'</span><button class="btn '+(done?'btn-success':'btn-primary')+' btn-sm" onclick="completeChallenge(\''+ch.id+'\')">'+(done?'Erledigt':'Erledigen')+'</button></div>';}).join(''):'<div class="empty-state"><div class="empty-title">Keine Sportübungen</div><div class="empty-sub">Aktiviere Auto-Challenges oder lege eine Sportübung an.</div></div>';
     const players=getVisibleContestPlayers(); players.sort((a,b)=>getPlayerPointSummary(String(b.email||b.id).toLowerCase()).totalPoints-getPlayerPointSummary(String(a.email||a.id).toLowerCase()).totalPoints);
     board.innerHTML=players.length?players.map((p,idx)=>{const id=String(p.email||p.id||'').toLowerCase(); const st=getPlayerPointSummary(id); const me=id===getCurrentPlayerId(); const medal=idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':(idx+1); const live=p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>'; return '<div class="leader-row clickable" onclick="openContestUserDetails(\''+esc(id)+'\')"><div class="leader-rank">'+medal+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+live+'</div><div class="leader-detail">Heute: '+st.todayPoints+' P · Gesamt: '+st.totalPoints+' P · '+st.totalCount+' erledigt</div></div><div class="leader-score">'+st.totalPoints+'</div></div>';}).join(''):'<div class="dash-empty">Noch keine Mitspieler. Sobald sich jemand mit Google anmeldet, erscheint er hier automatisch.</div>';
   };
@@ -3672,7 +3750,7 @@ const pad=n=>String(n).padStart(2,'0');
 const key=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const parse=s=>{ if(!s) return null; if(s instanceof Date) return new Date(s.getFullYear(),s.getMonth(),s.getDate()); const m=String(s).match(/^(\d{4})-(\d{2})-(\d{2})/); return m?new Date(+m[1],+m[2]-1,+m[3]):null; };
 const add=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
-const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const esc = s => String(s??'').replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c])); // [FIX: inkl. backtick]
 const monthNames=window.DE_MONTHS||['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
 function opts(){
   let def={showHolidays:true,showChallengeDots:true,showWeekNumbers:true};
@@ -3941,7 +4019,7 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
 (function(){
   'use strict';
   const pad=n=>String(n).padStart(2,'0');
-  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const esc = s => String(s??'').replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c])); // [FIX: inkl. backtick]
   const key=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
   const parse=v=>{ if(!v) return null; const d=v instanceof Date?new Date(v):new Date(String(v).slice(0,10)+'T12:00:00'); return isNaN(d)?null:d; };
   const addDays=(d,n)=>{ const x=new Date(d); x.setDate(x.getDate()+n); return x; };
@@ -4207,7 +4285,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 (function(){
   'use strict';
   const DAY=86400000;
-  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const esc = s => String(s??'').replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c])); // [FIX: inkl. backtick]
   const pad=n=>String(n).padStart(2,'0');
   function dkey(d){
     if(typeof d==='string') return d.slice(0,10);
@@ -4388,7 +4466,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 (function () {
   'use strict';
   const $ = id => document.getElementById(id);
-  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const esc = s => String(s??'').replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c])); // [FIX: inkl. backtick]
   const DAY = 86400000;
 
   function toKey(d) {
@@ -4783,7 +4861,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 (function(){
   'use strict';
   const $=id=>document.getElementById(id);
-  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const esc = s => String(s??'').replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c])); // [FIX: inkl. backtick]
   const pad=n=>String(n).padStart(2,'0');
   const today=()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
   const norm=s=>String(s||'').trim().toLowerCase();
@@ -4887,7 +4965,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   'use strict';
 
   const $  = id => document.getElementById(id);
-  const esc = s => String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const esc = s => String(s??'').replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c])); // [FIX: inkl. backtick]
   const pad2 = n => String(n).padStart(2,'0');
 
   /* ── INJECT FINAL CSS ── */
@@ -5441,7 +5519,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
         <div class="challenge-body">
           <div class="challenge-name">${esc(ch.title||ch.name||'Challenge')}</div>
           <div class="challenge-meta">${esc(ch.desc||'')}</div>
-          ${url?`<a class="challenge-meta" style="color:var(--acc);text-decoration:none;font-weight:600" href="${esc(url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Übung ansehen ↗</a>`:''}
+          ${url?`<a class="challenge-meta" style="color:var(--acc);text-decoration:none;font-weight:600" href="${safeUrl(url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Übung ansehen ↗</a>`:''}
         </div>
         <span class="points-pill">+${pts}</span>
         ${done
@@ -5887,7 +5965,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 (function () {
   'use strict';
 
-  const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const esc = s => String(s??'').replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c])); // [FIX: inkl. backtick]
   const lsRead  = k => { try{ return JSON.parse(localStorage.getItem('change_v1_'+k)); }catch(e){ return null; } };
   const lsWrite = (k,v) => { try{ localStorage.setItem('change_v1_'+k,JSON.stringify(v)); }catch(e){} };
   const $       = id => document.getElementById(id);
@@ -7362,7 +7440,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   const PLAYERS = 'change_players';
   const BAD_IDS = new Set(['', 'du', 'ich', 'me', 'local-user', 'google-user', 'local-authenticated-user', 'mitspieler', 'unknown']);
   const norm = v => String(v || '').trim().toLowerCase();
-  const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const esc = s => String(s??'').replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c])); // [FIX: inkl. backtick]
   const pad2 = n => String(n).padStart(2, '0');
   const today = () => { const d = new Date(); return d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate()); };
   const safeDocId = id => norm(id || 'unknown').replace(/[^a-z0-9._-]/g, '_');

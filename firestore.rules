@@ -1,9 +1,114 @@
 rules_version = '2';
+
+// ═══════════════════════════════════════════════════════════════
+// CHANGE APP — Sichere Firestore Security Rules
+// Fixes: CRIT-1 (offene Regeln), MED-1 (keine Validierung)
+// ═══════════════════════════════════════════════════════════════
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /change_players/{id} { allow read, write: if true; }
-    match /change_completions/{id} { allow read, write: if true; }
-    match /change_challenges/{id} { allow read, write: if true; }
-    match /change_settings/{id} { allow read, write: if true; }
+
+    // ── HILFSFUNKTIONEN ──────────────────────────────────────────
+
+    // Ist der Nutzer eingeloggt?
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // Ist der Nutzer der Eigentümer des Dokuments?
+    function isOwner(uid) {
+      return isAuth() && request.auth.uid == uid;
+    }
+
+    // Ist der Nutzer ein bekannter Spieler (hat ein Profil)?
+    function isKnownPlayer() {
+      return isAuth() &&
+        exists(/databases/$(database)/documents/change_players/$(request.auth.uid));
+    }
+
+    // Schreibdaten-Validierung: Maximale String-Länge
+    function validString(field, maxLen) {
+      return field is string && field.size() <= maxLen;
+    }
+
+    // ── SPIELER-PROFILE ──────────────────────────────────────────
+    // Jeder authentifizierte Nutzer kann Profile lesen (für Rangliste/Mitspieler).
+    // Schreiben nur auf das eigene Profil erlaubt.
+    match /change_players/{userId} {
+
+      allow read: if isAuth();
+
+      allow create: if isOwner(userId)
+        && validString(request.resource.data.name, 80)
+        && validString(request.resource.data.email, 200);
+
+      allow update: if isOwner(userId)
+        && validString(request.resource.data.name, 80);
+
+      // Löschen: nur eigenes Profil
+      allow delete: if isOwner(userId);
+    }
+
+    // ── CHALLENGE-COMPLETIONS ─────────────────────────────────────
+    // Spieler können alle Completions lesen (für Rangliste).
+    // Anlegen/Ändern nur für eigene Completions.
+    match /change_completions/{docId} {
+
+      allow read: if isAuth();
+
+      allow create: if isAuth()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.keys().hasAll(['userId', 'challengeId', 'completedAt'])
+        && request.resource.data.keys().size() <= 10;
+
+      allow update: if isAuth()
+        && resource.data.userId == request.auth.uid;
+
+      allow delete: if isAuth()
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // ── CHALLENGES (Aufgaben-Definitionen) ────────────────────────
+    // Alle angemeldeten Spieler können Challenges lesen.
+    // Erstellen/Ändern nur für den Ersteller.
+    match /change_challenges/{challengeId} {
+
+      allow read: if isAuth();
+
+      allow create: if isAuth()
+        && request.resource.data.createdBy == request.auth.uid
+        && validString(request.resource.data.title, 120)
+        && request.resource.data.points is number
+        && request.resource.data.points >= 1
+        && request.resource.data.points <= 1000;
+
+      allow update: if isAuth()
+        && resource.data.createdBy == request.auth.uid
+        && validString(request.resource.data.title, 120);
+
+      allow delete: if isAuth()
+        && resource.data.createdBy == request.auth.uid;
+    }
+
+    // ── SETTINGS ──────────────────────────────────────────────────
+    // Nur der Eigentümer kann seine eigenen Einstellungen lesen/schreiben.
+    match /change_settings/{userId} {
+
+      allow read, write: if isOwner(userId);
+    }
+
+    // ── FCM PUSH TOKENS ───────────────────────────────────────────
+    // Neue Sammlung für Push-Tokens — nur eigene Tokens verwaltbar.
+    match /change_push_tokens/{userId} {
+
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId);
+    }
+
+    // ── FALLBACK: Alles andere verbieten ─────────────────────────
+    // Wichtig: Kein implizites Erlauben!
+    match /{document=**} {
+      allow read, write: if false;
+    }
   }
 }
