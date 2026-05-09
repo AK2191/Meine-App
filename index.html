@@ -1333,8 +1333,10 @@ async function fetchUserInfo(){
     const r=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{'Authorization':'Bearer '+accessToken}});
     if(!r.ok)return;
     const u=await r.json();
-    userInfo={name:u.name||u.email,email:u.email,picture:u.picture||''};
-    SecureTokenStore.setUser(userInfo); ls('user_info_safe', {name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''}); // [FIX CRIT-3]
+    userInfo={name:u.name||u.given_name+' '+(u.family_name||'')||u.email,email:u.email,picture:u.picture||''};
+    userInfo.name = userInfo.name.trim() || u.email;
+    SecureTokenStore.setUser(userInfo);
+    ls('user_info_safe', {name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''});
   }catch{}
 }
 
@@ -2130,9 +2132,17 @@ function toast(msg,type){
 function confirmLogout(){
   const name=userInfo.name||userInfo.email||'Nutzer';
   const mail=userInfo.email||'';
-  const avatar=userInfo.picture
-    ? `<img src="${esc(userInfo.picture)}" alt="">`
-    : esc((name||'?').split(' ').map(x=>x[0]).join('').substring(0,2).toUpperCase()||'?');
+  // Bild aus userInfo ODER aus Firebase Auth (falls GSI-Bild fehlt)
+  let picUrl = userInfo.picture || '';
+  if(!picUrl){
+    try{
+      const fbU = window.firebase && firebase.auth ? firebase.auth().currentUser : null;
+      if(fbU && fbU.photoURL) picUrl = fbU.photoURL;
+    }catch(_e){}
+  }
+  const avatar = picUrl
+    ? `<img src="${esc(picUrl)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+    : `<span style="font-size:14px;font-weight:700">${esc((name||'?').split(' ').map(x=>x[0]).join('').substring(0,2).toUpperCase()||'?')}</span>`;
   const html=`
     <div class="logout-profile">
       <div class="logout-avatar">${avatar}</div>
@@ -6350,15 +6360,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       var uDy = typeof window.getUrlaubTotalDays==='function' ? window.getUrlaubTotalDays() : 30;
 
       var friseurSection =
-        '<div class="toggle-row"><div class="toggle-copy">'
-        +'<div class="toggle-title">✂️ Friseur-Tracker <span class="status-pill '+(on?'status-on':'status-off')+'">'+(on?'AKTIV':'AUS')+'</span></div>'
-        +'<div class="toggle-sub">Zeigt im Dashboard wann der letzte &amp; nächste Friseur-Termin war/ist. Termin muss „Friseur" im Titel enthalten.</div>'
-        +'</div><label class="switch"><input type="checkbox" id="us-friseur-on" '+(on?'checked':'')+' onchange="window.setFriseurEnabled&&window.setFriseurEnabled(this.checked)"><span class="slider"></span></label></div>'
-        +'<div style="margin-top:10px;display:flex;align-items:center;gap:10px">'
-        +'<label style="font-size:12px;color:var(--t3);font-weight:600;white-space:nowrap">Erinnerung nach</label>'
-        +'<select class="finput" id="us-friseur-weeks" style="max-width:120px" onchange="window.setFriseurWeeks&&window.setFriseurWeeks(parseInt(this.value))">'
-        +[2,3,4,5,6,8].map(function(n){return '<option value="'+n+'" '+(n===w?'selected':'')+'>'+n+' Wochen</option>';}).join('')
-        +'</select></div>';
+        '<div class="settings-group">'        +'<div class="settings-group-label">Friseur-Tracker</div>'        +'<div class="toggle-row"><div class="toggle-copy">'        +'<div class="toggle-title">✂️ Friseur-Tracker <span class="status-pill '+(on?'status-on':'status-off')+'">'+(on?'AKTIV':'AUS')+'</span></div>'        +'<div class="toggle-sub">Zeigt wann der letzte &amp; nächste Friseur-Termin war/ist.</div>'        +'</div><label class="switch"><input type="checkbox" id="us-friseur-on" '+(on?'checked':'')+' onchange="window.setFriseurEnabled&&window.setFriseurEnabled(this.checked)"><span class="slider"></span></label></div>'        +'<div style="padding:8px 14px 12px;display:flex;align-items:center;gap:10px">'        +'<label style="font-size:12px;color:var(--t3);font-weight:600;white-space:nowrap">Erinnerung nach</label>'        +'<select class="finput" id="us-friseur-weeks" style="max-width:120px" onchange="window.setFriseurWeeks&&window.setFriseurWeeks(parseInt(this.value))">'        +[2,3,4,5,6,8].map(function(n){return '<option value="'+n+'" '+(n===w?'selected':'')+'>'+n+' Wochen</option>';}).join('')        +'</select></div>'        +'</div>';
 
       // Halbtage-Chips aufbauen
       var halfDayChips = (typeof window.getUrlaubHalfDays==='function' ? window.getUrlaubHalfDays() : [])
@@ -6373,27 +6375,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
         }).join(' ');
 
       var urlaubSection =
-        '<div class="toggle-row" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--b1)"><div class="toggle-copy">'
-        +'<div class="toggle-title">🏖️ Urlaubs-Tracker <span class="status-pill '+(uOn?'status-on':'status-off')+'">'+(uOn?'AKTIV':'AUS')+'</span></div>'
-        +'<div class="toggle-sub">Zeigt verbrauchte &amp; verbleibende Urlaubstage. Kalendereinträge mit „Urlaub" im Titel – Wochenenden &amp; Feiertage werden herausgerechnet.</div>'
-        +'</div><label class="switch"><input type="checkbox" id="us-urlaub-on" '+(uOn?'checked':'')+' onchange="window.setUrlaubEnabled&&window.setUrlaubEnabled(this.checked)"><span class="slider"></span></label></div>'
-        // Jahresurlaub-Eingabe
-        +'<div style="margin-top:10px;display:flex;align-items:center;gap:10px">'
-        +'<label style="font-size:12px;color:var(--t3);font-weight:600;white-space:nowrap">Jahresurlaub</label>'
-        +'<input type="number" class="finput" id="us-urlaub-days" min="1" max="365" value="'+uDy+'" style="max-width:80px" onchange="window.setUrlaubDays&&window.setUrlaubDays(parseInt(this.value)||30)">'
-        +'<span style="font-size:12px;color:var(--t4)"> Tage</span>'
-        +'</div>'
-        // Halbe Urlaubstage
-        +'<div style="margin-top:12px">'
-        +'<div style="font-size:12px;color:var(--t3);font-weight:600;margin-bottom:6px">Halbe Urlaubstage</div>'
-        +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">'
-        +'<input type="date" class="finput" id="us-half-date" style="max-width:160px">'
-        +'<button class="btn btn-secondary btn-sm" onclick="(function(){ var el=document.getElementById(&quot;us-half-date&quot;); var v=el&&el.value; if(!v)return; window.addUrlaubHalfDay&&window.addUrlaubHalfDay(v); if(el)el.value=&quot;&quot;; })()">'
-        +'+ Hinzufügen</button>'
-        +'</div>'
-        +'<div data-half-list style="display:flex;flex-wrap:wrap;gap:6px;min-height:16px">'+halfDayChips+'</div>'
-        +'<div style="font-size:11px;color:var(--t4);margin-top:6px">Dieser Tag zählt als 0,5 statt 1 Urlaubstag.</div>'
-        +'</div>';
+        '<div class="settings-group">'        +'<div class="settings-group-label">Urlaubs-Tracker</div>'        +'<div class="toggle-row"><div class="toggle-copy">'        +'<div class="toggle-title">🏖️ Urlaubs-Tracker <span class="status-pill '+(uOn?'status-on':'status-off')+'">'+(uOn?'AKTIV':'AUS')+'</span></div>'        +'<div class="toggle-sub">Zeigt verbrauchte &amp; verbleibende Urlaubstage. Wochenenden &amp; Feiertage herausgerechnet.</div>'        +'</div><label class="switch"><input type="checkbox" id="us-urlaub-on" '+(uOn?'checked':'')+' onchange="window.setUrlaubEnabled&&window.setUrlaubEnabled(this.checked)"><span class="slider"></span></label></div>'        +'<div style="padding:8px 14px 4px;display:flex;align-items:center;gap:10px">'        +'<label style="font-size:12px;color:var(--t3);font-weight:600;white-space:nowrap">Jahresurlaub</label>'        +'<input type="number" class="finput" id="us-urlaub-days" min="1" max="365" value="'+uDy+'" style="max-width:80px" onchange="window.setUrlaubDays&&window.setUrlaubDays(parseInt(this.value)||30)">'        +'<span style="font-size:12px;color:var(--t4)"> Tage</span>'        +'</div>'        +'<div style="padding:8px 14px 12px">'        +'<div style="font-size:12px;color:var(--t3);font-weight:600;margin-bottom:6px">Halbe Urlaubstage</div>'        +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">'        +'<input type="date" class="finput" id="us-half-date" style="max-width:160px">'        +'<button class="btn btn-secondary btn-sm" onclick="(function(){ var el=document.getElementById(&quot;us-half-date&quot;); var v=el&&el.value; if(!v)return; window.addUrlaubHalfDay&&window.addUrlaubHalfDay(v); if(el)el.value=&quot;&quot;; })()">'        +'+ Hinzufügen</button>'        +'</div>'        +'<div data-half-list style="display:flex;flex-wrap:wrap;gap:6px;min-height:16px">'+halfDayChips+'</div>'        +'<div style="font-size:11px;color:var(--t4);margin-top:6px">Dieser Tag zählt als 0,5 statt 1 Urlaubstag.</div>'        +'</div>'        +'</div>';
 
       return friseurSection + urlaubSection;
     }());
