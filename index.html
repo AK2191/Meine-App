@@ -663,6 +663,69 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 .settings-group .btn{margin:10px 14px;width:calc(100% - 28px);}
 .settings-group .fg{padding:12px 14px 0;}
 .settings-spacer{height:8px;}
+
+/* ── DARK MODE OVERRIDES — Challenges & Kalender ──────────── */
+[data-theme="dark"] .challenge-done{
+  background:rgba(22,163,74,.12)!important;
+  border-left-color:rgba(74,222,128,.5)!important;
+}
+[data-theme="dark"] .challenge-week-day.is-today{
+  background:rgba(74,222,128,.08)!important;
+}
+[data-theme="dark"] .challenge-week-day.has-points{
+  background:rgba(74,222,128,.06)!important;
+  border-color:rgba(74,222,128,.2)!important;
+}
+[data-theme="dark"] .cal-day-polished{
+  background:var(--s1)!important;
+}
+[data-theme="dark"] .cal-day-polished.weekend{
+  background:var(--s2)!important;
+}
+[data-theme="dark"] .cal-day-polished.today{
+  background:rgba(74,222,128,.06)!important;
+}
+[data-theme="dark"] #month-grid.month-grid-polished{
+  background:var(--s2)!important;
+}
+[data-theme="dark"] .year-card-stacked{
+  background:var(--s1)!important;
+}
+[data-theme="dark"] .cal-event-chip{
+  background:rgba(59,130,246,.12)!important;
+  color:#93c5fd!important;
+  border-color:rgba(59,130,246,.25)!important;
+}
+[data-theme="dark"] .cal-event-chip.is-range{
+  background:rgba(74,222,128,.10)!important;
+  border-color:rgba(74,222,128,.22)!important;
+  color:var(--acc)!important;
+}
+[data-theme="dark"] .cal-event-chip.green{
+  background:rgba(74,222,128,.12)!important;
+  border-color:rgba(74,222,128,.22)!important;
+  color:#4ade80!important;
+}
+[data-theme="dark"] .cal-event-chip.amber{
+  background:rgba(252,211,77,.12)!important;
+  border-color:rgba(252,211,77,.22)!important;
+  color:#fcd34d!important;
+}
+[data-theme="dark"] .cal-event-chip.red{
+  background:rgba(248,113,113,.12)!important;
+  border-color:rgba(248,113,113,.22)!important;
+  color:#f87171!important;
+}
+[data-theme="dark"] .cal-holiday-inline{
+  color:#fcd34d!important;
+  background:rgba(252,211,77,.12)!important;
+  border-color:rgba(252,211,77,.20)!important;
+}
+[data-theme="dark"] .nitem{background:var(--s2)!important;}
+[data-theme="dark"] .settings-group{background:var(--s2)!important;}
+[data-theme="dark"] .settings-group-label{background:var(--s3)!important;}
+[data-theme="dark"] .toggle-row{background:transparent!important;}
+
 </style>
 </style>
 <style id="range-google-style">
@@ -1249,7 +1312,7 @@ function showLogin(){
 }
 
 function handleGoogleLogin(){
-  // Original GSI-Login (bewährt) + signInAnonymously für Firestore-Auth
+  // Original GSI-Login (bewährt) — Firebase Auth nur für Persistenz
   CLIENT_ID = getGoogleClientId();
   if(!CLIENT_ID){document.getElementById('setup-modal').classList.add('show');return;}
   if(!window.google){toast('Google-Bibliothek wird geladen…','');return;}
@@ -1266,23 +1329,9 @@ function handleGoogleLogin(){
         SecureTokenStore.setUser(userInfo);
         ls('user_info_safe', {name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''});
         ls('was_logged_in', true);
-        // signInAnonymously → firebase.auth().currentUser != null
-        // → Firestore Rules isAuth() greifen → Schreiben erlaubt
-        try{
-          if(window.firebase && firebase.auth && firebase.apps.length){
-            await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-            if(!firebase.auth().currentUser){
-              await firebase.auth().signInAnonymously();
-            }
-            // userInfo nach Login im Firebase-User-Profil speichern
-            // → damit Name auch nach F5 korrekt bleibt
-            const fbU = firebase.auth().currentUser;
-            if(fbU && userInfo.name){
-              fbU.updateProfile({displayName: userInfo.name, photoURL: userInfo.picture||''})
-                .catch(()=>{});
-            }
-          }
-        }catch(ae){ console.warn('[Anon Auth]', ae.code, ae.message); }
+        // [FIX] Kein signInAnonymously mehr — erzeugt zufällige UIDs in Firestore
+        // Firestore-Schutz läuft über E-Mail-Validierung in den Rules
+        // Firebase Auth nur für Persistenz (kein anonymer Login)
         startTokenAutoRefresh();
         bootMainApp();
         loadGoogleData();
@@ -2069,7 +2118,12 @@ function checkNotifications(){
       const _done3=new Set((window.challengeCompletions||[])
         .filter(function(c){return String(c.date||'').slice(0,10)===_td2&&(!_me3||String(c.playerId||c.email||c.userEmail||'').toLowerCase()===_me3);})
         .map(function(c){return c.challengeId;}));
-      const _active=(window.challenges||[]).filter(function(c){return c&&c.active!==false&&!c.optional;});
+      // [FIX] Nur Challenges zählen die HEUTE fällig sind (daily oder heutiges Datum)
+      const _today3=(typeof dateKey==='function')?dateKey(new Date()):new Date().toISOString().slice(0,10);
+      const _active=(window.challenges||[]).filter(function(c){
+        return c && c.active!==false && !c.optional &&
+          (c.recurrence==='daily' || !c.date || String(c.date||c.startDate||'').slice(0,10)===_today3);
+      });
       const openCount=_active.filter(function(c){return !_done3.has(c.id);}).length;
       const critCount=notifications.filter(function(n){return n.urgency==='crit';}).length;
 
@@ -8641,10 +8695,11 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 
   // ── Firestore-Dokument-ID für Settings ──
   function settingsDocId(){
+    // [FIX] Nur echte Email-Adressen verwenden — niemals UID oder leeren String
     const email = (typeof userInfo !== 'undefined' && userInfo.email)
-      ? String(userInfo.email).toLowerCase()
+      ? String(userInfo.email).toLowerCase().trim()
       : null;
-    if(!email) return null;
+    if(!email || !email.includes('@') || email.length < 5) return null;
     return email.replace(/[^a-z0-9._-]/g, '_');
   }
 
@@ -8695,10 +8750,10 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   window.saveSettingsToFirestore = async function(){
     const db = getDb();
     const docId = settingsDocId();
-    if(!db || !docId) return;
-    const fbUser = (typeof firebase !== 'undefined' && firebase.auth)
-      ? firebase.auth().currentUser : null;
-    if(!fbUser) return;
+    // [FIX] Nur schreiben wenn echte Email-Doc-ID vorhanden
+    if(!db || !docId || docId.length < 3) return;
+    // [FIX] Firebase Auth optional — auch ohne Auth schreiben wenn Email bekannt
+    // (Firestore Rules v5: isAuth() — Anonymous Auth entfernt)
     try {
       await db.collection('change_settings').doc(docId).set(collectSettings(), {merge: true});
     } catch(e){ console.warn('[Settings Sync] Speichern fehlgeschlagen:', e.message); }
@@ -9030,7 +9085,11 @@ window.openNotifPanel = function(){
     const done = new Set((window.challengeCompletions||[])
       .filter(c => String(c.date||'').slice(0,10)===td && (!me||String(c.playerId||c.email||'').toLowerCase()===me.toLowerCase()))
       .map(c=>c.challengeId));
-    const active = (window.challenges||[]).filter(c=>c&&c.active!==false&&!c.optional);
+    // [FIX] Nur heutige Challenges zählen
+    const active = (window.challenges||[]).filter(c=>
+      c && c.active!==false && !c.optional &&
+      (c.recurrence==='daily' || !c.date || String(c.date||c.startDate||'').slice(0,10)===td)
+    );
     const openCount = active.filter(c=>!done.has(c.id)).length;
     const doneCount = active.filter(c=>done.has(c.id)).length;
 
@@ -9098,7 +9157,8 @@ window.syncStreakToFirestore = async function(){
     const fbUser = firebase.auth ? firebase.auth().currentUser : null;
     if(!fbUser) return;
     const email = (typeof userInfo!=='undefined'?userInfo.email:'') || '';
-    if(!email) return;
+    // [FIX] Nur mit echter Email (nicht Anonymous UID)
+    if(!email || !email.includes('@')) return;
     const docId = email.toLowerCase().replace(/[^a-z0-9._-]/g,'_');
     const streak = window.getCurrentStreak();
     const badges = window.getEarnedBadges().map(b=>b.id);
@@ -9157,7 +9217,8 @@ window.saveSettingsToFirestore = async function(){
     const db = window.firebase && firebase.firestore ? firebase.firestore() : null;
     const fbUser = db && firebase.auth ? firebase.auth().currentUser : null;
     const email = (typeof userInfo!=='undefined'?userInfo.email:'') || '';
-    if(db && fbUser && email){
+    // [FIX] Nur mit echter Email schreiben
+    if(db && email && email.includes('@')){
       const docId = email.toLowerCase().replace(/[^a-z0-9._-]/g,'_');
       const dark = document.documentElement.getAttribute('data-theme') === 'dark';
       await db.collection('change_settings').doc(docId).set({darkMode:dark},{merge:true});
