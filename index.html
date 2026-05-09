@@ -665,6 +665,31 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 .settings-spacer{height:8px;}
 
 /* ── DARK MODE OVERRIDES — Challenges & Kalender ──────────── */
+
+/* ── DARK MODE — Challenge Buttons ─────────────────────── */
+[data-theme="dark"] .btn-ghost{
+  color:var(--t2)!important;
+  border-color:var(--b2)!important;
+}
+[data-theme="dark"] .btn-ghost:hover{
+  background:var(--s3)!important;
+  color:var(--t1)!important;
+}
+[data-theme="dark"] .challenge-card-head,
+[data-theme="dark"] .leader-card-head{
+  background:var(--s2)!important;
+}
+[data-theme="dark"] .challenge-title{
+  color:var(--t1)!important;
+}
+[data-theme="dark"] .challenge-sub{
+  color:var(--t4)!important;
+}
+[data-theme="dark"] .ch-optional-section,
+[data-theme="dark"] .challenge-optional-label{
+  color:var(--amb)!important;
+}
+
 [data-theme="dark"] .challenge-done{
   background:rgba(22,163,74,.12)!important;
   border-left-color:rgba(74,222,128,.5)!important;
@@ -6439,9 +6464,9 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       </div>
       <div class="settings-group">
         <div class="settings-group-label">Kalenderansicht</div>
-        ${switchRow('Feiertage anzeigen','Wird neben dem Datum klein angezeigt','us-toggle-holidays',o.showHolidays)}
-        ${switchRow('Challenge-Punkte anzeigen','Badge unten rechts pro Tag','us-toggle-dots',o.showChallengeDots)}
-        ${switchRow('Kalenderwochen anzeigen','KW-Nummer links pro Woche','us-toggle-kw',o.showWeekNumbers)}
+        ${switchRow('Feiertage anzeigen','','us-toggle-holidays',o.showHolidays)}
+        ${switchRow('Challenge-Punkte anzeigen','','us-toggle-dots',o.showChallengeDots)}
+        ${switchRow('Kalenderwochen anzeigen','','us-toggle-kw',o.showWeekNumbers)}
       </div>
       `; /* auto-save */
 
@@ -6608,7 +6633,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     if(typeof renderCalendar==='function')renderCalendar();
     // [FIREBASE SYNC] Einstellungen in Firestore speichern
     setTimeout(()=>{ if(typeof window.saveSettingsToFirestore==='function') window.saveSettingsToFirestore(); }, 300);
-    if(typeof toast==='function')toast('Gespeichert ✓','ok');
+    // kein Toast bei Auto-Save
   };
   // Friseur-Tracker Settings
   function buildFriseurSection(){
@@ -7459,7 +7484,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
               writeHolidayState(el.value);
               if(typeof renderCalendar==='function') renderCalendar();
               if(typeof buildDashboard==='function') buildDashboard();
-              if(typeof toast==='function') toast('Bundesland gespeichert ✓','ok');
+              // kein Toast bei Bundesland-Wechsel
             });
           }
         }
@@ -7478,7 +7503,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     writeHolidayState(se?se.value:readLegacyState());
     if(typeof renderCalendar==='function') renderCalendar();
     if(typeof buildDashboard==='function') buildDashboard();
-    if(typeof toast==='function') toast('Gespeichert ✓','ok');
+    // kein Toast bei Auto-Save
   };
   window.saveCalSettings=window._saveCalSettings;
   window.openCalendarSettings=function(){return window.openSettingsPanel?window.openSettingsPanel('calendar'):undefined;};
@@ -8985,46 +9010,43 @@ function checkNewBadges(){
    STREAK & BADGE DISPLAY IM DASHBOARD
 ══════════════════════════════════════════════════ */
 function injectStreakCard(){
-  // Nur wenn noch nicht vorhanden
-  if(document.getElementById('streak-card')) return;
+  // Streak als dezente Zeile in der Challenge-Karte (wie Friseur/Urlaub)
+  const existing = document.getElementById('streak-row');
+  if(existing) existing.remove();
+
   const streak = window.getCurrentStreak();
   const badges = window.getEarnedBadges();
-  const newBadges = window.getNewBadges();
   if(streak === 0 && badges.length === 0) return;
 
-  const card = document.createElement('div');
-  card.id = 'streak-card';
-  card.style.cssText = 'background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:14px 16px;margin:0 0 14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap';
+  // Ziel: challenge-card-body oder challenges-list Container
+  const chCard = document.querySelector('.challenge-card') ||
+                 document.querySelector('[id="challenges-list"]')?.closest('.challenge-card') ||
+                 document.querySelector('.challenge-card-head')?.parentElement;
+  if(!chCard) return;
 
-  // Streak
-  if(streak > 0){
-    card.innerHTML += `
-      <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:120px">
-        <div style="font-size:28px;line-height:1">🔥</div>
-        <div>
-          <div style="font-size:20px;font-weight:800;color:var(--t1);line-height:1">${streak} Tag${streak!==1?'e':''}</div>
-          <div style="font-size:11px;color:var(--t3);font-weight:500;margin-top:1px">STREAK</div>
-        </div>
-      </div>`;
-  }
+  const row = document.createElement('div');
+  row.id = 'streak-row';
+  row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 14px;border-top:1px solid var(--b1);cursor:pointer';
+  row.onclick = () => window.openBadgePanel && window.openBadgePanel();
 
-  // Badges
-  if(badges.length > 0){
-    const badgeHtml = badges.slice(-5).map(b =>
-      `<span title="${b.name}: ${b.desc}" style="font-size:18px;cursor:default">${b.icon}</span>`
-    ).join('');
-    card.innerHTML += `
-      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0" onclick="openBadgePanel()">
-        ${badgeHtml}
-        ${badges.length > 5 ? `<span style="font-size:12px;color:var(--t3);font-weight:600">+${badges.length-5}</span>` : ''}
-      </div>`;
-  }
+  // Streak Flamme
+  const streakPart = streak > 0
+    ? `<span style="font-size:13px">🔥</span>
+       <span style="font-size:11px;font-weight:700;color:var(--t2)">Streak</span>
+       <span style="font-size:13px;font-weight:800;color:var(--acc)">${streak} Tag${streak!==1?'e':''}</span>`
+    : '';
 
-  // Einfügen über dem Dashboard
-  const dash = document.getElementById('dashboard-view');
-  if(dash && dash.firstChild){
-    dash.insertBefore(card, dash.firstChild);
-  }
+  // Abzeichen
+  const badgePart = badges.length > 0
+    ? `<span style="font-size:11px;color:var(--t4);margin-left:4px">·</span>
+       ${badges.slice(-4).map(b=>`<span title="${b.name}" style="font-size:14px">${b.icon}</span>`).join('')}
+       ${badges.length > 4 ? `<span style="font-size:10px;color:var(--t4);font-weight:600">+${badges.length-4}</span>` : ''}`
+    : '';
+
+  row.innerHTML = streakPart + badgePart +
+    `<span style="font-size:10px;color:var(--t4);margin-left:auto">Details →</span>`;
+
+  chCard.appendChild(row);
 }
 
 /* ══════════════════════════════════════════════════
@@ -9190,11 +9212,20 @@ window.completeChallenge = function(id){
   }, 800);
 };
 
-// Dashboard-Hook
+// Dashboard + Challenges Hook
 const _origBuildDash = window.buildDashboard;
 window.buildDashboard = function(){
   if(typeof _origBuildDash === 'function') _origBuildDash.apply(this, arguments);
-  setTimeout(injectStreakCard, 400);
+  setTimeout(injectStreakCard, 600);
+};
+
+// Auch nach Challenges-Render einbauen
+const _origSetView = window.setMainView;
+window.setMainView = function(view){
+  if(typeof _origSetView === 'function') _origSetView.apply(this, arguments);
+  if(view === 'challenges'){
+    setTimeout(injectStreakCard, 500);
+  }
 };
 
 // Nach Login
