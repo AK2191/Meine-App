@@ -2160,15 +2160,17 @@ function checkNotifications(){
       const _td2=(typeof dateKey==='function')?dateKey(new Date()):new Date().toISOString().slice(0,10);
       const _ui3=(typeof userInfo!=='undefined'?userInfo:window.userInfo)||{};
       const _me3=String(_ui3.email||'').toLowerCase();
+      const _me3norm=_me3.replace(/[^a-z0-9._@-]/g,'');
       const _done3=new Set((window.challengeCompletions||[])
-        .filter(function(c){return String(c.date||'').slice(0,10)===_td2&&(!_me3||String(c.playerId||c.email||c.userEmail||'').toLowerCase()===_me3);})
-        .map(function(c){return c.challengeId;}));
-      // [FIX] Nur Challenges zählen die HEUTE fällig sind (daily oder heutiges Datum)
+        .filter(function(c){const cP=String(c.playerId||c.email||c.userEmail||'').toLowerCase();return String(c.date||'').slice(0,10)===_td2&&(!_me3||cP===_me3||cP.replace(/[^a-z0-9._@-]/g,'')===_me3norm);})
+        .map(function(c){return String(c.challengeId);}));
       const _today3=(typeof dateKey==='function')?dateKey(new Date()):new Date().toISOString().slice(0,10);
-      const _active=(window.challenges||[]).filter(function(c){
-        return c && c.active!==false && !c.optional &&
-          (c.recurrence==='daily' || !c.date || String(c.date||c.startDate||'').slice(0,10)===_today3);
-      });
+      const _active=(typeof dailyChallenges==='function')
+        ? dailyChallenges().filter(function(c){ return !c.optional; })
+        : (window.challenges||[]).filter(function(c){
+            return c && c.active!==false && !c.optional &&
+              (c.recurrence==='daily' || !c.date || String(c.date||c.startDate||'').slice(0,10)===_today3);
+          });
       const openCount=_active.filter(function(c){return !_done3.has(c.id);}).length;
       const critCount=notifications.filter(function(n){return n.urgency==='crit';}).length;
 
@@ -7425,9 +7427,11 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       + '<div style="width:'+pct+'%;height:100%;background:'+barColor+';border-radius:2px"></div>'
       + '</div>';
 
-    var badge = remaining <= 0
-      ? '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:rgba(239,68,68,.12);color:#dc2626">⚠ Kein Urlaub mehr</span>'
-      : '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:'+(remaining<=5?'rgba(245,158,11,.12);color:#b45309':'rgba(45,106,79,.1);color:var(--acc)')+'">'+formatVacationDays(remaining)+' Tage übrig</span>';
+    var badge = remaining === 0
+      ? '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:rgba(45,106,79,.1);color:var(--acc)">✓ Urlaub vollständig verplant</span>'
+      : remaining < 0
+        ? '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:rgba(239,68,68,.12);color:#dc2626">⚠ '+Math.abs(remaining)+' Tage überzogen</span>'
+        : '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:'+(remaining<=5?'rgba(245,158,11,.12);color:#b45309':'rgba(45,106,79,.1);color:var(--acc)')+'">'+formatVacationDays(remaining)+' Tage übrig</span>';
 
     return '<div onclick="window.openUrlaubPanel&&window.openUrlaubPanel()" style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--b1);cursor:pointer" onmouseover="this.style.background=\'var(--s2)\'" onmouseout="this.style.background=\'\'">'
       + '<span style="font-size:12px;flex-shrink:0">🏖️</span>'
@@ -9150,14 +9154,21 @@ window.openNotifPanel = function(){
 
     const td = (typeof dateKey==='function')?dateKey(new Date()):new Date().toISOString().slice(0,10);
     const me = (typeof userInfo!=='undefined'?userInfo.email:'') || '';
+    const _meNorm = me.replace(/[^a-z0-9._@-]/g,'');
     const done = new Set((window.challengeCompletions||[])
-      .filter(c => String(c.date||'').slice(0,10)===td && (!me||String(c.playerId||c.email||'').toLowerCase()===me.toLowerCase()))
-      .map(c=>c.challengeId));
-    // [FIX] Nur heutige Challenges zählen
-    const active = (window.challenges||[]).filter(c=>
-      c && c.active!==false && !c.optional &&
-      (c.recurrence==='daily' || !c.date || String(c.date||c.startDate||'').slice(0,10)===td)
-    );
+      .filter(c => {
+        const cDate = String(c.date||'').slice(0,10);
+        const cP = String(c.playerId||c.email||c.userEmail||'').toLowerCase();
+        return cDate===td && (!me || cP===me || cP.replace(/[^a-z0-9._@-]/g,'')===_meNorm);
+      })
+      .map(c=>String(c.challengeId)));
+    // [FIX v2] Gleiche Quelle wie visuelle Liste: dailyChallenges()
+    const active = (typeof dailyChallenges==='function')
+      ? dailyChallenges().filter(c=>!c.optional)
+      : (window.challenges||[]).filter(c=>
+          c && c.active!==false && !c.optional &&
+          (c.recurrence==='daily' || !c.date || String(c.date||c.startDate||'').slice(0,10)===td)
+        );
     const openCount = active.filter(c=>!done.has(c.id)).length;
     const doneCount = active.filter(c=>done.has(c.id)).length;
 
