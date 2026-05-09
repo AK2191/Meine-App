@@ -1212,64 +1212,40 @@ function showLogin(){
   document.getElementById('login-screen').style.display='flex';
 }
 
-async function handleGoogleLogin(){
-  // [FIX AUTH v2] Firebase signInWithPopup als primärer Login
-  // → Firebase nutzt automatisch die richtige Web-Client-ID
-  // → currentUser wird korrekt gesetzt → Firestore Rules greifen
-  // → accessToken für Google Calendar aus dem Ergebnis
-  if(!window.firebase || !firebase.auth || !firebase.apps.length){
-    toast('Firebase wird geladen…',''); return;
-  }
+function handleGoogleLogin(){
+  CLIENT_ID = getGoogleClientId();
+  if(!CLIENT_ID){document.getElementById('setup-modal').classList.add('show');return;}
+  if(!window.google){toast('Google-Bibliothek wird geladen…','');return;}
   try{
-    await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-    const provider = new firebase.auth.GoogleAuthProvider();
-    // Google Calendar Scopes für den Kalender-Sync
-    provider.addScope('https://www.googleapis.com/auth/calendar');
-    provider.addScope('https://www.googleapis.com/auth/calendar.events');
-    provider.addScope('profile');
-    provider.addScope('email');
-    // signInWithPopup: ein einziger Popup für alles
-    const result = await firebase.auth().signInWithPopup(provider);
-    const fbUser = result.user;
-    const cred   = result.credential;
-
-    // Google Calendar Access Token aus Firebase Auth Ergebnis
-    accessToken = cred.accessToken || '';
-    SecureTokenStore.setToken(accessToken, 3600);
-
-    // Nutzerinfo direkt aus Firebase Auth
-    userInfo = {
-      name:    fbUser.displayName || fbUser.email || '',
-      email:   fbUser.email       || '',
-      picture: fbUser.photoURL    || ''
-    };
-    SecureTokenStore.setUser(userInfo);
-    ls('user_info_safe', {name: userInfo.name, email: userInfo.email});
-    ls('was_logged_in', true);
-    isDemoMode = false; lsDel('demo_mode');
-
-    startTokenAutoRefresh();
-    bootMainApp();
-    loadGoogleData();
-  } catch(e){
-    if(e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') return;
-    console.warn('[Firebase Login Fehler]', e.code, e.message);
-    // Fallback: Redirect für alle Fehler (kein Popup-Abhängigkeit)
-    const redirectCodes = ['auth/popup-blocked','auth/internal-error',
-      'auth/operation-not-supported-in-this-environment','auth/popup-request-cancelled'];
-    if(redirectCodes.includes(e.code) || e.code?.includes('internal')){
-      toast('Versuche alternative Anmeldung…','');
-      try {
-        const provider2 = new firebase.auth.GoogleAuthProvider();
-        provider2.addScope('https://www.googleapis.com/auth/calendar');
-        provider2.addScope('https://www.googleapis.com/auth/calendar.events');
-        await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-        await firebase.auth().signInWithRedirect(provider2);
-        return;
-      } catch(e2){ console.warn('[Redirect Fehler]', e2); }
-    }
-    toast('Anmeldung fehlgeschlagen: '+(e.message||e.code||e),'err');
-  }
+    const tc=google.accounts.oauth2.initTokenClient({
+      client_id:cleanGoogleClientId(CLIENT_ID),
+      scope:GCAL_SCOPE,
+      callback: async resp => {
+        if(resp.error){toast('Anmeldung fehlgeschlagen: '+resp.error,'err');return;}
+        accessToken=resp.access_token;
+        SecureTokenStore.setToken(accessToken, 3600);
+        isDemoMode=false; lsDel('demo_mode');
+        await fetchUserInfo();
+        SecureTokenStore.setUser(userInfo);
+        ls('user_info_safe', {name: userInfo.name||'', email: userInfo.email||''});
+        ls('was_logged_in', true);
+        // [FIRESTORE FIX] Anonymous Auth → currentUser != null → Rules greifen
+        // Erfordert: Firebase Console → Authentication → Anonymous → Aktivieren
+        try{
+          if(window.firebase && firebase.auth && firebase.apps.length){
+            await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+            if(!firebase.auth().currentUser){
+              await firebase.auth().signInAnonymously();
+            }
+          }
+        }catch(e){ console.warn('[Anon Auth]', e.message); }
+        startTokenAutoRefresh();
+        bootMainApp();
+        loadGoogleData();
+      }
+    });
+    tc.requestAccessToken({prompt:'consent'});
+  }catch(e){toast('Google-Anmeldung konnte nicht gestartet werden','err');}
 }
 
 
