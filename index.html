@@ -6363,11 +6363,11 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
         '<div class="settings-group">'        +'<div class="settings-group-label">Friseur-Tracker</div>'        +'<div class="toggle-row"><div class="toggle-copy">'        +'<div class="toggle-title">✂️ Friseur-Tracker <span class="status-pill '+(on?'status-on':'status-off')+'">'+(on?'AKTIV':'AUS')+'</span></div>'        +'<div class="toggle-sub">Zeigt wann der letzte &amp; nächste Friseur-Termin war/ist.</div>'        +'</div><label class="switch"><input type="checkbox" id="us-friseur-on" '+(on?'checked':'')+' onchange="window.setFriseurEnabled&&window.setFriseurEnabled(this.checked)"><span class="slider"></span></label></div>'        +'<div style="padding:8px 14px 12px;display:flex;align-items:center;gap:10px">'        +'<label style="font-size:12px;color:var(--t3);font-weight:600;white-space:nowrap">Erinnerung nach</label>'        +'<select class="finput" id="us-friseur-weeks" style="max-width:120px" onchange="window.setFriseurWeeks&&window.setFriseurWeeks(parseInt(this.value))">'        +[2,3,4,5,6,8].map(function(n){return '<option value="'+n+'" '+(n===w?'selected':'')+'>'+n+' Wochen</option>';}).join('')        +'</select></div>'        +'</div>';
 
       // Halbtage-Chips aufbauen
-      var halfDayChips = (typeof window.getUrlaubHalfDays==='function' ? window.getUrlaubHalfDays() : [])
-        .filter(function(d){ return d.slice(0,4)===String(new Date().getFullYear()); })
-        .map(function(d){
-          var label = '';
-          try{ label = new Date(d+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}); }catch(e){ label = d; }
+      // Jahresunabhängige Chips: MM-DD Format
+      var _halfDaysList = (typeof window.getUrlaubHalfDays==='function' ? window.getUrlaubHalfDays() : []);
+      var halfDayChips = _halfDaysList.map(function(d){
+          // d ist MM-DD → TT.MM. anzeigen
+          var label = d.slice(3)+'.'+d.slice(0,2)+'.';
           return '<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(245,158,11,.1);color:#b45309;border:1px solid rgba(245,158,11,.25);border-radius:999px;padding:2px 8px;font-size:11px;font-weight:600">'
             +label
             +'<button data-half-date="'+esc(d)+'" onclick="window.removeUrlaubHalfDay&&window.removeUrlaubHalfDay(this.dataset.halfDate);window.renderUrlaubHalfDayList&&window.renderUrlaubHalfDayList()" style="background:none;border:none;cursor:pointer;color:#b45309;font-size:10px;padding:0;line-height:1;margin-left:2px">✕</button>'
@@ -6375,7 +6375,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
         }).join(' ');
 
       var urlaubSection =
-        '<div class="settings-group">'        +'<div class="settings-group-label">Urlaubs-Tracker</div>'        +'<div class="toggle-row"><div class="toggle-copy">'        +'<div class="toggle-title">🏖️ Urlaubs-Tracker <span class="status-pill '+(uOn?'status-on':'status-off')+'">'+(uOn?'AKTIV':'AUS')+'</span></div>'        +'<div class="toggle-sub">Zeigt verbrauchte &amp; verbleibende Urlaubstage. Wochenenden &amp; Feiertage herausgerechnet.</div>'        +'</div><label class="switch"><input type="checkbox" id="us-urlaub-on" '+(uOn?'checked':'')+' onchange="window.setUrlaubEnabled&&window.setUrlaubEnabled(this.checked)"><span class="slider"></span></label></div>'        +'<div style="padding:8px 14px 4px;display:flex;align-items:center;gap:10px">'        +'<label style="font-size:12px;color:var(--t3);font-weight:600;white-space:nowrap">Jahresurlaub</label>'        +'<input type="number" class="finput" id="us-urlaub-days" min="1" max="365" value="'+uDy+'" style="max-width:80px" onchange="window.setUrlaubDays&&window.setUrlaubDays(parseInt(this.value)||30)">'        +'<span style="font-size:12px;color:var(--t4)"> Tage</span>'        +'</div>'        +'<div style="padding:8px 14px 12px">'        +'<div style="font-size:12px;color:var(--t3);font-weight:600;margin-bottom:6px">Halbe Urlaubstage</div>'        +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">'        +'<input type="date" class="finput" id="us-half-date" style="max-width:160px">'        +'<button class="btn btn-secondary btn-sm" onclick="(function(){ var el=document.getElementById(&quot;us-half-date&quot;); var v=el&&el.value; if(!v)return; window.addUrlaubHalfDay&&window.addUrlaubHalfDay(v); if(el)el.value=&quot;&quot;; })()">'        +'+ Hinzufügen</button>'        +'</div>'        +'<div data-half-list style="display:flex;flex-wrap:wrap;gap:6px;min-height:16px">'+halfDayChips+'</div>'        +'<div style="font-size:11px;color:var(--t4);margin-top:6px">Dieser Tag zählt als 0,5 statt 1 Urlaubstag.</div>'        +'</div>'        +'</div>';
+        '<div class="settings-group">'        +'<div class="settings-group-label">Urlaubs-Tracker</div>'        +'<div class="toggle-row"><div class="toggle-copy">'        +'<div class="toggle-title">🏖️ Urlaubs-Tracker <span class="status-pill '+(uOn?'status-on':'status-off')+'">'+(uOn?'AKTIV':'AUS')+'</span></div>'        +'<div class="toggle-sub">Zeigt verbrauchte &amp; verbleibende Urlaubstage. Wochenenden &amp; Feiertage herausgerechnet.</div>'        +'</div><label class="switch"><input type="checkbox" id="us-urlaub-on" '+(uOn?'checked':'')+' onchange="window.setUrlaubEnabled&&window.setUrlaubEnabled(this.checked)"><span class="slider"></span></label></div>'        +'<div style="padding:8px 14px 4px;display:flex;align-items:center;gap:10px">'        +'<label style="font-size:12px;color:var(--t3);font-weight:600;white-space:nowrap">Jahresurlaub</label>'        +'<input type="number" class="finput" id="us-urlaub-days" min="1" max="365" value="'+uDy+'" style="max-width:80px" onchange="window.setUrlaubDays&&window.setUrlaubDays(parseInt(this.value)||30)">'        +'<span style="font-size:12px;color:var(--t4)"> Tage</span>'        +'</div>'        +'<div style="padding:8px 14px 12px">'        +'<div style="font-size:12px;color:var(--t3);font-weight:600;margin-bottom:6px">Halbe Urlaubstage</div>'        +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">'        +'<select class="finput" id="us-half-month" style="max-width:90px">'        +['01 Jan','02 Feb','03 Mär','04 Apr','05 Mai','06 Jun','07 Jul','08 Aug','09 Sep','10 Okt','11 Nov','12 Dez'].map(function(m){var v=m.slice(0,2);return '<option value="'+v+'">'+m.slice(3)+'</option>';}).join('')        +'</select>'        +'<select class="finput" id="us-half-day" style="max-width:70px">'        +Array.from({length:31},function(_,i){var d=String(i+1).padStart(2,'0');return '<option value="'+d+'">'+d+'.</option>';}).join('')        +'</select>'        +'<button class="btn btn-secondary btn-sm" onclick="(function(){ var m=document.getElementById(&quot;us-half-month&quot;); var d=document.getElementById(&quot;us-half-day&quot;); if(!m||!d)return; var v=m.value+&quot;-&quot;+d.value; window.addUrlaubHalfDay&&window.addUrlaubHalfDay(v); })()">'        +'+ Hinzufügen</button>'        +'</div>'        +'<div data-half-list style="display:flex;flex-wrap:wrap;gap:6px;min-height:16px">'+halfDayChips+'</div>'        +'<div style="font-size:11px;color:var(--t4);margin-top:6px">Dieser Tag zählt als 0,5 statt 1 Urlaubstag.</div>'        +'</div>'        +'</div>';
 
       return friseurSection + urlaubSection;
     }());
@@ -6991,42 +6991,70 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     try{ return JSON.parse(localStorage.getItem(LS_HALF) || '[]'); }catch(e){ return []; }
   }
   function saveHalfDays(arr){ localStorage.setItem(LS_HALF, JSON.stringify(arr)); }
-  function isHalfDay(dateStr){ return getHalfDays().indexOf(dateStr) !== -1; }
+  // [FIX] Jahresunabhängige Halbtage: Format MM-DD statt YYYY-MM-DD
+  // Alte Einträge (YYYY-MM-DD) werden automatisch migriert
+  function normalizeHalfDay(d){
+    if(!d) return '';
+    // Bereits MM-DD Format
+    if(/^\d{2}-\d{2}$/.test(d)) return d;
+    // YYYY-MM-DD → MM-DD
+    if(/^\d{4}-\d{2}-\d{2}$/.test(d)) return d.slice(5);
+    return d;
+  }
+  function getHalfDaysNorm(){
+    var raw = getHalfDays();
+    // Migration: falls alte YYYY-Einträge drin — umwandeln
+    var norm = raw.map(normalizeHalfDay).filter(Boolean);
+    // Deduplizieren
+    norm = norm.filter(function(v,i){ return norm.indexOf(v)===i; }).sort();
+    // Zurückschreiben wenn Format geändert
+    if(JSON.stringify(raw) !== JSON.stringify(norm)) saveHalfDays(norm);
+    return norm;
+  }
+  function isHalfDay(dateStr){
+    var mmdd = normalizeHalfDay(dateStr);
+    return getHalfDaysNorm().indexOf(mmdd) !== -1;
+  }
+  function fmtMMDD(mmdd){
+    // MM-DD → TT.MM. (z.B. "01-05" → "05.01.")
+    if(!mmdd || mmdd.length !== 5) return mmdd;
+    return mmdd.slice(3)+'.'+mmdd.slice(0,2)+'.';
+  }
 
   window.setUrlaubEnabled   = function(v){ localStorage.setItem(LS_ON, v ? 'true' : 'false'); if(typeof window.buildDashCards==='function') window.buildDashCards(); };
   window.setUrlaubDays      = function(d){ localStorage.setItem(LS_DAYS, String(parseInt(d)||30)); if(typeof window.buildDashCards==='function') window.buildDashCards(); };
   window.getUrlaubEnabled   = isOn;
   window.getUrlaubTotalDays = getTotalDays;
-  window.getUrlaubHalfDays  = getHalfDays;
+  window.getUrlaubHalfDays  = getHalfDaysNorm;
 
   window.addUrlaubHalfDay = function(dateStr){
     if(!dateStr) return;
-    var arr = getHalfDays();
-    if(arr.indexOf(dateStr) === -1){ arr.push(dateStr); arr.sort(); saveHalfDays(arr); }
+    var mmdd = normalizeHalfDay(dateStr);
+    if(!mmdd) return;
+    var arr = getHalfDaysNorm();
+    if(arr.indexOf(mmdd) === -1){ arr.push(mmdd); arr.sort(); saveHalfDays(arr); }
     if(typeof window.buildDashCards==='function') window.buildDashCards();
     window.renderUrlaubHalfDayList && window.renderUrlaubHalfDayList();
   };
   window.removeUrlaubHalfDay = function(dateStr){
-    saveHalfDays(getHalfDays().filter(function(d){ return d !== dateStr; }));
+    var mmdd = normalizeHalfDay(dateStr);
+    saveHalfDays(getHalfDaysNorm().filter(function(d){ return d !== mmdd; }));
     if(typeof window.buildDashCards==='function') window.buildDashCards();
     window.renderUrlaubHalfDayList && window.renderUrlaubHalfDayList();
   };
 
-  // Aktualisiert die Chip-Liste in den Einstellungen ohne Panel-Neuöffnung
+  // Chip-Liste: zeigt nur MM-DD, kein Jahr
   window.renderUrlaubHalfDayList = function(){
     var container = document.querySelector('[data-half-list]');
     if(!container) return;
-    var year = String(new Date().getFullYear());
-    var chips = getHalfDays().filter(function(d){ return d.slice(0,4)===year; })
-      .map(function(d){
-        var label = '';
-        try{ label = new Date(d+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}); }catch(e){ label=d; }
-        var span = document.createElement('span');
-        span.style.cssText = 'display:inline-flex;align-items:center;gap:4px;background:rgba(245,158,11,.1);color:#b45309;border:1px solid rgba(245,158,11,.25);border-radius:999px;padding:2px 8px;font-size:11px;font-weight:600';
-        span.innerHTML = label + '<button style="background:none;border:none;cursor:pointer;color:#b45309;font-size:10px;padding:0;line-height:1;margin-left:2px">✕</button>';
-        span.querySelector('button').onclick = function(){ window.removeUrlaubHalfDay(d); };
-        return span;
-      });
+    var chips = getHalfDaysNorm().map(function(d){
+      var label = fmtMMDD(d);
+      var span = document.createElement('span');
+      span.style.cssText = 'display:inline-flex;align-items:center;gap:4px;background:rgba(245,158,11,.1);color:#b45309;border:1px solid rgba(245,158,11,.25);border-radius:999px;padding:2px 8px;font-size:11px;font-weight:600';
+      span.innerHTML = label + '<button style="background:none;border:none;cursor:pointer;color:#b45309;font-size:10px;padding:0;line-height:1;margin-left:2px">✕</button>';
+      span.querySelector('button').onclick = function(){ window.removeUrlaubHalfDay(d); };
+      return span;
+    });
     container.innerHTML = '';
     chips.forEach(function(c){ container.appendChild(c); });
   };
@@ -7164,7 +7192,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     var remaining = totalDays - used;
     var events    = getUrlaubEvents();
     var year      = new Date().getFullYear();
-    var halfDays  = getHalfDays().filter(function(d){ return d.slice(0,4) === String(year); });
+    var halfDays  = (typeof getHalfDaysNorm==='function'?getHalfDaysNorm():getHalfDays()); // jahresunabhängig
     var today     = new Date().toISOString().slice(0,10);
 
     var fmtD = function(str){
@@ -7206,8 +7234,9 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       halfHtml = '<div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--b1)">'
         + '<div style="font-size:10px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Halbe Urlaubstage</div>'
         + halfDays.map(function(d){
+          var lbl = (d&&d.length===5) ? d.slice(3)+'.'+d.slice(0,2)+'.' : fmtD(d);
           return '<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--b1)">'
-            + '<span style="font-size:12px;color:var(--t2)">'+fmtD(d)+'</span>'
+            + '<span style="font-size:12px;color:var(--t2)">'+lbl+'</span>'
             + '<span style="font-size:11px;font-weight:700;background:rgba(245,158,11,.1);color:#b45309;padding:2px 8px;border-radius:999px">½ Tag</span>'
             + '</div>';
         }).join('')
