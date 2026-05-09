@@ -648,8 +648,16 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 </head>
 <body>
 <script>
-// [FIX HIGH-3] Clickjacking-Schutz
-if(window.top !== window.self){document.body.innerHTML='';window.top.location=window.self.location;}
+// [FIX HIGH-3] Clickjacking-Schutz (sicher, kein SecurityError)
+try {
+  if(window.top !== window.self){
+    document.body.style.display='none';
+    try { window.top.location.replace(window.self.location.href); } catch(_e) {
+      // Cross-origin iframe — Seite einfach ausblenden
+      document.body.innerHTML = '<p style="font-family:sans-serif;padding:20px">Diese App kann nicht in einem iframe geladen werden.</p>';
+    }
+  }
+} catch(_e) { /* Sicherheitscheck nicht möglich — ignorieren */ }
 // [FIX MED-5] Konsolen-Logs in Produktion unterdrücken
 if(window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'){
   const _noop=()=>{};
@@ -937,7 +945,9 @@ async function persistChangeState(){
     ls('challenges', challenges);
     ls('challenge_completions', challengeCompletions);
     ls('challenge_players', challengePlayers);
-    if(typeof registerLivePlayer==='function') registerLivePlayer();
+    // [FIX AUTH-GUARD] Firestore nur schreiben wenn Firebase Auth aktiv
+    const fbUser = (typeof firebase!=='undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+    if(typeof registerLivePlayer==='function' && fbUser) registerLivePlayer();
   }catch(e){console.warn('Persist local:',e);}
 }
 
@@ -981,7 +991,9 @@ window.addEventListener('load', async () => {
   CLIENT_ID = getGoogleClientId();
   // [FIX CRIT-3] Tokens kommen aus SecureTokenStore (RAM), nicht localStorage
   accessToken = SecureTokenStore.getToken() || '';
-  userInfo = SecureTokenStore.getUser() || ls('user_info_safe') || {};
+  // [FIX AUTH-GUARD] user_info_safe nur laden wenn auch ein Token vorhanden
+  // Ohne Token: kein Firestore-Zugriff möglich → userInfo leer lassen
+  userInfo = accessToken ? (SecureTokenStore.getUser() || ls('user_info_safe') || {}) : {};
   events = ls('events') || [];
   gEvents = Array.isArray(gEvents) ? gEvents : [];
   // Global spiegeln: spätere modulare Patches lesen bewusst über window.*
@@ -2041,7 +2053,9 @@ document.addEventListener('touchend',e=>{
     ls('challenges',challenges);
     ls('challenge_completions',challengeCompletions);
     ls('challenge_players',challengePlayers);
-    if(typeof registerLivePlayer==='function') registerLivePlayer();
+    // [FIX AUTH-GUARD] Firestore nur wenn Firebase Auth aktiv
+    const _fbU = (typeof firebase!=='undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+    if(typeof registerLivePlayer==='function' && _fbU) registerLivePlayer();
   }
 
   window.buildDefaultChallenges = function(){
@@ -2570,6 +2584,9 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   window.registerLivePlayer = async function(){
     if(ls('live_sync_enabled')===false) return;
     if(!db || !userInfo.email) return;
+    // [FIX AUTH-GUARD] Firebase Auth muss aktiv sein
+    const fbUser = (typeof firebase!=='undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+    if(!fbUser){ console.warn('[Auth-Guard] registerLivePlayer blockiert — kein Firebase Login'); return; }
     try{
       await db.collection('change_players').doc(safeDocId(currentEmail())).set(publicPlayer(),{merge:true});
       if(typeof ensureCurrentChallengePlayer==='function') ensureCurrentChallengePlayer();
