@@ -15,6 +15,19 @@
     return (items || []).map(function(p){ return p.name; }).join(', ');
   }
   function cache(){ return Service && Service.getCached ? Service.getCached() : null; }
+  function todayPollen(data){
+    var p = data && data.pollen;
+    if(!p) return null;
+    var forecast = p.forecast || [];
+    if(forecast.length){
+      var today = dayKey();
+      for(var i=0;i<forecast.length;i++){
+        if(forecast[i] && forecast[i].date === today) return forecast[i];
+      }
+      return forecast[0];
+    }
+    return p;
+  }
 
   function buildNotifications(){
     var settings = Store && Store.settings ? Store.settings() : {};
@@ -42,8 +55,9 @@
       });
     }
 
-    if(settings.pollenAlertsEnabled && data.pollen && data.pollen.strong && data.pollen.strong.length){
-      var names = joinNames(data.pollen.strong.slice(0,3));
+    var pollenToday = todayPollen(data);
+    if(settings.pollenAlertsEnabled && pollenToday && pollenToday.strong && pollenToday.strong.length){
+      var names = joinNames(pollenToday.strong.slice(0,3));
       notes.push({
         id: 'pollen:high:'+dayKey()+':'+names.toLowerCase().replace(/\s+/g,'-'),
         kind: 'pollen',

@@ -30,12 +30,32 @@
     var s = settings();
     return !!(s.weatherEnabled || s.rainAlertsEnabled || s.pollenEnabled || s.pollenAlertsEnabled);
   }
-  function pollenSummary(data){
+  function todayPollen(data){
     var p = data && data.pollen;
-    if(!p) return 'Pollen werden geladen';
-    if(p.strong && p.strong.length) return 'Stark: ' + p.strong.map(function(x){ return x.name; }).join(', ');
-    if(p.elevated && p.elevated.length) return 'Mittel: ' + p.elevated.map(function(x){ return x.name; }).join(', ');
+    if(!p) return null;
+    var forecast = p.forecast || [];
+    if(forecast.length){
+      var todayKey = new Date().toISOString().slice(0, 10);
+      for(var i=0;i<forecast.length;i++){
+        if(forecast[i] && forecast[i].date === todayKey) return forecast[i];
+      }
+      return forecast[0];
+    }
+    return {items:p.items || [], strong:p.strong || [], elevated:p.elevated || [], top:(p.items || []).filter(function(x){ return x.rank >= 2; }).slice(0,3)};
+  }
+  function pollenSummary(data){
+    var day = todayPollen(data);
+    if(!day) return 'Pollen werden geladen';
+    if(day.strong && day.strong.length) return 'Pollen stark';
+    if(day.elevated && day.elevated.length) return 'Pollen mittel';
     return 'Pollen ruhig';
+  }
+  function pollenSubline(data){
+    var day = todayPollen(data);
+    if(!day) return '7-Tage-Ausblick';
+    var top = (day.strong && day.strong.length ? day.strong : (day.elevated && day.elevated.length ? day.elevated : [])).slice(0, 2);
+    if(top.length) return top.map(function(x){ return x.name; }).join(', ');
+    return '7-Tage-Ausblick';
   }
   function weatherSummary(data){
     var w = data && data.weather;
@@ -84,8 +104,9 @@
       html += '<button class="change-health-pill" type="button" onclick="ChangeWeatherCard.openForecast(\'weather\')"><span>🌦️</span><span><strong>'+esc(weatherSummary(data))+'</strong><small>'+esc(rainSummary(data))+'</small></span></button>';
     }
     if(s.pollenEnabled || s.pollenAlertsEnabled){
-      var hasStrong = data && data.pollen && data.pollen.strong && data.pollen.strong.length;
-      html += '<button class="change-health-pill '+(hasStrong?'is-warning':'')+'" type="button" onclick="ChangeWeatherCard.openForecast(\'pollen\')"><span>🌿</span><span><strong>'+esc(pollenSummary(data))+'</strong><small>7-Tage-Ausblick</small></span></button>';
+      var dayPollen = todayPollen(data);
+      var hasStrong = dayPollen && dayPollen.strong && dayPollen.strong.length;
+      html += '<button class="change-health-pill '+(hasStrong?'is-warning':'')+'" type="button" onclick="ChangeWeatherCard.openForecast(\'pollen\')"><span>🌿</span><span><strong>'+esc(pollenSummary(data))+'</strong><small>'+esc(pollenSubline(data))+'</small></span></button>';
     }
     return html;
   }
@@ -119,14 +140,12 @@
     var visible = hourly.slice(0, range);
     var lastDay = null;
     var cards = visible.map(function(hour, index){
-      var divider = '';
-      if(index > 0 && hour.dayKey !== lastDay){
-        divider = '<div class="change-hourly-divider">'+esc(hour.dayLabel || 'Morgen')+'</div>';
-      }
+      var isNewDay = index > 0 && hour.dayKey !== lastDay;
       lastDay = hour.dayKey;
       var prob = hour.rainProbability != null ? hour.rainProbability + ' %' : '';
       var rainText = prob || (hour.precipitation ? hour.precipitation + ' mm' : hour.summary || '');
-      return divider + '<div class="change-hourly-card '+(hour.isWet?'is-rain':'')+'"><div class="change-hourly-time">'+esc(hour.label || '')+'</div><div class="change-hourly-icon">'+esc(hour.icon || '🌦️')+'</div><strong>'+esc(hour.temperature != null ? hour.temperature + '°' : '–')+'</strong><small>'+esc(rainText)+'</small></div>';
+      var marker = isNewDay ? '<div class="change-hourly-day-marker">'+esc(hour.dayLabel || 'Morgen')+'</div>' : '';
+      return '<div class="change-hourly-card '+(hour.isWet?'is-rain ':'')+(isNewDay?'has-day-marker':'')+'">'+marker+'<div class="change-hourly-time">'+esc(hour.label || '')+'</div><div class="change-hourly-icon">'+esc(hour.icon || '🌦️')+'</div><strong>'+esc(hour.temperature != null ? hour.temperature + '°' : '–')+'</strong><small>'+esc(rainText)+'</small></div>';
     }).join('');
     return '<section class="change-hourly-section"><div class="change-section-head"><strong>Nächste Stunden</strong><div class="change-hourly-toggle" role="group" aria-label="Stundenbereich"><button type="button" class="'+(range===12?'active':'')+'" onclick="ChangeWeatherCard.setHourlyRange(12)">12 h</button><button type="button" class="'+(range===24?'active':'')+'" onclick="ChangeWeatherCard.setHourlyRange(24)">24 h</button></div></div><div class="change-hourly-strip">'+cards+'</div></section>';
   }
