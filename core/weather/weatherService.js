@@ -16,6 +16,14 @@
     77:'Schneekörner', 80:'leichte Schauer', 81:'Schauer', 82:'starke Schauer',
     85:'Schneeschauer', 86:'starke Schneeschauer', 95:'Gewitter', 96:'Gewitter mit Hagel', 99:'starkes Gewitter'
   };
+  var WEATHER_ICONS = {
+    0:'☀️', 1:'🌤️', 2:'⛅', 3:'☁️', 45:'🌫️', 48:'🌫️',
+    51:'🌦️', 53:'🌦️', 55:'🌧️', 56:'🌧️', 57:'🌧️',
+    61:'🌧️', 63:'🌧️', 65:'🌧️', 66:'🌧️', 67:'🌧️',
+    71:'🌨️', 73:'🌨️', 75:'❄️', 77:'❄️',
+    80:'🌦️', 81:'🌧️', 82:'⛈️', 85:'🌨️', 86:'🌨️',
+    95:'⛈️', 96:'⛈️', 99:'⛈️'
+  };
   var POLLEN = [
     {key:'alder_pollen', name:'Erle'},
     {key:'birch_pollen', name:'Birke'},
@@ -31,6 +39,7 @@
     var f = Math.pow(10, digits || 0);
     return Math.round(n * f) / f;
   }
+  function dateKeyFromTime(t){ return String(t || '').slice(0,10); }
   function closestIndex(times, now){
     if(!times || !times.length) return -1;
     var best = 0;
@@ -57,19 +66,20 @@
       longitude: String(loc.longitude),
       current: 'temperature_2m,precipitation,rain,showers,weather_code',
       hourly: 'precipitation_probability,precipitation,rain,showers,weather_code',
-      forecast_hours: '4',
+      daily: 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max',
+      forecast_days: '7',
       timezone: 'auto'
     });
     return WEATHER_ENDPOINT + '?' + params.toString();
   }
-  function pollenUrl(loc){
+  function pollenUrl(loc, days){
     var vars = POLLEN.map(function(p){ return p.key; }).join(',');
     var params = new URLSearchParams({
       latitude: String(loc.latitude),
       longitude: String(loc.longitude),
       current: vars,
       hourly: vars,
-      forecast_hours: '24',
+      forecast_days: String(days || 7),
       timezone: 'auto',
       domains: 'cams_europe'
     });
@@ -80,6 +90,25 @@
     return Math.max(0, Number(hourly.precipitation && hourly.precipitation[idx]) || 0)
       + Math.max(0, Number(hourly.rain && hourly.rain[idx]) || 0)
       + Math.max(0, Number(hourly.showers && hourly.showers[idx]) || 0);
+  }
+  function parseWeatherForecast(data){
+    var daily = data && data.daily ? data.daily : {};
+    var times = daily.time || [];
+    return times.slice(0, 7).map(function(date, i){
+      var code = daily.weather_code && daily.weather_code[i];
+      var prob = daily.precipitation_probability_max && daily.precipitation_probability_max[i];
+      var sum = daily.precipitation_sum && daily.precipitation_sum[i];
+      return {
+        date: date,
+        code: code,
+        icon: WEATHER_ICONS[code] || '🌦️',
+        summary: WEATHER_CODES[code] || 'Wetter',
+        tempMax: round(daily.temperature_2m_max && daily.temperature_2m_max[i], 0),
+        tempMin: round(daily.temperature_2m_min && daily.temperature_2m_min[i], 0),
+        rainProbability: isFinite(Number(prob)) ? Number(prob) : null,
+        precipitation: round(sum || 0, 1) || 0
+      };
+    });
   }
   function parseWeather(data){
     var now = Date.now();
@@ -109,9 +138,11 @@
     return {
       temperature: temp,
       summary: WEATHER_CODES[code] || 'Wetter',
+      icon: WEATHER_ICONS[code] || '🌦️',
       code: code,
       precipitation: round(current.precipitation || current.rain || current.showers || 0, 1),
       nextRain: nextRain,
+      forecast: parseWeatherForecast(data),
       timezone: data && data.timezone,
       updatedAt: new Date().toISOString()
     };
@@ -123,22 +154,55 @@
     if(value < 50) return {key:'medium', label:'mittel', rank:2};
     return {key:'high', label:'hoch', rank:3};
   }
+  function itemForPollen(p, value){
+    value = round(value || 0, 1) || 0;
+    var level = pollenLevel(value);
+    return {key:p.key, name:p.name, value:value, level:level.key, levelLabel:level.label, rank:level.rank};
+  }
+  function sortPollenItems(items){
+    return items.sort(function(a,b){ return (b.rank - a.rank) || (b.value - a.value) || a.name.localeCompare(b.name); });
+  }
+  function parsePollenForecast(data){
+    var hourly = data && data.hourly ? data.hourly : {};
+    var times = hourly.time || [];
+    var grouped = {};
+    times.forEach(function(t, idx){
+      var date = dateKeyFromTime(t);
+      if(!date) return;
+      if(!grouped[date]) grouped[date] = {};
+      POLLEN.forEach(function(p){
+        var val = Number(hourly[p.key] && hourly[p.key][idx]);
+        if(!isFinite(val)) val = 0;
+        grouped[date][p.key] = Math.max(grouped[date][p.key] || 0, val);
+      });
+    });
+    return Object.keys(grouped).sort().slice(0,7).map(function(date){
+      var vals = grouped[date] || {};
+      var items = sortPollenItems(POLLEN.map(function(p){ return itemForPollen(p, vals[p.key]); }));
+      return {
+        date: date,
+        items: items,
+        strong: items.filter(function(p){ return p.level === 'high'; }),
+        elevated: items.filter(function(p){ return p.level === 'medium'; }),
+        top: items.filter(function(p){ return p.rank >= 2; }).slice(0,3)
+      };
+    });
+  }
   function parsePollen(data){
     var current = data && data.current ? data.current : {};
     var hourly = data && data.hourly ? data.hourly : {};
     var idx = closestIndex(hourly.time || [], Date.now());
-    var items = POLLEN.map(function(p){
+    var items = sortPollenItems(POLLEN.map(function(p){
       var value = current[p.key];
       if(value == null && idx >= 0 && hourly[p.key]) value = hourly[p.key][idx];
-      value = round(value || 0, 1) || 0;
-      var level = pollenLevel(value);
-      return {key:p.key, name:p.name, value:value, level:level.key, levelLabel:level.label, rank:level.rank};
-    }).sort(function(a,b){ return (b.rank - a.rank) || (b.value - a.value) || a.name.localeCompare(b.name); });
+      return itemForPollen(p, value);
+    }));
     return {
       items: items,
       strong: items.filter(function(p){ return p.level === 'high'; }),
       elevated: items.filter(function(p){ return p.level === 'medium'; }),
       available: items.some(function(p){ return p.value > 0; }),
+      forecast: parsePollenForecast(data),
       updatedAt: new Date().toISOString()
     };
   }
@@ -155,7 +219,7 @@
         jobs.push(fetchJson(weatherUrl(loc)).then(function(data){ result.weather = parseWeather(data); }).catch(function(e){ result.weatherError = e.message || String(e); }));
       }
       if(settings.pollenEnabled || settings.pollenAlertsEnabled){
-        jobs.push(fetchJson(pollenUrl(loc)).then(function(data){ result.pollen = parsePollen(data); }).catch(function(e){ result.pollenError = e.message || String(e); }));
+        jobs.push(fetchJson(pollenUrl(loc, 7)).catch(function(){ return fetchJson(pollenUrl(loc, 5)); }).then(function(data){ result.pollen = parsePollen(data); }).catch(function(e){ result.pollenError = e.message || String(e); }));
       }
       await Promise.all(jobs);
       Store.writeCache(result);
@@ -179,6 +243,8 @@
     getCached: getCached,
     needsRefresh: needsRefresh,
     pollenLevel: pollenLevel,
-    codeLabel: function(code){ return WEATHER_CODES[code] || 'Wetter'; }
+    codeLabel: function(code){ return WEATHER_CODES[code] || 'Wetter'; },
+    codeIcon: function(code){ return WEATHER_ICONS[code] || '🌦️'; },
+    pollenCatalog: function(){ return POLLEN.slice(); }
   };
 })();

@@ -1,11 +1,46 @@
-.change-health-card .dash-card-body{padding:14px!important;display:grid;gap:12px;max-height:none!important}
-.change-health-block{border:1px solid var(--b1);background:var(--s2);border-radius:14px;padding:12px 13px;line-height:1.35}
-.change-health-label{font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--t4);margin-bottom:6px}
-.change-health-muted{font-size:11.5px;color:var(--t4);margin-top:3px}
-.change-health-empty{font-size:12px;color:var(--t3);line-height:1.45;margin-bottom:10px}
-.change-health-error{font-size:11.5px;color:#dc2626;background:var(--red-d);border-radius:12px;padding:10px 12px}
-.change-pollen-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+/* Wetter & Pollen leben bewusst in der Dashboard-Kopfzeile, nicht als eigene Kachel. */
+.dash-hello{position:relative}
+.dash-hello.change-health-ready{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+.change-dash-title-block{min-width:0;flex:1}
+.change-health-summary{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;max-width:680px}
+.change-health-pill{appearance:none;border:1px solid var(--b1);background:var(--s1);color:var(--t1);border-radius:16px;padding:8px 10px;display:flex;align-items:center;gap:8px;min-width:154px;max-width:260px;box-shadow:0 1px 2px rgba(0,0,0,.04);cursor:pointer;text-align:left;font-family:var(--font);transition:border-color .14s,background .14s,transform .14s}
+.change-health-pill:hover{border-color:var(--b2);background:var(--s2)}
+.change-health-pill>span:first-child{width:30px;height:30px;border-radius:11px;background:var(--acc-d);display:flex;align-items:center;justify-content:center;flex:0 0 30px}
+.change-health-pill strong{display:block;font-size:12px;font-weight:900;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px;line-height:1.15}
+.change-health-pill small{display:block;font-size:10.5px;font-weight:700;color:var(--t4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px;margin-top:2px}
+.change-health-pill.is-warning>span:first-child{background:var(--amb-d)}
+.change-health-pill.is-warning strong{color:var(--amb)}
+.change-health-refresh{width:34px;height:34px;border-radius:12px;border:1px solid var(--b1);background:var(--s1);color:var(--t3);font-weight:900;cursor:pointer}
+.change-health-refresh:hover{background:var(--s2);color:var(--t1)}
+.change-health-card{display:none!important}
+.change-forecast-panel{display:grid;gap:12px}
+.change-forecast-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:2px 0 8px;border-bottom:1px solid var(--b1)}
+.change-forecast-title{font-size:16px;font-weight:950;color:var(--t1);letter-spacing:-.2px}
+.change-forecast-sub{font-size:11.5px;color:var(--t4);margin-top:3px;font-weight:650}
+.change-forecast-list{display:grid;gap:8px}
+.change-forecast-row{display:flex;align-items:center;gap:12px;padding:12px 13px;border:1px solid var(--b1);border-radius:16px;background:var(--s1)}
+.change-forecast-date{width:68px;flex:0 0 68px;display:flex;align-items:center;gap:8px;color:var(--t2)}
+.change-forecast-date strong{font-size:12px;font-weight:900;line-height:1.15}
+.change-forecast-date span{font-size:18px}
+.change-forecast-main{flex:1;min-width:0}
+.change-forecast-main strong{display:block;font-size:13px;font-weight:900;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.change-forecast-main small{display:block;font-size:11px;font-weight:650;color:var(--t4);margin-top:2px}
+.change-forecast-value{font-size:13px;font-weight:950;color:var(--t1);white-space:nowrap}
+.change-forecast-empty{border:1px dashed var(--b2);border-radius:16px;padding:18px;text-align:center;color:var(--t4);font-size:13px;background:var(--s1)}
+.change-pollen-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
 .change-pollen-chip{display:inline-flex;align-items:center;border-radius:999px;padding:3px 8px;font-size:10.5px;font-weight:850;background:var(--s3);color:var(--t3)}
 .change-pollen-chip.medium{background:var(--amb-d);color:#b85f00}
 .change-pollen-chip.high{background:var(--red-d);color:#dc2626}
-.change-weather-location-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.change-pollen-chip.low{background:var(--acc-d);color:var(--acc)}
+.change-pollen-chip.none{background:var(--s2);color:var(--t4)}
+@media(max-width:900px){
+  .dash-hello.change-health-ready{display:block}
+  .change-health-summary{justify-content:flex-start;margin-top:12px;max-width:none}
+  .change-health-pill{flex:1 1 190px;max-width:none}
+}
+@media(max-width:520px){
+  .change-health-summary{display:grid;grid-template-columns:1fr;gap:8px}
+  .change-health-pill{width:100%;min-width:0}
+  .change-health-pill strong,.change-health-pill small{max-width:calc(100vw - 130px)}
+  .change-health-refresh{position:absolute;right:0;top:0}
+}

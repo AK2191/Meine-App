@@ -119,12 +119,13 @@
     var months = [['01','Jan'],['02','Feb'],['03','Mär'],['04','Apr'],['05','Mai'],['06','Jun'],['07','Jul'],['08','Aug'],['09','Sep'],['10','Okt'],['11','Nov'],['12','Dez']];
     var monthOptions = months.map(function(item){ return '<option value="'+item[0]+'">'+item[1]+'</option>'; }).join('');
     var dayOptions = Array.from({length:31}, function(_, i){ var d = String(i+1).padStart(2,'0'); return '<option value="'+d+'">'+d+'.</option>'; }).join('');
-    return card('Dashboard',
-        switchRow('Friseur-Tracker '+pill(friseurOn?'AKTIV':'AUS', friseurOn?'ok':'off'), 'Zeigt den letzten und nächsten Friseur-Termin.', 'set-friseur', friseurOn)+
-        '<div class="change-settings-actions"><label class="flabel">Erinnerung nach</label><select class="finput" id="set-friseur-weeks">'+[2,3,4,5,6,8].map(function(n){ return '<option value="'+n+'" '+(n === friseurWeeks ? 'selected' : '')+'>'+n+' Wochen</option>'; }).join('')+'</select></div>'+
-        switchRow('Urlaubs-Tracker '+pill(urlaubOn?'AKTIV':'AUS', urlaubOn?'ok':'off'), '', 'set-urlaub', urlaubOn)+
-        '<div class="change-settings-actions"><label class="flabel">Jahresurlaub</label><input type="number" class="finput" id="set-urlaub-days" min="1" max="365" value="'+urlaubDays+'"></div>'+
-        '<div class="change-settings-actions"><label class="flabel">Halbe Urlaubstage</label><div class="change-halfday-controls"><select class="finput" id="set-half-month">'+monthOptions+'</select><select class="finput" id="set-half-day">'+dayOptions+'</select><button class="btn btn-secondary btn-sm" id="set-add-half" type="button">+ Hinzufügen</button></div>'+halfDayChips()+'</div>')
+    return card('Friseur-Tracker',
+        switchRow('Im Dashboard anzeigen '+pill(friseurOn?'AKTIV':'AUS', friseurOn?'ok':'off'), 'Zeigt den letzten und nächsten Friseur-Termin.', 'set-friseur', friseurOn)+
+        '<div class="change-settings-actions change-setting-field"><label class="flabel">Erinnerung nach</label><select class="finput" id="set-friseur-weeks">'+[2,3,4,5,6,8].map(function(n){ return '<option value="'+n+'" '+(n === friseurWeeks ? 'selected' : '')+'>'+n+' Wochen</option>'; }).join('')+'</select></div>')
+      + card('Urlaubs-Tracker',
+        switchRow('Im Dashboard anzeigen '+pill(urlaubOn?'AKTIV':'AUS', urlaubOn?'ok':'off'), 'Zeigt verplante und verbleibende Urlaubstage.', 'set-urlaub', urlaubOn)+
+        '<div class="change-settings-actions change-setting-field"><label class="flabel">Jahresurlaub</label><input type="number" class="finput" id="set-urlaub-days" min="1" max="365" value="'+urlaubDays+'"></div>'+
+        '<div class="change-settings-actions change-setting-field"><label class="flabel">Halbe Urlaubstage</label><div class="change-halfday-controls"><select class="finput" id="set-half-month">'+monthOptions+'</select><select class="finput" id="set-half-day">'+dayOptions+'</select><button class="btn btn-secondary btn-sm" id="set-add-half" type="button">+ Hinzufügen</button></div>'+halfDayChips()+'</div>')
       + card('Mitspieler-Aktivität', '<div class="change-settings-actions"><div class="change-settings-sub" style="margin-bottom:8px">'+esc(window.ChangePlayerActivity && window.ChangePlayerActivity.summaryText ? window.ChangePlayerActivity.summaryText() : '')+'</div>'+activity+'</div>');
   }
   function syncPane(){

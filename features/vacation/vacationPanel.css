@@ -1,0 +1,31 @@
+.change-vacation-panel{display:grid;gap:14px}
+.change-vacation-summary{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--b1);border-radius:18px;overflow:hidden;background:var(--s1)}
+.change-vacation-summary>div{text-align:center;padding:14px 8px;border-right:1px solid var(--b1)}
+.change-vacation-summary>div:last-child{border-right:0}
+.change-vacation-summary strong{display:block;font-size:24px;font-weight:950;color:var(--acc);letter-spacing:-.5px}
+.change-vacation-summary .warn strong{color:var(--amb)}
+.change-vacation-summary .bad strong{color:#ef4444}
+.change-vacation-summary span{display:block;margin-top:3px;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--t4)}
+.change-vacation-progress{height:7px;border-radius:999px;background:var(--s2);border:1px solid var(--b1);overflow:hidden;margin-top:-4px}
+.change-vacation-progress span{display:block;height:100%;border-radius:999px;background:var(--acc)}
+.change-vacation-caption{font-size:11px;font-weight:750;color:var(--t4);margin-top:-8px}
+.change-vacation-section{display:grid;gap:8px}
+.change-vacation-section-title{font-size:10px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;color:var(--t4)}
+.change-vacation-list{display:grid;gap:8px}
+.change-vacation-row{display:flex;align-items:center;gap:11px;border:1px solid var(--b1);background:var(--s1);border-radius:16px;padding:11px 12px}
+.change-vacation-row.now{border-color:rgba(52,211,153,.35);background:rgba(52,211,153,.06)}
+.change-vacation-row.future .change-vacation-dot{background:var(--t4)}
+.change-vacation-row.past{opacity:.75}
+.change-vacation-dot{width:8px;height:8px;border-radius:999px;background:var(--acc);flex:0 0 8px}
+.change-vacation-main{flex:1;min-width:0}
+.change-vacation-title{font-size:13px;font-weight:900;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.change-vacation-date{font-size:11.5px;font-weight:650;color:var(--t4);margin-top:2px}
+.change-vacation-side{text-align:right;display:grid;gap:3px;justify-items:end;flex:0 0 auto}
+.change-vacation-side span{font-size:10px;font-weight:900;color:var(--t4);text-transform:uppercase;letter-spacing:.06em}
+.change-vacation-side strong{font-size:13px;font-weight:950;color:var(--t1)}
+.change-vacation-row.now .change-vacation-side strong{color:var(--acc)}
+.change-vacation-halfdays{display:flex;gap:8px;flex-wrap:wrap}
+.change-vacation-halfday{display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(245,158,11,.24);background:rgba(245,158,11,.1);border-radius:999px;padding:5px 9px;color:#b45309}
+.change-vacation-halfday strong{font-size:12px;font-weight:950}.change-vacation-halfday small{font-size:10px;font-weight:900}
+.change-vacation-empty{border:1px dashed var(--b2);border-radius:16px;padding:18px;text-align:center;color:var(--t4);font-size:13px;line-height:1.45;background:var(--s1)}
+.change-vacation-note{font-size:11px;color:var(--t4);line-height:1.4;border-top:1px solid var(--b1);padding-top:12px}
