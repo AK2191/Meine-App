@@ -11,8 +11,8 @@
   font-src 'self' https://fonts.gstatic.com;
   connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://securetoken.googleapis.com https://fcm.googleapis.com wss://*.firebaseio.com https://www.gstatic.com https://cdn.jsdelivr.net https://api.open-meteo.com https://air-quality-api.open-meteo.com;
   img-src 'self' data: https://*.googleusercontent.com https://lh3.googleusercontent.com;
-  frame-src https://accounts.google.com;
-  child-src https://accounts.google.com;
+  frame-src https://accounts.google.com https://*.firebaseapp.com https://*.web.app;
+  child-src https://accounts.google.com https://*.firebaseapp.com https://*.web.app;
   worker-src 'self';
   object-src 'none';
   base-uri 'self';
@@ -1522,8 +1522,35 @@ function showLogin(){
   document.getElementById('login-screen').style.display='flex';
 }
 
-function handleGoogleLogin(){
-  // Original GSI-Login (bewährt) — Firebase Auth nur für Persistenz
+async function handleGoogleLogin(){
+  try{
+    if(window.signInChangeFirebaseWithGoogle && window.firebase && window.FIREBASE_CONFIG){
+      const result = await window.signInChangeFirebaseWithGoogle({ popup:true });
+      if(result && result.redirecting) return;
+      isDemoMode = false;
+      try{ lsDel('demo_mode'); }catch(e){}
+      try{ if(typeof SecureTokenStore !== 'undefined' && window.userInfo) SecureTokenStore.setUser(window.userInfo); }catch(e){}
+      try{ ls('was_logged_in', true); }catch(e){}
+      try{ if(typeof startTokenAutoRefresh === 'function') startTokenAutoRefresh(); }catch(e){}
+      bootMainApp();
+      if(accessToken) loadGoogleData();
+      setTimeout(async () => {
+        try{ if(typeof forceLoadChangeSettings === 'function') await forceLoadChangeSettings(true); }catch(e){}
+        try{ if(typeof loadSettingsFromFirestore === 'function') await loadSettingsFromFirestore(); }catch(e){}
+      }, 1200);
+      return;
+    }
+  }catch(e){
+    console.warn('Firebase Google Login:', e);
+    const code = e && e.code ? e.code : '';
+    if(code === 'auth/popup-closed-by-user') return;
+    if(code === 'auth/unauthorized-domain') { toast('Firebase Auth: GitHub-Pages-Domain in Firebase erlauben.','err'); return; }
+    if(code === 'auth/operation-not-allowed') { toast('Firebase Auth: Google-Anmeldung in Firebase aktivieren.','err'); return; }
+    toast('Google-Anmeldung konnte nicht gestartet werden','err');
+    return;
+  }
+
+  // Fallback nur, falls Firebase nicht geladen/konfiguriert ist.
   CLIENT_ID = getGoogleClientId();
   if(!CLIENT_ID){document.getElementById('setup-modal').classList.add('show');return;}
   if(!window.google){toast('Google-Bibliothek wird geladen…','');return;}
@@ -1534,31 +1561,19 @@ function handleGoogleLogin(){
       callback: async resp => {
         if(resp.error){toast('Anmeldung fehlgeschlagen: '+resp.error,'err');return;}
         accessToken=resp.access_token;
-        SecureTokenStore.setToken(accessToken, 3600);
-        isDemoMode=false; lsDel('demo_mode');
+        try{ if(typeof SecureTokenStore !== 'undefined') SecureTokenStore.setToken(accessToken, 3600); else ls('access_token',accessToken); }catch(e){ try{ ls('access_token', accessToken); }catch(_e){} }
+        isDemoMode=false; try{ lsDel('demo_mode'); }catch(e){}
         await fetchUserInfo();
-        try{ if(window.ensureChangeFirebaseAuth) await window.ensureChangeFirebaseAuth({accessToken:resp.access_token, silent:true}); }catch(_e){}
-        SecureTokenStore.setUser(userInfo);
-        ls('user_info_safe', {name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''});
-        ls('was_logged_in', true);
-        // [FIX] Kein signInAnonymously mehr — erzeugt zufällige UIDs in Firestore
-        // Firestore-Schutz läuft über E-Mail-Validierung in den Rules
-        // Firebase Auth nur für Persistenz (kein anonymer Login)
-        startTokenAutoRefresh();
+        try{ if(typeof SecureTokenStore !== 'undefined') SecureTokenStore.setUser(userInfo); }catch(e){}
+        try{ ls('user_info_safe', {name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''}); ls('was_logged_in', true); }catch(e){}
+        try{ if(typeof startTokenAutoRefresh === 'function') startTokenAutoRefresh(); }catch(e){}
         bootMainApp();
         loadGoogleData();
-        // Settings nach Login aus Firestore laden
-        setTimeout(async () => {
-          if(typeof loadSettingsFromFirestore === 'function') {
-            await loadSettingsFromFirestore();
-          }
-        }, 2000);
       }
     });
     tc.requestAccessToken({prompt:'consent'});
   }catch(e){toast('Google-Anmeldung konnte nicht gestartet werden','err');}
 }
-
 
 
 async function firebaseMobileLoginFallback(){
@@ -1579,22 +1594,16 @@ async function handleFirebaseRedirectLogin(){
     if(!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
     const result = await firebase.auth().getRedirectResult();
     if(result && result.user){
-      const u=result.user;
-      userInfo={name:u.displayName||u.email,email:u.email,picture:u.photoURL||''};
-      SecureTokenStore.setUser(userInfo); ls('user_info_safe', {name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''}); // [FIX CRIT-3]
-      let oauthToken='';
-      try{
-        const cred=firebase.auth.GoogleAuthProvider.credentialFromResult(result);
-        oauthToken=cred && cred.accessToken ? cred.accessToken : '';
-      }catch(_e){}
-      accessToken = oauthToken || ''; // [FIX] echter Token oder leer
-      if(accessToken) SecureTokenStore.setToken(accessToken, 3600); // [FIX CRIT-3] kein localStorage
+      if(window.applyChangeFirebaseAuthResult) window.applyChangeFirebaseAuthResult(result);
+      else {
+        const u=result.user;
+        userInfo={name:u.displayName||u.email,email:u.email,picture:u.photoURL||''};
+        ls('user_info',userInfo);
+      }
       isDemoMode=false; lsDel('demo_mode');
-      ls('was_logged_in', true);
-      startTokenAutoRefresh();
       bootMainApp();
       initFirebaseLive && initFirebaseLive();
-      if(oauthToken) loadGoogleData();
+      if(accessToken) loadGoogleData();
       toast('Mobile Anmeldung erfolgreich ✓','ok');
     }
   }catch(e){console.warn('Redirect Ergebnis:',e);}
@@ -2861,7 +2870,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
       try{ installChangeApp(); }catch(_e){}
       return fail('iPhone: erst Change zum Home-Bildschirm hinzufügen');
     }
-    const authReady = window.ensureChangeFirebaseAuth ? await window.ensureChangeFirebaseAuth({ silent:false }) : true;
+    const authReady = window.ensureChangeFirebaseAuth ? await window.ensureChangeFirebaseAuth({ silent:false, interactive:true }) : true;
     if(!authReady) return fail('Push braucht eine gültige Firebase-Anmeldung. Bitte einmal neu mit Google anmelden');
     const ok = await initFirebaseLive();
     if(!ok) return fail('Firebase konnte nicht gestartet werden');
@@ -3059,6 +3068,10 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   window.publishChallengesToFirestore=async function(){
     if(!hasCfg()) return;
     const db=getDb(); if(!db) return;
+    if(window.ensureChangeFirebaseAuth){
+      const authOk = await window.ensureChangeFirebaseAuth({silent:true});
+      if(!authOk) return;
+    }
     try{for(const ch of (challenges||[])){await db.collection('change_challenges').doc(ch.id).set(chDueData(ch),{merge:true});}}catch(e){console.warn('Challenge live publish:',e)}
   };
   window.listenLiveChallenges=function(){
@@ -7624,7 +7637,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     if(!window.firebase || !window.FIREBASE_CONFIG) return null;
     const cfg = window.FIREBASE_CONFIG || {};
     if(!cfg.apiKey || String(cfg.apiKey).includes('HIER_') || !cfg.projectId) return null;
-    try{ if(!firebase.apps.length) firebase.initializeApp(cfg); db = firebase.firestore(); return db; }
+    try{ if(!firebase.apps.length) firebase.initializeApp(cfg); if(window.ensureChangeFirebaseAuth){ const authOk = await window.ensureChangeFirebaseAuth({silent:true}); if(!authOk) return null; } db = firebase.firestore(); return db; }
     catch(e){ console.warn('Challenge Sync Firebase:', e); return null; }
   }
   async function registerPlayer(){
@@ -8662,156 +8675,20 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 
 <script>
 /* ========================================================
-   SETTINGS SYNC — Einstellungen ↔ Firestore change_settings
-   Synct: Kalender-Optionen, Bundesland, Push, Live-Sync
+   SETTINGS SYNC — Kompatibilität
+   Die echte zentrale Logik liegt in CHANGE SETTINGS SYNC.
+   Dieser Block erzeugt keine zweite Firestore-Verbindung mehr.
 ======================================================== */
 (function(){
-
-  // ==== Firestore-Dokument-ID für Settings ====
-  function settingsDocId(){
-    // [FIX] Nur echte Email-Adressen verwenden — niemals UID oder leeren String
-    const email = (typeof userInfo !== 'undefined' && userInfo.email)
-      ? String(userInfo.email).toLowerCase().trim()
-      : null;
-    if(!email || !email.includes('@') || email.length < 5) return null;
-    return email.replace(/[^a-z0-9._-]/g, '_');
-  }
-
-  function getDb(){
-    try {
-      if(typeof firebase !== 'undefined' && firebase.firestore) return firebase.firestore();
-    } catch(e){}
-    return null;
-  }
-
-  // ==== Alle Einstellungen sammeln ====
-  function collectSettings(){
-    const s = {};
-    // Kalender-Optionen
-    try {
-      const calKeys = ['change_v1_calendar_view_options','calendar_settings'];
-      calKeys.forEach(k => {
-        const v = localStorage.getItem(k);
-        if(v) Object.assign(s, JSON.parse(v));
-      });
-    } catch(e){}
-    // Bundesland
-    try {
-      s.holidayState = localStorage.getItem('holiday_state')
-        || localStorage.getItem('change_v1_holiday_state') || 'ALL';
-    } catch(e){ s.holidayState = 'ALL'; }
-    // Live-Sync
-    try {
-      const lv = localStorage.getItem('change_v1_live_sync_enabled');
-      s.liveSyncEnabled = lv === null ? true : lv !== 'false';
-    } catch(e){ s.liveSyncEnabled = true; }
-    // Push
-    try {
-      const pv = localStorage.getItem('change_push_enabled');
-      s.pushEnabled = pv === null ? false : pv === '1' || pv === 'true';
-    } catch(e){ s.pushEnabled = false; }
-    // Kalender-Ansicht
-    try {
-      s.calView = typeof currentCalView !== 'undefined' ? currentCalView : 'month';
-    } catch(e){ s.calView = 'month'; }
-
-    s.updatedAt = new Date().toISOString();
-    s.email = (typeof userInfo !== 'undefined') ? (userInfo.email || '') : '';
-    return s;
-  }
-
-  // ==== Einstellungen in Firestore speichern ====
   window.saveSettingsToFirestore = async function(){
-    const db = getDb();
-    const docId = settingsDocId();
-    // [FIX] Nur schreiben wenn echte Email-Doc-ID vorhanden
-    if(!db || !docId || docId.length < 3) return;
-    // [FIX] Firebase Auth optional — auch ohne Auth schreiben wenn Email bekannt
-    // (Firestore Rules v5: isAuth() — Anonymous Auth entfernt)
-    try {
-      await db.collection('change_settings').doc(docId).set(collectSettings(), {merge: true});
-    } catch(e){ console.warn('[Settings Sync] Speichern fehlgeschlagen:', e.message); }
+    if(typeof window.saveChangeSettings === 'function') return window.saveChangeSettings(true);
+    return false;
   };
-
-  // ==== Einstellungen aus Firestore laden & anwenden ====
   window.loadSettingsFromFirestore = async function(){
-    const db = getDb();
-    const docId = settingsDocId();
-    if(!db || !docId) return;
-    try {
-      const snap = await db.collection('change_settings').doc(docId).get();
-      if(!snap.exists) return;
-      const s = snap.data();
-
-      // Kalender-Optionen anwenden
-      const calOpts = {};
-      if(typeof s.showHolidays === 'boolean')    calOpts.showHolidays    = s.showHolidays;
-      if(typeof s.showChallengeDots === 'boolean') calOpts.showChallengeDots = s.showChallengeDots;
-      if(typeof s.showWeekNumbers === 'boolean')  calOpts.showWeekNumbers  = s.showWeekNumbers;
-      if(Object.keys(calOpts).length){
-        localStorage.setItem('change_v1_calendar_view_options', JSON.stringify(calOpts));
-        localStorage.setItem('calendar_settings', JSON.stringify(calOpts));
-      }
-
-      // Bundesland
-      if(s.holidayState){
-        localStorage.setItem('holiday_state', s.holidayState);
-        localStorage.setItem('change_v1_holiday_state', s.holidayState);
-        if(typeof calendarSettings !== 'undefined') calendarSettings.state = s.holidayState;
-      }
-
-      // Live-Sync
-      if(typeof s.liveSyncEnabled === 'boolean'){
-        localStorage.setItem('change_v1_live_sync_enabled', s.liveSyncEnabled ? 'true' : 'false');
-        try { if(typeof ls === 'function') ls('live_sync_enabled', s.liveSyncEnabled); } catch(e){}
-      }
-
-      // Push
-      if(typeof s.pushEnabled === 'boolean'){
-        localStorage.setItem('change_push_enabled', s.pushEnabled ? '1' : '0');
-      }
-
-      // Kalender neu rendern falls nötig
-      try { if(typeof renderCalendar === 'function') renderCalendar(); } catch(e){}
-      console.warn('[Settings Sync] Einstellungen geladen ✓');
-    } catch(e){ console.warn('[Settings Sync] Laden fehlgeschlagen:', e.message); }
+    if(typeof window.forceLoadChangeSettings === 'function') return window.forceLoadChangeSettings(true);
+    return false;
   };
-
-  // ==== In saveCalSettings() einhängen ====
-  const _origSaveCal = window.saveCalSettings;
-  window.saveCalSettings = function(){
-    if(typeof _origSaveCal === 'function') _origSaveCal.apply(this, arguments);
-    // Async speichern ohne await (kein UI-Block)
-    setTimeout(() => window.saveSettingsToFirestore(), 300);
-  };
-
-  // ==== In setLiveSyncEnabled() einhängen ====
-  const _origSetLive = window.setLiveSyncEnabled;
-  window.setLiveSyncEnabled = function(enabled){
-    if(typeof _origSetLive === 'function') _origSetLive.apply(this, arguments);
-    setTimeout(() => window.saveSettingsToFirestore(), 300);
-  };
-
-  // ==== Nach Login: Settings laden ====
-  const _origBoot = window.bootMainApp;
-  window.bootMainApp = function(){
-    if(typeof _origBoot === 'function') _origBoot.apply(this, arguments);
-    // Kurz warten bis Firebase Auth bereit ist
-    setTimeout(async () => {
-      await window.loadSettingsFromFirestore();
-    }, 1500);
-  };
-
-  // ==== Beim Speichern von Push-Einstellungen auch synchen ====
-  // Beobachte localStorage-Änderungen (Polling alle 2s nach bootMainApp)
-  let _settingsSyncTimer = null;
-  const _origReqNotif = window.reqNotifPermission;
-  window.reqNotifPermission = async function(){
-    if(typeof _origReqNotif === 'function') await _origReqNotif.apply(this, arguments);
-    setTimeout(() => window.saveSettingsToFirestore(), 1000);
-  };
-
-  console.warn('[Settings Sync] Modul geladen ✓');
+  console.warn('[Settings Sync] Kompatibilitätsmodul geladen ✓');
 })();
 </script>
 
