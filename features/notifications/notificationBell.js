@@ -85,51 +85,30 @@
   window.openNotifPanel = render;
   window.togglePushFromBell = async function(on){
     try{
+      var toggle = document.getElementById('bell-push-toggle');
+      if(toggle) toggle.disabled = true;
+      var ok = false;
       if(!on){
-        Store.setStoredPushEnabled(false);
-        if(typeof toast === 'function') toast('Push-Benachrichtigungen deaktiviert','ok');
-        render();
-        return;
-      }
-      if(typeof Notification === 'undefined'){
-        Store.setStoredPushEnabled(false);
-        if(typeof toast === 'function') toast('Push wird von diesem Browser nicht unterstützt','err');
-        render();
-        return;
-      }
-      var permission = Notification.permission;
-      if(permission !== 'granted') permission = await Notification.requestPermission();
-      if(permission === 'granted'){
-        Store.setStoredPushEnabled(true);
-        try{
-          if(typeof initFirebaseMessaging === 'function') await initFirebaseMessaging();
-          else if(typeof enablePushNotifications === 'function') await enablePushNotifications();
-        }catch(e){ console.warn('Push optional:', e); }
-        if(typeof toast === 'function') toast('Push-Benachrichtigungen aktiviert ✓','ok');
+        ok = window.ChangePushController && window.ChangePushController.deactivate ? window.ChangePushController.deactivate() : (Store.setStoredPushEnabled(false), true);
       }else{
-        Store.setStoredPushEnabled(false);
-        if(typeof toast === 'function') toast('Push wurde im Browser nicht erlaubt','err');
+        ok = window.ChangePushController && window.ChangePushController.activate ? await window.ChangePushController.activate() : false;
       }
+      if(!ok) Store.setStoredPushEnabled(false);
       render();
+      return !!ok;
     }catch(e){
       console.warn('togglePushFromBell:', e);
       Store.setStoredPushEnabled(false);
       if(typeof toast === 'function') toast('Push konnte nicht geändert werden','err');
       render();
+      return false;
     }
   };
   window.reqNotifPermission = function(){ return window.togglePushFromBell(true); };
   window.sendTestBellNotification = function(){
-    try{
-      if(!Store.pushActive()){
-        if(typeof toast === 'function') toast('Push ist deaktiviert','err');
-        return;
-      }
-      new Notification('Change', {body:'Test-Benachrichtigung funktioniert.', tag:'change-test'});
-      if(typeof toast === 'function') toast('Test gesendet ✓','ok');
-    }catch(e){
-      if(typeof toast === 'function') toast('Test-Benachrichtigung nicht möglich','err');
-    }
+    if(window.ChangePushController && typeof window.ChangePushController.test === 'function') return window.ChangePushController.test();
+    if(typeof toast === 'function') toast('Test-Benachrichtigung nicht möglich','err');
+    return false;
   };
 
   setTimeout(function(){ if(Center && Center.updateBellIndicator) Center.updateBellIndicator(); }, 0);

@@ -101,8 +101,13 @@
     if(Notification.permission === 'denied') return 'blockiert';
     return 'noch nicht erlaubt';
   }
+  function hasPushToken(){
+    try{ if(localStorage.getItem('fcm_token')) return true; }catch(e){}
+    try{ if(typeof ls === 'function' && ls('fcm_token')) return true; }catch(e){}
+    return false;
+  }
   function pushActive(){
-    return readStoredPushEnabled() && typeof Notification !== 'undefined' && Notification.permission === 'granted';
+    return readStoredPushEnabled() && typeof Notification !== 'undefined' && Notification.permission === 'granted' && hasPushToken();
   }
 
   window.ChangeNotificationStore = {

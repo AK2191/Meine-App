@@ -13,6 +13,7 @@
   img-src 'self' data: https://*.googleusercontent.com https://lh3.googleusercontent.com;
   frame-src https://accounts.google.com;
   child-src https://accounts.google.com;
+  worker-src 'self';
   object-src 'none';
   base-uri 'self';
   form-action 'self';
@@ -2836,38 +2837,48 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   }
 
   window.enablePushNotifications = async function(){
-    if(!hasFirebaseConfig()){ toast('Firebase ist noch nicht eingerichtet: firebase-config.js ausfüllen','err'); return; }
-    if(!('Notification' in window)){ toast('Dieser Browser unterstützt keine Push-Mitteilungen','err'); openPushSettingsPanel(); return; }
-    if(Notification.permission==='denied'){
-      toast('Benachrichtigungen sind im Browser blockiert','err');
-      openPushSettingsPanel();
-      return;
+    function fail(message, showToast){
+      try{ ls('push_enabled', false); }catch(_e){}
+      try{ localStorage.setItem('change_push_enabled','0'); }catch(_e){}
+      if(showToast !== false && typeof toast === 'function') toast(message, 'err');
+      return false;
     }
+    if(!hasFirebaseConfig()) return fail('Firebase ist noch nicht eingerichtet: firebase-config.js ausfüllen');
+    if(!('serviceWorker' in navigator)) return fail('Dieser Browser unterstützt keine Service Worker');
+    if(!('Notification' in window)) return fail('Dieser Browser unterstützt keine Push-Mitteilungen');
+    if(Notification.permission === 'denied') return fail('Benachrichtigungen sind im Browser blockiert');
     if(isIOSDevice() && !isStandaloneApp()){
-      toast('iPhone: erst Change zum Home-Bildschirm hinzufügen','err');
-      installChangeApp();
-      return;
+      try{ installChangeApp(); }catch(_e){}
+      return fail('iPhone: erst Change zum Home-Bildschirm hinzufügen');
     }
-    const ok=await initFirebaseLive(); if(!ok){ toast('Firebase konnte nicht gestartet werden','err'); return; }
+    const ok = await initFirebaseLive();
+    if(!ok) return fail('Firebase konnte nicht gestartet werden');
     try{
-      let perm=Notification.permission;
-      if(perm==='default') perm=await Notification.requestPermission();
-      if(perm!=='granted'){ toast('Benachrichtigungen wurden nicht erlaubt','err'); openPushSettingsPanel(); return; }
-      const reg=await navigator.serviceWorker.register('./firebase-messaging-sw.js', {scope:'./'});
+      let perm = Notification.permission;
+      if(perm === 'default') perm = await Notification.requestPermission();
+      if(perm !== 'granted') return fail('Benachrichtigungen wurden nicht erlaubt');
+
+      const reg = await navigator.serviceWorker.register('./firebase-messaging-sw.js', {scope:'./'});
       await navigator.serviceWorker.ready;
-      const vapid=getVapidKey();
-      if(!vapid || vapid.includes('HIER_')){ toast('VAPID Key fehlt in firebase-config.js','err'); return; }
-      if(!messaging) messaging=firebase.messaging();
-      const token=await messaging.getToken({vapidKey:vapid,serviceWorkerRegistration:reg});
+
+      const vapid = getVapidKey();
+      if(!vapid || vapid.includes('HIER_')) return fail('VAPID Key fehlt in firebase-config.js');
+      if(!messaging) messaging = firebase.messaging();
+      const token = await messaging.getToken({vapidKey:vapid, serviceWorkerRegistration:reg});
       if(!token) throw new Error('Kein Push-Token erhalten');
-      ls('fcm_token',token);
-      ls('push_enabled',true);
+
+      ls('fcm_token', token);
+      ls('push_enabled', true);
+      try{ localStorage.setItem('change_push_enabled','1'); }catch(_e){}
       await db.collection('change_players').doc(safeDocId(currentEmail())).set({
         ...publicPlayer(), fcmToken:token, pushEnabled:true, tokenUpdatedAt:firebase.firestore.FieldValue.serverTimestamp()
       },{merge:true});
-      toast('Push-Benachrichtigungen aktiviert ✓','ok');
-      openPushSettingsPanel();
-    }catch(e){ console.warn('Push aktivieren:',e); toast('Push konnte nicht aktiviert werden: '+(e.message||e),'err'); openPushSettingsPanel(); }
+      if(typeof toast === 'function') toast('Push-Benachrichtigungen aktiviert ✓','ok');
+      return true;
+    }catch(e){
+      console.warn('Push aktivieren:', e);
+      return fail('Push konnte nicht aktiviert werden: '+(e.message||e));
+    }
   };
 
   function installForegroundPushHandler(){
@@ -9554,6 +9565,7 @@ console.warn('[Nudge] Anfeuern-System geladen ✓');
 <!-- Change Notifications: zentrale Glocke + Read-State -->
 <script src="./core/notifications/notificationStore.js"></script>
 <script src="./core/notifications/notificationCenter.js"></script>
+<script src="./core/notifications/pushController.js"></script>
 <script src="./features/notifications/notificationBell.js"></script>
 
 </body>
