@@ -1228,6 +1228,7 @@ let challenges = [];
 let challengeCompletions = [];
 let challengePlayers = [];
 let notifications = [];
+try{ window.notifications = notifications; }catch(_){}
 
 
 // Filter state
@@ -2296,6 +2297,7 @@ function updateBellIndicator(){
 function checkNotifications(){
   const allEvs=getAllEvents();
   notifications=[];
+  try{ window.notifications = notifications; }catch(_){}
   allEvs.forEach(ev=>{
     if(!ev.date)return;
     const diff=daysUntil(ev.date);
@@ -2309,6 +2311,7 @@ function checkNotifications(){
     if(diff===threshold&&Notification.permission==='granted') fireNotification(ev,diff);
   });
   notifications.sort((a,b)=>a.diff-b.diff);
+  try{ window.notifications = notifications; }catch(_){}
   updateBellIndicator();
 }
 
@@ -2331,7 +2334,7 @@ function openNotifPanel(){
     openPanel('Benachrichtigungen',`<div class="empty-state">
       <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
       <div class="empty-title">Alles im Griff</div>
-      <div class="empty-sub">Keine dringenden Einträge</div>
+      <div class="empty-sub">Keine neuen Benachrichtigungen</div>
     </div>`);
     return;
   }
@@ -6185,7 +6188,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   window.openNotifPanel=function(){
     try{if(typeof checkNotifications==='function')checkNotifications();}catch(e){}
     var esc2=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
-    var notes=(window.notifications||[]).slice(0,12);
+    var notes=(typeof notifications!=='undefined'&&Array.isArray(notifications)?notifications:(window.notifications||[])).slice(0,12);
     var icons={deadline:'⚠️',meeting:'📅',reminder:'🔔',other:'📌'};
     var bgs={crit:'var(--red-d)',warn:'var(--amb-d)',ok:'var(--s2)'};
     var html='';
@@ -8954,7 +8957,7 @@ const _origOpenNotif = window.openNotifPanel;
 window.openNotifPanel = function(){
   try{
     if(typeof checkNotifications === 'function') checkNotifications();
-    const notes = (window.notifications||[]).slice(0,12);
+    const notes = (typeof notifications !== 'undefined' && Array.isArray(notifications) ? notifications : (window.notifications||[])).slice(0,12);
     let html = '';
 
     if(notes.length > 0){
