@@ -291,6 +291,42 @@ const ls = (k,v) => {
   try{localStorage.setItem(LSK+'_'+k,JSON.stringify(v));}catch{}
 };
 const lsDel = k => {try{localStorage.removeItem(LSK+'_'+k);}catch{}};
+
+function readRawJson(key, fallback = null){try{const raw=localStorage.getItem(key);return raw==null?fallback:JSON.parse(raw);}catch(e){return fallback;}}
+function writeRawJson(key, value){try{localStorage.setItem(key,JSON.stringify(value));}catch(e){}}
+function normalizeProfileInfo(info){
+  const current=(typeof userInfo!=='undefined'&&userInfo&&typeof userInfo==='object')?userInfo:{};
+  const next=Object.assign({},current,info||{});
+  return {name:String(next.name||next.displayName||next.email||'').trim(),email:String(next.email||next.mail||'').trim(),picture:String(next.picture||next.photoURL||current.picture||'').trim()};
+}
+function saveUserProfileInfo(info){
+  const normalized=normalizeProfileInfo(info);
+  if(!normalized.name&&!normalized.email&&!normalized.picture)return normalized;
+  userInfo=Object.assign({},userInfo||{},normalized);
+  try{SecureTokenStore.setUser(userInfo);}catch(e){}
+  const safe={name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''};
+  try{ls('user_info_safe',safe);}catch(e){}
+  try{ls('user_info',safe);}catch(e){}
+  writeRawJson('user_info_safe',safe);writeRawJson('user_info',safe);
+  return normalized;
+}
+function resolveUserProfileInfo(){
+  let fbUser=null;try{fbUser=window.firebase&&firebase.auth&&firebase.auth().currentUser;}catch(e){}
+  const candidates=[fbUser?{name:fbUser.displayName||'',email:fbUser.email||'',picture:fbUser.photoURL||''}:null,(typeof userInfo!=='undefined'?userInfo:null),(typeof SecureTokenStore!=='undefined'&&SecureTokenStore.getUser?SecureTokenStore.getUser():null),ls('user_info_safe'),ls('user_info'),readRawJson('change_v1_user_info_safe'),readRawJson('change_v1_user_info'),readRawJson('user_info_safe'),readRawJson('user_info'),readRawJson('google_user'),readRawJson('current_user')].filter(Boolean);
+  const result={name:'',email:'',picture:''};
+  for(const c of candidates){if(!result.name)result.name=String(c.name||c.displayName||'').trim();if(!result.email)result.email=String(c.email||c.mail||'').trim();const pic=String(c.picture||c.photoURL||'').trim();if(!result.picture&&/^https:\/\//i.test(pic))result.picture=pic;}
+  if(!result.name&&result.email)result.name=result.email.split('@')[0];
+  return saveUserProfileInfo(result);
+}
+function renderAvatarInitials(av,initials){while(av&&av.firstChild)av.removeChild(av.firstChild);if(!av)return;const sp=document.createElement('span');sp.id='avatar-initials';sp.textContent=initials||'?';av.appendChild(sp);}
+function updateAvatar(){
+  const av=document.getElementById('user-avatar');if(!av)return;
+  const profile=resolveUserProfileInfo();const rawName=String(profile.name||profile.email||'?');const initials=rawName.split(/[\s._-]+/).filter(Boolean).map(w=>w[0]||'').join('').substring(0,2).toUpperCase()||'?';
+  while(av.firstChild)av.removeChild(av.firstChild);
+  if(profile.picture&&/^https:\/\//i.test(profile.picture)){const img=document.createElement('img');img.alt=rawName;img.referrerPolicy='no-referrer';img.decoding='async';img.src=profile.picture;img.addEventListener('error',()=>renderAvatarInitials(av,initials),{once:true});av.appendChild(img);}else renderAvatarInitials(av,initials);
+  try{if(typeof updateAvatarDot==='function')updateAvatarDot();}catch(e){}
+}
+window.updateAvatar=updateAvatar;
 async function persistChangeState(){
   try{
     ls('events', events);
@@ -470,8 +506,7 @@ async function handleFirebaseRedirectLogin(){
       if(window.applyChangeFirebaseAuthResult) window.applyChangeFirebaseAuthResult(result);
       else {
         const u=result.user;
-        userInfo={name:u.displayName||u.email,email:u.email,picture:u.photoURL||''};
-        ls('user_info',userInfo);
+        saveUserProfileInfo({name:u.displayName||u.email,email:u.email,picture:u.photoURL||''});
       }
       isDemoMode=false; lsDel('demo_mode');
       bootMainApp();
@@ -487,8 +522,8 @@ async function fetchUserInfo(){
     const r=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{'Authorization':'Bearer '+accessToken}});
     if(!r.ok)return;
     const u=await r.json();
-    userInfo={name:u.name||u.email,email:u.email,picture:u.picture||''};
-    ls('user_info',userInfo);
+    saveUserProfileInfo({name:u.name||u.email||userInfo.name||'',email:u.email||userInfo.email||'',picture:u.picture||userInfo.picture||''});
+    updateAvatar();
   }catch{}
 }
 
@@ -519,13 +554,7 @@ function bootMainApp(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('main-app').style.display='flex';
 
-  const initials=(userInfo.name||'?').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase();
-  const av=document.getElementById('user-avatar');
-  if(userInfo.picture){
-    av.innerHTML=`<img src="${esc(userInfo.picture)}" alt="" onerror="this.parentElement.innerHTML='<span id=avatar-initials>${initials}</span>'">`;
-  }else{
-    av.innerHTML=`<span id="avatar-initials">${initials}</span>`;
-  }
+  updateAvatar();
 
   setMainView('dashboard');
   checkNotifications();
