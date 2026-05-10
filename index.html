@@ -4709,24 +4709,59 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   }
 
   /* ==== ALLE EVENTS (dedupliziert, mit startDate/endDate) ==== */
-  function allEvents() {
-    const out = [], seen = new Set();
-    function add(ev, src) {
-      const r = getRange(ev); if (!r.start) return;
-      const key = (ev.googleEventId ? 'g:' + ev.googleEventId : 'l:' + ev.id) + ':' + r.start + ':' + r.end;
-      if (seen.has(key)) return; seen.add(key);
-      const id = src === 'google' ? (String(ev.id || '').startsWith('g_') ? ev.id : 'g_' + (ev.id || ev.googleEventId || '')) : ev.id;
-      out.push(Object.assign({}, ev, { id, date: r.start, startDate: r.start, endDate: r.end, source: src,
-        time: ev.time || (ev.start?.dateTime ? new Date(ev.start.dateTime).toTimeString().slice(0,5) : '') }));
-    }
-    try { (window.events || []).forEach(ev => add(ev, ev.source || 'local')); } catch (e) {}
-    try {
-      if (window.googleCalendarSyncEnabled !== false && localStorage.getItem('change_v1_google_calendar_sync') !== 'false')
-        (window.gEvents || []).forEach(ge => add(ge, 'google'));
-    } catch (e) {}
-    return out.sort((a, b) => a.startDate.localeCompare(b.startDate) || daysFrom(b.startDate, b.endDate) - daysFrom(a.startDate, a.endDate));
+  function contentKey(ev, src, r) {
+    const title = String(getTitle(ev)).trim().toLowerCase();
+    const time = String(ev?.time || (ev?.start?.dateTime ? new Date(ev.start.dateTime).toTimeString().slice(0,5) : '') || '');
+    const endTime = String(ev?.endTime || (ev?.end?.dateTime ? new Date(ev.end.dateTime).toTimeString().slice(0,5) : '') || '');
+    const loc = String(ev?.location || '').trim().toLowerCase();
+    return [src, title, r.start, r.end, time, endTime, loc].join('|');
   }
-
+  function idKey(ev, src, r) {
+    const gid = String(ev?.googleEventId || ev?.id || '').replace(/^g_/, '');
+    if (src === 'google' && gid) return 'g:'+gid+':'+r.start+':'+r.end;
+    if (src !== 'google' && ev?.id) return 'l:'+String(ev.id)+':'+r.start+':'+r.end;
+    return '';
+  }
+  function normalizeEvent(ev, src) {
+    const r = getRange(ev); if (!r.start) return null;
+    const id = src === 'google'
+      ? (String(ev.id || '').startsWith('g_') ? ev.id : 'g_' + (ev.id || ev.googleEventId || contentKey(ev, src, r)))
+      : ev.id;
+    return Object.assign({}, ev, {
+      id,
+      title: getTitle(ev),
+      date: r.start,
+      startDate: r.start,
+      endDate: r.end,
+      source: src,
+      googleEventId: src === 'google' ? String(ev.googleEventId || ev.id || '').replace(/^g_/, '') : ev.googleEventId,
+      time: ev.time || (ev.start?.dateTime ? new Date(ev.start.dateTime).toTimeString().slice(0,5) : ''),
+      endTime: ev.endTime || (ev.end?.dateTime ? new Date(ev.end.dateTime).toTimeString().slice(0,5) : '')
+    });
+  }
+  function allEvents() {
+    const raw = [];
+    try { (window.events || []).forEach(ev => raw.push({ ev, src: ev?.source === 'google' || String(ev?.id || '').startsWith('g_') ? 'google' : 'local' })); } catch (e) {}
+    try {
+      if (window.googleCalendarSyncEnabled !== false && localStorage.getItem('change_v1_google_calendar_sync') !== 'false') {
+        (window.gEvents || []).forEach(ge => raw.push({ ev: ge, src: 'google' }));
+      }
+    } catch (e) {}
+    const out = [], seenIds = new Set(), seenContent = new Set();
+    raw.forEach(item => {
+      const normalized = normalizeEvent(item.ev, item.src);
+      if (!normalized) return;
+      const r = getRange(normalized);
+      const ik = idKey(normalized, normalized.source, r);
+      const ck = contentKey(normalized, normalized.source, r);
+      if (ik && seenIds.has(ik)) return;
+      if (seenContent.has(ck)) return;
+      if (ik) seenIds.add(ik);
+      seenContent.add(ck);
+      out.push(normalized);
+    });
+    return out.sort((a, b) => a.startDate.localeCompare(b.startDate) || daysFrom(b.startDate, b.endDate) - daysFrom(a.startDate, a.endDate) || getTitle(a).localeCompare(getTitle(b)));
+  }
   window.getAllEvents = allEvents;
   window.getEventById = function (id) {
     const plain = String(id || '').replace(/__\d{4}-\d{2}-\d{2}$/, '');
@@ -4788,6 +4823,21 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       const wDates = wCells.map(c => toKey(new Date(c.y, c.m, c.d)));
       const row = document.createElement('div');
       row.className = 'cfx-week-row';
+      const visibleSegments = layoutWeek(wDates);
+      const visibleForDate = new Map();
+      visibleSegments.forEach(seg => {
+        for (let idx = seg.sIdx; idx <= seg.eIdx; idx++) {
+          const list = visibleForDate.get(wDates[idx]) || [];
+          list.push(seg.ev);
+          visibleForDate.set(wDates[idx], list);
+        }
+      });
+      function hiddenCountFor(k) {
+        const all = eventsOnDate(k);
+        const visible = visibleForDate.get(k) || [];
+        const visibleKeys = new Set(visible.map(ev => contentKey(ev, ev.source || (isGoog(ev) ? 'google' : 'local'), getRange(ev))));
+        return all.filter(ev => !visibleKeys.has(contentKey(ev, ev.source || (isGoog(ev) ? 'google' : 'local'), getRange(ev)))).length;
+      }
 
       /* Tageszellen */
       wCells.forEach((c, i) => {
@@ -4811,11 +4861,13 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
             html += '<span class="cfx-kw">KW '+Math.ceil((((dd-y0)/DAY)+1)/7)+'</span>';
           } catch(e){}
         }
+        const hidden = hiddenCountFor(k);
+        if (hidden > 0) html += '<span class="cfx-more">+'+hidden+' mehr</span>';
         cell.innerHTML = html; row.appendChild(cell);
       });
 
       /* Balken (Week-Level Grid, überspannen mehrere Spalten) */
-      layoutWeek(wDates).forEach(seg => {
+      visibleSegments.forEach(seg => {
         const ev = seg.ev, r = getRange(ev);
         const bar = document.createElement('button');
         bar.type = 'button';
@@ -4851,6 +4903,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 .cfx-points{position:absolute!important;right:6px!important;bottom:5px!important;min-width:18px!important;height:17px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;border-radius:999px!important;padding:0 5px!important;background:rgba(52,211,153,.13)!important;border:1px solid rgba(52,211,153,.22)!important;color:var(--grn)!important;font-size:9.5px!important;line-height:1!important;font-weight:900!important;font-family:var(--mono)!important;pointer-events:none!important;z-index:8!important}
 .cfx-points.done{opacity:1!important}
 .cfx-kw{position:absolute!important;left:4px!important;bottom:4px!important;font-size:9px!important;font-weight:900!important;color:var(--acc)!important;background:rgba(45,106,79,.10)!important;border-radius:999px!important;padding:2px 5px!important;pointer-events:none!important;z-index:2!important}
+.cfx-more{position:absolute!important;right:6px!important;bottom:25px!important;z-index:12!important;border-radius:999px!important;padding:2px 6px!important;background:var(--s2)!important;border:1px solid var(--b1)!important;color:var(--t3)!important;font-size:10px!important;font-weight:850!important;line-height:1!important;pointer-events:none!important}
 /* ==== Balken ==== */
 .cfx-bar{grid-row:1!important;align-self:start!important;height:20px!important;min-width:0!important;margin-top:calc(28px + var(--cfx-lane,0)*23px)!important;padding:0 7px!important;border:1px solid transparent!important;border-top-left-radius:10px!important;border-bottom-left-radius:10px!important;border-top-right-radius:10px!important;border-bottom-right-radius:10px!important;margin-left:4px!important;margin-right:4px!important;display:flex!important;align-items:center!important;gap:4px!important;z-index:20!important;overflow:hidden!important;cursor:pointer!important;font-size:11px!important;font-weight:700!important;white-space:nowrap!important;box-shadow:0 2px 7px rgba(0,0,0,.06)!important;transition:transform .1s,box-shadow .1s!important}
 .cfx-bar:hover{transform:translateY(-1px)!important;box-shadow:0 5px 12px rgba(0,0,0,.10)!important}

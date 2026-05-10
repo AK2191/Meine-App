@@ -35,7 +35,8 @@
   function openDayPanel(date, givenEvents){
     var key = M.dateKey(date);
     var summary = M.daySummary(key);
-    var events = M.eventsForDate(key, givenEvents || summary.events);
+    var events = M.eventsForDate(key);
+    var doneChallenges = (summary.challenges || []).filter(function(challenge){ return !!challenge.done; });
     var title = events.length ? (events.length+' '+(events.length === 1 ? 'Termin' : 'Termine')) : (summary.holidays.length ? 'Feiertag' : 'Tag');
     var html = '<div class="change-day-header"><div class="change-day-date">'+esc(M.weekday(key)+', '+M.fmtDate(key))+'</div>';
     if(summary.challengeTotal){
@@ -53,8 +54,8 @@
     html += events.length ? events.map(function(event){ return eventRow(event); }).join('') : '<div class="change-day-empty">Keine Termine für diesen Tag</div>';
     html += '</div>';
 
-    html += '<div class="change-day-section"><div class="change-day-section-title">Challenges</div>';
-    html += summary.challenges.length ? summary.challenges.map(challengeRow).join('') : '<div class="change-day-empty">Keine Challenges für diesen Tag</div>';
+    html += '<div class="change-day-section"><div class="change-day-section-title">Erledigte Challenges</div>';
+    html += doneChallenges.length ? doneChallenges.map(challengeRow).join('') : '<div class="change-day-empty">Keine erledigten Challenges für diesen Tag</div>';
     html += '</div>';
 
     html += '<button class="btn btn-primary btn-full" style="margin-top:16px" onclick="window.openEventPanel(null, new Date(\''+key+'T12:00:00\'))">+ Neuer Termin für diesen Tag</button>';

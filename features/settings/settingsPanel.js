@@ -81,19 +81,50 @@
         switchRow('Challengepunkte im Kalender', 'Nur kleines Badge unten rechts.', 'set-show-points', options.showChallengeDots)+
         switchRow('Kalenderwochen anzeigen', '', 'set-show-kw', options.showWeekNumbers));
   }
+  function dashboardBool(getterName, key, fallback){
+    try{ if(typeof window[getterName] === 'function') return !!window[getterName](); }catch(e){}
+    return readBool(key, fallback);
+  }
+  function dashboardNumber(getterName, keys, fallback){
+    try{ if(typeof window[getterName] === 'function') return parseFloat(window[getterName]()) || fallback; }catch(e){}
+    keys = Array.isArray(keys) ? keys : [keys];
+    for(var i=0;i<keys.length;i++){
+      try{ var raw = localStorage.getItem(keys[i]); if(raw != null && raw !== '') return parseFloat(raw) || fallback; }catch(e){}
+    }
+    return fallback;
+  }
+  function halfDays(){
+    try{ if(typeof window.getUrlaubHalfDays === 'function') return (window.getUrlaubHalfDays() || []).slice().sort(); }catch(e){}
+    try{ return (JSON.parse(localStorage.getItem('urlaub_half_days') || '[]') || []).map(function(d){ return String(d).length === 10 ? String(d).slice(5) : String(d); }).sort(); }catch(e){ return []; }
+  }
+  function halfDayLabel(value){
+    value = String(value || '');
+    if(/^\d{4}-\d{2}-\d{2}$/.test(value)) value = value.slice(5);
+    if(/^\d{2}-\d{2}$/.test(value)) return value.slice(3)+'.'+value.slice(0,2)+'.';
+    return value;
+  }
+  function halfDayChips(){
+    var list = halfDays();
+    if(!list.length) return '<div class="change-settings-sub" data-half-list>Keine halben Urlaubstage hinterlegt.</div>';
+    return '<div data-half-list class="change-halfday-list">'+list.map(function(day){
+      return '<span class="change-halfday-chip">'+esc(halfDayLabel(day))+'<button type="button" data-remove-half="'+esc(day)+'" aria-label="Halben Urlaubstag entfernen">×</button></span>';
+    }).join('')+'</div>';
+  }
   function dashboardPane(){
-    var friseurOn = readBool('friseur_enabled', true);
-    var urlaubOn = readBool('urlaub_enabled', true);
-    var friseurWeeks = 4;
-    var urlaubDays = 30;
-    try{ friseurWeeks = parseInt(localStorage.getItem('friseur_weeks') || '4', 10) || 4; }catch(e){}
-    try{ urlaubDays = parseInt(localStorage.getItem('urlaub_days') || '30', 10) || 30; }catch(e){}
+    var friseurOn = dashboardBool('getFriseurEnabled', 'change_v1_friseur_enabled', false);
+    var urlaubOn = dashboardBool('getUrlaubEnabled', 'urlaub_tracker_on', true);
+    var friseurWeeks = dashboardNumber('getFriseurWeeks', ['change_v1_friseur_weeks','friseur_weeks'], 3);
+    var urlaubDays = dashboardNumber('getUrlaubTotalDays', ['urlaub_tracker_days','urlaub_days'], 30);
     var activity = window.ChangePlayerActivity && window.ChangePlayerActivity.panelHtml ? window.ChangePlayerActivity.panelHtml(4) : '<div class="dash-empty">Keine Aktivität</div>';
+    var months = [['01','Jan'],['02','Feb'],['03','Mär'],['04','Apr'],['05','Mai'],['06','Jun'],['07','Jul'],['08','Aug'],['09','Sep'],['10','Okt'],['11','Nov'],['12','Dez']];
+    var monthOptions = months.map(function(item){ return '<option value="'+item[0]+'">'+item[1]+'</option>'; }).join('');
+    var dayOptions = Array.from({length:31}, function(_, i){ var d = String(i+1).padStart(2,'0'); return '<option value="'+d+'">'+d+'.</option>'; }).join('');
     return card('Dashboard',
         switchRow('Friseur-Tracker '+pill(friseurOn?'AKTIV':'AUS', friseurOn?'ok':'off'), 'Zeigt den letzten und nächsten Friseur-Termin.', 'set-friseur', friseurOn)+
         '<div class="change-settings-actions"><label class="flabel">Erinnerung nach</label><select class="finput" id="set-friseur-weeks">'+[2,3,4,5,6,8].map(function(n){ return '<option value="'+n+'" '+(n === friseurWeeks ? 'selected' : '')+'>'+n+' Wochen</option>'; }).join('')+'</select></div>'+
         switchRow('Urlaubs-Tracker '+pill(urlaubOn?'AKTIV':'AUS', urlaubOn?'ok':'off'), '', 'set-urlaub', urlaubOn)+
-        '<div class="change-settings-actions"><label class="flabel">Jahresurlaub</label><input type="number" class="finput" id="set-urlaub-days" min="1" max="365" value="'+urlaubDays+'"></div>')
+        '<div class="change-settings-actions"><label class="flabel">Jahresurlaub</label><input type="number" class="finput" id="set-urlaub-days" min="1" max="365" value="'+urlaubDays+'"></div>'+
+        '<div class="change-settings-actions"><label class="flabel">Halbe Urlaubstage</label><div class="change-halfday-controls"><select class="finput" id="set-half-month">'+monthOptions+'</select><select class="finput" id="set-half-day">'+dayOptions+'</select><button class="btn btn-secondary btn-sm" id="set-add-half" type="button">+ Hinzufügen</button></div>'+halfDayChips()+'</div>')
       + card('Mitspieler-Aktivität', '<div class="change-settings-actions"><div class="change-settings-sub" style="margin-bottom:8px">'+esc(window.ChangePlayerActivity && window.ChangePlayerActivity.summaryText ? window.ChangePlayerActivity.summaryText() : '')+'</div>'+activity+'</div>');
   }
   function syncPane(){
@@ -159,10 +190,12 @@
       saveCalendarOptions(options);
     };
     ['set-show-holidays','set-show-points','set-show-kw','set-holiday-state'].forEach(function(id){ var el=$(id); if(el) el.addEventListener('change', saveCal); });
-    var friseur = $('set-friseur'); if(friseur) friseur.addEventListener('change', function(){ if(window.setFriseurEnabled) window.setFriseurEnabled(friseur.checked); else writeBool('friseur_enabled', friseur.checked); refreshSameTab(); });
-    var frWeeks = $('set-friseur-weeks'); if(frWeeks) frWeeks.addEventListener('change', function(){ if(window.setFriseurWeeks) window.setFriseurWeeks(parseInt(frWeeks.value,10)); else localStorage.setItem('friseur_weeks', frWeeks.value); });
-    var urlaub = $('set-urlaub'); if(urlaub) urlaub.addEventListener('change', function(){ if(window.setUrlaubEnabled) window.setUrlaubEnabled(urlaub.checked); else writeBool('urlaub_enabled', urlaub.checked); refreshSameTab(); });
-    var urDays = $('set-urlaub-days'); if(urDays) urDays.addEventListener('change', function(){ if(window.setUrlaubDays) window.setUrlaubDays(parseInt(urDays.value,10) || 30); else localStorage.setItem('urlaub_days', String(parseInt(urDays.value,10) || 30)); });
+    var friseur = $('set-friseur'); if(friseur) friseur.addEventListener('change', function(){ if(window.setFriseurEnabled) window.setFriseurEnabled(friseur.checked); else writeBool('change_v1_friseur_enabled', friseur.checked); try{ if(window.buildDashboard) window.buildDashboard(); }catch(e){} refreshSameTab(); });
+    var frWeeks = $('set-friseur-weeks'); if(frWeeks) frWeeks.addEventListener('change', function(){ var value = parseInt(frWeeks.value,10) || 3; if(window.setFriseurWeeks) window.setFriseurWeeks(value); else localStorage.setItem('change_v1_friseur_weeks', String(value)); try{ if(window.buildDashboard) window.buildDashboard(); }catch(e){} });
+    var urlaub = $('set-urlaub'); if(urlaub) urlaub.addEventListener('change', function(){ if(window.setUrlaubEnabled) window.setUrlaubEnabled(urlaub.checked); else writeBool('urlaub_tracker_on', urlaub.checked); try{ if(window.buildDashboard) window.buildDashboard(); }catch(e){} refreshSameTab(); });
+    var urDays = $('set-urlaub-days'); if(urDays) urDays.addEventListener('change', function(){ var value = parseInt(urDays.value,10) || 30; if(window.setUrlaubDays) window.setUrlaubDays(value); else localStorage.setItem('urlaub_tracker_days', String(value)); try{ if(window.buildDashboard) window.buildDashboard(); }catch(e){} });
+    var addHalf = $('set-add-half'); if(addHalf) addHalf.addEventListener('click', function(){ var month = $('set-half-month'), day = $('set-half-day'); if(!month || !day) return; var value = month.value+'-'+day.value; if(window.addUrlaubHalfDay) window.addUrlaubHalfDay(value); else { var list = halfDays(); if(list.indexOf(value) < 0) list.push(value); try{ localStorage.setItem('urlaub_half_days', JSON.stringify(list.sort())); }catch(e){} } try{ if(window.buildDashboard) window.buildDashboard(); }catch(e){} refreshSameTab(); });
+    document.querySelectorAll('[data-remove-half]').forEach(function(btn){ btn.addEventListener('click', function(){ var value = btn.getAttribute('data-remove-half'); if(window.removeUrlaubHalfDay) window.removeUrlaubHalfDay(value); else { try{ localStorage.setItem('urlaub_half_days', JSON.stringify(halfDays().filter(function(day){ return day !== value; }))); }catch(e){} } try{ if(window.buildDashboard) window.buildDashboard(); }catch(e){} refreshSameTab(); }); });
     var push = $('set-push'); if(push) push.addEventListener('change', async function(){ if(window.togglePushFromBell) await window.togglePushFromBell(push.checked); refreshSameTab(); });
     var test = $('set-test-push'); if(test) test.addEventListener('click', function(){ if(window.sendTestBellNotification) window.sendTestBellNotification(); });
     var updateWeather = async function(patch, needsLocation){

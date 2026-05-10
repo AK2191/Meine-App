@@ -120,36 +120,65 @@
       googleEventId: String(event.id || '').replace(/^g_/, '')
     };
   }
+  function canonicalIdKey(event){
+    var range = rangeOf(event);
+    var source = sourceOf(event);
+    var gid = String(event && (event.googleEventId || event.id) || '').replace(/^g_/, '');
+    if(source === 'google' && gid) return 'google:'+gid+'|'+range.start+'|'+range.end;
+    if(source !== 'google' && event && event.id) return 'local:'+String(event.id)+'|'+range.start+'|'+range.end;
+    return '';
+  }
+  function canonicalContentKey(event){
+    var range = rangeOf(event);
+    return [
+      sourceOf(event),
+      titleOf(event).trim().toLowerCase(),
+      range.start,
+      range.end,
+      timeOf(event) || '',
+      endTimeOf(event) || '',
+      String((event && (event.location || event.place)) || '').trim().toLowerCase()
+    ].join('|');
+  }
+  function dedupeEvents(list){
+    var seenIds = new Set();
+    var seenContent = new Set();
+    return list.filter(function(event){
+      var range = rangeOf(event);
+      if(!range.start) return false;
+      var idKey = canonicalIdKey(event);
+      var contentKey = canonicalContentKey(event);
+      if(idKey && seenIds.has(idKey)) return false;
+      if(seenContent.has(contentKey)) return false;
+      if(idKey) seenIds.add(idKey);
+      seenContent.add(contentKey);
+      return true;
+    });
+  }
   function allEvents(){
     var out = [];
     readList('events', []).forEach(function(event){
       if(!event) return;
-      var range = rangeOf(event);
+      var normalized = (event.source === 'google' || String(event.id || '').indexOf('g_') === 0) && event.start ? normalizeGoogleEvent(event) : event;
+      var range = rangeOf(normalized);
       if(!range.start) return;
-      out.push(Object.assign({}, event, {
-        title: titleOf(event),
+      out.push(Object.assign({}, normalized, {
+        title: titleOf(normalized),
         date: range.start,
         startDate: range.start,
         endDate: range.end,
-        time: timeOf(event),
-        endTime: endTimeOf(event),
-        source: sourceOf(event)
+        time: timeOf(normalized),
+        endTime: endTimeOf(normalized),
+        source: sourceOf(normalized)
       }));
     });
     readList('gEvents', []).forEach(function(event){
       if(!event) return;
       var normalized = event.start ? normalizeGoogleEvent(event) : Object.assign({}, event, {source:'google'});
       var range = rangeOf(normalized);
-      if(range.start) out.push(Object.assign({}, normalized, {date:range.start, startDate:range.start, endDate:range.end}));
+      if(range.start) out.push(Object.assign({}, normalized, {date:range.start, startDate:range.start, endDate:range.end, source:'google'}));
     });
-    var seen = new Set();
-    return out.filter(function(event){
-      var range = rangeOf(event);
-      var id = (event.googleEventId ? 'g:'+event.googleEventId : String(event.id || titleOf(event)))+'|'+range.start+'|'+range.end+'|'+titleOf(event);
-      if(seen.has(id)) return false;
-      seen.add(id);
-      return true;
-    });
+    return dedupeEvents(out);
   }
   function eventById(id){
     id = String(id || '');
@@ -159,17 +188,16 @@
   }
   function eventsForDate(key, preferred){
     key = dateKey(key);
-    var merged = allEvents().concat(Array.isArray(preferred) ? preferred : []);
-    var seen = new Set();
-    return merged.filter(function(event){
+    var merged = allEvents();
+    if(Array.isArray(preferred) && !merged.length){
+      merged = preferred.map(function(event){
+        if(event && event.start) return normalizeGoogleEvent(event);
+        return event;
+      });
+    }
+    return dedupeEvents(merged).filter(function(event){
       var range = rangeOf(event);
       return range.start <= key && range.end >= key;
-    }).filter(function(event){
-      var range = rangeOf(event);
-      var id = (event.googleEventId ? 'g:'+event.googleEventId : String(event.id || titleOf(event)))+'|'+range.start+'|'+range.end;
-      if(seen.has(id)) return false;
-      seen.add(id);
-      return true;
     }).sort(function(a,b){
       var ar = rangeOf(a), br = rangeOf(b);
       var aRange = ar.start !== ar.end, bRange = br.start !== br.end;
@@ -200,9 +228,16 @@
   }
   function challengeDone(ch, key){
     var me = currentPlayerId();
-    return readList('challengeCompletions', readList('challenge_completions', [])).some(function(c){
+    var ids = new Set([me]);
+    try{ if(window.userInfo && window.userInfo.email) ids.add(String(window.userInfo.email).toLowerCase()); }catch(e){}
+    var list = readList('challenge_completions', []).concat(readList('challengeCompletions', []));
+    var seen = new Set();
+    return list.some(function(c){
+      var ck = [c.challengeId, c.date || c.completedDate || c.createdAt, c.playerId || c.userEmail || c.email || ''].join('|');
+      if(seen.has(ck)) return false;
+      seen.add(ck);
       var who = String(c.playerId || c.userEmail || c.email || '').toLowerCase();
-      return String(c.challengeId) === String(ch.id) && dateKey(c.date || c.completedDate || c.createdAt) === key && (!who || who === me);
+      return String(c.challengeId) === String(ch.id) && dateKey(c.date || c.completedDate || c.createdAt) === key && (!who || ids.has(who));
     });
   }
   function challengesForDate(key){
