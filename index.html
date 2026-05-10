@@ -5745,15 +5745,27 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     // Leaderboard
     const players=playerStats();
     const medals=['🥇','🥈','🥉'];
-    board$.innerHTML=players.length?players.map((p,i)=>`
+    board$.innerHTML=players.length?players.map((p,i)=>{
+      const isMe = String(p.id||'').toLowerCase() === String(me||'').toLowerCase();
+      const nudgeTo = encodeURIComponent(String(p.id||''));
+      const nudgeName = encodeURIComponent(String(p.name||p.id||'Mitspieler'));
+      const nudgeBtn = isMe ? '' : `<button class="nudge-btn" onclick="event.stopPropagation();window.sendNudge&&window.sendNudge(decodeURIComponent('${nudgeTo}'),decodeURIComponent('${nudgeName}'))" title="Anfeuern" aria-label="${esc(p.name||p.id)} anfeuern">💪</button>`;
+      return `
       <div class="leader-row clickable" onclick="window.openPlayerRecentPanel&&window.openPlayerRecentPanel('${esc(p.id)}','${esc(p.name||p.id)}')">
         <div class="leader-rank">${medals[i]||String(i+1)}</div>
         <div style="flex:1;min-width:0">
           <div class="leader-name">${esc(p.name||p.id)}${p.online?'<span class="live-dot"></span>':''}</div>
           <div class="leader-detail">Heute: ${p.today} P · Gesamt: ${p.total} P · ${p.count} erledigt</div>
         </div>
-        <div class="leader-score">${p.total}</div>
-      </div>`).join(''):'<div class="dash-empty">Noch keine Mitspieler</div>';
+        <div style="display:flex;align-items:center;gap:8px">${nudgeBtn}<div class="leader-score">${p.total}</div></div>
+      </div>`;
+    }).join(''):'<div class="dash-empty">Noch keine Mitspieler</div>';
+
+    // Gruppen-Ziel direkt nach jeder Punkte-Änderung/live Sync aktualisieren,
+    // ohne dass der Nutzer die Ansicht wechseln muss.
+    if(typeof window.renderGroupGoal === 'function'){
+      requestAnimationFrame(()=>window.renderGroupGoal());
+    }
   }
 
   /* ====
@@ -9420,14 +9432,38 @@ window.bootMainApp = function(){
 const _origComplete2 = window.completeChallenge;
 const _prevComplete = _origComplete2;
 window.completeChallenge = function(id){
-  if(typeof _prevComplete === 'function') _prevComplete.call(this, id);
-  setTimeout(window.renderGroupGoal, 1000);
+  const result = (typeof _prevComplete === 'function') ? _prevComplete.apply(this, arguments) : undefined;
+  Promise.resolve(result).finally(()=>{
+    requestAnimationFrame(()=>window.renderGroupGoal&&window.renderGroupGoal());
+    setTimeout(()=>window.renderGroupGoal&&window.renderGroupGoal(), 350);
+  });
+  return result;
+};
+
+const _origUndoChallenge2 = window.undoChallenge;
+window.undoChallenge = function(id){
+  const result = (typeof _origUndoChallenge2 === 'function') ? _origUndoChallenge2.apply(this, arguments) : undefined;
+  Promise.resolve(result).finally(()=>{
+    requestAnimationFrame(()=>window.renderGroupGoal&&window.renderGroupGoal());
+    setTimeout(()=>window.renderGroupGoal&&window.renderGroupGoal(), 350);
+  });
+  return result;
+};
+
+const _origResetTodayChallenges2 = window.resetTodayChallenges;
+window.resetTodayChallenges = function(){
+  const result = (typeof _origResetTodayChallenges2 === 'function') ? _origResetTodayChallenges2.apply(this, arguments) : undefined;
+  Promise.resolve(result).finally(()=>{
+    requestAnimationFrame(()=>window.renderGroupGoal&&window.renderGroupGoal());
+    setTimeout(()=>window.renderGroupGoal&&window.renderGroupGoal(), 450);
+  });
+  return result;
 };
 
 const _origSetView2 = window.setMainView;
 window.setMainView = function(view){
   if(typeof _origSetView2 === 'function') _origSetView2.apply(this, arguments);
-  if(view === 'challenges') setTimeout(window.renderGroupGoal, 400);
+  if(view === 'challenges') requestAnimationFrame(()=>window.renderGroupGoal&&window.renderGroupGoal());
 };
 
 })();
@@ -9460,12 +9496,27 @@ function getDb(){
   catch(e){ return null; }
 }
 
+function readJson(key, fallback){
+  try{ const raw = localStorage.getItem(key); return raw == null ? fallback : JSON.parse(raw); }catch(e){ return fallback; }
+}
+
+function currentNudgeAccount(){
+  let fu = null;
+  try{ fu = window.firebase && firebase.auth && firebase.auth().currentUser; }catch(e){}
+  const stored = Object.assign({}, readJson('change_v1_user_info', {}) || {}, readJson('user_info', {}) || {});
+  const info = Object.assign({}, stored, window.userInfo || {});
+  try{ if(typeof userInfo !== 'undefined') Object.assign(info, userInfo || {}); }catch(e){}
+  const email = String((fu && fu.email) || info.email || localStorage.getItem('change_v1_user_email') || localStorage.getItem('user_email') || '').trim().toLowerCase();
+  const name = String((fu && fu.displayName) || info.name || info.displayName || (email ? email.split('@')[0] : 'Jemand')).trim();
+  return { email, name };
+}
+
 function myEmail(){
-  return ((typeof userInfo!=='undefined' && userInfo.email) || '').toLowerCase();
+  return currentNudgeAccount().email;
 }
 
 function myName(){
-  return (typeof userInfo!=='undefined' && userInfo.name) ? userInfo.name : 'Jemand';
+  return currentNudgeAccount().name || 'Jemand';
 }
 
 // ==== NUDGE SENDEN ====
@@ -9477,9 +9528,11 @@ window.sendNudge = async function(toEmail, toName){
   }
 
   // Button kurz deaktivieren (visuelles Feedback)
-  const btns = document.querySelectorAll('.nudge-btn');
-  btns.forEach(b => { if(b.title==='Anfeuern') b.classList.add('sent'); });
-  setTimeout(()=>btns.forEach(b=>b.classList.remove('sent')), 3000);
+  const btns = Array.from(document.querySelectorAll('.nudge-btn'));
+  const targetKey = encodeURIComponent(String(toEmail || ''));
+  const targetBtns = btns.filter(b => { const oc = b.getAttribute('onclick') || ''; return oc.includes(toEmail) || oc.includes(targetKey); });
+  (targetBtns.length ? targetBtns : btns).forEach(b => { if((b.title||'').includes('Anfeuern')) b.classList.add('sent'); });
+  setTimeout(()=>btns.forEach(b=>b.classList.remove('sent')), 1800);
 
   const msg = randomMessage();
   const nudge = {
