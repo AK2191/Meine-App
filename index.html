@@ -209,6 +209,7 @@ var calendarSettings = window.calendarSettings;
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="./firebase-config.js"></script>
+<script src="./core/integrations/firebaseAuthBridge.js"></script>
 <style>
 /* ====
    CHANGE · LIGHT DESIGN SYSTEM
@@ -1536,6 +1537,7 @@ function handleGoogleLogin(){
         SecureTokenStore.setToken(accessToken, 3600);
         isDemoMode=false; lsDel('demo_mode');
         await fetchUserInfo();
+        try{ if(window.ensureChangeFirebaseAuth) await window.ensureChangeFirebaseAuth({accessToken:resp.access_token, silent:true}); }catch(_e){}
         SecureTokenStore.setUser(userInfo);
         ls('user_info_safe', {name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''});
         ls('was_logged_in', true);
@@ -2747,6 +2749,10 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
       if(!firebase.apps.length) fbApp=firebase.initializeApp(getFirebaseConfig());
       else fbApp=firebase.app();
       db=firebase.firestore();
+      if(window.ensureChangeFirebaseAuth){
+        const authOk = await window.ensureChangeFirebaseAuth({ silent:true });
+        if(!authOk){ console.warn('Firebase Auth nicht bereit: Firestore-Sync/Push pausiert.'); return false; }
+      }
       if(firebase.messaging && 'serviceWorker' in navigator && 'Notification' in window){ messaging=firebase.messaging(); }
       ls(FIREBASE_READY_KEY,true);
       installForegroundPushHandler();
@@ -2855,6 +2861,8 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
       try{ installChangeApp(); }catch(_e){}
       return fail('iPhone: erst Change zum Home-Bildschirm hinzufügen');
     }
+    const authReady = window.ensureChangeFirebaseAuth ? await window.ensureChangeFirebaseAuth({ silent:false }) : true;
+    if(!authReady) return fail('Push braucht eine gültige Firebase-Anmeldung. Bitte einmal neu mit Google anmelden');
     const ok = await initFirebaseLive();
     if(!ok) return fail('Firebase konnte nicht gestartet werden');
     try{
@@ -7818,6 +7826,10 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     try{
       if(!window.firebase || !window.FIREBASE_CONFIG || !firebase.firestore) return null;
       if(!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
+      if(window.ensureChangeFirebaseAuth){
+        const authOk = await window.ensureChangeFirebaseAuth({ silent:true });
+        if(!authOk) return null;
+      }
       return firebase.firestore();
     }catch(e){ console.warn('Challenge Firebase init:', e); return null; }
   }
@@ -8103,6 +8115,10 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     try{
       if(!window.firebase||!window.FIREBASE_CONFIG||!firebase.firestore)return null;
       if(!firebase.apps.length)firebase.initializeApp(window.FIREBASE_CONFIG);
+      if(window.ensureChangeFirebaseAuth){
+        const authOk=await window.ensureChangeFirebaseAuth({silent:true});
+        if(!authOk)return null;
+      }
       db=firebase.firestore();
       return db;
     }catch(e){console.warn('Final Challenge Sync Firebase init:',e);toastMsg('Firebase konnte nicht gestartet werden.','err');return null;}
@@ -8367,7 +8383,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     if(!window.firebase || !window.FIREBASE_CONFIG) return null;
     const cfg = window.FIREBASE_CONFIG || {};
     if(!cfg.apiKey || String(cfg.apiKey).includes('HIER_') || !cfg.projectId) return null;
-    try{ if(!firebase.apps.length) firebase.initializeApp(cfg); return firebase.firestore(); }
+    try{ if(!firebase.apps.length) firebase.initializeApp(cfg); if(window.ensureChangeFirebaseAuth){ const authOk = await window.ensureChangeFirebaseAuth({ silent:true }); if(!authOk) return null; } return firebase.firestore(); }
     catch(e){ console.warn('Settings Sync Firebase:', e); return null; }
   }
 

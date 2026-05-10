@@ -2,9 +2,9 @@ rules_version = '2';
 
 // ═══════════════════════════════════════════════════════════════
 // CHANGE APP — Firestore Rules v5
-// Vereinfacht: isAuth() reicht — kein Email-Matching
-// Grund: signInWithCredential kann scheitern → currentUser=null
-// Sicherheit: Anonym = kein Schreiben. Eingeloggt = erlaubt.
+// Firestore-Zugriff nur mit Firebase Auth.
+// Die App meldet sich nach dem Google-Login zusätzlich per Firebase Auth an.
+// Wichtig: Keine offenen Schreibrechte ohne request.auth.
 // ═══════════════════════════════════════════════════════════════
 
 service cloud.firestore {
