@@ -22,6 +22,8 @@ change-app/
 │   ├── misc.js                 ← Kleine Helfer (früher inline in index.html)
 │   ├── calendar/
 │   │   └── calendarModel.js    ← window.ChangeCalendarModel — Kalender-Datenlogik
+│   ├── challenges/
+│   │   └── challengeStore.js   ← window.ChangeChallengeStore — zentrale Challenge-Datenquelle
 │   ├── integrations/
 │   │   ├── firebaseAuthBridge.js
 │   │   └── googleSyncStatus.js
@@ -78,15 +80,24 @@ change-app/
 | `window.ChangeCalendarModel` | `core/calendar/calendarModel.js` | Kalender-Daten, Datum-Logik, Events |
 | `window.ChangeNotificationStore` | `core/notifications/notificationStore.js` | Benachrichtigungs-State |
 | `window.ChangeViewState` | `core/ui/viewState.js` | View-Routing (dashboard/calendar/challenges) |
-| `window.challenges` | `app.js` / `change-post.js` | Challenge-Liste |
+| `window.ChangeChallengeStore` | `core/challenges/challengeStore.js` | Zentrale Challenge-Datenquelle, hält `window.challenges`, `window.challengeCompletions`, `window.challengePlayers` synchron |
 | `window.events` | `app.js` / `change-post.js` | Kalender-Events |
-| `window.challengePlayers` | `app.js` / `change-post.js` | Mitspieler |
+| `window.challengePlayers` | `core/challenges/challengeStore.js` | Mitspieler-Array über ChallengeStore |
 
 **Regel:** Logik die `window.ChangeCalendarModel` braucht → immer prüfen ob M geladen ist:
 ```js
 var M = window.ChangeCalendarModel;
 if (!M) return; // sicher abbrechen
 ```
+
+**Challenge-State:** Neue Challenge-Logik darf nicht mehr eigene Arrays als Wahrheit verwenden.
+```js
+var S = window.ChangeChallengeStore;
+if (!S) return;
+var challenges = S.getChallenges();
+S.replaceChallenges(challenges, { persist: true });
+```
+`window.challenges` bleibt nur als Kompatibilitäts-Alias für ältere Renderer erhalten.
 
 ---
 
@@ -165,10 +176,12 @@ M.fmtDate(dateKey)    // "10. Mai 2026"
 
 ## 5. Challenges-Regeln
 
+- Zentrale Datenquelle ist `core/challenges/challengeStore.js` / `window.ChangeChallengeStore`
+- Keine neuen lokalen Challenge-Arrays als Source of Truth anlegen
 - Punkte **nur** wenn `done === true` in Firestore
 - `markChallengeDone(id, userId)` ist die EINZIGE Stelle die Punkte schreibt → `features/challenges/challenge-sync.js`
 - Im Kalender: nur `.cal-points` Badge ("+15"), kein Icon, kein Label
-- Tägliche Auto-Challenges: `window.ensureDailyAutoChallenges()` aus `change-pre.js`
+- Tägliche Auto-Challenges: `window.ensureDailyAutoChallenges()` schreibt immer über `window.ChangeChallengeStore`; `window.challenges` ist nur Kompatibilitäts-Alias
 
 ---
 

@@ -378,7 +378,17 @@
     const OPTS=[
       {id:'sport_fitness_30_optional',title:'Fitness · mind. 30 Minuten',points:30,icon:'🏋️',desc:'Leichtes bis mittleres Training für mind. 30 Minuten.',optional:true,active:true}
     ];
-    function ensure(){const chs=window.challenges||[];OPTS.forEach(o=>{if(!chs.find(c=>c.id===o.id))chs.push({...o,createdAt:new Date().toISOString()});});window.challenges=chs;}
+    function ensure(){
+      const chs=window.challenges||[];
+      OPTS.forEach(o=>{if(!chs.find(c=>c.id===o.id))chs.push({...o,createdAt:new Date().toISOString()});});
+      if(window.ChangeChallengeStore){
+        window.ChangeChallengeStore.mergeChallenges(chs,{persist:true});
+        window.challenges=window.ChangeChallengeStore.getChallenges();
+      }else{
+        window.challenges=chs;
+        try{ if(typeof window.ls==='function') window.ls('challenges', chs); }catch(e){}
+      }
+    }
     [400,1800,6800].forEach(ms=>setTimeout(ensure,ms));
     function wrapRC(){const fn=window.renderChallenges;if(typeof fn==='function'&&!fn.__optW){window.renderChallenges=function(){ensure();return fn.apply(this,arguments);};window.renderChallenges.__optW=true;}}
     [200,600,3100,6700].forEach(ms=>setTimeout(wrapRC,ms));
