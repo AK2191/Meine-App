@@ -9,7 +9,7 @@
   script-src 'self' https://www.gstatic.com https://accounts.google.com https://cdn.jsdelivr.net 'unsafe-inline';
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src 'self' https://fonts.gstatic.com;
-  connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://securetoken.googleapis.com https://fcm.googleapis.com wss://*.firebaseio.com https://www.gstatic.com https://cdn.jsdelivr.net;
+  connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://securetoken.googleapis.com https://fcm.googleapis.com wss://*.firebaseio.com https://www.gstatic.com https://cdn.jsdelivr.net https://api.open-meteo.com https://air-quality-api.open-meteo.com;
   img-src 'self' data: https://*.googleusercontent.com https://lh3.googleusercontent.com;
   frame-src https://accounts.google.com;
   child-src https://accounts.google.com;
@@ -22,7 +22,7 @@
 <!-- [FIX MED-2] Referrer Policy -->
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <!-- [FIX LOW-2] Permissions Policy — deaktiviert nicht benötigte Browser-APIs -->
-<meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(), usb=(), bluetooth=()">
+<meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(self), payment=(), usb=(), bluetooth=()">
 <!-- [FIX LOW-3] Theme-Color — einmalig definiert -->
 <meta name="theme-color" content="#F8F7F3">
 <meta name="mobile-web-app-capable" content="yes">
@@ -203,6 +203,7 @@ var calendarSettings = window.calendarSettings;
 <link rel="stylesheet" href="./features/notifications/notificationBell.css">
 <link rel="stylesheet" href="./features/calendar/calendarPanels.css">
 <link rel="stylesheet" href="./features/settings/settingsPanel.css">
+<link rel="stylesheet" href="./features/weather/weatherCard.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -9596,11 +9597,15 @@ console.warn('[Nudge] Anfeuern-System geladen ✓');
 <script src="./core/calendar/calendarModel.js"></script>
 <script src="./core/integrations/googleSyncStatus.js"></script>
 <script src="./core/activity/playerActivity.js"></script>
+<script src="./core/weather/weatherStore.js"></script>
+<script src="./core/weather/weatherService.js"></script>
+<script src="./core/weather/weatherRules.js"></script>
 <script src="./core/notifications/notificationStore.js"></script>
 <script src="./core/notifications/notificationCenter.js"></script>
 <script src="./core/notifications/pushController.js"></script>
 <script src="./features/notifications/notificationBell.js"></script>
 <script src="./features/calendar/calendarPanels.js"></script>
+<script src="./features/weather/weatherCard.js"></script>
 <script src="./features/settings/settingsPanel.js"></script>
 
 </body>

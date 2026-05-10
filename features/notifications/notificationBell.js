@@ -37,8 +37,10 @@
       + '<div class="nitem-icon" style="background:var(--acc-d)">'+esc(n.icon || '🔔')+'</div>'
       + '<div class="nitem-body"><div class="nitem-title">'+esc(n.title || 'Benachrichtigung')+'</div>'
       + '<div class="nitem-sub">'+esc(n.body || n.date || '')+'</div></div>'
+      + '<div class="change-notification-actions">'
       + '<span class="nitem-badge urgency-badge '+badgeClass(n)+'">'+esc(n.label || 'Neu')+'</span>'
-      + '<button class="change-read-btn" type="button" title="Als gelesen markieren" data-notification-read="'+esc(n.id)+'">✓</button>'
+      + '<button class="change-read-btn" type="button" title="Als gelesen markieren" aria-label="Als gelesen markieren" data-notification-read="'+esc(n.id)+'">✓</button>'
+      + '</div>'
       + '</div>';
   }
   function renderList(notes){

@@ -1,0 +1,11 @@
+.change-health-card .dash-card-body{padding:14px!important;display:grid;gap:12px;max-height:none!important}
+.change-health-block{border:1px solid var(--b1);background:var(--s2);border-radius:14px;padding:12px 13px;line-height:1.35}
+.change-health-label{font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--t4);margin-bottom:6px}
+.change-health-muted{font-size:11.5px;color:var(--t4);margin-top:3px}
+.change-health-empty{font-size:12px;color:var(--t3);line-height:1.45;margin-bottom:10px}
+.change-health-error{font-size:11.5px;color:#dc2626;background:var(--red-d);border-radius:12px;padding:10px 12px}
+.change-pollen-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.change-pollen-chip{display:inline-flex;align-items:center;border-radius:999px;padding:3px 8px;font-size:10.5px;font-weight:850;background:var(--s3);color:var(--t3)}
+.change-pollen-chip.medium{background:var(--amb-d);color:#b85f00}
+.change-pollen-chip.high{background:var(--red-d);color:#dc2626}
+.change-weather-location-row{display:flex;align-items:center;justify-content:space-between;gap:10px}

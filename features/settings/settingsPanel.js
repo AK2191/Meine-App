@@ -63,6 +63,16 @@
     try{ installed = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches; }catch(e){}
     return installed ? 'Installiert' : 'Nicht installiert';
   }
+  function weatherHealthStatus(){
+    var store = window.ChangeWeatherStore;
+    var service = window.ChangeWeatherService;
+    var settings = store && store.settings ? store.settings() : {};
+    var loc = store && store.getLocation ? store.getLocation() : null;
+    var cache = service && service.getCached ? service.getCached() : null;
+    var active = !!(settings.weatherEnabled || settings.rainAlertsEnabled || settings.pollenEnabled || settings.pollenAlertsEnabled);
+    var detail = loc ? ('Standort gespeichert' + (cache && cache.savedAt ? ' · aktualisiert ' + new Date(cache.savedAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}) : '')) : 'Standort noch nicht freigegeben';
+    return {settings:settings, location:loc, active:active, label:active ? (loc ? 'AKTIV' : 'STANDORT FEHLT') : 'AUS', tone:active ? (loc ? 'ok' : 'error') : 'off', detail:detail};
+  }
   function calendarPane(){
     var options = calendarOptions();
     return card('Region', '<div class="change-settings-actions"><label class="flabel">Bundesland für Feiertage</label><select class="finput" id="set-holiday-state">'+stateOptions(options.holidayState)+'</select><div class="settings-hint">Steuert Feiertage im Kalender und in der Tagesübersicht.</div></div>')
@@ -91,9 +101,18 @@
     var live = readBool('live_sync_enabled', true);
     var auto = readBool('auto_challenges_enabled', true);
     var google = googleStatus();
+    var weather = weatherHealthStatus();
+    var ws = weather.settings || {};
     return card('Benachrichtigungen',
         switchRow('Push-Benachrichtigungen '+pill(push.label, push.tone), push.detail, 'set-push', push.active)+
         '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-test-push" type="button">Test-Benachrichtigung senden</button></div>')
+      + card('Wetter & Gesundheit',
+        '<div class="change-settings-row"><div><div class="change-settings-title"><span class="change-status-dot '+weather.tone+'"></span>Wetter & Pollen '+pill(weather.label, weather.tone)+'</div><div class="change-settings-sub">'+esc(weather.detail)+'</div></div></div>'+        
+        switchRow('Wetter im Dashboard', 'Zeigt heutiges Wetter am aktuellen Standort.', 'set-weather', !!ws.weatherEnabled)+
+        switchRow('Regenwarnung', 'Hinweis, wenn Regen in der nächsten Stunde möglich ist.', 'set-rain-alerts', !!ws.rainAlertsEnabled)+
+        switchRow('Pollen aktuell', 'Zeigt, welche Pollen gerade mittel oder stark sind.', 'set-pollen', !!ws.pollenEnabled)+
+        switchRow('Pollen-Hinweise '+pill('nur stark', 'off'), 'Maximal ein Hinweis pro Tag bei hoher Belastung.', 'set-pollen-alerts', !!ws.pollenAlertsEnabled)+
+        '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-weather-location" type="button">Standort aktualisieren</button></div>')
       + card('Synchronisierung',
         switchRow('Live-Mitspieler '+pill(live?'VERBUNDEN':'AUS', live?'ok':'off'), 'Aktualisiert Rangliste und Aktivität.', 'set-live', live)+
         switchRow('Auto-Challenges '+pill(auto?'AKTIV':'AUS', auto?'ok':'off'), 'Erstellt die täglichen Standard-Challenges.', 'set-auto', auto))
@@ -146,6 +165,26 @@
     var urDays = $('set-urlaub-days'); if(urDays) urDays.addEventListener('change', function(){ if(window.setUrlaubDays) window.setUrlaubDays(parseInt(urDays.value,10) || 30); else localStorage.setItem('urlaub_days', String(parseInt(urDays.value,10) || 30)); });
     var push = $('set-push'); if(push) push.addEventListener('change', async function(){ if(window.togglePushFromBell) await window.togglePushFromBell(push.checked); refreshSameTab(); });
     var test = $('set-test-push'); if(test) test.addEventListener('click', function(){ if(window.sendTestBellNotification) window.sendTestBellNotification(); });
+    var updateWeather = async function(patch, needsLocation){
+      try{
+        if(window.ChangeWeatherStore && window.ChangeWeatherStore.writeSettings) window.ChangeWeatherStore.writeSettings(patch || {});
+        if(needsLocation && window.ChangeWeatherStore && !window.ChangeWeatherStore.getLocation()) await window.ChangeWeatherStore.requestLocation();
+        if(window.ChangeWeatherRules && window.ChangeWeatherRules.refreshAndNotify) await window.ChangeWeatherRules.refreshAndNotify(true);
+        if(window.ChangeWeatherCard && window.ChangeWeatherCard.update) window.ChangeWeatherCard.update();
+      }catch(e){ if(typeof window.toast === 'function') window.toast(e.message || 'Wetter-Einstellung konnte nicht gespeichert werden','err'); }
+      refreshSameTab();
+    };
+    var weatherToggle = $('set-weather'); if(weatherToggle) weatherToggle.addEventListener('change', function(){ updateWeather({weatherEnabled:weatherToggle.checked}, weatherToggle.checked); });
+    var rainToggle = $('set-rain-alerts'); if(rainToggle) rainToggle.addEventListener('change', function(){ updateWeather({rainAlertsEnabled:rainToggle.checked, weatherEnabled: rainToggle.checked ? true : (window.ChangeWeatherStore&&window.ChangeWeatherStore.settings().weatherEnabled)}, rainToggle.checked); });
+    var pollenToggle = $('set-pollen'); if(pollenToggle) pollenToggle.addEventListener('change', function(){ updateWeather({pollenEnabled:pollenToggle.checked}, pollenToggle.checked); });
+    var pollenAlertToggle = $('set-pollen-alerts'); if(pollenAlertToggle) pollenAlertToggle.addEventListener('change', function(){ updateWeather({pollenAlertsEnabled:pollenAlertToggle.checked, pollenEnabled: pollenAlertToggle.checked ? true : (window.ChangeWeatherStore&&window.ChangeWeatherStore.settings().pollenEnabled)}, pollenAlertToggle.checked); });
+    var weatherLocation = $('set-weather-location'); if(weatherLocation) weatherLocation.addEventListener('click', async function(){
+      try{
+        if(window.ChangeWeatherStore) await window.ChangeWeatherStore.requestLocation();
+        if(window.ChangeWeatherRules) await window.ChangeWeatherRules.refreshAndNotify(true);
+      }catch(e){ if(typeof window.toast === 'function') window.toast(e.message || 'Standort konnte nicht aktualisiert werden','err'); }
+      refreshSameTab();
+    });
     var live = $('set-live'); if(live) live.addEventListener('change', async function(){ if(window.setLiveSyncEnabled) await window.setLiveSyncEnabled(live.checked); else writeBool('live_sync_enabled', live.checked); refreshSameTab(); });
     var auto = $('set-auto'); if(auto) auto.addEventListener('change', function(){ if(window.setAutoChallengesEnabled) window.setAutoChallengesEnabled(auto.checked); else { writeBool('auto_challenges_enabled', auto.checked); writeBool('change_v1_auto_challenges_enabled', auto.checked); } refreshSameTab(); });
     var google = $('set-google'); if(google) google.addEventListener('change', async function(){ if(window.ChangeGoogleSyncStatus){ if(google.checked) await window.ChangeGoogleSyncStatus.syncNow(); else window.ChangeGoogleSyncStatus.disconnect(); } refreshSameTab(); });

@@ -217,12 +217,20 @@
     }catch(e){ return []; }
   }
 
+  function buildWeatherHealthNotifications(){
+    try{
+      if(!window.ChangeWeatherRules || typeof window.ChangeWeatherRules.buildNotifications !== 'function') return [];
+      return window.ChangeWeatherRules.buildNotifications() || [];
+    }catch(e){ return []; }
+  }
+
   function buildAll(options){
     options = options || {};
     var notes = []
       .concat(buildGoogleSyncNotifications())
       .concat(buildNudgeNotifications())
       .concat(buildPlayerActivityNotifications())
+      .concat(buildWeatherHealthNotifications())
       .concat(buildChallengeNotifications())
       .concat(buildDailySummaryNotifications())
       .concat(buildEventNotifications());
