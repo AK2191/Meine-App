@@ -1605,8 +1605,25 @@
   function persistEvents(arr){try{window.events=arr;events=arr;}catch(e){window.events=arr;}try{if(typeof ls==='function')ls('events',arr);else localStorage.setItem('change_v1_events',JSON.stringify(arr));}catch(e){try{localStorage.setItem('change_v1_events',JSON.stringify(arr));}catch(_){}}}
   function refresh(){try{if(typeof renderCalendar==='function')renderCalendar();}catch(e){}try{if(typeof renderUpcoming==='function')renderUpcoming();}catch(e){}try{if(typeof buildDashboard==='function')buildDashboard();}catch(e){}try{if(typeof checkNotifications==='function')checkNotifications();}catch(e){}try{if(typeof saveToDrive==='function')saveToDrive();}catch(e){}}
   function findEvent(id){try{if(typeof getEventById==='function')return getEventById(id);}catch(e){}return allLocalEvents().find(function(e){return String(e.id)===String(id);});}
-  function range(ev){var s=ev&&String(ev.startDate||ev.date||'').slice(0,10), e=ev&&String(ev.endDate||ev.date||s||'').slice(0,10); if(!s)s=todayKey(); if(!e||e<s)e=s; return {start:s,end:e};}
+  function range(ev){
+    var s='',e='';
+    if(ev){
+      s=String(ev.startDate||ev.date||ev.dateKey||(ev.start&&ev.start.date)||(ev.start&&ev.start.dateTime?String(ev.start.dateTime).slice(0,10):'')||'').slice(0,10);
+      e=String(ev.endDate||ev.dateEnd||ev.toDate||ev.untilDate||ev.date||ev.startDate||'').slice(0,10);
+      if(!e&&ev.end&&ev.end.date){e=addDays(String(ev.end.date).slice(0,10),-1);}
+      if(!e&&ev.end&&ev.end.dateTime){e=String(ev.end.dateTime).slice(0,10);}
+    }
+    if(!s)s=todayKey(); if(!e||e<s)e=s; return {start:s,end:e};
+  }
   function addOneHour(time){var parts=String(time||'09:00').split(':');var h=(parseInt(parts[0],10)||9)+1,m=parseInt(parts[1],10)||0;if(h>23)h=23;return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');}
+  function eventTitle(ev){return String((ev&&(ev.title||ev.summary||ev.name))||'Termin').trim()||'Termin';}
+  function eventTime(ev){if(ev&&ev.time)return String(ev.time).slice(0,5);if(ev&&ev.start&&ev.start.dateTime){try{return new Date(ev.start.dateTime).toTimeString().slice(0,5);}catch(e){}}return '';}
+  function eventEndTime(ev){if(ev&&ev.endTime)return String(ev.endTime).slice(0,5);if(ev&&ev.end&&ev.end.dateTime){try{return new Date(ev.end.dateTime).toTimeString().slice(0,5);}catch(e){}}return '';}
+  function eventTimeLabel(ev){var a=eventTime(ev),b=eventEndTime(ev);if(a&&b&&a!==b)return a+' – '+b;return a||'Ganztägig';}
+  function fmtEventDate(k){try{if(typeof fmtDate==='function')return fmtDate(k);}catch(e){}try{return new Date(String(k)+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});}catch(e){return String(k||'');}}
+  function eventDateLabel(ev){var r=range(ev);return r.start===r.end?fmtEventDate(r.start):(fmtEventDate(r.start)+' – '+fmtEventDate(r.end));}
+  function googleBadge(){return '<span class="cal-g" title="von Google">G</span>';}
+  function readonlyEventHtml(ev){return '<div class="day-detail-list"><div class="day-detail-event" style="margin-bottom:12px"><div class="day-detail-time">'+esc(eventTimeLabel(ev))+'</div><div class="day-detail-main"><div class="day-detail-title">'+esc(eventTitle(ev))+googleBadge()+'</div><div class="day-detail-sub">'+esc(eventDateLabel(ev))+'</div></div></div></div><button class="btn btn-ghost btn-full" onclick="closePanel()">Schließen</button>';}
 
   window.syncEventToGoogleReliable = async function(ev){
     var token=getToken();
@@ -1651,9 +1668,7 @@
   window.openEventPanel=function(id,pre){
     var ev=id?findEvent(id):null;
     if(ev&&ev.source==='google'){
-      var gr=range(ev), txt=gr.start===gr.end?gr.start:(gr.start+' – '+gr.end);
-      try{if(typeof fmtDate==='function')txt=gr.start===gr.end?fmtDate(gr.start):(fmtDate(gr.start)+' – '+fmtDate(gr.end));}catch(e){}
-      openPanel(ev.title||'Google-Termin','<div class="google-detail"><span class="gmark big">G</span><div><div class="challenge-title">Von Google Kalender</div><div class="settings-hint">'+esc(txt)+'</div></div></div><button class="btn btn-ghost btn-full" onclick="closePanel()">Schließen</button>');
+      openPanel(eventTitle(ev),readonlyEventHtml(ev));
       return;
     }
     var dv=ev?(ev.startDate||ev.date):dateKey(pre||new Date()), ed=ev?(ev.endDate||ev.date||dv):dv;
