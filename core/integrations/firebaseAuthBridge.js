@@ -105,7 +105,8 @@
     if(options.redirect === true) return true;
     if(options.popup === true) return false;
     var ua = String(navigator.userAgent || '');
-    return /iPhone|iPad|iPod/i.test(ua);
+    var host = String(location.hostname || '');
+    return /iPhone|iPad|iPod/i.test(ua) || host.endsWith('.github.io');
   }
 
   async function waitForAuthState(timeoutMs){
@@ -187,7 +188,7 @@
           return false;
         }
 
-        var result = await signInChangeFirebaseWithGoogle({ popup: true });
+        var result = await signInChangeFirebaseWithGoogle({ redirect: true });
         return !!(result && (result.user || result.redirecting || auth.currentUser));
       }catch(e){
         warnOnce('Firebase Auth Bridge:', e);

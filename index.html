@@ -1525,36 +1525,7 @@ function showLogin(){
 }
 
 async function handleGoogleLogin(){
-  try{
-    if(window.signInChangeFirebaseWithGoogle && window.firebase && window.FIREBASE_CONFIG){
-      const result = await window.signInChangeFirebaseWithGoogle({ popup:true });
-      if(result && result.redirecting) return;
-      isDemoMode = false;
-      try{ lsDel('demo_mode'); }catch(e){}
-      try{ if(typeof SecureTokenStore !== 'undefined' && window.userInfo) SecureTokenStore.setUser(window.userInfo); }catch(e){}
-      try{ ls('was_logged_in', true); }catch(e){}
-      try{ if(typeof startTokenAutoRefresh === 'function') startTokenAutoRefresh(); }catch(e){}
-      bootMainApp();
-      if(accessToken) loadGoogleData();
-      setTimeout(async () => {
-        try{ if(typeof forceLoadChangeSettings === 'function') await forceLoadChangeSettings(true); }catch(e){}
-        try{ if(typeof loadSettingsFromFirestore === 'function') await loadSettingsFromFirestore(); }catch(e){}
-      }, 1200);
-      return;
-    }
-  }catch(e){
-    console.warn('Firebase Google Login:', e);
-    const code = e && e.code ? e.code : '';
-    if(code === 'auth/popup-closed-by-user') return;
-    // Wichtig: Firebase darf den normalen Google-Kalender-Login nicht blockieren.
-    // Wenn Firebase Auth z. B. wegen CSP/Provider-Konfiguration scheitert, startet
-    // die App trotzdem über den stabilen Google Identity Services Token-Login.
-    if(code === 'auth/unauthorized-domain') toast('Firebase Auth Domain fehlt. Kalender-Anmeldung läuft ohne Live-Sync.','err');
-    else if(code === 'auth/operation-not-allowed') toast('Firebase Google-Anmeldung ist nicht aktiv. Kalender-Anmeldung läuft ohne Live-Sync.','err');
-    else toast('Firebase-Sync pausiert. Kalender-Anmeldung wird normal gestartet.','err');
-  }
-
-  // Stabiler Google-Kalender-Login: darf auch laufen, wenn Firebase Auth nicht bereit ist.
+  // Stabiler Google-Kalender-Login: Firebase darf die Anmeldung nicht blockieren.
   CLIENT_ID = getGoogleClientId();
   if(!CLIENT_ID){document.getElementById('setup-modal').classList.add('show');return;}
   if(!window.google){toast('Google-Bibliothek wird geladen…','');return;}
@@ -1573,6 +1544,10 @@ async function handleGoogleLogin(){
         try{ if(typeof startTokenAutoRefresh === 'function') startTokenAutoRefresh(); }catch(e){}
         bootMainApp();
         loadGoogleData();
+        setTimeout(async () => {
+          try{ if(window.ensureChangeFirebaseAuth) await window.ensureChangeFirebaseAuth({ silent:true, interactive:false, waitMs:300 }); }catch(e){}
+          try{ if(typeof initFirebaseLive === 'function') await initFirebaseLive(); }catch(e){}
+        }, 900);
       }
     });
     tc.requestAccessToken({prompt:'consent'});
@@ -9346,6 +9321,13 @@ function getDb(){
   catch(e){ return null; }
 }
 
+function nudgeFirebaseReady(){
+  try{
+    if(window.isChangeFirebaseAuthReady) return !!window.isChangeFirebaseAuthReady();
+    return !!(window.firebase && firebase.auth && firebase.auth().currentUser);
+  }catch(e){ return false; }
+}
+
 function readJson(key, fallback){
   try{ const raw = localStorage.getItem(key); return raw == null ? fallback : JSON.parse(raw); }catch(e){ return fallback; }
 }
@@ -9395,14 +9377,14 @@ window.sendNudge = async function(toEmail, toName){
     seen:      false
   };
 
-  const db = getDb();
+  const db = nudgeFirebaseReady() ? getDb() : null;
   if(db){
     try{
       await db.collection('change_nudges').add(nudge);
       if(typeof toast==='function')
         toast('💪 Anfeuern gesendet an '+toName+'!','ok');
     }catch(e){
-      console.warn('[Nudge]', e.message);
+      if(!(e && (e.code === 'permission-denied' || String(e.message||'').includes('Missing or insufficient permissions')))) console.warn('[Nudge]', e.message);
       // Fallback: lokal speichern
       _saveLocalNudge(nudge);
       if(typeof toast==='function')
@@ -9427,6 +9409,7 @@ function _saveLocalNudge(nudge){
 window.checkIncomingNudges = async function(){
   const me = myEmail();
   if(!me) return;
+  if(!nudgeFirebaseReady()) return;
   const db = getDb();
   if(!db) return;
 
@@ -9461,7 +9444,7 @@ window.checkIncomingNudges = async function(){
 
     if(typeof updateBellIndicator === 'function') updateBellIndicator();
 
-  }catch(e){ console.warn('[Nudge check]', e.message); }
+  }catch(e){ if(!(e && (e.code === 'permission-denied' || String(e.message||'').includes('Missing or insufficient permissions')))) console.warn('[Nudge check]', e.message); }
 };
 
 function _storeNudgesForPanel(nudges){
