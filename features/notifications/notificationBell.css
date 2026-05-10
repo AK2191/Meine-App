@@ -1,0 +1,15 @@
+.bell-push-box{display:block!important;margin-bottom:14px}
+.change-notif-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 0 8px}
+.change-notif-count{font-size:11px;font-weight:800;color:var(--t4);text-transform:uppercase;letter-spacing:.05em}
+.change-mark-all{border:0;background:transparent;color:var(--acc);font-size:12px;font-weight:800;cursor:pointer;padding:6px 4px;border-radius:8px}
+.change-mark-all:hover{background:var(--acc-d)}
+.change-notification-item{position:relative;display:flex;align-items:center;gap:10px;padding-right:42px;cursor:pointer}
+.change-notification-item:hover{background:var(--s2)}
+.change-read-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:999px;border:1px solid var(--b1);background:var(--s1);color:var(--acc);font-size:14px;font-weight:900;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.change-read-btn:hover{background:var(--acc-d);border-color:rgba(45,106,79,.22)}
+.change-notif-empty{padding:22px 10px;text-align:center;color:var(--t3)}
+.change-notif-empty strong{display:block;color:var(--t1);font-size:15px;margin-bottom:4px}
+.change-notif-section{margin-top:12px}
+.change-notif-status{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 8px;font-size:10px;font-weight:900;letter-spacing:.04em}
+.change-notif-status.on{background:var(--grn-d);color:var(--grn)}
+.change-notif-status.off{background:var(--amb-d);color:var(--amb)}

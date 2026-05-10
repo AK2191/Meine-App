@@ -199,6 +199,7 @@ var calendarSettings = window.calendarSettings;
 <script src="https://accounts.google.com/gsi/client" async referrerpolicy="no-referrer"></script>
 <link rel="manifest" href="./manifest.json">
 <link rel="stylesheet" href="./change.css">
+<link rel="stylesheet" href="./features/notifications/notificationBell.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -9549,6 +9550,11 @@ window.openNotifPanel = function(){
 console.warn('[Nudge] Anfeuern-System geladen ✓');
 })();
 </script>
+
+<!-- Change Notifications: zentrale Glocke + Read-State -->
+<script src="./core/notifications/notificationStore.js"></script>
+<script src="./core/notifications/notificationCenter.js"></script>
+<script src="./features/notifications/notificationBell.js"></script>
 
 </body>
 </html>
