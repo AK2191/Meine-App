@@ -2684,13 +2684,14 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     return daily;
   };
   window.setAutoChallengesEnabled=function(enabled){
-    ls(AUTO_KEY, !!enabled);
-    if(enabled) ensureDailyAutoChallenges();
+    const on=!!enabled;
+    ls(AUTO_KEY,on);
+    try{localStorage.setItem('change_v1_auto_challenges_enabled', JSON.stringify(on));}catch(e){}
+    if(on) ensureDailyAutoChallenges();
     if(typeof renderChallenges==='function') renderChallenges();
     if(typeof renderCalendar==='function') renderCalendar();
     if(typeof buildDashboard==='function') buildDashboard();
-    toast('Auto-Challenges '+(enabled?'aktiviert':'deaktiviert'), enabled?'ok':'');
-    if(typeof openPushSettingsPanel==='function') openPushSettingsPanel();
+    if(typeof window._refreshSyncPills==='function') window._refreshSyncPills();
   };
   window.toggleAutoChallenges=function(){
     const enabled=ls(AUTO_KEY)!==false;
@@ -6435,7 +6436,11 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       const lT=$('us-toggle-live');
       if(lT) lT.addEventListener('change',async e=>{if(typeof setLiveSyncEnabled==='function')await setLiveSyncEnabled(e.target.checked);else lsWrite('live_sync_enabled',e.target.checked);window._refreshSyncPills();});
       const aT=$('us-toggle-auto');
-      if(aT) aT.addEventListener('change',e=>{if(typeof setAutoChallengesEnabled==='function')setAutoChallengesEnabled(e.target.checked);else lsWrite('auto_challenges_enabled',e.target.checked);if(typeof toast==='function')toast(e.target.checked?'Auto-Challenges aktiviert':'Auto-Challenges deaktiviert','ok');});
+      if(aT) aT.addEventListener('change',e=>{
+        if(typeof setAutoChallengesEnabled==='function') setAutoChallengesEnabled(e.target.checked);
+        else{ lsWrite('auto_challenges_enabled',e.target.checked); lsWrite('change_v1_auto_challenges_enabled',e.target.checked); }
+        window._refreshSyncPills();
+      });
       const gT=$('us-toggle-gsync');
       if(gT) gT.addEventListener('change',async e=>{setGoogleSyncEnabled(e.target.checked);if(e.target.checked){await window.triggerGoogleCalendarSync();}else{window.gEvents=[];if(typeof renderCalendar==='function')renderCalendar();if(typeof buildDashboard==='function')buildDashboard();if(typeof toast==='function')toast('Google Kalender getrennt','ok');}window._refreshSyncPills();});
     },80);
@@ -6465,6 +6470,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       const token=lsRead('fcm_token');
       const pushOn=!!token&&lsRead('push_enabled')!==false&&perm==='granted';
       const liveOn=lsRead('live_sync_enabled')!==false;
+      const autoOn=lsRead('auto_challenges_enabled')!==false;
       const gIn=typeof isGoogleLoggedIn==='function'?isGoogleLoggedIn():false;
       const gOn=typeof isGoogleSyncEnabled==='function'&&isGoogleSyncEnabled()&&gIn;
       // Update push pill
@@ -6473,6 +6479,9 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       // Update live pill
       const lTog=$('us-toggle-live');
       if(lTog) lTog.checked=liveOn;
+      // Update auto-challenge pill
+      const aTog=$('us-toggle-auto');
+      if(aTog) aTog.checked=autoOn;
       // Update toggle title pills via label text
       document.querySelectorAll('[id^="us-pane-sync"] .toggle-title, #us-pane-sync .toggle-title').forEach(function(el){
         const txt=el.textContent||'';
@@ -6483,6 +6492,10 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
         if(txt.includes('Live')){
           const sp=el.querySelector('.status-pill');
           if(sp){sp.className='status-pill '+(liveOn?'status-on':'status-off');sp.textContent=liveOn?'VERBUNDEN':'DEAKTIVIERT';}
+        }
+        if(txt.includes('Auto-Challenges')){
+          const sp=el.querySelector('.status-pill');
+          if(sp){sp.className='status-pill '+(autoOn?'status-on':'status-off');sp.textContent=autoOn?'AKTIV':'INAKTIV';}
         }
       });
       // Status wird im Panel direkt aktualisiert – kein zusätzlicher Toast.
@@ -8337,7 +8350,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       sync: {
         pushPreferenceEnabled: readBool(['change_v1_push_enabled'], false),
         liveSyncEnabled: readBool(['change_v1_live_sync_enabled','live_sync_enabled'], true),
-        autoChallengesEnabled: readBool(['change_v1_auto_challenges_enabled'], true),
+        autoChallengesEnabled: readBool(['change_v1_auto_challenges_enabled','auto_challenges_enabled'], true),
         googleCalendarSyncEnabled: readBool(['change_v1_google_calendar_sync'], true)
       },
       google: {
@@ -8387,7 +8400,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
         writeJson('change_v1_live_sync_enabled', sync.liveSyncEnabled);
         writeJson('live_sync_enabled', sync.liveSyncEnabled);
       }
-      if(typeof sync.autoChallengesEnabled === 'boolean') writeJson('change_v1_auto_challenges_enabled', sync.autoChallengesEnabled);
+      if(typeof sync.autoChallengesEnabled === 'boolean'){ writeJson('change_v1_auto_challenges_enabled', sync.autoChallengesEnabled); writeJson('auto_challenges_enabled', sync.autoChallengesEnabled); }
       if(typeof sync.googleCalendarSyncEnabled === 'boolean'){
         writeRaw('change_v1_google_calendar_sync', sync.googleCalendarSyncEnabled ? 'true' : 'false');
         window.googleCalendarSyncEnabled = sync.googleCalendarSyncEnabled;

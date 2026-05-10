@@ -1424,13 +1424,14 @@ document.addEventListener('touchend',e=>{
     return daily;
   };
   window.setAutoChallengesEnabled=function(enabled){
-    ls(AUTO_KEY, !!enabled);
-    if(enabled) ensureDailyAutoChallenges();
+    const on=!!enabled;
+    ls(AUTO_KEY,on);
+    try{localStorage.setItem('change_v1_auto_challenges_enabled', JSON.stringify(on));}catch(e){}
+    if(on) ensureDailyAutoChallenges();
     if(typeof renderChallenges==='function') renderChallenges();
     if(typeof renderCalendar==='function') renderCalendar();
     if(typeof buildDashboard==='function') buildDashboard();
-    toast('Auto-Challenges '+(enabled?'aktiviert':'deaktiviert'), enabled?'ok':'');
-    if(typeof openPushSettingsPanel==='function') openPushSettingsPanel();
+    if(typeof window._refreshSyncPills==='function') window._refreshSyncPills();
   };
   window.toggleAutoChallenges=function(){
     const enabled=ls(AUTO_KEY)!==false;
@@ -5513,7 +5514,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       sync: {
         pushPreferenceEnabled: readBool(['change_v1_push_enabled'], false),
         liveSyncEnabled: readBool(['change_v1_live_sync_enabled','live_sync_enabled'], true),
-        autoChallengesEnabled: readBool(['change_v1_auto_challenges_enabled'], true),
+        autoChallengesEnabled: readBool(['change_v1_auto_challenges_enabled','auto_challenges_enabled'], true),
         googleCalendarSyncEnabled: readBool(['change_v1_google_calendar_sync'], true)
       },
       google: {
@@ -5563,7 +5564,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
         writeJson('change_v1_live_sync_enabled', sync.liveSyncEnabled);
         writeJson('live_sync_enabled', sync.liveSyncEnabled);
       }
-      if(typeof sync.autoChallengesEnabled === 'boolean') writeJson('change_v1_auto_challenges_enabled', sync.autoChallengesEnabled);
+      if(typeof sync.autoChallengesEnabled === 'boolean'){ writeJson('change_v1_auto_challenges_enabled', sync.autoChallengesEnabled); writeJson('auto_challenges_enabled', sync.autoChallengesEnabled); }
       if(typeof sync.googleCalendarSyncEnabled === 'boolean'){
         writeRaw('change_v1_google_calendar_sync', sync.googleCalendarSyncEnabled ? 'true' : 'false');
         window.googleCalendarSyncEnabled = sync.googleCalendarSyncEnabled;
