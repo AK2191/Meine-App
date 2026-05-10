@@ -5632,7 +5632,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       });
       await database.collection(COLLECTION).doc(safeDocId(me.email || me.id)).set(payload, { merge:true });
       writeRaw(LAST_SYNC_KEY, data.updatedAtLocal);
-      if(!silent && typeof toast === 'function') toast('Einstellungen gespeichert ✓','ok');
+      // Autosave läuft ruhig im Hintergrund; kein generischer Erfolgs-Toast.
       return true;
     }catch(e){
       console.warn('Settings Sync save:', e);
@@ -5651,11 +5651,11 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
       const snap = await database.collection(COLLECTION).doc(safeDocId(me.email || me.id)).get();
       if(!snap.exists){
         await window.saveChangeSettings(true);
-        if(!silent && typeof toast === 'function') toast('Einstellungen erstmals gespeichert ✓','ok');
+        // Initialer Settings-Save läuft ruhig im Hintergrund.
         return true;
       }
       applySettings(Object.assign({id:snap.id}, snap.data() || {}));
-      if(!silent && typeof toast === 'function') toast('Einstellungen geladen ✓','ok');
+      // Settings wurden geladen; kein zusätzlicher Toast im Push-&-Sync-Panel.
       return true;
     }catch(e){
       console.warn('Settings Sync load:', e);
