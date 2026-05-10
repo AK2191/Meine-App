@@ -2264,6 +2264,35 @@ async function saveToDrive(){
 function showDriveStatus(){ /* nicht mehr benötigt */ }
 
 /* NOTIFICATIONS */
+function getUnreadNudgeCount(){
+  try{
+    return (JSON.parse(sessionStorage.getItem('change_nudges_in')||'[]')||[])
+      .filter(function(n){ return n && n.localSeen !== true; }).length;
+  }catch(_){ return 0; }
+}
+
+function getCalendarNotificationCount(){
+  try{
+    return (notifications||[]).filter(function(n){ return n && (n.urgency==='crit'||n.urgency==='warn'); }).length;
+  }catch(_){ return 0; }
+}
+
+function updateBellIndicator(){
+  const total = getCalendarNotificationCount() + getUnreadNudgeCount();
+  const dot = document.getElementById('notif-dot');
+  const badge = document.getElementById('notif-count-badge');
+  if(dot) dot.style.display = total > 0 ? 'block' : 'none';
+  if(badge){
+    if(total > 0){
+      badge.textContent = total > 9 ? '9+' : String(total);
+      badge.style.display = 'block';
+    }else{
+      badge.textContent = '';
+      badge.style.display = 'none';
+    }
+  }
+}
+
 function checkNotifications(){
   const allEvs=getAllEvents();
   notifications=[];
@@ -2280,57 +2309,7 @@ function checkNotifications(){
     if(diff===threshold&&Notification.permission==='granted') fireNotification(ev,diff);
   });
   notifications.sort((a,b)=>a.diff-b.diff);
-  const hasCrit=notifications.some(function(n){ return n.urgency==='crit'||n.urgency==='warn'; });
-  // Auch bei offenen Challenges Dot zeigen
-  var hasOpenChallenges=false;
-  try{
-    var _td=(typeof dateKey==='function')?dateKey(new Date()):new Date().toISOString().slice(0,10);
-    var _ui2=(typeof userInfo!=='undefined'?userInfo:window.userInfo)||{};
-    var _me2=String(_ui2.email||'').toLowerCase();
-    var _done2=new Set((window.challengeCompletions||[])
-      .filter(function(c){return String(c.date||'').slice(0,10)===_td&&(!_me2||String(c.playerId||c.email||c.userEmail||'').toLowerCase()===_me2);})
-      .map(function(c){return c.challengeId;}));
-    const _sportOnly=(window.challenges||[]).filter(function(c){return c&&c.active!==false&&!c.optional&&(!c.date||c.date===_td||c.recurrence==='daily')&&(c.type==='Sport'||/^sport_|^auto_.*_sport_|^opt_/.test(c.id||''));});
-    hasOpenChallenges=_sportOnly.some(function(c){return !_done2.has(c.id);});
-  }catch(_){}
-  const dot=document.getElementById('notif-dot');
-  if(dot) dot.style.display=(hasCrit||hasOpenChallenges)?'block':'none';
-
-  // [FIX] Glocken-Badge: zeigt korrekte Anzahl offener Challenges heute
-  const badge=document.getElementById('notif-count-badge');
-  if(badge){
-    try{
-      const _td2=(typeof dateKey==='function')?dateKey(new Date()):new Date().toISOString().slice(0,10);
-      const _ui3=(typeof userInfo!=='undefined'?userInfo:window.userInfo)||{};
-      const _me3=String(_ui3.email||'').toLowerCase();
-      const _me3norm=_me3.replace(/[^a-z0-9._@-]/g,'');
-      const _done3=new Set((window.challengeCompletions||[])
-        .filter(function(c){const cP=String(c.playerId||c.email||c.userEmail||'').toLowerCase();return String(c.date||'').slice(0,10)===_td2&&(!_me3||cP===_me3||cP.replace(/[^a-z0-9._@-]/g,'')===_me3norm);})
-        .map(function(c){return String(c.challengeId);}));
-      const _today3=(typeof dateKey==='function')?dateKey(new Date()):new Date().toISOString().slice(0,10);
-      // [FIX v3] Nur Pflicht-Challenges von heute zählen
-      const _active=(typeof dailyChallenges==='function')
-        ? dailyChallenges().filter(function(c){ return c && !c.optional; })
-        : [];
-      const openCount=_active.filter(function(c){return !_done3.has(String(c.id));}).length;
-      const critCount=(notifications||[]).filter(function(n){return n&&n.urgency==='crit';}).length;
-
-      // Streak-Info für Badge
-      const streakVal=(typeof window.getCurrentStreak==='function')?window.getCurrentStreak():0;
-
-      // Badge zeigt nur kritische Termine — keine Challenge-Zahlen im Badge
-      if(critCount>0){
-        badge.textContent=critCount>9?'9+':String(critCount);
-        badge.style.display='block';
-      } else if(openCount>0){
-        // Nur Punkt anzeigen wenn offene Challenges da sind (kein Zahl-Spam)
-        badge.textContent='';
-        badge.style.display='none'; // Badge deaktiviert — nur dot reicht
-      } else {
-        badge.style.display='none';
-      }
-    }catch(_){}
-  }
+  updateBellIndicator();
 }
 
 function fireNotification(ev,daysLeft){
@@ -6202,59 +6181,14 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       <label class="switch"><input type="checkbox" id="${id}" ${checked?'checked':''} ${disabled?'disabled':''}><span class="slider"></span></label>
     </div>`;
 
-  /* ==== GLOCKE: nur Terminhinweise ==== */
+  /* ==== GLOCKE: Benachrichtigungen, keine Challenge-Zusammenfassung ==== */
   window.openNotifPanel=function(){
     try{if(typeof checkNotifications==='function')checkNotifications();}catch(e){}
     var esc2=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
-
-    /* Offene Challenges heute */
-    var chHtml='';
-    try{
-      var _today=(typeof dateKey==='function')?dateKey(new Date()):new Date().toISOString().slice(0,10);
-      var _ui=(typeof userInfo!=='undefined'?userInfo:window.userInfo)||{};
-      var _me=String(_ui.email||'').toLowerCase();
-      var _doneIds=new Set((window.challengeCompletions||[])
-        .filter(function(c){return String(c.date||'').slice(0,10)===_today&&(!_me||String(c.playerId||c.email||c.userEmail||'').toLowerCase()===_me);})
-        .map(function(c){return c.challengeId;}));
-      var _allCh=(function(){
-        var _today2=_today;
-        if(typeof challengeScheduleForDate==='function'){
-          return challengeScheduleForDate(_today2).filter(function(c){return c&&c.active!==false&&!c.optional;});
-        }
-        return (window.challenges||[]).filter(function(c){
-          return c&&c.active!==false&&!c.optional&&(c.recurrence==='daily'||c.date===_today2);
-        });
-      }());
-      var _open=_allCh.filter(function(c){return !_doneIds.has(c.id);});
-      var _done=_allCh.filter(function(c){return _doneIds.has(c.id);});
-      if(_open.length){
-        chHtml+='<div class="panel-notif-section"><div class="pns-title" style="color:var(--acc)">🏆 Challenges heute ('+_open.length+' offen)</div>';
-        chHtml+=_open.slice(0,4).map(function(c){return '<div class="nitem" onclick="setMainView(\'challenges\');closePanel()">'
-          +'<div class="nitem-icon" style="background:var(--acc-d)">'+esc2(c.icon||'🏃')+'</div>'
-          +'<div class="nitem-body"><div class="nitem-title">'+esc2(c.title||'Challenge')+'</div>'
-          +'<div class="nitem-sub">'+(parseInt(c.points)||0)+' Punkte</div></div>'
-          +'<span class="nitem-badge" style="background:var(--amb-d);color:var(--amb);font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px">offen</span>'
-          +'</div>';}).join('');
-        if(_open.length>4) chHtml+='<div style="font-size:12px;color:var(--t4);padding:4px 0">+'+(_open.length-4)+' weitere</div>';
-        chHtml+='</div>';
-      }
-      if(_done.length){
-        chHtml+='<div class="panel-notif-section"><div class="pns-title" style="color:#22c55e">✅ Heute erledigt ('+_done.length+')</div>';
-        chHtml+=_done.slice(0,3).map(function(c){return '<div class="nitem">'
-          +'<div class="nitem-icon" style="background:#dcfce7">'+esc2(c.icon||'✅')+'</div>'
-          +'<div class="nitem-body"><div class="nitem-title" style="color:var(--t3);text-decoration:line-through">'+esc2(c.title||'Challenge')+'</div>'
-          +'<div class="nitem-sub">+'+( parseInt(c.points)||0)+' Punkte</div></div>'
-          +'<span class="nitem-badge" style="background:#dcfce7;color:#16a34a;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px">✓</span>'
-          +'</div>';}).join('');
-        chHtml+='</div>';
-      }
-    }catch(_){}
-
-    /* Kalender-Ereignisse */
-    var notes=(window.notifications||[]).slice(0,8);
+    var notes=(window.notifications||[]).slice(0,12);
     var icons={deadline:'⚠️',meeting:'📅',reminder:'🔔',other:'📌'};
     var bgs={crit:'var(--red-d)',warn:'var(--amb-d)',ok:'var(--s2)'};
-    var calHtml='';
+    var html='';
     if(notes.length){
       var crit=notes.filter(function(n){return n.urgency==='crit';}),
           warn=notes.filter(function(n){return n.urgency==='warn';}),
@@ -6262,29 +6196,20 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       var mkI=function(n){
         var lbl=n.diff<0?'Überfällig':n.diff===0?'Heute':n.diff===1?'Morgen':'In '+n.diff+'T';
         var bcls=n.urgency==='crit'?'ub-crit':n.urgency==='warn'?'ub-warn':'ub-ok';
-        return '<div class="nitem" onclick="setMainView(\'calendar\');setTimeout(function(){openEventPanel(\''+n.id+'\');},200);closePanel()">'
+        return '<div class="nitem" onclick="setMainView(\'calendar\');setTimeout(function(){openEventPanel(\''+esc2(n.id)+'\');},200);closePanel()">'
           +'<div class="nitem-icon" style="background:'+bgs[n.urgency]+'">'+(icons[n.type]||'📅')+'</div>'
           +'<div class="nitem-body"><div class="nitem-title">'+esc2(n.title||'')+'</div>'
-          +'<div class="nitem-sub">'+(n.date||'')+'</div></div>'
+          +'<div class="nitem-sub">'+esc2(n.date||'')+'</div></div>'
           +'<span class="nitem-badge urgency-badge '+bcls+'">'+lbl+'</span></div>';
       };
-      if(crit.length) calHtml+='<div class="panel-notif-section"><div class="pns-title" style="color:var(--red)">⚡ Dringende Termine</div>'+crit.map(mkI).join('')+'</div>';
-      if(warn.length) calHtml+='<div class="panel-notif-section"><div class="pns-title" style="color:var(--amb)">📅 Diese Woche</div>'+warn.map(mkI).join('')+'</div>';
-      if(ok.length)   calHtml+='<div class="panel-notif-section"><div class="pns-title">Demnächst</div>'+ok.map(mkI).join('')+'</div>';
+      if(crit.length) html+='<div class="panel-notif-section"><div class="pns-title" style="color:var(--red)">⚡ Dringende Termine</div>'+crit.map(mkI).join('')+'</div>';
+      if(warn.length) html+='<div class="panel-notif-section"><div class="pns-title" style="color:var(--amb)">📅 Diese Woche</div>'+warn.map(mkI).join('')+'</div>';
+      if(ok.length)   html+='<div class="panel-notif-section"><div class="pns-title">Demnächst</div>'+ok.map(mkI).join('')+'</div>';
+    }else{
+      html='<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><div class="empty-title">Alles im Griff</div><div class="empty-sub">Keine neuen Benachrichtigungen</div></div>';
     }
-
-    var html=chHtml+calHtml;
-    if(!html) html='<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><div class="empty-title">Alles erledigt ✓</div><div class="empty-sub">Keine offenen Challenges und keine Termine</div></div>';
-
-    // Mark-as-read button only if there are open challenges
-    if(chHtml){
-      html='<div style="display:flex;justify-content:flex-end;margin-bottom:8px">'+
-        '<button class="btn btn-ghost btn-sm" onclick="window._markChallengesRead()" style="font-size:11px;color:var(--t4)">Alle gelesen ✓</button>'+
-      '</div>'+html;
-    }
-    var title=notes.length&&chHtml?'Challenges & Termine':chHtml?'Challenges':'Benachrichtigungen';
-    if(typeof openPanel==='function') openPanel(title, html);
-    var dot=$('notif-dot');if(dot)dot.style.display='none';
+    if(typeof openPanel==='function') openPanel('Benachrichtigungen', html);
+    if(typeof updateBellIndicator==='function') updateBellIndicator();
   };
 
   /* ==== GOOGLE ==== */
@@ -6579,27 +6504,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   window.openPushSettingsPanel=()=>window.openSettingsPanel('sync');
   window.saveCalSettings=window._saveCalSettings;
 
-  /* ==== Benachrichtigungen als gelesen markieren ==== */
-  window._markChallengesRead=function(){
-    try{
-      const td=(typeof dateKey==='function')?dateKey(new Date()):new Date().toISOString().slice(0,10);
-      localStorage.setItem('change_notif_read_'+td,'1');
-      const dot=document.getElementById('notif-dot');
-      if(dot) dot.style.display='none';
-      if(typeof closePanel==='function') closePanel();
-    }catch(e){}
-  };
-  // Dot ausgeblendet lassen wenn heute schon als gelesen markiert
-  function _isReadToday(){
-    const td=(typeof dateKey==='function')?dateKey(new Date()):new Date().toISOString().slice(0,10);
-    return localStorage.getItem('change_notif_read_'+td)==='1';
-  }
-  function _patchDotIfRead(){
-    if(_isReadToday()){const dot=document.getElementById('notif-dot');if(dot)dot.style.display='none';}
-  }
-  document.addEventListener('DOMContentLoaded',_patchDotIfRead);
-  window.addEventListener('load',_patchDotIfRead);
-  [800,2000].forEach(ms=>setTimeout(_patchDotIfRead,ms));
+  /* Glocke wird zentral über updateBellIndicator() gesteuert. */
 
   /* ==== PUNKTE-KALENDER RETRY NACH FIREBASE-LOAD ==== */
   (function(){
@@ -9043,88 +8948,35 @@ window.openBadgePanel = function(){
 };
 
 /* ====
-   BENACHRICHTIGUNGS-PANEL — Mit Streaks + Badges
+   BENACHRICHTIGUNGS-PANEL — nur echte Benachrichtigungen
 ==== */
 const _origOpenNotif = window.openNotifPanel;
 window.openNotifPanel = function(){
   try{
     if(typeof checkNotifications === 'function') checkNotifications();
     const notes = (window.notifications||[]).slice(0,12);
-    const streak = window.getCurrentStreak();
-    const newBadges = window.getNewBadges();
-    const earnedBadges = window.getEarnedBadges();
-
-    const td = (typeof dateKey==='function')?dateKey(new Date()):new Date().toISOString().slice(0,10);
-    const me = (typeof userInfo!=='undefined'?userInfo.email:'') || '';
-    const _meNorm = me.replace(/[^a-z0-9._@-]/g,'');
-    const done = new Set((window.challengeCompletions||[])
-      .filter(c => {
-        const cDate = String(c.date||'').slice(0,10);
-        const cP = String(c.playerId||c.email||c.userEmail||'').toLowerCase();
-        return cDate===td && (!me || cP===me || cP.replace(/[^a-z0-9._@-]/g,'')===_meNorm);
-      })
-      .map(c=>String(c.challengeId)));
-    // [FIX v2] Gleiche Quelle wie visuelle Liste: dailyChallenges()
-    const active = (typeof dailyChallenges==='function')
-      ? dailyChallenges().filter(c=>!c.optional)
-      : (window.challenges||[]).filter(c=>
-          c && c.active!==false && !c.optional &&
-          (c.recurrence==='daily' || !c.date || String(c.date||c.startDate||'').slice(0,10)===td)
-        );
-    const openCount = active.filter(c=>!done.has(c.id)).length;
-    const doneCount = active.filter(c=>done.has(c.id)).length;
-
     let html = '';
 
-    // Streak + Abzeichen Sektion
-    if(streak > 0 || earnedBadges.length > 0){
-      html += `<div style="background:var(--s2);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:16px;cursor:pointer" onclick="openBadgePanel()">`;
-      if(streak > 0) html += `<div style="text-align:center"><div style="font-size:22px;font-weight:800;color:var(--t1)">🔥 ${streak}</div><div style="font-size:10px;color:var(--t3);text-transform:uppercase">Streak</div></div>`;
-      if(earnedBadges.length > 0){
-        html += `<div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:4px">${earnedBadges.length} Abzeichen</div>`;
-        html += `<div style="display:flex;gap:4px;flex-wrap:wrap">${earnedBadges.slice(-6).map(b=>`<span style="font-size:16px">${b.icon}</span>`).join('')}</div></div>`;
-      }
-      html += `<div style="font-size:11px;color:var(--t4)">Details →</div></div>`;
-    }
-
-    // Neue Abzeichen
-    if(newBadges.length > 0){
-      const badge = BADGES.find(b=>b.id===newBadges[0]);
-      if(badge) html += `<div style="background:var(--grn-d);border:1px solid var(--grn);border-radius:var(--r);padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px"><span style="font-size:22px">${badge.icon}</span><div><div style="font-size:13px;font-weight:600;color:var(--t1)">Neues Abzeichen: ${badge.name}</div><div style="font-size:11px;color:var(--t3)">${badge.desc}</div></div></div>`;
-      window.markBadgesSeen();
-    }
-
-    // Challenges heute
-    html += `<div style="background:var(--s2);border-radius:var(--r);padding:12px 14px;margin-bottom:14px">
-      <div style="font-size:10px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Challenges heute</div>
-      <div style="display:flex;gap:16px">
-        <div style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--grn)">${doneCount}</div><div style="font-size:10px;color:var(--t3)">erledigt</div></div>
-        <div style="text-align:center"><div style="font-size:20px;font-weight:800;color:${openCount>0?'var(--amb)':'var(--t3)'}">${openCount}</div><div style="font-size:10px;color:var(--t3)">offen</div></div>
-        <div style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--t2)">${active.length}</div><div style="font-size:10px;color:var(--t3)">gesamt</div></div>
-      </div>
-    </div>`;
-
-    // Termine
     if(notes.length > 0){
       const icons={deadline:'⚠️',meeting:'📅',reminder:'🔔',other:'📌'};
       const bgs={crit:'var(--red-d)',warn:'var(--amb-d)',ok:'var(--s2)'};
       const crit=notes.filter(n=>n.urgency==='crit');
       const warn=notes.filter(n=>n.urgency==='warn');
       const ok=notes.filter(n=>n.urgency==='ok');
-      const mkItem=n=>{const label=n.diff<0?'Überfällig':n.diff===0?'Heute':n.diff===1?'Morgen':`In ${n.diff}T`;const bcls=n.urgency==='crit'?'ub-crit':n.urgency==='warn'?'ub-warn':'ub-ok';return `<div class="nitem" onclick="setMainView('calendar');setTimeout(()=>openEventPanel('${n.id}'),200);closePanel()"><div class="nitem-icon" style="background:${bgs[n.urgency]}">${icons[n.type]||'📅'}</div><div class="nitem-body"><div class="nitem-title">${n.title||''}</div><div class="nitem-sub">${n.date||''}</div></div><span class="nitem-badge urgency-badge ${bcls}">${label}</span></div>`;};
+      const mkItem=n=>{
+        const label=n.diff<0?'Überfällig':n.diff===0?'Heute':n.diff===1?'Morgen':`In ${n.diff}T`;
+        const bcls=n.urgency==='crit'?'ub-crit':n.urgency==='warn'?'ub-warn':'ub-ok';
+        return `<div class="nitem" onclick="setMainView('calendar');setTimeout(()=>openEventPanel('${n.id}'),200);closePanel()"><div class="nitem-icon" style="background:${bgs[n.urgency]}">${icons[n.type]||'📅'}</div><div class="nitem-body"><div class="nitem-title">${n.title||''}</div><div class="nitem-sub">${n.date||''}</div></div><span class="nitem-badge urgency-badge ${bcls}">${label}</span></div>`;
+      };
       if(crit.length) html+=`<div class="panel-notif-section"><div class="pns-title" style="color:var(--red)">⚡ Dringend</div>${crit.map(mkItem).join('')}</div>`;
       if(warn.length) html+=`<div class="panel-notif-section"><div class="pns-title" style="color:var(--amb)">⚠ Diese Woche</div>${warn.map(mkItem).join('')}</div>`;
       if(ok.length) html+=`<div class="panel-notif-section"><div class="pns-title">Demnächst</div>${ok.map(mkItem).join('')}</div>`;
-    } else if(openCount===0){
-      html += `<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><div class="empty-title">Alles erledigt</div><div class="empty-sub">Keine offenen Challenges & Termine</div></div>`;
+    }else{
+      html = `<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><div class="empty-title">Alles im Griff</div><div class="empty-sub">Keine neuen Benachrichtigungen</div></div>`;
     }
 
-    const title = openCount > 0 ? openCount+' offene Challenge'+(openCount!==1?'s':'') : 'Alles im Griff';
-    if(typeof openPanel === 'function') openPanel(title, html);
-    const dot = document.getElementById('notif-dot');
-    if(dot) dot.style.display='none';
-    const badge2 = document.getElementById('notif-count-badge');
-    if(badge2) badge2.style.display='none';
+    if(typeof openPanel === 'function') openPanel('Benachrichtigungen', html);
+    if(typeof updateBellIndicator === 'function') updateBellIndicator();
   }catch(e){ if(typeof _origOpenNotif==='function') _origOpenNotif(); }
 };
 
@@ -9609,15 +9461,7 @@ window.checkIncomingNudges = async function(){
     // In Benachrichtigungs-Panel eintragen
     _storeNudgesForPanel(nudges);
 
-    // Glocke anzeigen
-    const dot = document.getElementById('notif-dot');
-    if(dot) dot.style.display = 'block';
-    const badge = document.getElementById('notif-count-badge');
-    if(badge){
-      const cur = parseInt(badge.textContent)||0;
-      badge.textContent = cur + nudges.length > 9 ? '9+' : String(cur + nudges.length);
-      badge.style.display = 'block';
-    }
+    if(typeof updateBellIndicator === 'function') updateBellIndicator();
 
   }catch(e){ console.warn('[Nudge check]', e.message); }
 };
@@ -9625,8 +9469,21 @@ window.checkIncomingNudges = async function(){
 function _storeNudgesForPanel(nudges){
   try{
     const arr = JSON.parse(sessionStorage.getItem('change_nudges_in')||'[]');
-    nudges.forEach(n => arr.unshift(n));
-    sessionStorage.setItem('change_nudges_in', JSON.stringify(arr.slice(-10)));
+    const seen = new Set(arr.map(n => [n.from,n.sentAt,n.message].join('|')));
+    nudges.forEach(n => {
+      const item = Object.assign({}, n, { localSeen:false });
+      const key = [item.from,item.sentAt,item.message].join('|');
+      if(!seen.has(key)){ arr.unshift(item); seen.add(key); }
+    });
+    sessionStorage.setItem('change_nudges_in', JSON.stringify(arr.slice(0,10)));
+  }catch(e){}
+}
+
+function markNudgesRead(){
+  try{
+    const arr = JSON.parse(sessionStorage.getItem('change_nudges_in')||'[]');
+    sessionStorage.setItem('change_nudges_in', JSON.stringify(arr.map(n => Object.assign({}, n, {localSeen:true}))));
+    if(typeof updateBellIndicator === 'function') updateBellIndicator();
   }catch(e){}
 }
 
@@ -9677,6 +9534,9 @@ window.openNotifPanel = function(){
       const div = document.createElement('div');
       div.innerHTML = nudgeHtml;
       panelBody.insertBefore(div, panelBody.firstChild);
+      markNudgesRead();
+    }else if(nudgeHtml){
+      markNudgesRead();
     }
   }, 50);
 };
