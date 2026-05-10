@@ -9,7 +9,7 @@
   script-src 'self' https://www.gstatic.com https://accounts.google.com https://cdn.jsdelivr.net 'unsafe-inline';
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src 'self' https://fonts.gstatic.com;
-  connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://securetoken.googleapis.com https://fcm.googleapis.com wss://*.firebaseio.com https://www.gstatic.com;
+  connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://securetoken.googleapis.com https://fcm.googleapis.com wss://*.firebaseio.com https://www.gstatic.com https://cdn.jsdelivr.net;
   img-src 'self' data: https://*.googleusercontent.com https://lh3.googleusercontent.com;
   frame-ancestors 'none';
   frame-src 'none';
@@ -2313,7 +2313,6 @@ document.addEventListener('touchend',e=>{
 },{passive:true});
 
 /* CHANGE EXTENSIONS: Challenges + Contest + Auto Sync */
-;(function(){
   const originalBoot = bootMainApp;
   const originalSetMainView = setMainView;
   const originalFabAction = fabAction;
@@ -2459,7 +2458,6 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     }
   };
   setTimeout(()=>{try{renderCalendar();}catch(e){console.warn(e)}},0);
-})();
 
 
 
