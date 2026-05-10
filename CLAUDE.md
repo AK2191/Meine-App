@@ -78,7 +78,9 @@ change-app/
 | Objekt | Datei | Zweck |
 |--------|-------|-------|
 | `window.ChangeCalendarModel` | `core/calendar/calendarModel.js` | Kalender-Daten, Datum-Logik, Events |
-| `window.ChangeNotificationStore` | `core/notifications/notificationStore.js` | Benachrichtigungs-State |
+| `window.ChangeNotificationStore` | `core/notifications/notificationStore.js` | Benachrichtigungs-State, gelesen/Push-Status |
+| `window.ChangeNotifications` | `core/notifications/notificationCenter.js` | einzige Quelle für Glocken-Inhalte und Badge-Zähler |
+| `window.ChangeWeatherService` | `core/weather/weatherService.js` | Wetter/Pollen Abruf mit Standort- und Cache-Prüfung |
 | `window.ChangeViewState` | `core/ui/viewState.js` | View-Routing (dashboard/calendar/challenges) |
 | `window.ChangeChallengeStore` | `core/challenges/challengeStore.js` | Zentrale Challenge-Datenquelle, hält `window.challenges`, `window.challengeCompletions`, `window.challengePlayers` synchron |
 | `window.events` | `app.js` / `change-post.js` | Kalender-Events |
@@ -190,10 +192,15 @@ M.fmtDate(dateKey)    // "10. Mai 2026"
 | Schalter | Datei | Was es macht |
 |----------|-------|-------------|
 | 🔔 Push | `core/notifications/pushController.js` | FCM Push |
+| 🔔 Glocke | `features/notifications/notificationBell.js` + `core/notifications/*` | einzige UI-Steuerung für Push und Benachrichtigungen; Settings zeigt keinen Push-Duplikat-Schalter |
 | 🔄 Live-Sync | `change-post.js` | Firestore onSnapshot |
 | 📅 Google Cal | `core/integrations/googleSyncStatus.js` | Google Calendar API |
 
 **Regel:** Kein `onSnapshot` außerhalb von `change-post.js` starten. Google-Sync bei Toggle-Aktivierung automatisch einmal ausführen.
+
+**Benachrichtigungen:** `openNotifPanel()` darf ausschließlich aus `features/notifications/notificationBell.js` kommen. Alte Panels aus `app.js`/`core/misc.js` dürfen nicht mehr erweitert werden. Gelesene Einträge werden in `ChangeNotificationStore` gespeichert und im Center vor dem Rendern gefiltert.
+
+**Wetter:** Wetter/Pollen dürfen nur mit aktuellem Browser-Standort angezeigt werden. `weatherService` verwirft Cache, wenn Standort, Tag oder TTL nicht passen. Ist der Standort älter als 6 Stunden, zeigt die Dashboard-Kopfzeile nur „Standort aktualisieren“ und keine alten Wetterwerte.
 
 ---
 
@@ -233,14 +240,15 @@ Firebase SDKs
   → core/integrations/googleSyncStatus.js
   → core/activity/playerActivity.js
   → core/weather/*
-  → core/notifications/*                  ← window.ChangeNotificationStore
-  → core/notifications/notify-style.js
   → core/ui/viewState.js                  ← window.ChangeViewState
   → core/misc.js
+  → core/challenges/challengeStore.js     ← window.ChangeChallengeStore
   → change-pre.js                         ← Sport-Pool, Auto-Challenges
   → change-post.js                        ← App-Init, Firebase, Google
   → app.js                                ← Hauptlogik
-  → features/notifications/*
+  → core/notifications/*                  ← überschreibt alte Notification-Globals aus app.js sauber
+  → core/notifications/notify-style.js    ← nur Styles, keine Funktions-Overrides
+  → features/notifications/*              ← einzige Push-/Benachrichtigungs-UI
   → features/calendar/*
   → features/weather/*
   → features/vacation/*
@@ -250,3 +258,20 @@ Firebase SDKs
 ```
 
 *Letzte Aktualisierung: Mai 2026 · Basiert auf ZIP-Stand des echten Repos*
+
+
+## Benachrichtigungen
+
+Benachrichtigungen: `features/notifications/notificationBell.js` ist die einzige UI für Push-Aktivierung, Test-Push und Notification-Liste. `core/notifications/notificationCenter.js` baut die Hinweise und `core/notifications/pushController.js` aktiviert/deaktiviert FCM. Settings darf keine separaten Push-Schalter oder Test-Buttons anbieten.
+
+## Einstellungen · Dashboard/Wetter
+
+- `features/settings/settingsPanel.js` zeigt **Wetter & Gesundheit** ausschließlich im Tab **Dashboard**.
+- Der Tab **Sync** enthält nur Live-Sync, Auto-Challenges und Google Kalender.
+- Wetter-/Pollen-Schalter bleiben an `core/weather/weatherStore.js` gebunden; Dashboard-Rendering läuft weiter über `features/weather/weatherCard.js`.
+
+## Google/Firebase Auth
+
+- Firebase-Auth darf auf GitHub Pages nicht automatisch `signInWithRedirect()` starten.
+- `core/integrations/firebaseAuthBridge.js` nutzt standardmäßig Popup/Auth-State und Redirect nur bei expliziter Anforderung.
+- Google Kalender Login bleibt über `handleGoogleLogin()` / GIS Token-Client in `app.js`; Firebase darf diesen Login nicht blockieren.

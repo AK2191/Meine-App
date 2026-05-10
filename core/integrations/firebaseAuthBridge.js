@@ -102,11 +102,10 @@
 
   function shouldUseRedirect(options){
     options = options || {};
-    if(options.redirect === true) return true;
-    if(options.popup === true) return false;
-    var ua = String(navigator.userAgent || '');
-    var host = String(location.hostname || '');
-    return /iPhone|iPad|iPod/i.test(ua) || host.endsWith('.github.io');
+    // Redirect verlässt die GitHub-Pages-App und kann beim nächsten Öffnen wieder
+    // direkt auf accounts.google.com landen. Deshalb nur noch nutzen, wenn es
+    // ausdrücklich angefordert wird. Standard ist Popup/kein automatischer Redirect.
+    return options.redirect === true && options.popup !== true;
   }
 
   async function waitForAuthState(timeoutMs){
@@ -188,7 +187,7 @@
           return false;
         }
 
-        var result = await signInChangeFirebaseWithGoogle({ redirect: true });
+        var result = await signInChangeFirebaseWithGoogle({ popup: true });
         return !!(result && (result.user || result.redirecting || auth.currentUser));
       }catch(e){
         warnOnce('Firebase Auth Bridge:', e);

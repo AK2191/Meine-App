@@ -158,6 +158,18 @@
       return '<span class="change-halfday-chip">'+esc(halfDayLabel(day))+'<button type="button" data-remove-half="'+esc(day)+'" aria-label="Halben Urlaubstag entfernen">×</button></span>';
     }).join('')+'</div>';
   }
+
+  function weatherHealthCard(){
+    var weather = weatherHealthStatus();
+    var ws = weather.settings || {};
+    return card('Wetter & Gesundheit',
+        '<div class="change-settings-row"><div><div class="change-settings-title"><span class="change-status-dot '+weather.tone+'"></span>Wetter & Pollen '+pill(weather.label, weather.tone)+'</div><div class="change-settings-sub">'+esc(weather.detail)+'</div></div></div>'+        
+        switchRow('Wetter im Dashboard', 'Zeigt heutiges Wetter am aktuellen Standort.', 'set-weather', !!ws.weatherEnabled)+
+        switchRow('Regenwarnung', 'Hinweis, wenn Regen in der nächsten Stunde möglich ist.', 'set-rain-alerts', !!ws.rainAlertsEnabled)+
+        switchRow('Pollen aktuell', 'Zeigt, welche Pollen gerade mittel oder stark sind.', 'set-pollen', !!ws.pollenEnabled)+
+        switchRow('Pollen-Hinweise '+pill('nur stark', 'off'), 'Maximal ein Hinweis pro Tag bei hoher Belastung.', 'set-pollen-alerts', !!ws.pollenAlertsEnabled)+
+        '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-weather-location" type="button">Standort aktualisieren</button></div>');
+  }
   function dashboardPane(){
     var friseurOn = dashboardBool('getFriseurEnabled', 'change_v1_friseur_enabled', false);
     var urlaubOn = dashboardBool('getUrlaubEnabled', 'urlaub_tracker_on', true);
@@ -167,7 +179,8 @@
     var months = [['01','Jan'],['02','Feb'],['03','Mär'],['04','Apr'],['05','Mai'],['06','Jun'],['07','Jul'],['08','Aug'],['09','Sep'],['10','Okt'],['11','Nov'],['12','Dez']];
     var monthOptions = months.map(function(item){ return '<option value="'+item[0]+'">'+item[1]+'</option>'; }).join('');
     var dayOptions = Array.from({length:31}, function(_, i){ var d = String(i+1).padStart(2,'0'); return '<option value="'+d+'">'+d+'.</option>'; }).join('');
-    return card('Friseur-Tracker',
+    return weatherHealthCard()
+      + card('Friseur-Tracker',
         switchRow('Im Dashboard anzeigen '+pill(friseurOn?'AKTIV':'AUS', friseurOn?'ok':'off'), 'Zeigt den letzten und nächsten Friseur-Termin.', 'set-friseur', friseurOn)+
         '<div class="change-settings-actions change-setting-field"><label class="flabel">Erinnerung nach</label><select class="finput" id="set-friseur-weeks">'+[2,3,4,5,6,8].map(function(n){ return '<option value="'+n+'" '+(n === friseurWeeks ? 'selected' : '')+'>'+n+' Wochen</option>'; }).join('')+'</select></div>')
       + card('Urlaubs-Tracker',
@@ -177,23 +190,10 @@
       + card('Mitspieler-Aktivität', '<div class="change-settings-actions"><div class="change-settings-sub" style="margin-bottom:8px">'+esc(window.ChangePlayerActivity && window.ChangePlayerActivity.summaryText ? window.ChangePlayerActivity.summaryText() : '')+'</div>'+activity+'</div>');
   }
   function syncPane(){
-    var push = pushStatus();
     var live = readBool('live_sync_enabled', true);
     var auto = getAutoChallengesEnabled();
     var google = googleStatus();
-    var weather = weatherHealthStatus();
-    var ws = weather.settings || {};
-    return card('Benachrichtigungen',
-        switchRow('Push-Benachrichtigungen '+pill(push.label, push.tone), push.detail, 'set-push', push.active)+
-        '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-test-push" type="button">Test-Benachrichtigung senden</button></div>')
-      + card('Wetter & Gesundheit',
-        '<div class="change-settings-row"><div><div class="change-settings-title"><span class="change-status-dot '+weather.tone+'"></span>Wetter & Pollen '+pill(weather.label, weather.tone)+'</div><div class="change-settings-sub">'+esc(weather.detail)+'</div></div></div>'+        
-        switchRow('Wetter im Dashboard', 'Zeigt heutiges Wetter am aktuellen Standort.', 'set-weather', !!ws.weatherEnabled)+
-        switchRow('Regenwarnung', 'Hinweis, wenn Regen in der nächsten Stunde möglich ist.', 'set-rain-alerts', !!ws.rainAlertsEnabled)+
-        switchRow('Pollen aktuell', 'Zeigt, welche Pollen gerade mittel oder stark sind.', 'set-pollen', !!ws.pollenEnabled)+
-        switchRow('Pollen-Hinweise '+pill('nur stark', 'off'), 'Maximal ein Hinweis pro Tag bei hoher Belastung.', 'set-pollen-alerts', !!ws.pollenAlertsEnabled)+
-        '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-weather-location" type="button">Standort aktualisieren</button></div>')
-      + card('Synchronisierung',
+    return card('Synchronisierung',
         switchRow('Live-Mitspieler '+pill(live?'VERBUNDEN':'AUS', live?'ok':'off'), 'Aktualisiert Rangliste und Aktivität.', 'set-live', live)+
         switchRow('Auto-Challenges '+pill(auto?'AKTIV':'AUS', auto?'ok':'off'), 'Erstellt die täglichen Standard-Challenges.', 'set-auto', auto))
       + card('Google Kalender',
@@ -212,7 +212,7 @@
     var html = '<div class="change-settings-tabs">'
       + tabButton('calendar','📅 Kalender', startTab)
       + tabButton('dashboard','▦ Dashboard', startTab)
-      + tabButton('sync','↻ Push & Sync', startTab)
+      + tabButton('sync','↻ Sync', startTab)
       + tabButton('app','⚙︎ App', startTab)
       + '</div>'
       + '<div class="change-settings-pane '+(startTab==='calendar'?'active':'')+'" data-pane="calendar">'+calendarPane()+'</div>'
@@ -249,30 +249,6 @@
     var urDays = $('set-urlaub-days'); if(urDays) urDays.addEventListener('change', function(){ var value = parseInt(urDays.value,10) || 30; if(window.setUrlaubDays) window.setUrlaubDays(value); else localStorage.setItem('urlaub_tracker_days', String(value)); try{ if(window.buildDashboard) window.buildDashboard(); }catch(e){} });
     var addHalf = $('set-add-half'); if(addHalf) addHalf.addEventListener('click', function(){ var month = $('set-half-month'), day = $('set-half-day'); if(!month || !day) return; var value = month.value+'-'+day.value; if(window.addUrlaubHalfDay) window.addUrlaubHalfDay(value); else { var list = halfDays(); if(list.indexOf(value) < 0) list.push(value); try{ localStorage.setItem('urlaub_half_days', JSON.stringify(list.sort())); }catch(e){} } try{ if(window.buildDashboard) window.buildDashboard(); }catch(e){} refreshSameTab(); });
     document.querySelectorAll('[data-remove-half]').forEach(function(btn){ btn.addEventListener('click', function(){ var value = btn.getAttribute('data-remove-half'); if(window.removeUrlaubHalfDay) window.removeUrlaubHalfDay(value); else { try{ localStorage.setItem('urlaub_half_days', JSON.stringify(halfDays().filter(function(day){ return day !== value; }))); }catch(e){} } try{ if(window.buildDashboard) window.buildDashboard(); }catch(e){} refreshSameTab(); }); });
-    var push = $('set-push'); if(push) push.addEventListener('change', async function(){
-      var wanted = !!push.checked;
-      push.disabled = true;
-      try{
-        var ok = false;
-        if(window.ChangePushController){
-          ok = wanted ? await window.ChangePushController.activate() : window.ChangePushController.deactivate();
-        }else if(window.ChangeNotificationStore && window.ChangeNotificationStore.setStoredPushEnabled){
-          window.ChangeNotificationStore.setStoredPushEnabled(wanted); ok = true;
-        }else{
-          writeBool('change_push_enabled', wanted); writeBool('push_enabled', wanted); ok = true;
-        }
-        if(wanted && !ok){
-          if(window.ChangeNotificationStore && window.ChangeNotificationStore.setStoredPushEnabled) window.ChangeNotificationStore.setStoredPushEnabled(false);
-          push.checked = false;
-        }
-        try{ if(window.ChangeNotifications && window.ChangeNotifications.updateBellIndicator) window.ChangeNotifications.updateBellIndicator(); }catch(e){}
-      }catch(e){
-        push.checked = false;
-        try{ if(window.toast) window.toast('Push konnte nicht geändert werden','err'); }catch(_){}
-      }
-      refreshSameTab('sync');
-    });
-    var test = $('set-test-push'); if(test) test.addEventListener('click', function(){ if(window.sendTestBellNotification) window.sendTestBellNotification(); });
     var updateWeather = async function(patch, needsLocation){
       try{
         if(window.ChangeWeatherStore && window.ChangeWeatherStore.writeSettings) window.ChangeWeatherStore.writeSettings(patch || {});

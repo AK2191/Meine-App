@@ -336,10 +336,6 @@
   <script src="./core/weather/weatherStore.js"></script>
   <script src="./core/weather/weatherService.js"></script>
   <script src="./core/weather/weatherRules.js"></script>
-  <script src="./core/notifications/notificationStore.js"></script>
-  <script src="./core/notifications/notificationCenter.js"></script>
-  <script src="./core/notifications/pushController.js"></script>
-  <script src="./core/notifications/notify-style.js"></script>
   <script src="./core/ui/viewState.js"></script>
   <script src="./core/misc.js"></script>
   <script src="./core/challenges/challengeStore.js"></script>
@@ -348,6 +344,12 @@
   <script src="./change-pre.js"></script>
   <script src="./change-post.js"></script>
   <script src="./app.js"></script>
+
+  <!-- Core: Benachrichtigungen nach app.js, damit alte App-Globals sauber überschrieben werden -->
+  <script src="./core/notifications/notificationStore.js"></script>
+  <script src="./core/notifications/notificationCenter.js"></script>
+  <script src="./core/notifications/pushController.js"></script>
+  <script src="./core/notifications/notify-style.js"></script>
 
   <!-- Features -->
   <script src="./features/notifications/notificationBell.js"></script>

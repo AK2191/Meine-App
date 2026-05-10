@@ -64,8 +64,17 @@
     }
   }
 
-  function deactivate(){
+  async function deactivate(){
     setEnabled(false);
+    if(typeof window.disablePushNotifications === 'function'){
+      try{
+        var ok = await window.disablePushNotifications({silent:true, keepPanel:true});
+        setEnabled(false);
+        return ok !== false;
+      }catch(e){
+        console.warn('ChangePushController.deactivate:', e);
+      }
+    }
     toastSafe('Push-Benachrichtigungen deaktiviert','ok');
     return true;
   }

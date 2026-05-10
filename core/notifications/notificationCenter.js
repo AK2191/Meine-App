@@ -99,7 +99,7 @@
       var dk = eventStart(ev);
       if(!dk) return null;
       var diff = daysUntilKey(dk);
-      if(diff < -3 || diff > 60) return null;
+      if(diff < -1 || diff > 60) return null;
       var rawId = String((ev && ev.id) || (ev && ev.googleEventId) || eventTitle(ev)+'_'+dk);
       var dedupe = rawId+'|'+dk+'|'+eventTitle(ev);
       if(seen.has(dedupe)) return null;

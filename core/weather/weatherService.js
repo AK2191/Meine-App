@@ -3,6 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var CACHE_TTL = 30 * 60 * 1000;
+  var LOCATION_MAX_AGE = 6 * 60 * 60 * 1000;
   var WEATHER_ENDPOINT = 'https://api.open-meteo.com/v1/forecast';
   var POLLEN_ENDPOINT = 'https://air-quality-api.open-meteo.com/v1/air-quality';
 
@@ -51,6 +52,29 @@
     });
     return best;
   }
+
+  function sameLocation(a, b){
+    if(!a || !b) return false;
+    var alat = Number(a.latitude), alon = Number(a.longitude);
+    var blat = Number(b.latitude), blon = Number(b.longitude);
+    if(!isFinite(alat) || !isFinite(alon) || !isFinite(blat) || !isFinite(blon)) return false;
+    return Math.abs(alat - blat) < 0.01 && Math.abs(alon - blon) < 0.01;
+  }
+  function sameForecastDay(cache){
+    if(!cache || !cache.savedAt) return false;
+    var d = new Date(cache.savedAt);
+    var n = new Date();
+    return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth() && d.getDate() === n.getDate();
+  }
+  function locationIsFresh(loc){
+    if(!loc || !loc.savedAt) return false;
+    var t = Date.parse(loc.savedAt);
+    return isFinite(t) && Date.now() - t <= LOCATION_MAX_AGE;
+  }
+  function cacheMatchesCurrentLocation(cache){
+    return sameLocation(cache && cache.location, Store.getLocation());
+  }
+
   function fetchJson(url){
     var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
     var timer = controller ? setTimeout(function(){ controller.abort(); }, 10000) : null;
@@ -260,6 +284,7 @@
     inFlight = (async function(){
       var loc = Store.getLocation();
       if(!loc) return {status:'needs_location', location:null, weather:null, pollen:null, savedAt:new Date().toISOString()};
+      if(!force && !locationIsFresh(loc)) return {status:'stale_location', location:loc, weather:null, pollen:null, savedAt:new Date().toISOString()};
       var settings = Store.settings();
       var result = {status:'ok', location:loc, weather:null, pollen:null, savedAt:new Date().toISOString()};
       var jobs = [];
@@ -278,7 +303,15 @@
   }
 
   function getCached(){ return Store.readCache(); }
-  function needsRefresh(){ return Store.cacheAgeMs(Store.readCache()) > CACHE_TTL; }
+  function needsRefresh(){
+    var cache = Store.readCache();
+    if(!cache || Store.cacheAgeMs(cache) > CACHE_TTL) return true;
+    if(!sameForecastDay(cache)) return true;
+    if(!cacheMatchesCurrentLocation(cache)) return true;
+    var loc = Store.getLocation();
+    if(!locationIsFresh(loc)) return true;
+    return false;
+  }
   async function ensureFresh(){
     var cache = Store.readCache();
     if(cache && !needsRefresh()) return cache;

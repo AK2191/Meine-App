@@ -508,7 +508,7 @@ async function firebaseMobileLoginFallback(){
     provider.addScope('profile');
     provider.addScope('email');
     provider.addScope('https://www.googleapis.com/auth/calendar');
-    await firebase.auth().signInWithRedirect(provider);
+    await firebase.auth().signInWithRedirect(provider());
   }catch(e){console.warn('Mobile Firebase Login:',e);toast('Mobile Anmeldung konnte nicht gestartet werden: '+(e.message||e),'err');}
 }
 
@@ -517,6 +517,10 @@ async function handleFirebaseRedirectLogin(){
     if(!window.firebase || !window.FIREBASE_CONFIG || !firebase.auth) return;
     if(!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
     const result = await firebase.auth().getRedirectResult();
+    if(!result || !result.user){
+      try{ sessionStorage.removeItem('firebase:redirectEventId'); }catch(_e){}
+      return;
+    }
     if(result && result.user){
       if(window.applyChangeFirebaseAuthResult) window.applyChangeFirebaseAuthResult(result);
       else {
@@ -1245,7 +1249,16 @@ function fireNotification(ev,daysLeft){
   new Notification(title,{body:ev.desc||'Termin',tag:ev.id});
 }
 
-function scheduleNotifCheck(){setInterval(checkNotifications,3600000);}
+function scheduleNotifCheck(){
+  if(window._changeNotificationScheduleStarted) return;
+  window._changeNotificationScheduleStarted = true;
+  setInterval(()=>{
+    try{
+      if(window.ChangeNotifications && typeof window.ChangeNotifications.check === 'function') window.ChangeNotifications.check();
+      else if(typeof checkNotifications === 'function') checkNotifications();
+    }catch(_e){}
+  },3600000);
+}
 function reqNotifPermission(){
   if('Notification' in window&&Notification.permission==='default'){
     Notification.requestPermission().then(p=>{if(p==='granted')toast('Benachrichtigungen aktiviert ✓','ok');});
@@ -1867,7 +1880,8 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     toast('Test gesendet ✓','ok');
   };
 
-  window.disablePushNotifications = async function(){
+  window.disablePushNotifications = async function(options){
+    options = options || {};
     try{
       await initFirebaseLive();
       if(messaging){
@@ -1879,9 +1893,10 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
       if(db && userInfo.email){
         await db.collection('change_players').doc(safeDocId(currentEmail())).set({pushEnabled:false,fcmToken:'',tokenUpdatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
       }
-      toast('Push-Benachrichtigungen deaktiviert','ok');
-      openPushSettingsPanel();
-    }catch(e){ console.warn('Push deaktivieren:',e); toast('Push konnte nicht deaktiviert werden','err'); }
+      if(!options.silent && typeof toast === 'function') toast('Push-Benachrichtigungen deaktiviert','ok');
+      if(!options.keepPanel && window.ChangeNotificationBell && typeof window.ChangeNotificationBell.render === 'function') window.ChangeNotificationBell.render();
+    }catch(e){ console.warn('Push deaktivieren:',e); if(!options.silent && typeof toast === 'function') toast('Push konnte nicht deaktiviert werden','err'); return false; }
+    return true;
   };
 
   window.setPushNotificationsEnabled = function(enabled){
@@ -1906,41 +1921,8 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   };
 
   window.openPushSettingsPanel = function(){
-    const cfgOk=hasFirebaseConfig();
-    const supported=('Notification' in window);
-    const perm=supported?Notification.permission:'nicht unterstützt';
-    const token=ls('fcm_token');
-    const pushEnabled=!!token && ls('push_enabled')!==false && perm==='granted';
-    const liveEnabled=ls('live_sync_enabled')!==false;
-    const online=liveEnabled?(challengePlayers||[]).filter(p=>p.online).length:0;
-    const autoEnabled=ls('auto_challenges_enabled')!==false;
-    const installStatus=isStandaloneApp()?'installiert':(deferredInstallPrompt?'bereit':'manuell');
-    const permClass=perm==='granted'?'push-ok':(perm==='denied'?'push-err':'push-warn');
-    const html=`
-      <div class="push-box">
-        <div class="challenge-title">Push & Live-Sync</div>
-        <div class="push-status ${cfgOk?'push-ok':'push-warn'}">${cfgOk?'Firebase-Konfiguration gefunden.':'Firebase ist noch nicht konfiguriert. Trage deine Werte in firebase-config.js ein.'}</div>
-        <div class="push-status ${permClass}">Benachrichtigungsstatus: <strong>${esc(perm)}</strong></div>
-        <div class="push-status">Push-Token: <strong>${token?'vorhanden':'noch nicht erstellt'}</strong></div>
-        <div class="push-status">App-Installation: <strong>${esc(installStatus)}</strong></div>
-        <div class="push-status">Live-Mitspieler: <strong>${liveEnabled?('verbunden · '+online+' online'):'deaktiviert'}</strong></div>
-      </div>
-      ${notificationHelpHtml(perm)}
-      <div class="toggle-row">
-        <div class="toggle-copy"><div class="toggle-title">Push-Benachrichtigungen <span class="status-pill ${pushEnabled?'status-on':'status-off'}">${pushEnabled?'AKTIV':'INAKTIV'}</span></div><div class="toggle-sub">Benachrichtigt dich über offene Challenges. Bei blockierten Browser-Berechtigungen bleibt der Regler aus.</div></div>
-        <label class="switch"><input type="checkbox" ${pushEnabled?'checked':''} onchange="setPushNotificationsEnabled(this.checked)"><span class="slider"></span></label>
-      </div>
-      <div class="toggle-row">
-        <div class="toggle-copy"><div class="toggle-title">Live-Mitspieler <span class="status-pill ${liveEnabled?'status-on':'status-off'}">${liveEnabled?'VERBUNDEN':'DEAKTIVIERT'}</span></div><div class="toggle-sub">Synchronisiert Kontest-Teilnehmer und erledigte Übungen live über Firebase.</div></div>
-        <label class="switch"><input type="checkbox" ${liveEnabled?'checked':''} onchange="setLiveSyncEnabled(this.checked)"><span class="slider"></span></label>
-      </div>
-      <div class="toggle-row">
-        <div class="toggle-copy"><div class="toggle-title">Tägliche Auto-Challenges <span class="status-pill ${autoEnabled?'status-on':'status-off'}">${autoEnabled?'AKTIV':'INAKTIV'}</span></div><div class="toggle-sub">Erzeugt jeden Tag kleine Sportübungen.</div></div>
-        <label class="switch"><input type="checkbox" ${autoEnabled?'checked':''} onchange="setAutoChallengesEnabled(this.checked)"><span class="slider"></span></label>
-      </div>
-      <button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="installChangeApp()">Change als App installieren</button>
-      <div class="settings-hint">Android: Push funktioniert in Chrome/als installierte PWA. iPhone/iPad: Push funktioniert nur, wenn Change zum Home-Bildschirm hinzugefügt und von dort gestartet wurde.</div>`;
-    openPanel('Push & Live-Sync',html);
+    if(window.openSettingsPanel) return window.openSettingsPanel('sync');
+    if(typeof openPanel === 'function') openPanel('Sync', '<div class="dash-empty">Sync-Einstellungen werden geladen.</div>');
   };
 
   window.openParticipantPanel = function(){

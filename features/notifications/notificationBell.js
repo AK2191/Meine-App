@@ -6,8 +6,8 @@
 
   function esc(v){ return Center && Center.esc ? Center.esc(v) : String(v == null ? '' : v); }
   function statusText(){
-    var perm = Store.permissionLabel();
-    var on = Store.pushActive();
+    var perm = Store && Store.permissionLabel ? Store.permissionLabel() : (typeof Notification === 'undefined' ? 'nicht unterstützt' : Notification.permission);
+    var on = Store && Store.pushActive ? Store.pushActive() : false;
     return {on:on, perm:perm, text:on ? 'AKTIV' : 'INAKTIV'};
   }
   function renderPushBox(){
@@ -45,7 +45,7 @@
   }
   function renderList(notes){
     if(!notes.length){
-      return '<div class="change-notif-empty"><strong>Alles im Griff</strong><span>Keine neuen Benachrichtigungen</span></div>';
+      return '<div class="change-notif-empty"><strong>Alles gelesen</strong><span>Keine offenen Benachrichtigungen.</span></div>';
     }
     var groups = {crit:[], warn:[], info:[], ok:[]};
     notes.forEach(function(n){ (groups[n.urgency] || groups.ok).push(n); });
@@ -69,15 +69,17 @@
       });
     });
     var all = document.getElementById('mark-all-notifications-read');
-    if(all) all.addEventListener('click', window.markAllNotificationsRead);
+    if(all) all.addEventListener('click', function(ev){ ev.preventDefault(); window.markAllNotificationsRead(); });
   }
   function render(){
     var notes = Center.build({includeRead:false});
-    var html = renderPushBox()
+    var html = '<div class="change-notification-bell-panel" id="change-notification-bell-panel">'
+      + renderPushBox()
       + '<div class="change-notif-head"><div class="change-notif-count">'+notes.length+' ungelesen</div>'
       + (notes.length ? '<button class="change-mark-all" type="button" id="mark-all-notifications-read">Alle gelesen</button>' : '')
       + '</div>'
-      + renderList(notes);
+      + renderList(notes)
+      + '</div>';
     if(typeof openPanel === 'function') openPanel('Benachrichtigungen', html);
     bindPanelEvents();
     Center.updateBellIndicator();
@@ -91,16 +93,16 @@
       if(toggle) toggle.disabled = true;
       var ok = false;
       if(!on){
-        ok = window.ChangePushController && window.ChangePushController.deactivate ? window.ChangePushController.deactivate() : (Store.setStoredPushEnabled(false), true);
+        ok = window.ChangePushController && window.ChangePushController.deactivate ? await window.ChangePushController.deactivate() : (Store && Store.setStoredPushEnabled ? Store.setStoredPushEnabled(false) : null, true);
       }else{
         ok = window.ChangePushController && window.ChangePushController.activate ? await window.ChangePushController.activate() : false;
       }
-      if(!ok) Store.setStoredPushEnabled(false);
+      if(!ok && Store && Store.setStoredPushEnabled) Store.setStoredPushEnabled(false);
       render();
       return !!ok;
     }catch(e){
       console.warn('togglePushFromBell:', e);
-      Store.setStoredPushEnabled(false);
+      if(Store && Store.setStoredPushEnabled) Store.setStoredPushEnabled(false);
       if(typeof toast === 'function') toast('Push konnte nicht geändert werden','err');
       render();
       return false;

@@ -27,36 +27,10 @@
       <label class="switch"><input type="checkbox" id="${id}" ${checked?'checked':''} ${disabled?'disabled':''}><span class="slider"></span></label>
     </div>`;
 
-  /* ==== GLOCKE: Benachrichtigungen, keine Challenge-Zusammenfassung ==== */
-  window.openNotifPanel=function(){
-    try{if(typeof checkNotifications==='function')checkNotifications();}catch(e){}
-    var esc2=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
-    var notes=(typeof notifications!=='undefined'&&Array.isArray(notifications)?notifications:(window.notifications||[])).slice(0,12);
-    var icons={deadline:'⚠️',meeting:'📅',reminder:'🔔',other:'📌'};
-    var bgs={crit:'var(--red-d)',warn:'var(--amb-d)',ok:'var(--s2)'};
-    var html='';
-    if(notes.length){
-      var crit=notes.filter(function(n){return n.urgency==='crit';}),
-          warn=notes.filter(function(n){return n.urgency==='warn';}),
-          ok=notes.filter(function(n){return n.urgency==='ok';});
-      var mkI=function(n){
-        var lbl=n.diff<0?'Überfällig':n.diff===0?'Heute':n.diff===1?'Morgen':'In '+n.diff+'T';
-        var bcls=n.urgency==='crit'?'ub-crit':n.urgency==='warn'?'ub-warn':'ub-ok';
-        return '<div class="nitem" onclick="setMainView(\'calendar\');setTimeout(function(){openEventPanel(\''+esc2(n.id)+'\');},200);closePanel()">'
-          +'<div class="nitem-icon" style="background:'+bgs[n.urgency]+'">'+(icons[n.type]||'📅')+'</div>'
-          +'<div class="nitem-body"><div class="nitem-title">'+esc2(n.title||'')+'</div>'
-          +'<div class="nitem-sub">'+esc2(n.date||'')+'</div></div>'
-          +'<span class="nitem-badge urgency-badge '+bcls+'">'+lbl+'</span></div>';
-      };
-      if(crit.length) html+='<div class="panel-notif-section"><div class="pns-title" style="color:var(--red)">⚡ Dringende Termine</div>'+crit.map(mkI).join('')+'</div>';
-      if(warn.length) html+='<div class="panel-notif-section"><div class="pns-title" style="color:var(--amb)">📅 Diese Woche</div>'+warn.map(mkI).join('')+'</div>';
-      if(ok.length)   html+='<div class="panel-notif-section"><div class="pns-title">Demnächst</div>'+ok.map(mkI).join('')+'</div>';
-    }else{
-      html='<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><div class="empty-title">Alles im Griff</div><div class="empty-sub">Keine neuen Benachrichtigungen</div></div>';
-    }
-    if(typeof openPanel==='function') openPanel('Benachrichtigungen', html);
-    if(typeof updateBellIndicator==='function') updateBellIndicator();
-  };
+  /* ==== GLOCKE ====
+     Benachrichtigungen und Push werden ausschließlich über
+     features/notifications/notificationBell.js gesteuert.
+  */
 
   /* ==== GOOGLE ==== */
   function isGoogleLoggedIn(){
@@ -179,9 +153,6 @@
     }());
 
     const hasCfg=!!(window.FIREBASE_CONFIG&&window.FIREBASE_CONFIG.apiKey&&!String(window.FIREBASE_CONFIG.apiKey).includes('HIER_'));
-    const perm=typeof Notification!=='undefined'?Notification.permission:'nicht unterstützt';
-    const token=lsRead('fcm_token');
-    const pushOn=!!token&&lsRead('push_enabled')!==false&&perm==='granted';
     const liveOn=lsRead('live_sync_enabled')!==false;
     const autoOn=lsRead('auto_challenges_enabled')!==false;
     const gIn=isGoogleLoggedIn();
@@ -194,13 +165,6 @@
     const gPill=gIn?(gOn?'<span class="status-pill status-on">AKTIV</span>':'<span class="status-pill status-off">AUS</span>'):'<span class="status-pill status-off">NICHT ANGEMELDET</span>';
 
     const syncPane=`
-      <div class="settings-group">
-        <div class="settings-group-label">Benachrichtigungen</div>
-        ${switchRow('Push-Benachrichtigungen <span class="status-pill '+(pushOn?'status-on':'status-off')+'">'+(pushOn?'AKTIV':'INAKTIV')+'</span>','','us-toggle-push',pushOn)}
-        <div style="padding:0 14px 12px">
-          <button class="btn btn-secondary btn-full" style="font-size:12px" onclick="window._sendTestNotification()">Test-Benachrichtigung senden</button>
-        </div>
-      </div>
       <div class="settings-group">
         <div class="settings-group-label">Synchronisierung</div>
         ${switchRow('Live-Mitspieler <span class="status-pill '+(liveOn?'status-on':'status-off')+'">'+(liveOn?'VERBUNDEN':'DEAKTIVIERT')+'</span>','','us-toggle-live',liveOn)}
@@ -239,7 +203,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Dashboard
         </button>
         <button class="settings-tab ${startTab==='sync'?'active':''}" id="us-tab-sync" onclick="window._switchSettingsTab('sync')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Push & Sync
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Sync
         </button>
       </div>
       <div id="us-pane-calendar"  class="settings-pane ${startTab==='calendar'?'active':''}">${calPane}</div>
@@ -255,12 +219,6 @@
       // Calendar settings: auto-save on change
       ['us-toggle-holidays','us-toggle-dots','us-toggle-kw'].forEach(function(id){var el=document.getElementById(id);if(el&&!el._asBound){el._asBound=true;el.addEventListener('change',function(){window._saveCalSettings();});}});
       var _stEl=document.getElementById('us-holiday-state');if(_stEl&&!_stEl._asBound){_stEl._asBound=true;_stEl.addEventListener('change',function(){window._saveCalSettings();});}
-      const pT=$('us-toggle-push');
-      if(pT) pT.addEventListener('change',async e=>{
-        if(!e.target.checked){if(typeof disablePushNotifications==='function')await disablePushNotifications();else lsWrite('push_enabled',false);}
-        else{if(typeof enablePushNotifications==='function')await enablePushNotifications();else{const p=typeof Notification!=='undefined'?await Notification.requestPermission():'denied';if(p==='granted')lsWrite('push_enabled',true);else{e.target.checked=false;if(typeof toast==='function')toast('Berechtigung verweigert','err');}}}
-        window._refreshSyncPills();
-      });
       const lT=$('us-toggle-live');
       if(lT) lT.addEventListener('change',async e=>{if(typeof setLiveSyncEnabled==='function')await setLiveSyncEnabled(e.target.checked);else lsWrite('live_sync_enabled',e.target.checked);window._refreshSyncPills();});
       const aT=$('us-toggle-auto');
@@ -274,36 +232,20 @@
     },80);
   };
 
-  window._sendTestNotification=async function(){
-    const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
-    const isPWA=window.navigator.standalone||window.matchMedia('(display-mode: standalone)').matches;
-    if(isIOS&&!isPWA){if(typeof toast==='function') toast('📱 iOS: Als App installieren (Teilen → Zum Home-Bildschirm), dann Push aktivieren.',''); return;}
-    if(!('Notification' in window)){if(typeof toast==='function') toast('Push wird hier nicht unterstützt.','err'); return;}
-    if(Notification.permission==='denied'){if(typeof toast==='function') toast('Push blockiert — in Browser-Einstellungen erlauben.','err'); return;}
-    if(Notification.permission!=='granted'){const p=await Notification.requestPermission(); if(p!=='granted'){if(typeof toast==='function') toast('Push nicht erlaubt.','err'); return;}}
-    try{
-      const n=new Notification('Change · Test 🔔',{body:'Push-Benachrichtigungen funktionieren!',icon:'./icon-192.png',tag:'change-test'});
-      n.onclick=()=>{window.focus();n.close();}; if(typeof toast==='function') toast('Test-Push gesendet ✓','ok');
-    }catch(e){
-      if('serviceWorker' in navigator){navigator.serviceWorker.ready.then(sw=>{sw.showNotification('Change · Test 🔔',{body:'Push funktioniert!',icon:'./icon-192.png'}); if(typeof toast==='function') toast('Test ✓','ok');}).catch(()=>{if(typeof toast==='function') toast('Fehlgeschlagen: '+e.message,'err');});
-      }else{if(typeof toast==='function') toast('Fehlgeschlagen: '+e.message,'err');}
-    }
+  window._sendTestNotification=function(){
+    if(window.sendTestBellNotification) return window.sendTestBellNotification();
+    if(typeof toast==='function') toast('Bitte über die Glocke testen.','err');
+    return false;
   };
   window._switchSettingsTab=function(tab){ ['calendar','dashboard','sync'].forEach(t=>{const b=$('us-tab-'+t),p=$('us-pane-'+t);if(b)b.classList.toggle('active',t===tab);if(p)p.classList.toggle('active',t===tab);});};
 
   // In-Place Sync-Status aktualisieren ohne Panel zu schließen
   window._refreshSyncPills=function(){
     try{
-      const perm=typeof Notification!=='undefined'?Notification.permission:'nicht unterstützt';
-      const token=lsRead('fcm_token');
-      const pushOn=!!token&&lsRead('push_enabled')!==false&&perm==='granted';
       const liveOn=lsRead('live_sync_enabled')!==false;
       const autoOn=lsRead('auto_challenges_enabled')!==false;
       const gIn=typeof isGoogleLoggedIn==='function'?isGoogleLoggedIn():false;
       const gOn=typeof isGoogleSyncEnabled==='function'&&isGoogleSyncEnabled()&&gIn;
-      // Update push pill
-      const pTog=$('us-toggle-push');
-      if(pTog) pTog.checked=pushOn;
       // Update live pill
       const lTog=$('us-toggle-live');
       if(lTog) lTog.checked=liveOn;
@@ -313,10 +255,6 @@
       // Update toggle title pills via label text
       document.querySelectorAll('[id^="us-pane-sync"] .toggle-title, #us-pane-sync .toggle-title').forEach(function(el){
         const txt=el.textContent||'';
-        if(txt.includes('Push')){
-          const sp=el.querySelector('.status-pill');
-          if(sp){sp.className='status-pill '+(pushOn?'status-on':'status-off');sp.textContent=pushOn?'AKTIV':'INAKTIV';}
-        }
         if(txt.includes('Live')){
           const sp=el.querySelector('.status-pill');
           if(sp){sp.className='status-pill '+(liveOn?'status-on':'status-off');sp.textContent=liveOn?'VERBUNDEN':'DEAKTIVIERT';}
@@ -752,7 +690,7 @@
   const CONTROL_IDS = new Set([
     'us-holiday-state','holiday-state','us-toggle-holidays','toggle-holidays','us-toggle-dots','toggle-dots','us-toggle-kw','toggle-kw',
     'holiday-notifications','us-friseur-on','us-friseur-weeks','us-urlaub-on','us-urlaub-days','us-half-date',
-    'us-toggle-push','us-toggle-live','us-toggle-auto','us-toggle-gsync','client-id-input'
+    'us-toggle-live','us-toggle-auto','us-toggle-gsync','client-id-input'
   ]);
 
   let saveTimer = null;

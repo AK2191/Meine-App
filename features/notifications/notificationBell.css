@@ -17,3 +17,6 @@
 .change-notif-status{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 8px;font-size:10px;font-weight:900;letter-spacing:.04em}
 .change-notif-status.on{background:var(--grn-d);color:var(--grn)}
 .change-notif-status.off{background:var(--amb-d);color:var(--amb)}
+
+.change-notification-bell-panel .bell-push-box{display:block!important}
+.change-notification-bell-panel .panel-notif-section:first-of-type{margin-top:12px}

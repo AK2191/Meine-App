@@ -95,10 +95,17 @@
   function writeCache(cache){
     writeJson(CACHE_KEY, Object.assign({}, cache || {}, {savedAt:new Date().toISOString()}));
   }
+  function ageMs(iso){
+    if(!iso) return Infinity;
+    var t = Date.parse(iso);
+    return isNaN(t) ? Infinity : Date.now() - t;
+  }
+  function locationAgeMs(loc){
+    return ageMs((loc || getLocation() || {}).savedAt);
+  }
   function cacheAgeMs(cache){
     if(!cache || !cache.savedAt) return Infinity;
-    var t = Date.parse(cache.savedAt);
-    return isNaN(t) ? Infinity : Date.now() - t;
+    return ageMs(cache.savedAt);
   }
 
   window.ChangeWeatherStore = {
@@ -112,6 +119,7 @@
     requestLocation: requestLocation,
     readCache: readCache,
     writeCache: writeCache,
-    cacheAgeMs: cacheAgeMs
+    cacheAgeMs: cacheAgeMs,
+    locationAgeMs: locationAgeMs
   };
 })();

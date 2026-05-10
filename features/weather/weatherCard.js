@@ -11,6 +11,8 @@
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
     });
   }
+  var LOCATION_MAX_AGE = 6 * 60 * 60 * 1000;
+
   function fmtUpdated(iso){
     if(!iso) return '';
     try{ return new Date(iso).toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}); }catch(e){ return ''; }
@@ -25,6 +27,15 @@
   function hourlyRange(){
     var n = Number(settings().weatherHourlyHours || 12);
     return n === 24 ? 24 : 12;
+  }
+  function locationIsFresh(loc){
+    if(!loc || !loc.savedAt) return false;
+    var t = Date.parse(loc.savedAt);
+    return isFinite(t) && Date.now() - t <= LOCATION_MAX_AGE;
+  }
+  function locationHint(loc){
+    if(!loc || !loc.savedAt) return 'Standort aktualisieren';
+    try{ return 'Standort von '+new Date(loc.savedAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}); }catch(e){ return 'Standort aktualisieren'; }
   }
   function hasAnyEnabled(){
     var s = settings();
@@ -98,6 +109,9 @@
     if(!hasAnyEnabled()) return '';
     if(!loc){
       return '<button class="change-health-pill is-warning" type="button" onclick="ChangeWeatherCard.updateLocation()"><span>📍</span><span><strong>Standort fehlt</strong><small>für Wetter & Pollen</small></span></button>';
+    }
+    if(!locationIsFresh(loc)){
+      return '<button class="change-health-pill is-warning" type="button" onclick="ChangeWeatherCard.updateLocation()"><span>📍</span><span><strong>Standort aktualisieren</strong><small>Wetter nur mit aktuellem Standort</small></span></button>';
     }
     var html = '';
     if(s.weatherEnabled || s.rainAlertsEnabled){
@@ -185,7 +199,8 @@
       updateHero();
       var isPollen = type === 'pollen';
       var title = isPollen ? '🌿 Pollen-Ausblick' : '🌦️ Wetter-Ausblick';
-      var sub = isPollen ? 'Nächste 7 Tage · aktueller Standort' : 'Heute · Stunden · 7 Tage';
+      var loc = Store && Store.getLocation ? Store.getLocation() : null;
+      var sub = isPollen ? 'Nächste 7 Tage · '+locationHint(loc) : 'Heute · Stunden · 7 Tage · '+locationHint(loc);
       var content = isPollen ? pollenForecastHtml(data) : (weatherCurrentHtml(data) + weatherHourlyHtml(data) + weatherForecastHtml(data));
       var body = '<div class="change-forecast-panel"><div class="change-forecast-head"><div><div class="change-forecast-title">'+title+'</div><div class="change-forecast-sub">'+sub+'</div></div></div>' + content + '</div>';
       if(typeof window.openPanel === 'function') window.openPanel(isPollen ? 'Pollen' : 'Wetter', body);
