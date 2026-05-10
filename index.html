@@ -714,7 +714,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 }
 #fab:hover{transform:scale(1.08)}
 #fab svg{width:22px;height:22px;stroke:white;stroke-width:2.2}
-@media(max-width:700px){#fab{display:flex}}
+@media(max-width:700px){#fab{display:none} body.change-view-calendar #fab{display:flex}}
 
 /* ==== TOAST ==== */
 #toast-wrap{
@@ -2679,8 +2679,9 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   window.setAutoChallengesEnabled=function(enabled){
     const on=!!enabled;
     ls(AUTO_KEY,on);
-    try{localStorage.setItem('change_v1_auto_challenges_enabled', JSON.stringify(on));}catch(e){}
+    try{localStorage.setItem('change_v1_auto_challenges_enabled', JSON.stringify(on)); localStorage.setItem('auto_challenges_enabled', JSON.stringify(on));}catch(e){}
     if(on) ensureDailyAutoChallenges();
+    else{ try{ if(Array.isArray(challenges)){ challenges=challenges.filter(ch=>!(ch&&ch.auto===true)); ls('challenges', challenges); } }catch(e){} }
     if(typeof renderChallenges==='function') renderChallenges();
     if(typeof renderCalendar==='function') renderCalendar();
     if(typeof buildDashboard==='function') buildDashboard();
@@ -9541,6 +9542,7 @@ console.warn('[Nudge] Anfeuern-System geladen ✓');
 <script src="./features/weather/weatherCard.js"></script>
 <script src="./features/vacation/vacationPanel.js"></script>
 <script src="./features/settings/settingsPanel.js"></script>
+<script src="./core/ui/viewState.js"></script>
 
 </body>
 </html>

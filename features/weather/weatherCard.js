@@ -87,7 +87,6 @@
       var hasStrong = data && data.pollen && data.pollen.strong && data.pollen.strong.length;
       html += '<button class="change-health-pill '+(hasStrong?'is-warning':'')+'" type="button" onclick="ChangeWeatherCard.openForecast(\'pollen\')"><span>🌿</span><span><strong>'+esc(pollenSummary(data))+'</strong><small>7-Tage-Ausblick</small></span></button>';
     }
-    if(data && data.savedAt) html += '<button class="change-health-refresh" type="button" title="Aktualisiert '+esc(fmtUpdated(data.savedAt))+'" onclick="ChangeWeatherCard.refresh()">↻</button>';
     return html;
   }
   function removeOldCard(){
@@ -169,7 +168,7 @@
       var title = isPollen ? '🌿 Pollen-Ausblick' : '🌦️ Wetter-Ausblick';
       var sub = isPollen ? 'Nächste 7 Tage · aktueller Standort' : 'Heute · Stunden · 7 Tage';
       var content = isPollen ? pollenForecastHtml(data) : (weatherCurrentHtml(data) + weatherHourlyHtml(data) + weatherForecastHtml(data));
-      var body = '<div class="change-forecast-panel"><div class="change-forecast-head"><div><div class="change-forecast-title">'+title+'</div><div class="change-forecast-sub">'+sub+'</div></div><button class="btn btn-secondary btn-sm" type="button" onclick="ChangeWeatherCard.refreshForecast(\''+esc(type)+'\')">↻</button></div>' + content + '</div>';
+      var body = '<div class="change-forecast-panel"><div class="change-forecast-head"><div><div class="change-forecast-title">'+title+'</div><div class="change-forecast-sub">'+sub+'</div></div></div>' + content + '</div>';
       if(typeof window.openPanel === 'function') window.openPanel(isPollen ? 'Pollen' : 'Wetter', body);
     }catch(e){ if(typeof toast === 'function') toast(e.message || 'Ausblick konnte nicht geladen werden','err'); }
   }

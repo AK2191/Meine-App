@@ -170,4 +170,5 @@ body.change-mobile .challenge-item > .btn{margin-left:auto!important}
 body.change-mobile .month-grid-polished .cal-week-polished,
 body.change-mobile .cfx-week-row{min-height:98px!important}
 body.change-mobile .year-grid-stacked{grid-template-columns:1fr!important}
-body.change-mobile #fab{display:flex!important}
+body.change-mobile #fab{display:none!important}
+body.change-mobile.change-view-calendar #fab{display:flex!important}

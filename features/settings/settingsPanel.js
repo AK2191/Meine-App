@@ -23,6 +23,54 @@
     try{ if(typeof window.ls === 'function') window.ls(key, !!value); }catch(e){}
     try{ localStorage.setItem(key, value ? 'true' : 'false'); }catch(e){}
   }
+  function readBoolMulti(keys, fallback){
+    keys = Array.isArray(keys) ? keys : [keys];
+    for(var i=0;i<keys.length;i++){
+      var key = keys[i];
+      try{
+        if(typeof window.ls === 'function'){
+          var v = window.ls(key.replace(/^change_v1_/, ''));
+          if(v === true || v === false) return v;
+        }
+      }catch(e){}
+      try{
+        var raw = localStorage.getItem(key);
+        if(raw === null) continue;
+        if(raw === 'true' || raw === '1') return true;
+        if(raw === 'false' || raw === '0') return false;
+        var parsed = JSON.parse(raw);
+        if(parsed === true || parsed === false) return parsed;
+      }catch(e){}
+    }
+    return fallback;
+  }
+  function writeBoolMulti(keys, value){
+    keys = Array.isArray(keys) ? keys : [keys];
+    try{ if(typeof window.ls === 'function') window.ls(keys[0].replace(/^change_v1_/, ''), !!value); }catch(e){}
+    keys.forEach(function(key){
+      try{ localStorage.setItem(key, JSON.stringify(!!value)); }catch(e){}
+    });
+  }
+  function getAutoChallengesEnabled(){
+    return readBoolMulti(['change_v1_auto_challenges_enabled','auto_challenges_enabled'], true);
+  }
+  function setAutoChallengesState(on){
+    on = !!on;
+    writeBoolMulti(['change_v1_auto_challenges_enabled','auto_challenges_enabled'], on);
+    try{ if(window.setAutoChallengesEnabled) window.setAutoChallengesEnabled(on); }catch(e){}
+    writeBoolMulti(['change_v1_auto_challenges_enabled','auto_challenges_enabled'], on);
+    if(!on){
+      try{
+        if(Array.isArray(window.challenges)){
+          window.challenges = window.challenges.filter(function(ch){ return !(ch && ch.auto === true); });
+          if(typeof window.ls === 'function') window.ls('challenges', window.challenges);
+        }
+      }catch(e){}
+    }
+    try{ if(window.renderChallenges) window.renderChallenges(); }catch(e){}
+    try{ if(window.renderCalendar) window.renderCalendar(); }catch(e){}
+    try{ if(window.buildDashboard) window.buildDashboard(); }catch(e){}
+  }
   function readJson(key, fallback){ try{ return JSON.parse(localStorage.getItem(key) || 'null') || fallback; }catch(e){ return fallback; } }
   function saveCalendarOptions(options){
     try{ localStorage.setItem('calendar_settings', JSON.stringify(options)); }catch(e){}
@@ -131,7 +179,7 @@
   function syncPane(){
     var push = pushStatus();
     var live = readBool('live_sync_enabled', true);
-    var auto = readBool('auto_challenges_enabled', true);
+    var auto = getAutoChallengesEnabled();
     var google = googleStatus();
     var weather = weatherHealthStatus();
     var ws = weather.settings || {};
@@ -156,9 +204,11 @@
     return card('App', '<div class="change-settings-row"><div><div class="change-settings-title">Change als App installieren '+pill(installedLabel(), installedLabel()==='Installiert'?'ok':'off')+'</div><div class="change-settings-sub">Für Handy-Nutzung, Push und Startbildschirm.</div></div></div><div class="change-settings-actions"><button class="btn btn-secondary btn-full" onclick="if(typeof installChangeApp===\'function\')installChangeApp()">Change als App installieren</button></div>')
       + card('Daten', '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" onclick="try{localStorage.setItem(\'change_v1_manual_backup\', JSON.stringify({events:window.events||[],challenges:window.challenges||[],challengeCompletions:window.challengeCompletions||[],settings:{calendar:localStorage.getItem(\'calendar_settings\')}}));toast&&toast(\'Backup lokal erstellt ✓\',\'ok\')}catch(e){toast&&toast(\'Backup fehlgeschlagen\',\'err\')}">Lokales Backup erstellen</button></div>');
   }
+  var currentSettingsTab = 'calendar';
   function tabButton(id, label, active){ return '<button class="change-settings-tab '+(active===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'+label+'</button>'; }
   function openSettingsPanel(startTab){
-    startTab = startTab || 'calendar';
+    startTab = ['calendar','dashboard','sync','app'].indexOf(startTab) >= 0 ? startTab : (currentSettingsTab || 'calendar');
+    currentSettingsTab = startTab;
     var html = '<div class="change-settings-tabs">'
       + tabButton('calendar','📅 Kalender', startTab)
       + tabButton('dashboard','▦ Dashboard', startTab)
@@ -172,13 +222,15 @@
     if(typeof window.openPanel === 'function') window.openPanel('Einstellungen', html);
     setTimeout(bindSettings, 30);
   }
-  function refreshSameTab(){
+  function refreshSameTab(tab){
+    if(tab && ['calendar','dashboard','sync','app'].indexOf(tab) >= 0) currentSettingsTab = tab;
     var active = document.querySelector('.change-settings-tab.active');
-    openSettingsPanel(active ? active.getAttribute('data-settings-tab') : 'calendar');
+    var next = active ? active.getAttribute('data-settings-tab') : currentSettingsTab;
+    openSettingsPanel(next || 'calendar');
   }
   function bindSettings(){
     document.querySelectorAll('[data-settings-tab]').forEach(function(btn){
-      btn.addEventListener('click', function(){ openSettingsPanel(btn.getAttribute('data-settings-tab')); });
+      btn.addEventListener('click', function(){ currentSettingsTab = btn.getAttribute('data-settings-tab') || currentSettingsTab; openSettingsPanel(currentSettingsTab); });
     });
     var saveCal = function(){
       var options = {
@@ -197,7 +249,29 @@
     var urDays = $('set-urlaub-days'); if(urDays) urDays.addEventListener('change', function(){ var value = parseInt(urDays.value,10) || 30; if(window.setUrlaubDays) window.setUrlaubDays(value); else localStorage.setItem('urlaub_tracker_days', String(value)); try{ if(window.buildDashboard) window.buildDashboard(); }catch(e){} });
     var addHalf = $('set-add-half'); if(addHalf) addHalf.addEventListener('click', function(){ var month = $('set-half-month'), day = $('set-half-day'); if(!month || !day) return; var value = month.value+'-'+day.value; if(window.addUrlaubHalfDay) window.addUrlaubHalfDay(value); else { var list = halfDays(); if(list.indexOf(value) < 0) list.push(value); try{ localStorage.setItem('urlaub_half_days', JSON.stringify(list.sort())); }catch(e){} } try{ if(window.buildDashboard) window.buildDashboard(); }catch(e){} refreshSameTab(); });
     document.querySelectorAll('[data-remove-half]').forEach(function(btn){ btn.addEventListener('click', function(){ var value = btn.getAttribute('data-remove-half'); if(window.removeUrlaubHalfDay) window.removeUrlaubHalfDay(value); else { try{ localStorage.setItem('urlaub_half_days', JSON.stringify(halfDays().filter(function(day){ return day !== value; }))); }catch(e){} } try{ if(window.buildDashboard) window.buildDashboard(); }catch(e){} refreshSameTab(); }); });
-    var push = $('set-push'); if(push) push.addEventListener('change', async function(){ if(window.togglePushFromBell) await window.togglePushFromBell(push.checked); refreshSameTab(); });
+    var push = $('set-push'); if(push) push.addEventListener('change', async function(){
+      var wanted = !!push.checked;
+      push.disabled = true;
+      try{
+        var ok = false;
+        if(window.ChangePushController){
+          ok = wanted ? await window.ChangePushController.activate() : window.ChangePushController.deactivate();
+        }else if(window.ChangeNotificationStore && window.ChangeNotificationStore.setStoredPushEnabled){
+          window.ChangeNotificationStore.setStoredPushEnabled(wanted); ok = true;
+        }else{
+          writeBool('change_push_enabled', wanted); writeBool('push_enabled', wanted); ok = true;
+        }
+        if(wanted && !ok){
+          if(window.ChangeNotificationStore && window.ChangeNotificationStore.setStoredPushEnabled) window.ChangeNotificationStore.setStoredPushEnabled(false);
+          push.checked = false;
+        }
+        try{ if(window.ChangeNotifications && window.ChangeNotifications.updateBellIndicator) window.ChangeNotifications.updateBellIndicator(); }catch(e){}
+      }catch(e){
+        push.checked = false;
+        try{ if(window.toast) window.toast('Push konnte nicht geändert werden','err'); }catch(_){}
+      }
+      refreshSameTab('sync');
+    });
     var test = $('set-test-push'); if(test) test.addEventListener('click', function(){ if(window.sendTestBellNotification) window.sendTestBellNotification(); });
     var updateWeather = async function(patch, needsLocation){
       try{
@@ -220,12 +294,15 @@
       refreshSameTab();
     });
     var live = $('set-live'); if(live) live.addEventListener('change', async function(){ if(window.setLiveSyncEnabled) await window.setLiveSyncEnabled(live.checked); else writeBool('live_sync_enabled', live.checked); refreshSameTab(); });
-    var auto = $('set-auto'); if(auto) auto.addEventListener('change', function(){ if(window.setAutoChallengesEnabled) window.setAutoChallengesEnabled(auto.checked); else { writeBool('auto_challenges_enabled', auto.checked); writeBool('change_v1_auto_challenges_enabled', auto.checked); } refreshSameTab(); });
+    var auto = $('set-auto'); if(auto) auto.addEventListener('change', function(){
+      setAutoChallengesState(!!auto.checked);
+      refreshSameTab('sync');
+    });
     var google = $('set-google'); if(google) google.addEventListener('change', async function(){ if(window.ChangeGoogleSyncStatus){ if(google.checked) await window.ChangeGoogleSyncStatus.syncNow(); else window.ChangeGoogleSyncStatus.disconnect(); } refreshSameTab(); });
     var syncGoogle = $('set-sync-google'); if(syncGoogle) syncGoogle.addEventListener('click', async function(){ if(window.ChangeGoogleSyncStatus) await window.ChangeGoogleSyncStatus.syncNow(); refreshSameTab(); });
   }
 
-  window.ChangeSettingsPanel = {open: openSettingsPanel};
+  window.ChangeSettingsPanel = {open: openSettingsPanel, getAutoChallengesEnabled: getAutoChallengesEnabled, setAutoChallengesState: setAutoChallengesState};
   window.openSettingsPanel = openSettingsPanel;
   window.openCalendarSettings = function(){ return openSettingsPanel('calendar'); };
   window.openPushSettingsPanel = function(){ return openSettingsPanel('sync'); };

@@ -73,5 +73,5 @@
   };
 
   setTimeout(function(){ refreshAndNotify(false); }, 900);
-  setInterval(function(){ refreshAndNotify(false); }, 30 * 60 * 1000);
+  setInterval(function(){ refreshAndNotify(false); }, 60 * 60 * 1000);
 })();

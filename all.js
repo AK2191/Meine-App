@@ -1648,8 +1648,9 @@ document.addEventListener('touchend',e=>{
   window.setAutoChallengesEnabled=function(enabled){
     const on=!!enabled;
     ls(AUTO_KEY,on);
-    try{localStorage.setItem('change_v1_auto_challenges_enabled', JSON.stringify(on));}catch(e){}
+    try{localStorage.setItem('change_v1_auto_challenges_enabled', JSON.stringify(on)); localStorage.setItem('auto_challenges_enabled', JSON.stringify(on));}catch(e){}
     if(on) ensureDailyAutoChallenges();
+    else{ try{ if(Array.isArray(challenges)){ challenges=challenges.filter(ch=>!(ch&&ch.auto===true)); ls('challenges', challenges); } }catch(e){} }
     if(typeof renderChallenges==='function') renderChallenges();
     if(typeof renderCalendar==='function') renderCalendar();
     if(typeof buildDashboard==='function') buildDashboard();
