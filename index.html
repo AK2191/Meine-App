@@ -201,6 +201,8 @@ var calendarSettings = window.calendarSettings;
 <link rel="manifest" href="./manifest.json">
 <link rel="stylesheet" href="./change.css">
 <link rel="stylesheet" href="./features/notifications/notificationBell.css">
+<link rel="stylesheet" href="./features/calendar/calendarPanels.css">
+<link rel="stylesheet" href="./features/settings/settingsPanel.css">
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -9591,10 +9593,15 @@ console.warn('[Nudge] Anfeuern-System geladen ✓');
 </script>
 
 <!-- Change Notifications: zentrale Glocke + Read-State -->
+<script src="./core/calendar/calendarModel.js"></script>
+<script src="./core/integrations/googleSyncStatus.js"></script>
+<script src="./core/activity/playerActivity.js"></script>
 <script src="./core/notifications/notificationStore.js"></script>
 <script src="./core/notifications/notificationCenter.js"></script>
 <script src="./core/notifications/pushController.js"></script>
 <script src="./features/notifications/notificationBell.js"></script>
+<script src="./features/calendar/calendarPanels.js"></script>
+<script src="./features/settings/settingsPanel.js"></script>
 
 </body>
 </html>

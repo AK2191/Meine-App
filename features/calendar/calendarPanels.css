@@ -1,0 +1,27 @@
+.change-day-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:2px 0 14px}
+.change-day-date{font-size:12px;font-weight:850;color:var(--t4);letter-spacing:.01em;text-transform:none}
+.change-day-points{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:5px 9px;background:rgba(45,106,79,.08);color:var(--acc);font-size:11px;font-weight:900;white-space:nowrap}
+.change-day-section{margin:14px 0 0}
+.change-day-section-title{font-size:10px;font-weight:900;color:var(--t4);text-transform:uppercase;letter-spacing:.08em;margin:0 0 8px}
+.change-day-event{display:grid;grid-template-columns:82px 1fr;gap:12px;align-items:center;padding:13px 14px;border:1px solid var(--b1);border-left:4px solid var(--acc);border-radius:16px;background:var(--s1);cursor:pointer;transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease;margin-bottom:9px}
+.change-day-event:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(16,24,40,.08);border-color:rgba(45,106,79,.22)}
+.change-day-time{font-size:12px;font-weight:750;color:var(--t3);line-height:1.25}
+.change-day-title{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:900;color:var(--t1);line-height:1.25}
+.change-day-sub{font-size:12px;color:var(--t4);margin-top:3px;line-height:1.35}
+.change-google-dot{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:rgba(66,133,244,.13);color:#4285f4;font-size:9px;font-weight:950;line-height:1;flex-shrink:0}
+.change-google-dot.synced{background:rgba(22,163,74,.13);color:var(--grn)}
+.change-holiday-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.18);color:#b45309;margin-bottom:8px}
+.change-holiday-icon{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(245,158,11,.13)}
+.change-holiday-title{display:block;font-size:13px;font-weight:900;color:#b45309}
+.change-holiday-sub{display:block;font-size:11px;color:#c7812c;margin-top:2px}
+.change-challenge-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--b1);border-radius:14px;background:var(--s1);margin-bottom:8px;cursor:pointer}
+.change-challenge-row.done{opacity:.74;background:rgba(34,197,94,.05)}
+.change-challenge-icon{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:var(--pur-d);font-size:14px;flex-shrink:0}
+.change-challenge-title{font-size:13px;font-weight:850;color:var(--t1)}
+.change-challenge-sub{font-size:11px;color:var(--t4);margin-top:2px}
+.change-challenge-badge{font-size:11px;font-weight:900;border-radius:999px;padding:4px 8px;background:var(--amb-d);color:var(--amb);margin-left:auto;white-space:nowrap}
+.change-challenge-row.done .change-challenge-badge{background:var(--grn-d);color:var(--grn)}
+.change-day-empty{padding:16px 14px;border:1px dashed var(--b2);border-radius:14px;color:var(--t5);font-size:13px;text-align:center;background:var(--s2)}
+.change-event-detail-card{cursor:default;margin-bottom:14px}.change-event-detail-card:hover{transform:none;box-shadow:none}
+.change-conflict-note{display:none;margin:0 0 12px;padding:10px 12px;border-radius:14px;background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.20);color:#9a5b00;font-size:12px;line-height:1.45}.change-conflict-note.visible{display:block}
+@media(max-width:760px){.change-day-event{grid-template-columns:72px 1fr;padding:12px}.change-day-time{font-size:11px}.change-day-title{font-size:13px}}

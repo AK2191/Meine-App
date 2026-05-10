@@ -182,11 +182,49 @@
     });
   }
 
+  function buildGoogleSyncNotifications(){
+    try{
+      var sync = window.ChangeGoogleSyncStatus && window.ChangeGoogleSyncStatus.getStatus ? window.ChangeGoogleSyncStatus.getStatus() : null;
+      if(!sync || !sync.error) return [];
+      return [{
+        id: 'google-sync:error:'+String(sync.error).slice(0,64),
+        kind: 'google-sync',
+        title: 'Google-Sync prüfen',
+        body: sync.error,
+        date: todayKey(),
+        diff: 0,
+        label: 'Aktion nötig',
+        urgency: 'crit',
+        icon: '⚠️',
+        priority: 8,
+        action: {type:'settings', tab:'sync'}
+      }];
+    }catch(e){ return []; }
+  }
+
+  function buildPlayerActivityNotifications(){
+    try{
+      if(!window.ChangePlayerActivity || typeof window.ChangePlayerActivity.inboxItems !== 'function') return [];
+      return window.ChangePlayerActivity.inboxItems(3);
+    }catch(e){ return []; }
+  }
+
+  function buildDailySummaryNotifications(){
+    try{
+      if(!window.ChangePlayerActivity || typeof window.ChangePlayerActivity.dailySummaryNotification !== 'function') return [];
+      var note = window.ChangePlayerActivity.dailySummaryNotification();
+      return note ? [note] : [];
+    }catch(e){ return []; }
+  }
+
   function buildAll(options){
     options = options || {};
     var notes = []
+      .concat(buildGoogleSyncNotifications())
       .concat(buildNudgeNotifications())
+      .concat(buildPlayerActivityNotifications())
       .concat(buildChallengeNotifications())
+      .concat(buildDailySummaryNotifications())
       .concat(buildEventNotifications());
     notes.sort(function(a,b){
       return (a.priority - b.priority) || ((ORDER[a.urgency] || 9) - (ORDER[b.urgency] || 9)) || ((a.diff || 0) - (b.diff || 0)) || String(a.title).localeCompare(String(b.title));
@@ -268,9 +306,13 @@
         }, 180);
       }else if(note.action.type === 'view' && note.action.view){
         try{ if(typeof setMainView === 'function') setMainView(note.action.view); }catch(e){}
+      }else if(note.action.type === 'settings'){
+        try{ if(typeof openSettingsPanel === 'function') openSettingsPanel(note.action.tab || 'sync'); }catch(e){}
       }
     }
-    try{ if(typeof closePanel === 'function') closePanel(); }catch(e){}
+    if(!note || !note.action || note.action.type !== 'settings'){
+      try{ if(typeof closePanel === 'function') closePanel(); }catch(e){}
+    }
   }
 
   window.ChangeNotifications = {
