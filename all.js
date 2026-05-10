@@ -4550,9 +4550,49 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   function allLocalEvents(){var arr=[];try{arr=Array.isArray(window.events)?window.events:(Array.isArray(events)?events:[]);}catch(e){arr=Array.isArray(window.events)?window.events:[]}return arr;}
   function persistEvents(arr){try{window.events=arr;events=arr;}catch(e){window.events=arr;}try{if(typeof ls==='function')ls('events',arr);else localStorage.setItem('change_v1_events',JSON.stringify(arr));}catch(e){try{localStorage.setItem('change_v1_events',JSON.stringify(arr));}catch(_){}}}
   function refresh(){try{if(typeof renderCalendar==='function')renderCalendar();}catch(e){}try{if(typeof renderUpcoming==='function')renderUpcoming();}catch(e){}try{if(typeof buildDashboard==='function')buildDashboard();}catch(e){}try{if(typeof checkNotifications==='function')checkNotifications();}catch(e){}try{if(typeof saveToDrive==='function')saveToDrive();}catch(e){}}
-  function findEvent(id){try{if(typeof getEventById==='function')return getEventById(id);}catch(e){}return allLocalEvents().find(function(e){return String(e.id)===String(id);});}
-  function range(ev){var s=ev&&String(ev.startDate||ev.date||'').slice(0,10), e=ev&&String(ev.endDate||ev.date||s||'').slice(0,10); if(!s)s=todayKey(); if(!e||e<s)e=s; return {start:s,end:e};}
+  function findEvent(id){
+    var raw=String(id||''), plain=raw.replace(/^g_/,'').replace(/__\d{4}-\d{2}-\d{2}$/,'');
+    if(!raw)return null;
+    try{if(typeof window.getEventById==='function'){var e=window.getEventById(raw)||window.getEventById(plain);if(e)return e;}}catch(e){}
+    try{var local=allLocalEvents().find(function(e){return String(e.id)===raw||String(e.id)===plain||String(e.googleEventId||'')===plain;});if(local)return local;}catch(e){}
+    try{var gs=Array.isArray(window.gEvents)?window.gEvents:(Array.isArray(gEvents)?gEvents:[]);var ge=gs.find(function(g){return String(g.id)===plain||String(g.id)===raw||('g_'+String(g.id))===raw;});if(ge)return normalizeGoogleEvent(ge);}
+    catch(e){}
+    return null;
+  }
+  function range(ev){
+    var s='',e='';
+    if(ev){
+      s=String(ev.startDate||ev.date||ev.dateKey||ev.start?.date||(ev.start?.dateTime?String(ev.start.dateTime).slice(0,10):'')||'').slice(0,10);
+      e=String(ev.endDate||ev.dateEnd||ev.toDate||ev.untilDate||ev.date||ev.startDate||'').slice(0,10);
+      if(!e&&ev.end?.date)e=addDays(String(ev.end.date).slice(0,10),-1);
+      if(!e&&ev.end?.dateTime)e=String(ev.end.dateTime).slice(0,10);
+    }
+    if(!s)s=todayKey(); if(!e||e<s)e=s; return {start:s,end:e};
+  }
   function addOneHour(time){var parts=String(time||'09:00').split(':');var h=(parseInt(parts[0],10)||9)+1,m=parseInt(parts[1],10)||0;if(h>23)h=23;return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');}
+  function normalizeGoogleEvent(ge){
+    var r=range(ge), raw=String(ge&&ge.id||'');
+    return Object.assign({},ge,{id:raw.startsWith('g_')?raw:'g_'+raw,googleEventId:raw.replace(/^g_/,''),title:ge.summary||ge.title||'(Kein Titel)',date:r.start,startDate:r.start,endDate:r.end,time:ge.start?.dateTime?new Date(ge.start.dateTime).toTimeString().slice(0,5):(ge.time||''),endTime:ge.end?.dateTime?new Date(ge.end.dateTime).toTimeString().slice(0,5):(ge.endTime||''),desc:ge.description||ge.desc||'',color:ge.color||'blue',source:'google'});
+  }
+  function eventTitle(ev){return String((ev&&(ev.title||ev.summary||ev.name))||'Termin').trim()||'Termin';}
+  function eventDesc(ev){return String((ev&&(ev.desc||ev.description||ev.note))||'').trim();}
+  function eventLocation(ev){return String((ev&&(ev.location||ev.place))||'').trim();}
+  function eventTime(ev){if(ev&&ev.time)return String(ev.time).slice(0,5); if(ev&&ev.start?.dateTime)return new Date(ev.start.dateTime).toTimeString().slice(0,5); return '';}
+  function eventEndTime(ev){if(ev&&ev.endTime)return String(ev.endTime).slice(0,5); if(ev&&ev.end?.dateTime)return new Date(ev.end.dateTime).toTimeString().slice(0,5); return '';}
+  function isGoogleEvent(ev){return !!(ev&&(ev.source==='google'||String(ev.id||'').startsWith('g_')));}
+  function fmtSafe(k){try{if(typeof fmtDate==='function')return fmtDate(k);}catch(e){}return String(k||'');}
+  function eventDateLine(ev){var r=range(ev), start=fmtSafe(r.start), end=fmtSafe(r.end), t=eventTime(ev), te=eventEndTime(ev);var date=r.start===r.end?start:(start+' – '+end);if(t&&te&&te!==t)return date+' · '+t+' – '+te+' Uhr';if(t)return date+' · '+t+' Uhr';return date;}
+  function ensureEventDetailStyle(){
+    if(document.getElementById('change-event-detail-style'))return;
+    var st=document.createElement('style');st.id='change-event-detail-style';
+    st.textContent='.event-detail-card{display:grid;grid-template-columns:40px 1fr;gap:12px;border:1px solid var(--b1);border-left:4px solid var(--acc);border-radius:16px;background:var(--s1);padding:14px;margin-bottom:14px}.event-detail-icon{width:32px;height:32px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;background:rgba(66,133,244,.13);color:#4285f4}.event-detail-kicker{font-size:11px;font-weight:850;color:var(--t5);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}.event-detail-title{font-size:15px;font-weight:850;color:var(--t1);line-height:1.25;margin-bottom:5px}.event-detail-meta{font-size:12px;font-weight:650;color:var(--t4);line-height:1.4}.event-detail-desc,.event-detail-location{font-size:12px;color:var(--t3);line-height:1.45;margin-top:9px;white-space:pre-wrap}.event-detail-actions{display:flex;gap:8px;margin-top:10px}.event-detail-actions .btn{flex:1}@media(max-width:640px){.event-detail-card{grid-template-columns:34px 1fr;padding:13px}.event-detail-title{font-size:14px}}';
+    document.head.appendChild(st);
+  }
+  function readOnlyEventHtml(ev){
+    ensureEventDetailStyle();
+    var google=isGoogleEvent(ev), title=eventTitle(ev), desc=eventDesc(ev), loc=eventLocation(ev);
+    return '<div class="event-detail-card"><div class="event-detail-icon">'+(google?'G':'📅')+'</div><div><div class="event-detail-kicker">'+(google?'Google Kalender':'Termin')+'</div><div class="event-detail-title">'+esc(title)+'</div><div class="event-detail-meta">'+(eventTime(ev)?esc(eventDateLine(ev)):'Ganztägig · '+esc(eventDateLine(ev)))+'</div>'+(loc?'<div class="event-detail-location">📍 '+esc(loc)+'</div>':'')+(desc?'<div class="event-detail-desc">'+esc(desc)+'</div>':'')+'</div></div><button class="btn btn-ghost btn-full" onclick="closePanel()">Schließen</button>';
+  }
 
   window.syncEventToGoogleReliable = async function(ev){
     var token=getToken();
@@ -4596,10 +4636,8 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
 
   window.openEventPanel=function(id,pre){
     var ev=id?findEvent(id):null;
-    if(ev&&ev.source==='google'){
-      var gr=range(ev), txt=gr.start===gr.end?gr.start:(gr.start+' – '+gr.end);
-      try{if(typeof fmtDate==='function')txt=gr.start===gr.end?fmtDate(gr.start):(fmtDate(gr.start)+' – '+fmtDate(gr.end));}catch(e){}
-      openPanel(ev.title||'Google-Termin','<div class="google-detail"><span class="gmark big">G</span><div><div class="challenge-title">Von Google Kalender</div><div class="settings-hint">'+esc(txt)+'</div></div></div><button class="btn btn-ghost btn-full" onclick="closePanel()">Schließen</button>');
+    if(ev&&isGoogleEvent(ev)){
+      openPanel(eventTitle(ev)||'Google-Termin',readOnlyEventHtml(ev));
       return;
     }
     var dv=ev?(ev.startDate||ev.date):dateKey(pre||new Date()), ed=ev?(ev.endDate||ev.date||dv):dv;
