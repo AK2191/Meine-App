@@ -6,13 +6,14 @@
 <!-- [FIX HIGH-3 + CRIT-2] Content Security Policy — blockiert XSS & Clickjacking -->
 <meta http-equiv="Content-Security-Policy" content="
   default-src 'self';
-  script-src 'self' https://www.gstatic.com https://accounts.google.com https://cdn.jsdelivr.net 'unsafe-inline';
+  script-src 'self' https://www.gstatic.com https://*.gstatic.com https://apis.google.com https://accounts.google.com https://cdn.jsdelivr.net 'unsafe-inline';
+  script-src-elem 'self' https://www.gstatic.com https://*.gstatic.com https://apis.google.com https://accounts.google.com https://cdn.jsdelivr.net 'unsafe-inline';
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src 'self' https://fonts.gstatic.com;
-  connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://securetoken.googleapis.com https://fcm.googleapis.com wss://*.firebaseio.com https://www.gstatic.com https://cdn.jsdelivr.net https://api.open-meteo.com https://air-quality-api.open-meteo.com;
-  img-src 'self' data: https://*.googleusercontent.com https://lh3.googleusercontent.com;
-  frame-src https://accounts.google.com https://*.firebaseapp.com https://*.web.app;
-  child-src https://accounts.google.com https://*.firebaseapp.com https://*.web.app;
+  connect-src 'self' https://*.googleapis.com https://apis.google.com https://*.firebaseio.com https://securetoken.googleapis.com https://identitytoolkit.googleapis.com https://fcm.googleapis.com wss://*.firebaseio.com https://www.gstatic.com https://*.gstatic.com https://cdn.jsdelivr.net https://api.open-meteo.com https://air-quality-api.open-meteo.com;
+  img-src 'self' data: https://*.googleusercontent.com https://lh3.googleusercontent.com https://*.gstatic.com;
+  frame-src https://accounts.google.com https://apis.google.com https://*.firebaseapp.com https://*.web.app;
+  child-src https://accounts.google.com https://apis.google.com https://*.firebaseapp.com https://*.web.app;
   worker-src 'self';
   object-src 'none';
   base-uri 'self';
@@ -1545,13 +1546,15 @@ async function handleGoogleLogin(){
     console.warn('Firebase Google Login:', e);
     const code = e && e.code ? e.code : '';
     if(code === 'auth/popup-closed-by-user') return;
-    if(code === 'auth/unauthorized-domain') { toast('Firebase Auth: GitHub-Pages-Domain in Firebase erlauben.','err'); return; }
-    if(code === 'auth/operation-not-allowed') { toast('Firebase Auth: Google-Anmeldung in Firebase aktivieren.','err'); return; }
-    toast('Google-Anmeldung konnte nicht gestartet werden','err');
-    return;
+    // Wichtig: Firebase darf den normalen Google-Kalender-Login nicht blockieren.
+    // Wenn Firebase Auth z. B. wegen CSP/Provider-Konfiguration scheitert, startet
+    // die App trotzdem über den stabilen Google Identity Services Token-Login.
+    if(code === 'auth/unauthorized-domain') toast('Firebase Auth Domain fehlt. Kalender-Anmeldung läuft ohne Live-Sync.','err');
+    else if(code === 'auth/operation-not-allowed') toast('Firebase Google-Anmeldung ist nicht aktiv. Kalender-Anmeldung läuft ohne Live-Sync.','err');
+    else toast('Firebase-Sync pausiert. Kalender-Anmeldung wird normal gestartet.','err');
   }
 
-  // Fallback nur, falls Firebase nicht geladen/konfiguriert ist.
+  // Stabiler Google-Kalender-Login: darf auch laufen, wenn Firebase Auth nicht bereit ist.
   CLIENT_ID = getGoogleClientId();
   if(!CLIENT_ID){document.getElementById('setup-modal').classList.add('show');return;}
   if(!window.google){toast('Google-Bibliothek wird geladen…','');return;}

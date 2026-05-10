@@ -439,13 +439,15 @@ async function handleGoogleLogin(){
     console.warn('Firebase Google Login:', e);
     const code = e && e.code ? e.code : '';
     if(code === 'auth/popup-closed-by-user') return;
-    if(code === 'auth/unauthorized-domain') { toast('Firebase Auth: GitHub-Pages-Domain in Firebase erlauben.','err'); return; }
-    if(code === 'auth/operation-not-allowed') { toast('Firebase Auth: Google-Anmeldung in Firebase aktivieren.','err'); return; }
-    toast('Google-Anmeldung konnte nicht gestartet werden','err');
-    return;
+    // Wichtig: Firebase darf den normalen Google-Kalender-Login nicht blockieren.
+    // Wenn Firebase Auth z. B. wegen CSP/Provider-Konfiguration scheitert, startet
+    // die App trotzdem über den stabilen Google Identity Services Token-Login.
+    if(code === 'auth/unauthorized-domain') toast('Firebase Auth Domain fehlt. Kalender-Anmeldung läuft ohne Live-Sync.','err');
+    else if(code === 'auth/operation-not-allowed') toast('Firebase Google-Anmeldung ist nicht aktiv. Kalender-Anmeldung läuft ohne Live-Sync.','err');
+    else toast('Firebase-Sync pausiert. Kalender-Anmeldung wird normal gestartet.','err');
   }
 
-  // Fallback nur, falls Firebase nicht geladen/konfiguriert ist.
+  // Stabiler Google-Kalender-Login: darf auch laufen, wenn Firebase Auth nicht bereit ist.
   CLIENT_ID = getGoogleClientId();
   if(!CLIENT_ID){document.getElementById('setup-modal').classList.add('show');return;}
   if(!window.google){toast('Google-Bibliothek wird geladen…','');return;}
