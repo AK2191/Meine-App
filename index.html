@@ -6,7 +6,7 @@
 <!-- [FIX HIGH-3 + CRIT-2] Content Security Policy — blockiert XSS & Clickjacking -->
 <meta http-equiv="Content-Security-Policy" content="
   default-src 'self';
-  script-src 'self' https://www.gstatic.com https://accounts.google.com 'unsafe-inline';
+  script-src 'self' https://www.gstatic.com https://accounts.google.com https://cdn.jsdelivr.net 'unsafe-inline';
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src 'self' https://fonts.gstatic.com;
   connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://securetoken.googleapis.com https://fcm.googleapis.com wss://*.firebaseio.com https://www.gstatic.com;
@@ -42,10 +42,10 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="./firebase-config.js"></script>
 <style>
-/* ═══════════════════════════════════════
+/* ====
    CHANGE · LIGHT DESIGN SYSTEM
    Minimalistisch · Warm · Klar
-═══════════════════════════════════════ */
+==== */
 :root{
   --bg:#F8F7F3; --bg2:#FFFFFF; --bg3:#F1F0EB;
   --s1:#FFFFFF; --s2:#F5F4EF; --s3:#EDECEA;
@@ -63,7 +63,7 @@
   --sh-lg:0 2px 8px rgba(0,0,0,.06),0 16px 40px rgba(0,0,0,.10);
   --nav-h:58px;
 }
-/* ── DARK MODE ──────────────────────────────────── */
+/* ==== DARK MODE ==== */
 [data-theme="dark"]{
   --bg:#0F0F0F; --bg2:#1A1A1A; --bg3:#141414;
   --s1:#1A1A1A; --s2:#222222; --s3:#2A2A2A;
@@ -89,7 +89,7 @@ body{
 ::-webkit-scrollbar-thumb{background:var(--b2);border-radius:10px}
 #app{display:flex;flex-direction:column;height:100vh;height:-webkit-fill-available}
 
-/* ── LOADING ─────────────────────────── */
+/* ==== LOADING ==== */
 #loading{
   position:fixed;inset:0;background:var(--bg);z-index:9999;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
@@ -104,7 +104,7 @@ body{
 .ld-text{font-size:13px;color:var(--t4);font-weight:500;letter-spacing:.3px}
 @keyframes ld-pulse{0%,100%{box-shadow:0 0 0 0 rgba(45,106,79,.3)}50%{box-shadow:0 0 0 12px rgba(45,106,79,0)}}
 
-/* ── SETUP MODAL ─────────────────────── */
+/* ==== SETUP MODAL ==== */
 #setup-modal{
   display:none;position:fixed;inset:0;z-index:800;
   background:rgba(0,0,0,.35);backdrop-filter:blur(6px);
@@ -143,7 +143,7 @@ body{
 .fl-group{margin-bottom:14px}
 .btn-row{display:flex;gap:8px;margin-top:4px}
 
-/* ── BUTTONS ─────────────────────────── */
+/* ==== BUTTONS ==== */
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:7px;
   padding:10px 18px;border-radius:var(--r);border:none;
@@ -166,7 +166,7 @@ body{
 .btn svg{width:15px;height:15px;stroke-width:2;flex-shrink:0}
 .btn-sm{padding:6px 11px;font-size:12px;border-radius:var(--rsm)}
 
-/* ── LOGIN ───────────────────────────── */
+/* ==== LOGIN ==== */
 #login-screen{
   display:none;flex-direction:column;align-items:center;justify-content:center;
   height:100%;padding:24px;background:var(--bg);
@@ -200,10 +200,10 @@ body{
 .demo-btn:hover{color:var(--t2)}
 .login-note{margin-top:20px;font-size:12px;color:var(--t5);line-height:1.5}
 
-/* ── MAIN APP ────────────────────────── */
+/* ==== MAIN APP ==== */
 #main-app{display:none;flex-direction:column;height:100%;overflow:hidden}
 
-/* ── HEADER ──────────────────────────── */
+/* ==== HEADER ==== */
 #header{
   display:flex;align-items:center;gap:12px;padding:0 16px;height:56px;flex-shrink:0;
   background:var(--s1);border-bottom:1px solid var(--b1);z-index:100;position:relative;
@@ -270,10 +270,10 @@ body{
   .h-right{margin-left:auto}
 }
 
-/* ── CONTENT ─────────────────────────── */
+/* ==== CONTENT ==== */
 #content{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
 
-/* ── CALENDAR ────────────────────────── */
+/* ==== CALENDAR ==== */
 #cal-body{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
 .wday-row{
   display:grid;grid-template-columns:repeat(7,1fr);
@@ -308,7 +308,7 @@ body{
 .ev-chip.purple{background:rgba(124,58,237,.12);color:var(--pur)}
 .more-chip{font-size:9.5px;color:var(--t4);padding:1px 3px}
 
-/* ── AGENDA ──────────────────────────── */
+/* ==== AGENDA ==== */
 #agenda-view{display:none;flex:1;overflow-y:auto;padding:16px;background:var(--bg)}
 .ag-group{margin-bottom:24px}
 .ag-header{display:flex;align-items:center;gap:14px;margin-bottom:10px}
@@ -337,7 +337,7 @@ body{
 .ub-warn{background:var(--amb-d);color:var(--amb)}
 .ub-ok{background:var(--grn-d);color:var(--grn)}
 
-/* ── UPCOMING STRIP ───────────────────── */
+/* ==== UPCOMING STRIP ==== */
 #upcoming-strip{
   height:44px;background:var(--s1);border-top:1px solid var(--b1);
   display:flex;align-items:center;gap:10px;padding:0 14px;flex-shrink:0;overflow:hidden;
@@ -356,7 +356,7 @@ body{
 .us-chip.red{background:var(--red-d);color:var(--red)}
 .us-chip.purple{background:var(--pur-d);color:var(--pur)}
 
-/* ── DASHBOARD ───────────────────────── */
+/* ==== DASHBOARD ==== */
 #dashboard-view{display:none;flex:1;overflow-y:auto;padding:24px 24px 32px;background:var(--bg)}
 .dash-hello{margin-bottom:20px}
 .dash-hello h1{font-size:24px;font-weight:800;color:var(--t1);letter-spacing:-.5px;margin-bottom:3px;line-height:1.2}
@@ -408,7 +408,7 @@ body{
 .badge-gray{background:var(--s2);color:var(--t3)}
 .dash-empty{padding:18px 16px;font-size:12.5px;color:var(--t4);text-align:center}
 
-/* ── CHALLENGES ──────────────────────── */
+/* ==== CHALLENGES ==== */
 #challenges-view{display:none;flex:1;overflow:hidden;flex-direction:column}
 .list-header{
   display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--b1);flex-shrink:0;
@@ -462,7 +462,7 @@ body{
 .leader-rank{width:26px;height:26px;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--t3);flex-shrink:0}
 .leader-name{font-size:13px;font-weight:700;color:var(--t1)}.leader-detail{font-size:11.5px;color:var(--t3)}.leader-score{margin-left:auto;font-family:var(--mono);font-size:18px;font-weight:800;color:var(--acc)}
 
-/* ── PANEL ───────────────────────────── */
+/* ==== PANEL ==== */
 #panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:300;opacity:0;pointer-events:none;transition:opacity .3s}
 #panel-overlay.show{opacity:1;pointer-events:all}
 #side-panel{
@@ -478,7 +478,7 @@ body{
 .panel-close-btn svg{width:15px;height:15px;stroke-width:2.2}
 .panel-body{flex:1;overflow-y:auto;padding:18px;background:var(--s1)}
 
-/* ── FORM ────────────────────────────── */
+/* ==== FORM ==== */
 .fg{margin-bottom:14px}
 .flabel{display:block;font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
 .finput{
@@ -502,7 +502,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 .divider{height:1px;background:var(--b1);margin:14px 0}
 .section-label{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
 
-/* ── PANEL NOTIF ─────────────────────── */
+/* ==== PANEL NOTIF ==== */
 .panel-notif-section{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:12px 14px;margin-bottom:12px}
 .pns-title{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
 .nitem{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--b1);cursor:pointer;transition:opacity .1s}
@@ -515,14 +515,14 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 .notif-pill{display:flex;align-items:center;gap:10px;background:var(--acc-d);border:1px solid rgba(45,106,79,.2);border-radius:var(--r);padding:12px 14px;margin-top:12px}
 .np-body{flex:1}.np-title{font-size:12px;font-weight:700;color:var(--acc);margin-bottom:2px}.np-sub{font-size:11.5px;color:var(--t3)}
 
-/* ── EMPTY STATE ─────────────────────── */
+/* ==== EMPTY STATE ==== */
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px;text-align:center}
 .empty-icon{width:52px;height:52px;border-radius:14px;background:var(--s2);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
 .empty-icon svg{width:26px;height:26px;stroke:var(--t3);stroke-width:1.5}
 .empty-title{font-size:15px;font-weight:700;color:var(--t2);margin-bottom:4px}
 .empty-sub{font-size:13px;color:var(--t4);line-height:1.6}
 
-/* ── BOTTOM NAV ──────────────────────── */
+/* ==== BOTTOM NAV ==== */
 #bottom-nav{display:none;background:var(--s1);border-top:1px solid var(--b1);flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,0px)}
 @media(max-width:700px){#bottom-nav{display:block}}
 .bnav-inner{display:flex;align-items:stretch;height:var(--nav-h)}
@@ -534,7 +534,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 .bnav-item svg{width:21px;height:21px;stroke-width:1.7}
 .bnav-label{font-size:10px;font-weight:600}
 
-/* ── FAB ─────────────────────────────── */
+/* ==== FAB ==== */
 #fab{
   position:fixed;bottom:calc(var(--nav-h) + 14px + env(safe-area-inset-bottom,0px));right:16px;
   width:48px;height:48px;border-radius:50%;background:var(--acc);
@@ -545,7 +545,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 #fab svg{width:22px;height:22px;stroke:white;stroke-width:2.2}
 @media(max-width:700px){#fab{display:flex}}
 
-/* ── TOAST ───────────────────────────── */
+/* ==== TOAST ==== */
 #toast-wrap{
   position:fixed;bottom:calc(var(--nav-h) + 12px + env(safe-area-inset-bottom,0px));
   left:50%;transform:translateX(-50%);z-index:900;display:flex;flex-direction:column;gap:6px;pointer-events:none;align-items:center;
@@ -555,7 +555,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 .toast.ok{background:var(--grn)}.toast.err{background:var(--red)}
 @keyframes tin{from{opacity:0;transform:translateY(8px) scale(.95)}to{opacity:1;transform:none}}
 
-/* ── EXTENDED CALENDAR ────────────────── */
+/* ==== EXTENDED CALENDAR ==== */
 .day-cell{position:relative}
 .challenge-day-dot{position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--amb);z-index:2}
 .challenge-day-dot.done{background:var(--grn)}
@@ -576,20 +576,20 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 @media(max-width:900px){.year-grid{grid-template-columns:1fr}.workweek-grid{grid-template-columns:1fr}}
 @media(max-width:700px){.view-toggle{display:flex!important;overflow-x:auto}.vbtn{padding:5px 8px}}
 
-/* ── CONTEST DETAIL ───────────────────── */
+/* ==== CONTEST DETAIL ==== */
 .stat-strip{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 14px}
 .stat-box{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:12px}
 .stat-num{font-family:var(--mono);font-size:24px;font-weight:800;color:var(--acc);line-height:1}
 .stat-label{font-size:11px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-top:4px}
 
-/* ── LIVE DOT + PUSH ─────────────────── */
+/* ==== LIVE DOT + PUSH ==== */
 .live-dot{width:8px;height:8px;border-radius:50%;background:var(--grn);display:inline-block;margin-left:5px;vertical-align:middle}
 .live-dot.off{background:var(--t4)}
 .push-box{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:14px;margin-bottom:12px}
 .push-status{font-size:12px;color:var(--t2);line-height:1.5;margin-top:6px}
 .push-ok{color:var(--grn)}.push-warn{color:var(--amb)}.push-err{color:var(--red)}
 
-/* ── TOGGLES ─────────────────────────── */
+/* ==== TOGGLES ==== */
 .toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:12px 14px;margin:12px 0}
 .toggle-copy{min-width:0}.toggle-title{font-size:13px;font-weight:700;color:var(--t1)}.toggle-sub{font-size:11.5px;color:var(--t3);line-height:1.45;margin-top:2px}
 .switch{position:relative;display:inline-block;width:48px;height:28px;flex-shrink:0}
@@ -606,7 +606,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 .logout-name{font-size:15px;font-weight:700;color:var(--t1)}.logout-mail{font-size:12px;color:var(--t3);margin-top:2px}
 .logout-warning{font-size:12px;color:var(--t2);line-height:1.5;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:12px;margin-bottom:12px}
 
-/* ── EXERCISE LINK ───────────────────── */
+/* ==== EXERCISE LINK ==== */
 .exercise-link{display:inline-flex;margin-top:5px;color:var(--acc);font-size:11.5px;font-weight:600;text-decoration:none}
 .exercise-link:hover{text-decoration:underline}
 .challenge-meta{white-space:normal!important;line-height:1.35}
@@ -618,7 +618,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 .help-steps{background:var(--amb-d);border:1px solid rgba(217,119,6,.2);border-radius:var(--r);padding:12px 14px;margin-bottom:12px;color:var(--t2);font-size:12px}
 .help-steps ol{padding-left:18px;margin-top:6px}
 
-/* ── WEEK POINTS CARD ────────────────── */
+/* ==== WEEK POINTS CARD ==== */
 .challenge-week-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rlg);overflow:hidden}
 .challenge-week-head{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--b1)}
 .challenge-week-title{font-size:14px;font-weight:700;color:var(--t1)}.challenge-week-sub{font-size:12px;color:var(--t3);margin-top:2px}
@@ -635,7 +635,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 #challenges-view .list-header .btn-primary{display:none!important}
 #fab.challenge-disabled{display:none!important}
 
-/* ── MOBILE ──────────────────────────── */
+/* ==== MOBILE ==== */
 @media(max-width:480px){
   .day-cell{padding:3px 3px 2px}.day-num-wrap{width:22px;height:22px}.day-num{font-size:10.5px}.ev-chip{font-size:9px;padding:1px 4px}
   .kpi-num{font-size:24px}.kpi-grid{grid-template-columns:repeat(2,1fr)!important}
@@ -645,7 +645,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
   .challenge-layout{grid-template-columns:1fr!important}
 }
 
-/* ── SETTINGS GRUPPEN ──────────────────────────────── */
+/* ==== SETTINGS GRUPPEN ==== */
 .settings-group{
   background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);
   overflow:hidden;margin:0 0 12px;
@@ -664,9 +664,9 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 .settings-group .fg{padding:12px 14px 0;}
 .settings-spacer{height:8px;}
 
-/* ── DARK MODE OVERRIDES — Challenges & Kalender ──────────── */
+/* ==== DARK MODE OVERRIDES — Challenges & Kalender ==== */
 
-/* ── DARK MODE — Challenge Buttons ─────────────────────── */
+/* ==== DARK MODE — Challenge Buttons ==== */
 [data-theme="dark"] .btn-ghost{
   color:var(--t2)!important;
   border-color:var(--b2)!important;
@@ -752,7 +752,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 [data-theme="dark"] .toggle-row{background:transparent!important;}
 
 
-/* ── NUDGE / ANSTUPSEN BUTTON ──────────────────── */
+/* ==== NUDGE / ANSTUPSEN BUTTON ==== */
 .nudge-btn{
   width:30px;height:30px;border-radius:50%;border:none;
   background:var(--acc-d);color:var(--acc);font-size:14px;
@@ -852,7 +852,7 @@ if(window.location.hostname !== 'localhost' && window.location.hostname !== '127
 <!-- Toast -->
 <div id="toast-wrap"></div>
 
-<!-- ═══ APP ═══ -->
+<!-- ==== APP ==== -->
 <div id="app">
 
   <!-- Login -->
@@ -1023,9 +1023,7 @@ if(window.location.hostname !== 'localhost' && window.location.hostname !== '127
 <script>
 'use strict';
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
-   CONSTANTS & STATE
-━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* CONSTANTS & STATE */
 const VER = '2.0';
 const LSK = 'change_v1';
 const GCAL_SCOPE = [
@@ -1058,13 +1056,7 @@ let userInfo = {};
 let isDemoMode = false;
 let currentMainView = 'dashboard';
 let currentCalView = 'month';
-let curDate = new Date(); window.curDate = curDate;
-// curDate-Setter: hält window.curDate automatisch synchron
-Object.defineProperty(window, 'curDate', {
-  get() { return curDate; },
-  set(v) { curDate = v; },
-  configurable: true
-});
+var curDate = new Date(); // var = global window.curDate für change-post.js
 
 // Data
 let events = [];
@@ -1079,7 +1071,7 @@ let notifications = [];
 let invFilter = 'alle';
 let conFilter = 'alle';
 
-/* ── LOCAL STORAGE ── */
+/* ==== LOCAL STORAGE ==== */
 const ls = (k,v) => {
   if(v===undefined){try{return JSON.parse(localStorage.getItem(LSK+'_'+k));}catch{return null;}}
   try{localStorage.setItem(LSK+'_'+k,JSON.stringify(v));}catch{}
@@ -1097,7 +1089,7 @@ async function persistChangeState(){
   }catch(e){console.warn('Persist local:',e);}
 }
 
-/* ── DATE HELPERS ── */
+/* ==== DATE HELPERS ==== */
 const pad = n => String(n).padStart(2,'0');
 const dateKey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const isToday = d => {const t=new Date();return d.getFullYear()===t.getFullYear()&&d.getMonth()===t.getMonth()&&d.getDate()===t.getDate();};
@@ -1110,13 +1102,11 @@ const esc = s => String(s??'').replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;
 const safeUrl = u => { if(!u) return ''; const s=String(u).trim(); if(/^(javascript|data|vbscript):/i.test(s)) return ''; if(!/^https?:\/\//.test(s)) return ''; return s; };
 const uid = () => Math.random().toString(36).substring(2,10)+Date.now().toString(36);
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
-   INIT
-━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+/* INIT */
+/* ==========================
    [FIX CRIT-3] SECURE TOKEN STORE
    Access-Token NUR im RAM – nie in localStorage
-━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+========================== */
 const SecureTokenStore = (() => {
   let _tok = null, _exp = 0, _usr = null;
   // Alte unsichere Tokens sofort aus localStorage löschen
@@ -1285,7 +1275,7 @@ function hideLd(){
   setTimeout(()=>el.style.display='none',400);
 }
 
-/* ── PWA ── */
+/* ==== PWA ==== */
 function initPWA(){
   if(!('serviceWorker' in navigator))return;
   navigator.serviceWorker.register('./firebase-messaging-sw.js', {scope:'./'}).catch(err=>{
@@ -1333,9 +1323,7 @@ function installChangeApp(){
   }
   openPanel('Change installieren', '<div class="push-box"><div class="challenge-title">Installation manuell starten</div><div class="push-status">Der Browser hat keinen automatischen Installationsdialog bereitgestellt.</div><div class="help-steps">'+steps+'</div></div>');
 }
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
-   SETUP & AUTH
-━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* SETUP & AUTH */
 function saveClientId(){
   // [FIX MED-1] Strikte Validierung der OAuth Client-ID
   const raw = document.getElementById('client-id-input').value || '';
@@ -1451,7 +1439,7 @@ async function fetchUserInfo(){
   }catch{}
 }
 
-/* ── DEMO ── */
+/* ==== DEMO ==== */
 function startDemoInternal(){
   lsDel('demo_mode'); isDemoMode=false;
   showLogin();
@@ -1470,9 +1458,7 @@ function buildDemoEvents(){
 
 
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
-   BOOT
-━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* BOOT */
 function bootMainApp(){
   hideLd();
   document.getElementById('login-screen').style.display='none';
@@ -1521,9 +1507,7 @@ function bootMainApp(){
   document.getElementById('dash-sub').textContent=`${new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'})} · Ihr persönlicher Überblick`;
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
-   MAIN VIEW CONTROLLER
-━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* MAIN VIEW CONTROLLER */
 function setMainView(v){
   currentMainView=v;
   const views=['dashboard','calendar'];
@@ -1559,9 +1543,7 @@ function fabAction(){
   else openEventPanel(null);
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
-   DASHBOARD
-━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* DASHBOARD */
 function buildDashboard(){
   buildKPIs();
   buildDashCards();
@@ -1599,14 +1581,14 @@ function buildKPIs(){
     </div>`;
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+/* ==========================
    DASHBOARD TRACKER ROWS
    Erweiterbar: weitere Tracker hier ergänzen
-━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+========================== */
 function renderTrackerRows(){
   var rows='';
 
-  // ── Friseur-Tracker ───────────────────────────────────────
+  // ==== Friseur-Tracker ====
   var friseurOn=typeof window.getFriseurEnabled==='function'?window.getFriseurEnabled():false;
   if(friseurOn){
     var lastDate=typeof window._friseurFindLast==='function'?window._friseurFindLast():null;
@@ -1668,7 +1650,7 @@ function renderTrackerRows(){
     </div>`;
   }
 
-  // ── Weitere Tracker hier ergänzen ────────────────────────
+  // ==== Weitere Tracker hier ergänzen ====
   // Beispiel: Arzt, Auto-Service, etc.
   // if(arztOn){ rows += renderArztRow(); }
 
@@ -1717,9 +1699,7 @@ function renderLeaderboardMini(){
 }
 
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
-   CALENDAR
-━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* CALENDAR */
 function renderCalendar(){
   const y=curDate.getFullYear(),m=curDate.getMonth();
   document.getElementById('month-label').textContent=`${DE_MONTHS[m]} ${y}`;
@@ -1874,9 +1854,7 @@ function renderUpcoming(){
   }).join('');
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
-   EVENT PANEL (CALENDAR)
-━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* EVENT PANEL (CALENDAR) */
 function openEventPanel(id,preDate){
   const ev=id?getEventById(id):null;
 
@@ -2045,9 +2023,7 @@ function openDayPanel(dt,dayEvs){
   openPanel(`${dayEvs.length} Termine`,html);
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
-   GOOGLE APIs
-━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* GOOGLE APIs */
 async function loadGoogleData(){
   if(!accessToken)return;
   await loadGoogleEvents();
@@ -2107,7 +2083,7 @@ async function saveToGoogleCal(existingId){
   }catch(e){toast('Fehler: '+e.message,'err');}
 }
 
-/* ── FIREBASE / LOCAL STORAGE BRIDGE ── */
+/* ==== FIREBASE / LOCAL STORAGE BRIDGE ==== */
 async function loadFromDrive(){
   // Daten werden lokal und – sobald Firebase verbunden ist – in Firestore synchronisiert.
   if(typeof initFirebaseLive==='function') await initFirebaseLive();
@@ -2124,9 +2100,7 @@ async function saveToDrive(){
 
 function showDriveStatus(){ /* nicht mehr benötigt */ }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
-   NOTIFICATIONS
-━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* NOTIFICATIONS */
 function checkNotifications(){
   const allEvs=getAllEvents();
   notifications=[];
@@ -2247,9 +2221,7 @@ function openNotifPanel(){
   openPanel(`${notifications.length} Hinweis${notifications.length!==1?'e':''}`,html);
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
-   PANEL SYSTEM
-━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* PANEL SYSTEM */
 function openPanel(title,html){
   document.getElementById('panel-title').textContent=title;
   document.getElementById('panel-body').innerHTML=html;
@@ -2261,9 +2233,7 @@ function closePanel(){
   document.getElementById('panel-overlay').classList.remove('show');
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
-   TOAST
-━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* TOAST */
 function toast(msg,type){
   const w=document.getElementById('toast-wrap');
   const el=document.createElement('div');
@@ -2273,9 +2243,7 @@ function toast(msg,type){
   setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300);},3200);
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
-   AUTH / LOGOUT
-━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* AUTH / LOGOUT */
 function confirmLogout(){
   const name=userInfo.name||userInfo.email||'Nutzer';
   const mail=userInfo.email||'';
@@ -2318,7 +2286,7 @@ async function logout(){
   else document.getElementById('setup-modal').classList.add('show');
 }
 
-/* ── KEYBOARD ── */
+/* ==== KEYBOARD ==== */
 document.addEventListener('keydown',e=>{
   if(document.getElementById('side-panel').classList.contains('open')){
     if(e.key==='Escape')closePanel();
@@ -2334,7 +2302,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='a'||e.key==='A')setCalView('agenda');
 });
 
-/* ── TOUCH SWIPE (calendar) ── */
+/* ==== TOUCH SWIPE (calendar) ==== */
 let touchX0=0;
 document.addEventListener('touchstart',e=>{touchX0=e.touches[0].clientX;},{passive:true});
 document.addEventListener('touchend',e=>{
@@ -2344,10 +2312,8 @@ document.addEventListener('touchend',e=>{
   if(Math.abs(dx)>60)navigate(dx<0?1:-1);
 },{passive:true});
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
-   CHANGE EXTENSIONS: Challenges + Contest + Auto Sync
-━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-(function(){
+/* CHANGE EXTENSIONS: Challenges + Contest + Auto Sync */
+;(function(){
   const originalBoot = bootMainApp;
   const originalSetMainView = setMainView;
   const originalFabAction = fabAction;
@@ -2497,9 +2463,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
 
 
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
-   AUTO-CHALLENGES: täglich kleine Rätsel & Trainingsübungen
-━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* AUTO-CHALLENGES: täglich kleine Rätsel & Trainingsübungen */
 (function(){
   const AUTO_KEY='auto_challenges_enabled';
   const AUTO_POOL=[
@@ -2571,10 +2535,10 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   window.renderChallenges=function(){ ensureDailyAutoChallenges(); return oldRenderChallenges.apply(this,arguments); };
 })();
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+/* ==========================
    FIREBASE EXTENSION: echte Push Notifications + automatische Mitspieler-Erkennung
    Voraussetzung: firebase-config.js, firebase-messaging-sw.js und manifest.json liegen im Repo-Root.
-━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+========================== */
 (function(){
   let fbApp=null, db=null, messaging=null, unsubscribePlayers=null, unsubscribeCompletions=null;
   let lastChallengeNotifyKey='';
@@ -2895,7 +2859,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   setTimeout(()=>{ if(userInfo && userInfo.email) initFirebaseLive(); },1200);
 })();
 
-/* ── FIREBASE EXTENSION 2: Challenges live veröffentlichen ── */
+/* ==== FIREBASE EXTENSION 2: Challenges live veröffentlichen ==== */
 (function(){
   function hasCfg(){const c=window.FIREBASE_CONFIG||{};return !!(c.apiKey&&!String(c.apiKey).includes('HIER_')&&c.projectId&&window.firebase)}
   function getDb(){try{return firebase.firestore()}catch(e){return null}}
@@ -2923,9 +2887,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
 })();
 
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
-   FINAL PATCH: Kalender-Sync, Sport-Challenges, Contest-Details
-━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* FINAL PATCH: Kalender-Sync, Sport-Challenges, Contest-Details */
 (function(){
   const DEMO_EMAIL='demo@example.com';
   const SPORT_POOL=[
@@ -3019,9 +2981,7 @@ if(currentMainView==='calendar'){renderCalendar();renderUpcoming();} syncEventTo
 
 
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
-   FINAL FIX 2: Demo-User aus echtem Contest, Sportlinks, Kalender-403-Hilfe
-━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* FINAL FIX 2: Demo-User aus echtem Contest, Sportlinks, Kalender-403-Hilfe */
 (function(){
   const DEMO_IDS=['demo@example.com','demo nutzer','demo-nutzer','demo'];
   const SPORTS_ONLY_POOL=[
@@ -4076,7 +4036,7 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
 </script>
 
 <script id="daypanel-range-final-fix">
-/* ── final fix: day detail includes multi-day range events ── */
+/* ==== final fix: day detail includes multi-day range events ==== */
 (function(){
   'use strict';
   const pad=n=>String(n).padStart(2,'0');
@@ -4518,12 +4478,12 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 </script>
 
 <script id="CHANGE-FINAL-MULTIDAY-BARS">
-/* ═══════════════════════════════════════════════════════════
+/* ====
    CHANGE · FINAL OVERRIDE
    Echte durchgehende Zeitraum-Balken im Monatskalender.
    Dashboard: Zeitraum-Events dedupliziert, übersichtlich.
    Dieses Script ist das LETZTE und überschreibt alle vorherigen renderMonth / buildDashCards.
-═══════════════════════════════════════════════════════════ */
+==== */
 (function () {
   'use strict';
   const $ = id => document.getElementById(id);
@@ -4564,7 +4524,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     return '';
   }
 
-  /* ── ALLE EVENTS (dedupliziert, mit startDate/endDate) ── */
+  /* ==== ALLE EVENTS (dedupliziert, mit startDate/endDate) ==== */
   function allEvents() {
     const out = [], seen = new Set();
     function add(ev, src) {
@@ -4595,7 +4555,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       .sort((a, b) => { const ar = getRange(a), br = getRange(b); if (ar.isRange !== br.isRange) return ar.isRange ? -1 : 1; return ar.start.localeCompare(br.start) || (a.time||'99:99').localeCompare(b.time||'99:99'); });
   }
 
-  /* ── LAYOUT-ALGORITHMUS: Balken auf Wochen-Ebene ── */
+  /* ==== LAYOUT-ALGORITHMUS: Balken auf Wochen-Ebene ==== */
   function layoutWeek(weekDates) { // weekDates: 7 date-keys Mo–So
     const wStart = weekDates[0], wEnd = weekDates[6];
     const evs = allEvents().filter(ev => { const r = getRange(ev); return r.start <= wEnd && r.end >= wStart; })
@@ -4619,7 +4579,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     return result;
   }
 
-  /* ── MONATS-ZELLEN BAUEN ── */
+  /* ==== MONATS-ZELLEN BAUEN ==== */
   function buildCells(y, m) {
     let first = new Date(y,m,1).getDay(); first = first===0?6:first-1;
     const dim = new Date(y,m+1,0).getDate(), prev = new Date(y,m,0).getDate(), cells = [];
@@ -4629,7 +4589,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     return cells;
   }
 
-  /* ── RENDERMONTH (FINAL) ── */
+  /* ==== RENDERMONTH (FINAL) ==== */
   window.renderMonth = function (y, m) {
     const grid = $('month-grid'); if (!grid) return;
     const o = opts();
@@ -4688,7 +4648,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     }
   };
 
-  /* ── CSS INJECTION ── */
+  /* ==== CSS INJECTION ==== */
   function injectStyle() {
     if ($('cfx-style')) return;
     const st = document.createElement('style'); st.id = 'cfx-style';
@@ -4707,7 +4667,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 .cfx-points{position:absolute!important;right:6px!important;bottom:5px!important;min-width:18px!important;height:17px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;border-radius:999px!important;padding:0 5px!important;background:rgba(52,211,153,.13)!important;border:1px solid rgba(52,211,153,.22)!important;color:var(--grn)!important;font-size:9.5px!important;line-height:1!important;font-weight:900!important;font-family:var(--mono)!important;pointer-events:none!important;z-index:8!important}
 .cfx-points.done{opacity:1!important}
 .cfx-kw{position:absolute!important;left:4px!important;bottom:4px!important;font-size:9px!important;font-weight:900!important;color:var(--acc)!important;background:rgba(45,106,79,.10)!important;border-radius:999px!important;padding:2px 5px!important;pointer-events:none!important;z-index:2!important}
-/* ─── Balken ─── */
+/* ==== Balken ==== */
 .cfx-bar{grid-row:1!important;align-self:start!important;height:20px!important;min-width:0!important;margin-top:calc(28px + var(--cfx-lane,0)*23px)!important;padding:0 7px!important;border:1px solid transparent!important;border-top-left-radius:10px!important;border-bottom-left-radius:10px!important;border-top-right-radius:10px!important;border-bottom-right-radius:10px!important;margin-left:4px!important;margin-right:4px!important;display:flex!important;align-items:center!important;gap:4px!important;z-index:20!important;overflow:hidden!important;cursor:pointer!important;font-size:11px!important;font-weight:700!important;white-space:nowrap!important;box-shadow:0 2px 7px rgba(0,0,0,.06)!important;transition:transform .1s,box-shadow .1s!important}
 .cfx-bar:hover{transform:translateY(-1px)!important;box-shadow:0 5px 12px rgba(0,0,0,.10)!important}
 .cfx-bar.cl{border-top-left-radius:0!important;border-bottom-left-radius:0!important;margin-left:0!important;border-left-color:transparent!important}
@@ -4734,7 +4694,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     document.head.appendChild(st);
   }
 
-  /* ── DASHBOARD ── */
+  /* ==== DASHBOARD ==== */
   function dashCalendarItems() {
     const td = toKey(new Date()), limit = toKey(addD(td, 30));
     const seen = new Set();
@@ -5016,11 +4976,11 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 </script>
 
 
-<!-- ═══════════════════════════════════════
+<!-- ====
      CHANGE · FINAL STABLE OVERRIDE v2
      Fixes: Dashboard, Feiertage, Challenges, Account-ID,
             Datumsbereich, 7 Übungen, Optional-Sektion.
-═══════════════════════════════════════ -->
+==== -->
 <script id="change-final-stable">
 (function(){
   'use strict';
@@ -5029,7 +4989,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   const esc = s => String(s??'').replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c])); // [FIX: inkl. backtick]
   const pad2 = n => String(n).padStart(2,'0');
 
-  /* ── INJECT FINAL CSS ── */
+  /* ==== INJECT FINAL CSS ==== */
   function injectFinalStyle(){
     const old=document.getElementById('change-clean-dashboard-style');
     if(old) old.textContent='#kpi-grid{display:none!important}';
@@ -5127,7 +5087,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     `;
   }
 
-  /* ── DATE HELPERS ── */
+  /* ==== DATE HELPERS ==== */
   function todayStr(){
     const d=new Date();
     return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
@@ -5148,7 +5108,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     return ev.time+(ev.endTime&&ev.endTime!==ev.time?' – '+ev.endTime:'')+' Uhr';
   }
 
-  /* ── ROBUST ACCOUNT ID ──
+  /* ==== ROBUST ACCOUNT ID ====
      Tries multiple sources in order of reliability.
      Never returns "local-user" if an email can be found. */
   function myId(){
@@ -5172,14 +5132,14 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     return 'local-user';
   }
 
-  /* ── ALL EVENTS ── */
+  /* ==== ALL EVENTS ==== */
   function allEvents(){
     try{ if(typeof window.getAllEvents==='function') return (window.getAllEvents()||[]).filter(e=>e&&e.date); }
     catch(e){}
     return (window.events||[]).filter(e=>e&&e.date);
   }
 
-  /* ── ACTIVE CHALLENGES: max 7 normal + optional ── */
+  /* ==== ACTIVE CHALLENGES: max 7 normal + optional ==== */
   const isOptional=c=>/spazier|fitness/i.test(c.title||c.name||'')||!!c.optional;
 
   // Remove these specific challenges from the list entirely
@@ -5209,7 +5169,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
             ...dedupOpt.map(c=>({...c,_optional:true}))];
   }
 
-  /* ── IS DONE TODAY ── */
+  /* ==== IS DONE TODAY ==== */
   function isDoneToday(chId,pid){
     pid=(pid||myId()).toLowerCase();
     const td=todayStr();
@@ -5220,7 +5180,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     );
   }
 
-  /* ── COMPLETE / UNDO (own impl — uses myId() so IDs always match) ── */
+  /* ==== COMPLETE / UNDO (own impl — uses myId() so IDs always match) ==== */
   function uid6(){return Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,6);}
 
   window.completeChallenge=function(id){
@@ -5298,7 +5258,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     }
   };
 
-  /* ── PLAYER STATS ── */
+  /* ==== PLAYER STATS ==== */
   function playerStats(){
     const td=todayStr(), me=myId();
     const by={};
@@ -5330,7 +5290,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     return Object.values(by).sort((a,b)=>b.total-a.total);
   }
 
-  /* ── UPCOMING HOLIDAYS ── */
+  /* ==== UPCOMING HOLIDAYS ==== */
   function upcomingHolidays(limit){
     const out=[];
     if(typeof window.getHolidaysForDate!=='function') return out;
@@ -5345,9 +5305,9 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     return out;
   }
 
-  /* ══════════════════════════════════════
+  /* ====
      BUILD DASHBOARD
-  ══════════════════════════════════════ */
+  ==== */
   function buildDashboard(){
     const g$=$('dash-greeting'), s$=$('dash-sub');
     if(g$){
@@ -5362,7 +5322,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     if(!grid) return;
     const td=todayStr();
 
-    /* ── Calendar rows: merged + chronological + range support ── */
+    /* ==== Calendar rows: merged + chronological + range support ==== */
     const holidays=upcomingHolidays(6);
     const eventsRaw=allEvents()
       .filter(e=>{
@@ -5438,7 +5398,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       }
     });
 
-    /* ── Heute-Streifen: immer sichtbar, egal ob Termine oder nicht ── */
+    /* ==== Heute-Streifen: immer sichtbar, egal ob Termine oder nicht ==== */
     /* Range-Events die heute noch aktiv sind (start<=today<=end) → Heute-Block */
     const todayEvents=rows.filter(r=>r.type==='holiday'?r.date===td:(r.date<=td&&(r.endDate||r.date)>=td));
     const todayDateFmt=new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
@@ -5508,7 +5468,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 
     if(!calRows) calRows='<div class="dash-empty">Keine Termine oder Feiertage</div>';
 
-    /* ── Challenge + leaderboard rows ── */
+    /* ==== Challenge + leaderboard rows ==== */
     const active=activeChallenges();
     const pending=active.filter(c=>!isDoneToday(c.id)).slice(0,4);
     let chRows=pending.map(c=>`<div class="dash-row" onclick="setMainView('challenges')">
@@ -5550,9 +5510,9 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       </div>`;
   }
 
-  /* ══════════════════════════════════════
+  /* ====
      RENDER CHALLENGES
-  ══════════════════════════════════════ */
+  ==== */
   function renderChallenges(){
     const list$=$('challenges-list'), board$=$('leaderboard-list');
     if(!list$||!board$) return;
@@ -5612,9 +5572,9 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       </div>`).join(''):'<div class="dash-empty">Noch keine Mitspieler</div>';
   }
 
-  /* ══════════════════════════════════════
+  /* ====
      SET MAIN VIEW
-  ══════════════════════════════════════ */
+  ==== */
   function setMainView(v){
     if(!['dashboard','calendar','challenges'].includes(v)) v='dashboard';
     window.currentMainView=v;
@@ -5630,7 +5590,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     try{history.pushState({view:v},'','#/'+v);}catch(e){}
   }
 
-  /* ── CALENDAR CHALLENGE DOTS: override to use myId() ──
+  /* ==== CALENDAR CHALLENGE DOTS: override to use myId() ====
      Ensures calendar dots and Punkte-Kalender use the same ID
      as completeChallenge. */
   function challengePointsForDate(dk){
@@ -5648,7 +5608,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     return pts>0?{points:pts,done:true,allDone:true}:null;
   };
 
-  /* ── EXPOSE ── */
+  /* ==== EXPOSE ==== */
   renderChallenges.__fix5=true;
   // buildDashboard NOT assigned to window — patch version wins
   window.buildKPIs=function(){if(window.buildDashboard&&window.buildDashboard.__eventFix)window.buildDashboard();else buildDashboard();};
@@ -5678,7 +5638,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     setMainView(v);
   });
 
-  /* ── INIT ── */
+  /* ==== INIT ==== */
   function init(){
     injectFinalStyle();
     const route=location.hash.replace('#/','').replace('#','')||'dashboard';
@@ -5717,11 +5677,11 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 
 })();
 </script>
-<!-- ═══════════════════════════════════════
+<!-- ====
      CHANGE · DASHBOARD EVENT FIX
      Fixes: endDate für Google-Termine, Zeitraum-Events erscheinen heute,
             korrekte Uhrzeiten, Titel aus Google summary
-═══════════════════════════════════════ -->
+==== -->
 <script id="change-dashboard-event-fix">
 (function(){
   'use strict';
@@ -5730,7 +5690,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   const addDay = (k,n) => { const d = new Date(k+'T12:00:00'); d.setDate(d.getDate()+n); return keyOf(d); };
   const todayKey = () => keyOf(new Date());
 
-  /* ── Vollständige getAllEvents mit endDate, startDate, title ── */
+  /* ==== Vollständige getAllEvents mit endDate, startDate, title ==== */
   window.getAllEvents = function(){
     const out = [], seen = new Set();
     function add(ev){
@@ -5779,7 +5739,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     return out;
   };
 
-  /* ── Dashboard: Heute-Block berechnet korrekt aus startDate/endDate ── */
+  /* ==== Dashboard: Heute-Block berechnet korrekt aus startDate/endDate ==== */
   function evStartK(e){ return String(e.startDate||e.date||'').slice(0,10); }
   function evEndK(e)  { return String(e.endDate||e.date||evStartK(e)||'').slice(0,10); }
   function evTitle(e) { return String(e.title||e.summary||e.name||'Termin').replace(/\bZeitraum\b\s*:?/gi,'').replace(/\s{2,}/g,' ').trim(); }
@@ -6019,9 +5979,9 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   #avatar-status-dot{display:none}  /* Dot ausgeblendet, Ring reicht */
 </style>
 
-<!-- ═══════════════════════════════════════════════════════
+<!-- ====
      CHANGE · EINSTELLUNGEN + AVATAR DOT + FIXES
-═══════════════════════════════════════════════════════ -->
+==== -->
 <script id="change-unified-settings">
 (function () {
   'use strict';
@@ -6046,7 +6006,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       <label class="switch"><input type="checkbox" id="${id}" ${checked?'checked':''} ${disabled?'disabled':''}><span class="slider"></span></label>
     </div>`;
 
-  /* ─── GLOCKE: nur Terminhinweise ────────────────────── */
+  /* ==== GLOCKE: nur Terminhinweise ==== */
   window.openNotifPanel=function(){
     try{if(typeof checkNotifications==='function')checkNotifications();}catch(e){}
     var esc2=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
@@ -6131,7 +6091,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     var dot=$('notif-dot');if(dot)dot.style.display='none';
   };
 
-  /* ─── GOOGLE ─────────────────────────────────────────── */
+  /* ==== GOOGLE ==== */
   function isGoogleLoggedIn(){
     // accessToken is 'firebase-auth' when logged in via Firebase Google Sign-In
     var at=window.accessToken||(typeof accessToken!=='undefined'?accessToken:'');
@@ -6173,7 +6133,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     }
   })();
 
-  /* ─── AVATAR RING (Google-Status) ───────────────────── */
+  /* ==== AVATAR RING (Google-Status) ==== */
   function updateAvatarDot(){
     const av=$('user-avatar'); if(!av)return;
     const at=window.accessToken||(typeof accessToken!=='undefined'?accessToken:'');
@@ -6189,7 +6149,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   setInterval(updateAvatarDot,8000);
   setTimeout(updateAvatarDot,1500);
 
-  /* ─── EINSTELLUNGS-PANEL ─────────────────────────────── */
+  /* ==== EINSTELLUNGS-PANEL ==== */
   window.openSettingsPanel=function(startTab){
     startTab=startTab||'calendar';
     const o=readOpt();
@@ -6423,7 +6383,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   window.openPushSettingsPanel=()=>window.openSettingsPanel('sync');
   window.saveCalSettings=window._saveCalSettings;
 
-  /* ── Benachrichtigungen als gelesen markieren ── */
+  /* ==== Benachrichtigungen als gelesen markieren ==== */
   window._markChallengesRead=function(){
     try{
       const td=(typeof dateKey==='function')?dateKey(new Date()):new Date().toISOString().slice(0,10);
@@ -6445,7 +6405,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
   window.addEventListener('load',_patchDotIfRead);
   [800,2000].forEach(ms=>setTimeout(_patchDotIfRead,ms));
 
-  /* ─── PUNKTE-KALENDER RETRY NACH FIREBASE-LOAD ──────── */
+  /* ==== PUNKTE-KALENDER RETRY NACH FIREBASE-LOAD ==== */
   (function(){
     let _done=false;
     function tryWB(){if(_done)return;if((window.challengeCompletions||[]).length>0){_done=true;if(window.currentMainView==='challenges'&&typeof window.renderWeekBar==='function')window.renderWeekBar();}}
@@ -6454,7 +6414,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     try{Object.defineProperty(window,'challengeCompletions',{get:()=>_c,set:v=>{_c=v;if(v&&v.length>0){_done=true;setTimeout(()=>{if(window.currentMainView==='challenges'&&typeof window.renderWeekBar==='function')window.renderWeekBar();},50);}},configurable:true});}catch(e){}
   })();
 
-  /* ─── OPTIONALE CHALLENGES SICHERSTELLEN ────────────── */
+  /* ==== OPTIONALE CHALLENGES SICHERSTELLEN ==== */
   (function(){
     const OPTS=[
       {id:'sport_fitness_30_optional',title:'Fitness · mind. 30 Minuten',points:30,icon:'🏋️',desc:'Leichtes bis mittleres Training für mind. 30 Minuten.',optional:true,active:true}
@@ -6465,7 +6425,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     [200,600,3100,6700].forEach(ms=>setTimeout(wrapRC,ms));
   })();
 
-  /* ─── getAllEvents: Google-Titel korrekt ─────────────── */
+  /* ==== getAllEvents: Google-Titel korrekt ==== */
   (function(){
     const pad=n=>String(n).padStart(2,'0');
     const keyOf=d=>{const x=d instanceof Date?d:new Date(String(d)+'T12:00:00');return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate());};
@@ -6494,7 +6454,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 </script>
 
 <style id="db-unified">
-/* ── Dashboard unified style ── */
+/* ==== Dashboard unified style ==== */
 .db-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);overflow:hidden}
 .db-head{padding:14px 18px 12px;border-bottom:1px solid var(--b1);background:var(--s1)}
 .db-title{font-size:14px;font-weight:700;color:var(--t1)}
@@ -6508,12 +6468,12 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 .dash-today-row{border-left:3px solid var(--acc)!important;background:linear-gradient(90deg,rgba(45,106,79,.04),transparent)!important}
 </style>
 
-<!-- ═══════════════════════════════════════
+<!-- ====
      CHANGE · FRISEUR-TRACKER
      Zeigt im Dashboard wie lange der letzte
      Friseur-Termin her ist + Benachrichtigung
      nach X Wochen (Standard: 3)
-═══════════════════════════════════════ -->
+==== -->
 <style id="friseur-tracker-style">
   #friseur-banner{
     display:none;
@@ -6859,12 +6819,12 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 </script>
 
 <script>
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+/* ==========================
    URLAUBS-TRACKER
    Zeigt im Dashboard verbrauchte / verbleibende Urlaubstage
    Berechnung: Kalendereinträge mit "Urlaub" im Titel,
                minus Wochenenden, minus Feiertage (gem. Bundesland)
-━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+========================== */
 (function(){
   var LS_ON    = 'urlaub_tracker_on';
   var LS_DAYS  = 'urlaub_tracker_days';
@@ -7380,11 +7340,11 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 })();
 </script>
 
-<!-- ═══════════════════════════════════════
+<!-- ====
      CHANGE · GLOBAL CHALLENGE POINT SYNC
      Nur gemeinsame Challenge-Punkte; Termine/Dashboard bleiben privat.
      WICHTIG: completeChallenge/undoChallenge werden NICHT überschrieben.
-════════════════════════════════════════ -->
+==== -->
 <script id="change-global-challenge-sync">
 (function(){
   'use strict';
@@ -7531,10 +7491,10 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 
 <script id="change-account-safe-challenge-sync">
 
-/* ── Account-sicherer Challenge Sync Fix ───────────────────
+/* ==== Account-sicherer Challenge Sync Fix ====
    Verhindert falsche Spieler wie "Mitspieler" / local-user.
    Challenge-Punkte werden nur mit echtem Google-Konto gespeichert.
-────────────────────────────────────────────────────────── */
+==== */
 (function(){
   'use strict';
 
@@ -8085,11 +8045,11 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 </script>
 
 <script id="change-settings-sync">
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
+/* ==========================
    CHANGE SETTINGS SYNC
    Zentrale Speicherung aller Einstellungspunkte über Firebase.
    Es werden nur Präferenzen gespeichert – keine Tokens und keine Access-Keys.
-━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+========================== */
 (function(){
   'use strict';
 
@@ -8482,13 +8442,13 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 
 
 <script>
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+/* ========================================================
    SETTINGS SYNC — Einstellungen ↔ Firestore change_settings
    Synct: Kalender-Optionen, Bundesland, Push, Live-Sync
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+======================================================== */
 (function(){
 
-  // ── Firestore-Dokument-ID für Settings ──
+  // ==== Firestore-Dokument-ID für Settings ====
   function settingsDocId(){
     // [FIX] Nur echte Email-Adressen verwenden — niemals UID oder leeren String
     const email = (typeof userInfo !== 'undefined' && userInfo.email)
@@ -8505,7 +8465,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     return null;
   }
 
-  // ── Alle Einstellungen sammeln ──
+  // ==== Alle Einstellungen sammeln ====
   function collectSettings(){
     const s = {};
     // Kalender-Optionen
@@ -8541,7 +8501,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     return s;
   }
 
-  // ── Einstellungen in Firestore speichern ──
+  // ==== Einstellungen in Firestore speichern ====
   window.saveSettingsToFirestore = async function(){
     const db = getDb();
     const docId = settingsDocId();
@@ -8554,7 +8514,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     } catch(e){ console.warn('[Settings Sync] Speichern fehlgeschlagen:', e.message); }
   };
 
-  // ── Einstellungen aus Firestore laden & anwenden ──
+  // ==== Einstellungen aus Firestore laden & anwenden ====
   window.loadSettingsFromFirestore = async function(){
     const db = getDb();
     const docId = settingsDocId();
@@ -8598,7 +8558,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     } catch(e){ console.warn('[Settings Sync] Laden fehlgeschlagen:', e.message); }
   };
 
-  // ── In saveCalSettings() einhängen ──
+  // ==== In saveCalSettings() einhängen ====
   const _origSaveCal = window.saveCalSettings;
   window.saveCalSettings = function(){
     if(typeof _origSaveCal === 'function') _origSaveCal.apply(this, arguments);
@@ -8606,14 +8566,14 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     setTimeout(() => window.saveSettingsToFirestore(), 300);
   };
 
-  // ── In setLiveSyncEnabled() einhängen ──
+  // ==== In setLiveSyncEnabled() einhängen ====
   const _origSetLive = window.setLiveSyncEnabled;
   window.setLiveSyncEnabled = function(enabled){
     if(typeof _origSetLive === 'function') _origSetLive.apply(this, arguments);
     setTimeout(() => window.saveSettingsToFirestore(), 300);
   };
 
-  // ── Nach Login: Settings laden ──
+  // ==== Nach Login: Settings laden ====
   const _origBoot = window.bootMainApp;
   window.bootMainApp = function(){
     if(typeof _origBoot === 'function') _origBoot.apply(this, arguments);
@@ -8623,7 +8583,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     }, 1500);
   };
 
-  // ── Beim Speichern von Push-Einstellungen auch synchen ──
+  // ==== Beim Speichern von Push-Einstellungen auch synchen ====
   // Beobachte localStorage-Änderungen (Polling alle 2s nach bootMainApp)
   let _settingsSyncTimer = null;
   const _origReqNotif = window.reqNotifPermission;
@@ -8638,15 +8598,15 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 
 
 <script>
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+/* ==================================================
    CHANGE APP — STREAK · BADGES · DARK MODE · NOTIF
    Firebase-Sync für alle Features
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+================================================== */
 (function(){
 
-/* ══════════════════════════════════════════════════
+/* ====
    DARK MODE
-══════════════════════════════════════════════════ */
+==== */
 const DM_KEY = 'change_v1_dark_mode';
 
 function applyTheme(dark){
@@ -8678,9 +8638,9 @@ window.toggleDarkMode = function(){
   }
 })();
 
-/* ══════════════════════════════════════════════════
+/* ====
    STREAK BERECHNUNG
-══════════════════════════════════════════════════ */
+==== */
 window.getCurrentStreak = function(email){
   try{
     const me = email || (typeof userInfo !== 'undefined' ? userInfo.email : '') || '';
@@ -8717,9 +8677,9 @@ window.getCurrentStreak = function(email){
   } catch(e){ return 0; }
 };
 
-/* ══════════════════════════════════════════════════
+/* ====
    MEILENSTEINE & ABZEICHEN
-══════════════════════════════════════════════════ */
+==== */
 const BADGES = [
   { id:'first_done',   icon:'🎯', name:'Erster Schritt',    desc:'Erste Challenge erledigt',        check: (s,p) => p.totalDone >= 1 },
   { id:'streak3',      icon:'🔥', name:'3 Tage dabei',      desc:'3 Tage Streak',                   check: (s,p) => s >= 3 },
@@ -8776,9 +8736,9 @@ function checkNewBadges(){
   if(typeof checkNotifications === 'function') checkNotifications();
 }
 
-/* ══════════════════════════════════════════════════
+/* ====
    STREAK & BADGE DISPLAY IM DASHBOARD
-══════════════════════════════════════════════════ */
+==== */
 function injectStreakCard(){
   // Alte Zeilen entfernen
   document.querySelectorAll('#streak-row, #streak-row-dash').forEach(el => el.remove());
@@ -8787,7 +8747,7 @@ function injectStreakCard(){
   const badges = window.getEarnedBadges();
   if(streak === 0 && badges.length === 0) return;
 
-  // ── Streak-Inhalt ──
+  // ==== Streak-Inhalt ====
   const streakPart = streak > 0
     ? `<span style="font-size:16px;line-height:1">🔥</span>
        <div style="display:flex;flex-direction:column;line-height:1.2">
@@ -8803,7 +8763,7 @@ function injectStreakCard(){
        </div>`
     : '';
 
-  // ── 1. In Challenges-Karte: direkt unter dem Header (oben) ──
+  // ==== 1. In Challenges-Karte: direkt unter dem Header (oben) ====
   const chHead = document.querySelector('.challenge-card-head');
   if(chHead && chHead.parentElement){
     const row = document.createElement('div');
@@ -8827,7 +8787,7 @@ function injectStreakCard(){
     }
   }
 
-  // ── 2. Im Dashboard-Challenges-Block ──
+  // ==== 2. Im Dashboard-Challenges-Block ====
   const dashChHead = document.querySelector('.dash-card-body');
   // KPI-Karte für Challenges im Dashboard
   const kpiCh = document.getElementById('kpi-challenges');
@@ -8844,9 +8804,9 @@ function injectStreakCard(){
   }
 }
 
-/* ══════════════════════════════════════════════════
+/* ====
    BENACHRICHTIGUNGS-PANEL — Streak + Badges
-══════════════════════════════════════════════════ */
+==== */
 window.openBadgePanel = function(){
   const badges   = window.getEarnedBadges();
   const allBadges= BADGES;
@@ -8885,9 +8845,9 @@ window.openBadgePanel = function(){
   if(typeof openPanel === 'function') openPanel('Meine Abzeichen', html);
 };
 
-/* ══════════════════════════════════════════════════
+/* ====
    BENACHRICHTIGUNGS-PANEL — Mit Streaks + Badges
-══════════════════════════════════════════════════ */
+==== */
 const _origOpenNotif = window.openNotifPanel;
 window.openNotifPanel = function(){
   try{
@@ -8971,9 +8931,9 @@ window.openNotifPanel = function(){
   }catch(e){ if(typeof _origOpenNotif==='function') _origOpenNotif(); }
 };
 
-/* ══════════════════════════════════════════════════
+/* ====
    FIREBASE SYNC — Streak + Badges in change_players
-══════════════════════════════════════════════════ */
+==== */
 window.syncStreakToFirestore = async function(){
   try{
     const db = window.firebase && firebase.firestore ? firebase.firestore() : null;
@@ -8997,9 +8957,9 @@ window.syncStreakToFirestore = async function(){
   }catch(e){ console.warn('[Streak Sync]', e.message); }
 };
 
-/* ══════════════════════════════════════════════════
+/* ====
    HOOKS — nach Challenge-Erledigung
-══════════════════════════════════════════════════ */
+==== */
 const _origComplete = window.completeChallenge;
 window.completeChallenge = function(id){
   if(typeof _origComplete === 'function') _origComplete.call(this, id);
@@ -9085,14 +9045,12 @@ console.warn('[Change] Streak · Badges · Dark Mode · Notif geladen ✓');
 
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 <script>
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   KONFETTI + GRUPPEN-ZIEL DER WOCHE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* KONFETTI + GRUPPEN-ZIEL DER WOCHE */
 (function(){
 
-/* ══════════════════════════════════════════════════
+/* ====
    KONFETTI — wenn alle Tages-Challenges erledigt
-══════════════════════════════════════════════════ */
+==== */
 let _konfettiDone = false;
 
 function checkAllDone(){
@@ -9159,9 +9117,9 @@ if(localStorage.getItem('change_konfetti_date') !== _today){
   _konfettiDone = false;
 }
 
-/* ══════════════════════════════════════════════════
+/* ====
    GRUPPEN-ZIEL DER WOCHE
-══════════════════════════════════════════════════ */
+==== */
 const GOAL_KEY = 'change_group_goal';
 const DEFAULT_GOAL = 350; // Standard-Punkteziel
 
@@ -9292,11 +9250,11 @@ window.setMainView = function(view){
 
 
 <script>
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+/* ==================================================
    ANFEUERN / ANSTUPSEN — Firebase Nudge System
    Ablauf: Klick → Firestore change_nudges → Empfänger
    sieht Benachrichtigung beim nächsten App-Öffnen
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+================================================== */
 (function(){
 
 const NUDGE_MESSAGES = [
@@ -9325,7 +9283,7 @@ function myName(){
   return (typeof userInfo!=='undefined' && userInfo.name) ? userInfo.name : 'Jemand';
 }
 
-// ── NUDGE SENDEN ─────────────────────────────────
+// ==== NUDGE SENDEN ====
 window.sendNudge = async function(toEmail, toName){
   const from = myEmail();
   if(!from || from === toEmail){
@@ -9377,7 +9335,7 @@ function _saveLocalNudge(nudge){
   }catch(e){}
 }
 
-// ── NUDGES EMPFANGEN ─────────────────────────────
+// ==== NUDGES EMPFANGEN ====
 window.checkIncomingNudges = async function(){
   const me = myEmail();
   if(!me) return;
@@ -9434,7 +9392,7 @@ function _storeNudgesForPanel(nudges){
   }catch(e){}
 }
 
-// ── NUDGE-VERLAUF IM BENACHRICHTIGUNGS-PANEL ────
+// ==== NUDGE-VERLAUF IM BENACHRICHTIGUNGS-PANEL ====
 window.getNudgesPanelHtml = function(){
   try{
     const arr = JSON.parse(sessionStorage.getItem('change_nudges_in')||'[]');
@@ -9458,7 +9416,7 @@ window.getNudgesPanelHtml = function(){
   }catch(e){ return ''; }
 };
 
-// ── HOOKS ────────────────────────────────────────
+// ==== HOOKS ====
 // Nach Login: Nudges prüfen
 const _nudgeBoot = window.bootMainApp;
 window.bootMainApp = function(){
