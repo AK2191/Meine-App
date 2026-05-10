@@ -2165,22 +2165,24 @@ function checkNotifications(){
         .filter(function(c){const cP=String(c.playerId||c.email||c.userEmail||'').toLowerCase();return String(c.date||'').slice(0,10)===_td2&&(!_me3||cP===_me3||cP.replace(/[^a-z0-9._@-]/g,'')===_me3norm);})
         .map(function(c){return String(c.challengeId);}));
       const _today3=(typeof dateKey==='function')?dateKey(new Date()):new Date().toISOString().slice(0,10);
+      // [FIX v3] Nur Pflicht-Challenges von heute zählen
       const _active=(typeof dailyChallenges==='function')
-        ? dailyChallenges().filter(function(c){ return !c.optional; })
-        : (window.challenges||[]).filter(function(c){
-            return c && c.active!==false && !c.optional &&
-              (c.recurrence==='daily' || !c.date || String(c.date||c.startDate||'').slice(0,10)===_today3);
-          });
-      const openCount=_active.filter(function(c){return !_done3.has(c.id);}).length;
-      const critCount=notifications.filter(function(n){return n.urgency==='crit';}).length;
+        ? dailyChallenges().filter(function(c){ return c && !c.optional; })
+        : [];
+      const openCount=_active.filter(function(c){return !_done3.has(String(c.id));}).length;
+      const critCount=(notifications||[]).filter(function(n){return n&&n.urgency==='crit';}).length;
 
       // Streak-Info für Badge
       const streakVal=(typeof window.getCurrentStreak==='function')?window.getCurrentStreak():0;
 
-      if(openCount>0||critCount>0){
-        const total=openCount+critCount;
-        badge.textContent=total>9?'9+':String(total);
+      // Badge zeigt nur kritische Termine — keine Challenge-Zahlen im Badge
+      if(critCount>0){
+        badge.textContent=critCount>9?'9+':String(critCount);
         badge.style.display='block';
+      } else if(openCount>0){
+        // Nur Punkt anzeigen wenn offene Challenges da sind (kein Zahl-Spam)
+        badge.textContent='';
+        badge.style.display='none'; // Badge deaktiviert — nur dot reicht
       } else {
         badge.style.display='none';
       }
@@ -2412,284 +2414,7 @@ document.addEventListener('touchend',e=>{
       const tabs=document.querySelector('.h-tabs');
       const btn=document.createElement('button');
       btn.className='h-tab'; btn.id='htab-challenges'; btn.onclick=()=>setMainView('challenges');
-      btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/></svg>Challenges';
-      tabs && tabs.appendChild(btn);
-    }
-    if(!document.getElementById('bnav-challenges')){
-      const nav=document.querySelector('.bnav-inner');
-      const btn=document.createElement('button');
-      btn.className='bnav-item'; btn.id='bnav-challenges'; btn.onclick=()=>setMainView('challenges');
-      btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/></svg><span class="bnav-label">Contest</span>';
-      nav && nav.appendChild(btn);
-    }
-  }
-
-  window.bootMainApp = function(){
-    originalBoot();
-    readChallengeState();
-    installChallengeView();
-    installChallengeNav();
-  };
-
-  window.setMainView = function(v){
-    if(v!=='challenges') return originalSetMainView(v);
-    currentMainView=v;
-    ['dashboard','calendar','challenges'].forEach(vv=>{
-      const el=document.getElementById(vv==='calendar'?'cal-body':vv+'-view');
-      if(el) el.style.display='none';
-    });
-    document.getElementById('cal-controls').style.display='none';
-    installChallengeView();
-    document.getElementById('challenges-view').style.display='flex';
-    document.querySelectorAll('.h-tab').forEach(t=>t.classList.remove('active'));
-    document.getElementById('htab-challenges')?.classList.add('active');
-    document.querySelectorAll('.bnav-item').forEach(t=>t.classList.remove('active'));
-    document.getElementById('bnav-challenges')?.classList.add('active');
-    renderChallenges();
-  };
-  window.fabAction = function(){
-    if(currentMainView==='challenges') openChallengePanel(null);
-    else originalFabAction();
-  };
-
-  window.buildKPIs = function(){
-    originalBuildKPIs();
-    readChallengeState();
-    const grid=document.getElementById('kpi-grid'); if(!grid||document.getElementById('kpi-challenges')) return;
-    const stats=getChallengeStats()[getCurrentPlayerId()]||{points:0,count:0};
-    const card=document.createElement('div'); card.id='kpi-challenges'; card.className='kpi-card good'; card.onclick=()=>setMainView('challenges');
-    card.innerHTML='<div class="kpi-icon-wrap green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/></svg></div><div class="kpi-num good-color">'+stats.points+'</div><div class="kpi-label">Challenge Punkte</div>';
-    grid.appendChild(card);
-  };
-
-  window.renderChallenges = function(){
-    readChallengeState();
-    const list=document.getElementById('challenges-list');
-    const board=document.getElementById('leaderboard-list');
-    if(!list||!board)return;
-    const active=challenges.filter(c=>c.active!==false);
-    list.innerHTML=active.length?active.map(ch=>{
-      const done=isChallengeDoneToday(ch.id);
-      return '<div class="challenge-item '+(done?'challenge-done':'')+'"><div class="challenge-icon">'+esc(ch.icon||'🏆')+'</div><div class="challenge-body"><div class="challenge-name">'+esc(ch.title)+'</div><div class="challenge-meta">'+esc(ch.desc||'')+' · '+(ch.points||0)+' Punkte</div></div><span class="points-pill">+'+(ch.points||0)+'</span><button class="btn '+(done?'btn-success':'btn-primary')+' btn-sm" onclick="completeChallenge(\''+ch.id+'\')">'+(done?'Erledigt':'Erledigen')+'</button><button class="btn btn-ghost btn-sm" onclick="openChallengePanel(\''+ch.id+'\')">Bearbeiten</button></div>';
-    }).join(''):'<div class="empty-state"><div class="empty-title">Keine Challenges</div><div class="empty-sub">Lege eine neue Challenge an.</div></div>';
-    const stats=getChallengeStats();
-    const players=[...challengePlayers].sort((a,b)=>(stats[b.id]?.points||0)-(stats[a.id]?.points||0));
-    board.innerHTML=players.length?players.map((p,idx)=>{
-      const st=stats[p.id]||{points:0,count:0}; const me=p.id===getCurrentPlayerId();
-      const medal=idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':(idx+1);
-      const live=p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>';
-      return '<div class="leader-row"><div class="leader-rank">'+medal+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+live+'</div><div class="leader-detail">'+st.count+' Challenges erledigt · Platz '+(idx+1)+(p.email?' · '+esc(p.email):'')+'</div></div><div class="leader-score">'+st.points+'</div></div>';
-    }).join(''):'<div class="dash-empty">Noch keine Mitspieler</div>';
-  };
-  window.completeChallenge = function(id){
-    const ch=challenges.find(c=>c.id===id); if(!ch)return;
-    if(isChallengeDoneToday(id)){toast('Diese Challenge ist heute schon erledigt','');return;}
-    challengeCompletions.push({id:'cc_'+uid(),challengeId:id,playerId:getCurrentPlayerId(),playerName:userInfo.name||userInfo.email||'Ich',date:todayKey(),points:parseInt(ch.points)||0,createdAt:new Date().toISOString()});
-    ls('challenge_completions',challengeCompletions); persistChangeState(); renderChallenges(); buildDashboard(); toast('+'+(ch.points||0)+' Punkte ✓','ok');
-  };
-  window._execResetToday = function(){
-    try{
-      const me2=getCurrentPlayerId(), td2=todayKey();
-      challengeCompletions=challengeCompletions.filter(function(c){ return !(c.playerId===me2&&c.date===td2); });
-      ls('challenge_completions',challengeCompletions);
-      if(typeof persistChangeState==='function') persistChangeState();
-      if(typeof renderChallenges==='function') renderChallenges();
-      if(typeof window.buildDashboard==='function') window.buildDashboard();
-      if(typeof renderWeekBar==='function') renderWeekBar();
-      if(typeof closePanel==='function') closePanel();
-      if(typeof toast==='function') toast('Heute zurückgesetzt ✓','ok');
-    }catch(err){ console.warn('Reset error:',err); }
-  };
-  window.resetTodayChallenges = function(){
-    if(typeof openPanel==='function'){
-      openPanel('Heute zurücksetzen',
-        '<div class="push-box" style="margin-bottom:16px">' +
-          '<div class="push-status">Alle deine heutigen Erledigungen werden gelöscht und die Punkte abgezogen.</div>' +
-        '</div>' +
-        '<button class="btn btn-danger btn-full" onclick="window._execResetToday()">Zurücksetzen</button>' +
-        '<button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="closePanel()">Abbrechen</button>'
-      );
-    }
-  };
-  window.openChallengePanel = function(id){
-    const ch=id?challenges.find(c=>c.id===id):null;
-    const html='<div class="fg"><label class="flabel">Titel *</label><input class="finput" id="ch-title" value="'+esc(ch?.title||'')+'" placeholder="z.B. 10 Minuten Bewegung"></div><div class="fr"><div class="fg"><label class="flabel">Punkte</label><input type="number" class="finput" id="ch-points" min="1" value="'+(ch?.points||10)+'"></div><div class="fg"><label class="flabel">Icon</label><input class="finput" id="ch-icon" value="'+esc(ch?.icon||'🏆')+'" placeholder="🏆"></div></div><div class="fg"><label class="flabel">Beschreibung</label><textarea class="finput" id="ch-desc" rows="4" placeholder="Was muss erledigt werden?">'+esc(ch?.desc||'')+'</textarea></div><div class="fa"><button class="btn btn-primary" style="flex:1" onclick="saveChallenge(\''+(ch?.id||'')+'\')">'+(ch?'Aktualisieren':'Challenge speichern')+'</button>'+(ch?'<button class="btn btn-danger" onclick="deleteChallenge(\''+ch.id+'\')">Löschen</button>':'')+'</div>';
-    openPanel(ch?'Challenge bearbeiten':'Neue Challenge',html);
-  };
-  window.saveChallenge = function(existingId){
-    const title=document.getElementById('ch-title')?.value.trim(); if(!title){toast('Bitte Titel eingeben','err');return;}
-    const ch={id:existingId||'ch_'+uid(),title:title,points:parseInt(document.getElementById('ch-points')?.value)||10,icon:document.getElementById('ch-icon')?.value.trim()||'🏆',desc:document.getElementById('ch-desc')?.value.trim()||'',active:true,createdAt:existingId?(challenges.find(c=>c.id===existingId)?.createdAt||new Date().toISOString()):new Date().toISOString(),updatedAt:new Date().toISOString()};
-    if(existingId){const i=challenges.findIndex(c=>c.id===existingId); if(i>=0)challenges[i]=ch; else challenges.push(ch);} else challenges.push(ch);
-    ls('challenges',challenges); persistChangeState(); closePanel(); renderChallenges(); buildDashboard(); toast('Challenge gespeichert ✓','ok');
-  };
-  window.deleteChallenge = function(id){
-    if(!confirm('Challenge wirklich löschen?'))return;
-    challenges=challenges.filter(c=>c.id!==id); challengeCompletions=challengeCompletions.filter(c=>c.challengeId!==id);
-    ls('challenges',challenges); ls('challenge_completions',challengeCompletions); persistChangeState(); closePanel(); renderChallenges(); buildDashboard(); toast('Challenge gelöscht','');
-  };
-  window.openParticipantPanel = function(){
-    const html='<div class="fg"><label class="flabel">Name des Mitspielers</label><input class="finput" id="pl-name" placeholder="z.B. Anna"></div><div class="fg"><label class="flabel">E-Mail optional</label><input class="finput" id="pl-email" placeholder="anna@example.com"></div><button class="btn btn-primary btn-full" onclick="addParticipant()">Mitspieler hinzufügen</button><div class="divider"></div><div class="section-label">Bestehende Mitspieler</div>'+challengePlayers.map(p=>'<div class="leader-row"><div class="leader-rank">👤</div><div><div class="leader-name">'+esc(p.name)+'</div><div class="leader-detail">'+esc(p.email||p.id)+'</div></div></div>').join('');
-    openPanel('Mitspieler',html);
-  };
-  window.addParticipant = function(){
-    const name=document.getElementById('pl-name')?.value.trim(); const email=document.getElementById('pl-email')?.value.trim();
-    if(!name){toast('Bitte Namen eingeben','err');return;}
-    const id=(email||('player_'+uid())).toLowerCase();
-    if(!challengePlayers.some(p=>p.id===id)) challengePlayers.push({id:id,name:name,email:email,createdAt:new Date().toISOString()});
-    ls('challenge_players',challengePlayers); persistChangeState(); closePanel(); renderChallenges(); toast('Mitspieler hinzugefügt ✓','ok');
-  };
-
-  window.syncLocalEventToGoogle = async function(ev){
-    if(!accessToken||isDemoMode||!ev||ev.source==='google')return;
-    const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const body={summary:ev.title,description:ev.desc||'',start:ev.time?{dateTime:ev.date+'T'+ev.time+':00',timeZone:tz}:{date:ev.date},end:ev.endTime?{dateTime:ev.date+'T'+ev.endTime+':00',timeZone:tz}:(ev.time?{dateTime:ev.date+'T'+ev.time+':00',timeZone:tz}:{date:ev.date})};
-    try{
-      const url=ev.googleEventId?'https://www.googleapis.com/calendar/v3/calendars/primary/events/'+encodeURIComponent(ev.googleEventId):'https://www.googleapis.com/calendar/v3/calendars/primary/events';
-      const r=await fetch(url,{method:ev.googleEventId?'PATCH':'POST',headers:{'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify(body)});
-      if(!r.ok)throw new Error('Google Kalender '+r.status);
-      const saved=await r.json(); const i=events.findIndex(e=>e.id===ev.id);
-      if(i>=0&&!events[i].googleEventId){events[i].googleEventId=saved.id; ls('events',events); persistChangeState();}
-      loadGoogleEvents();
-    }catch(e){console.warn('Auto Google Sync:',e);toast('Google Kalender-Sync fehlgeschlagen','err');}
-  };
-  window.saveEvent = function(existingId){
-    originalSaveEvent(existingId);
-    const ev=events[events.length-1];
-    if(accessToken&&!isDemoMode&&ev) syncLocalEventToGoogle(ev);
-    persistChangeState();
-  };
-  window.deleteEvent = function(id){originalDeleteEvent(id); persistChangeState();};
-
-  document.addEventListener('keydown',e=>{if(e.key==='5'&&!document.getElementById('side-panel').classList.contains('open'))setMainView('challenges');});
-})();
-
-
-
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━
-   CHANGE CALENDAR EXTENSIONS: VIEWS, HOLIDAYS, STATE SETTINGS, CHALLENGE DOTS
-━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-(function(){
-  const STATE_OPTIONS={
-    'ALL':'Alle Bundesländer anzeigen','BW':'Baden-Württemberg','BY':'Bayern','BY-AUGSBURG':'Bayern · Augsburg','BE':'Berlin','BB':'Brandenburg','HB':'Bremen','HH':'Hamburg','HE':'Hessen','MV':'Mecklenburg-Vorpommern','NI':'Niedersachsen','NW':'Nordrhein-Westfalen','RP':'Rheinland-Pfalz','SL':'Saarland','SN':'Sachsen','ST':'Sachsen-Anhalt','SH':'Schleswig-Holstein','TH':'Thüringen'
-  };
-  if(!window.calendarSettings){window.calendarSettings={state:(function(){try{return localStorage.getItem('change_v1_holiday_state')||JSON.parse(localStorage.getItem('holiday_state')||'null')||localStorage.getItem('holiday_state')||'ALL';}catch(e){return localStorage.getItem('change_v1_holiday_state')||localStorage.getItem('holiday_state')||'ALL';}})(),holidayNotifications:ls('holiday_notifications')!==false};}
-  function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x;}
-  function easterDate(year){
-    const a=year%19,b=Math.floor(year/100),c=year%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),day=((h+l-7*m+114)%31)+1;
-    return new Date(year,mo-1,day);
-  }
-  function H(date,name,states,local){return {date:dateKey(date),name,states:states||['ALL'],local:!!local};}
-  window.getGermanHolidays=function(year){
-    const e=easterDate(year), list=[];
-    list.push(H(new Date(year,0,1),'Neujahr',['ALL']));
-    list.push(H(new Date(year,0,6),'Heilige Drei Könige',['BW','BY','BY-AUGSBURG','ST']));
-    list.push(H(new Date(year,2,8),'Internationaler Frauentag',['BE','MV']));
-    list.push(H(addDays(e,-2),'Karfreitag',['ALL']));
-    list.push(H(addDays(e,1),'Ostermontag',['ALL']));
-    list.push(H(new Date(year,4,1),'Tag der Arbeit',['ALL']));
-    list.push(H(addDays(e,39),'Christi Himmelfahrt',['ALL']));
-    list.push(H(addDays(e,50),'Pfingstmontag',['ALL']));
-    list.push(H(addDays(e,60),'Fronleichnam',['BW','BY','BY-AUGSBURG','HE','NW','RP','SL']));
-    list.push(H(new Date(year,7,8),'Augsburger Friedensfest',['BY-AUGSBURG'],true));
-    list.push(H(new Date(year,7,15),'Mariä Himmelfahrt',['SL','BY','BY-AUGSBURG']));
-    list.push(H(new Date(year,8,20),'Weltkindertag',['TH']));
-    list.push(H(new Date(year,9,3),'Tag der Deutschen Einheit',['ALL']));
-    list.push(H(new Date(year,9,31),'Reformationstag',['BB','MV','SN','ST','TH','HB','HH','NI','SH']));
-    list.push(H(new Date(year,10,1),'Allerheiligen',['BW','BY','BY-AUGSBURG','NW','RP','SL']));
-    const nov23=new Date(year,10,23); const offset=(nov23.getDay()+4)%7; list.push(H(addDays(nov23,-offset),'Buß- und Bettag',['SN']));
-    list.push(H(new Date(year,11,25),'1. Weihnachtstag',['ALL']));
-    list.push(H(new Date(year,11,26),'2. Weihnachtstag',['ALL']));
-    return list;
-  };
-  window.getHolidaysForDate=function(dk){
-    const y=parseInt(dk.slice(0,4),10), state=(window.calendarSettings?.state)||ls('holiday_state')||'ALL';
-    return getGermanHolidays(y).filter(h=>h.date===dk && (state==='ALL'||h.states.includes('ALL')||h.states.includes(state)));
-  };
-  function challengeScheduleForDate(dk){
-    const active=(window.challenges||challenges||[]).filter(c=>c.active!==false);
-    return active.filter(c=>{
-      if(c.recurrence==='daily') return true;
-      const sd=c.date||c.startDate;
-      if(sd) return sd===dk;
-      return dk===dateKey(new Date());
-    });
-  }
-  window.getChallengeDayStatus=function(dk){
-    const me=String((typeof getCurrentPlayerId==='function')?getCurrentPlayerId():((userInfo&&userInfo.email)||'local')).trim().toLowerCase();
-    const completions=(window.challengeCompletions||challengeCompletions||[]).filter(c=>{
-      const player=String(c.playerId||c.userEmail||c.email||'').trim().toLowerCase();
-      return player===me && String(c.date||'')===dk;
-    });
-    const points=completions.reduce((sum,c)=>{
-      const ch=(window.challenges||challenges||[]).find(x=>String(x.id)===String(c.challengeId))||{};
-      return sum+(parseInt(c.points??ch.points??0,10)||0);
-    },0);
-    if(points<=0) return null;
-    return {planned:completions.length,done:completions.length,points,allDone:true};
-  };
-  function eventRowsForDate(dk){
-    return getAllEvents().filter(e=>e.date===dk).sort((a,b)=>(a.time||'99:99').localeCompare(b.time||'99:99'));
-  }
-  function renderHolidayAndChallengeDecorations(dk){
-    const hs=getHolidaysForDate(dk), ch=getChallengeDayStatus(dk);
-    let html='';
-    if(ch) html+='<span class="challenge-day-dot '+(ch.allDone?'done':'')+'" title="Challenges: '+ch.done+'/'+ch.planned+' erledigt"></span>';
-    if(hs.length) html+=hs.slice(0,2).map(h=>'<div class="holiday-line" title="'+esc(h.name+' · '+h.states.map(s=>STATE_OPTIONS[s]||s).join(', '))+'">'+esc(h.name)+'</div>').join('');
-    return html;
-  }
-  const oldRenderMonth=window.renderMonth;
-  window.renderMonth=function(y,m){
-    const grid=document.getElementById('month-grid'); if(!grid)return;
-    grid.className=''; grid.style.display='grid'; grid.style.gridTemplateRows='repeat(6,1fr)'; grid.innerHTML='';
-    let firstDay=new Date(y,m,1).getDay(); firstDay=firstDay===0?6:firstDay-1;
-    const dim=new Date(y,m+1,0).getDate(), prevDim=new Date(y,m,0).getDate(), cells=[];
-    for(let i=0;i<firstDay;i++) cells.push({d:prevDim-firstDay+1+i,m:m===0?11:m-1,y:m===0?y-1:y,other:true});
-    for(let i=1;i<=dim;i++) cells.push({d:i,m,y,other:false});
-    while(cells.length<42){const ld=cells.length-firstDay-dim+1;cells.push({d:ld,m:m===11?0:m+1,y:m===11?y+1:y,other:true});}
-    for(let w=0;w<6;w++){
-      const row=document.createElement('div'); row.className='week-row';
-      for(let d=0;d<7;d++){
-        const c=cells[w*7+d], dt=new Date(c.y,c.m,c.d), dk=dateKey(dt), dayEvs=eventRowsForDate(dk);
-        const cell=document.createElement('div'); cell.className='day-cell'+(c.other?' other':'')+(d>=5?' weekend':'')+(isToday(dt)?' today':''); cell.onclick=()=>onDayClick(dt,dayEvs);
-        let html='<div class="day-num-wrap"><div class="day-num">'+c.d+'</div></div>'+renderHolidayAndChallengeDecorations(dk);
-        const maxV=window.innerWidth<480?1:2;
-        dayEvs.slice(0,maxV).forEach(ev=>{html+='<div class="ev-chip '+ev.color+'" onclick="event.stopPropagation();openEventPanel(\''+ev.id+'\')">'+esc(ev.title)+'</div>';});
-        if(dayEvs.length>maxV) html+='<div class="more-chip">+'+(dayEvs.length-maxV)+'</div>';
-        cell.innerHTML=html; row.appendChild(cell);
-      }
-      grid.appendChild(row);
-    }
-  };
-  window.renderYear=function(y){
-    const grid=document.getElementById('month-grid'); if(!grid)return;
-    grid.style.display='grid'; grid.style.gridTemplateRows='none'; grid.className='year-grid'; grid.innerHTML='';
-    for(let m=0;m<12;m++){
-      const card=document.createElement('div'); card.className='year-month-card'; card.onclick=()=>{curDate=new Date(y,m,1);setCalView('month');};
-      let first=new Date(y,m,1).getDay(); first=first===0?6:first-1; const dim=new Date(y,m+1,0).getDate();
-      let html='<div class="year-month-title">'+DE_MONTHS[m]+'</div><div class="year-mini-grid">';
-      ['M','D','M','D','F','S','S'].forEach(x=>html+='<div class="year-mini-day" style="font-weight:800;color:var(--t5)">'+x+'</div>');
-      for(let i=0;i<first;i++)html+='<div></div>';
-      for(let d=1;d<=dim;d++){const dt=new Date(y,m,d), dk=dateKey(dt), hs=getHolidaysForDate(dk), ch=getChallengeDayStatus(dk); html+='<div class="year-mini-day '+(isToday(dt)?'today ':'')+(hs.length?'holiday':'')+'">'+d+(ch?'<span class="challenge-day-dot '+(ch.allDone?'done':'')+'"></span>':'')+'</div>';}
-      html+='</div>'; card.innerHTML=html; grid.appendChild(card);
-    }
-  };
-  window.renderWorkweek=function(){
-    const grid=document.getElementById('month-grid'); if(!grid)return;
-    grid.style.display='grid'; grid.style.gridTemplateRows='none'; grid.className='workweek-grid'; grid.innerHTML='';
-    const base=new Date(curDate); const day=(base.getDay()+6)%7; const monday=addDays(base,-day);
-    for(let i=0;i<5;i++){
-      const dt=addDays(monday,i), dk=dateKey(dt), hs=getHolidaysForDate(dk), ch=getChallengeDayStatus(dk), evs=eventRowsForDate(dk);
-      const card=document.createElement('div'); card.className='workday-card'; card.onclick=()=>onDayClick(dt,evs);
-      let html=(ch?'<span class="challenge-day-dot '+(ch.allDone?'done':'')+'"></span>':'')+'<div class="workday-head">'+DE_DAYS_F[dt.getDay()]+'</div><div class="workday-date">'+fmtDate(dk)+'</div>';
-      if(hs.length) html+=hs.map(h=>'<div class="holiday-badge">'+esc(h.name)+'</div>').join('');
-      evs.forEach(ev=>html+='<div class="ag-card '+ev.color+'" style="margin-bottom:7px" onclick="event.stopPropagation();openEventPanel(\''+ev.id+'\')"><div class="ag-time">'+(ev.time||'Ganztägig')+'</div><div class="ag-body"><div class="ag-title">'+esc(ev.title)+'</div></div></div>');
-      if(!evs.length) html+='<div class="dash-empty">Keine Termine</div>';
-      card.innerHTML=html; grid.appendChild(card);
-    }
-  };
-  window.renderTodayView=function(){
-    const ag=document.getElementById('agenda-view'), dk=dateKey(new Date()), hs=getHolidaysForDate(dk), chs=challengeScheduleForDate(dk), evs=eventRowsForDate(dk);
-    let html='<div class="today-view"><div class="dash-hello"><h1>Heute</h1><p>'+fmtDate(dk)+'</p></div>';
+      btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"></div>';
     if(hs.length) html+='<div class="dash-card" style="margin-bottom:14px"><div class="dash-card-head"><div class="dash-card-title">Feiertage</div><div class="dash-card-sub">'+esc(STATE_OPTIONS[calendarSettings.state]||calendarSettings.state)+'</div></div><div class="dash-card-body">'+hs.map(h=>'<div class="dash-row"><div class="dash-row-icon" style="background:var(--amb-d)">🎉</div><div class="dash-row-body"><div class="dash-row-title">'+esc(h.name)+'</div><div class="dash-row-sub">'+esc(h.states.map(s=>STATE_OPTIONS[s]||s).join(', '))+'</div></div></div>').join('')+'</div></div>';
     html+='<div class="dash-card" style="margin-bottom:14px"><div class="dash-card-head"><div class="dash-card-title">Challenges</div><button class="btn btn-ghost btn-sm" onclick="setMainView(\'challenges\')">Öffnen</button></div><div class="dash-card-body">'+(chs.length?chs.map(ch=>'<div class="dash-row"><div class="dash-row-icon" style="background:var(--pur-d)">'+esc(ch.icon||'🏆')+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(ch.title)+'</div><div class="dash-row-sub">'+(ch.points||0)+' Punkte</div></div><button class="btn btn-primary btn-sm" onclick="completeChallenge(\''+ch.id+'\')">Erledigen</button></div>').join(''):'<div class="dash-empty">Heute keine Challenge geplant</div>')+'</div></div>';
     html+='<div class="dash-card"><div class="dash-card-head"><div class="dash-card-title">Termine</div></div><div class="dash-card-body">'+(evs.length?evs.map(ev=>'<div class="dash-row" onclick="openEventPanel(\''+ev.id+'\')"><div class="dash-row-icon" style="background:var(--acc-d)">📅</div><div class="dash-row-body"><div class="dash-row-title">'+esc(ev.title)+'</div><div class="dash-row-sub">'+(ev.time?(ev.time+(ev.endTime&&ev.endTime!==ev.time?' – '+ev.endTime:'')+' Uhr'):'Ganztägig')+'</div></div></div>').join(''):'<div class="dash-empty">Heute keine Termine</div>')+'</div></div></div>';
@@ -3448,7 +3173,7 @@ if(currentMainView==='calendar'){renderCalendar();renderUpcoming();} syncEventTo
   async function fetchRecentFromFirebase(playerId){const out=[],seen=new Set(); try{if(typeof firebase==='undefined'||!firebase.firestore)return []; const db=firebase.firestore(), id=norm(playerId); for(const field of ['playerId','userEmail','email']){try{const snap=await db.collection('change_completions').where(field,'==',id).limit(100).get(); snap.forEach(doc=>{const d={id:doc.id,...doc.data()}; if(!seen.has(d.id)){seen.add(d.id); out.push(d);}});}catch(e){console.warn(PATCH,'firebase query',field,e);}}}catch(e){console.warn(PATCH,'firebase recent',e);} return out.sort((x,y)=>completionTimeValue(y)-completionTimeValue(x)).slice(0,5);}
   window.openPlayerRecentPanel=function(playerId,playerName){const id=norm(playerId)||account().id, name=playerName||id, initial=localRecent(id,5); const html='<div class="last-completed-panel"><div class="section-label">Letzte 5 erledigte Aufgaben</div><div class="last-completed-person">'+esc(name)+'</div><div id="last-completed-list">'+renderRecentHtml(initial,true)+'</div></div>'; if(typeof openPanel==='function')openPanel('Erledigte Aufgaben',html); fetchRecentFromFirebase(id).then(remote=>{const list=$('last-completed-list'); if(!list)return; const merged=[],seen=new Set(); remote.concat(initial).sort((x,y)=>completionTimeValue(y)-completionTimeValue(x)).forEach(c=>{if(c&&c.id&&!seen.has(c.id)){seen.add(c.id); merged.push(c);}}); list.innerHTML=renderRecentHtml(merged.slice(0,5),false);});};
   function playerStats(){const a=account(), td=(typeof dateKey==='function'?dateKey(new Date()):new Date().toISOString().slice(0,10)), by={}; (window.challengePlayers||[]).forEach(p=>{const id=norm(p&&(p.email||p.id)); if(!id||id.includes('demo')||badId(id))return; by[id]={id,name:p.name||p.email||id,email:id,total:0,today:0,count:0,online:!!p.online};}); (window.challengeCompletions||[]).forEach(c=>{let id=completionPlayerId(c); if(badId(id))id=a.id; if(!id||id.includes('demo'))return; if(!by[id])by[id]={id,name:c.playerName||id,email:id,total:0,today:0,count:0,online:id===a.id}; const p=parseInt(c.points,10)||0; by[id].total+=p; by[id].count++; if(String(c.date||'').slice(0,10)===td)by[id].today+=p;}); if(!by[a.id])by[a.id]={id:a.id,name:a.name,email:a.email||a.id,total:0,today:0,count:0,online:true}; return Object.values(by).sort((x,y)=>y.total-x.total);}
-  function enhanceLeaderboard(){const board=$('leaderboard-list'); if(!board)return; const a=account(); const players=playerStats(); board.innerHTML=players.map((p,i)=>{const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1, me=p.id===a.id?' · Du':''; return '<div class="leader-row clickable" onclick="openPlayerRecentPanel(\''+esc(p.id)+'\',\''+esc(p.name||p.email||p.id)+'\')" title="Letzte erledigte Aufgaben anzeigen"><div class="leader-rank">'+medal+'</div><div><div class="leader-name">'+esc(p.name||p.email)+me+(p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>')+'</div><div class="leader-detail">Heute: '+p.today+' P · Gesamt: '+p.total+' P · '+p.count+' erledigt</div></div><div class="leader-score">'+p.total+'</div></div>';}).join('')||'<div class="dash-empty">Noch keine Kontest-Daten</div>';}
+  function enhanceLeaderboard(){const board=$('leaderboard-list'); if(!board)return; const a=account(); const players=playerStats(); board.innerHTML=players.map((p,i)=>{const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1; const isMe=p.id===a.id; const meTag=isMe?' · Du':''; const nudge=isMe?'':'<button class="nudge-btn" onclick="event.stopPropagation();window.sendNudge(\''+esc(p.id)+'\',\''+esc(p.name||p.email||p.id)+'\')" title="Anfeuern 💪">💪</button>'; return '<div class="leader-row clickable" onclick="openPlayerRecentPanel(\''+esc(p.id)+'\',\''+esc(p.name||p.email||p.id)+'\')" title="Letzte erledigte Aufgaben anzeigen"><div class="leader-rank">'+medal+'</div><div style="flex:1"><div class="leader-name">'+esc(p.name||p.email)+meTag+(p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>')+'</div><div class="leader-detail">Heute: '+p.today+' P · Gesamt: '+p.total+' P · '+p.count+' erledigt</div></div><div style="display:flex;align-items:center;gap:8px">'+nudge+'<div class="leader-score">'+p.total+'</div></div></div>';}).join('')||'<div class="dash-empty">Noch keine Kontest-Daten</div>';}
   const prevRender=window.renderChallenges; window.renderChallenges=function(){if(typeof prevRender==='function')prevRender.apply(this,arguments); try{enhanceLeaderboard();}catch(e){console.warn(PATCH,'enhance',e);}};
   if(!document.getElementById('change-v4-last-five-style')){const st=document.createElement('style');st.id='change-v4-last-five-style';st.textContent='.leader-row.clickable{cursor:pointer}.leader-row.clickable:hover{background:var(--s2)}.last-completed-person{font-size:18px;font-weight:800;color:var(--t1);margin:4px 0 14px}.last-completed-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--b1)}.last-completed-row:last-child{border-bottom:none}.last-completed-icon{width:36px;height:36px;border-radius:10px;background:var(--acc-d);display:flex;align-items:center;justify-content:center;flex-shrink:0}.last-completed-main{min-width:0}.last-completed-title{font-size:14px;font-weight:800;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.last-completed-meta{font-size:12px;color:var(--t3);margin-top:2px}';document.head.appendChild(st);}
   window.addEventListener('load',function(){setTimeout(function(){try{if((window.currentMainView||'')==='challenges')enhanceLeaderboard();}catch(e){}},900);});
@@ -6515,7 +6240,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
         }).join(' ');
 
       var urlaubSection =
-        '<div class="settings-group">'        +'<div class="settings-group-label">Urlaubs-Tracker</div>'        +'<div class="toggle-row"><div class="toggle-copy">'        +'<div class="toggle-title">🏖️ Urlaubs-Tracker <span class="status-pill '+(uOn?'status-on':'status-off')+'">'+(uOn?'AKTIV':'AUS')+'</span></div>'        +'<div class="toggle-sub">Zeigt verbrauchte &amp; verbleibende Urlaubstage. Wochenenden &amp; Feiertage herausgerechnet.</div>'        +'</div><label class="switch"><input type="checkbox" id="us-urlaub-on" '+(uOn?'checked':'')+' onchange="window.setUrlaubEnabled&&window.setUrlaubEnabled(this.checked)"><span class="slider"></span></label></div>'        +'<div style="padding:8px 14px 4px;display:flex;align-items:center;gap:10px">'        +'<label style="font-size:12px;color:var(--t3);font-weight:600;white-space:nowrap">Jahresurlaub</label>'        +'<input type="number" class="finput" id="us-urlaub-days" min="1" max="365" value="'+uDy+'" style="max-width:80px" onchange="window.setUrlaubDays&&window.setUrlaubDays(parseInt(this.value)||30)">'        +'<span style="font-size:12px;color:var(--t4)"> Tage</span>'        +'</div>'        +'<div style="padding:8px 14px 12px">'        +'<div style="font-size:12px;color:var(--t3);font-weight:600;margin-bottom:6px">Halbe Urlaubstage</div>'        +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">'        +'<select class="finput" id="us-half-month" style="max-width:90px">'        +['01 Jan','02 Feb','03 Mär','04 Apr','05 Mai','06 Jun','07 Jul','08 Aug','09 Sep','10 Okt','11 Nov','12 Dez'].map(function(m){var v=m.slice(0,2);return '<option value="'+v+'">'+m.slice(3)+'</option>';}).join('')        +'</select>'        +'<select class="finput" id="us-half-day" style="max-width:70px">'        +Array.from({length:31},function(_,i){var d=String(i+1).padStart(2,'0');return '<option value="'+d+'">'+d+'.</option>';}).join('')        +'</select>'        +'<button class="btn btn-secondary btn-sm" onclick="(function(){ var m=document.getElementById(&quot;us-half-month&quot;); var d=document.getElementById(&quot;us-half-day&quot;); if(!m||!d)return; var v=m.value+&quot;-&quot;+d.value; window.addUrlaubHalfDay&&window.addUrlaubHalfDay(v); })()">'        +'+ Hinzufügen</button>'        +'</div>'        +'<div data-half-list style="display:flex;flex-wrap:wrap;gap:6px;min-height:16px">'+halfDayChips+'</div>'        +'<div style="font-size:11px;color:var(--t4);margin-top:6px">Dieser Tag zählt als 0,5 statt 1 Urlaubstag.</div>'        +'</div>'        +'</div>';
+        '<div class="settings-group">'        +'<div class="settings-group-label">Urlaubs-Tracker</div>'        +'<div class="toggle-row"><div class="toggle-copy">'        +'<div class="toggle-title">🏖️ Urlaubs-Tracker <span class="status-pill '+(uOn?'status-on':'status-off')+'">'+(uOn?'AKTIV':'AUS')+'</span></div>'        +''        +'</div><label class="switch"><input type="checkbox" id="us-urlaub-on" '+(uOn?'checked':'')+' onchange="window.setUrlaubEnabled&&window.setUrlaubEnabled(this.checked)"><span class="slider"></span></label></div>'        +'<div style="padding:8px 14px 4px;display:flex;align-items:center;gap:10px">'        +'<label style="font-size:12px;color:var(--t3);font-weight:600;white-space:nowrap">Jahresurlaub</label>'        +'<input type="number" class="finput" id="us-urlaub-days" min="1" max="365" value="'+uDy+'" style="max-width:80px" onchange="window.setUrlaubDays&&window.setUrlaubDays(parseInt(this.value)||30)">'        +'<span style="font-size:12px;color:var(--t4)"> Tage</span>'        +'</div>'        +'<div style="padding:8px 14px 12px">'        +'<div style="font-size:12px;color:var(--t3);font-weight:600;margin-bottom:6px">Halbe Urlaubstage</div>'        +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">'        +'<select class="finput" id="us-half-month" style="max-width:90px">'        +['01 Jan','02 Feb','03 Mär','04 Apr','05 Mai','06 Jun','07 Jul','08 Aug','09 Sep','10 Okt','11 Nov','12 Dez'].map(function(m){var v=m.slice(0,2);return '<option value="'+v+'">'+m.slice(3)+'</option>';}).join('')        +'</select>'        +'<select class="finput" id="us-half-day" style="max-width:70px">'        +Array.from({length:31},function(_,i){var d=String(i+1).padStart(2,'0');return '<option value="'+d+'">'+d+'.</option>';}).join('')        +'</select>'        +'<button class="btn btn-secondary btn-sm" onclick="(function(){ var m=document.getElementById(&quot;us-half-month&quot;); var d=document.getElementById(&quot;us-half-day&quot;); if(!m||!d)return; var v=m.value+&quot;-&quot;+d.value; window.addUrlaubHalfDay&&window.addUrlaubHalfDay(v); })()">'        +'+ Hinzufügen</button>'        +'</div>'        +'<div data-half-list style="display:flex;flex-wrap:wrap;gap:6px;min-height:16px">'+halfDayChips+'</div>'        +''        +'</div>'        +'</div>';
 
       return friseurSection + urlaubSection;
     }());
@@ -6538,23 +6263,23 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     const syncPane=`
       <div class="settings-group">
         <div class="settings-group-label">Benachrichtigungen</div>
-        ${switchRow('Push-Benachrichtigungen <span class="status-pill '+(pushOn?'status-on':'status-off')+'">'+(pushOn?'AKTIV':'INAKTIV')+'</span>','Erinnerungen für offene Challenges.','us-toggle-push',pushOn)}
+        ${switchRow('Push-Benachrichtigungen <span class="status-pill '+(pushOn?'status-on':'status-off')+'">'+(pushOn?'AKTIV':'INAKTIV')+'</span>','','us-toggle-push',pushOn)}
         <div style="padding:0 14px 12px">
           <button class="btn btn-secondary btn-full" style="font-size:12px" onclick="window._sendTestNotification()">Test-Benachrichtigung senden</button>
         </div>
       </div>
       <div class="settings-group">
         <div class="settings-group-label">Synchronisierung</div>
-        ${switchRow('Live-Mitspieler <span class="status-pill '+(liveOn?'status-on':'status-off')+'">'+(liveOn?'VERBUNDEN':'DEAKTIVIERT')+'</span>','Mitspieler-Status live über Firebase.','us-toggle-live',liveOn)}
-        ${switchRow('Auto-Challenges <span class="status-pill '+(autoOn?'status-on':'status-off')+'">'+(autoOn?'AKTIV':'INAKTIV')+'</span>','Erzeugt täglich neue Sportübungen.','us-toggle-auto',autoOn)}
+        ${switchRow('Live-Mitspieler <span class="status-pill '+(liveOn?'status-on':'status-off')+'">'+(liveOn?'VERBUNDEN':'DEAKTIVIERT')+'</span>','','us-toggle-live',liveOn)}
+        ${switchRow('Auto-Challenges <span class="status-pill '+(autoOn?'status-on':'status-off')+'">'+(autoOn?'AKTIV':'INAKTIV')+'</span>','','us-toggle-auto',autoOn)}
       </div>
       <div class="settings-group">
         <div class="settings-group-label">Google Kalender</div>
         <div class="toggle-row">
           <div class="toggle-copy">
             <div class="toggle-title">${gDot}Google Kalender ${gPill}</div>
-            <div class="toggle-sub">${gIn?'Termine aus Google Kalender werden angezeigt.':'Bitte über den Google-Login verbinden.'}</div>
-            <div style="color:${gIn?'#22c55e':'#ef4444'};font-weight:600;font-size:11px;margin-top:4px">${gIn?'● Verbunden':'● Nicht angemeldet'}</div>
+            <div class="toggle-sub">${gIn?'':''}</div>
+            
           </div>
           <label class="switch"><input type="checkbox" id="us-toggle-gsync" ${gOn?'checked':''} ${!gSync?'disabled':''}><span class="slider"></span></label>
         </div>
@@ -6612,7 +6337,21 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     },80);
   };
 
-  window._sendTestNotification=function(){if(typeof Notification==='undefined'||Notification.permission!=='granted'){if(typeof toast==='function')toast('Push zuerst aktivieren','err');return;}try{new Notification('Change',{body:'Push funktioniert ✓'});if(typeof toast==='function')toast('Test gesendet ✓','ok');}catch(e){if(typeof toast==='function')toast('Test fehlgeschlagen','err');}};
+  window._sendTestNotification=async function(){
+    const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isPWA=window.navigator.standalone||window.matchMedia('(display-mode: standalone)').matches;
+    if(isIOS&&!isPWA){if(typeof toast==='function') toast('📱 iOS: Als App installieren (Teilen → Zum Home-Bildschirm), dann Push aktivieren.',''); return;}
+    if(!('Notification' in window)){if(typeof toast==='function') toast('Push wird hier nicht unterstützt.','err'); return;}
+    if(Notification.permission==='denied'){if(typeof toast==='function') toast('Push blockiert — in Browser-Einstellungen erlauben.','err'); return;}
+    if(Notification.permission!=='granted'){const p=await Notification.requestPermission(); if(p!=='granted'){if(typeof toast==='function') toast('Push nicht erlaubt.','err'); return;}}
+    try{
+      const n=new Notification('Change · Test 🔔',{body:'Push-Benachrichtigungen funktionieren!',icon:'./icon-192.png',tag:'change-test'});
+      n.onclick=()=>{window.focus();n.close();}; if(typeof toast==='function') toast('Test-Push gesendet ✓','ok');
+    }catch(e){
+      if('serviceWorker' in navigator){navigator.serviceWorker.ready.then(sw=>{sw.showNotification('Change · Test 🔔',{body:'Push funktioniert!',icon:'./icon-192.png'}); if(typeof toast==='function') toast('Test ✓','ok');}).catch(()=>{if(typeof toast==='function') toast('Fehlgeschlagen: '+e.message,'err');});
+      }else{if(typeof toast==='function') toast('Fehlgeschlagen: '+e.message,'err');}
+    }
+  };
   window._switchSettingsTab=function(tab){ ['calendar','dashboard','sync'].forEach(t=>{const b=$('us-tab-'+t),p=$('us-pane-'+t);if(b)b.classList.toggle('active',t===tab);if(p)p.classList.toggle('active',t===tab);});};
 
   // In-Place Sync-Status aktualisieren ohne Panel zu schließen
@@ -9418,7 +9157,7 @@ if(localStorage.getItem('change_konfetti_date') !== _today){
    GRUPPEN-ZIEL DER WOCHE
 ══════════════════════════════════════════════════ */
 const GOAL_KEY = 'change_group_goal';
-const DEFAULT_GOAL = 200; // Standard-Punkteziel
+const DEFAULT_GOAL = 350; // Standard-Punkteziel
 
 function getWeekStart(){
   const d = new Date();
@@ -9458,6 +9197,7 @@ function getGroupPoints(){
   for(let i=0;i<7;i++){
     days.push(new Date(d.getTime()+i*86400000).toISOString().slice(0,10));
   }
+  // ALLE Spieler zählen — nicht nur eigene
   return (window.challengeCompletions||[])
     .filter(c => days.includes(String(c.date||'').slice(0,10)))
     .reduce((s,c) => s + (parseInt(c.points)||0), 0);
@@ -9500,7 +9240,6 @@ window.renderGroupGoal = function(){
     </div>
     <div style="display:flex;justify-content:space-between;margin-top:6px">
       <span style="font-size:11px;color:var(--t3)">${pct}% erreicht</span>
-      <button style="font-size:11px;color:var(--t4);background:none;border:none;cursor:pointer;padding:0" onclick="openGoalSettings()">Ziel ändern</button>
     </div>
     ${done ? '<div style="font-size:12px;font-weight:600;color:var(--grn);margin-top:8px;text-align:center">🎉 Ziel erreicht! Ihr seid großartig!</div>' : ''}
   `;
@@ -9512,21 +9251,7 @@ window.renderGroupGoal = function(){
   }
 };
 
-window.openGoalSettings = function(){
-  const goal = getGroupGoal();
-  const html = `
-    <div style="text-align:center;font-size:32px;margin-bottom:16px">🎯</div>
-    <div class="fg">
-      <label class="flabel">Punkte-Ziel diese Woche (für alle zusammen)</label>
-      <input class="finput" id="goal-input" type="number" min="50" max="5000" step="50" value="${goal.target}">
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0">
-      ${[100,200,300,500].map(v=>`<button class="btn btn-secondary btn-sm" onclick="document.getElementById('goal-input').value=${v}">${v}P</button>`).join('')}
-    </div>
-    <button class="btn btn-primary btn-full" onclick="saveGroupGoal(document.getElementById('goal-input').value);closePanel();toast('Ziel gespeichert ✓','ok')">Ziel setzen</button>
-  `;
-  if(typeof openPanel==='function') openPanel('Gruppen-Ziel', html);
-};
+// openGoalSettings entfernt — Ziel ist fest bei 350
 
 function getWeekNumber(){
   const d = new Date();
