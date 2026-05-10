@@ -7191,7 +7191,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     }
 
     // Kacheln
-    var remainColor = remaining <= 0 ? '#ef4444' : remaining <= 5 ? '#f59e0b' : 'var(--acc)';
+    var remainColor = remaining < 0 ? '#ef4444' : remaining === 0 ? 'var(--acc)' : remaining <= 5 ? '#f59e0b' : 'var(--acc)';
     var usedDisp    = formatVacationDays(used);
     var remDisp     = formatVacationDays(remaining);
     var summaryHtml = '<div style="display:flex;gap:0;margin-bottom:16px;border-radius:var(--r);overflow:hidden;border:1px solid var(--b1)">'
@@ -7225,11 +7225,11 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     var remaining = totalDays - used;
     var pct       = Math.min(100, Math.round((used / totalDays) * 100));
 
-    var usedColor = remaining <= 0 ? '#ef4444' : remaining <= 5 ? '#f59e0b' : 'var(--acc)';
+    var usedColor = remaining < 0 ? '#ef4444' : remaining === 0 ? 'var(--acc)' : remaining <= 5 ? '#f59e0b' : 'var(--acc)';
     var leftText  = '<span style="font-weight:800;color:'+usedColor+'">'+formatVacationDays(used)+' von '+formatVacationDays(totalDays)+'</span>'
                   + '<span style="color:var(--t4)"> Tagen verbraucht</span>';
 
-    var barColor    = remaining <= 0 ? '#ef4444' : remaining <= 5 ? '#f59e0b' : 'var(--acc)';
+    var barColor    = remaining < 0 ? '#ef4444' : remaining === 0 ? 'var(--acc)' : remaining <= 5 ? '#f59e0b' : 'var(--acc)';
     var progressBar = '<div style="flex:1;max-width:80px;height:4px;background:var(--b1);border-radius:2px;overflow:hidden;margin:0 8px">'
       + '<div style="width:'+pct+'%;height:100%;background:'+barColor+';border-radius:2px"></div>'
       + '</div>';
