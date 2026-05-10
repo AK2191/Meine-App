@@ -22,6 +22,10 @@
     }catch(e){ return String(date || ''); }
   }
   function settings(){ return Store && Store.settings ? Store.settings() : {}; }
+  function hourlyRange(){
+    var n = Number(settings().weatherHourlyHours || 12);
+    return n === 24 ? 24 : 12;
+  }
   function hasAnyEnabled(){
     var s = settings();
     return !!(s.weatherEnabled || s.rainAlertsEnabled || s.pollenEnabled || s.pollenAlertsEnabled);
@@ -100,14 +104,41 @@
   }
   function levelClass(level){ return level === 'high' ? 'high' : level === 'medium' ? 'medium' : level === 'low' ? 'low' : 'none'; }
   function levelLabel(level){ return level === 'high' ? 'hoch' : level === 'medium' ? 'mittel' : level === 'low' ? 'niedrig' : 'ruhig'; }
+  function weatherCurrentHtml(data){
+    var w = data && data.weather;
+    if(!w) return '';
+    var rain = rainSummary(data);
+    var forecast = w.forecast && w.forecast[0] ? w.forecast[0] : null;
+    var tempLine = (w.temperature != null ? w.temperature + ' °C' : 'Wetter') + ' · ' + (w.summary || 'heute');
+    var range = forecast ? ((forecast.tempMax != null ? forecast.tempMax + '°' : '–') + ' / ' + (forecast.tempMin != null ? forecast.tempMin + '°' : '–')) : '';
+    return '<div class="change-weather-now"><div class="change-weather-now-icon">'+esc(w.icon || '🌦️')+'</div><div><strong>'+esc(tempLine)+'</strong><small>'+esc(rain)+' '+(range ? '· Tageswerte '+range : '')+'</small></div></div>';
+  }
+  function weatherHourlyHtml(data){
+    var hourly = data && data.weather && data.weather.hourly || [];
+    if(!hourly.length) return '<div class="change-forecast-empty">Noch keine Stundenwerte geladen.</div>';
+    var range = hourlyRange();
+    var visible = hourly.slice(0, range);
+    var lastDay = null;
+    var cards = visible.map(function(hour, index){
+      var divider = '';
+      if(index > 0 && hour.dayKey !== lastDay){
+        divider = '<div class="change-hourly-divider">'+esc(hour.dayLabel || 'Morgen')+'</div>';
+      }
+      lastDay = hour.dayKey;
+      var prob = hour.rainProbability != null ? hour.rainProbability + ' %' : '';
+      var rainText = prob || (hour.precipitation ? hour.precipitation + ' mm' : hour.summary || '');
+      return divider + '<div class="change-hourly-card '+(hour.isWet?'is-rain':'')+'"><div class="change-hourly-time">'+esc(hour.label || '')+'</div><div class="change-hourly-icon">'+esc(hour.icon || '🌦️')+'</div><strong>'+esc(hour.temperature != null ? hour.temperature + '°' : '–')+'</strong><small>'+esc(rainText)+'</small></div>';
+    }).join('');
+    return '<section class="change-hourly-section"><div class="change-section-head"><strong>Nächste Stunden</strong><div class="change-hourly-toggle" role="group" aria-label="Stundenbereich"><button type="button" class="'+(range===12?'active':'')+'" onclick="ChangeWeatherCard.setHourlyRange(12)">12 h</button><button type="button" class="'+(range===24?'active':'')+'" onclick="ChangeWeatherCard.setHourlyRange(24)">24 h</button></div></div><div class="change-hourly-strip">'+cards+'</div></section>';
+  }
   function weatherForecastHtml(data){
     var forecast = data && data.weather && data.weather.forecast || [];
     if(!forecast.length) return '<div class="change-forecast-empty">Noch kein Wetter-Ausblick geladen.</div>';
-    return '<div class="change-forecast-list">' + forecast.map(function(day){
+    return '<section class="change-daily-section"><div class="change-section-head"><strong>7-Tage-Ausblick</strong></div><div class="change-forecast-list">' + forecast.map(function(day){
       var rain = day.rainProbability != null ? day.rainProbability + ' % Regen' : (day.precipitation ? day.precipitation + ' mm' : 'kaum Regen');
       var temp = (day.tempMax != null ? day.tempMax + '°' : '–') + ' / ' + (day.tempMin != null ? day.tempMin + '°' : '–');
       return '<div class="change-forecast-row"><div class="change-forecast-date"><strong>'+esc(fmtDay(day.date))+'</strong><span>'+esc(day.icon || '🌦️')+'</span></div><div class="change-forecast-main"><strong>'+esc(day.summary || 'Wetter')+'</strong><small>'+esc(rain)+'</small></div><div class="change-forecast-value">'+esc(temp)+'</div></div>';
-    }).join('') + '</div>';
+    }).join('') + '</div></section>';
   }
   function pollenForecastHtml(data){
     var forecast = data && data.pollen && data.pollen.forecast || [];
@@ -125,22 +156,31 @@
     if(Service && Service.ensureFresh) return Service.ensureFresh();
     return Service && Service.getCached ? Service.getCached() : null;
   }
-  async function openForecast(type){
+  async function openForecast(type, options){
+    options = options || {};
     try{
       var s = settings();
       if(type === 'weather' && !(s.weatherEnabled || s.rainAlertsEnabled)) Store.writeSettings({weatherEnabled:true});
       if(type === 'pollen' && !(s.pollenEnabled || s.pollenAlertsEnabled)) Store.writeSettings({pollenEnabled:true});
       if(Store && !Store.getLocation()) await Store.requestLocation();
-      var data = await getData(true);
+      var data = await getData(options.forceRefresh === false ? false : true);
       updateHero();
       var isPollen = type === 'pollen';
-      var body = '<div class="change-forecast-panel"><div class="change-forecast-head"><div><div class="change-forecast-title">'+(isPollen?'🌿 Pollen-Ausblick':'🌦️ Wetter-Ausblick')+'</div><div class="change-forecast-sub">Nächste 7 Tage · aktueller Standort</div></div><button class="btn btn-secondary btn-sm" type="button" onclick="ChangeWeatherCard.refreshForecast(\''+esc(type)+'\')">↻</button></div>' + (isPollen ? pollenForecastHtml(data) : weatherForecastHtml(data)) + '</div>';
+      var title = isPollen ? '🌿 Pollen-Ausblick' : '🌦️ Wetter-Ausblick';
+      var sub = isPollen ? 'Nächste 7 Tage · aktueller Standort' : 'Heute · Stunden · 7 Tage';
+      var content = isPollen ? pollenForecastHtml(data) : (weatherCurrentHtml(data) + weatherHourlyHtml(data) + weatherForecastHtml(data));
+      var body = '<div class="change-forecast-panel"><div class="change-forecast-head"><div><div class="change-forecast-title">'+title+'</div><div class="change-forecast-sub">'+sub+'</div></div><button class="btn btn-secondary btn-sm" type="button" onclick="ChangeWeatherCard.refreshForecast(\''+esc(type)+'\')">↻</button></div>' + content + '</div>';
       if(typeof window.openPanel === 'function') window.openPanel(isPollen ? 'Pollen' : 'Wetter', body);
     }catch(e){ if(typeof toast === 'function') toast(e.message || 'Ausblick konnte nicht geladen werden','err'); }
   }
   async function refreshForecast(type){
     await refresh();
-    await openForecast(type || 'weather');
+    await openForecast(type || 'weather', {forceRefresh:false});
+  }
+  async function setHourlyRange(hours){
+    var next = Number(hours) === 24 ? 24 : 12;
+    if(Store && Store.writeSettings) Store.writeSettings({weatherHourlyHours: next});
+    await openForecast('weather', {forceRefresh:false});
   }
   async function updateLocation(){
     try{
@@ -193,6 +233,7 @@
     enableAll: enableAll,
     openForecast: openForecast,
     refreshForecast: refreshForecast,
+    setHourlyRange: setHourlyRange,
     installDashboardHook: installDashboardHook
   };
 

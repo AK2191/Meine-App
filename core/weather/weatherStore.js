@@ -9,7 +9,8 @@
     weatherEnabled: false,
     rainAlertsEnabled: false,
     pollenEnabled: false,
-    pollenAlertsEnabled: false
+    pollenAlertsEnabled: false,
+    weatherHourlyHours: 12
   };
 
   function readJson(key, fallback){

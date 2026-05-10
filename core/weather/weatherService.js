@@ -65,7 +65,7 @@
       latitude: String(loc.latitude),
       longitude: String(loc.longitude),
       current: 'temperature_2m,precipitation,rain,showers,weather_code',
-      hourly: 'precipitation_probability,precipitation,rain,showers,weather_code',
+      hourly: 'temperature_2m,precipitation_probability,precipitation,rain,showers,weather_code',
       daily: 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max',
       forecast_days: '7',
       timezone: 'auto'
@@ -110,6 +110,53 @@
       };
     });
   }
+
+  function sameLocalDay(a, b){
+    return a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  }
+  function dayLabelForTime(t){
+    var d = new Date(t);
+    var today = new Date();
+    var tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+    if(sameLocalDay(d, today)) return 'Heute';
+    if(sameLocalDay(d, tomorrow)) return 'Morgen';
+    try{ return d.toLocaleDateString('de-DE', {weekday:'short', day:'2-digit', month:'2-digit'}); }catch(e){ return String(t || '').slice(0,10); }
+  }
+  function timeLabelForTime(t, isFirst){
+    if(isFirst) return 'Jetzt';
+    try{ return new Date(t).toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}); }catch(e){ return String(t || '').slice(11,16); }
+  }
+  function parseHourlyForecast(data, limit){
+    var hourly = data && data.hourly ? data.hourly : {};
+    var times = hourly.time || [];
+    if(!times.length) return [];
+    var now = Date.now();
+    var start = 0;
+    for(var i=0;i<times.length;i++){
+      var ts = Date.parse(times[i]);
+      if(isFinite(ts) && ts >= now - 60 * 60 * 1000){ start = i; break; }
+    }
+    return times.slice(start, start + (limit || 24)).map(function(time, offset){
+      var idx = start + offset;
+      var code = hourly.weather_code && hourly.weather_code[idx];
+      var prob = Number(hourly.precipitation_probability && hourly.precipitation_probability[idx]);
+      var amount = rainAmountAt(hourly, idx);
+      var wetCode = [51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99].indexOf(Number(code)) !== -1;
+      return {
+        time: time,
+        dayKey: dateKeyFromTime(time),
+        dayLabel: dayLabelForTime(time),
+        label: timeLabelForTime(time, offset === 0),
+        code: code,
+        icon: WEATHER_ICONS[code] || '🌦️',
+        summary: WEATHER_CODES[code] || 'Wetter',
+        temperature: round(hourly.temperature_2m && hourly.temperature_2m[idx], 0),
+        rainProbability: isFinite(prob) ? prob : null,
+        precipitation: round(amount, 1) || 0,
+        isWet: amount > 0 || (isFinite(prob) && prob >= 60) || wetCode
+      };
+    });
+  }
   function parseWeather(data){
     var now = Date.now();
     var current = data && data.current ? data.current : {};
@@ -143,6 +190,7 @@
       precipitation: round(current.precipitation || current.rain || current.showers || 0, 1),
       nextRain: nextRain,
       forecast: parseWeatherForecast(data),
+      hourly: parseHourlyForecast(data, 24),
       timezone: data && data.timezone,
       updatedAt: new Date().toISOString()
     };
