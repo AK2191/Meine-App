@@ -2384,8 +2384,31 @@ document.addEventListener('touchend',e=>{
     if(!document.getElementById('htab-challenges')){
       const tabs=document.querySelector('.h-tabs');
       const btn=document.createElement('button');
-      btn.className='h-tab'; btn.id='htab-challenges'; btn.onclick=()=>setMainView('challenges');
-      btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"></div>';
+      btn.className='h-tab';
+      btn.id='htab-challenges';
+      btn.onclick=()=>setMainView('challenges');
+      btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/></svg>Challenges';
+      if(tabs) tabs.appendChild(btn);
+    }
+    if(!document.getElementById('bnav-challenges')){
+      const nav=document.querySelector('.bnav-inner');
+      const btn=document.createElement('button');
+      btn.className='bnav-item';
+      btn.id='bnav-challenges';
+      btn.onclick=()=>setMainView('challenges');
+      btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/></svg><span class="bnav-label">Challenges</span>';
+      if(nav) nav.appendChild(btn);
+    }
+  }
+
+  window.renderTodayView=function(){
+    const ag=document.getElementById('agenda-view');
+    if(!ag) return;
+    const dk=dateKey(new Date());
+    const hs=getHolidaysForDate(dk);
+    const chs=challengeScheduleForDate(dk);
+    const evs=eventRowsForDate(dk);
+    let html='<div class="today-view"><div class="dash-hello"><h1>Heute</h1><p>'+fmtDate(dk)+'</p></div>';
     if(hs.length) html+='<div class="dash-card" style="margin-bottom:14px"><div class="dash-card-head"><div class="dash-card-title">Feiertage</div><div class="dash-card-sub">'+esc(STATE_OPTIONS[calendarSettings.state]||calendarSettings.state)+'</div></div><div class="dash-card-body">'+hs.map(h=>'<div class="dash-row"><div class="dash-row-icon" style="background:var(--amb-d)">🎉</div><div class="dash-row-body"><div class="dash-row-title">'+esc(h.name)+'</div><div class="dash-row-sub">'+esc(h.states.map(s=>STATE_OPTIONS[s]||s).join(', '))+'</div></div></div>').join('')+'</div></div>';
     html+='<div class="dash-card" style="margin-bottom:14px"><div class="dash-card-head"><div class="dash-card-title">Challenges</div><button class="btn btn-ghost btn-sm" onclick="setMainView(\'challenges\')">Öffnen</button></div><div class="dash-card-body">'+(chs.length?chs.map(ch=>'<div class="dash-row"><div class="dash-row-icon" style="background:var(--pur-d)">'+esc(ch.icon||'🏆')+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(ch.title)+'</div><div class="dash-row-sub">'+(ch.points||0)+' Punkte</div></div><button class="btn btn-primary btn-sm" onclick="completeChallenge(\''+ch.id+'\')">Erledigen</button></div>').join(''):'<div class="dash-empty">Heute keine Challenge geplant</div>')+'</div></div>';
     html+='<div class="dash-card"><div class="dash-card-head"><div class="dash-card-title">Termine</div></div><div class="dash-card-body">'+(evs.length?evs.map(ev=>'<div class="dash-row" onclick="openEventPanel(\''+ev.id+'\')"><div class="dash-row-icon" style="background:var(--acc-d)">📅</div><div class="dash-row-body"><div class="dash-row-title">'+esc(ev.title)+'</div><div class="dash-row-sub">'+(ev.time?(ev.time+(ev.endTime&&ev.endTime!==ev.time?' – '+ev.endTime:'')+' Uhr'):'Ganztägig')+'</div></div></div>').join(''):'<div class="dash-empty">Heute keine Termine</div>')+'</div></div></div>';
