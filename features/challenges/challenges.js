@@ -191,24 +191,27 @@
     function chItem(ch){
       var done = isDoneToday(ch.id), pts = parseInt(ch.points,10)||0;
 
-      // Action-Row: "Übung ansehen" links, Button rechts — auf einer Linie
       var linkHtml = (!ch.optional && ch.url)
         ? '<a class="ch-link" href="'+esc(safeUrl(ch.url))+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">Übung ansehen ↗</a>'
-        : '<span></span>'; // Platzhalter damit Button rechts bleibt
+        : '';
 
       var btnHtml = done
-        ? '<button class="btn btn-success btn-sm" disabled>Erledigt ✓</button>'
+        ? '<button class="btn btn-success btn-sm ch-do-btn" disabled>Erledigt ✓</button>'
           +'<button class="btn btn-undo btn-sm" onclick="event.stopPropagation();window.undoChallenge(\''+esc(ch.id)+'\')" title="Rückgängig">↶</button>'
-        : '<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();window.completeChallenge(\''+esc(ch.id)+'\')">Erledigen</button>';
+        : '<button class="btn btn-primary btn-sm ch-do-btn" onclick="event.stopPropagation();window.completeChallenge(\''+esc(ch.id)+'\')">Erledigen</button>';
 
-      return '<div class="challenge-item'+(done?' challenge-done':'')+'" style="pointer-events:auto">'
+      // Struktur:
+      // [Icon] [Body: Zeile1(Name + Pts) / Zeile2(Desc) / Zeile3(Link + Button)]
+      return '<div class="challenge-item'+(done?' challenge-done':'')+'">'
         +'<div class="challenge-icon">'+esc(ch.icon||'🏆')+'</div>'
-        +'<div class="challenge-body" style="pointer-events:auto;min-width:0">'
-          +'<div class="challenge-name">'+esc(ch.title||'Challenge')+'</div>'
+        +'<div class="challenge-body">'
+          +'<div class="ch-top-row">'
+            +'<span class="challenge-name">'+esc(ch.title||'Challenge')+'</span>'
+            +'<span class="points-pill">+'+pts+'</span>'
+          +'</div>'
           +'<div class="challenge-meta">'+esc(ch.desc||'')+'</div>'
           +'<div class="ch-action-row">'+linkHtml+btnHtml+'</div>'
         +'</div>'
-        +'<span class="points-pill" style="flex-shrink:0;align-self:flex-start">+'+pts+'</span>'
         +'</div>';
     }
 
