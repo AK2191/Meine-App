@@ -264,24 +264,36 @@
     return getDailyPool(todayStr()).filter(function(ch){return !isDoneToday(ch.id);}).slice(0,4);
   };
 
-  /* setMainView-Hook — OHNE window.challenges zu setzen */
-  window.addEventListener('load', function(){
-    setTimeout(function(){
-      window.renderChallenges = renderChallenges;
-      window.completeChallenge = window.completeChallenge; // keep our version
-      if((window.currentMainView||'')==='challenges') renderChallenges();
-    }, 800);
-    // Nochmal nach Firebase-Auth
-    setTimeout(function(){
-      window.renderChallenges = renderChallenges;
-      if((window.currentMainView||'')==='challenges') renderChallenges();
-    }, 2500);
-  });
-
-  setTimeout(function(){
+  /* ── Eigentümer der renderChallenges-Funktion bleiben ──
+   * calendar-logic.js reassertet window.renderChallenges bei
+   * 2000ms und 5600ms. Wir reasserten bei 6500ms > 5600ms.
+   * window.challenges befüllen damit Legacy-Code korrekt liest. */
+  function assertOwnership(){
     window.renderChallenges = renderChallenges;
+
+    // window.challenges mit unserem Pool befüllen
+    var today = todayStr();
+    window.challenges = getDailyPool(today).concat(OPTIONAL).map(function(ch){
+      return {
+        id: ch.id, title: ch.title, desc: ch.desc, icon: ch.icon,
+        points: ch.points, active: true, date: today,
+        recurrence: 'daily', type: 'Sport', optional: !!ch.optional
+      };
+    });
+    try{ if(typeof ls==='function') ls('challenges', window.challenges); }catch(e){}
+
     if((window.currentMainView||'')==='challenges') renderChallenges();
-  }, 600);
+  }
+
+  // Sofort
+  setTimeout(assertOwnership, 200);
+
+  window.addEventListener('load', function(){
+    // 6500ms > cal-logic letzter Override (5600ms)
+    [800, 2500, 6500].forEach(function(ms){ setTimeout(assertOwnership, ms); });
+    // Danach alle 10 Sek. dauerhaft sicherstellen
+    setTimeout(function(){ setInterval(assertOwnership, 10000); }, 7000);
+  });
 
   console.log('[Change] challenges.js ✓ — '+POOL.length+' Übungen, 7/Tag');
 })();
