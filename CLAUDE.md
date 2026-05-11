@@ -9,21 +9,23 @@
 ```
 change-app/
 │
-├── index.html                  ← Nur HTML-Gerüst + <script>/<link> Tags. Kein CSS, keine Logik.
+├── index.html                        ← Nur HTML-Gerüst + <script>/<link> Tags
 │
 ├── styles/
-│   ├── tokens.css              ← EINZIGE Stelle für Farben, Abstände, Radii, Fonts
-│   └── app.css                 ← Alle UI-Styles. Neue Styles hier anhängen.
+│   ├── tokens.css                    ← EINZIGE Stelle für Farben, Abstände, Radii
+│   └── app.css                       ← Alle UI-Styles
 │
-├── change.css                  ← Feature-Overrides (Challenges, Dashboard-Layout, Mobile)
+├── change.css                        ← Feature-Overrides
 │
 ├── core/
-│   ├── bootstrap.js            ← Kalender-Initialisierung (früher inline in index.html)
-│   ├── misc.js                 ← Kleine Helfer (früher inline in index.html)
+│   ├── firestore-guard.js            ← MUSS VOR ALLEM ANDEREN LADEN
+│   │                                    Verhindert Firestore-Schreibflut
+│   │                                    publishChallengesToFirestore = No-Op
+│   │                                    listenLiveChallenges = deaktiviert
+│   ├── bootstrap.js
+│   ├── misc.js
 │   ├── calendar/
-│   │   └── calendarModel.js    ← window.ChangeCalendarModel — Kalender-Datenlogik
-│   ├── challenges/
-│   │   └── challengeStore.js   ← window.ChangeChallengeStore — zentrale Challenge-Datenquelle
+│   │   └── calendarModel.js          ← window.ChangeCalendarModel
 │   ├── integrations/
 │   │   ├── firebaseAuthBridge.js
 │   │   └── googleSyncStatus.js
@@ -34,26 +36,29 @@ change-app/
 │   │   ├── weatherService.js
 │   │   └── weatherRules.js
 │   ├── notifications/
-│   │   ├── notificationStore.js   ← window.ChangeNotificationStore
+│   │   ├── notificationStore.js
 │   │   ├── notificationCenter.js
 │   │   ├── pushController.js
 │   │   └── notify-style.js
 │   └── ui/
-│       └── viewState.js           ← window.ChangeViewState — View-Routing
+│       └── viewState.js              ← window.ChangeViewState
 │
 ├── features/
 │   ├── calendar/
-│   │   ├── calendarPanels.js      ← Tages-Panel, Event-Panel
+│   │   ├── calendarPanels.js
 │   │   ├── calendarPanels.css
-│   │   └── calendar-logic.js     ← Rendering-Logik (früher inline)
+│   │   └── calendar-logic.js
 │   ├── challenges/
-│   │   └── challenge-sync.js     ← Punkte-Sync (früher inline)
+│   │   ├── challenge-sync.js         ← Firebase-Sync für Completions/Players
+│   │   └── challenge-fixes.js        ← MUSS ZULETZT LADEN
+│   │                                    Push-Counter Fix (max 7, nicht 24)
+│   │                                    Klick-Fix (Erledigen + Mitspieler)
+│   │                                    Wetter/Pollen als Browser-Push
 │   ├── dashboard/
-│   │   └── dashboard-logic.js    ← Dashboard-Aufbau (früher inline)
+│   │   └── dashboard-logic.js
 │   ├── settings/
-│   │   ├── settingsPanel.js
-│   │   ├── settingsPanel.css
-│   │   └── settings-logic.js     ← Einstellungen (früher inline)
+│   │   ├── settingsPanel.js          ← MUSS NACH settings-logic.js LADEN
+│   │   └── settings-logic.js
 │   ├── notifications/
 │   │   ├── notificationBell.js
 │   │   └── notificationBell.css
@@ -64,214 +69,126 @@ change-app/
 │       ├── vacationPanel.js
 │       └── vacationPanel.css
 │
-├── app.js                        ← Hauptlogik (früher inline in index.html)
-├── change-pre.js                 ← Sport-Pool, Challenge-Wochenbalken, Routing
-├── change-post.js                ← App-Init, Firebase, Google-Sync
-├── firebase-config.js            ← Firebase-Credentials (nie ändern)
-└── firebase-messaging-sw.js      ← Service Worker (nie ändern)
+├── app.js                            ← Hauptlogik (aus index.html extrahiert)
+├── change-pre.js                     ← Sport-Pool, Auto-Challenges, Routing
+├── change-post.js                    ← App-Init, Firebase, Google-Sync
+├── firebase-config.js                ← Credentials (nie ändern)
+└── firebase-messaging-sw.js          ← Service Worker (nie ändern)
 ```
 
 ---
 
-## 2. Globale Objekte — was wo lebt
+## 2. Script-Ladereihenfolge in index.html (KRITISCH — nicht ändern!)
 
-| Objekt | Datei | Zweck |
-|--------|-------|-------|
-| `window.ChangeCalendarModel` | `core/calendar/calendarModel.js` | Kalender-Daten, Datum-Logik, Events |
-| `window.ChangeNotificationStore` | `core/notifications/notificationStore.js` | Benachrichtigungs-State, gelesen/Push-Status |
-| `window.ChangeNotifications` | `core/notifications/notificationCenter.js` | einzige Quelle für Glocken-Inhalte und Badge-Zähler |
-| `window.ChangeWeatherService` | `core/weather/weatherService.js` | Wetter/Pollen Abruf mit Standort- und Cache-Prüfung |
-| `window.ChangeViewState` | `core/ui/viewState.js` | View-Routing (dashboard/calendar/challenges) |
-| `window.ChangeChallengeStore` | `core/challenges/challengeStore.js` | Zentrale Challenge-Datenquelle, hält `window.challenges`, `window.challengeCompletions`, `window.challengePlayers` synchron |
-| `window.events` | `app.js` / `change-post.js` | Kalender-Events |
-| `window.challengePlayers` | `core/challenges/challengeStore.js` | Mitspieler-Array über ChallengeStore |
-
-**Regel:** Logik die `window.ChangeCalendarModel` braucht → immer prüfen ob M geladen ist:
-```js
-var M = window.ChangeCalendarModel;
-if (!M) return; // sicher abbrechen
 ```
-
-**Challenge-State:** Neue Challenge-Logik darf nicht mehr eigene Arrays als Wahrheit verwenden.
-```js
-var S = window.ChangeChallengeStore;
-if (!S) return;
-var challenges = S.getChallenges();
-S.replaceChallenges(challenges, { persist: true });
+Firebase SDKs (extern)
+  → firebase-config.js
+  → core/firestore-guard.js          ← ERSTES eigenes Script! Schreibschutz.
+  → core/integrations/firebaseAuthBridge.js
+  → core/bootstrap.js
+  → canvas-confetti (extern)
+  → core/calendar/calendarModel.js
+  → core/integrations/googleSyncStatus.js
+  → core/activity/playerActivity.js
+  → core/weather/*
+  → core/notifications/*
+  → core/ui/viewState.js
+  → core/misc.js
+  → change-pre.js
+  → change-post.js
+  → app.js
+  → features/notifications/*
+  → features/calendar/*
+  → features/weather/*
+  → features/vacation/*
+  → features/settings/settings-logic.js
+  → features/settings/settingsPanel.js  ← NACH settings-logic!
+  → features/challenges/challenge-sync.js
+  → features/dashboard/dashboard-logic.js
+  → features/challenges/challenge-fixes.js  ← LETZTES Script!
 ```
-`window.challenges` bleibt nur als Kompatibilitäts-Alias für ältere Renderer erhalten.
 
 ---
 
-## 3. Design-System (PFLICHT)
+## 3. Firestore-Nutzung — was darf schreiben/lesen
 
-### Farben — nur via CSS-Variablen
-```css
-/* ✓ Richtig */
-color: var(--acc);
-background: var(--s1);
-border: 1px solid var(--b1);
+| Collection | Lesen | Schreiben | Wer |
+|---|---|---|---|
+| `change_completions` | ✅ onSnapshot | ✅ bei Erledigen | challenge-sync.js |
+| `change_players` | ✅ onSnapshot | ✅ bei Login/Live | challenge-sync.js |
+| `change_settings` | ✅ einmalig | ✅ bei Änderung | settingsPanel.js |
+| `change_challenges` | ❌ deaktiviert | ❌ deaktiviert | firestore-guard.js blockiert |
 
-/* ✗ Falsch — nie direkt */
-color: #2D6A4F;
-background: #FFFFFF;
-```
+**REGEL:** Sport-Challenges leben NUR im App-Code (change-pre.js / app.js).
+Nicht in Firestore. Die `change_challenges` Collection kann gelöscht werden.
 
-### Tokens-Übersicht (tokens.css)
+**WARUM:** Jedes `renderChallenges()` → `ensureDailyAutoChallenges()` → `publishToFirestore()`
+hat 24 Writes erzeugt. Bei 4× Startup = 96 Writes/Start. → Limit erreicht.
+
+---
+
+## 4. Designsystem
+
 | Variable | Light | Dark | Bedeutung |
-|----------|-------|------|-----------|
-| `--acc` | `#2D6A4F` | `#4ADE80` | Primärfarbe (Forest Green → Hell-Grün) |
+|---|---|---|---|
+| `--acc` | `#2D6A4F` | `#4ADE80` | Primärfarbe (Forest Green) |
 | `--bg` | `#F8F7F3` | `#0F0F0F` | Seitenhintergrund |
 | `--s1` | `#FFFFFF` | `#1A1A1A` | Card-Hintergrund |
-| `--b1` | `rgba(0,0,0,.07)` | `rgba(255,255,255,.07)` | Border leicht |
 | `--t1` | `#18181B` | `#F4F4F5` | Text primär |
-| `--t3` | `#71717A` | `#A1A1AA` | Text gedimmt |
-| `--rsm` | `6px` | `6px` | Radius klein |
-| `--r` | `10px` | `10px` | Radius normal |
-| `--rlg` | `16px` | `16px` | Radius groß |
 
-### Dark Mode
-```js
-// Ein/Ausschalten — EINZIGE Stelle
-document.documentElement.setAttribute('data-theme', 'dark');  // an
-document.documentElement.removeAttribute('data-theme');        // aus
-```
+Font: `var(--font)` → Plus Jakarta Sans
+Mono: `var(--mono)` → JetBrains Mono
 
-### Fonts
-- **UI:** `var(--font)` → Plus Jakarta Sans
-- **Zahlen/Code:** `var(--mono)` → JetBrains Mono
+Dark Mode: `document.documentElement.setAttribute('data-theme', 'dark')`
 
 ---
 
-## 4. Kalender-Regeln (STRICT)
+## 5. Kalender-Tages-Struktur (STRICT)
 
-### Tages-Zelle — Pflicht-Struktur:
 ```
 ┌─────────────────────────────┐
 │ 10  Muttertag               │  ← Datum + Feiertag (klein)
 │ ████████████ Urlaub         │  ← Zeiträume: IMMER oben, volle Breite
 │ 09:00 Meeting               │  ← Einzeltermine darunter (max. 2)
-│ +1 mehr                     │  ← Bei >2: "+X mehr"
-│                         +15 │  ← Punkte-Badge: unten rechts, nur bei > 0
+│ +1 mehr                     │
+│                         +15 │  ← Punkte-Badge: unten rechts, nur > 0
 └─────────────────────────────┘
 ```
 
-**Regeln:**
-- Zeiträume = `.ev-chip.multiday` → immer erste Zeile(n)
-- Einzeltermine → unter Zeiträumen
-- Max. 2 Einzeltermine → dann "+X mehr"
-- Punkte-Badge = `.cal-points` → absolut unten rechts
-- Kein Element überlappt ein anderes
-
-### CalendarModel nutzen:
-```js
-var M = window.ChangeCalendarModel;
-M.esc(value)          // XSS-sicher escapen
-M.titleOf(event)      // Titel
-M.rangeOf(event)      // { start, end }
-M.timeLabel(event)    // "09:00" oder "Ganztag"
-M.sourceOf(event)     // 'google' | 'local'
-M.fmtDate(dateKey)    // "10. Mai 2026"
-```
-
 ---
 
-## 5. Challenges-Regeln
+## 6. Challenges-Regeln
 
-- Zentrale Datenquelle ist `core/challenges/challengeStore.js` / `window.ChangeChallengeStore`
-- Keine neuen lokalen Challenge-Arrays als Source of Truth anlegen
-- Punkte **nur** wenn `done === true` in Firestore
-- `markChallengeDone(id, userId)` ist die EINZIGE Stelle die Punkte schreibt → `features/challenges/challenge-sync.js`
-- Im Kalender: nur `.cal-points` Badge ("+15"), kein Icon, kein Label
-- Tägliche Auto-Challenges: `window.ensureDailyAutoChallenges()` schreibt immer über `window.ChangeChallengeStore`; `window.challenges` ist nur Kompatibilitäts-Alias
-
----
-
-## 6. Sync-Regeln
-
-| Schalter | Datei | Was es macht |
-|----------|-------|-------------|
-| 🔔 Push | `core/notifications/pushController.js` | FCM Push |
-| 🔔 Glocke | `features/notifications/notificationBell.js` + `core/notifications/*` | einzige UI-Steuerung für Push und Benachrichtigungen; Settings zeigt keinen Push-Duplikat-Schalter |
-| 🔄 Live-Sync | `change-post.js` | Firestore onSnapshot |
-| 📅 Google Cal | `core/integrations/googleSyncStatus.js` | Google Calendar API |
-
-**Regel:** Kein `onSnapshot` außerhalb von `change-post.js` starten. Google-Sync bei Toggle-Aktivierung automatisch einmal ausführen.
-
-**Benachrichtigungen:** `openNotifPanel()` darf ausschließlich aus `features/notifications/notificationBell.js` kommen. Alte Panels aus `app.js`/`core/misc.js` dürfen nicht mehr erweitert werden. Gelesene Einträge werden in `ChangeNotificationStore` gespeichert und im Center vor dem Rendern gefiltert.
-
-**Wetter:** Wetter/Pollen dürfen nur mit aktuellem Browser-Standort angezeigt werden. `weatherService` verwirft Cache, wenn Standort, Tag oder TTL nicht passen. Ist der Standort älter als 6 Stunden, zeigt die Dashboard-Kopfzeile nur „Standort aktualisieren“ und keine alten Wetterwerte.
+- Max. **7 Pflicht-Challenges** pro Tag (deterministisch aus Pool)
+- Max. **2 optionale** (Spazieren, Fitness) — getrennt dargestellt
+- Punkte nur bei `done === true` in Firestore (`change_completions`)
+- `window.completeChallenge(id)` ist die EINZIGE Stelle die Punkte schreibt
+- Push-Benachrichtigung: max. 7 offen (nie 24) — via `challengeScheduleForDate()`
 
 ---
 
 ## 7. Neues Feature — Checkliste
 
 ```
-[ ] 1. Datei: Gehört es in core/ (Logik) oder features/ (UI)?
-[ ] 2. Logik in core/[bereich]/[name].js schreiben
-[ ] 3. CSS in styles/app.css anhängen (nur Tokens verwenden)
-[ ] 4. In index.html einbinden (<script src="...">)
-[ ] 5. Testen: Kalender laden → Dashboard öffnen → Challenge abhaken
-[ ] 6. Commit auf dev, erst dann merge auf main
+[ ] 1. Gehört es in core/ (Logik) oder features/ (UI)?
+[ ] 2. Schreibt es in Firestore? → Welche Collection? Cooldown nötig?
+[ ] 3. CSS mit Tokens (var(--acc) statt #2D6A4F)
+[ ] 4. In index.html einbinden (Reihenfolge beachten!)
+[ ] 5. Testen: Kalender → Dashboard → Challenge abhaken
+[ ] 6. CLAUDE.md aktualisieren
 ```
 
 ---
 
 ## 8. Verboten
 
-- ❌ Inline CSS oder JS in index.html schreiben
+- ❌ Inline CSS oder JS in index.html
+- ❌ `publishChallengesToFirestore()` aufrufen — ist No-Op, bleibt so
+- ❌ `listenLiveChallenges()` aufrufen — deaktiviert
+- ❌ Neue Patch-Dateien (change-fix-v5.js etc.)
+- ❌ `!important` in CSS
 - ❌ Hex-Codes außerhalb von tokens.css
-- ❌ Neue Patch-Dateien anlegen (change-fix-v5.js o.ä.)
-- ❌ `window.ChangeCalendarModel` in features/ ohne `if (!M) return`
-- ❌ Zwei Funktionen die dasselbe tun (Sync, Rendering, Punkte)
-- ❌ Direkt auf `main` commiten wenn etwas geändert wurde
 
 ---
 
-## 9. Script-Ladereihenfolge in index.html (nicht ändern!)
-
-```
-Firebase SDKs
-  → firebase-config.js
-  → core/integrations/firebaseAuthBridge.js
-  → core/bootstrap.js
-  → canvas-confetti (extern)
-  → core/calendar/calendarModel.js        ← window.ChangeCalendarModel
-  → core/integrations/googleSyncStatus.js
-  → core/activity/playerActivity.js
-  → core/weather/*
-  → core/ui/viewState.js                  ← window.ChangeViewState
-  → core/misc.js
-  → core/challenges/challengeStore.js     ← window.ChangeChallengeStore
-  → change-pre.js                         ← Sport-Pool, Auto-Challenges
-  → change-post.js                        ← App-Init, Firebase, Google
-  → app.js                                ← Hauptlogik
-  → core/notifications/*                  ← überschreibt alte Notification-Globals aus app.js sauber
-  → core/notifications/notify-style.js    ← nur Styles, keine Funktions-Overrides
-  → features/notifications/*              ← einzige Push-/Benachrichtigungs-UI
-  → features/calendar/*
-  → features/weather/*
-  → features/vacation/*
-  → features/settings/*
-  → features/challenges/challenge-sync.js
-  → features/dashboard/dashboard-logic.js
-```
-
-*Letzte Aktualisierung: Mai 2026 · Basiert auf ZIP-Stand des echten Repos*
-
-
-## Benachrichtigungen
-
-Benachrichtigungen: `features/notifications/notificationBell.js` ist die einzige UI für Push-Aktivierung, Test-Push und Notification-Liste. `core/notifications/notificationCenter.js` baut die Hinweise und `core/notifications/pushController.js` aktiviert/deaktiviert FCM. Settings darf keine separaten Push-Schalter oder Test-Buttons anbieten.
-
-## Einstellungen · Dashboard/Wetter
-
-- `features/settings/settingsPanel.js` zeigt **Wetter & Gesundheit** ausschließlich im Tab **Dashboard**.
-- Der Tab **Sync** enthält nur Live-Sync, Auto-Challenges und Google Kalender.
-- Wetter-/Pollen-Schalter bleiben an `core/weather/weatherStore.js` gebunden; Dashboard-Rendering läuft weiter über `features/weather/weatherCard.js`.
-
-## Google/Firebase Auth
-
-- Firebase-Auth darf auf GitHub Pages nicht automatisch `signInWithRedirect()` starten.
-- `core/integrations/firebaseAuthBridge.js` nutzt standardmäßig Popup/Auth-State und Redirect nur bei expliziter Anforderung.
-- Google Kalender Login bleibt über `handleGoogleLogin()` / GIS Token-Client in `app.js`; Firebase darf diesen Login nicht blockieren.
+*Letzte Aktualisierung: Mai 2026 · v3*
