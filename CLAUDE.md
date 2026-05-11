@@ -1,7 +1,7 @@
 # CLAUDE.md — Change App
 > **Einzige Wahrheit** über Struktur, Regeln und Arbeitsweise.
 > Vor jeder Änderung lesen. Nach jeder Änderung aktualisieren.
-> Letzte Aktualisierung: Mai 2026
+> Letzte Aktualisierung: Mai 2026 — Settings-Fix: settingsPanel.js ist kanonischer Panel-Besitzer
 
 ---
 
@@ -73,9 +73,12 @@ change-app/
 │   ├── dashboard/
 │   │   └── dashboard-logic.js          ← Dashboard-Aufbau
 │   ├── settings/
-│   │   ├── settingsPanel.js            ← MUSS NACH settings-logic.js LADEN
+│   │   ├── settingsPanel.js            ← KANONISCHES Settings-Panel
+│   │   │                                   Lädt VOR settings-logic.js
 │   │   │                                   Enthält: Wetter, Pollen, Push, Google-Sync
-│   │   └── settings-logic.js
+│   │   └── settings-logic.js           ← Legacy-/Sync-Helfer
+│   │                                       Darf openSettingsPanel nur an
+│   │                                       ChangeSettingsPanel.open delegieren
 │   ├── notifications/
 │   │   ├── notificationBell.js         ← window.openNotifPanel
 │   │   │                                   ⚠ Überschreibt window.reqNotifPermission!
@@ -132,8 +135,8 @@ Firebase SDKs (extern, compat v10)
   → features/calendar/calendar-logic.js
   → features/weather/weatherCard.js
   → features/vacation/vacationPanel.js
-  → features/settings/settingsPanel.js      ← settingsPanel NACH settings-logic!
-  → features/settings/settings-logic.js     ← settings-logic zuerst
+  → features/settings/settingsPanel.js      ← kanonisches Settings-Panel zuerst
+  → features/settings/settings-logic.js     ← Legacy-/Sync-Helfer danach; delegiert openSettingsPanel
   → features/challenges/challenge-sync.js
   → features/dashboard/dashboard-logic.js
   → features/challenges/challenges.js
@@ -155,10 +158,21 @@ features/challenges/challenges-mobile.css
 
 ---
 
+## 2.1 Settings-System (WICHTIG)
+
+- `features/settings/settingsPanel.js` ist der einzige Besitzer der Settings-UI.
+- `features/settings/settings-logic.js` bleibt für Legacy-Funktionen, Sync-Helfer und alte globale Aliase geladen.
+- `settings-logic.js` darf kein zweites Settings-Panel mehr rendern. `window.openSettingsPanel(...)` muss an `window.ChangeSettingsPanel.open(...)` delegieren, sobald `settingsPanel.js` verfügbar ist.
+- Push bleibt zentral über die Glocke (`features/notifications/notificationBell.js` + `core/notifications/*`). Keine zusätzlichen Push-Buttons in den Settings einbauen.
+- Google-Sync bleibt ein eigener Schalter im Sync-Tab; bei Aktivierung wird neu synchronisiert.
+
+---
+
 ## 3. Bekannte Timing-Konflikte (WICHTIG)
 
 | Zeitpunkt | Was passiert | Gegenmaßnahme |
 |-----------|-------------|---------------|
+| 120ms | core/misc.js kann Kalender früh rendern | curDate/currentCalView nur über Safe-Helper initialisieren |
 | 150ms | app.js reassertet renderChallenges | challenges.js überschreibt bei 200ms |
 | 500ms | app.js FINAL PATCH reassertet | challenges.js 800ms |
 | 600ms | app.js FINAL FIX 2 reassertet | challenges.js 800ms |

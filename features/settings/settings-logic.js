@@ -93,6 +93,15 @@
   /* ==== EINSTELLUNGS-PANEL ==== */
   window.openSettingsPanel=function(startTab){
     startTab=startTab||'calendar';
+
+    // settingsPanel.js ist der kanonische Besitzer der Settings-UI.
+    // settings-logic.js bleibt für Legacy-Helfer/Sync-Funktionen geladen, darf
+    // das Panel aber nicht erneut aufbauen oder ChangeSettingsPanel überschreiben.
+    if(window.ChangeSettingsPanel && typeof window.ChangeSettingsPanel.open==='function'){
+      return window.ChangeSettingsPanel.open(startTab);
+    }
+
+    // Legacy-Fallback nur verwenden, falls settingsPanel.js nicht geladen wurde.
     const o=readOpt();
     const STATES=window.STATE_OPTIONS||(typeof STATE_OPTIONS!=='undefined'?STATE_OPTIONS:{ALL:'Alle Bundesländer',BW:'Baden-Württemberg',BY:'Bayern','BY-AUGSBURG':'Bayern · Augsburg',BE:'Berlin',BB:'Brandenburg',HB:'Bremen',HH:'Hamburg',HE:'Hessen',MV:'Mecklenburg-Vorpommern',NI:'Niedersachsen',NW:'Nordrhein-Westfalen',RP:'Rheinland-Pfalz',SL:'Saarland',SN:'Sachsen',ST:'Sachsen-Anhalt',SH:'Schleswig-Holstein',TH:'Thüringen'});
     const curState=(function(){
@@ -159,7 +168,6 @@
     const gSync=typeof canSyncGoogleCalendar==='function'?canSyncGoogleCalendar():gIn;
     const gOn=isGoogleSyncEnabled()&&gIn;
     const online=liveOn?(window.challengePlayers||[]).filter(p=>p.online).length:0;
-    const permCls=perm==='granted'?'push-ok':perm==='denied'?'push-err':'push-warn';
     const instSt=(typeof isStandaloneApp==='function'&&isStandaloneApp())?'Installiert':(typeof deferredInstallPrompt!=='undefined'&&deferredInstallPrompt?'Bereit':'Manuell');
     const gDot=`<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${gIn?'#22c55e':'#ef4444'};margin-right:5px;vertical-align:middle"></span>`;
     const gPill=gIn?(gOn?'<span class="status-pill status-on">AKTIV</span>':'<span class="status-pill status-off">AUS</span>'):'<span class="status-pill status-off">NICHT ANGEMELDET</span>';
