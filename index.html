@@ -321,6 +321,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="./firebase-config.js"></script>
+  <!-- Firestore-Guard: verhindert Schreibflut, MUSS vor app.js geladen werden -->
+  <script src="./core/firestore-guard.js"></script>
 
   <!-- Core: Integrationen -->
   <script src="./core/integrations/firebaseAuthBridge.js"></script>
