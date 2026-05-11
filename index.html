@@ -54,7 +54,6 @@
 </head>
 <body>
 
-
 <!-- Loading -->
 <div id="loading">
   <div class="ld-icon">
@@ -87,7 +86,6 @@
     </div>
   </div>
 </div>
-
 
 <!-- Panel overlay -->
 <div id="panel-overlay" onclick="closePanel()"></div>
@@ -288,11 +286,9 @@
             korrekte Uhrzeiten, Titel aus Google summary
 ==== -->
 
-
 <!-- ====
      CHANGE · EINSTELLUNGEN + AVATAR DOT + FIXES
 ==== -->
-
 
 <!-- ====
      CHANGE · FRISEUR-TRACKER
@@ -309,7 +305,6 @@
 
 <!-- Change Notifications: zentrale Glocke + Read-State -->
 
-
   <!-- ════════════════════════════════════
        SCRIPTS — Reihenfolge nicht ändern
   ════════════════════════════════════ -->
@@ -321,8 +316,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="./firebase-config.js"></script>
-  <!-- Firestore-Guard: verhindert Schreibflut, MUSS vor app.js geladen werden -->
-  <script src="./core/firestore-guard.js"></script>
 
   <!-- Core: Integrationen -->
   <script src="./core/integrations/firebaseAuthBridge.js"></script>
@@ -361,8 +354,8 @@
   <script src="./features/challenges/challenge-sync.js"></script>
   <script src="./features/dashboard/dashboard-logic.js"></script>
 
-  <!-- Fixes: Push-Counter, Klick-Blockade, Wetter-Push -->
-  <script src="./features/challenges/challenge-fixes.js"></script>
+  <!-- Firestore-Guard: lädt ZULETZT damit app.js nicht mehr überschreiben kann -->
+  <script src="./core/firestore-guard.js"></script>
 
 </body>
 </html>
