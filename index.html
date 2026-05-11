@@ -336,20 +336,17 @@
   <script src="./core/weather/weatherStore.js"></script>
   <script src="./core/weather/weatherService.js"></script>
   <script src="./core/weather/weatherRules.js"></script>
+  <script src="./core/notifications/notificationStore.js"></script>
+  <script src="./core/notifications/notificationCenter.js"></script>
+  <script src="./core/notifications/pushController.js"></script>
+  <script src="./core/notifications/notify-style.js"></script>
   <script src="./core/ui/viewState.js"></script>
   <script src="./core/misc.js"></script>
-  <script src="./core/challenges/challengeStore.js"></script>
 
   <!-- Haupt-App -->
   <script src="./change-pre.js"></script>
   <script src="./change-post.js"></script>
   <script src="./app.js"></script>
-
-  <!-- Core: Benachrichtigungen nach app.js, damit alte App-Globals sauber überschrieben werden -->
-  <script src="./core/notifications/notificationStore.js"></script>
-  <script src="./core/notifications/notificationCenter.js"></script>
-  <script src="./core/notifications/pushController.js"></script>
-  <script src="./core/notifications/notify-style.js"></script>
 
   <!-- Features -->
   <script src="./features/notifications/notificationBell.js"></script>
@@ -357,10 +354,13 @@
   <script src="./features/calendar/calendar-logic.js"></script>
   <script src="./features/weather/weatherCard.js"></script>
   <script src="./features/vacation/vacationPanel.js"></script>
-  <script src="./features/settings/settings-logic.js"></script>
   <script src="./features/settings/settingsPanel.js"></script>
+  <script src="./features/settings/settings-logic.js"></script>
   <script src="./features/challenges/challenge-sync.js"></script>
   <script src="./features/dashboard/dashboard-logic.js"></script>
+
+  <!-- Fixes: Push-Counter, Klick-Blockade, Wetter-Push -->
+  <script src="./features/challenges/challenge-fixes.js"></script>
 
 </body>
 </html>
