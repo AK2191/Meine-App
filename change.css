@@ -123,11 +123,13 @@
   .challenge-week-actions{width:100%!important;justify-content:space-between!important}
   .challenge-week-actions .btn{font-size:11px!important;padding:5px 8px!important}
   .challenge-week-title{font-size:13px!important}
-  /* Challenge-Items */
-  .challenge-item{flex-wrap:wrap!important;padding:10px 12px!important;gap:6px!important}
-  .challenge-body{flex:1 1 180px!important}
-  .points-pill{order:3;margin-left:auto}
-  .challenge-item .btn{order:4;width:100%!important;justify-content:center!important;margin-top:2px!important}
+  /* Challenge-Items — kompaktes Layout */
+  .challenge-item{flex-wrap:nowrap!important;padding:9px 12px!important;gap:8px!important;align-items:flex-start!important}
+  .challenge-body{flex:1!important;min-width:0!important}
+  /* Button NICHT auf 100% — sonst überschreibt es ch-do-btn */
+  .challenge-item .btn{width:auto!important;order:unset!important;margin-top:0!important}
+  /* Nur btn-undo darf schmal sein */
+  .challenge-item .btn-undo{width:auto!important}
   /* Dashboard */
   .dash-grid{grid-template-columns:1fr!important}
 }

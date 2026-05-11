@@ -1,24 +1,20 @@
 /**
  * Change App · firestore-guard.js — lädt ZULETZT
- *
- * Fix 1: Firestore-Schreibflut stoppen
- * Fix 2: Notif-Panel beim Start verhindern
- * Fix 3: Settings-Button — addEventListener statt onclick
+ * Fix 1: Firestore-Schreibflut
+ * Fix 2: Notif-Panel beim Start
+ * Fix 3: Settings-Button via Capturing-Listener
  */
 (function(){
   'use strict';
 
-  /* ── FIX 1 + 2 ── */
   function installGuards(){
     window.publishChallengesToFirestore      = async function(){ return; };
     window.publishLocalChallengesToFirestore = async function(){ return; };
     window.listenLiveChallenges              = function(){ return; };
-
     if(typeof window._changeLiveChallengesListener === 'function'){
       try{ window._changeLiveChallengesListener(); }catch(e){}
       window._changeLiveChallengesListener = null;
     }
-
     window.reqNotifPermission = function(){
       if(typeof Notification === 'undefined') return;
       if(Notification.permission === 'default'){
@@ -30,35 +26,38 @@
     };
   }
 
-  /* ── FIX 3: Settings — eigener Click-Handler via addEventListener ──
-   * Wir hören auf JEDEN Klick im Dokument und prüfen ob das
-   * Ziel der Settings-Button ist. So kann kein anderer Code
-   * unsere Handhabung blockieren.
-   */
-  var settingsHandlerInstalled = false;
+  function openSettings(){
+    try{
+      if(typeof window.openSettingsPanel === 'function'){
+        window.openSettingsPanel('calendar');
+      } else if(window.ChangeSettingsPanel && typeof window.ChangeSettingsPanel.open === 'function'){
+        window.ChangeSettingsPanel.open('calendar');
+      } else {
+        if(typeof openPanel === 'function')
+          openPanel('Einstellungen', '<p style="padding:16px;color:var(--t3)">Einstellungen werden geladen…</p>');
+      }
+    }catch(err){
+      if(typeof toast === 'function') toast('Einstellungen: ' + (err.message||err), 'err');
+    }
+  }
 
+  var handlerInstalled = false;
   function installSettingsHandler(){
-    if(settingsHandlerInstalled) return;
-    settingsHandlerInstalled = true;
-
+    if(handlerInstalled) return;
+    handlerInstalled = true;
     document.addEventListener('click', function(e){
-      // Prüfe ob geklicktes Element (oder ein Elternteil) der Settings-Button ist
       var el = e.target;
-      while(el && el !== document){
+      while(el && el !== document.body){
         if(el.id === 'settings-btn' ||
-           (el.getAttribute && el.getAttribute('title') === 'Einstellungen' && el.tagName === 'BUTTON')){
-          // Settings-Button geklickt
-          if(typeof window.openSettingsPanel === 'function'){
-            window.openSettingsPanel('calendar');
-          }
-          return; // kein stopPropagation/preventDefault — andere Handler bleiben
+          (el.tagName === 'BUTTON' && el.getAttribute('title') === 'Einstellungen')){
+          openSettings();
+          return;
         }
         el = el.parentElement;
       }
-    }, true); // true = Capturing-Phase — kommt VOR onclick und anderen Bubbling-Listenern
+    }, true);
   }
 
-  /* Init */
   installGuards();
   installSettingsHandler();
 
@@ -67,7 +66,6 @@
   }
   window.addEventListener('load', function(){
     installGuards();
-    installSettingsHandler();
     setTimeout(installGuards, 500);
   });
 
