@@ -189,20 +189,27 @@
     var dk=todayStr(), daily=getDailyPool(dk);
 
     function chItem(ch){
-      var done=isDoneToday(ch.id), pts=parseInt(ch.points,10)||0;
-      var link=(!ch.optional&&ch.url)
-        ?'<a class="challenge-meta" style="color:var(--acc);text-decoration:none;font-weight:600;display:inline-block;margin-top:2px" href="'+esc(safeUrl(ch.url))+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">Übung ansehen ↗</a>'
-        :'';
-      var btn=done
-        ?'<button class="btn btn-success btn-sm" disabled style="pointer-events:auto">Erledigt ✓</button>'
-         +'<button class="btn btn-undo btn-sm" style="pointer-events:auto;margin-left:4px" onclick="event.stopPropagation();window.undoChallenge(\''+esc(ch.id)+'\')" title="Rückgängig">↶</button>'
-        :'<button class="btn btn-primary btn-sm" style="pointer-events:auto" onclick="event.stopPropagation();window.completeChallenge(\''+esc(ch.id)+'\')">Erledigen</button>';
+      var done = isDoneToday(ch.id), pts = parseInt(ch.points,10)||0;
+
+      // Action-Row: "Übung ansehen" links, Button rechts — auf einer Linie
+      var linkHtml = (!ch.optional && ch.url)
+        ? '<a class="ch-link" href="'+esc(safeUrl(ch.url))+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">Übung ansehen ↗</a>'
+        : '<span></span>'; // Platzhalter damit Button rechts bleibt
+
+      var btnHtml = done
+        ? '<button class="btn btn-success btn-sm" disabled>Erledigt ✓</button>'
+          +'<button class="btn btn-undo btn-sm" onclick="event.stopPropagation();window.undoChallenge(\''+esc(ch.id)+'\')" title="Rückgängig">↶</button>'
+        : '<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();window.completeChallenge(\''+esc(ch.id)+'\')">Erledigen</button>';
+
       return '<div class="challenge-item'+(done?' challenge-done':'')+'" style="pointer-events:auto">'
         +'<div class="challenge-icon">'+esc(ch.icon||'🏆')+'</div>'
         +'<div class="challenge-body" style="pointer-events:auto;min-width:0">'
-        +'<div class="challenge-name">'+esc(ch.title||'Challenge')+'</div>'
-        +'<div class="challenge-meta">'+esc(ch.desc||'')+'</div>'+link
-        +'</div><span class="points-pill" style="flex-shrink:0">+'+pts+'</span>'+btn+'</div>';
+          +'<div class="challenge-name">'+esc(ch.title||'Challenge')+'</div>'
+          +'<div class="challenge-meta">'+esc(ch.desc||'')+'</div>'
+          +'<div class="ch-action-row">'+linkHtml+btnHtml+'</div>'
+        +'</div>'
+        +'<span class="points-pill" style="flex-shrink:0;align-self:flex-start">+'+pts+'</span>'
+        +'</div>';
     }
 
     var html=daily.map(chItem).join('');
