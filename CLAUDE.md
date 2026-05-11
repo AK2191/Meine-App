@@ -1,7 +1,7 @@
 # CLAUDE.md — Change App
 > **Einzige Wahrheit** über Struktur, Regeln und Arbeitsweise.
 > Vor jeder Änderung lesen. Nach jeder Änderung aktualisieren.
-> Letzte Aktualisierung: Mai 2026 — Settings-Fix: settingsPanel.js ist kanonischer Panel-Besitzer
+> Letzte Aktualisierung: Mai 2026 — Challenge-Links + Mobile-Stabilisierung
 
 ---
 
@@ -53,9 +53,9 @@ change-app/
 │   │   ├── calendarPanels.js           ← Tages-Panel, Event-Panel
 │   │   ├── calendarPanels.css
 │   │   └── calendar-logic.js           ← Kalender-Rendering (FINAL-Version)
-│   │                                       ⚠ Reassertet window.renderChallenges bei
-│   │                                          2000ms + 5600ms — challenges.js muss
-│   │                                          danach (6500ms+) dagegen halten!
+│   │                                       Darf Challenge-UI nur als Fallback rendern.
+│   │                                       Wenn challenges.js geladen ist, muss an
+│   │                                       window.renderChallenges delegiert werden.
 │   │
 │   ├── challenges/
 │   │   ├── challenge-sync.js           ← Firebase-Sync: change_completions + change_players
@@ -63,9 +63,10 @@ change-app/
 │   │   │                                   • Pool: 40 Übungen (hardcoded, kein Firestore)
 │   │   │                                   • Täglich 7 deterministisch per Datum
 │   │   │                                   • 2 feste Optionale (Fitness 30min, Spazieren 10min)
-│   │   │                                   • assertOwnership() bei 200ms, 800ms, 2500ms,
-│   │   │                                     6500ms + setInterval alle 10s
+│   │   │                                   • Markiert renderChallenges mit __changeChallenges
 │   │   │                                   • Befüllt window.challenges für Legacy-Code
+│   │   │                                     inklusive url/link/youtubeUrl
+│   │   │                                   • Kein blindes 10s-Neurendern auf Mobile
 │   │   └── challenges-mobile.css       ← Kompaktes Mobile-Layout
 │   │                                       Grid: Icon | Body+ActionRow | Punkte
 │   │                                       "Übung ansehen ↗" + [Erledigen] auf einer Zeile
@@ -92,8 +93,8 @@ change-app/
 │       └── vacationPanel.css
 │
 ├── app.js                              ← Hauptlogik (aus index.html extrahiert)
-│                                           ⚠ Reassertet window.renderChallenges
-│                                              bei 150ms, 500ms, 600ms
+│                                           Legacy-Code kann renderChallenges setzen;
+│                                           challenges.js übernimmt danach kanonisch.
 ├── change-pre.js                       ← Sport-Pool (Legacy), Auto-Challenges, Routing
 │                                           ⚠ Setzt window.challenges — wird von
 │                                              challenges.js überschrieben
@@ -137,9 +138,8 @@ Firebase SDKs (extern, compat v10)
   → features/vacation/vacationPanel.js
   → features/settings/settingsPanel.js      ← kanonisches Settings-Panel zuerst
   → features/settings/settings-logic.js     ← Legacy-/Sync-Helfer danach; delegiert openSettingsPanel
-  → features/challenges/challenge-sync.js
   → features/dashboard/dashboard-logic.js
-  → features/challenges/challenges.js
+  → features/challenges/challenges.js       ← kanonische Challenge-UI, muss nach calendar-logic laden
   → core/firestore-guard.js                 ← IMMER ZULETZT
 ```
 
@@ -151,9 +151,9 @@ change.css
 features/notifications/notificationBell.css
 features/calendar/calendarPanels.css
 features/settings/settingsPanel.css
+features/challenges/challenges-mobile.css
 features/weather/weatherCard.css
 features/vacation/vacationPanel.css
-features/challenges/challenges-mobile.css
 ```
 
 ---
@@ -173,12 +173,9 @@ features/challenges/challenges-mobile.css
 | Zeitpunkt | Was passiert | Gegenmaßnahme |
 |-----------|-------------|---------------|
 | 120ms | core/misc.js kann Kalender früh rendern | curDate/currentCalView nur über Safe-Helper initialisieren |
-| 150ms | app.js reassertet renderChallenges | challenges.js überschreibt bei 200ms |
-| 500ms | app.js FINAL PATCH reassertet | challenges.js 800ms |
-| 600ms | app.js FINAL FIX 2 reassertet | challenges.js 800ms |
-| 2000ms | calendar-logic.js reassertet | challenges.js 2500ms |
-| 5600ms | calendar-logic.js FINAL reassertet | challenges.js **6500ms** ← kritisch |
-| 7000ms+ | — | setInterval alle 10s dauerhaft |
+| 150–600ms | Legacy-Code kann renderChallenges setzen | challenges.js markiert kanonischen Renderer mit `__changeChallenges` |
+| 2000ms / 5600ms | calendar-logic.js aktualisiert Kalender-/Punkte-Helper | Darf `window.renderChallenges` nur setzen, wenn kein `__changeChallenges` vorhanden ist |
+| Mobile Scroll | Wiederholtes Blind-Rendern setzt Touch-/Scroll-Zustand zurück | challenges.js rendert nur neu, wenn der aktuelle DOM-Owner nicht `change-challenges` ist |
 
 ---
 
@@ -247,6 +244,8 @@ completeChallenge(id)
 - ❌ Kein Schreiben in `change_challenges`
 - ❌ Kein `checkNotifications()` nach Erledigen (würde Glocke hochzählen)
 - ❌ Kein `Object.defineProperty` auf `window.challenges` (blockiert Legacy-Code)
+- ❌ Kein dauerhaftes Neurendern im 10-Sekunden-Takt, wenn die Challenge-Liste bereits von `challenges.js` gerendert wurde
+- ✅ YouTube-Links müssen im Pool und im Legacy-Export (`url`, `link`, `youtubeUrl`) erhalten bleiben
 
 ---
 

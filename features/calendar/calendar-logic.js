@@ -1558,9 +1558,25 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
   const BLACKLIST=['spazieren gehen für 10'];
   const isBlacklisted=c=>BLACKLIST.some(b=>String(c.title||c.name||'').toLowerCase().includes(b));
 
+  function hydrateChallengeMeta(c){
+    c = c || {};
+    const base = window.ChangeChallenges && typeof window.ChangeChallenges.findById === 'function'
+      ? (window.ChangeChallenges.findById(c.id) || {})
+      : {};
+    const rawUrl = c.url || c.video || c.youtube || c.youtubeUrl || c.link || base.url || '';
+    return {
+      ...c,
+      title: c.title || c.name || base.title || 'Challenge',
+      desc: c.desc || base.desc || '',
+      icon: c.icon || base.icon || '🏆',
+      points: parseInt(c.points,10) || parseInt(base.points,10) || 0,
+      url: rawUrl
+    };
+  }
+
   function activeChallenges(){
     const td=todayStr();
-    const all=(window.challenges||[]).filter(c=>
+    const all=(window.challenges||[]).map(hydrateChallengeMeta).filter(c=>
       c&&c.active!==false&&(!c.date||c.date===td||c.recurrence==='daily')&&!isBlacklisted(c)
     );
     const normal=all.filter(c=>!isOptional(c));
@@ -1947,21 +1963,25 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
       const pts=parseInt(ch.points,10)||0;
       // Optional challenges (spazieren/fitness) never show a link
       const url=ch._optional?'':(ch.url||ch.video||ch.youtube||ch.youtubeUrl||ch.link||'');
+      const linkHtml=url?`<a class="ch-link" href="${safeUrl(url)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">Übung ansehen ↗</a>`:'';
+      const btnHtml=done
+        ?`<button class="btn btn-success btn-sm ch-do-btn" disabled>Erledigt ✓</button>
+           <button class="btn btn-undo btn-sm" title="Rückgängig" onclick="event.stopPropagation();window.undoChallenge('${esc(ch.id)}')">↶</button>`
+        :`<button class="btn btn-primary btn-sm ch-do-btn" onclick="event.stopPropagation();window.completeChallenge('${esc(ch.id)}')">Erledigen</button>`;
       return `<div class="challenge-item ${done?'challenge-done':''}">
         <div class="challenge-icon">${esc(ch.icon||'🏆')}</div>
         <div class="challenge-body">
-          <div class="challenge-name">${esc(ch.title||ch.name||'Challenge')}</div>
+          <div class="ch-top-row">
+            <span class="challenge-name">${esc(ch.title||ch.name||'Challenge')}</span>
+            <span class="points-pill">+${pts}</span>
+          </div>
           <div class="challenge-meta">${esc(ch.desc||'')}</div>
-          ${url?`<a class="challenge-meta" style="color:var(--acc);text-decoration:none;font-weight:600" href="${safeUrl(url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Übung ansehen ↗</a>`:''}
+          <div class="ch-action-row">${linkHtml}${btnHtml}</div>
         </div>
-        <span class="points-pill">+${pts}</span>
-        ${done
-          ?`<button class="btn btn-success btn-sm" disabled>Erledigt ✓</button>
-             <button class="btn btn-undo btn-sm" title="Rückgängig" onclick="window.undoChallenge('${esc(ch.id)}')">↶</button>`
-          :`<button class="btn btn-primary btn-sm" onclick="window.completeChallenge('${esc(ch.id)}')">Erledigen</button>`
-        }
       </div>`;
     }
+
+    list$.setAttribute('data-render-owner','calendar-fallback');
 
     let html=normal.map(chItem).join('');
     if(optional.length){
@@ -2010,7 +2030,10 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
     document.getElementById('bnav-'+v)?.classList.add('active');
     if(v==='dashboard') buildDashboard();
     if(v==='calendar'){window.renderCalendar&&window.renderCalendar();window.renderUpcoming&&window.renderUpcoming();}
-    if(v==='challenges') renderChallenges();
+    if(v==='challenges'){
+      if(typeof window.renderChallenges==='function') window.renderChallenges();
+      else renderChallenges();
+    }
     try{history.pushState({view:v},'','#/'+v);}catch(e){}
   }
 
@@ -2033,10 +2056,12 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
   };
 
   /* ==== EXPOSE ==== */
-  renderChallenges.__fix5=true;
+  renderChallenges.__calendarFallback=true;
   // buildDashboard NOT assigned to window — patch version wins
   window.buildKPIs=function(){if(window.buildDashboard&&window.buildDashboard.__eventFix)window.buildDashboard();else buildDashboard();};
-  window.renderChallenges=renderChallenges;
+  if(!window.renderChallenges || !window.renderChallenges.__changeChallenges){
+    window.renderChallenges=renderChallenges;
+  }
   // setMainView: always use window.buildDashboard (patch version)
   window.setMainView=function(v,fr){
     if(!['dashboard','calendar','challenges'].includes(v))v='dashboard';
@@ -2053,7 +2078,10 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
     var fab=document.getElementById('fab');if(fab)fab.style.display=v==='calendar'?'flex':'none';
     if(v==='dashboard'){var bd=window.buildDashboard&&window.buildDashboard.__eventFix?window.buildDashboard:buildDashboard;bd();}
     if(v==='calendar'&&typeof renderCalendar==='function')renderCalendar();
-    if(v==='challenges'&&typeof renderChallenges==='function')renderChallenges();
+    if(v==='challenges'){
+      if(typeof window.renderChallenges==='function') window.renderChallenges();
+      else if(typeof renderChallenges==='function') renderChallenges();
+    }
     if(!fr){try{history.pushState({view:v},'','#/'+v);}catch(e){location.hash='/'+v;}}
   };
 
@@ -2080,22 +2108,32 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
     setTimeout(()=>{
       // Re-assert after firebase auth resolves (myId() will now return email)
       // buildDashboard NOT reassigned here — patch version (today-section) must win
-      window.renderChallenges=renderChallenges;
+      if(!window.renderChallenges || !window.renderChallenges.__changeChallenges){
+        window.renderChallenges=renderChallenges;
+      }
       // setMainView NOT reassigned — our patched version stays
       window.getChallengeDayStatus=function(dk){const p=challengePointsForDate(dk);return p>0?{points:p,done:true,allDone:true}:null;};
       window.getChallengePointsForDate=challengePointsForDate;
       injectFinalStyle();
-      if(window.currentMainView==='challenges') renderChallenges();
+      if(window.currentMainView==='challenges'){
+        if(typeof window.renderChallenges==='function') window.renderChallenges();
+        else renderChallenges();
+      }
     },2000);
     // Final override after step7 last timer (5200ms)
     setTimeout(()=>{
       // buildDashboard NOT reassigned here — patch version (today-section) must win
-      window.renderChallenges=renderChallenges;
+      if(!window.renderChallenges || !window.renderChallenges.__changeChallenges){
+        window.renderChallenges=renderChallenges;
+      }
       // setMainView NOT reassigned — our patched version stays
       window.getChallengeDayStatus=function(dk){const p=challengePointsForDate(dk);return p>0?{points:p,done:true,allDone:true}:null;};
       window.getChallengePointsForDate=challengePointsForDate;
       injectFinalStyle();
-      if(window.currentMainView==='challenges') renderChallenges();
+      if(window.currentMainView==='challenges'){
+        if(typeof window.renderChallenges==='function') window.renderChallenges();
+        else renderChallenges();
+      }
     },5600);
   });
 

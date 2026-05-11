@@ -69,6 +69,31 @@
     {id:'opt_walk_10',    icon:'🚶', title:'Spazieren · mind. 10 Min.', points:15, desc:'Gehe mindestens 10 Minuten locker spazieren.',               optional:true}
   ];
 
+  function findById(id){
+    id = String(id||'');
+    for(var i=0;i<POOL.length;i++) if(String(POOL[i].id)===id) return POOL[i];
+    for(var j=0;j<OPTIONAL.length;j++) if(String(OPTIONAL[j].id)===id) return OPTIONAL[j];
+    return null;
+  }
+
+  function hydrateLegacyChallenge(ch){
+    ch = ch || {};
+    var base = findById(ch.id) || {};
+    return {
+      id: ch.id || base.id,
+      title: ch.title || ch.name || base.title || 'Challenge',
+      desc: ch.desc || base.desc || '',
+      icon: ch.icon || base.icon || '🏆',
+      points: parseInt(ch.points,10) || parseInt(base.points,10) || 0,
+      url: ch.url || ch.video || ch.youtube || ch.youtubeUrl || ch.link || base.url || '',
+      active: ch.active !== false,
+      date: ch.date || todayStr(),
+      recurrence: ch.recurrence || 'daily',
+      type: ch.type || 'Sport',
+      optional: !!(ch.optional || base.optional)
+    };
+  }
+
   /* ─── Hilfsfunktionen ─── */
   function pad(n){ return String(n).padStart(2,'0'); }
   function todayStr(){
@@ -215,6 +240,8 @@
         +'</div>';
     }
 
+    list.setAttribute('data-render-owner','change-challenges');
+
     var html=daily.map(chItem).join('');
     html+='<div class="ch-optional-section" style="margin:10px 0 4px;padding:8px 16px;font-size:10px;font-weight:800;color:var(--t4);text-transform:uppercase;letter-spacing:.07em;border-top:1px solid var(--b1)">Optionale Punkte</div>';
     html+=OPTIONAL.map(chItem).join('');
@@ -253,8 +280,18 @@
     try{if(typeof window.renderGroupGoal==='function') window.renderGroupGoal();}catch(e){}
   }
 
+  renderChallenges.__changeChallenges = true;
+
   /* ─── Exports ─── */
   // KEIN Object.defineProperty auf window.challenges — lässt anderen Code unberührt
+  window.ChangeChallenges = {
+    pool: POOL,
+    optional: OPTIONAL,
+    findById: findById,
+    hydrate: hydrateLegacyChallenge,
+    resolveUrl: function(id){ var ch=findById(id); return ch && ch.url ? ch.url : ''; },
+    render: renderChallenges
+  };
   window.renderChallenges           = renderChallenges;
   window.challengeScheduleForDate   = function(dk){ return getDailyPool(dk||todayStr()); };
   window.ensureDailyAutoChallenges  = function(){ return getDailyPool(todayStr()); };
@@ -271,21 +308,33 @@
    * calendar-logic.js reassertet window.renderChallenges bei
    * 2000ms und 5600ms. Wir reasserten bei 6500ms > 5600ms.
    * window.challenges befüllen damit Legacy-Code korrekt liest. */
+  var lastLegacyExportKey = '';
+
   function assertOwnership(){
     window.renderChallenges = renderChallenges;
 
-    // window.challenges mit unserem Pool befüllen
+    // window.challenges mit unserem Pool befüllen — inklusive YouTube-URLs,
+    // damit Legacy-/Fallback-Renderer keine Link-Information verlieren.
     var today = todayStr();
-    window.challenges = getDailyPool(today).concat(OPTIONAL).map(function(ch){
-      return {
-        id: ch.id, title: ch.title, desc: ch.desc, icon: ch.icon,
-        points: ch.points, active: true, date: today,
-        recurrence: 'daily', type: 'Sport', optional: !!ch.optional
-      };
-    });
-    try{ if(typeof ls==='function') ls('challenges', window.challenges); }catch(e){}
+    var exportKey = today + ':' + getDailyPool(today).map(function(ch){return ch.id;}).join(',');
+    if(exportKey !== lastLegacyExportKey){
+      window.challenges = getDailyPool(today).concat(OPTIONAL).map(function(ch){
+        return {
+          id: ch.id, title: ch.title, desc: ch.desc, icon: ch.icon,
+          points: ch.points, url: ch.url || '', link: ch.url || '', youtubeUrl: ch.url || '',
+          active: true, date: today, recurrence: 'daily', type: 'Sport', optional: !!ch.optional
+        };
+      });
+      lastLegacyExportKey = exportKey;
+      try{ if(typeof ls==='function') ls('challenges', window.challenges); }catch(e){}
+    }
 
-    if((window.currentMainView||'')==='challenges') renderChallenges();
+    // Nicht alle 10 Sekunden blind neu rendern: das setzt auf Mobile
+    // den Scroll/Touch-Zustand zurück und wirkt unruhig.
+    var list = document.getElementById('challenges-list');
+    if((window.currentMainView||'')==='challenges' && (!list || list.getAttribute('data-render-owner')!=='change-challenges')){
+      renderChallenges();
+    }
   }
 
   // Sofort

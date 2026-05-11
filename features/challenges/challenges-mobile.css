@@ -194,3 +194,84 @@
   .ch-top-row .challenge-name { font-size: 12px !important; }
   .ch-do-btn { font-size: 10.5px !important; padding: 4px 9px !important; }
 }
+
+/* ════════════════════════════════
+   MOBILE STABILISIERUNG
+   Wichtig: stärker als change.css/body.change-mobile Overrides.
+   Ziel: kein Umbruch-Flackern, Link + Button in einer ruhigen Action-Zeile.
+════════════════════════════════ */
+body.change-mobile .challenge-item {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
+  padding: 12px 14px !important;
+}
+
+body.change-mobile .challenge-item > .challenge-icon {
+  flex: 0 0 30px !important;
+  width: 30px !important;
+  height: 30px !important;
+  margin-top: 0 !important;
+}
+
+body.change-mobile .challenge-item > .challenge-body {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  width: auto !important;
+}
+
+body.change-mobile .ch-top-row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: start !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+body.change-mobile .ch-top-row .challenge-name {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  line-height: 1.28 !important;
+}
+
+body.change-mobile .ch-top-row .points-pill {
+  margin-left: 0 !important;
+  align-self: start !important;
+  justify-self: end !important;
+}
+
+body.change-mobile .ch-action-row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  margin-top: 7px !important;
+}
+
+body.change-mobile .ch-link {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+body.change-mobile .ch-do-btn {
+  justify-self: end !important;
+  margin-left: 0 !important;
+  min-width: 78px !important;
+}
+
+body.change-mobile .ch-action-row .btn-undo {
+  justify-self: end !important;
+}
+
+/* Legacy-Fallback: falls ein alter Renderer kurz aktiv ist, bleibt die Zeile trotzdem stabil. */
+body.change-mobile .challenge-item > .points-pill,
+body.change-mobile .challenge-item > .btn:not(.btn-undo) {
+  flex: 0 0 auto !important;
+  align-self: flex-start !important;
+  margin-left: 0 !important;
+}
