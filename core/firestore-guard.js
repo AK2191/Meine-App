@@ -1,201 +1,142 @@
 /**
  * Change App · firestore-guard.js
  * ════════════════════════════════════════════════════════
- * Behebt: unkontrollierte Firestore-Schreibflut bei Challenges
+ * Behebt 3 Probleme — muss NACH app.js geladen werden:
  *
- * DAS PROBLEM:
- * - publishChallengesToFirestore() schreibt ALLE ~24 Challenges
- *   einzeln in Firestore (24 Writes pro Aufruf)
- * - renderChallenges() → ensureDailyAutoChallenges() → publish()
- *   = jeder Render triggert 24 Writes
- * - Startup: 4× renderChallenges in 600ms = 96 Writes beim Laden
- * - listenLiveChallenges() onSnapshot liest bei jeder Änderung
- *   alle 24 Docs = 24 Reads × viele Schreibzyklen
- * - Ergebnis: 20.000 Reads/Writes pro Tag, App-Limit erreicht
+ * 1. FIRESTORE SCHREIBFLUT
+ *    publishChallengesToFirestore() schreibt alle 24 Sport-
+ *    Challenges einzeln. renderChallenges() ruft das mehrfach
+ *    auf. Fix: No-Op nach dem Laden aller Scripts.
  *
- * DIE LÖSUNG:
- * 1. publishChallengesToFirestore DEAKTIVIEREN
- *    → Sport-Challenges leben im App-Code, nicht in Firestore
- *    → change_challenges Sammlung nur für USER-erstellte Challenges
+ * 2. BENACHRICHTIGUNGS-PANEL ÖFFNET BEIM START
+ *    notificationBell.js überschreibt window.reqNotifPermission
+ *    mit togglePushFromBell(true) → openPanel().
+ *    bootMainApp() ruft reqNotifPermission() auf → Panel öffnet.
+ *    Fix: reqNotifPermission zurück auf Browser-Dialog setzen.
  *
- * 2. listenLiveChallenges DEAKTIVIEREN
- *    → kein permanenter onSnapshot auf alle Challenges
- *    → Live-Sync läuft weiterhin über change_completions (Punkte)
- *    → und change_players (Rangliste) — das ist was wirklich gebraucht wird
- *
- * 3. ensureDailyAutoChallenges nur lokal (localStorage)
- *    → kein Firestore-Write bei jedem renderChallenges()
- *
- * BLEIBT AKTIV (korrekte Firebase-Nutzung):
- * - change_completions: Punkte lesen/schreiben ✓
- * - change_players: Rangliste live ✓
- * - change_settings: Einstellungen sync ✓
- * - Einzelne Challenges speichern (saveChallenge) ✓
- *
- * Ladereihenfolge: DIREKT nach firebase-config.js, VOR app.js
+ * 3. SETTINGS NICHT KLICKBAR
+ *    Wurde durch Object.defineProperty in challenge-fixes.js
+ *    verursacht. Diese Datei ersetzt den ganzen Fix sauber.
+ * ════════════════════════════════════════════════════════
  */
 (function(){
   'use strict';
 
-  /* ════════════════════════════════════════════════
-     SCHRITT 1 — publishChallengesToFirestore deaktivieren
-     Wird durch No-Op ersetzt. Kein Write mehr.
-  ════════════════════════════════════════════════ */
-  window.publishChallengesToFirestore = async function(){
-    // Deaktiviert: Sport-Challenges sind lokaler App-Code,
-    // kein Firestore-Write nötig. Nur user-erstellte
-    // Challenges werden über saveChallenge() gespeichert.
-    return;
-  };
+  function install(){
 
-  // Auch die "local" Variante deaktivieren
-  window.publishLocalChallengesToFirestore = async function(){ return; };
+    /* ── FIX 1: Firestore-Schreibflut stoppen ── */
 
+    // publishChallengesToFirestore → No-Op
+    // Sport-Challenges leben im App-Code, nicht in Firestore
+    window.publishChallengesToFirestore       = async function(){ return; };
+    window.publishLocalChallengesToFirestore  = async function(){ return; };
 
-  /* ════════════════════════════════════════════════
-     SCHRITT 2 — listenLiveChallenges deaktivieren
-     Kein permanenter onSnapshot auf change_challenges.
-     = Spart 24 Reads bei jeder Änderung.
-  ════════════════════════════════════════════════ */
-  window.listenLiveChallenges = function(){
-    // Deaktiviert: kein onSnapshot auf change_challenges.
-    // Sport-Pool kommt aus dem App-Code.
-    // User-Challenges werden beim Login einmalig geladen.
-    return;
-  };
+    // listenLiveChallenges → No-Op (kein onSnapshot auf change_challenges)
+    window.listenLiveChallenges = function(){ return; };
 
-  // Falls _changeLiveChallengesListener gesetzt wurde: aufräumen
-  window.addEventListener('load', function(){
-    setTimeout(function(){
-      if(window._changeLiveChallengesListener){
-        try{
-          window._changeLiveChallengesListener();
-          window._changeLiveChallengesListener = null;
-        }catch(e){}
-      }
-    }, 2000);
-  });
-
-
-  /* ════════════════════════════════════════════════
-     SCHRITT 3 — Rate-Limiter für alle Firestore Writes
-     Globale Schutzfunktion: max. 1 Write-Batch pro 30 Sek.
-     für dieselbe Sammlung (außer completions + players)
-  ════════════════════════════════════════════════ */
-  var _lastWrite = {};
-  var WRITE_COOLDOWN = 30 * 1000; // 30 Sekunden
-
-  var _origFirestore = null;
-
-  function installFirestoreGuard(){
-    if(!window.firebase || !firebase.firestore) return;
-    if(window._firestoreGuardInstalled) return;
-    window._firestoreGuardInstalled = true;
-
-    try{
-      var db = firebase.firestore();
-      var _origCollection = db.collection.bind(db);
-
-      db.collection = function(name){
-        var col = _origCollection(name);
-
-        // change_challenges: set() und add() blockieren
-        // (nur Punkte/Spieler/Einstellungen dürfen schreiben)
-        if(name === 'change_challenges'){
-          var _origDoc = col.doc.bind(col);
-          col.doc = function(id){
-            var doc = _origDoc(id);
-            var _origSet = doc.set.bind(doc);
-            doc.set = async function(data, opts){
-              // NUR wenn explizit vom User ausgelöst (saveChallenge)
-              // nicht von publishChallengesToFirestore
-              // Einfacher Check: stacktrace enthält 'publishChallenge'?
-              var stack = new Error().stack || '';
-              if(stack.includes('publishChallenge') || stack.includes('normalizeSport') || stack.includes('stripNonSport') || stack.includes('ensureDaily')){
-                return; // blockieren
-              }
-              return _origSet(data, opts);
-            };
-            return doc;
-          };
-        }
-        return col;
-      };
-    }catch(e){
-      // Firestore Guard konnte nicht installiert werden — kein Problem
-      console.warn('[FirestoreGuard] Konnte nicht installiert werden:', e.message);
+    // Vorhandenen Listener aufräumen falls schon aktiv
+    if(typeof window._changeLiveChallengesListener === 'function'){
+      try{ window._changeLiveChallengesListener(); }catch(e){}
+      window._changeLiveChallengesListener = null;
     }
+
+
+    /* ── FIX 2: Benachrichtigungs-Panel nicht beim Start öffnen ── */
+
+    // notificationBell.js hat reqNotifPermission mit togglePushFromBell(true)
+    // überschrieben → öffnet Panel bei jedem Boot.
+    // Fix: nur Browser-Permission anfragen, kein Panel öffnen.
+    window.reqNotifPermission = function(){
+      if(typeof Notification === 'undefined') return;
+      if(Notification.permission === 'default'){
+        Notification.requestPermission().then(function(p){
+          if(p === 'granted' && typeof toast === 'function'){
+            toast('Benachrichtigungen aktiviert ✓', 'ok');
+          }
+        });
+      }
+    };
+
+
+    /* ── FIX 3: Klickbarkeit sichern (ohne Object.defineProperty) ── */
+
+    // Sicherstellen dass completeChallenge existiert
+    if(typeof window.completeChallenge !== 'function'){
+      window.completeChallenge = function(id){
+        if(typeof toast === 'function') toast('Bitte Seite neu laden','err');
+      };
+    }
+
+    // CSS-Fix: Buttons in challenge-view klickbar machen
+    function ensureClickable(){
+      // challenge-layout und alle Kinder klickbar
+      var layout = document.querySelector('.challenge-layout');
+      if(layout) layout.style.pointerEvents = 'auto';
+
+      // streak-row darf challenge-list nicht überlagern
+      var streak = document.getElementById('streak-row');
+      if(streak){
+        streak.style.position  = 'relative';
+        streak.style.zIndex    = '1';
+        streak.style.pointerEvents = 'auto';
+      }
+
+      // Alle challenge-item Buttons klickbar
+      document.querySelectorAll('#challenges-list .btn').forEach(function(btn){
+        btn.style.pointerEvents = 'auto';
+        btn.style.position = 'relative';
+        btn.style.zIndex   = '10';
+      });
+
+      // Leader-rows klickbar
+      document.querySelectorAll('.leader-row').forEach(function(row){
+        row.style.pointerEvents = 'auto';
+      });
+    }
+
+    // Nach jedem renderChallenges aufrufen
+    var _origRender = window.renderChallenges;
+    if(typeof _origRender === 'function'){
+      window.renderChallenges = function(){
+        var r = _origRender.apply(this, arguments);
+        setTimeout(ensureClickable, 80);
+        return r;
+      };
+    }
+
+    // Nach jedem setMainView auf 'challenges'
+    var _origSet = window.setMainView;
+    if(typeof _origSet === 'function'){
+      window.setMainView = function(v, fr){
+        var r = _origSet.apply(this, [v, fr]);
+        if(v === 'challenges') setTimeout(ensureClickable, 200);
+        return r;
+      };
+    }
+
+    // Beim Laden sofort
+    setTimeout(ensureClickable, 500);
+    window.addEventListener('load', function(){ setTimeout(ensureClickable, 1000); });
+
+    console.log('[Change] firestore-guard.js ✓ — Schreibflut+Panel+Klick gefixt');
   }
 
-  // Nach Firebase-Init installieren
+  // NACH allen anderen Scripts ausführen
+  // (weil app.js publishChallengesToFirestore nach uns überschreiben würde)
   if(document.readyState === 'loading'){
+    // Wir sind noch im <head> oder frühem <body> — DOMContentLoaded abwarten
     document.addEventListener('DOMContentLoaded', function(){
-      setTimeout(installFirestoreGuard, 100);
+      // Noch etwas warten damit alle inline + src Scripts gelaufen sind
+      setTimeout(install, 200);
     });
   } else {
-    setTimeout(installFirestoreGuard, 100);
+    // Dokument schon geparst — sofort aber nach Microtask-Queue
+    setTimeout(install, 50);
   }
 
+  // Sicherheitsnetz: nochmal nach load
   window.addEventListener('load', function(){
-    setTimeout(installFirestoreGuard, 500);
+    setTimeout(install, 300);
   });
 
-
-  /* ════════════════════════════════════════════════
-     SCHRITT 4 — ensureDailyAutoChallenges entkoppeln
-     Stellt sicher dass die Funktion NIEMALS Firestore aufruft.
-     Nur localStorage.
-  ════════════════════════════════════════════════ */
-  var _ensureGuardInstalled = false;
-
-  function guardEnsureDaily(){
-    if(_ensureGuardInstalled) return;
-    var orig = window.ensureDailyAutoChallenges;
-    if(typeof orig !== 'function') return;
-    _ensureGuardInstalled = true;
-
-    window.ensureDailyAutoChallenges = function(dk){
-      var result = orig.call(this, dk);
-      // Nach dem Aufruf: sicherstellen dass kein Firestore-Write passiert
-      // (publishChallengesToFirestore ist bereits No-Op, aber sicher ist sicher)
-      return result;
-    };
-  }
-
-  // Mehrfach versuchen (ensureDailyAutoChallenges wird mehrfach überschrieben)
-  [500, 1000, 2000, 3000].forEach(function(ms){
-    setTimeout(guardEnsureDaily, ms);
-  });
-
-
-  /* ════════════════════════════════════════════════
-     MONITORING — zeigt Firestore-Aktivität in Konsole
-     (nur im Development — nach Bedarf deaktivieren)
-  ════════════════════════════════════════════════ */
-  var _readCount  = 0;
-  var _writeCount = 0;
-  var _monitorStart = Date.now();
-
-  window.getFirestoreStats = function(){
-    var mins = ((Date.now() - _monitorStart) / 60000).toFixed(1);
-    return {
-      reads:  _readCount,
-      writes: _writeCount,
-      minutes: mins,
-      readsPerMin:  (_readCount  / Math.max(parseFloat(mins), 0.1)).toFixed(1),
-      writesPerMin: (_writeCount / Math.max(parseFloat(mins), 0.1)).toFixed(1)
-    };
-  };
-
-  // Konsole-Ausgabe alle 5 Minuten
-  setInterval(function(){
-    var s = window.getFirestoreStats();
-    if(s.reads > 0 || s.writes > 0){
-      console.log('[FirestoreGuard] Letzte '+s.minutes+' Min: '
-        + s.reads+' Reads ('+s.readsPerMin+'/min), '
-        + s.writes+' Writes ('+s.writesPerMin+'/min)');
-    }
-  }, 5 * 60 * 1000);
-
-  console.log('[Change] firestore-guard.js geladen ✓ — Schreibflut blockiert');
 })();
