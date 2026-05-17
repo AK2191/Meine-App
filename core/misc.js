@@ -252,20 +252,16 @@ window.renderGroupGoal = function(){
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
       <div style="display:flex;align-items:center;gap:8px">
         <span style="font-size:18px">🎯</span>
-        <div>
-          <div style="font-size:13px;font-weight:700;color:var(--t1)">Gruppen-Ziel · KW ${getWeekNumber()}</div>
-        </div>
+        <div style="font-size:13px;font-weight:700;color:var(--t1)">Gruppen-Ziel · KW ${getWeekNumber()}</div>
       </div>
       <div style="text-align:right">
         <div style="font-size:18px;font-weight:800;color:${done?'var(--grn)':'var(--acc)'}">${points}</div>
         <div style="font-size:10px;color:var(--t4)">von ${goal.target} P</div>
       </div>
     </div>
-    <div style="background:var(--s3);border-radius:999px;height:8px;overflow:hidden">
-      <div style="height:8px;border-radius:999px;background:${done?'var(--grn)':'var(--acc)'};width:${pct}%;transition:width .4s ease"></div>
-    </div>
-    <div style="display:flex;justify-content:space-between;margin-top:6px">
-      <span style="font-size:11px;color:var(--t3)">${pct}% erreicht</span>
+    <div style="position:relative;background:var(--s3);border-radius:999px;height:20px;overflow:hidden">
+      <div style="height:20px;border-radius:999px;background:${done?'var(--grn)':'var(--acc)'};width:${pct}%;transition:width .4s ease"></div>
+      <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${pct>18?'#fff':'var(--t2)'};">${pct}% erreicht</span>
     </div>
     ${done ? '<div style="font-size:12px;font-weight:600;color:var(--grn);margin-top:8px;text-align:center">🎉 Ziel erreicht! Ihr seid großartig!</div>' : ''}
   `;
