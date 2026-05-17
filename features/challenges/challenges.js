@@ -119,16 +119,97 @@
     return arr.slice(off).concat(arr.slice(0,off)).slice(0,7);
   }
 
-  /* Spieler-ID */
+  /* Spieler-ID – robust, alle Quellen */
   function myId(){
+    // 1. Firebase Auth (sicherste Quelle)
     try{
       var fu=typeof firebase!=='undefined'&&firebase.auth&&firebase.auth().currentUser;
       if(fu&&fu.email) return fu.email.toLowerCase().trim();
-      if(fu&&fu.uid) return fu.uid.toLowerCase().trim();
     }catch(e){}
-    var i=window.userInfo||{};
-    return String(i.email||i.uid||'').toLowerCase().trim()||'local-user';
+    // 2. window.userInfo (gesetzt von firebaseAuthBridge)
+    try{ var wi=window.userInfo; if(wi&&wi.email) return String(wi.email).toLowerCase().trim(); }catch(e){}
+    // 3. localStorage-Cache (gesetzt von saveUserProfileInfo)
+    try{
+      var cached=['change_v1_user_email','user_email'];
+      for(var ci=0;ci<cached.length;ci++){
+        var v=localStorage.getItem(cached[ci]);
+        if(v&&v.includes('@')) return v.toLowerCase().trim();
+      }
+    }catch(e){}
+    // 4. ls('user_info_safe')
+    try{
+      if(typeof ls==='function'){
+        var safe=ls('user_info_safe')||ls('user_info');
+        if(safe&&safe.email) return String(safe.email).toLowerCase().trim();
+      }
+    }catch(e){}
+    // 5. Direkt aus localStorage JSON
+    try{
+      var raw=localStorage.getItem('user_info_safe')||localStorage.getItem('change_v1_user_info')||localStorage.getItem('user_info');
+      if(raw){ var obj=JSON.parse(raw); if(obj&&obj.email) return String(obj.email).toLowerCase().trim(); }
+    }catch(e){}
+    return 'local-user';
   }
+
+  /* ─── Spieler-Panel (Klick auf Ranglisten-Eintrag) ─── */
+  window.openPlayerRecentPanel = function(playerId, playerName){
+    var id = String(playerId||'').toLowerCase();
+    var name = playerName || id || 'Mitspieler';
+    var completions = (window.challengeCompletions||[]);
+
+    // Statistik
+    var todayKey = todayStr();
+    var todayPts = 0, totalPts = 0, done = [];
+    completions.forEach(function(c){
+      var cid = String(c.playerId||c.userEmail||c.email||'').toLowerCase();
+      if(cid!==id) return;
+      var pts = parseInt(c.points,10)||0;
+      totalPts += pts;
+      if(String(c.date||'').slice(0,10)===todayKey) todayPts += pts;
+      done.push(c);
+    });
+    done.sort(function(a,b){ return String(b.createdAt||b.date||'').localeCompare(String(a.createdAt||a.date||'')); });
+    var last5 = done.slice(0,5);
+
+    // Challenge-Name auflösen
+    function chName(c){
+      var pool = getDailyPool(todayStr()).concat(OPTIONAL);
+      var found = pool.find(function(x){return x.id===String(c.challengeId||'');});
+      return (found&&found.title)||c.challengeTitle||c.challengeId||'Aufgabe';
+    }
+    function chIcon(c){
+      var pool = getDailyPool(todayStr()).concat(OPTIONAL);
+      var found = pool.find(function(x){return x.id===String(c.challengeId||'');});
+      return (found&&found.icon)||c.icon||'✅';
+    }
+    function fmtDate(c){
+      var d = c.date||'';
+      if(!d) return '';
+      try{ var dt=new Date(d+'T12:00:00'); return dt.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}); }catch(e){ return d; }
+    }
+
+    var statsHtml = '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">'
+      +'<div style="background:var(--s2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--t1)">'+todayPts+'</div><div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Heute</div></div>'
+      +'<div style="background:var(--s2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--t1)">'+totalPts+'</div><div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Gesamt</div></div>'
+      +'<div style="background:var(--s2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--t1)">'+done.length+'</div><div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Erledigt</div></div>'
+      +'</div>';
+
+    var rowsHtml = last5.length
+      ? last5.map(function(c){
+          return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--b1)">'
+            +'<div style="width:34px;height:34px;border-radius:10px;background:var(--acc-d);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">'+esc(chIcon(c))+'</div>'
+            +'<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(chName(c))+'</div>'
+            +'<div style="font-size:11px;color:var(--t3);margin-top:2px">'+fmtDate(c)+(parseInt(c.points,10)?' · +'+parseInt(c.points,10)+' P':'')+'</div></div>'
+            +'</div>';
+        }).join('')
+      : '<div class="dash-empty">Noch keine erledigten Aufgaben</div>';
+
+    var html = statsHtml
+      +'<div style="font-size:10px;font-weight:800;color:var(--t4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Letzte Aufgaben</div>'
+      +rowsHtml;
+
+    if(typeof openPanel==='function') openPanel(name, html);
+  };
 
   /* Erledigt heute? */
   function isDoneToday(chId){
@@ -287,14 +368,6 @@
     }catch(e){board.innerHTML='<div class="dash-empty">Rangliste wird geladen…</div>';}
 
     try{if(typeof window.renderGroupGoal==='function') window.renderGroupGoal();}catch(e){}
-
-    // Mitspieler-Aktivität aktualisieren
-    try{
-      var actList = document.getElementById('player-activity-list');
-      if(actList && window.ChangePlayerActivity && typeof window.ChangePlayerActivity.panelHtml === 'function'){
-        actList.innerHTML = window.ChangePlayerActivity.panelHtml(4);
-      }
-    }catch(e){}
   }
 
   renderChallenges.__changeChallenges = true;

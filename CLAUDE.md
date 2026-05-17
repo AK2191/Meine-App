@@ -182,3 +182,10 @@ firebase deploy --only hosting
 | 2026-05-17 | Mitspieler-Button entfernt, Karte heißt jetzt „Rangliste“         | Claude |
 | 2026-05-17 | App Icon „Tiefe & Stille“ hinzugefügt                              | Claude |
 | 2026-05-17 | CLAUDE.md initial erstellt                                         | Claude |
+| 2026-05-17 | myId() robust: 5-stufiger Fallback (Firebase → userInfo → localStorage) | Claude |
+| 2026-05-17 | openPlayerRecentPanel() definiert in challenges.js (war fehlend)   | Claude |
+| 2026-05-17 | Player-Panel: Heute/Gesamt/Erledigt + letzte 5 Aufgaben            | Claude |
+| 2026-05-17 | Mitspieler-Aktivität aus Rangliste-Karte entfernt → jetzt im Player-Panel | Claude |
+| 2026-05-17 | Anfeuern-Button für eigenen Account korrekt versteckt (myId fix)   | Claude |
+| 2026-05-17 | window.injectStreakCard + window.checkNewBadges exportiert (app.js) | Claude |
+| 2026-05-17 | Settings: Wetter/Pollen getrennte Karten, Tracker umbenannt        | Claude |
