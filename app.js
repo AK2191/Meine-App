@@ -243,7 +243,14 @@ function trySilentGoogleTokenRefresh(){
     const tc = google.accounts.oauth2.initTokenClient({
       client_id: cleanGoogleClientId(CLIENT_ID),
       scope: GCAL_SCOPE,
-      prompt: '',          // kein Popup — still im Hintergrund
+      // prompt:'none' → GSI öffnet NIEMALS ein Browser-Fenster oder Popup.
+      // Wenn die Google-Session abgelaufen ist, wird error_callback aufgerufen.
+      // prompt:'' (leer) hingegen lässt Google entscheiden → kann Fenster öffnen.
+      prompt: 'none',
+      error_callback: () => {
+        // Stilles Scheitern — Token abgelaufen, Nutzer muss sich
+        // beim nächsten manuellen Google-Sync neu anmelden. Kein Toast, kein Fenster.
+      },
       callback: async resp => {
         if(resp && resp.access_token){
           accessToken = resp.access_token;
@@ -252,9 +259,10 @@ function trySilentGoogleTokenRefresh(){
           try{ updateAvatar(); }catch(e){}
           if(typeof loadGoogleData === 'function') loadGoogleData();
         }
+        // Kein access_token → stilles Scheitern, kein Fehler-Toast
       }
     });
-    tc.requestAccessToken({prompt: ''});
+    tc.requestAccessToken({prompt: 'none'});
   } catch(e){ /* silent — kein Fehler wenn nicht möglich */ }
 }
 

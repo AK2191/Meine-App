@@ -299,6 +299,7 @@ completeChallenge(id)
 - ❌ checkNotifications() nach Challenge-Erledigen
 - ❌ !important in CSS (außer für gezielte Overrides mit Kommentar)
 - ❌ Hex-Codes außerhalb von tokens.css
+- ❌ `prompt: ''` (leer) in `trySilentGoogleTokenRefresh` — öffnet Browser-Fenster. Immer `prompt: 'none'` + `error_callback`.
 
 ---
 
@@ -311,3 +312,36 @@ completeChallenge(id)
 | `manifest.json` | PWA-Definition |
 | `firestore.rules` | Sicherheitsregeln |
 | `functions/` | Cloud Functions — separater Deploy |
+
+---
+
+## 12. Behobene Root-Cause-Bugs (Mai 2026)
+
+### Google Browser-Fenster beim Token-Refresh
+**Ursache:** `trySilentGoogleTokenRefresh()` in `app.js` verwendete `prompt: ''` (leer).
+Mit Google Identity Services (GSI) bedeutet `prompt: ''` "lass Google entscheiden" —
+wenn die Google-Session abgelaufen ist, öffnet GSI **trotzdem** ein Browser-Fenster oder Popup.
+
+**Fix (app.js):**
+- `prompt: 'none'` in `initTokenClient` UND in `requestAccessToken`
+- Zusätzlich `error_callback: () => {}` — bei abgelaufener Session → stilles Scheitern, **kein Fenster**
+- Nutzer muss sich nur beim expliziten Google-Sync (Settings → Sync) manuell neu anmelden
+
+**Regel:** `trySilentGoogleTokenRefresh` darf NIEMALS ein UI-Element öffnen.
+`prompt: 'none'` + `error_callback` garantiert das.
+
+---
+
+### Standort nach 6h inaktiv obwohl noch eingeloggt
+**Ursache:** `LOCATION_MAX_AGE = 6h` in `core/weather/weatherService.js`.
+Firebase-Login-Sessions halten 2+ Tage. Nach 6h gab `refresh()` sofort `{status:'stale_location'}`
+zurück → Wetter wurde stumm deaktiviert, ohne den Nutzer zu informieren.
+
+**Fix (core/weather/weatherService.js):**
+- `LOCATION_MAX_AGE` von 6h auf **24h** erhöht
+- `refresh()` versucht bei veraltetem Standort eine **stille Neuabfrage** via `Store.requestLocation()`
+  - `navigator.geolocation` mit `maximumAge: 30min` → nutzt Browser-Cache, **kein Berechtigungs-Dialog**
+  - Schlägt Neuabfrage fehl → `stale_location` wie bisher
+  - Klappt Neuabfrage → frischer Standort, Wetter lädt normal weiter
+
+**Regel:** `LOCATION_MAX_AGE` immer ≥ 24h halten.
