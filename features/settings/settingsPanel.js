@@ -162,16 +162,29 @@
   function weatherHealthCard(){
     var weather = weatherHealthStatus();
     var ws = weather.settings || {};
-    // Wetter-Karte
+    var wetterOn  = !!ws.weatherEnabled;
+    var pollenOn  = !!ws.pollenEnabled;
+
+    // Wetter-Karte: wie Friseur – AKTIV/AUS Pill + Sub-Optionen nur wenn AN
+    var wetterSub = wetterOn
+      ? switchRow('Regenwarnung', '', 'set-rain-alerts', !!ws.rainAlertsEnabled)
+        +'<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-weather-location" type="button">Standort aktualisieren</button></div>'
+      : '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-weather-location" type="button">Standort aktualisieren</button></div>';
+
     var wetterCard = card('Wetter',
-        '<div class="change-settings-row"><div><div class="change-settings-title"><span class="change-status-dot '+weather.tone+'"></span>Wetter & Pollen '+pill(weather.label, weather.tone)+'</div><div class="change-settings-sub">'+esc(weather.detail)+'</div></div></div>'+
-        switchRow('Im Dashboard anzeigen', '', 'set-weather', !!ws.weatherEnabled)+
-        switchRow('Regenwarnung', '', 'set-rain-alerts', !!ws.rainAlertsEnabled)+
-        '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-weather-location" type="button">Standort aktualisieren</button></div>');
-    // Pollen-Karte
+        '<div class="change-settings-row change-settings-row--status"><div><div class="change-settings-title"><span class="change-status-dot '+weather.tone+'"></span>'+esc(weather.detail)+'</div></div></div>'+
+        switchRow('Im Dashboard anzeigen '+pill(wetterOn?'AKTIV':'AUS', wetterOn?'ok':'off'), '', 'set-weather', wetterOn)+
+        wetterSub);
+
+    // Pollen-Karte: Sub-Optionen nur wenn AN
+    var pollenSub = pollenOn
+      ? switchRow('Pollen-Hinweise '+pill('nur stark', 'off'), '', 'set-pollen-alerts', !!ws.pollenAlertsEnabled)
+      : '';
+
     var pollenCard = card('Pollen',
-        switchRow('Im Dashboard anzeigen', '', 'set-pollen', !!ws.pollenEnabled)+
-        switchRow('Pollen-Hinweise '+pill('nur stark', 'off'), '', 'set-pollen-alerts', !!ws.pollenAlertsEnabled));
+        switchRow('Im Dashboard anzeigen '+pill(pollenOn?'AKTIV':'AUS', pollenOn?'ok':'off'), '', 'set-pollen', pollenOn)+
+        pollenSub);
+
     return wetterCard + pollenCard;
   }
   function dashboardPane(){

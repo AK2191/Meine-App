@@ -97,6 +97,15 @@
   color: #f87171 !important;
 }
 
+/* Erledigt + Undo immer zusammen in einer Zeile */
+.ch-done-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex-shrink: 0 !important;
+  margin-left: auto !important;
+}
+
 
 /* ════════════════════════════════
    MOBILE (max 700px)
@@ -262,6 +271,15 @@ body.change-mobile .ch-do-btn {
   justify-self: end !important;
   margin-left: 0 !important;
   min-width: 78px !important;
+}
+
+body.change-mobile .ch-done-group {
+  justify-self: end !important;
+  margin-left: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex-shrink: 0 !important;
 }
 
 body.change-mobile .ch-action-row .btn-undo {

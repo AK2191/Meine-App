@@ -189,9 +189,9 @@
     }
 
     var statsHtml = '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">'
-      +'<div style="background:var(--s2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--t1)">'+todayPts+'</div><div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Heute</div></div>'
-      +'<div style="background:var(--s2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--t1)">'+totalPts+'</div><div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Gesamt</div></div>'
-      +'<div style="background:var(--s2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--t1)">'+done.length+'</div><div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Erledigt</div></div>'
+      +'<div style="background:var(--s2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--acc)">'+todayPts+'</div><div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px">Pkt. heute</div></div>'
+      +'<div style="background:var(--s2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--t1)">'+totalPts+'</div><div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px">Pkt. gesamt</div></div>'
+      +'<div style="background:var(--s2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--t1)">'+done.length+'</div><div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px">Aufgaben</div></div>'
       +'</div>';
 
     var rowsHtml = last5.length
@@ -311,8 +311,10 @@
         : '';
 
       var btnHtml = done
-        ? '<button class="btn btn-success btn-sm ch-do-btn" disabled>Erledigt ✓</button>'
-          +'<button class="btn btn-undo btn-sm" onclick="event.stopPropagation();window.undoChallenge(\''+esc(ch.id)+'\')" title="Rückgängig">↶</button>'
+        ? '<div class="ch-done-group">'
+            +'<button class="btn btn-success btn-sm ch-do-btn" disabled>Erledigt ✓</button>'
+            +'<button class="btn btn-undo btn-sm" onclick="event.stopPropagation();window.undoChallenge(\''+esc(ch.id)+'\')" title="Rückgängig">↶</button>'
+          +'</div>'
         : '<button class="btn btn-primary btn-sm ch-do-btn" onclick="event.stopPropagation();window.completeChallenge(\''+esc(ch.id)+'\')">Erledigen</button>';
 
       // Struktur:
