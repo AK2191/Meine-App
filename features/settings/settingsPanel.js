@@ -159,26 +159,43 @@
     }).join('')+'</div>';
   }
 
+  function weatherAlertHours(key, fallback){
+    try{ var v = parseInt(localStorage.getItem(key), 10); if(v > 0) return v; }catch(e){}
+    return fallback || 2;
+  }
+  function hoursSelect(id, current){
+    var opts = [1,2,3,6,12,24].map(function(h){
+      return '<option value="'+h+'" '+(h===current?'selected':'')+'>'+h+' Std. vorher</option>';
+    }).join('');
+    return '<div class="change-settings-actions change-setting-field"><label class="flabel">Erinnerung</label><select class="finput" id="'+id+'">'+opts+'</select></div>';
+  }
   function weatherHealthCard(){
     var weather = weatherHealthStatus();
     var ws = weather.settings || {};
     var wetterOn  = !!ws.weatherEnabled;
+    var rainOn    = !!ws.rainAlertsEnabled;
     var pollenOn  = !!ws.pollenEnabled;
+    var pollWarnOn= !!ws.pollenAlertsEnabled;
+    var rainHours   = weatherAlertHours('change_v1_rain_alert_hours', 2);
+    var pollenHours = weatherAlertHours('change_v1_pollen_alert_hours', 2);
 
-    // Wetter-Karte: wie Friseur – AKTIV/AUS Pill + Sub-Optionen nur wenn AN
+    // Wetter-Karte
+    var rainSub = rainOn ? hoursSelect('set-rain-hours', rainHours) : '';
     var wetterSub = wetterOn
-      ? switchRow('Regenwarnung', '', 'set-rain-alerts', !!ws.rainAlertsEnabled)
-        +'<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-weather-location" type="button">Standort aktualisieren</button></div>'
+      ? switchRow('Regenwarnung', '', 'set-rain-alerts', rainOn)
+        + rainSub
+        + '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-weather-location" type="button">Standort aktualisieren</button></div>'
       : '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-weather-location" type="button">Standort aktualisieren</button></div>';
 
     var wetterCard = card('Wetter',
-        '<div class="change-settings-row change-settings-row--status"><div><div class="change-settings-title"><span class="change-status-dot '+weather.tone+'"></span>'+esc(weather.detail)+'</div></div></div>'+
         switchRow('Im Dashboard anzeigen '+pill(wetterOn?'AKTIV':'AUS', wetterOn?'ok':'off'), '', 'set-weather', wetterOn)+
         wetterSub);
 
-    // Pollen-Karte: Sub-Optionen nur wenn AN
+    // Pollen-Karte
+    var pollWarnSub = pollWarnOn ? hoursSelect('set-pollen-hours', pollenHours) : '';
     var pollenSub = pollenOn
-      ? switchRow('Pollen-Hinweise '+pill('nur stark', 'off'), '', 'set-pollen-alerts', !!ws.pollenAlertsEnabled)
+      ? switchRow('Pollenwarnung '+pill('nur stark', 'off'), '', 'set-pollen-alerts', pollWarnOn)
+        + pollWarnSub
       : '';
 
     var pollenCard = card('Pollen',
@@ -275,8 +292,10 @@
     };
     var weatherToggle = $('set-weather'); if(weatherToggle) weatherToggle.addEventListener('change', function(){ updateWeather({weatherEnabled:weatherToggle.checked}, weatherToggle.checked); });
     var rainToggle = $('set-rain-alerts'); if(rainToggle) rainToggle.addEventListener('change', function(){ updateWeather({rainAlertsEnabled:rainToggle.checked, weatherEnabled: rainToggle.checked ? true : (window.ChangeWeatherStore&&window.ChangeWeatherStore.settings().weatherEnabled)}, rainToggle.checked); });
+    var rainHours = $('set-rain-hours'); if(rainHours) rainHours.addEventListener('change', function(){ try{ localStorage.setItem('change_v1_rain_alert_hours', rainHours.value); }catch(e){} });
     var pollenToggle = $('set-pollen'); if(pollenToggle) pollenToggle.addEventListener('change', function(){ updateWeather({pollenEnabled:pollenToggle.checked}, pollenToggle.checked); });
     var pollenAlertToggle = $('set-pollen-alerts'); if(pollenAlertToggle) pollenAlertToggle.addEventListener('change', function(){ updateWeather({pollenAlertsEnabled:pollenAlertToggle.checked, pollenEnabled: pollenAlertToggle.checked ? true : (window.ChangeWeatherStore&&window.ChangeWeatherStore.settings().pollenEnabled)}, pollenAlertToggle.checked); });
+    var pollenHours = $('set-pollen-hours'); if(pollenHours) pollenHours.addEventListener('change', function(){ try{ localStorage.setItem('change_v1_pollen_alert_hours', pollenHours.value); }catch(e){} });
     var weatherLocation = $('set-weather-location'); if(weatherLocation) weatherLocation.addEventListener('click', async function(){
       try{
         if(window.ChangeWeatherStore) await window.ChangeWeatherStore.requestLocation();
