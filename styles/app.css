@@ -175,10 +175,11 @@ body{
 }
 .h-logo{display:flex;align-items:center;gap:9px;flex-shrink:0}
 .h-logo-icon{
-  width:28px;height:28px;border-radius:0;background:transparent;
+  width:36px;height:36px;border-radius:10px;background:transparent;
   display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:0 2px 8px rgba(129,140,248,.25);
 }
-.h-logo-icon svg{width:28px;height:28px;stroke:none;}
+.h-logo-icon svg{width:36px;height:36px;stroke:none;}
 .h-logo-name{font-size:16px;font-weight:800;color:var(--t1);letter-spacing:-.3px}
 .h-sep{width:1px;height:20px;background:var(--b1);flex-shrink:0}
 .h-tabs{display:flex;align-items:center;gap:2px;flex:1}
