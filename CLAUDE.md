@@ -174,7 +174,11 @@ firebase deploy --only hosting
 
 ## 📝 Änderungslog
 
-| Datum      | Was                                      | Von    |
-|------------|------------------------------------------|--------|
-| 2026-05-17 | App Icon „Tiefe & Stille" hinzugefügt    | Claude |
-| 2026-05-17 | CLAUDE.md initial erstellt               | Claude |
+| Datum      | Was                                                                | Von    |
+|------------|--------------------------------------------------------------------|--------|
+| 2026-05-17 | Gruppen-Ziel: Prozent zentriert in Fortschrittsleiste (20px)      | Claude |
+| 2026-05-17 | Text „Heute frei“ → „Heute keine Termine vorhanden“              | Claude |
+| 2026-05-17 | Challenges-Layout: gleiche Kartenhöhe, Gruppen-Ziel volle Breite  | Claude |
+| 2026-05-17 | Mitspieler-Button entfernt, Karte heißt jetzt „Rangliste“         | Claude |
+| 2026-05-17 | App Icon „Tiefe & Stille“ hinzugefügt                              | Claude |
+| 2026-05-17 | CLAUDE.md initial erstellt                                         | Claude |
