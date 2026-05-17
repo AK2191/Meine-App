@@ -3,7 +3,9 @@
 
   var Store = window.ChangeWeatherStore;
   var CACHE_TTL = 30 * 60 * 1000;
-  var LOCATION_MAX_AGE = 6 * 60 * 60 * 1000;
+  // 24h statt 6h: Standort bleibt so lange aktiv wie eine typische Login-Session.
+  // Bei 6h wurde Wetter stumm deaktiviert, obwohl der Nutzer noch eingeloggt war.
+  var LOCATION_MAX_AGE = 24 * 60 * 60 * 1000;
   var WEATHER_ENDPOINT = 'https://api.open-meteo.com/v1/forecast';
   var POLLEN_ENDPOINT = 'https://air-quality-api.open-meteo.com/v1/air-quality';
 
@@ -284,7 +286,13 @@
     inFlight = (async function(){
       var loc = Store.getLocation();
       if(!loc) return {status:'needs_location', location:null, weather:null, pollen:null, savedAt:new Date().toISOString()};
-      if(!force && !locationIsFresh(loc)) return {status:'stale_location', location:loc, weather:null, pollen:null, savedAt:new Date().toISOString()};
+      // Wenn Standort veraltet ist: stille Neuabfrage im Hintergrund.
+      // navigator.geolocation nutzt maximumAge=30min → kein erneuter Berechtigungs-Dialog.
+      // Schlägt die Neuabfrage fehl (z.B. kein GPS), wird der vorhandene Standort weiter genutzt.
+      if(!force && !locationIsFresh(loc)){
+        try{ loc = await Store.requestLocation(); }catch(e){ /* still verwenden wenn fehlschlägt */ }
+        if(!loc) return {status:'stale_location', location:null, weather:null, pollen:null, savedAt:new Date().toISOString()};
+      }
       var settings = Store.settings();
       var result = {status:'ok', location:loc, weather:null, pollen:null, savedAt:new Date().toISOString()};
       var jobs = [];
