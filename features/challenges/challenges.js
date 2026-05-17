@@ -185,6 +185,13 @@
     renderChallenges();
     try{if(typeof buildDashboard==='function')buildDashboard();}catch(e){}
     try{if(typeof window.renderCalendar==='function')window.renderCalendar();}catch(e){}
+    try{if(typeof window.renderWeekBar==='function')window.renderWeekBar();}catch(e){}
+    // Achievements + Streak nach Erledigung prüfen
+    setTimeout(function(){
+      try{if(typeof checkNewBadges==='function')checkNewBadges();}catch(e){}
+      try{if(typeof window.syncStreakToFirestore==='function')window.syncStreakToFirestore();}catch(e){}
+      try{if(typeof injectStreakCard==='function')injectStreakCard();}catch(e){}
+    }, 700);
   };
 
   /* ─── Rückgängig ─── */
@@ -203,6 +210,8 @@
     if(typeof toast==='function') toast(removed.length?'Zurückgesetzt':'Nichts zurückzusetzen','');
     renderChallenges();
     try{if(typeof buildDashboard==='function')buildDashboard();}catch(e){}
+    try{if(typeof window.renderCalendar==='function')window.renderCalendar();}catch(e){}
+    try{if(typeof window.renderWeekBar==='function')window.renderWeekBar();}catch(e){}
   };
 
   /* ─── Render ─── */
@@ -278,6 +287,14 @@
     }catch(e){board.innerHTML='<div class="dash-empty">Rangliste wird geladen…</div>';}
 
     try{if(typeof window.renderGroupGoal==='function') window.renderGroupGoal();}catch(e){}
+
+    // Mitspieler-Aktivität aktualisieren
+    try{
+      var actList = document.getElementById('player-activity-list');
+      if(actList && window.ChangePlayerActivity && typeof window.ChangePlayerActivity.panelHtml === 'function'){
+        actList.innerHTML = window.ChangePlayerActivity.panelHtml(4);
+      }
+    }catch(e){}
   }
 
   renderChallenges.__changeChallenges = true;

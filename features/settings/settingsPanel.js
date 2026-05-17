@@ -162,32 +162,34 @@
   function weatherHealthCard(){
     var weather = weatherHealthStatus();
     var ws = weather.settings || {};
-    return card('Wetter & Gesundheit',
-        '<div class="change-settings-row"><div><div class="change-settings-title"><span class="change-status-dot '+weather.tone+'"></span>Wetter & Pollen '+pill(weather.label, weather.tone)+'</div><div class="change-settings-sub">'+esc(weather.detail)+'</div></div></div>'+        
-        switchRow('Wetter im Dashboard', '', 'set-weather', !!ws.weatherEnabled)+
+    // Wetter-Karte
+    var wetterCard = card('Wetter',
+        '<div class="change-settings-row"><div><div class="change-settings-title"><span class="change-status-dot '+weather.tone+'"></span>Wetter & Pollen '+pill(weather.label, weather.tone)+'</div><div class="change-settings-sub">'+esc(weather.detail)+'</div></div></div>'+
+        switchRow('Im Dashboard anzeigen', '', 'set-weather', !!ws.weatherEnabled)+
         switchRow('Regenwarnung', '', 'set-rain-alerts', !!ws.rainAlertsEnabled)+
-        switchRow('Pollen aktuell', '', 'set-pollen', !!ws.pollenEnabled)+
-        switchRow('Pollen-Hinweise '+pill('nur stark', 'off'), '', 'set-pollen-alerts', !!ws.pollenAlertsEnabled)+
         '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-weather-location" type="button">Standort aktualisieren</button></div>');
+    // Pollen-Karte
+    var pollenCard = card('Pollen',
+        switchRow('Im Dashboard anzeigen', '', 'set-pollen', !!ws.pollenEnabled)+
+        switchRow('Pollen-Hinweise '+pill('nur stark', 'off'), '', 'set-pollen-alerts', !!ws.pollenAlertsEnabled));
+    return wetterCard + pollenCard;
   }
   function dashboardPane(){
     var friseurOn = dashboardBool('getFriseurEnabled', 'change_v1_friseur_enabled', false);
     var urlaubOn = dashboardBool('getUrlaubEnabled', 'urlaub_tracker_on', true);
     var friseurWeeks = dashboardNumber('getFriseurWeeks', ['change_v1_friseur_weeks','friseur_weeks'], 3);
     var urlaubDays = dashboardNumber('getUrlaubTotalDays', ['urlaub_tracker_days','urlaub_days'], 30);
-    var activity = window.ChangePlayerActivity && window.ChangePlayerActivity.panelHtml ? window.ChangePlayerActivity.panelHtml(4) : '<div class="dash-empty">Keine Aktivität</div>';
     var months = [['01','Jan'],['02','Feb'],['03','Mär'],['04','Apr'],['05','Mai'],['06','Jun'],['07','Jul'],['08','Aug'],['09','Sep'],['10','Okt'],['11','Nov'],['12','Dez']];
     var monthOptions = months.map(function(item){ return '<option value="'+item[0]+'">'+item[1]+'</option>'; }).join('');
     var dayOptions = Array.from({length:31}, function(_, i){ var d = String(i+1).padStart(2,'0'); return '<option value="'+d+'">'+d+'.</option>'; }).join('');
     return weatherHealthCard()
-      + card('Friseur-Tracker',
+      + card('Friseur',
         switchRow('Im Dashboard anzeigen '+pill(friseurOn?'AKTIV':'AUS', friseurOn?'ok':'off'), '', 'set-friseur', friseurOn)+
         '<div class="change-settings-actions change-setting-field"><label class="flabel">Erinnerung nach</label><select class="finput" id="set-friseur-weeks">'+[2,3,4,5,6,8].map(function(n){ return '<option value="'+n+'" '+(n === friseurWeeks ? 'selected' : '')+'>'+n+' Wochen</option>'; }).join('')+'</select></div>')
-      + card('Urlaubs-Tracker',
+      + card('Urlaub',
         switchRow('Im Dashboard anzeigen '+pill(urlaubOn?'AKTIV':'AUS', urlaubOn?'ok':'off'), '', 'set-urlaub', urlaubOn)+
         '<div class="change-settings-actions change-setting-field"><label class="flabel">Jahresurlaub</label><input type="number" class="finput" id="set-urlaub-days" min="1" max="365" value="'+urlaubDays+'"></div>'+
-        '<div class="change-settings-actions change-setting-field"><label class="flabel">Halbe Urlaubstage</label><div class="change-halfday-controls"><select class="finput" id="set-half-month">'+monthOptions+'</select><select class="finput" id="set-half-day">'+dayOptions+'</select><button class="btn btn-secondary btn-sm" id="set-add-half" type="button">+ Hinzufügen</button></div>'+halfDayChips()+'</div>')
-      + card('Mitspieler-Aktivität', '<div class="change-settings-actions"><div class="change-settings-sub" style="margin-bottom:8px">'+esc(window.ChangePlayerActivity && window.ChangePlayerActivity.summaryText ? window.ChangePlayerActivity.summaryText() : '')+'</div>'+activity+'</div>');
+        '<div class="change-settings-actions change-setting-field"><label class="flabel">Halbe Urlaubstage</label><div class="change-halfday-controls"><select class="finput" id="set-half-month">'+monthOptions+'</select><select class="finput" id="set-half-day">'+dayOptions+'</select><button class="btn btn-secondary btn-sm" id="set-add-half" type="button">+ Hinzufügen</button></div>'+halfDayChips()+'</div>');
   }
   function syncPane(){
     var live = readBool('live_sync_enabled', true);

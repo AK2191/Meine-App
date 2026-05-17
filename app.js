@@ -3070,6 +3070,9 @@ function injectStreakCard(){
     streakBadge.textContent = '🔥 '+streak+' Tage Streak';
   }
 }
+// Explizit exportieren, damit challenges.js nach app.js darauf zugreifen kann
+window.injectStreakCard = injectStreakCard;
+window.checkNewBadges  = checkNewBadges;
 
 /* ====
    BENACHRICHTIGUNGS-PANEL — Streak + Badges
