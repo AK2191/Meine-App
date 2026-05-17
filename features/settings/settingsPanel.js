@@ -118,15 +118,15 @@
     var loc = store && store.getLocation ? store.getLocation() : null;
     var cache = service && service.getCached ? service.getCached() : null;
     var active = !!(settings.weatherEnabled || settings.rainAlertsEnabled || settings.pollenEnabled || settings.pollenAlertsEnabled);
-    var detail = loc ? ('Standort gespeichert' + (cache && cache.savedAt ? ' · aktualisiert ' + new Date(cache.savedAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}) : '')) : 'Standort noch nicht freigegeben';
+    var detail = loc ? 'Standort freigegeben' : 'Standort noch nicht freigegeben';
     return {settings:settings, location:loc, active:active, label:active ? (loc ? 'AKTIV' : 'STANDORT FEHLT') : 'AUS', tone:active ? (loc ? 'ok' : 'error') : 'off', detail:detail};
   }
   function calendarPane(){
     var options = calendarOptions();
-    return card('Region', '<div class="change-settings-actions"><label class="flabel">Bundesland für Feiertage</label><select class="finput" id="set-holiday-state">'+stateOptions(options.holidayState)+'</select><div class="settings-hint">Steuert Feiertage im Kalender und in der Tagesübersicht.</div></div>')
+    return card('Region', '<div class="change-settings-actions"><label class="flabel">Bundesland für Feiertage</label><select class="finput" id="set-holiday-state">'+stateOptions(options.holidayState)+'</select></div>')
       + card('Kalenderansicht',
         switchRow('Feiertage anzeigen', '', 'set-show-holidays', options.showHolidays)+
-        switchRow('Challengepunkte im Kalender', 'Nur kleines Badge unten rechts.', 'set-show-points', options.showChallengeDots)+
+        switchRow('Challengepunkte im Kalender', '', 'set-show-points', options.showChallengeDots)+
         switchRow('Kalenderwochen anzeigen', '', 'set-show-kw', options.showWeekNumbers));
   }
   function dashboardBool(getterName, key, fallback){
@@ -164,10 +164,10 @@
     var ws = weather.settings || {};
     return card('Wetter & Gesundheit',
         '<div class="change-settings-row"><div><div class="change-settings-title"><span class="change-status-dot '+weather.tone+'"></span>Wetter & Pollen '+pill(weather.label, weather.tone)+'</div><div class="change-settings-sub">'+esc(weather.detail)+'</div></div></div>'+        
-        switchRow('Wetter im Dashboard', 'Zeigt heutiges Wetter am aktuellen Standort.', 'set-weather', !!ws.weatherEnabled)+
-        switchRow('Regenwarnung', 'Hinweis, wenn Regen in der nächsten Stunde möglich ist.', 'set-rain-alerts', !!ws.rainAlertsEnabled)+
-        switchRow('Pollen aktuell', 'Zeigt, welche Pollen gerade mittel oder stark sind.', 'set-pollen', !!ws.pollenEnabled)+
-        switchRow('Pollen-Hinweise '+pill('nur stark', 'off'), 'Maximal ein Hinweis pro Tag bei hoher Belastung.', 'set-pollen-alerts', !!ws.pollenAlertsEnabled)+
+        switchRow('Wetter im Dashboard', '', 'set-weather', !!ws.weatherEnabled)+
+        switchRow('Regenwarnung', '', 'set-rain-alerts', !!ws.rainAlertsEnabled)+
+        switchRow('Pollen aktuell', '', 'set-pollen', !!ws.pollenEnabled)+
+        switchRow('Pollen-Hinweise '+pill('nur stark', 'off'), '', 'set-pollen-alerts', !!ws.pollenAlertsEnabled)+
         '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-weather-location" type="button">Standort aktualisieren</button></div>');
   }
   function dashboardPane(){
@@ -181,10 +181,10 @@
     var dayOptions = Array.from({length:31}, function(_, i){ var d = String(i+1).padStart(2,'0'); return '<option value="'+d+'">'+d+'.</option>'; }).join('');
     return weatherHealthCard()
       + card('Friseur-Tracker',
-        switchRow('Im Dashboard anzeigen '+pill(friseurOn?'AKTIV':'AUS', friseurOn?'ok':'off'), 'Zeigt den letzten und nächsten Friseur-Termin.', 'set-friseur', friseurOn)+
+        switchRow('Im Dashboard anzeigen '+pill(friseurOn?'AKTIV':'AUS', friseurOn?'ok':'off'), '', 'set-friseur', friseurOn)+
         '<div class="change-settings-actions change-setting-field"><label class="flabel">Erinnerung nach</label><select class="finput" id="set-friseur-weeks">'+[2,3,4,5,6,8].map(function(n){ return '<option value="'+n+'" '+(n === friseurWeeks ? 'selected' : '')+'>'+n+' Wochen</option>'; }).join('')+'</select></div>')
       + card('Urlaubs-Tracker',
-        switchRow('Im Dashboard anzeigen '+pill(urlaubOn?'AKTIV':'AUS', urlaubOn?'ok':'off'), 'Zeigt verplante und verbleibende Urlaubstage.', 'set-urlaub', urlaubOn)+
+        switchRow('Im Dashboard anzeigen '+pill(urlaubOn?'AKTIV':'AUS', urlaubOn?'ok':'off'), '', 'set-urlaub', urlaubOn)+
         '<div class="change-settings-actions change-setting-field"><label class="flabel">Jahresurlaub</label><input type="number" class="finput" id="set-urlaub-days" min="1" max="365" value="'+urlaubDays+'"></div>'+
         '<div class="change-settings-actions change-setting-field"><label class="flabel">Halbe Urlaubstage</label><div class="change-halfday-controls"><select class="finput" id="set-half-month">'+monthOptions+'</select><select class="finput" id="set-half-day">'+dayOptions+'</select><button class="btn btn-secondary btn-sm" id="set-add-half" type="button">+ Hinzufügen</button></div>'+halfDayChips()+'</div>')
       + card('Mitspieler-Aktivität', '<div class="change-settings-actions"><div class="change-settings-sub" style="margin-bottom:8px">'+esc(window.ChangePlayerActivity && window.ChangePlayerActivity.summaryText ? window.ChangePlayerActivity.summaryText() : '')+'</div>'+activity+'</div>');

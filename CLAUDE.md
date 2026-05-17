@@ -1,7 +1,7 @@
 # CLAUDE.md — Change App
 > **Einzige Wahrheit** über Struktur, Regeln und Arbeitsweise.
 > Vor jeder Änderung lesen. Nach jeder Änderung aktualisieren.
-> Letzte Aktualisierung: Mai 2026 — Challenge-Links + Mobile-Stabilisierung
+> Letzte Aktualisierung: Mai 2026 — Challenge-Links + Mobile-Stabilisierung + UI-Text-Cleanup
 
 ---
 
@@ -332,7 +332,18 @@ wenn die Google-Session abgelaufen ist, öffnet GSI **trotzdem** ein Browser-Fen
 
 ---
 
-### Standort nach 6h inaktiv obwohl noch eingeloggt
+### UI-Text-Cleanup (Mai 2026)
+Folgende erklärende Hilfstexte wurden entfernt (zu viel visuelles Rauschen):
+
+| Datei | Entfernter Text |
+|---|---|
+| `features/notifications/notificationBell.js` | `toggle-sub` mit „Zentrale Steuerung über die Glocke · Browser: …" |
+| `features/settings/settingsPanel.js` | Subtext bei: Challengepunkte im Kalender, Feiertage-Hinweis, Standort-Timestamp, Wetter, Regenwarnung, Pollen, Pollen-Hinweise, Friseur-Tracker, Urlaubs-Tracker |
+| `core/misc.js` | „Gemeinsam X Punkte diese Woche" unter Gruppen-Ziel |
+| `app.js` | `logout-warning` Div mit Firebase-Hinweistext |
+| `styles/app.css` | `.logout-warning` CSS-Regel (Element entfernt) |
+
+**Regel:** Keine erklärenden Subtexte bei Toggle-Rows — der Titel allein muss selbsterklärend sein.
 **Ursache:** `LOCATION_MAX_AGE = 6h` in `core/weather/weatherService.js`.
 Firebase-Login-Sessions halten 2+ Tage. Nach 6h gab `refresh()` sofort `{status:'stale_location'}`
 zurück → Wetter wurde stumm deaktiviert, ohne den Nutzer zu informieren.

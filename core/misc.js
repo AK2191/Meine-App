@@ -254,7 +254,6 @@ window.renderGroupGoal = function(){
         <span style="font-size:18px">🎯</span>
         <div>
           <div style="font-size:13px;font-weight:700;color:var(--t1)">Gruppen-Ziel · KW ${getWeekNumber()}</div>
-          <div style="font-size:11px;color:var(--t3)">Gemeinsam ${goal.target} Punkte diese Woche</div>
         </div>
       </div>
       <div style="text-align:right">

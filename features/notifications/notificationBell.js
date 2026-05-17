@@ -15,7 +15,7 @@
     return '<div class="push-box bell-push-box">'
       + '<div class="toggle-row">'
       + '<div class="toggle-copy"><div class="toggle-title">Push-Benachrichtigungen <span class="change-notif-status '+(st.on?'on':'off')+'">'+st.text+'</span></div>'
-      + '<div class="toggle-sub">Zentrale Steuerung über die Glocke · Browser: '+esc(st.perm)+'</div></div>'
+      + '</div>'
       + '<label class="switch"><input type="checkbox" id="bell-push-toggle" '+(st.on?'checked':'')+'><span class="slider"></span></label>'
       + '</div>'
       + '<button class="btn btn-secondary btn-full" id="bell-test-push" type="button" style="margin-top:12px">Test-Benachrichtigung senden</button>'

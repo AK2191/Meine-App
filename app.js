@@ -1356,7 +1356,6 @@ function confirmLogout(){
         <div class="logout-mail">${esc(mail)}</div>
       </div>
     </div>
-    <div class="logout-warning">Du meldest dich nur auf diesem Gerät ab. Deine Punkte, Challenges und Kontest-Daten bleiben in Firebase erhalten.</div>
     <button class="btn btn-danger btn-full" onclick="logout()">Jetzt abmelden</button>
     `;
   openPanel('Abmelden',html);
