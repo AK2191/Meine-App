@@ -3219,41 +3219,10 @@ window.bootMainApp = function(){
 };
 
 // Dark Mode in Settings-Sync einbinden
-const _origSaveSettings = window.saveSettingsToFirestore;
-window.saveSettingsToFirestore = async function(){
-  if(typeof _origSaveSettings === 'function') await _origSaveSettings.call(this);
-  // Dark Mode in Settings mitschicken
-  try{
-    const db = window.firebase && firebase.firestore ? firebase.firestore() : null;
-    const fbUser = db && firebase.auth ? firebase.auth().currentUser : null;
-    const email = (typeof userInfo!=='undefined'?userInfo.email:'') || '';
-    // [FIX] Nur mit echter Email schreiben
-    if(db && email && email.includes('@')){
-      const docId = email.toLowerCase().replace(/[^a-z0-9._-]/g,'_');
-      const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-      await db.collection('change_settings').doc(docId).set({darkMode:dark},{merge:true});
-    }
-  }catch(e){}
-};
-
-// Dark Mode aus Firebase laden
-const _origLoadSettings = window.loadSettingsFromFirestore;
-window.loadSettingsFromFirestore = async function(){
-  if(typeof _origLoadSettings === 'function') await _origLoadSettings.call(this);
-  try{
-    const db = window.firebase && firebase.firestore ? firebase.firestore() : null;
-    const email = (typeof userInfo!=='undefined'?userInfo.email:'') || '';
-    if(db && email){
-      const docId = email.toLowerCase().replace(/[^a-z0-9._-]/g,'_');
-      const snap = await db.collection('change_settings').doc(docId).get();
-      if(snap.exists && typeof snap.data().darkMode === 'boolean'){
-        const dark = snap.data().darkMode;
-        localStorage.setItem(DM_KEY, dark ? '1' : '0');
-        applyTheme(dark);
-      }
-    }
-  }catch(e){}
-};
+// Settings-Sync läuft vollständig über features/settings/settings-logic.js
+// Dark Mode wird nur lokal gespeichert (kein Firebase-Sync per Nutzer-Wunsch)
+window.saveSettingsToFirestore = window.saveChangeSettings || window.saveSettingsToFirestore;
+window.loadSettingsFromFirestore = window.forceLoadChangeSettings || window.loadSettingsFromFirestore;
 
 console.warn('[Change] Streak · Badges · Dark Mode · Notif geladen ✓');
 })();

@@ -698,7 +698,8 @@
   const CONTROL_IDS = new Set([
     'us-holiday-state','holiday-state','us-toggle-holidays','toggle-holidays','us-toggle-dots','toggle-dots','us-toggle-kw','toggle-kw',
     'holiday-notifications','us-friseur-on','us-friseur-weeks','us-urlaub-on','us-urlaub-days','us-half-date',
-    'us-toggle-live','us-toggle-auto','us-toggle-gsync','client-id-input'
+    'us-toggle-live','us-toggle-auto','us-toggle-gsync','client-id-input',
+    'set-weather','set-rain-alerts','set-rain-hours','set-pollen','set-pollen-alerts','set-pollen-hours'
   ]);
 
   let saveTimer = null;
@@ -818,8 +819,17 @@
     return String(readFirst(['change_v1_client_id','client_id'], '') || '').trim();
   }
 
+  function readWeatherSettings(){
+    try{
+      var raw = localStorage.getItem('change_v1_weather_settings');
+      if(raw) return JSON.parse(raw);
+    }catch(e){}
+    return {};
+  }
+
   function collectSettings(){
     const calendarOptions = readCalendarOptions();
+    const ws = readWeatherSettings();
     return {
       schema: 1,
       owner: settingsAccount(),
@@ -829,6 +839,14 @@
         showHolidays: calendarOptions.showHolidays !== false,
         showChallengeDots: calendarOptions.showChallengeDots !== false,
         showWeekNumbers: calendarOptions.showWeekNumbers === true
+      },
+      weather: {
+        weatherEnabled:     !!ws.weatherEnabled,
+        rainAlertsEnabled:  !!ws.rainAlertsEnabled,
+        pollenEnabled:      !!ws.pollenEnabled,
+        pollenAlertsEnabled:!!ws.pollenAlertsEnabled,
+        rainAlertHours:     parseInt(localStorage.getItem('change_v1_rain_alert_hours'), 10) || 2,
+        pollenAlertHours:   parseInt(localStorage.getItem('change_v1_pollen_alert_hours'), 10) || 2
       },
       dashboard: {
         friseurEnabled: typeof window.getFriseurEnabled === 'function' ? !!window.getFriseurEnabled() : readBool(['change_v1_friseur_enabled'], false),
@@ -884,6 +902,28 @@
       if(typeof dash.urlaubEnabled === 'boolean') writeString('urlaub_tracker_on', dash.urlaubEnabled ? 'true' : 'false');
       if(dash.urlaubTotalDays) writeString('urlaub_tracker_days', parseInt(dash.urlaubTotalDays, 10) || 30);
       if(Array.isArray(dash.urlaubHalfDays)) writeJson('urlaub_half_days', dash.urlaubHalfDays.slice().sort());
+
+      // Wetter-Einstellungen anwenden
+      const weather = settings.weather || {};
+      if(Object.keys(weather).length > 0){
+        const wsPatch = {};
+        if(typeof weather.weatherEnabled === 'boolean')     wsPatch.weatherEnabled = weather.weatherEnabled;
+        if(typeof weather.rainAlertsEnabled === 'boolean')  wsPatch.rainAlertsEnabled = weather.rainAlertsEnabled;
+        if(typeof weather.pollenEnabled === 'boolean')      wsPatch.pollenEnabled = weather.pollenEnabled;
+        if(typeof weather.pollenAlertsEnabled === 'boolean')wsPatch.pollenAlertsEnabled = weather.pollenAlertsEnabled;
+        if(Object.keys(wsPatch).length > 0){
+          try{
+            if(window.ChangeWeatherStore && window.ChangeWeatherStore.writeSettings) window.ChangeWeatherStore.writeSettings(wsPatch);
+            else {
+              const cur = JSON.parse(localStorage.getItem('change_v1_weather_settings') || '{}');
+              localStorage.setItem('change_v1_weather_settings', JSON.stringify(Object.assign({}, cur, wsPatch)));
+            }
+          }catch(e){}
+        }
+        if(weather.rainAlertHours)   try{ localStorage.setItem('change_v1_rain_alert_hours', String(parseInt(weather.rainAlertHours,10)||2)); }catch(e){}
+        if(weather.pollenAlertHours) try{ localStorage.setItem('change_v1_pollen_alert_hours', String(parseInt(weather.pollenAlertHours,10)||2)); }catch(e){}
+        try{ if(window.ChangeWeatherCard && window.ChangeWeatherCard.update) window.ChangeWeatherCard.update(); }catch(e){}
+      }
 
       if(typeof sync.pushPreferenceEnabled === 'boolean') writeJson('change_v1_push_enabled', sync.pushPreferenceEnabled);
       if(typeof sync.liveSyncEnabled === 'boolean'){
@@ -1042,6 +1082,17 @@
       'setPushNotificationsEnabled','enablePushNotifications','disablePushNotifications','setLiveSyncEnabled','setAutoChallengesEnabled',
       'setFriseurEnabled','setFriseurWeeks','setUrlaubEnabled','setUrlaubDays','addUrlaubHalfDay','removeUrlaubHalfDay'
     ].forEach(wrapSettingFunction);
+
+    // Wetter: ChangeWeatherStore.writeSettings wrappen
+    if(window.ChangeWeatherStore && window.ChangeWeatherStore.writeSettings && !window.ChangeWeatherStore.writeSettings.__settingsSyncWrapped){
+      const origWS = window.ChangeWeatherStore.writeSettings;
+      window.ChangeWeatherStore.writeSettings = function(){
+        const result = origWS.apply(window.ChangeWeatherStore, arguments);
+        setTimeout(markSettingsChanged, 80);
+        return result;
+      };
+      window.ChangeWeatherStore.writeSettings.__settingsSyncWrapped = true;
+    }
 
     if(!window.__changeSettingsDomHook){
       window.__changeSettingsDomHook = true;
