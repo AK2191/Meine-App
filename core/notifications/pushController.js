@@ -85,7 +85,7 @@
       return false;
     }
     try{
-      new Notification('Change', {body:'Test-Benachrichtigung funktioniert.', icon:'./icon-192.png', badge:'./icon-192.png', tag:'change-test'});
+      new Notification('Change', {body:'Test-Benachrichtigung funktioniert.', icon:'./icon-change-192.svg', badge:'./icon-change-192.svg', tag:'change-test'});
       toastSafe('Test gesendet ✓','ok');
       return true;
     }catch(e){

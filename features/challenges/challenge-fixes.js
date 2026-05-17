@@ -189,8 +189,8 @@
         var icon = n.kind === 'weather' ? '🌧️' : '🌿';
         new Notification('Change: ' + n.title, {
           body: n.body || '',
-          icon: './icon-192.png',
-          badge: './icon-192.png',
+          icon: './icon-change-192.svg',
+          badge: './icon-change-192.svg',
           tag: 'change-' + n.id
         });
         localStorage.setItem(firedKey, String(now));

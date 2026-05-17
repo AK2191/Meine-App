@@ -1814,8 +1814,8 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
       if(perm === 'default') perm = await Notification.requestPermission();
       if(perm !== 'granted') return fail('Benachrichtigungen wurden nicht erlaubt');
 
-      const reg = await navigator.serviceWorker.register('./firebase-messaging-sw.js', {scope:'./'});
-      await navigator.serviceWorker.ready;
+      // SW wurde bereits in initPWA() registriert – hier nur auf ready warten
+      const reg = await navigator.serviceWorker.ready;
 
       const vapid = getVapidKey();
       if(!vapid || vapid.includes('HIER_')) return fail('VAPID Key fehlt in firebase-config.js');
@@ -1841,7 +1841,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     if(!messaging || messaging._changeHandlerInstalled) return;
     messaging.onMessage(payload=>{
       const n=payload.notification||{};
-      if(Notification.permission==='granted') new Notification(n.title||'Change', {body:n.body||'', icon:'./icon-192.png', badge:'./icon-192.png'});
+      if(Notification.permission==='granted') new Notification(n.title||'Change', {body:n.body||'', icon:'./icon-change-192.svg', badge:'./icon-change-192.svg'});
       toast(n.title||'Neue Change-Nachricht','ok');
     });
     messaging._changeHandlerInstalled=true;
@@ -1849,7 +1849,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
 
   function openLocalNotification(title,body){
     if('Notification' in window && Notification.permission==='granted'){
-      try{ new Notification(title,{body,icon:'./icon-192.png',badge:'./icon-192.png'}); }catch{}
+      try{ new Notification(title,{body,icon:'./icon-change-192.svg',badge:'./icon-change-192.svg'}); }catch{}
     }
   }
   function startChallengeReminderLoop(){
