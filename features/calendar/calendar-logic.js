@@ -1458,11 +1458,14 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
         text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid rgba(245,158,11,.15);
         background:rgba(245,158,11,.04)}
       /* Challenge view: cleaner structure on desktop + mobile */
-      #challenges-view{overflow:hidden!important}
-      .challenge-layout{display:grid!important;grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr)!important;align-items:start!important;gap:16px!important;padding:16px 18px!important;overflow-y:auto!important}
+      #challenges-view{overflow:hidden!important;display:flex;flex-direction:column;height:100%}
+      .challenge-layout{display:grid!important;grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr)!important;align-items:stretch!important;gap:16px!important;padding:16px 18px!important;overflow-y:auto!important;flex:1;min-height:0}
       .challenge-layout > #challenge-week-points-card{grid-column:1 / -1;order:0;margin:0}
-      .challenge-layout > .challenge-card{order:1}
-      .challenge-layout > .leader-card{order:2}
+      .challenge-layout > #group-goal-card{grid-column:1 / -1;order:-1;margin:0}
+      .challenge-layout > .challenge-card{order:1;display:flex;flex-direction:column}
+      .challenge-layout > .leader-card{order:2;display:flex;flex-direction:column}
+      .challenge-layout > .challenge-card > #challenges-list{flex:1;overflow-y:auto}
+      .challenge-layout > .leader-card > #leaderboard-list{flex:1;overflow-y:auto}
       .challenge-card,.leader-card,.challenge-week-card{border-radius:var(--rlg)!important;overflow:hidden!important;box-shadow:var(--sh)!important;background:var(--s1)!important;border:1px solid var(--b1)!important}
       .challenge-card-head,.leader-card-head,.challenge-week-head{padding:14px 16px!important}
       @media(max-width:800px){
@@ -1837,7 +1840,7 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
     if(todayEvents.length===0){
       todayHtml=`<div class="dash-today-free">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:15px;height:15px;stroke-width:2;opacity:.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        Heute frei — keine Termine
+        Heute keine Termine vorhanden
       </div>`;
     } else {
       let todayItemsHtml='';

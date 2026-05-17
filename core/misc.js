@@ -246,7 +246,7 @@ window.renderGroupGoal = function(){
 
   const card = document.createElement('div');
   card.id = 'group-goal-card';
-  card.style.cssText = 'background:var(--s1);border:1px solid var(--b1);border-radius:var(--rlg,12px);padding:14px 16px;margin-bottom:14px;box-shadow:var(--sh)';
+  card.style.cssText = 'background:var(--s1);border:1px solid var(--b1);border-radius:var(--rlg,12px);padding:14px 16px;box-shadow:var(--sh)';
 
   card.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
@@ -270,10 +270,10 @@ window.renderGroupGoal = function(){
     ${done ? '<div style="font-size:12px;font-weight:600;color:var(--grn);margin-top:8px;text-align:center">🎉 Ziel erreicht! Ihr seid großartig!</div>' : ''}
   `;
 
-  // Vor der Challenge-Karte einfügen
+  // Innerhalb des Challenge-Layouts als erstes Element einfügen (grid-column: 1/-1 per CSS)
   const challengeLayout = document.querySelector('.challenge-layout');
   if(challengeLayout){
-    challengeLayout.parentElement.insertBefore(card, challengeLayout);
+    challengeLayout.insertBefore(card, challengeLayout.firstChild);
   }
 };
 

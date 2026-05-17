@@ -60,6 +60,14 @@ Jeder Kalendertag enthält:
 - Anzeige im Kalender: kleines Badge unten rechts
 - Keine großen visuellen Elemente
 
+### Layout (Desktop)
+- `.challenge-layout` → CSS Grid, 2 Spalten (`1.15fr / 0.85fr`), `align-items:stretch`
+- **Gruppen-Ziel** (`#group-goal-card`): `grid-column: 1/-1`, wird als erstes Kind ins `.challenge-layout` eingefügt (via `insertBefore(card, firstChild)` in `core/misc.js`)
+- **Punkte-Kalender** (`#challenge-week-points-card`): ebenfalls `grid-column: 1/-1`
+- **Heutige Aufgaben** (`.challenge-card`) + **Rangliste** (`.leader-card`): gleich hoch via `align-items:stretch` + `flex:1` auf Listen
+- **Mitspieler-Button** entfernt (war im `.leader-card-head`, Funktion `openParticipantPanel`)
+- Titel der rechten Karte: „Rangliste" (vorher „Kontest")
+
 ---
 
 ## 🔔 Push & Sync

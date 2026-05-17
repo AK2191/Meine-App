@@ -12,9 +12,9 @@
 .inline-test-link{font-size:11.5px;color:var(--acc);text-decoration:underline;cursor:pointer;margin-left:6px}
 
 /* ── Challenges Desktop-Layout ─────────────────────────── */
-.challenge-layout{grid-template-columns:1.15fr .85fr!important;align-items:start}
+.challenge-layout{grid-template-columns:1.15fr .85fr!important;align-items:stretch}
 .challenge-card,.leader-card{display:flex;flex-direction:column;min-height:0;max-height:calc(100vh - 150px)}
-#challenges-list,#leaderboard-list{overflow-y:auto;min-height:0;max-height:calc(100vh - 245px);-webkit-overflow-scrolling:touch}
+#challenges-list,#leaderboard-list{overflow-y:auto;min-height:0;-webkit-overflow-scrolling:touch}
 .contest-done-list{max-height:55vh;overflow-y:auto}
 #challenges-view .list-header .btn-primary{display:none!important}
 
@@ -55,8 +55,8 @@
 .app-view{width:100%;height:100%;min-height:0;transition:opacity .22s ease}
 .app-view.route-hidden{display:none!important;opacity:0}
 #dashboard-view{overflow-y:auto!important;display:none;flex-direction:column;min-height:0;padding-bottom:28px;-webkit-overflow-scrolling:touch}
-#challenges-view{overflow:hidden!important}
-.challenge-layout{overflow-y:auto!important;-webkit-overflow-scrolling:touch;padding-top:12px!important}
+#challenges-view{overflow:hidden!important;display:flex;flex-direction:column;height:100%}
+.challenge-layout{overflow-y:auto!important;-webkit-overflow-scrolling:touch;flex:1;min-height:0}
 
 /* ── FAB — nur Kalender ────────────────────────────────── */
 #fab{display:none} /* Wird per JS bei Kalender auf flex gesetzt */
