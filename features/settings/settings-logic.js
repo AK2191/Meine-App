@@ -602,9 +602,7 @@
 
       // Fenster starten ab (Erinnerungswochen + 1), je +1 Woche
       var windows = [
-        { offsetWeeks: weeks + 1, label: 'Frühestens sinnvoll',  color: '#2d6a4f', bg: 'rgba(45,106,79,.07)',  border: 'rgba(45,106,79,.18)' },
-        { offsetWeeks: weeks + 2, label: 'Empfohlener Zeitraum', color: '#b45309', bg: 'rgba(245,158,11,.07)', border: 'rgba(245,158,11,.22)' },
-        { offsetWeeks: weeks + 3, label: 'Dringend',             color: '#dc2626', bg: 'rgba(239,68,68,.07)',  border: 'rgba(239,68,68,.20)' }
+        { offsetWeeks: weeks + 1, label: 'Frühestens sinnvoll', color: '#2d6a4f', bg: 'rgba(45,106,79,.07)', border: 'rgba(45,106,79,.18)' }
       ];
 
       var windowRows = windows.map(function(w){
@@ -627,7 +625,6 @@
 
       bookingWindowHtml = '<div style="margin-bottom:16px">'
         + '<div style="font-size:10px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.5px;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--b1)">Empfohlenes Buchungsfenster</div>'
-        + '<div style="font-size:11px;color:var(--t3);margin-bottom:10px">Basierend auf deiner Erinnerung ('+(weeks)+' Wochen) + 1 Woche Puffer</div>'
         + windowRows
         + '</div>';
     }
