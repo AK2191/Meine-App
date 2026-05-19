@@ -594,6 +594,44 @@
         + '</div></div>';
     }
 
+    // Empfohlenes Buchungsfenster (nur wenn kein nächster Termin eingetragen)
+    var bookingWindowHtml = '';
+    if(!nextInfo && lastDate){
+      var baseDate = new Date(lastDate+'T12:00:00');
+      var todayMs  = new Date().setHours(0,0,0,0);
+
+      // Fenster starten ab (Erinnerungswochen + 1), je +1 Woche
+      var windows = [
+        { offsetWeeks: weeks + 1, label: 'Frühestens sinnvoll',  color: '#2d6a4f', bg: 'rgba(45,106,79,.07)',  border: 'rgba(45,106,79,.18)' },
+        { offsetWeeks: weeks + 2, label: 'Empfohlener Zeitraum', color: '#b45309', bg: 'rgba(245,158,11,.07)', border: 'rgba(245,158,11,.22)' },
+        { offsetWeeks: weeks + 3, label: 'Dringend',             color: '#dc2626', bg: 'rgba(239,68,68,.07)',  border: 'rgba(239,68,68,.20)' }
+      ];
+
+      var windowRows = windows.map(function(w){
+        var fromDate = new Date(baseDate.getTime() + w.offsetWeeks * 7 * 86400000);
+        var fromMs   = fromDate.setHours(0,0,0,0);
+        var isPast   = fromMs <= todayMs; // dieses Fenster hat bereits begonnen
+        var fmtFrom  = fromDate.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'short'});
+        var marker   = isPast
+          ? '<div style="width:7px;height:7px;border-radius:50%;background:'+w.color+';flex-shrink:0;margin-top:3px"></div>'
+          : '<div style="width:7px;height:7px;border-radius:50%;border:1.5px solid '+w.color+';flex-shrink:0;margin-top:3px"></div>';
+        return '<div style="display:flex;align-items:flex-start;gap:10px;padding:9px 11px;border-radius:8px;background:'+(isPast ? w.bg : 'transparent')+';border:1px solid '+(isPast ? w.border : 'var(--b1)')+';margin-bottom:6px">'
+          + marker
+          + '<div style="flex:1;min-width:0">'
+          +   '<div style="font-size:11px;font-weight:700;color:'+(isPast ? w.color : 'var(--t3)')+';letter-spacing:.1px">'+w.label+'</div>'
+          +   '<div style="font-size:12px;font-weight:600;color:'+(isPast ? 'var(--t1)' : 'var(--t3)')+';margin-top:2px">ab '+fmtFrom+'</div>'
+          + '</div>'
+          + (isPast ? '<div style="font-size:10px;font-weight:700;color:'+w.color+';white-space:nowrap;padding-top:2px">Jetzt</div>' : '')
+          + '</div>';
+      }).join('');
+
+      bookingWindowHtml = '<div style="margin-bottom:16px">'
+        + '<div style="font-size:10px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.5px;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--b1)">Empfohlenes Buchungsfenster</div>'
+        + '<div style="font-size:11px;color:var(--t3);margin-bottom:10px">Basierend auf deiner Erinnerung ('+(weeks)+' Wochen) + 1 Woche Puffer</div>'
+        + windowRows
+        + '</div>';
+    }
+
     // Liste vergangener Termine (neueste zuerst)
     var pastRows = past.slice().reverse().map(function(a, i){
       var isLast = i === 0;
@@ -618,7 +656,7 @@
     var sectionLabel = '<div style="font-size:10px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.5px;padding-bottom:6px;border-bottom:1px solid var(--b1);margin-bottom:4px">Besuche in '+year+'</div>';
 
     if(typeof openPanel === 'function'){
-      openPanel('✂️ Friseur-Besuche '+year, summaryHtml + nextBox + sectionLabel + pastRows + emptyHtml);
+      openPanel('✂️ Friseur-Besuche '+year, summaryHtml + nextBox + bookingWindowHtml + sectionLabel + pastRows + emptyHtml);
     }
   };
 

@@ -172,10 +172,39 @@ firebase deploy --only hosting
 
 ---
 
+## ✂️ Friseur-Tracker
+
+### Speicherung
+- `change_v1_friseur_enabled` (localStorage) → boolean
+- `change_v1_friseur_weeks` (localStorage) → Zahl (Wochen bis Erinnerung, z. B. 3)
+
+### Logik (`features/settings/settings-logic.js`)
+| Funktion                | Beschreibung                                                  |
+|-------------------------|---------------------------------------------------------------|
+| `findLastFriseur()`     | Letzter vergangener Termin mit „friseur" im Titel/Beschreibung |
+| `findNextFriseurInfo()` | Nächster zukünftiger Termin                                   |
+| `findAllFriseurThisYear()` | Alle Friseur-Termine des aktuellen Jahres                 |
+| `openFriseurPanel()`    | Detail-Panel mit Jahresübersicht                             |
+| `getFriseurRowHtml()`   | Dashboard-Zeile (kompakt)                                    |
+
+### Panel-Aufbau (`openFriseurPanel`)
+1. **Kacheln**: Besuche im Jahr / Ø Abstand / Erinnerungswochen
+2. **Nächster Termin**: grüne Box (nur wenn Termin eingetragen)
+3. **Empfohlenes Buchungsfenster** *(neu – 2026-05-19)*:
+   - Sichtbar nur wenn **kein** nächster Termin eingetragen ist
+   - Zeigt 3 Zeitfenster: Frühestens / Empfohlen / Dringend
+   - Startpunkt: letzter Termin + (Erinnerungswochen + 1) Wochen
+   - Jedes Fenster +1 Woche zum nächsten
+   - Aktive Fenster (Datum bereits erreicht) → farbig hervorgehoben
+4. **Besuchsliste**: vergangene Termine (neueste zuerst)
+
+---
+
 ## 📝 Änderungslog
 
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
+| 2026-05-19 | Friseur-Panel: Sektion „Empfohlenes Buchungsfenster" ergänzt (3 Fenster: Frühestens/Empfohlen/Dringend, je +1W ab Erinnerung+1W, nur wenn kein Termin eingetragen) | Claude |
 | 2026-05-17 | Gruppen-Ziel: Prozent zentriert in Fortschrittsleiste (20px)      | Claude |
 | 2026-05-17 | Text „Heute frei“ → „Heute keine Termine vorhanden“              | Claude |
 | 2026-05-17 | Challenges-Layout: gleiche Kartenhöhe, Gruppen-Ziel volle Breite  | Claude |
