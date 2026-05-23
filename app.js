@@ -330,7 +330,11 @@ window.addEventListener('load', async () => {
             picture: fbUser.photoURL || userInfo.picture || ''
           });
           updateAvatar();
-          loadSettingsFromFirestore && loadSettingsFromFirestore();
+          // Firebase Auth ist jetzt bestätigt → Sync anstoßen
+          // loadSettingsFromFirestore existiert nicht – korrekte Funktion: startChangeSettingsSync
+          setTimeout(() => {
+            if(typeof window.initFirebaseLive === 'function') window.initFirebaseLive();
+          }, 200);
         } else {
           // Session abgelaufen — beim nächsten Firestore-Write wird Fehler kommen
           // Nutzer muss sich neu anmelden wenn er Daten speichern will
@@ -358,6 +362,14 @@ window.addEventListener('load', async () => {
         if(document.getElementById('main-app').style.display !== 'flex'){
           bootMainApp();
         }
+        // Firebase Auth ist jetzt aktiv (fbUser gesetzt) → Sync sicherstellen
+        // initFirebaseLive wird vom bootMainApp-Wrapper nochmal mit 300ms aufgerufen,
+        // aber ensureChangeFirebaseAuth schlägt fehl wenn currentUser noch nicht gesetzt.
+        // Hier wissen wir sicher: Auth ist bereit → direkt aufrufen.
+        setTimeout(() => {
+          if(typeof window.initFirebaseLive === 'function') window.initFirebaseLive();
+          if(typeof window.startChangeSettingsSync === 'function') window.startChangeSettingsSync();
+        }, 400);
         setTimeout(trySilentGoogleTokenRefresh, 1500);
         startTokenAutoRefresh();
         initPWA(); scheduleNotifCheck();

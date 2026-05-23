@@ -171,8 +171,10 @@
     pendingAuth = (async function(){
       try{
         var auth = firebase.auth();
-        var current = auth.currentUser || await waitForAuthState(options.waitMs || 700);
-        if(current && sameUserOrNoEmail(current)){
+        var current = auth.currentUser || await waitForAuthState(options.waitMs || 1500);
+        if(current && (sameUserOrNoEmail(current) || options.silent)){
+          // Bei silent=true: jede gültige Firebase-Session akzeptieren.
+          // Firestore Rules prüfen nur request.auth != null – die E-Mail spielt serverseitig keine Rolle.
           writeUser(current);
           return true;
         }
