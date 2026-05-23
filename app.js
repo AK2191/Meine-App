@@ -510,7 +510,13 @@ async function handleGoogleLogin(){
         bootMainApp();
         loadGoogleData();
         setTimeout(async () => {
-          try{ if(window.ensureChangeFirebaseAuth) await window.ensureChangeFirebaseAuth({ silent:true, interactive:false, waitMs:300 }); }catch(e){}
+          try{
+            // Firebase Auth interaktiv starten – Popup öffnet sich kurz (Google-Session bereits aktiv,
+            // daher meist automatisch ohne Nutzerinteraktion).
+            if(window.signInChangeFirebaseWithGoogle){
+              await window.signInChangeFirebaseWithGoogle({ popup: true });
+            }
+          }catch(e){ console.warn('Firebase Auth nach Login:', e); }
           try{ if(typeof initFirebaseLive === 'function') await initFirebaseLive(); }catch(e){}
         }, 900);
       }
