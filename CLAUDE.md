@@ -233,6 +233,7 @@ firebase deploy --only hosting
 | 2026-05-23 | functions/index.js: icon/badge URL SVG → PNG                     | Claude |
 | 2026-05-23 | index.html: apple-touch-icon → PNG                               | Claude |
 | 2026-05-23 | index.html: apple-touch-icon → PNG                               | Claude |
+| 2026-05-23 | firestore-guard.js: Sync-Killer entfernt → publishChallengesToFirestore / listenLiveChallenges waren als leere No-Ops überschrieben; Guard auf Settings-Button + reqNotifPermission reduziert | Claude |
 | 2026-05-19 | Friseur-Panel: Sektion „Empfohlenes Buchungsfenster" ergänzt (3 Fenster: Frühestens/Empfohlen/Dringend, je +1W ab Erinnerung+1W, nur wenn kein Termin eingetragen) | Claude |
 | 2026-05-17 | Gruppen-Ziel: Prozent zentriert in Fortschrittsleiste (20px)      | Claude |
 | 2026-05-17 | Text „Heute frei“ → „Heute keine Termine vorhanden“              | Claude |

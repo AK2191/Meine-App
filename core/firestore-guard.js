@@ -1,30 +1,27 @@
 /**
  * Change App · firestore-guard.js — lädt ZULETZT
- * Fix 1: Firestore-Schreibflut
- * Fix 2: Notif-Panel beim Start
- * Fix 3: Settings-Button via Capturing-Listener
+ *
+ * Aufgabe:
+ *  1. Settings-Button via Capturing-Listener zuverlässig registrieren
+ *  2. Notification-Permission-Request bereitstellen
+ *
+ * NICHT hier: Firestore-Funktionen überschreiben oder deaktivieren.
+ * Der frühere "Anti-Schreibflut"-Workaround wurde entfernt – die
+ * eigentliche Flut-Kontrolle liegt in publishChallengesToFirestore()
+ * (Debounce + Auth-Check in app.js).
  */
 (function(){
   'use strict';
 
-  function installGuards(){
-    window.publishChallengesToFirestore      = async function(){ return; };
-    window.publishLocalChallengesToFirestore = async function(){ return; };
-    window.listenLiveChallenges              = function(){ return; };
-    if(typeof window._changeLiveChallengesListener === 'function'){
-      try{ window._changeLiveChallengesListener(); }catch(e){}
-      window._changeLiveChallengesListener = null;
+  window.reqNotifPermission = function(){
+    if(typeof Notification === 'undefined') return;
+    if(Notification.permission === 'default'){
+      Notification.requestPermission().then(function(p){
+        if(p === 'granted' && typeof toast === 'function')
+          toast('Benachrichtigungen aktiviert ✓', 'ok');
+      });
     }
-    window.reqNotifPermission = function(){
-      if(typeof Notification === 'undefined') return;
-      if(Notification.permission === 'default'){
-        Notification.requestPermission().then(function(p){
-          if(p === 'granted' && typeof toast === 'function')
-            toast('Benachrichtigungen aktiviert ✓', 'ok');
-        });
-      }
-    };
-  }
+  };
 
   function openSettings(){
     try{
@@ -58,16 +55,7 @@
     }, true);
   }
 
-  installGuards();
   installSettingsHandler();
-
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', installGuards);
-  }
-  window.addEventListener('load', function(){
-    installGuards();
-    setTimeout(installGuards, 500);
-  });
 
   console.log('[Change] firestore-guard.js ✓');
 })();
