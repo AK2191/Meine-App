@@ -25,8 +25,8 @@ messaging.onBackgroundMessage((payload) => {
 
   return self.registration.showNotification(title, {
     body,
-    icon:     './icon-change-192.svg',
-    badge:    './icon-change-192.svg',
+    icon:     './icon-change-192.png',
+    badge:    './icon-change-192.png',
     tag:      (payload.data && payload.data.tag) || 'change-push',
     renotify: true,
     vibrate:  [200, 100, 200],

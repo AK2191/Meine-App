@@ -1254,7 +1254,12 @@ function checkNotifications(){
 function fireNotification(ev,daysLeft){
   if(Notification.permission!=='granted')return;
   const title=daysLeft===0?`Heute fällig: ${ev.title}`:`In ${daysLeft} Tag${daysLeft>1?'en':''}: ${ev.title}`;
-  new Notification(title,{body:ev.desc||'Termin',tag:ev.id});
+  // Service Worker showNotification() – funktioniert auf iOS/Android (new Notification ist dort nicht erlaubt)
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.ready.then(reg=>{
+      reg.showNotification(title,{body:ev.desc||'Termin',icon:'./icon-change-192.png',badge:'./icon-change-192.png',tag:ev.id});
+    }).catch(()=>{});
+  }
 }
 
 function scheduleNotifCheck(){
@@ -1841,15 +1846,21 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     if(!messaging || messaging._changeHandlerInstalled) return;
     messaging.onMessage(payload=>{
       const n=payload.notification||{};
-      if(Notification.permission==='granted') new Notification(n.title||'Change', {body:n.body||'', icon:'./icon-change-192.svg', badge:'./icon-change-192.svg'});
+      if(Notification.permission==='granted' && 'serviceWorker' in navigator){
+        navigator.serviceWorker.ready.then(reg=>{
+          reg.showNotification(n.title||'Change',{body:n.body||'',icon:'./icon-change-192.png',badge:'./icon-change-192.png'});
+        }).catch(()=>{});
+      }
       toast(n.title||'Neue Change-Nachricht','ok');
     });
     messaging._changeHandlerInstalled=true;
   }
 
   function openLocalNotification(title,body){
-    if('Notification' in window && Notification.permission==='granted'){
-      try{ new Notification(title,{body,icon:'./icon-change-192.svg',badge:'./icon-change-192.svg'}); }catch{}
+    if('Notification' in window && Notification.permission==='granted' && 'serviceWorker' in navigator){
+      navigator.serviceWorker.ready.then(reg=>{
+        reg.showNotification(title,{body,icon:'./icon-change-192.png',badge:'./icon-change-192.png'});
+      }).catch(()=>{});
     }
   }
   function startChallengeReminderLoop(){

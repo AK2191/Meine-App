@@ -200,10 +200,39 @@ firebase deploy --only hosting
 
 ---
 
+## 🖼 Icons (Push-relevant)
+
+| Datei                  | Verwendung                              |
+|------------------------|-----------------------------------------|
+| `icon-change-192.png`  | PWA Manifest, Homescreen, Push-Badge    |
+| `icon-change-512.png`  | PWA Manifest, Splash Screen             |
+| `icon-change-192.svg`  | Nur Fallback (nicht für Push verwenden) |
+| `icon-change-512.svg`  | Desktop Browser-Favicon                 |
+
+> ⚠️ Push-Benachrichtigungen auf iOS/Android benötigen **PNG**-Icons.
+> SVG wird im PWA-Manifest und als Push-Icon von mobilen Browsern nicht akzeptiert.
+
+## 🔔 Push – Mobile Regeln
+
+- **`new Notification()`** ist auf iOS/Android **verboten** → immer `serviceWorker.ready.then(reg => reg.showNotification())` verwenden
+- **Icons in Push** → immer `.png`, niemals `.svg`
+- **iOS**: Push funktioniert **nur** wenn die App per Safari → „Zum Home-Bildschirm" installiert wurde (ab iOS 16.4)
+- **Android**: Push funktioniert im Chrome-Browser, Erlaubnis muss vom Nutzer erteilt werden
+
+---
+
 ## 📝 Änderungslog
 
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
+| 2026-05-23 | PNG-Icons erstellt (192px + 512px) aus SVG konvertiert            | Claude |
+| 2026-05-23 | manifest.json: SVG → PNG Icons (Mobile PWA-Kompatibilität)        | Claude |
+| 2026-05-23 | firebase-messaging-sw.js: icon/badge SVG → PNG                   | Claude |
+| 2026-05-23 | pushController.js: test() → reg.showNotification() statt new Notification() | Claude |
+| 2026-05-23 | app.js: fireNotification(), installForegroundPushHandler(), openLocalNotification() → reg.showNotification() + PNG | Claude |
+| 2026-05-23 | functions/index.js: icon/badge URL SVG → PNG                     | Claude |
+| 2026-05-23 | index.html: apple-touch-icon → PNG                               | Claude |
+| 2026-05-23 | index.html: apple-touch-icon → PNG                               | Claude |
 | 2026-05-19 | Friseur-Panel: Sektion „Empfohlenes Buchungsfenster" ergänzt (3 Fenster: Frühestens/Empfohlen/Dringend, je +1W ab Erinnerung+1W, nur wenn kein Termin eingetragen) | Claude |
 | 2026-05-17 | Gruppen-Ziel: Prozent zentriert in Fortschrittsleiste (20px)      | Claude |
 | 2026-05-17 | Text „Heute frei“ → „Heute keine Termine vorhanden“              | Claude |

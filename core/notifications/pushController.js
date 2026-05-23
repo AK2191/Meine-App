@@ -79,13 +79,21 @@
     return true;
   }
 
+  // Verwendet Service Worker showNotification() – funktioniert auf Mobile (iOS/Android)
+  // new Notification() ist auf mobilen Geräten nicht erlaubt
   async function test(){
     if(!supportsPush() || !Store || !Store.pushActive || !Store.pushActive()){
       toastSafe('Push ist deaktiviert','err');
       return false;
     }
     try{
-      new Notification('Change', {body:'Test-Benachrichtigung funktioniert.', icon:'./icon-change-192.svg', badge:'./icon-change-192.svg', tag:'change-test'});
+      const reg = await navigator.serviceWorker.ready;
+      await reg.showNotification('Change', {
+        body:  'Test-Benachrichtigung funktioniert.',
+        icon:  './icon-change-192.png',
+        badge: './icon-change-192.png',
+        tag:   'change-test'
+      });
       toastSafe('Test gesendet ✓','ok');
       return true;
     }catch(e){
