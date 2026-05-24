@@ -288,3 +288,29 @@ firebase deploy --only hosting
 | 2026-05-17 | Anfeuern-Button für eigenen Account korrekt versteckt (myId fix)   | Claude |
 | 2026-05-17 | window.injectStreakCard + window.checkNewBadges exportiert (app.js) | Claude |
 | 2026-05-17 | Settings: Wetter/Pollen getrennte Karten, Tracker umbenannt        | Claude |
+
+---
+
+## 🏆 Challenges – Firebase Sync Architektur
+
+### Schichten (von alt nach neu, jede überschreibt/wrapat die vorherige)
+1. `features/challenges/challenges.js` → `completeChallenge` Basis (durch Layer 2 ersetzt, toter Code)
+2. `challenge-sync.js` IIFE `change-account-safe` → überschreibt `completeChallenge` (Email-Check, saveLocal + publishCompletionToFirestore)
+3. `challenge-sync.js` IIFE `change-final-two-way` → wrapat Layer 2 (Upload + Download nach Completion)
+4. `app.js` `initFirebaseLive` → eigener Listener auf `change_completions` (parallel zu Layer 3, limit 500)
+
+### Collections
+- `change_completions` – erledigte Aufgaben (Punkte)
+- `change_challenges` – Challenge-Definitionen (shared, wird gemergt)
+- `change_players` – Spieler-Profile + Online-Status
+
+### Bekannte Non-Issues (funktionieren korrekt, NICHT anfassen)
+- Zwei parallele Listener auf `change_completions` → kein Datenverlust, Upsert-Logik schützt
+- `app.js`-Listener nutzt `snap.forEach` statt `snap.docChanges()` → O(n²), aber korrekt
+- Mehrere `uploadLocalCompletions()`-Aufrufe pro Completion → idempotent durch `set({merge:true})`
+
+### Invarianten (dürfen nie gebrochen werden)
+- Punkte nur für Completions mit valider E-Mail (`isEmail()` Check)
+- `isDoneToday()` verhindert Doppelerledigung am selben Tag
+- `sanitizeLocalCompletions()` entfernt Ghost-Einträge periodisch
+- Firestore Rules: alle Collections require `isAuth()`
