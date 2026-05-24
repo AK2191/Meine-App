@@ -252,6 +252,7 @@ firebase deploy --only hosting
 | 2026-05-24 | settingsPanel.js: BY-AUX → BY-AUGSBURG in stateOptions (cleanState() erkannte BY-AUX nicht → fiel auf ALL zurück) | Claude |
 | 2026-05-24 | settingsPanel.js: saveCal nutzt window.setHolidayState() statt direktem localStorage.setItem → schreibt beide Keys (change_v1_holiday_state + holiday_state) + löst Firebase-Sync aus | Claude |
 | 2026-05-24 | settings-logic.js: CONTROL_IDS um settingsPanel.js-IDs erweitert (set-holiday-state, set-show-holidays, set-show-points, set-show-kw, set-friseur, set-friseur-weeks, set-urlaub, set-urlaub-days, set-live, set-auto, set-google) → DOM change-Events triggern jetzt Firebase-Save für alle Settings-Änderungen | Claude |
+| 2026-05-24 | settingsPanel.js: clearChangeAppCache() + Button im App-Tab (Cache leeren & neu laden) – löscht Daten-Cache, bewahrt Auth + Einstellungen, reload mit Cache-Bust-URL | Claude |
 | 2026-05-24 | app.js getUrlaubRowHtml(): dash-row/dash-row-icon/dash-row-body Klassen wie Friseur, Progressbar inline in Sub-Zeile, Badge als dash-row-badge | Claude |
 | 2026-05-24 | weatherService.js: LOCATION_MAX_AGE 7 Tage → 2 Stunden (stille Auto-Aktualisierung) | Claude |
 | 2026-05-24 | weatherStore.js: GPS maximumAge 30 Min → 15 Min (Browser-Cache kürzer) | Claude |
@@ -314,3 +315,30 @@ firebase deploy --only hosting
 - `isDoneToday()` verhindert Doppelerledigung am selben Tag
 - `sanitizeLocalCompletions()` entfernt Ghost-Einträge periodisch
 - Firestore Rules: alle Collections require `isAuth()`
+
+---
+
+## 🗑️ Cache leeren (clearChangeAppCache)
+
+### Funktion: `window.clearChangeAppCache()`
+Definiert in: `features/settings/settingsPanel.js`
+Erreichbar: Einstellungen → App-Tab → „Cache leeren & neu laden"
+
+### Was gelöscht wird
+Alle localStorage-Einträge AUSSER Auth + Einstellungen:
+- Daten: `events`, `challenge_completions`, `challengeCompletions`, `challenges`, `challenge_players`, `gEvents`-Cache, Wetter-Cache, Benachrichtigungs-Flags, etc.
+- Service Worker Caches (Browser HTTP-Cache für App-Dateien)
+
+### Was bewahrt wird (PRESERVE-Set)
+- **Auth**: `user_info_safe`, `user_info`, `change_v1_user_info`, `was_logged_in`, `access_token`, `fcm_token`
+- **Kalender**: `change_v1_calendar_view_options`, `calendar_settings`, `change_v1_holiday_state`, `holiday_state`
+- **Dashboard**: `change_v1_friseur_*`, `urlaub_tracker_*`, `urlaub_half_days`
+- **Wetter**: `change_v1_weather_settings`, `*_alert_hours`
+- **Sync**: `live_sync_enabled`, `auto_challenges_enabled`, `change_v1_google_calendar_sync`, `push_enabled`
+- **Design**: `change_v1_dark_mode`
+
+### Reload-Strategie
+`window.location.replace(url + '?v=' + Date.now())` → Cache-Bust-Parameter umgeht iOS Safari + Android Chrome HTTP-Cache
+
+### Wichtige Regel
+Das PRESERVE-Set bei neuen wichtigen localStorage-Keys erweitern.

@@ -238,7 +238,8 @@
   }
   function appPane(){
     return card('App', '<div class="change-settings-row"><div><div class="change-settings-title">Change als App installieren '+pill(installedLabel(), installedLabel()==='Installiert'?'ok':'off')+'</div><div class="change-settings-sub">Für Handy-Nutzung, Push und Startbildschirm.</div></div></div><div class="change-settings-actions"><button class="btn btn-secondary btn-full" onclick="if(typeof installChangeApp===\'function\')installChangeApp()">Change als App installieren</button></div>')
-      + card('Daten', '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" onclick="try{localStorage.setItem(\'change_v1_manual_backup\', JSON.stringify({events:window.events||[],challenges:window.challenges||[],challengeCompletions:window.challengeCompletions||[],settings:{calendar:localStorage.getItem(\'calendar_settings\')}}));toast&&toast(\'Backup lokal erstellt ✓\',\'ok\')}catch(e){toast&&toast(\'Backup fehlgeschlagen\',\'err\')}">Lokales Backup erstellen</button></div>');
+      + card('Daten', '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" onclick="try{localStorage.setItem(\'change_v1_manual_backup\', JSON.stringify({events:window.events||[],challenges:window.challenges||[],challengeCompletions:window.challengeCompletions||[],settings:{calendar:localStorage.getItem(\'calendar_settings\')}}));toast&&toast(\'Backup lokal erstellt ✓\',\'ok\')}catch(e){toast&&toast(\'Backup fehlgeschlagen\',\'err\')}">Lokales Backup erstellen</button></div>')
+      + card('Cache leeren', '<div class="change-settings-sub" style="padding:0 0 10px">Löscht zwischengespeicherte Daten und lädt alles neu aus Firebase. Login und Einstellungen bleiben erhalten.</div><div class="change-settings-actions"><button class="btn btn-danger btn-full" id="btn-clear-cache">Cache leeren &amp; neu laden</button></div>');
   }
   var currentSettingsTab = 'calendar';
   function tabButton(id, label, active){ return '<button class="change-settings-tab '+(active===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'+label+'</button>'; }
@@ -321,7 +322,72 @@
     });
     var google = $('set-google'); if(google) google.addEventListener('change', async function(){ if(window.ChangeGoogleSyncStatus){ if(google.checked) await window.ChangeGoogleSyncStatus.syncNow(); else window.ChangeGoogleSyncStatus.disconnect(); } refreshSameTab(); });
     var syncGoogle = $('set-sync-google'); if(syncGoogle) syncGoogle.addEventListener('click', async function(){ if(window.ChangeGoogleSyncStatus) await window.ChangeGoogleSyncStatus.syncNow(); refreshSameTab(); });
+    var clearCacheBtn = $('btn-clear-cache');
+    if(clearCacheBtn) clearCacheBtn.addEventListener('click', function(){
+      clearCacheBtn.textContent = 'Wird gelöscht …';
+      clearCacheBtn.disabled = true;
+      setTimeout(function(){
+        if(typeof window.clearChangeAppCache === 'function') window.clearChangeAppCache();
+      }, 200); // kurze Pause damit der Button-Status sichtbar wird
+    });
   }
+
+  // ── Cache leeren ──────────────────────────────────────────────────────────
+  // Löscht alle Daten-Caches (Events, Completions, Players) aus localStorage.
+  // Bewahrt: Login-Session, Einstellungen, Push-Token.
+  // Löscht danach auch SW-Caches (Browser HTTP-Cache) und lädt neu.
+  window.clearChangeAppCache = async function() {
+    // Keys die NIEMALS gelöscht werden (Auth + Einstellungen)
+    var PRESERVE = new Set([
+      // Auth & Login
+      'change_v1_user_info', 'user_info', 'user_info_safe',
+      'change_v1_user_email', 'user_email',
+      'was_logged_in', 'access_token', 'change_v1_access_token',
+      'client_id', 'change_v1_client_id',
+      'fcm_token', 'change_v1_fcm_token',
+      // Kalender-Einstellungen
+      'change_v1_calendar_view_options', 'calendar_settings',
+      'change_v1_holiday_state', 'holiday_state',
+      'change_v1_holiday_notifications', 'holiday_notifications',
+      // Dashboard-Einstellungen
+      'change_v1_friseur_enabled', 'change_v1_friseur_weeks',
+      'urlaub_tracker_on', 'urlaub_tracker_days', 'urlaub_half_days',
+      // Wetter-Einstellungen
+      'change_v1_weather_settings', 'change_v1_rain_alert_hours', 'change_v1_pollen_alert_hours',
+      // Sync-Einstellungen
+      'live_sync_enabled', 'change_v1_live_sync_enabled',
+      'auto_challenges_enabled', 'change_v1_auto_challenges_enabled',
+      'change_v1_google_calendar_sync', 'change_google_sync_enabled',
+      'push_enabled', 'change_v1_push_enabled',
+      // Design
+      'change_v1_dark_mode',
+      // Settings-Sync-Timestamps
+      'change_v1_settings_updated_at', 'change_v1_settings_synced_at'
+    ]);
+
+    // 1. Alle zu löschenden Keys sammeln
+    var toDelete = [];
+    for (var i = 0; i < localStorage.length; i++) {
+      var key = localStorage.key(i);
+      if (key && !PRESERVE.has(key)) toDelete.push(key);
+    }
+    // Entfernen (separat, weil Iteration während Remove Index verschiebt)
+    toDelete.forEach(function(key) {
+      try { localStorage.removeItem(key); } catch(e) {}
+    });
+
+    // 2. Service Worker Caches leeren (Browser HTTP-Cache für App-Dateien)
+    if ('caches' in window) {
+      try {
+        var names = await caches.keys();
+        await Promise.all(names.map(function(n) { return caches.delete(n); }));
+      } catch(e) {}
+    }
+
+    // 3. Neu laden mit Cache-Bust-Parameter (iOS Safari + Android Chrome)
+    var url = window.location.href.split('?')[0].split('#')[0];
+    window.location.replace(url + '?v=' + Date.now());
+  };
 
   window.ChangeSettingsPanel = {open: openSettingsPanel, getAutoChallengesEnabled: getAutoChallengesEnabled, setAutoChallengesState: setAutoChallengesState};
   window.openSettingsPanel = openSettingsPanel;
