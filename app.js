@@ -2869,27 +2869,31 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     var remaining = totalDays - used;
     var pct       = Math.min(100, Math.round((used / totalDays) * 100));
 
-    var usedColor = remaining < 0 ? '#ef4444' : remaining === 0 ? 'var(--acc)' : remaining <= 5 ? '#f59e0b' : 'var(--acc)';
-    var leftText  = '<span style="font-weight:800;color:'+usedColor+'">'+formatVacationDays(used)+' von '+formatVacationDays(totalDays)+'</span>'
-                  + '<span style="color:var(--t4)"> Tagen verbraucht</span>';
+    var usedColor = remaining < 0 ? '#ef4444' : remaining <= 5 ? '#f59e0b' : 'var(--acc)';
+    var barColor  = usedColor;
 
-    var barColor    = remaining < 0 ? '#ef4444' : remaining === 0 ? 'var(--acc)' : remaining <= 5 ? '#f59e0b' : 'var(--acc)';
-    var progressBar = '<div style="flex:1;max-width:80px;height:4px;background:var(--b1);border-radius:2px;overflow:hidden;margin:0 8px">'
-      + '<div style="width:'+pct+'%;height:100%;background:'+barColor+';border-radius:2px"></div>'
-      + '</div>';
+    // Kompakte Sub-Zeile: "26 von 30 Tagen verbraucht"
+    var subLine = '<b style="color:'+usedColor+'">'+formatVacationDays(used)+' von '+formatVacationDays(totalDays)+'</b>'
+              + '<span style="color:var(--t4)"> Tagen</span>';
+
+    // Fortschrittsbalken inline (klein, passt in Sub-Zeile)
+    var bar = '<span style="display:inline-block;width:48px;height:3px;background:var(--b1);border-radius:2px;vertical-align:middle;margin:0 6px">'
+            + '<span style="display:block;width:'+pct+'%;height:100%;background:'+barColor+';border-radius:2px"></span>'
+            + '</span>';
 
     var badge = remaining === 0
-      ? '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:rgba(45,106,79,.1);color:var(--acc)">✓ Urlaub vollständig verplant</span>'
+      ? '<span class="dash-row-badge badge-green" style="white-space:nowrap;font-size:10px">✓ Vollständig verplant</span>'
       : remaining < 0
-        ? '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:rgba(239,68,68,.12);color:#dc2626">⚠ '+Math.abs(remaining)+' Tage überzogen</span>'
-        : '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:'+(remaining<=5?'rgba(245,158,11,.12);color:#b45309':'rgba(45,106,79,.1);color:var(--acc)')+'">'+formatVacationDays(remaining)+' Tage übrig</span>';
+        ? '<span class="dash-row-badge badge-red" style="white-space:nowrap;font-size:10px">⚠ '+Math.abs(remaining)+' überzogen</span>'
+        : '<span class="dash-row-badge" style="white-space:nowrap;font-size:10px;background:'+(remaining<=5?'rgba(245,158,11,.15);color:#b45309':'rgba(45,106,79,.1);color:var(--acc)')+'">'+formatVacationDays(remaining)+' Tage übrig</span>';
 
-    return '<div onclick="window.openUrlaubPanel&&window.openUrlaubPanel()" style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--b1);cursor:pointer" onmouseover="this.style.background=\'var(--s2)\'" onmouseout="this.style.background=\'\'">'
-      + '<span style="font-size:12px;flex-shrink:0">🏖️</span>'
-      + '<span style="font-size:11px;font-weight:700;color:var(--t2);white-space:nowrap;margin-right:2px">Urlaub</span>'
-      + '<span style="font-size:11px;min-width:0">'+leftText+'</span>'
-      + progressBar
-      + '<span style="margin-left:auto">'+badge+'</span>'
+    return '<div class="dash-row" onclick="window.openUrlaubPanel&&window.openUrlaubPanel()" style="cursor:pointer;border-top:1px solid var(--b1);margin-top:4px">'
+      + '<div class="dash-row-icon" style="background:rgba(156,163,175,.1);font-size:14px">🏖️</div>'
+      + '<div class="dash-row-body">'
+      + '<div class="dash-row-title">Urlaub</div>'
+      + '<div class="dash-row-sub" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+subLine+bar+'</div>'
+      + '</div>'
+      + badge
       + '</div>';
   };
 })();
