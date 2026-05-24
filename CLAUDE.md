@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-05-17
+> Zuletzt aktualisiert: 2026-05-24
 
 ---
 
@@ -202,12 +202,20 @@ firebase deploy --only hosting
 
 ## 🖼 Icons (Push-relevant)
 
-| Datei                  | Verwendung                              |
-|------------------------|-----------------------------------------|
-| `icon-change-192.png`  | PWA Manifest, Homescreen, Push-Badge    |
-| `icon-change-512.png`  | PWA Manifest, Splash Screen             |
-| `icon-change-192.svg`  | Nur Fallback (nicht für Push verwenden) |
-| `icon-change-512.svg`  | Desktop Browser-Favicon                 |
+| Datei                    | Verwendung                                      |
+|--------------------------|-------------------------------------------------|
+| `icon-change-192.png`    | PWA Manifest „any" (organische Blob-Form)       |
+| `icon-change-512.png`    | PWA Manifest „any" (organische Blob-Form)       |
+| `icon-maskable-192.png`  | PWA Manifest „maskable" (volles Rechteck, Safe-Zone ok) |
+| `icon-maskable-512.png`  | PWA Manifest „maskable" (volles Rechteck, Safe-Zone ok) |
+| `icon-change-192.svg`    | Nur Fallback (nicht für Push verwenden)         |
+| `icon-change-512.svg`    | Desktop Browser-Favicon                         |
+
+### Warum zwei Icon-Sets?
+- **`any`**: Icon wird so angezeigt wie es ist (mit Transparenz/organischer Form)
+- **`maskable`**: Android/ChromeOS schneidet das Icon kreisförmig zu → braucht volles Rechteck als Hintergrund, Inhalt muss innerhalb der „Safe Zone" (80% = 154px bei 192px) bleiben
+- Früher: gleiche PNG für both → schwarzer Kreis auf Android ❌
+- Jetzt: getrennte Dateien → Icon sieht korrekt aus ✅
 
 > ⚠️ Push-Benachrichtigungen auf iOS/Android benötigen **PNG**-Icons.
 > SVG wird im PWA-Manifest und als Push-Icon von mobilen Browsern nicht akzeptiert.
@@ -225,6 +233,8 @@ firebase deploy --only hosting
 
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
+| 2026-05-24 | manifest.json: getrennte maskable-Icons (icon-maskable-192/512.png) → Android zeigt kein schwarzes Kreis-Icon mehr | Claude |
+| 2026-05-24 | Friseur-Tracker Row: kompaktes Layout mit dash-row-Klassen, Text kein Umbruch mehr ("vor 17d · Do., 07. Mai"), Badge gekürzt ("→ Di., 02. Jun · 17:15") | Claude |
 | 2026-05-23 | PNG-Icons erstellt (192px + 512px) aus SVG konvertiert            | Claude |
 | 2026-05-23 | manifest.json: SVG → PNG Icons (Mobile PWA-Kompatibilität)        | Claude |
 | 2026-05-23 | firebase-messaging-sw.js: icon/badge SVG → PNG                   | Claude |
