@@ -170,7 +170,7 @@ body{
 
 /* ==== HEADER ==== */
 #header{
-  display:flex;align-items:center;gap:12px;padding:0 16px;height:56px;flex-shrink:0;
+  display:flex;align-items:center;gap:12px;padding:0 16px;height:52px;flex-shrink:0;
   background:var(--s1);border-bottom:1px solid var(--b1);z-index:100;position:relative;
 }
 .h-logo{display:flex;align-items:center;gap:9px;flex-shrink:0}
@@ -209,10 +209,10 @@ body{
   font-family:var(--font);font-size:12px;font-weight:600;color:var(--t3);cursor:pointer;transition:all .15s;
 }
 .vbtn.active{background:var(--acc);color:#fff}
-.h-right{display:flex;align-items:center;gap:6px;flex-shrink:0;position:relative;z-index:120}
+.h-right{display:flex;align-items:center;gap:4px;flex-shrink:0;position:relative;z-index:120}
 .icon-btn{
-  width:40px;height:40px;display:flex;align-items:center;justify-content:center;
-  border:none;background:transparent;border-radius:var(--rsm);cursor:pointer;color:var(--t2);transition:all .15s;position:relative;
+  width:38px;height:38px;display:flex;align-items:center;justify-content:center;
+  border:none;background:transparent;border-radius:10px;cursor:pointer;color:var(--t2);transition:all .15s;position:relative;
 }
 .icon-btn:hover{background:var(--s2);color:var(--t1)}
 .icon-btn svg{width:22px;height:22px;stroke-width:1.75}
