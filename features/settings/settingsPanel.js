@@ -85,7 +85,7 @@
   }
   function stateOptions(selected){
     var states = [
-      ['ALL','Alle Feiertage'],['BW','Baden-Württemberg'],['BY','Bayern'],['BY-AUX','Bayern · Augsburg'],['BE','Berlin'],['BB','Brandenburg'],['HB','Bremen'],['HH','Hamburg'],['HE','Hessen'],['MV','Mecklenburg-Vorpommern'],['NI','Niedersachsen'],['NW','Nordrhein-Westfalen'],['RP','Rheinland-Pfalz'],['SL','Saarland'],['SN','Sachsen'],['ST','Sachsen-Anhalt'],['SH','Schleswig-Holstein'],['TH','Thüringen']
+      ['ALL','Alle Feiertage'],['BW','Baden-Württemberg'],['BY','Bayern'],['BY-AUGSBURG','Bayern · Augsburg'],['BE','Berlin'],['BB','Brandenburg'],['HB','Bremen'],['HH','Hamburg'],['HE','Hessen'],['MV','Mecklenburg-Vorpommern'],['NI','Niedersachsen'],['NW','Nordrhein-Westfalen'],['RP','Rheinland-Pfalz'],['SL','Saarland'],['SN','Sachsen'],['ST','Sachsen-Anhalt'],['SH','Schleswig-Holstein'],['TH','Thüringen']
     ];
     return states.map(function(item){ return '<option value="'+item[0]+'" '+(selected === item[0] ? 'selected' : '')+'>'+item[1]+'</option>'; }).join('');
   }
@@ -275,7 +275,14 @@
         showWeekNumbers: !!($('set-show-kw') && $('set-show-kw').checked),
         holidayState: ($('set-holiday-state') && $('set-holiday-state').value) || 'ALL'
       };
-      try{ localStorage.setItem('holiday_state', options.holidayState); }catch(e){}
+      // setHolidayState schreibt change_v1_holiday_state + holiday_state (beide Keys),
+      // normalisiert via cleanState() und löst (gewrappt) Firebase-Sync aus.
+      if(typeof window.setHolidayState === 'function'){
+        window.setHolidayState(options.holidayState);
+      } else {
+        try{ localStorage.setItem('change_v1_holiday_state', options.holidayState); }catch(e){}
+        try{ localStorage.setItem('holiday_state', options.holidayState); }catch(e){}
+      }
       saveCalendarOptions(options);
     };
     ['set-show-holidays','set-show-points','set-show-kw','set-holiday-state'].forEach(function(id){ var el=$(id); if(el) el.addEventListener('change', saveCal); });
