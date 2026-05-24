@@ -239,7 +239,6 @@
   function appPane(){
     return card('App', '<div class="change-settings-row"><div><div class="change-settings-title">Change als App installieren '+pill(installedLabel(), installedLabel()==='Installiert'?'ok':'off')+'</div><div class="change-settings-sub">Für Handy-Nutzung, Push und Startbildschirm.</div></div></div><div class="change-settings-actions"><button class="btn btn-secondary btn-full" onclick="if(typeof installChangeApp===\'function\')installChangeApp()">Change als App installieren</button></div>')
       + card('Daten', '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" onclick="try{localStorage.setItem(\'change_v1_manual_backup\', JSON.stringify({events:window.events||[],challenges:window.challenges||[],challengeCompletions:window.challengeCompletions||[],settings:{calendar:localStorage.getItem(\'calendar_settings\')}}));toast&&toast(\'Backup lokal erstellt ✓\',\'ok\')}catch(e){toast&&toast(\'Backup fehlgeschlagen\',\'err\')}">Lokales Backup erstellen</button></div>')
-      + card('Cache leeren', '<div class="change-settings-sub" style="padding:0 0 10px">Löscht zwischengespeicherte Daten und lädt alles neu aus Firebase. Login und Einstellungen bleiben erhalten.</div><div class="change-settings-actions"><button class="btn btn-danger btn-full" id="btn-clear-cache">Cache leeren &amp; neu laden</button></div>');
   }
   var currentSettingsTab = 'calendar';
   function tabButton(id, label, active){ return '<button class="change-settings-tab '+(active===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'+label+'</button>'; }
@@ -322,14 +321,7 @@
     });
     var google = $('set-google'); if(google) google.addEventListener('change', async function(){ if(window.ChangeGoogleSyncStatus){ if(google.checked) await window.ChangeGoogleSyncStatus.syncNow(); else window.ChangeGoogleSyncStatus.disconnect(); } refreshSameTab(); });
     var syncGoogle = $('set-sync-google'); if(syncGoogle) syncGoogle.addEventListener('click', async function(){ if(window.ChangeGoogleSyncStatus) await window.ChangeGoogleSyncStatus.syncNow(); refreshSameTab(); });
-    var clearCacheBtn = $('btn-clear-cache');
-    if(clearCacheBtn) clearCacheBtn.addEventListener('click', function(){
-      clearCacheBtn.textContent = 'Wird gelöscht …';
-      clearCacheBtn.disabled = true;
-      setTimeout(function(){
-        if(typeof window.clearChangeAppCache === 'function') window.clearChangeAppCache();
-      }, 200); // kurze Pause damit der Button-Status sichtbar wird
-    });
+
   }
 
   // ── Cache leeren ──────────────────────────────────────────────────────────

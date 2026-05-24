@@ -252,6 +252,10 @@ firebase deploy --only hosting
 | 2026-05-24 | settingsPanel.js: BY-AUX → BY-AUGSBURG in stateOptions (cleanState() erkannte BY-AUX nicht → fiel auf ALL zurück) | Claude |
 | 2026-05-24 | settingsPanel.js: saveCal nutzt window.setHolidayState() statt direktem localStorage.setItem → schreibt beide Keys (change_v1_holiday_state + holiday_state) + löst Firebase-Sync aus | Claude |
 | 2026-05-24 | settings-logic.js: CONTROL_IDS um settingsPanel.js-IDs erweitert (set-holiday-state, set-show-holidays, set-show-points, set-show-kw, set-friseur, set-friseur-weeks, set-urlaub, set-urlaub-days, set-live, set-auto, set-google) → DOM change-Events triggern jetzt Firebase-Save für alle Settings-Änderungen | Claude |
+| 2026-05-24 | app.js confirmLogout(): Profil-Panel redesigned → Profilbild (72px) + Name/Email zentriert, Cache leeren-Row, Abmelden-Row; settingsPanel.js: Cache-Karte aus App-Tab entfernt (lebt jetzt im Profil-Panel) | Claude |
+| 2026-05-24 | app.js: Firestore experimentalAutoDetectLongPolling:true → iOS PWA WebSocket-Absturz → HTTP-Polling Fallback; startLivePlayersListener: fetchPlayersOnce() nach 2s+8s als One-Shot-HTTP-Fallback für Spieler | Claude |
+| 2026-05-24 | change-pre.js: renderWeekBar Retry [1200]ms → [1200,3000,6000,12000]ms; challengePlayers Object.defineProperty Watcher → Rangliste re-rendert wenn Firebase Spieler liefert | Claude |
+| 2026-05-24 | challenge-sync.js: boot Timeouts [200,800,1800,3500,7000] → +[12000,20000]ms für iOS Slow-Auth | Claude |
 | 2026-05-24 | settingsPanel.js: clearChangeAppCache() + Button im App-Tab (Cache leeren & neu laden) – löscht Daten-Cache, bewahrt Auth + Einstellungen, reload mit Cache-Bust-URL | Claude |
 | 2026-05-24 | app.js getUrlaubRowHtml(): dash-row/dash-row-icon/dash-row-body Klassen wie Friseur, Progressbar inline in Sub-Zeile, Badge als dash-row-badge | Claude |
 | 2026-05-24 | weatherService.js: LOCATION_MAX_AGE 7 Tage → 2 Stunden (stille Auto-Aktualisierung) | Claude |

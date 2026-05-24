@@ -746,7 +746,7 @@
   window.forceLoadChallengePoints=async function(){await uploadLocalCompletions();return loadRemoteCompletions();};
   window.debugChallengeSync=async function(){const me=account();const database=await ensureDb();let remote=-1;try{if(database){const s=await database.collection(COMPLETIONS).limit(1000).get();remote=s.size;}}catch(e){remote='Fehler: '+(e.message||e)};const local=allLocalCompletions().length;toastMsg('Sync-Status: lokal '+local+' · online '+remote+' · '+(me.email||'kein Konto'), remote===0?'err':'ok');return {account:me,local,remote};};
 
-  function boot(){[200,800,1800,3500,7000].forEach(ms=>setTimeout(startSync,ms));}
+  function boot(){[200,800,1800,3500,7000,12000,20000].forEach(ms=>setTimeout(startSync,ms));}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot); else boot();
   window.addEventListener('load',boot);
 })();

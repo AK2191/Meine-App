@@ -1360,7 +1360,6 @@ function toast(msg,type){
 function confirmLogout(){
   const name=userInfo.name||userInfo.email||'Nutzer';
   const mail=userInfo.email||'';
-  // Bild aus userInfo ODER aus Firebase Auth (falls GSI-Bild fehlt)
   let picUrl = userInfo.picture || '';
   if(!picUrl){
     try{
@@ -1368,20 +1367,39 @@ function confirmLogout(){
       if(fbU && fbU.photoURL) picUrl = fbU.photoURL;
     }catch(_e){}
   }
-  const avatar = picUrl
+  const initials = (name||'?').split(' ').map(x=>x[0]).join('').substring(0,2).toUpperCase()||'?';
+  const avatarInner = picUrl
     ? `<img src="${esc(picUrl)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
-    : `<span style="font-size:14px;font-weight:700">${esc((name||'?').split(' ').map(x=>x[0]).join('').substring(0,2).toUpperCase()||'?')}</span>`;
+    : `<span style="font-size:22px;font-weight:800;color:#fff">${esc(initials)}</span>`;
   const html=`
-    <div class="logout-profile">
-      <div class="logout-avatar">${avatar}</div>
-      <div style="min-width:0">
-        <div class="logout-name">${esc(name)}</div>
-        <div class="logout-mail">${esc(mail)}</div>
+    <div style="display:flex;flex-direction:column;align-items:center;padding:8px 0 20px">
+      <div style="width:72px;height:72px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:12px;box-shadow:0 4px 16px rgba(45,106,79,.25)">
+        ${avatarInner}
       </div>
+      <div style="font-size:17px;font-weight:800;color:var(--t1);text-align:center">${esc(name)}</div>
+      <div style="font-size:12px;color:var(--t3);margin-top:3px;text-align:center">${esc(mail)}</div>
     </div>
-    <button class="btn btn-danger btn-full" onclick="logout()">Jetzt abmelden</button>
-    `;
-  openPanel('Abmelden',html);
+    <div style="background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);overflow:hidden;margin-bottom:12px">
+      <button onclick="if(typeof window.clearChangeAppCache==='function'){this.textContent='Wird gelöscht …';this.disabled=true;setTimeout(()=>window.clearChangeAppCache(),200)}"
+        style="width:100%;display:flex;align-items:center;gap:12px;padding:14px 16px;background:none;border:none;cursor:pointer;text-align:left;border-bottom:1px solid var(--b1)">
+        <span style="font-size:20px;flex-shrink:0">🗑️</span>
+        <div style="min-width:0">
+          <div style="font-size:14px;font-weight:600;color:var(--t1)">Cache leeren &amp; neu laden</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:1px">Alle Daten frisch aus Firebase laden. Login bleibt erhalten.</div>
+        </div>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--t4)" stroke-width="2" style="flex-shrink:0;margin-left:auto"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <button onclick="logout()"
+        style="width:100%;display:flex;align-items:center;gap:12px;padding:14px 16px;background:none;border:none;cursor:pointer;text-align:left">
+        <span style="font-size:20px;flex-shrink:0">🚪</span>
+        <div style="min-width:0">
+          <div style="font-size:14px;font-weight:600;color:var(--red)">Abmelden</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:1px">${esc(mail)}</div>
+        </div>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--red)" stroke-width="2" style="flex-shrink:0;margin-left:auto;opacity:.6"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>`;
+  openPanel(name, html);
 }
 async function logout(){
   try{
@@ -1716,6 +1734,9 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
       if(!firebase.apps.length) fbApp=firebase.initializeApp(getFirebaseConfig());
       else fbApp=firebase.app();
       db=firebase.firestore();
+      // iOS PWA: WebSocket-Verbindungen können abbrechen → Long Polling als Fallback aktivieren
+      // experimentalAutoDetectLongPolling: Firestore testet WebSocket und fällt auf HTTP-Polling zurück
+      try { db.settings({ experimentalAutoDetectLongPolling: true, merge: true }); } catch(_e) {}
       if(window.ensureChangeFirebaseAuth){
         const authOk = await window.ensureChangeFirebaseAuth({ silent:true });
         if(!authOk){ console.warn('Firebase Auth nicht bereit: Firestore-Sync/Push pausiert.'); return false; }
@@ -1764,6 +1785,24 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
       if(currentMainView==='challenges') renderChallenges();
       if(currentMainView==='dashboard') buildDashboard();
     },err=>console.warn('Players listener:',err));
+    // Fallback: einmaliger HTTP-Fetch (funktioniert auf iOS auch wenn WebSocket ausfällt)
+    // Wird nach 2s und 8s versucht — deckt langsame Mobile-Auth ab
+    const fetchPlayersOnce = async (delay) => {
+      await new Promise(r => setTimeout(r, delay));
+      if(!db) return;
+      try{
+        const snap = await db.collection('change_players').get();
+        let changed = false;
+        snap.forEach(doc => { mergePlayer({id:doc.id,...doc.data()}); changed = true; });
+        if(changed){
+          persistChallengeStateToStore() || ls('challenge_players', challengePlayers);
+          if(currentMainView==='challenges') renderChallenges();
+          if(currentMainView==='dashboard') buildDashboard();
+        }
+      }catch(e){ console.warn('Players one-shot fetch:', e); }
+    };
+    fetchPlayersOnce(2000);
+    fetchPlayersOnce(8000);
   }
 
   function startLiveCompletionsListener(){
