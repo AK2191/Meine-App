@@ -5,7 +5,7 @@
   var CACHE_TTL = 30 * 60 * 1000;
   // 24h statt 6h: Standort bleibt so lange aktiv wie eine typische Login-Session.
   // Bei 6h wurde Wetter stumm deaktiviert, obwohl der Nutzer noch eingeloggt war.
-  var LOCATION_MAX_AGE = 7 * 24 * 60 * 60 * 1000;  // 7 Tage
+  var LOCATION_MAX_AGE = 2 * 60 * 60 * 1000;  // 2 Stunden – stille Auto-Aktualisierung
   var WEATHER_ENDPOINT = 'https://api.open-meteo.com/v1/forecast';
   var POLLEN_ENDPOINT = 'https://air-quality-api.open-meteo.com/v1/air-quality';
 

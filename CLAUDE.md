@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-05-24
+> Zuletzt aktualisiert: 2026-05-24 (2)
 
 ---
 
@@ -233,6 +233,9 @@ firebase deploy --only hosting
 
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
+| 2026-05-24 | weatherService.js: LOCATION_MAX_AGE 7 Tage → 2 Stunden (stille Auto-Aktualisierung) | Claude |
+| 2026-05-24 | weatherStore.js: GPS maximumAge 30 Min → 15 Min (Browser-Cache kürzer) | Claude |
+| 2026-05-24 | weatherCard.js: LOCATION_MAX_AGE 6h → 2h (sync); silentLocationRefresh() + installAutoRefresh() → auto-refresh bei visibilitychange, window focus, alle 30 Min | Claude |
 | 2026-05-24 | manifest.json: getrennte maskable-Icons (icon-maskable-192/512.png) → Android zeigt kein schwarzes Kreis-Icon mehr | Claude |
 | 2026-05-24 | Friseur-Tracker Row: kompaktes Layout mit dash-row-Klassen, Text kein Umbruch mehr ("vor 17d · Do., 07. Mai"), Badge gekürzt ("→ Di., 02. Jun · 17:15") | Claude |
 | 2026-05-23 | PNG-Icons erstellt (192px + 512px) aus SVG konvertiert            | Claude |

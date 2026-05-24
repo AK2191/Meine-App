@@ -11,7 +11,7 @@
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
     });
   }
-  var LOCATION_MAX_AGE = 6 * 60 * 60 * 1000;
+  var LOCATION_MAX_AGE = 2 * 60 * 60 * 1000;  // 2h – sync mit weatherService
 
   function fmtUpdated(iso){
     if(!iso) return '';
@@ -270,5 +270,45 @@
     installDashboardHook: installDashboardHook
   };
 
+  // ── Auto-Standort & Wetter-Refresh ─────────────────────────────────────
+  // Strategie: kein watchPosition (Batterie), stattdessen:
+  //   • visibilitychange: stille Aktualisierung wenn App wieder sichtbar wird
+  //   • setInterval: alle 30 Min Hintergrund-Check
+  // Beide prüfen ob Standort oder Wetter-Cache veraltet ist (>2h / >30min).
+  // Kein UI, kein Popup – vollständig unsichtbar für den Nutzer.
+
+  function silentLocationRefresh(){
+    if(!Store || !Store.getLocation) return;
+    var loc = Store.getLocation();
+    // Standort älter als 2h → still neu abfragen
+    var locAge = loc && loc.savedAt ? Date.now() - Date.parse(loc.savedAt) : Infinity;
+    var needsLoc = !loc || !isFinite(locAge) || locAge > LOCATION_MAX_AGE;
+    if(needsLoc && Store.requestLocation){
+      Store.requestLocation()
+        .then(function(){
+          // Standort frisch → Wetter neu laden
+          if(Service && Service.refresh) Service.refresh(false).then(updateHero).catch(function(){});
+        })
+        .catch(function(){ /* still – kein GPS verfügbar */ });
+    } else {
+      // Standort ok → nur Wetter-Cache prüfen
+      if(Service && Service.needsRefresh && Service.needsRefresh()){
+        Service.ensureFresh().then(updateHero).catch(function(){});
+      }
+    }
+  }
+
+  function installAutoRefresh(){
+    // 1) Beim App-Fokus (Tab-Wechsel / Homescreen)
+    document.addEventListener('visibilitychange', function(){
+      if(document.visibilityState === 'visible') silentLocationRefresh();
+    });
+    // 2) Beim Fenster-Fokus (Desktop)
+    window.addEventListener('focus', function(){ silentLocationRefresh(); });
+    // 3) Interval alle 30 Minuten als Fallback
+    setInterval(silentLocationRefresh, 30 * 60 * 1000);
+  }
+
   setTimeout(installDashboardHook, 0);
+  setTimeout(installAutoRefresh, 500);
 })();
