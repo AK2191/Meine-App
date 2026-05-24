@@ -734,9 +734,16 @@
   const LISTENER_KEY = '__changeSettingsSyncListener';
   const SAVE_DELAY = 650;
   const CONTROL_IDS = new Set([
+    // Legacy-IDs (settings-logic.js / Fallback-Panel)
     'us-holiday-state','holiday-state','us-toggle-holidays','toggle-holidays','us-toggle-dots','toggle-dots','us-toggle-kw','toggle-kw',
     'holiday-notifications','us-friseur-on','us-friseur-weeks','us-urlaub-on','us-urlaub-days','us-half-date',
     'us-toggle-live','us-toggle-auto','us-toggle-gsync','client-id-input',
+    // settingsPanel.js IDs (kanonischer Settings-Owner)
+    'set-holiday-state','set-show-holidays','set-show-points','set-show-kw',
+    'set-friseur','set-friseur-weeks',
+    'set-urlaub','set-urlaub-days',
+    'set-live','set-auto','set-google',
+    // Wetter (beide Panels)
     'set-weather','set-rain-alerts','set-rain-hours','set-pollen','set-pollen-alerts','set-pollen-hours'
   ]);
 

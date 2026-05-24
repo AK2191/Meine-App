@@ -138,6 +138,22 @@ public/icons/change-icon-192.svg   → PWA Manifest, Homescreen
 
 ---
 
+## ⚙️ Settings → Firebase Sync
+
+### Architektur
+- **UI-Owner:** `features/settings/settingsPanel.js` → erzeugt das Panel, bindet Events
+- **Firebase-Sync:** `features/settings/settings-logic.js` → IIFE `change-settings-sync`
+- **Trigger:** DOM `change`-Event (capturing) prüft `CONTROL_IDS` → `markSettingsChanged()` → `scheduleSettingsSave()` → `saveChangeSettings()` nach 650 ms Debounce
+
+### Wichtige Regel
+Bei neuen Eingabefeldern in `settingsPanel.js` immer `CONTROL_IDS` in `settings-logic.js` erweitern.
+
+### Speicherung
+- Firestore Collection: `change_settings`, Dokument-ID: E-Mail (normalisiert)
+- Auth: `ensureChangeFirebaseAuth({ silent:true })`
+
+---
+
 ## ⚙️ Arbeitsweise (STRICT)
 
 1. Arbeite in **kleinen, kontrollierten Schritten**
@@ -233,6 +249,7 @@ firebase deploy --only hosting
 
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
+| 2026-05-24 | settings-logic.js: CONTROL_IDS um settingsPanel.js-IDs erweitert (set-holiday-state, set-show-holidays, set-show-points, set-show-kw, set-friseur, set-friseur-weeks, set-urlaub, set-urlaub-days, set-live, set-auto, set-google) → DOM change-Events triggern jetzt Firebase-Save für alle Settings-Änderungen | Claude |
 | 2026-05-24 | app.js getUrlaubRowHtml(): dash-row/dash-row-icon/dash-row-body Klassen wie Friseur, Progressbar inline in Sub-Zeile, Badge als dash-row-badge | Claude |
 | 2026-05-24 | weatherService.js: LOCATION_MAX_AGE 7 Tage → 2 Stunden (stille Auto-Aktualisierung) | Claude |
 | 2026-05-24 | weatherStore.js: GPS maximumAge 30 Min → 15 Min (Browser-Cache kürzer) | Claude |
