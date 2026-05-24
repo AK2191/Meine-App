@@ -177,9 +177,9 @@ body{
 .h-logo-icon{
   width:36px;height:36px;border-radius:10px;background:transparent;
   display:flex;align-items:center;justify-content:center;flex-shrink:0;
-  box-shadow:0 2px 8px rgba(129,140,248,.25);
+  box-shadow:0 2px 10px rgba(45,106,79,.35);
 }
-.h-logo-icon svg{width:36px;height:36px;stroke:none;}
+.h-logo-icon svg{width:36px;height:36px;stroke:none;display:block;}
 .h-logo-name{font-size:16px;font-weight:800;color:var(--t1);letter-spacing:-.3px}
 .h-sep{width:1px;height:20px;background:var(--b1);flex-shrink:0}
 .h-tabs{display:flex;align-items:center;gap:2px;flex:1}
@@ -566,10 +566,25 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 .switch input:checked + .slider:before{transform:translateX(20px)}
 .status-pill{display:inline-flex;align-items:center;border-radius:999px;padding:3px 8px;font-size:11px;font-weight:700}
 .status-on{background:var(--grn-d);color:var(--grn)}.status-off{background:var(--s2);color:var(--t3)}.status-warn{background:var(--amb-d);color:var(--amb)}
-.logout-profile{display:flex;gap:12px;align-items:center;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:14px;margin-bottom:14px}
-.logout-avatar{width:48px;height:48px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;overflow:hidden;flex-shrink:0}
-.logout-avatar img{width:100%;height:100%;object-fit:cover}
-.logout-name{font-size:15px;font-weight:700;color:var(--t1)}.logout-mail{font-size:12px;color:var(--t3);margin-top:2px}
+/* Profil-Panel */
+.profile-panel-hero{display:flex;flex-direction:column;align-items:center;padding:4px 0 18px;gap:0}
+.profile-panel-avatar{width:72px;height:72px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:10px;box-shadow:0 4px 14px rgba(45,106,79,.22);flex-shrink:0}
+.profile-panel-img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.profile-panel-initials{font-size:22px;font-weight:800;color:#fff;line-height:1}
+.profile-panel-name{font-size:16px;font-weight:800;color:var(--t1);text-align:center;letter-spacing:-.2px}
+.profile-panel-mail{font-size:12px;color:var(--t3);margin-top:3px;text-align:center}
+.profile-panel-row{width:100%;display:flex;align-items:center;gap:12px;padding:13px 14px;background:none;border:none;border-bottom:1px solid var(--b1);cursor:pointer;text-align:left;transition:background .12s;font-family:var(--font)}
+.profile-panel-row:last-child{border-bottom:0}
+.profile-panel-row:hover{background:var(--s2)}
+.profile-panel-row-icon{font-size:18px;flex-shrink:0;width:24px;text-align:center}
+.profile-panel-row-body{flex:1;min-width:0}
+.profile-panel-row-title{font-size:13px;font-weight:700;color:var(--t1)}
+.profile-panel-row-sub{font-size:11px;color:var(--t4);margin-top:2px}
+.profile-panel-chevron{width:14px;height:14px;flex-shrink:0;color:var(--t4);stroke-width:2}
+.profile-panel-row--danger .profile-panel-row-title{color:var(--red)}
+.profile-panel-row--danger .profile-panel-chevron{color:var(--red);opacity:.6}
+/* Legacy logout-* (nicht mehr genutzt, kann entfernt werden) */
+.logout-profile{display:none}.logout-avatar{display:none}.logout-name{display:none}.logout-mail{display:none}
 
 
 /* ==== EXERCISE LINK ==== */

@@ -236,9 +236,26 @@
         '<div class="change-settings-row"><div><div class="change-settings-title"><span class="change-status-dot '+google.tone+'"></span>Google Kalender '+pill(google.label, google.tone)+'</div><div class="change-settings-sub">'+esc(google.detail || '')+'</div></div><label class="switch"><input type="checkbox" id="set-google" '+(google.enabled && google.loggedIn ? 'checked' : '')+' '+(!google.loggedIn ? 'disabled' : '')+'><span class="slider"></span></label></div>'+
         '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-sync-google" type="button" '+(!google.loggedIn ? 'disabled' : '')+'>Jetzt synchronisieren</button></div>');
   }
+  var APP_VERSION = '1.0.0';
+  var APP_BUILD   = '2026-05-24';
+
   function appPane(){
-    return card('App', '<div class="change-settings-row"><div><div class="change-settings-title">Change als App installieren '+pill(installedLabel(), installedLabel()==='Installiert'?'ok':'off')+'</div><div class="change-settings-sub">Für Handy-Nutzung, Push und Startbildschirm.</div></div></div><div class="change-settings-actions"><button class="btn btn-secondary btn-full" onclick="if(typeof installChangeApp===\'function\')installChangeApp()">Change als App installieren</button></div>')
-      + card('Daten', '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" onclick="try{localStorage.setItem(\'change_v1_manual_backup\', JSON.stringify({events:window.events||[],challenges:window.challenges||[],challengeCompletions:window.challengeCompletions||[],settings:{calendar:localStorage.getItem(\'calendar_settings\')}}));toast&&toast(\'Backup lokal erstellt ✓\',\'ok\')}catch(e){toast&&toast(\'Backup fehlgeschlagen\',\'err\')}">Lokales Backup erstellen</button></div>')
+    return card('App',
+      '<div class="change-settings-row"><div>'
+      +'<div class="change-settings-title">Change als App installieren '+pill(installedLabel(), installedLabel()==='Installiert'?'ok':'off')+'</div>'
+      +'<div class="change-settings-sub">Für Handy-Nutzung, Push und Startbildschirm.</div>'
+      +'</div></div>'
+      +'<div class="change-settings-actions"><button class="btn btn-secondary btn-full" onclick="if(typeof installChangeApp===\'function\')installChangeApp()">Change als App installieren</button></div>')
+      + card('Version',
+        '<div style="display:flex;align-items:center;gap:14px;padding:2px 0">'
+        +'<div style="width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#1a3a2a,#0d1f17);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(45,106,79,.3)">'
+        +'<svg viewBox="0 0 40 40" width="36" height="36" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="lg-c2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#4ade80"/><stop offset="100%" stop-color="#2d6a4f"/></linearGradient></defs><path d="M27 14.5 A10 10 0 1 0 27 25.5" fill="none" stroke="url(#lg-c2)" stroke-width="3.8" stroke-linecap="round"/></svg>'
+        +'</div>'
+        +'<div>'
+        +'<div style="font-size:15px;font-weight:700;color:var(--t1)">Change</div>'
+        +'<div style="font-size:12px;color:var(--t3);margin-top:2px">Version '+APP_VERSION+' &nbsp;·&nbsp; Build '+APP_BUILD+'</div>'
+        +'</div>'
+        +'</div>');
   }
   var currentSettingsTab = 'calendar';
   function tabButton(id, label, active){ return '<button class="change-settings-tab '+(active===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'+label+'</button>'; }

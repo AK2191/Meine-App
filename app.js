@@ -1369,34 +1369,30 @@ function confirmLogout(){
   }
   const initials = (name||'?').split(' ').map(x=>x[0]).join('').substring(0,2).toUpperCase()||'?';
   const avatarInner = picUrl
-    ? `<img src="${esc(picUrl)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
-    : `<span style="font-size:22px;font-weight:800;color:#fff">${esc(initials)}</span>`;
+    ? `<img src="${esc(picUrl)}" alt="" class="profile-panel-img">`
+    : `<span class="profile-panel-initials">${esc(initials)}</span>`;
   const html=`
-    <div style="display:flex;flex-direction:column;align-items:center;padding:8px 0 20px">
-      <div style="width:72px;height:72px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:12px;box-shadow:0 4px 16px rgba(45,106,79,.25)">
-        ${avatarInner}
-      </div>
-      <div style="font-size:17px;font-weight:800;color:var(--t1);text-align:center">${esc(name)}</div>
-      <div style="font-size:12px;color:var(--t3);margin-top:3px;text-align:center">${esc(mail)}</div>
+    <div class="profile-panel-hero">
+      <div class="profile-panel-avatar">${avatarInner}</div>
+      <div class="profile-panel-name">${esc(name)}</div>
+      <div class="profile-panel-mail">${esc(mail)}</div>
     </div>
-    <div style="background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);overflow:hidden;margin-bottom:12px">
-      <button onclick="if(typeof window.clearChangeAppCache==='function'){this.textContent='Wird gelöscht …';this.disabled=true;setTimeout(()=>window.clearChangeAppCache(),200)}"
-        style="width:100%;display:flex;align-items:center;gap:12px;padding:14px 16px;background:none;border:none;cursor:pointer;text-align:left;border-bottom:1px solid var(--b1)">
-        <span style="font-size:20px;flex-shrink:0">🗑️</span>
-        <div style="min-width:0">
-          <div style="font-size:14px;font-weight:600;color:var(--t1)">Cache leeren &amp; neu laden</div>
-          <div style="font-size:11px;color:var(--t3);margin-top:1px">Alle Daten frisch aus Firebase laden. Login bleibt erhalten.</div>
+    <div class="change-settings-card">
+      <button class="profile-panel-row" onclick="if(typeof window.clearChangeAppCache==='function'){this.querySelector('.profile-panel-row-title').textContent='Wird gelöscht …';this.disabled=true;setTimeout(()=>window.clearChangeAppCache(),200)}">
+        <span class="profile-panel-row-icon">🗑️</span>
+        <div class="profile-panel-row-body">
+          <div class="profile-panel-row-title">Cache leeren &amp; neu laden</div>
+          <div class="profile-panel-row-sub">Alle Daten frisch aus Firebase laden. Login bleibt erhalten.</div>
         </div>
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--t4)" stroke-width="2" style="flex-shrink:0;margin-left:auto"><polyline points="9 18 15 12 9 6"/></svg>
+        <svg class="profile-panel-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
-      <button onclick="logout()"
-        style="width:100%;display:flex;align-items:center;gap:12px;padding:14px 16px;background:none;border:none;cursor:pointer;text-align:left">
-        <span style="font-size:20px;flex-shrink:0">🚪</span>
-        <div style="min-width:0">
-          <div style="font-size:14px;font-weight:600;color:var(--red)">Abmelden</div>
-          <div style="font-size:11px;color:var(--t3);margin-top:1px">${esc(mail)}</div>
+      <button class="profile-panel-row profile-panel-row--danger" onclick="logout()">
+        <span class="profile-panel-row-icon">🚪</span>
+        <div class="profile-panel-row-body">
+          <div class="profile-panel-row-title">Abmelden</div>
+          <div class="profile-panel-row-sub">${esc(mail)}</div>
         </div>
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--red)" stroke-width="2" style="flex-shrink:0;margin-left:auto;opacity:.6"><polyline points="9 18 15 12 9 6"/></svg>
+        <svg class="profile-panel-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
     </div>`;
   openPanel(name, html);

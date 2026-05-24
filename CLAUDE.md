@@ -252,6 +252,8 @@ firebase deploy --only hosting
 | 2026-05-24 | settingsPanel.js: BY-AUX → BY-AUGSBURG in stateOptions (cleanState() erkannte BY-AUX nicht → fiel auf ALL zurück) | Claude |
 | 2026-05-24 | settingsPanel.js: saveCal nutzt window.setHolidayState() statt direktem localStorage.setItem → schreibt beide Keys (change_v1_holiday_state + holiday_state) + löst Firebase-Sync aus | Claude |
 | 2026-05-24 | settings-logic.js: CONTROL_IDS um settingsPanel.js-IDs erweitert (set-holiday-state, set-show-holidays, set-show-points, set-show-kw, set-friseur, set-friseur-weeks, set-urlaub, set-urlaub-days, set-live, set-auto, set-google) → DOM change-Events triggern jetzt Firebase-Save für alle Settings-Änderungen | Claude |
+| 2026-05-24 | app.js confirmLogout(): inline-Styles → CSS-Klassen (profile-panel-*); styles/app.css: .profile-panel-* ergänzt; settingsPanel.js: Daten/Backup-Card entfernt | Claude |
+| 2026-05-24 | index.html: App-Icon neu → sauberes C-Lettermark (dunkelgrüner Hintergrund + grüner Gradient-Bogen, 40×40 SVG); styles/app.css: box-shadow auf Grün; settingsPanel.js: APP_VERSION='1.0.0' + APP_BUILD Konstanten + Version-Card im App-Tab mit Mini-Icon | Claude |
 | 2026-05-24 | weatherService.js: sunrise+sunset zu daily-API-Params + fmtSunTime() + parseWeatherForecast() pro Tag + parseWeather() top-level; weatherCard.js: weatherCurrentHtml() + weatherForecastHtml() zeigen 🌅/🌇; weatherCard.css: .change-sun-row | Claude |
 | 2026-05-24 | notificationCenter.js: Tageszusammenfassung aus buildAll entfernt; Event-Filter diff>60 → diff>1 (nur heute+morgen); fireDueBrowserNotifications erweitert auf kind=weather/pollen/challenge (einmal täglich via sessionStorage) | Claude |
 | 2026-05-24 | styles/app.css: Header-Icons vergrößert → icon-btn 34→40px, SVG 17→22px, avatar 32→38px, color t3→t2, gap 4→6px; index.html: notif-badge Position angepasst (top/right 3→4px) | Claude |
@@ -350,3 +352,29 @@ Alle localStorage-Einträge AUSSER Auth + Einstellungen:
 
 ### Wichtige Regel
 Das PRESERVE-Set bei neuen wichtigen localStorage-Keys erweitern.
+
+---
+
+## 🔢 Versionierung
+
+### Wo die Version gepflegt wird
+`features/settings/settingsPanel.js` – Zeilen direkt vor `appPane()`:
+```javascript
+var APP_VERSION = '1.0.0';
+var APP_BUILD   = '2026-05-24';
+```
+
+### Anzeigeort
+Einstellungen → App-Tab → Karte „Version" (ganz unten)
+Zeigt: „Version 1.0.0 · Build 2026-05-24"
+
+### Versionierungsschema (Empfehlung)
+- `MAJOR.MINOR.PATCH` (Semver)
+- MAJOR: große neue Features / Breaking Changes
+- MINOR: neue Features (z.B. Sonnenauf-/untergang)
+- PATCH: Bugfixes (z.B. Settings-Firebase-Fix)
+
+### Bei jeder Änderung
+1. `APP_VERSION` in `settingsPanel.js` erhöhen
+2. `APP_BUILD` auf das aktuelle Datum setzen
+3. Eintrag in Änderungslog oben eintragen
