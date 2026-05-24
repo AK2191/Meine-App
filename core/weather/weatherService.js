@@ -92,7 +92,7 @@
       longitude: String(loc.longitude),
       current: 'temperature_2m,precipitation,rain,showers,weather_code',
       hourly: 'temperature_2m,precipitation_probability,precipitation,rain,showers,weather_code',
-      daily: 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max',
+      daily: 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,sunrise,sunset',
       forecast_days: '7',
       timezone: 'auto'
     });
@@ -117,6 +117,10 @@
       + Math.max(0, Number(hourly.rain && hourly.rain[idx]) || 0)
       + Math.max(0, Number(hourly.showers && hourly.showers[idx]) || 0);
   }
+  function fmtSunTime(iso){
+    if(!iso) return null;
+    try{ return new Date(iso).toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}); }catch(e){ return null; }
+  }
   function parseWeatherForecast(data){
     var daily = data && data.daily ? data.daily : {};
     var times = daily.time || [];
@@ -132,7 +136,9 @@
         tempMax: round(daily.temperature_2m_max && daily.temperature_2m_max[i], 0),
         tempMin: round(daily.temperature_2m_min && daily.temperature_2m_min[i], 0),
         rainProbability: isFinite(Number(prob)) ? Number(prob) : null,
-        precipitation: round(sum || 0, 1) || 0
+        precipitation: round(sum || 0, 1) || 0,
+        sunrise: fmtSunTime(daily.sunrise && daily.sunrise[i]),
+        sunset:  fmtSunTime(daily.sunset  && daily.sunset[i])
       };
     });
   }
@@ -208,6 +214,8 @@
         break;
       }
     }
+    var todayForecast = parseWeatherForecast(data);
+    var todaySun = todayForecast && todayForecast[0] ? todayForecast[0] : {};
     return {
       temperature: temp,
       summary: WEATHER_CODES[code] || 'Wetter',
@@ -215,7 +223,9 @@
       code: code,
       precipitation: round(current.precipitation || current.rain || current.showers || 0, 1),
       nextRain: nextRain,
-      forecast: parseWeatherForecast(data),
+      sunrise: todaySun.sunrise || null,
+      sunset:  todaySun.sunset  || null,
+      forecast: todayForecast,
       hourly: parseHourlyForecast(data, 24),
       timezone: data && data.timezone,
       updatedAt: new Date().toISOString()

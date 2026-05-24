@@ -209,31 +209,31 @@ body{
   font-family:var(--font);font-size:12px;font-weight:600;color:var(--t3);cursor:pointer;transition:all .15s;
 }
 .vbtn.active{background:var(--acc);color:#fff}
-.h-right{display:flex;align-items:center;gap:4px;flex-shrink:0;position:relative;z-index:120}
+.h-right{display:flex;align-items:center;gap:6px;flex-shrink:0;position:relative;z-index:120}
 .icon-btn{
-  width:34px;height:34px;display:flex;align-items:center;justify-content:center;
-  border:none;background:transparent;border-radius:var(--rsm);cursor:pointer;color:var(--t3);transition:all .15s;position:relative;
+  width:40px;height:40px;display:flex;align-items:center;justify-content:center;
+  border:none;background:transparent;border-radius:var(--rsm);cursor:pointer;color:var(--t2);transition:all .15s;position:relative;
 }
 .icon-btn:hover{background:var(--s2);color:var(--t1)}
-.icon-btn svg{width:17px;height:17px;stroke-width:1.8}
+.icon-btn svg{width:22px;height:22px;stroke-width:1.75}
 .notif-dot{
-  position:absolute;top:5px;right:5px;width:7px;height:7px;
+  position:absolute;top:6px;right:6px;width:7px;height:7px;
   background:var(--red);border-radius:50%;border:1.5px solid var(--s1);display:none;
 }
 .avatar{
-  width:32px;height:32px;border-radius:50%;background:var(--acc);
-  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;
+  width:38px;height:38px;border-radius:50%;background:var(--acc);
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;
   cursor:pointer;overflow:hidden;flex-shrink:0;transition:opacity .15s;
 }
 .avatar:hover{opacity:.85}
 .avatar img{width:100%;height:100%;object-fit:cover}
 @media(max-width:700px){
   .h-sep,.h-logo-name,.h-today-btn,.view-toggle,.h-tabs,.desktop-only{display:none!important}
-  #header{padding:0 12px;gap:8px}
+  #header{padding:0 14px;gap:8px}
   #cal-controls{flex:1}
   .h-month{font-size:15px;flex:1;text-align:center}
   /* Glocke, Einstellungen, Avatar immer ganz rechts */
-  .h-right{margin-left:auto}
+  .h-right{margin-left:auto;gap:4px}
 }
 
 /* ==== CONTENT ==== */

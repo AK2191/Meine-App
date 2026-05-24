@@ -145,7 +145,14 @@
     var forecast = w.forecast && w.forecast[0] ? w.forecast[0] : null;
     var tempLine = (w.temperature != null ? w.temperature + ' °C' : 'Wetter') + ' · ' + (w.summary || 'heute');
     var range = forecast ? ((forecast.tempMax != null ? forecast.tempMax + '°' : '–') + ' / ' + (forecast.tempMin != null ? forecast.tempMin + '°' : '–')) : '';
-    return '<div class="change-weather-now"><div class="change-weather-now-icon">'+esc(w.icon || '🌦️')+'</div><div><strong>'+esc(tempLine)+'</strong><small>'+esc(rain)+' '+(range ? '· Tageswerte '+range : '')+'</small></div></div>';
+    var sunHtml = '';
+    if(w.sunrise || w.sunset){
+      sunHtml = '<div class="change-sun-row">'
+        + (w.sunrise ? '<span>🌅 '+esc(w.sunrise)+'</span>' : '')
+        + (w.sunset  ? '<span>🌇 '+esc(w.sunset) +'</span>' : '')
+        + '</div>';
+    }
+    return '<div class="change-weather-now"><div class="change-weather-now-icon">'+esc(w.icon || '🌦️')+'</div><div><strong>'+esc(tempLine)+'</strong><small>'+esc(rain)+' '+(range ? '· Tageswerte '+range : '')+'</small>'+sunHtml+'</div></div>';
   }
   function weatherHourlyHtml(data){
     var hourly = data && data.weather && data.weather.hourly || [];
@@ -169,7 +176,8 @@
     return '<section class="change-daily-section"><div class="change-section-head"><strong>7-Tage-Ausblick</strong></div><div class="change-forecast-list">' + forecast.map(function(day){
       var rain = day.rainProbability != null ? day.rainProbability + ' % Regen' : (day.precipitation ? day.precipitation + ' mm' : 'kaum Regen');
       var temp = (day.tempMax != null ? day.tempMax + '°' : '–') + ' / ' + (day.tempMin != null ? day.tempMin + '°' : '–');
-      return '<div class="change-forecast-row"><div class="change-forecast-date"><strong>'+esc(fmtDay(day.date))+'</strong><span>'+esc(day.icon || '🌦️')+'</span></div><div class="change-forecast-main"><strong>'+esc(day.summary || 'Wetter')+'</strong><small>'+esc(rain)+'</small></div><div class="change-forecast-value">'+esc(temp)+'</div></div>';
+      var sunStr = (day.sunrise ? '🌅 '+esc(day.sunrise) : '') + (day.sunrise && day.sunset ? '  ' : '') + (day.sunset ? '🌇 '+esc(day.sunset) : '');
+      return '<div class="change-forecast-row"><div class="change-forecast-date"><strong>'+esc(fmtDay(day.date))+'</strong><span>'+esc(day.icon || '🌦️')+'</span></div><div class="change-forecast-main"><strong>'+esc(day.summary || 'Wetter')+'</strong><small>'+esc(rain)+(sunStr ? ' · '+sunStr : '')+'</small></div><div class="change-forecast-value">'+esc(temp)+'</div></div>';
     }).join('') + '</div></section>';
   }
   function pollenForecastHtml(data){
