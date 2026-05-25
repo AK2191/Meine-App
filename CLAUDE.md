@@ -252,6 +252,7 @@ firebase deploy --only hosting
 | 2026-05-24 | settingsPanel.js: BY-AUX → BY-AUGSBURG in stateOptions (cleanState() erkannte BY-AUX nicht → fiel auf ALL zurück) | Claude |
 | 2026-05-24 | settingsPanel.js: saveCal nutzt window.setHolidayState() statt direktem localStorage.setItem → schreibt beide Keys (change_v1_holiday_state + holiday_state) + löst Firebase-Sync aus | Claude |
 | 2026-05-24 | settings-logic.js: CONTROL_IDS um settingsPanel.js-IDs erweitert (set-holiday-state, set-show-holidays, set-show-points, set-show-kw, set-friseur, set-friseur-weeks, set-urlaub, set-urlaub-days, set-live, set-auto, set-google) → DOM change-Events triggern jetzt Firebase-Save für alle Settings-Änderungen | Claude |
+| 2026-05-25 | features/birthday-weather.js (neu): Geburtstagsdetektiv (🎂-Icon, pink, Push 3 Tage vorher), Wetter im Tages-Panel (7-Tage-Forecast Banner); app.js: Friseur-Sub → Countdown zum nächsten Termin, Geburtstags-Icon direkt im Dashboard-Row-Builder; index.html: script eingebunden; settingsPanel.js: Version 0.1.0001, Build entfernt | Claude |
 | 2026-05-24 | styles/app.css: Header height 56→52px; icon-btn 40→38px/gap 6→4px/border-radius 10px; h-right gap 6→4px; weatherCard.css: pill flex:1 1 0/min-width:0 (kein Abschneiden); Media-Queries width:100% auf Pills; settingsPanel.js: Icon aus Version-Card entfernt | Claude |
 | 2026-05-24 | app.js confirmLogout(): inline-Styles → CSS-Klassen (profile-panel-*); styles/app.css: .profile-panel-* ergänzt; settingsPanel.js: Daten/Backup-Card entfernt | Claude |
 | 2026-05-24 | index.html: App-Icon neu → sauberes C-Lettermark (dunkelgrüner Hintergrund + grüner Gradient-Bogen, 40×40 SVG); styles/app.css: box-shadow auf Grün; settingsPanel.js: APP_VERSION='1.0.0' + APP_BUILD Konstanten + Version-Card im App-Tab mit Mini-Icon | Claude |
@@ -359,23 +360,13 @@ Das PRESERVE-Set bei neuen wichtigen localStorage-Keys erweitern.
 ## 🔢 Versionierung
 
 ### Wo die Version gepflegt wird
-`features/settings/settingsPanel.js` – Zeilen direkt vor `appPane()`:
+`features/settings/settingsPanel.js` – direkt vor `appPane()`:
 ```javascript
-var APP_VERSION = '1.0.0';
-var APP_BUILD   = '2026-05-24';
+var APP_VERSION = '0.1.0001';
 ```
 
 ### Anzeigeort
-Einstellungen → App-Tab → Karte „Version" (ganz unten)
-Zeigt: „Version 1.0.0 · Build 2026-05-24"
+Einstellungen → App-Tab → Karte „Version": „Change · Version 0.1.0001"
 
-### Versionierungsschema (Empfehlung)
-- `MAJOR.MINOR.PATCH` (Semver)
-- MAJOR: große neue Features / Breaking Changes
-- MINOR: neue Features (z.B. Sonnenauf-/untergang)
-- PATCH: Bugfixes (z.B. Settings-Firebase-Fix)
-
-### Bei jeder Änderung
-1. `APP_VERSION` in `settingsPanel.js` erhöhen
-2. `APP_BUILD` auf das aktuelle Datum setzen
-3. Eintrag in Änderungslog oben eintragen
+### Versionierungsschema
+`0.MINOR.PATCH_4stellig` – z.B. `0.1.0002` für nächsten Bugfix, `0.2.0001` für neues Feature-Set.

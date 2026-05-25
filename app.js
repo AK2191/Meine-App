@@ -739,15 +739,21 @@ function renderTrackerRows(){
     // Icon-Hintergrund je Status
     var iconBg=overdue?'rgba(239,68,68,.12)':warn?'rgba(245,158,11,.12)':'rgba(156,163,175,.12)';
 
-    // Linke Seite: vergangener Termin
-    var sub=lastDate?'vor '+days+'d · '+fmtS(lastDate):'Kein vergangener Termin';
+    // Sub-Zeile: nächster Termin hat Priorität
+    var sub;
+    if(nextDate && daysUntilNext !== null){
+      var cd = daysUntilNext===0?'Heute!':daysUntilNext===1?'Morgen':daysUntilNext===2?'Übermorgen':'In '+daysUntilNext+' Tagen';
+      var timeStr=nextInfo&&nextInfo.time?' · '+nextInfo.time+' Uhr':'';
+      sub = '→ '+cd+timeStr+(lastDate?' · Letzter: '+fmtS(lastDate):'');
+    } else {
+      sub=lastDate?'Letzter: vor '+days+'d · '+fmtS(lastDate):'Noch kein Termin gefunden';
+    }
 
     // Rechtes Badge: nächster Termin
     var badge='';
-    if(nextDate){
-      var bc=daysUntilNext<=3?'badge-amber':'badge-blue';
-      var timeStr=nextInfo&&nextInfo.time?' · '+nextInfo.time:'';
-      badge='<span class="dash-row-badge '+bc+'">→ '+fmtS(nextDate)+timeStr+'</span>';
+    if(nextDate && daysUntilNext !== null){
+      var bc=daysUntilNext<=3?'badge-amber':'badge-green';
+      badge='<span class="dash-row-badge '+bc+'">'+fmtS(nextDate)+'</span>';
     } else if(overdue){
       badge='<span class="dash-row-badge badge-red">⚠ Überfällig</span>';
     } else if(warn){
@@ -2502,7 +2508,11 @@ renderCalendar(); if(typeof toast==='function') toast('Kalender-Einstellungen ge
       }
       const range=r.end && r.end!==r.start;
       const sub=range ? fmt(r.start)+' – '+fmt(r.end) : (fmtLong(r.start)+(evTime(r.event)?' · '+esc(evTime(r.event)):''));
-      return '<div class="dash-row change-dashboard-row '+((r.start<=today()&&r.end>=today())?'change-today-row':'')+'" onclick="setMainView(\'calendar\')">'+dateBlock(r)+'<div class="dash-row-icon change-icon-event">📅</div><div class="dash-row-body"><div class="dash-row-title">'+esc(r.title)+'</div><div class="dash-row-sub">'+sub+'</div></div></div>';
+      const isBday = typeof window.isBirthday==='function' && window.isBirthday(r.title);
+      const evIcon = isBday ? '🎂' : '📅';
+      const evRowCls = isBday ? 'change-dashboard-row change-bday-row' : 'change-dashboard-row';
+      const evIconCls = isBday ? 'dash-row-icon change-icon-bday' : 'dash-row-icon change-icon-event';
+      return '<div class="dash-row '+evRowCls+' '+((r.start<=today()&&r.end>=today())?'change-today-row':'')+'" onclick="setMainView(\'calendar\')">'+dateBlock(r)+'<div class="'+evIconCls+'">'+evIcon+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(r.title)+'</div><div class="dash-row-sub">'+sub+'</div></div></div>';
     }).join('');
   }
   function challengeHtml(){

@@ -236,8 +236,7 @@
         '<div class="change-settings-row"><div><div class="change-settings-title"><span class="change-status-dot '+google.tone+'"></span>Google Kalender '+pill(google.label, google.tone)+'</div><div class="change-settings-sub">'+esc(google.detail || '')+'</div></div><label class="switch"><input type="checkbox" id="set-google" '+(google.enabled && google.loggedIn ? 'checked' : '')+' '+(!google.loggedIn ? 'disabled' : '')+'><span class="slider"></span></label></div>'+
         '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-sync-google" type="button" '+(!google.loggedIn ? 'disabled' : '')+'>Jetzt synchronisieren</button></div>');
   }
-  var APP_VERSION = '1.0.0';
-  var APP_BUILD   = '2026-05-24';
+  var APP_VERSION = '0.1.0001';
 
   function appPane(){
     return card('App',
@@ -249,7 +248,7 @@
       + card('Version',
         '<div style="padding:4px 0">'
         +'<div style="font-size:15px;font-weight:700;color:var(--t1)">Change</div>'
-        +'<div style="font-size:12px;color:var(--t3);margin-top:4px">Version '+APP_VERSION+' &nbsp;·&nbsp; Build '+APP_BUILD+'</div>'
+        +'<div style="font-size:12px;color:var(--t3);margin-top:4px">Version '+APP_VERSION+'</div>'
         +'</div>');
   }
   var currentSettingsTab = 'calendar';
