@@ -491,10 +491,12 @@ async function handleGoogleLogin(){
         loadGoogleData();
         setTimeout(async () => {
           try{
-            // Firebase Auth interaktiv starten – Popup öffnet sich kurz (Google-Session bereits aktiv,
-            // daher meist automatisch ohne Nutzerinteraktion).
+            // Firebase Auth: currentUser prüfen, dann silent – kein zweites Popup öffnen
             if(window.signInChangeFirebaseWithGoogle){
-              await window.signInChangeFirebaseWithGoogle({ popup: true });
+              // Nur wenn noch kein Firebase-User vorhanden ist
+              if(typeof firebase !== 'undefined' && firebase.auth && !firebase.auth().currentUser){
+                await window.signInChangeFirebaseWithGoogle({ silent: true });
+              }
             }
           }catch(e){ console.warn('Firebase Auth nach Login:', e); }
           try{ if(typeof initFirebaseLive === 'function') await initFirebaseLive(); }catch(e){}
@@ -1768,11 +1770,18 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     }
   }
 
+  function isRealPlayer(p){
+    // Nur echte Google-User mit E-Mail-Adresse anzeigen
+    // Anonyme UIDs wie "46eqWWYouVO..." oder "0fWpGjK1..." herausfiltern
+    var id = String(p.email || p.id || '').toLowerCase();
+    return id.includes('@') && id.length > 4 && !id.includes('demo') && !id.includes('example');
+  }
+
   function startLivePlayersListener(){
     if(ls('live_sync_enabled')===false) return;
     if(!db || unsubscribePlayers) return;
     unsubscribePlayers=db.collection('change_players').onSnapshot(snap=>{
-      snap.forEach(doc=>mergePlayer({id:doc.id,...doc.data()}));
+      snap.forEach(doc=>{const d={id:doc.id,...doc.data()};if(isRealPlayer(d)) mergePlayer(d);});
       persistChallengeStateToStore() || ls('challenge_players',challengePlayers);
       if(currentMainView==='challenges') renderChallenges();
       if(currentMainView==='dashboard') buildDashboard();
@@ -1983,7 +1992,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
 
   window.openParticipantPanel = function(){
     initFirebaseLive();
-    const players=[...(challengePlayers||[])].sort((a,b)=>(b.online===true)-(a.online===true)||String(a.name||'').localeCompare(String(b.name||'')));
+    const players=[...(challengePlayers||[])].filter(isRealPlayer).sort((a,b)=>(b.online===true)-(a.online===true)||String(a.name||'').localeCompare(String(b.name||'')));
     const html='<div class="section-label">Automatisch erkannte Mitspieler</div>'+
       (players.length?players.map(p=>'<div class="leader-row"><div class="leader-rank">'+(p.picture?'<img src="'+esc(p.picture)+'" style="width:28px;height:28px;border-radius:50%;object-fit:cover">':'👤')+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(p.email===userInfo.email?' · Du':'')+(p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>')+'</div><div class="leader-detail">'+esc(p.email||'')+'</div></div></div>').join(''):'<div class="dash-empty">Noch keine Mitspieler erkannt. Sobald sich jemand mit Google anmeldet, erscheint er hier automatisch.</div>')+
       '<div class="settings-hint">Manuelles Hinzufügen ist deaktiviert. Jeder Google-Login wird automatisch als Mitspieler registriert.</div>';
@@ -2062,7 +2071,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   function playerKey(p){return String((p&& (p.email||p.id))||'').toLowerCase();}
   function isDemoPlayer(p){const k=playerKey(p); return k===DEMO_EMAIL || String(p?.name||'').toLowerCase().includes('demo nutzer');}
   window.getVisibleContestPlayers=function(){
-    const list=(challengePlayers||[]).filter(p=>isDemoMode || !isDemoPlayer(p));
+    const list=(challengePlayers||[]).filter(p=>(isDemoMode || !isDemoPlayer(p)) && isRealPlayer(p));
     const seen=new Set();
     return list.filter(p=>{const k=playerKey(p); if(!k||seen.has(k)) return false; seen.add(k); return true;});
   };
