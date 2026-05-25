@@ -164,7 +164,10 @@
     const database = await ensureFirebase();
     if(!database || unsubscribe) return !!database;
     await registerPlayer();
-    unsubscribe = database.collection(COMPLETIONS).orderBy('createdAt', 'desc').limit(1000).onSnapshot(snap => {
+    // Nur letzte 60 Tage – reduziert Reads massiv (statt alle 1000 Docs)
+    const since60 = new Date(); since60.setDate(since60.getDate()-60);
+    const since60Str = since60.toISOString().slice(0,10);
+    unsubscribe = database.collection(COMPLETIONS).where('date','>=',since60Str).limit(200).onSnapshot(snap => {
       snap.docChanges().forEach(change => {
         if(change.type === 'removed') removeCompletion(change.doc.id);
         else upsertCompletion(toLocalCompletion(change.doc.id, change.doc.data() || {}));
@@ -513,20 +516,7 @@
     if(!db) return false;
     await loadAllRemoteCompletions();
     if(window.__changeChallengeUnsub){ try{ window.__changeChallengeUnsub(); }catch(e){} }
-    window.__changeChallengeUnsub = db.collection(COMPLETIONS).orderBy('createdAt','desc').limit(1000).onSnapshot(snap => {
-      snap.docChanges().forEach(change => {
-        if(change.type === 'removed') window.challengeCompletions = (window.challengeCompletions || []).filter(c => String(c.id) !== String(change.doc.id));
-        else {
-          const row = toLocal(change.doc.id, change.doc.data() || {});
-          if(row) upsert(row);
-        }
-      });
-      sanitizeLocalCompletions();
-      refresh();
-    }, err => {
-      console.warn('Challenge listener:', err);
-      try{ if(typeof toast === 'function') toast('Live-Punkte-Sync blockiert. Firestore-Regeln prüfen.','err'); }catch(_e){}
-    });
+    // Doppelter Listener entfernt – change-account-safe listener übernimmt;
     return true;
   };
 
@@ -707,7 +697,9 @@
     await loadRemoteCompletions();
     if(unsub){try{unsub()}catch(e){}unsub=null;}
     try{
-      unsub=database.collection(COMPLETIONS).limit(1000).onSnapshot(snap=>{
+      // Nur letzte 60 Tage
+      const d60=new Date(); d60.setDate(d60.getDate()-60);
+      unsub=database.collection(COMPLETIONS).where('date','>=',d60.toISOString().slice(0,10)).limit(200).onSnapshot(snap=>{
         snap.docChanges().forEach(ch=>{
           if(ch.type==='removed') window.challengeCompletions=(window.challengeCompletions||[]).filter(c=>String(c.id)!==String(ch.doc.id));
           else {const row=normalizeCompletion(Object.assign({id:ch.doc.id},ch.doc.data()||{}),account());if(row)mergeLocal(row);}

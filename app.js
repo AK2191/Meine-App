@@ -1386,7 +1386,7 @@ function confirmLogout(){
 async function logout(){
   try{
     if(typeof firebase!=='undefined' && typeof db!=='undefined' && db && userInfo.email){
-      await db.collection('change_players').doc(String(userInfo.email).toLowerCase().replace(/[^a-z0-9._-]/g,'_')).set({online:false,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+      await throttledPlayerWrite({online:false,lastSeen:firebase.firestore.FieldValue.serverTimestamp()});
     }
   }catch(e){}
   try{ if(window.firebase && firebase.auth) await firebase.auth().signOut(); lsDel('was_logged_in');; }catch(e){}
@@ -1758,6 +1758,16 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     if(i>=0) challengePlayers[i]={...challengePlayers[i],...entry}; else challengePlayers.push(entry);
   }
 
+  var _lastPlayerWrite = 0;
+  function throttledPlayerWrite(data, merge=true){
+    var now = Date.now();
+    if(now - _lastPlayerWrite < 30000) return; // max 1x alle 30s
+    _lastPlayerWrite = now;
+    if(db && userInfo.email){
+      db.collection('change_players').doc(safeDocId(currentEmail())).set(data,{merge}).catch(()=>{});
+    }
+  }
+
   function startLivePlayersListener(){
     if(ls('live_sync_enabled')===false) return;
     if(!db || unsubscribePlayers) return;
@@ -1771,24 +1781,30 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   }
 
   function startLiveCompletionsListener(){
+    // Einmaliger GET statt onSnapshot – verhindert massenhaft Firestore-Reads.
+    // challenge-sync.js hat eigenen onSnapshot-Listener der live-Updates abdeckt.
     if(ls('live_sync_enabled')===false) return;
     if(!db || unsubscribeCompletions) return;
-    unsubscribeCompletions=db.collection('change_completions').orderBy('createdAt','desc').limit(500).onSnapshot(snap=>{
+    // Marker setzen damit kein zweiter Aufruf startet
+    unsubscribeCompletions = function(){ };
+    // Nur letzte 30 Tage laden
+    var cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 30);
+    var cutoffStr = cutoff.toISOString().slice(0,10);
+    db.collection('change_completions').where('date','>=',cutoffStr).limit(200).get().then(snap=>{
       snap.forEach(doc=>{
         const d={id:doc.id,...doc.data()};
         if(!challengeCompletions.some(c=>c.id===d.id)){
           challengeCompletions.push({
             id:d.id, challengeId:d.challengeId, playerId:(d.playerId||d.email||'').toLowerCase(),
             playerName:d.playerName||d.email||'Mitspieler', date:d.date, points:parseInt(d.points)||0,
-            createdAt:d.createdAtLocal||new Date().toISOString()
           });
         }
       });
       persistChallengeStateToStore() || ls('challenge_completions',challengeCompletions);
       if(currentMainView==='challenges') renderChallenges();
       if(currentMainView==='dashboard') buildDashboard();
-      if(currentMainView==='calendar') renderCalendar();
-    },err=>console.warn('Completions listener:',err));
+    }).catch(err=>console.warn('Completions get:',err));
   }
 
   async function publishCompletionToFirestore(completion){
