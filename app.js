@@ -283,27 +283,29 @@ window.addEventListener('load', async () => {
   await handleFirebaseRedirectLogin();
   if(document.getElementById('main-app').style.display==='flex') { initPWA(); scheduleNotifCheck(); return; }
 
-  // Google Calendar Redirect: Token aus URL-Hash lesen (nur fuer gcal_connect aus Einstellungen)
-  // Hauptlogin laeuft weiter ueber GIS-Popup (handleGoogleLogin)
+  // Google OAuth Redirect: Token aus URL-Hash lesen.
+  // Gilt fuer state=main_login (Login-Button) und state=gcal_connect (Verbinden-Button).
+  // Kein GIS-Popup – kein COOP-Freeze. Redirect-URI in Google Console registriert.
   const oauthState = handleGoogleOAuthRedirect();
-  if(oauthState === 'gcal_connect'){
-    // Kalender-Token erhalten: App laueft bereits, Kalender neu laden, Einstellungen oeffnen
-    if(document.getElementById('main-app').style.display === 'flex'){
-      try{ loadGoogleData(); }catch(e){}
-      setTimeout(()=>{ try{ if(typeof openSettingsPanel==='function') openSettingsPanel('sync'); }catch(e){} }, 600);
-      initPWA(); scheduleNotifCheck();
-      return;
+  if(oauthState){
+    // Nutzerprofil laden (Name, Bild) – Token ist gueltig, API-Call funktioniert
+    try{ await fetchUserInfo(); }catch(e){}
+    // Gecachte User-Info als Fallback wenn fetchUserInfo fehlschlaegt
+    if(!userInfo.email){
+      const cached = ls('user_info_safe') || {};
+      if(cached.email) userInfo = saveUserProfileInfo({ name: cached.name||'', email: cached.email||'', picture: cached.picture||'' });
     }
-    // App noch nicht gestartet (z.B. nach Seitenreload): normal booten dann Kalender laden
-    if(ls('was_logged_in') && ls('user_info_safe')?.email){
-      const cached = ls('user_info_safe');
-      userInfo = saveUserProfileInfo({ name: cached.name||'', email: cached.email||'', picture: cached.picture||'' });
-      bootMainApp();
-      try{ loadGoogleData(); }catch(e){}
+    bootMainApp();
+    try{ loadGoogleData(); }catch(e){}
+    // Bei gcal_connect: Sync-Einstellungen oeffnen damit Nutzer Erfolg sieht
+    if(oauthState === 'gcal_connect'){
       setTimeout(()=>{ try{ if(typeof openSettingsPanel==='function') openSettingsPanel('sync'); }catch(e){} }, 800);
-      initPWA(); scheduleNotifCheck();
-      return;
+    } else {
+      // main_login: kurze Bestaetigung
+      setTimeout(()=>{ try{ toast('Anmeldung erfolgreich ✓','ok'); }catch(e){}; }, 500);
     }
+    initPWA(); scheduleNotifCheck();
+    return;
   }
 
   // [FIX PERSISTENZ] Firebase Auth State prüfen
@@ -494,30 +496,24 @@ function showLogin(){
   document.getElementById('login-screen').style.display='flex';
 }
 
-async function handleGoogleLogin(){
+// handleGoogleLogin: OAuth 2.0 Implicit Flow via REDIRECT – KEIN GIS-Popup.
+// GIS requestAccessToken verursacht COOP-Freeze auf GitHub Pages:
+//   "Cross-Origin-Opener-Policy would block the window.closed call"
+// Loesung: Ganzseitiger Redirect zu Google. Token kommt im URL-Hash zurueck.
+// handleGoogleOAuthRedirect() im naechsten Seitenload verarbeitet ihn (state=main_login).
+// VORAUSSETZUNG: https://ak2191.github.io/Meine-App/ in Google Cloud Console registriert.
+function handleGoogleLogin(){
   CLIENT_ID = getGoogleClientId();
-  if(!CLIENT_ID){document.getElementById('setup-modal').classList.add('show');return;}
-  if(!window.google || !window.google.accounts){toast('Google-Bibliothek wird geladen…','');return;}
-  try{
-    const tc = google.accounts.oauth2.initTokenClient({
-      client_id: cleanGoogleClientId(CLIENT_ID),
-      scope: GCAL_SCOPE,
-      callback: async resp => {
-        if(resp.error){ toast('Anmeldung fehlgeschlagen: '+resp.error,'err'); return; }
-        accessToken = resp.access_token;
-        try{ if(typeof SecureTokenStore!=='undefined') SecureTokenStore.setToken(accessToken,3600); else ls('access_token',accessToken); }catch(e){}
-        isDemoMode=false; try{ lsDel('demo_mode'); }catch(e){}
-        await fetchUserInfo();
-        try{ if(typeof SecureTokenStore!=='undefined') SecureTokenStore.setUser(userInfo); }catch(e){}
-        try{ ls('user_info_safe',{name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''}); ls('was_logged_in',true); }catch(e){}
-        bootMainApp();
-        loadGoogleData();
-        // Firebase: NICHT automatisch nach Login – nur wenn Nutzer Sync-Schalter aktiviert.
-        // Verhindert Freeze wenn Firebase at Quota ist.
-      }
-    });
-    tc.requestAccessToken({prompt:'consent'});
-  }catch(e){ toast('Google-Anmeldung konnte nicht gestartet werden','err'); }
+  if(!CLIENT_ID){ document.getElementById('setup-modal').classList.add('show'); return; }
+  var redirectUri = window.location.href.split('?')[0].split('#')[0];
+  var authUrl = 'https://accounts.google.com/o/oauth2/auth'
+    + '?client_id=' + encodeURIComponent(cleanGoogleClientId(CLIENT_ID))
+    + '&redirect_uri=' + encodeURIComponent(redirectUri)
+    + '&response_type=token'
+    + '&scope=' + encodeURIComponent('https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email')
+    + '&prompt=select_account'
+    + '&state=main_login';
+  window.location.href = authUrl;
 }
 
 
@@ -537,30 +533,34 @@ async function firebaseMobileLoginFallback(){
 // Liest access_token aus dem URL-Hash nach Google-Redirect zurück.
 // Liest Google Calendar Token aus URL-Hash nach gcal_connect Redirect.
 // Nur fuer connectToGoogle() aus den Sync-Einstellungen, NICHT fuer den Haupt-Login.
+// Liest Google OAuth Token aus URL-Hash nach Redirect.
+// Verarbeitet state=main_login (voller App-Start) und state=gcal_connect (nur Kalender).
+// Redirect-URI muss in Google Cloud Console registriert sein: https://ak2191.github.io/Meine-App/
 function handleGoogleOAuthRedirect(){
   try{
     var hash = window.location.hash || '';
     if(!hash || hash.indexOf('access_token=') === -1) return null;
-    if(hash.indexOf('gcal_connect') === -1) return null; // Nur Calendar-Connect verarbeiten
     var params = {};
     hash.replace(/^#/, '').split('&').forEach(function(pair){
       var kv = pair.split('=');
-      params[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1] || '');
+      if(kv[0]) params[decodeURIComponent(kv[0])] = decodeURIComponent((kv[1] || '').replace(/\+/g, ' '));
     });
     var token = params['access_token'] || '';
+    var state = params['state'] || '';
     if(!token) return null;
-    // Hash aus URL entfernen (Token darf nicht im Browser-History bleiben)
+    // Hash sofort aus URL entfernen – Token darf nicht im Browser-History bleiben
     try{ window.history.replaceState(null, '', window.location.href.split('#')[0]); }catch(e){}
-    // Token speichern
+    // Token global setzen
     accessToken = token;
     try{ if(typeof SecureTokenStore !== 'undefined') SecureTokenStore.setToken(token, 3600); }catch(e){}
     try{ if(typeof ls === 'function') ls('access_token', token); }catch(e){}
+    try{ localStorage.setItem('was_logged_in', 'true'); }catch(e){}
     try{ localStorage.setItem('change_v1_google_calendar_sync', 'true'); }catch(e){}
     try{ localStorage.setItem('change_google_sync_enabled', 'true'); }catch(e){}
     try{ localStorage.removeItem('change_v1_google_last_error'); }catch(e){}
     try{ localStorage.setItem('change_v1_google_last_sync_at', new Date().toISOString()); }catch(e){}
-    console.info('[Change] Google Calendar Redirect: Token erhalten');
-    return 'gcal_connect';
+    console.info('[Change] OAuth Redirect OK – state:', state);
+    return state || 'main_login';
   }catch(e){
     console.warn('[Change] handleGoogleOAuthRedirect:', e);
     return null;
