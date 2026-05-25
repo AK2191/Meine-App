@@ -305,26 +305,27 @@ window.addEventListener('load', async () => {
     }catch(e){}
   })();
 
-  await handleFirebaseRedirectLogin();
-  if(document.getElementById('main-app').style.display==='flex') { initPWA(); scheduleNotifCheck(); return; }
-
-  // GIS-Token vorhanden: Nutzerprofil laden und App starten
+  // GIS-Token: ZUERST prüfen, BEVOR Firebase angefasst wird.
+  // Firebase (at Quota) würde sonst in handleFirebaseRedirectLogin() einfrieren.
   if(window._gisTokenReady){
+    console.info('[Change] GIS-Login: starte App ohne Firebase');
     try{ await fetchUserInfo(); }catch(e){}
     if(!userInfo.email){
       var _c = ls('user_info_safe') || {};
       if(_c.email) userInfo = saveUserProfileInfo({name:_c.name||'',email:_c.email||'',picture:_c.picture||''});
     }
-    if(userInfo.email){
-      ls('user_info_safe',{name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''});
-      ls('was_logged_in',true);
-      bootMainApp();
-      try{ loadGoogleData(); }catch(e){}
-      setTimeout(()=>{ try{ toast('Anmeldung erfolgreich ✓','ok'); }catch(e){}; },400);
-      initPWA(); scheduleNotifCheck();
-      return;
-    }
+    ls('user_info_safe',{name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''});
+    ls('was_logged_in',true);
+    bootMainApp();
+    try{ loadGoogleData(); }catch(e){}
+    setTimeout(()=>{ try{ toast('Anmeldung erfolgreich ✓','ok'); }catch(e){}; },400);
+    initPWA(); scheduleNotifCheck();
+    return;
+    // Firebase wird NICHT aufgerufen – verhindert Freeze bei Firebase at Quota
   }
+
+  await handleFirebaseRedirectLogin();
+  if(document.getElementById('main-app').style.display==='flex') { initPWA(); scheduleNotifCheck(); return; }
 
   // Google OAuth Redirect: Token aus URL-Hash lesen.
   // Gilt fuer state=main_login (Login-Button) und state=gcal_connect (Verbinden-Button).
