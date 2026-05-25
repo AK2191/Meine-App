@@ -280,8 +280,51 @@ window.addEventListener('load', async () => {
   challengePlayers    = ls('challenge_players')    || [];
   syncChallengeStateFromStore();
 
+  // GIS-Login-Token lesen: nach handleGoogleLogin() wird mit ?gis_login= navigiert.
+  // Token liegt max. 60s in localStorage – danach wird er ignoriert.
+  (function(){
+    try{
+      var params = new URLSearchParams(window.location.search);
+      if(params.get('gis_login')){
+        var token = localStorage.getItem('change_gis_token') || '';
+        var ts = parseInt(localStorage.getItem('change_gis_ts') || '0');
+        var fresh = token && (Date.now() - ts) < 60000;
+        // URL bereinigen (kein Token in Browser-History)
+        try{ window.history.replaceState(null, '', window.location.href.split('?')[0]); }catch(e){}
+        if(fresh){
+          accessToken = token;
+          try{ localStorage.removeItem('change_gis_token'); localStorage.removeItem('change_gis_ts'); }catch(e){}
+          try{ if(typeof SecureTokenStore!=='undefined') SecureTokenStore.setToken(token,3600); }catch(e){}
+          try{ if(typeof ls==='function') ls('access_token',token); }catch(e){}
+          try{ localStorage.setItem('was_logged_in','true'); }catch(e){}
+          try{ sessionStorage.setItem('change_oauth_ts', String(Date.now())); }catch(e){}
+          console.info('[Change] GIS-Token aus localStorage geladen ✓');
+          window._gisTokenReady = true;
+        }
+      }
+    }catch(e){}
+  })();
+
   await handleFirebaseRedirectLogin();
   if(document.getElementById('main-app').style.display==='flex') { initPWA(); scheduleNotifCheck(); return; }
+
+  // GIS-Token vorhanden: Nutzerprofil laden und App starten
+  if(window._gisTokenReady){
+    try{ await fetchUserInfo(); }catch(e){}
+    if(!userInfo.email){
+      var _c = ls('user_info_safe') || {};
+      if(_c.email) userInfo = saveUserProfileInfo({name:_c.name||'',email:_c.email||'',picture:_c.picture||''});
+    }
+    if(userInfo.email){
+      ls('user_info_safe',{name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''});
+      ls('was_logged_in',true);
+      bootMainApp();
+      try{ loadGoogleData(); }catch(e){}
+      setTimeout(()=>{ try{ toast('Anmeldung erfolgreich ✓','ok'); }catch(e){}; },400);
+      initPWA(); scheduleNotifCheck();
+      return;
+    }
+  }
 
   // Google OAuth Redirect: Token aus URL-Hash lesen.
   // Gilt fuer state=main_login (Login-Button) und state=gcal_connect (Verbinden-Button).
@@ -516,27 +559,38 @@ function showLogin(){
   document.getElementById('login-screen').style.display='flex';
 }
 
-// handleGoogleLogin: Firebase Auth signInWithRedirect – kein GIS-Popup, kein Implicit Flow.
-// GIS requestAccessToken → COOP-Freeze auf GitHub Pages.
-// OAuth Implicit Flow (response_type=token) → von Google fuer neue Apps deaktiviert.
-// Firebase Auth signInWithRedirect → funktioniert ohne COOP, ohne Implicit Flow.
-// handleFirebaseRedirectLogin() verarbeitet das Ergebnis und gibt auch den Calendar-Token zurueck.
+// handleGoogleLogin: GIS-Popup + sofortiger Seitenneuladen nach Token-Erhalt.
+// Das GIS-Popup FUNKTIONIERT (Token kommt im Callback an).
+// Der Freeze passiert DANACH wenn GIS window.closed pollt (COOP-Block).
+// Fix: Nach Token-Erhalt sofort window.location navigieren → GIS-Prozess wird gekillt.
+// Der Token wird kurz in localStorage gepuffert und beim naechsten Load gelesen.
 function handleGoogleLogin(){
-  if(!window.firebase || !window.FIREBASE_CONFIG || !firebase.auth){
-    toast('Anmeldung wird geladen – bitte kurz warten und nochmal versuchen.','');
-    return;
+  CLIENT_ID = getGoogleClientId();
+  if(!CLIENT_ID){ document.getElementById('setup-modal').classList.add('show'); return; }
+  if(!window.google || !window.google.accounts || !window.google.accounts.oauth2){
+    toast('Google-Bibliothek wird geladen…',''); return;
   }
   try{
-    if(!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
-    const provider = new firebase.auth.GoogleAuthProvider();
-    provider.addScope('https://www.googleapis.com/auth/calendar');
-    provider.addScope('https://www.googleapis.com/auth/userinfo.profile');
-    provider.addScope('https://www.googleapis.com/auth/userinfo.email');
-    provider.setCustomParameters({ prompt: 'select_account' });
-    firebase.auth().signInWithRedirect(provider);
+    const tc = google.accounts.oauth2.initTokenClient({
+      client_id: cleanGoogleClientId(CLIENT_ID),
+      scope: GCAL_SCOPE,
+      callback: function(resp){
+        if(resp && resp.error){ toast('Anmeldung: ' + resp.error, 'err'); return; }
+        var token = resp.access_token || '';
+        if(!token){ toast('Kein Token erhalten – bitte nochmal versuchen.','err'); return; }
+        // Token sofort sichern BEVOR GIS window.closed-Polling beginnt
+        try{ localStorage.setItem('change_gis_token', token); }catch(e){}
+        try{ localStorage.setItem('change_gis_ts', String(Date.now())); }catch(e){}
+        console.info('[Change] GIS Token erhalten – navigiere sofort weg um Freeze zu verhindern');
+        // Sofortige Navigation toetet den GIS-Prozess vor dem window.closed-Polling
+        var base = window.location.href.split('?')[0].split('#')[0];
+        window.location.replace(base + '?gis_login=' + Date.now());
+      }
+    });
+    tc.requestAccessToken({ prompt: 'select_account' });
   }catch(e){
-    console.warn('[Change] handleGoogleLogin Firebase Redirect:', e);
-    toast('Anmeldung fehlgeschlagen – bitte Seite neu laden.','err');
+    toast('Anmeldung konnte nicht gestartet werden','err');
+    console.warn('[Change] handleGoogleLogin:', e);
   }
 }
 
