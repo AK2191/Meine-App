@@ -1784,24 +1784,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
       if(currentMainView==='challenges') renderChallenges();
       if(currentMainView==='dashboard') buildDashboard();
     },err=>console.warn('Players listener:',err));
-    // Fallback: einmaliger HTTP-Fetch (funktioniert auf iOS auch wenn WebSocket ausfällt)
-    // Wird nach 2s und 8s versucht — deckt langsame Mobile-Auth ab
-    const fetchPlayersOnce = async (delay) => {
-      await new Promise(r => setTimeout(r, delay));
-      if(!db) return;
-      try{
-        const snap = await db.collection('change_players').get();
-        let changed = false;
-        snap.forEach(doc => { mergePlayer({id:doc.id,...doc.data()}); changed = true; });
-        if(changed){
-          persistChallengeStateToStore() || ls('challenge_players', challengePlayers);
-          if(currentMainView==='challenges') renderChallenges();
-          if(currentMainView==='dashboard') buildDashboard();
-        }
-      }catch(e){ console.warn('Players one-shot fetch:', e); }
-    };
-    fetchPlayersOnce(5000);  // nach 5s (directFbFetch läuft nach 2.5s – kein Overlap)
-    fetchPlayersOnce(60000); // Retry nach 60s (nicht 8s – verhindert 429)
+    // Spieler werden vollständig über den onSnapshot-Listener oben geladen.
   }
 
   function startLiveCompletionsListener(){

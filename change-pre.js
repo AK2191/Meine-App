@@ -310,105 +310,8 @@
     // Punkte-Kalender nach kurzer Pause nochmal rendern (Firebase-Daten laden asynchron)
     // Mehrere Versuche: iOS/Android Firebase kann 5–12 Sek. brauchen
     [1200, 3000, 6000, 12000].forEach(ms => setTimeout(renderWeekBar, ms));
-    // directFbFetch wird aus DOMContentLoaded gestartet (800ms + 5s) – kein Duplikat hier
   };
 
-  // ── Firestore REST Fetch (iOS-sicher) ──────────────────────────
-  // Nutzt die Firestore REST API (pures HTTPS, kein Firebase SDK, kein Auth).
-  // change_players + change_completions haben "allow read: if true" in Firestore Rules.
-  // Funktioniert auf iOS PWA garantiert, auch wenn das Firebase SDK / WebSocket ausfällt.
-  var _lastFetch = 0;
-  function getStr(field){ return field && (field.stringValue||field.integerValue||field.doubleValue)||''; }
-  function getBool(field){ return field && field.booleanValue === true; }
-
-  async function directFbFetch(force){
-    var now = Date.now();
-    // Throttle: max 1x pro Session wenn SDK-Daten vorhanden, sonst max 1x/120s
-    if(!force){
-      // Wenn Firebase SDK bereits Spieler geliefert hat → REST nicht nötig
-      var hasPlayers = (window.challengePlayers||[]).filter(function(p){
-        return p.email && p.email.includes('@');
-      }).length > 0;
-      var hasComps = (window.challengeCompletions||[]).length > 0;
-      if(hasPlayers && hasComps){
-        return; // SDK hat alles – REST überspringen
-      }
-      // Pro Session nur 1x wenn keine Daten vorhanden
-      var sessionKey = 'directFbFetch_done_' + (new Date().toDateString());
-      if(sessionStorage.getItem(sessionKey)) return;
-      if(now - _lastFetch < 120000) return; // absolute Untergrenze: 2 Min
-    }
-    _lastFetch = now;
-    try{ sessionStorage.setItem('directFbFetch_done_'+(new Date().toDateString()), '1'); }catch(e){}
-    var projectId = window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.projectId;
-    if(!projectId) return;
-    var base = 'https://firestore.googleapis.com/v1/projects/'+projectId+'/databases/(default)/documents';
-
-    // ─ Spieler laden ─────────────────────────────────────────
-    try{
-      var resp = await fetch(base+'/change_players?pageSize=50');
-      if(resp.ok){
-        var data = await resp.json();
-        var docs = data.documents||[];
-        var currentPlayers = (window.challengePlayers||[]).slice();
-        var changed = false;
-        docs.forEach(function(doc){
-          var f = doc.fields||{};
-          var email = norm(getStr(f.email)||getStr(f.id)||'');
-          if(!email||!email.includes('@')||email.includes('demo')||email.includes('example')) return;
-          var idx = currentPlayers.findIndex(function(p){ return norm(p.email||p.id)===email; });
-          var entry = {id:email,email:email,name:getStr(f.name)||email.split('@')[0],picture:getStr(f.picture)||'',online:getBool(f.online)};
-          if(idx>=0){ Object.assign(currentPlayers[idx],entry); }
-          else{ currentPlayers.push(entry); changed=true; }
-        });
-        if(changed){
-          window.challengePlayers = currentPlayers; // triggers setter → renderChallenges
-          if(window.currentMainView==='challenges'&&typeof window.renderChallenges==='function')
-            setTimeout(window.renderChallenges,50);
-        }
-      }
-    }catch(e){}
-
-    // ─ Completions laden (für WeekBar) ───────────────────────
-    try{
-      var resp = await fetch(base+'/change_completions?pageSize=200');
-      if(resp.ok){
-        var data = await resp.json();
-        var docs = data.documents||[];
-        var currentComps = (window.challengeCompletions||[]).slice();
-        var seen = new Set(currentComps.map(function(c){return String(c.id);}));
-        var added = false;
-        docs.forEach(function(doc){
-          var id = doc.name.split('/').pop();
-          if(seen.has(id)) return;
-          var f = doc.fields||{};
-          var email = norm(getStr(f.playerId)||getStr(f.email)||getStr(f.userEmail)||'');
-          if(!email||!email.includes('@')) return;
-          var challengeId = getStr(f.challengeId);
-          var date = getStr(f.date).slice(0,10);
-          if(!challengeId||!date) return;
-          currentComps.push({
-            id:id, challengeId:challengeId,
-            playerId:email, userEmail:email, email:email,
-            playerName:getStr(f.playerName)||email.split('@')[0],
-            date:date, points:parseInt(getStr(f.points))||0,
-            source:'rest'
-          });
-          seen.add(id); added=true;
-        });
-        if(added){
-          window.challengeCompletions = currentComps; // triggers setter → renderWeekBar
-          if(window.currentMainView==='challenges'&&typeof window.renderWeekBar==='function')
-            setTimeout(window.renderWeekBar,50);
-        }
-      }
-    }catch(e){}
-  }
-  window.refreshChallengesFromFirebase = directFbFetch;
-
-  // REST Fetch nur auf expliziten Aufruf (z.B. Cache leeren, manueller Refresh)
-  // Automatische Aufrufe entfernt – Firebase SDK Listener übernehmen alle Daten.
-  // directFbFetch() kann manuell via window.refreshChallengesFromFirebase() aufgerufen werden.
   document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       try{ ensureWeekBar(); if(window.currentMainView==='challenges') window.renderChallenges(); }catch(e){}
@@ -472,7 +375,6 @@
     if(v==='calendar'   && typeof window.renderCalendar==='function')   window.renderCalendar();
     if(v==='challenges' && typeof window.renderChallenges==='function') window.renderChallenges();
     // iOS: Direkter Firebase-Fetch wenn Challenges-View geöffnet wird
-    // directFbFetch nicht automatisch beim View-Wechsel – SDK-Listener sind aktiv
     if(!fromRoute){ try{ history.pushState({view:v},'','#/'+v); }catch(e){ location.hash='/'+v; } }
   };
 
