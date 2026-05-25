@@ -73,8 +73,8 @@ self.addEventListener('notificationclick', (event) => {
 
       return self.registration.showNotification(title, {
         body,
-        icon:     './icon-change-192.png',
-        badge:    './icon-change-192.png',
+        icon:     './icons/icons/icon-change-192.png',
+        badge:    './icons/icons/icon-change-192.png',
         tag:      (payload.data && payload.data.tag) || 'change-push',
         renotify: true,
         vibrate:  [200, 100, 200],

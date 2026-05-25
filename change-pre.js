@@ -406,11 +406,10 @@
   }
   window.refreshChallengesFromFirebase = directFbFetch;
 
-  // REST Fetch beim Start – unabhängig vom View, läuft auf iOS auch ohne Firebase SDK
-  // Lädt Spieler + Punkte sofort wenn der Browser bereit ist
+  // REST Fetch nur auf expliziten Aufruf (z.B. Cache leeren, manueller Refresh)
+  // Automatische Aufrufe entfernt – Firebase SDK Listener übernehmen alle Daten.
+  // directFbFetch() kann manuell via window.refreshChallengesFromFirebase() aufgerufen werden.
   document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(directFbFetch, 2500);   // nach 2.5s – Auth hat Zeit sich zu stabilisieren
-    setTimeout(directFbFetch, 30000); // Retry nach 30s (iOS-Resilience, kein 429-Risiko)
     setTimeout(() => {
       try{ ensureWeekBar(); if(window.currentMainView==='challenges') window.renderChallenges(); }catch(e){}
     }, 600);
@@ -473,7 +472,7 @@
     if(v==='calendar'   && typeof window.renderCalendar==='function')   window.renderCalendar();
     if(v==='challenges' && typeof window.renderChallenges==='function') window.renderChallenges();
     // iOS: Direkter Firebase-Fetch wenn Challenges-View geöffnet wird
-    if(v==='challenges') setTimeout(function(){ if(typeof directFbFetch==='function') directFbFetch(); }, 1500);
+    // directFbFetch nicht automatisch beim View-Wechsel – SDK-Listener sind aktiv
     if(!fromRoute){ try{ history.pushState({view:v},'','#/'+v); }catch(e){ location.hash='/'+v; } }
   };
 
