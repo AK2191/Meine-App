@@ -225,16 +225,46 @@
               +'<div class="change-settings-actions change-setting-field"><label class="flabel">Halbe Urlaubstage</label><div class="change-halfday-controls"><select class="finput" id="set-half-month">'+monthOptions+'</select><select class="finput" id="set-half-day">'+dayOptions+'</select><button class="btn btn-secondary btn-sm" id="set-add-half" type="button">+ Hinzufügen</button></div>'+halfDayChips()+'</div>'
             : ''));
   }
+  function firebaseStatus(){
+    // Firebase-Verbindungsstatus: prüft ob db/auth bereit ist
+    try{
+      var hasUser = typeof firebase !== 'undefined' && firebase.auth && !!firebase.auth().currentUser;
+      var hasDb = typeof window.initFirebaseLive === 'function';
+      if(hasUser) return {ok:true, label:'VERBUNDEN', tone:'ok', detail:'Challenges · Rangliste · Einstellungen'};
+      if(hasDb)   return {ok:false, label:'NICHT VERBUNDEN', tone:'off', detail:'Bitte mit Google anmelden.'};
+    }catch(e){}
+    return {ok:false, label:'AUS', tone:'off', detail:''};
+  }
+
   function syncPane(){
-    var live = readBool('live_sync_enabled', true);
-    var auto = getAutoChallengesEnabled();
+    var live   = readBool('live_sync_enabled', true);
+    var auto   = getAutoChallengesEnabled();
     var google = googleStatus();
-    return card('Synchronisierung',
-        switchRow('Live-Mitspieler '+pill(live?'VERBUNDEN':'AUS', live?'ok':'off'), 'Aktualisiert Rangliste und Aktivität.', 'set-live', live)+
-        switchRow('Auto-Challenges '+pill(auto?'AKTIV':'AUS', auto?'ok':'off'), 'Erstellt die täglichen Standard-Challenges.', 'set-auto', auto))
-      + card('Google Kalender',
-        '<div class="change-settings-row"><div><div class="change-settings-title"><span class="change-status-dot '+google.tone+'"></span>Google Kalender '+pill(google.label, google.tone)+'</div><div class="change-settings-sub">'+esc(google.detail || '')+'</div></div><label class="switch"><input type="checkbox" id="set-google" '+(google.enabled && google.loggedIn ? 'checked' : '')+' '+(!google.loggedIn ? 'disabled' : '')+'><span class="slider"></span></label></div>'+
-        '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-sync-google" type="button" '+(!google.loggedIn ? 'disabled' : '')+'>Jetzt synchronisieren</button></div>');
+    var fb     = firebaseStatus();
+
+    // Firebase-Zeile
+    var fbRow = '<div class="change-settings-row">'
+      + '<div><div class="change-settings-title"><span class="change-status-dot '+fb.tone+'"></span>Datenbank-Sync '+pill(fb.label, fb.tone)+'</div>'
+      + '<div class="change-settings-sub">'+esc(fb.detail)+'</div></div>'
+      + (fb.ok
+          ? '<label class="switch"><input type="checkbox" id="set-live" '+(live?'checked':'')+'><span class="slider"></span></label>'
+          : '<button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" onclick="if(typeof connectToGoogle===\'function\')connectToGoogle()">Verbinden</button>')
+      + '</div>';
+
+    // Google-Zeile
+    var gRow = '<div class="change-settings-row">'
+      + '<div><div class="change-settings-title"><span class="change-status-dot '+google.tone+'"></span>Google Kalender '+pill(google.label, google.tone)+'</div>'
+      + '<div class="change-settings-sub">'+esc(google.detail || (google.loggedIn ? 'Termine werden importiert.' : 'Klicke Verbinden zum Anmelden.'))+'</div></div>'
+      + (google.loggedIn
+          ? '<label class="switch"><input type="checkbox" id="set-google" '+(google.enabled?'checked':'')+' ><span class="slider"></span></label>'
+          : '<button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" id="btn-google-connect">Verbinden</button>')
+      + '</div>'
+      + (google.loggedIn ? '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-sync-google" type="button">Jetzt synchronisieren</button></div>' : '');
+
+    // Auto-Challenges-Zeile
+    var autoRow = switchRow('Auto-Challenges '+pill(auto?'AKTIV':'AUS', auto?'ok':'off'), 'Erstellt die täglichen Standard-Challenges.', 'set-auto', auto);
+
+    return card('Synchronisierung', fbRow + gRow + autoRow);
   }
   var APP_VERSION = '0.1.0001';
 
@@ -332,6 +362,7 @@
     });
     var google = $('set-google'); if(google) google.addEventListener('change', async function(){ if(window.ChangeGoogleSyncStatus){ if(google.checked) await window.ChangeGoogleSyncStatus.syncNow(); else window.ChangeGoogleSyncStatus.disconnect(); } refreshSameTab(); });
     var syncGoogle = $('set-sync-google'); if(syncGoogle) syncGoogle.addEventListener('click', async function(){ if(window.ChangeGoogleSyncStatus) await window.ChangeGoogleSyncStatus.syncNow(); refreshSameTab(); });
+    var btnGoogleConnect = $('btn-google-connect'); if(btnGoogleConnect) btnGoogleConnect.addEventListener('click', function(){ if(typeof connectToGoogle==='function') connectToGoogle(); });
 
   }
 

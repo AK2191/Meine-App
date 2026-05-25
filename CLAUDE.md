@@ -138,6 +138,18 @@ public/icons/change-icon-192.svg   → PWA Manifest, Homescreen
 
 ---
 
+## 🔄 Sync-Architektur (vollständig getrennt)
+
+| System | Zweck | Auth | Schalter |
+|--------|-------|------|---------|
+| **Datenbank-Sync** | Challenges, Rangliste, Einstellungen | Firebase Auth | `set-live` Toggle |
+| **Google Kalender** | Termine importieren/exportieren | Google OAuth Token | `set-google` Toggle |
+| **Auto-Challenges** | Tägliche Aufgaben | – | `set-auto` Toggle |
+
+Beide Systeme sind unabhängig. `syncPane()` in `settingsPanel.js` zeigt Status und Verbinden-Button für jedes System separat.
+
+---
+
 ## ⚙️ Settings → Firebase Sync
 
 ### Architektur
