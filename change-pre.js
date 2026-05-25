@@ -321,10 +321,25 @@
   function getStr(field){ return field && (field.stringValue||field.integerValue||field.doubleValue)||''; }
   function getBool(field){ return field && field.booleanValue === true; }
 
-  async function directFbFetch(){
+  async function directFbFetch(force){
     var now = Date.now();
-    if(now - _lastFetch < 45000) return; // max 1x alle 45s – verhindert HTTP 429
+    // Throttle: max 1x pro Session wenn SDK-Daten vorhanden, sonst max 1x/120s
+    if(!force){
+      // Wenn Firebase SDK bereits Spieler geliefert hat → REST nicht nötig
+      var hasPlayers = (window.challengePlayers||[]).filter(function(p){
+        return p.email && p.email.includes('@');
+      }).length > 0;
+      var hasComps = (window.challengeCompletions||[]).length > 0;
+      if(hasPlayers && hasComps){
+        return; // SDK hat alles – REST überspringen
+      }
+      // Pro Session nur 1x wenn keine Daten vorhanden
+      var sessionKey = 'directFbFetch_done_' + (new Date().toDateString());
+      if(sessionStorage.getItem(sessionKey)) return;
+      if(now - _lastFetch < 120000) return; // absolute Untergrenze: 2 Min
+    }
     _lastFetch = now;
+    try{ sessionStorage.setItem('directFbFetch_done_'+(new Date().toDateString()), '1'); }catch(e){}
     var projectId = window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.projectId;
     if(!projectId) return;
     var base = 'https://firestore.googleapis.com/v1/projects/'+projectId+'/databases/(default)/documents';
