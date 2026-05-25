@@ -143,6 +143,16 @@
     options = options || {};
     if(!initFirebase()) throw new Error('Firebase ist nicht bereit');
     var auth = firebase.auth();
+
+    // SILENT MODE: Nur vorhandene Session nutzen, NIE Popup öffnen
+    // Verhindert COOP-Freeze auf GitHub Pages
+    if(options.silent){
+      var user = auth.currentUser || await waitForAuthState(2000);
+      if(user){ writeUser(user); return { user: user, reused: true }; }
+      return { user: null, skipped: true }; // kein Fehler, kein Popup
+    }
+
+    // INTERACTIVE MODE: Popup oder Redirect (nur auf expliziten User-Klick)
     if(auth.currentUser && sameUserOrNoEmail(auth.currentUser)){
       writeUser(auth.currentUser);
       return { user: auth.currentUser, accessToken: '', reused: true };
@@ -155,10 +165,7 @@
       var result = await auth.signInWithPopup(provider());
       return applyAuthResult(result) || { user: auth.currentUser, accessToken: '' };
     }catch(e){
-      // COOP-Fehler (GitHub Pages) + geblockte Popups → Redirect als Fallback
       var code = e && e.code ? e.code : '';
-      var msg = e && e.message ? e.message : '';
-      // Nur bei tatsächlich geblocktem Popup auf Redirect umschalten
       var isPopupBlocked = code === 'auth/popup-blocked' || code === 'auth/cancelled-popup-request';
       if(isPopupBlocked){
         await auth.signInWithRedirect(provider());

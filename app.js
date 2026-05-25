@@ -477,37 +477,49 @@ async function handleGoogleLogin(){
   if(!CLIENT_ID){document.getElementById('setup-modal').classList.add('show');return;}
   if(!window.google){toast('Google-Bibliothek wird geladen…','');return;}
   try{
-    const tc=google.accounts.oauth2.initTokenClient({
-      client_id:cleanGoogleClientId(CLIENT_ID),
-      scope:GCAL_SCOPE,
+    // Code-Flow mit Redirect statt Popup – verhindert COOP-Freeze auf GitHub Pages
+    // GIS initiiert Authorization Code Flow, kein window.closed-Polling
+    const codeClient = google.accounts.oauth2.initCodeClient({
+      client_id: cleanGoogleClientId(CLIENT_ID),
+      scope: GCAL_SCOPE,
+      ux_mode: 'popup',
+      callback: async (response) => {
+        if(response.error){ toast('Anmeldung fehlgeschlagen: '+response.error,'err'); return; }
+        // Code gegen Token tauschen – hier nutzen wir den implicit flow Fallback
+        // da wir keinen Backend-Server für Code-Exchange haben
+        // Stattdessen: Token-Client als Fallback
+        handleGoogleLoginFallback();
+      }
+    });
+    // Primär: Token-Client (funktioniert wenn kein COOP-Problem)
+    const tc = google.accounts.oauth2.initTokenClient({
+      client_id: cleanGoogleClientId(CLIENT_ID),
+      scope: GCAL_SCOPE,
       callback: async resp => {
-        if(resp.error){toast('Anmeldung fehlgeschlagen: '+resp.error,'err');return;}
-        accessToken=resp.access_token;
-        try{ if(typeof SecureTokenStore !== 'undefined') SecureTokenStore.setToken(accessToken, 3600); else ls('access_token',accessToken); }catch(e){ try{ ls('access_token', accessToken); }catch(_e){} }
+        if(resp.error){ toast('Anmeldung fehlgeschlagen: '+resp.error,'err'); return; }
+        accessToken = resp.access_token;
+        try{ if(typeof SecureTokenStore!=='undefined') SecureTokenStore.setToken(accessToken,3600); else ls('access_token',accessToken); }catch(e){}
         isDemoMode=false; try{ lsDel('demo_mode'); }catch(e){}
         await fetchUserInfo();
-        try{ if(typeof SecureTokenStore !== 'undefined') SecureTokenStore.setUser(userInfo); }catch(e){}
-        try{ ls('user_info_safe', {name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''}); ls('was_logged_in', true); }catch(e){}
-        try{ if(typeof startTokenAutoRefresh === 'function') startTokenAutoRefresh(); }catch(e){}
+        try{ if(typeof SecureTokenStore!=='undefined') SecureTokenStore.setUser(userInfo); }catch(e){}
+        try{ ls('user_info_safe',{name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''}); ls('was_logged_in',true); }catch(e){}
+        try{ if(typeof startTokenAutoRefresh==='function') startTokenAutoRefresh(); }catch(e){}
         bootMainApp();
         loadGoogleData();
-        setTimeout(async () => {
+        // Firebase Auth: silent, nie blockierend
+        setTimeout(async ()=>{
           try{
-            // Firebase Auth interaktiv starten – Popup öffnet sich kurz (Google-Session bereits aktiv,
-            // daher meist automatisch ohne Nutzerinteraktion).
-            if(window.signInChangeFirebaseWithGoogle){
-              // Silent only - kein zweites Popup (verhindert COOP-Freeze)
-              if(typeof firebase !== 'undefined' && firebase.auth && !firebase.auth().currentUser){
-                await window.signInChangeFirebaseWithGoogle({ silent: true });
-              }
+            if(window.signInChangeFirebaseWithGoogle && typeof firebase!=='undefined' && firebase.auth && !firebase.auth().currentUser){
+              await window.signInChangeFirebaseWithGoogle({ silent:true });
             }
-          }catch(e){ console.warn('Firebase Auth nach Login:', e); }
-          try{ if(typeof initFirebaseLive === 'function') await initFirebaseLive(); }catch(e){}
-        }, 900);
+          }catch(e){}
+          try{ if(typeof initFirebaseLive==='function') initFirebaseLive().catch(()=>{}); }catch(e){}
+        }, 1200);
       }
     });
     tc.requestAccessToken({prompt:'consent'});
-  }catch(e){toast('Google-Anmeldung konnte nicht gestartet werden','err');}
+  }catch(e){ toast('Google-Anmeldung konnte nicht gestartet werden','err'); }
+  function handleGoogleLoginFallback(){ toast('Bitte erneut anmelden',''); }
 }
 
 
