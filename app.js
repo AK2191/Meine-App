@@ -1548,19 +1548,31 @@ function confirmLogout(){
   openPanel(name, html);
 }
 async function logout(){
-  try{
-    if(typeof firebase!=='undefined' && typeof db!=='undefined' && db && userInfo.email){
-      await throttledPlayerWrite({online:false,lastSeen:firebase.firestore.FieldValue.serverTimestamp()});
+  // 1. Google-Token revozieren – WICHTIG: verhindert GIS-Freeze beim naechsten Login.
+  //    Wenn der Token NICHT revoziert wird, kennt Google den Nutzer noch.
+  //    GIS oeffnet dann einen Popup der sich sofort schliesst → window.closed-Polling → Freeze.
+  var tokenToRevoke = accessToken || (typeof ls==='function' ? ls('access_token') : '');
+  if(tokenToRevoke){
+    try{
+      // Fire-and-forget: Token revozieren ohne auf Antwort zu warten
+      navigator.sendBeacon('https://oauth2.googleapis.com/revoke?token=' + encodeURIComponent(tokenToRevoke));
+    }catch(e){
+      try{ fetch('https://oauth2.googleapis.com/revoke?token=' + encodeURIComponent(tokenToRevoke), {method:'POST', mode:'no-cors'}); }catch(_e){}
     }
-  }catch(e){}
+  }
+  // 2. GIS-Zustand zuruecksetzen (falls Bibliothek geladen)
+  try{ if(window.google && google.accounts && google.accounts.oauth2) google.accounts.oauth2.revoke(tokenToRevoke || '', ()=>{}); }catch(e){}
+  // 3. Firebase signOut
   try{ if(window.firebase && firebase.auth) await firebase.auth().signOut(); }catch(e){}
-  // Auth + Session-Daten löschen (Einstellungen bleiben erhalten)
+  // 4. Alle Session-Daten loeschen
   lsDel('was_logged_in');
-  lsDel('access_token');lsDel('user_info');lsDel('demo_mode');
-  lsDel('change_v1_user_info');lsDel('user_info_safe');lsDel('change_v1_user_email');lsDel('user_email');
+  lsDel('access_token'); lsDel('user_info'); lsDel('demo_mode');
+  lsDel('change_v1_user_info'); lsDel('user_info_safe'); lsDel('change_v1_user_email'); lsDel('user_email');
+  lsDel('change_gis_token'); lsDel('change_gis_ts');
+  try{ sessionStorage.clear(); }catch(e){}
+  accessToken = ''; userInfo = {};
   closePanel();
-  // Seite neu laden: verhindert Freeze durch verbleibende Firestore-onSnapshot-Listener
-  // (Listener aus der alten Session würden nach signOut mit Auth-Fehlern laufen)
+  // 5. Seitenreload – sauberer Start ohne alte Listener
   var url = window.location.href.split('?')[0].split('#')[0];
   window.location.replace(url + '?logout=' + Date.now());
 }
