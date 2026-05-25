@@ -506,15 +506,19 @@ async function handleGoogleLogin(){
         try{ if(typeof startTokenAutoRefresh==='function') startTokenAutoRefresh(); }catch(e){}
         bootMainApp();
         loadGoogleData();
-        // Firebase Auth: silent, nie blockierend
+        // Firebase Auth: signInWithCredential nutzt den GIS-Token direkt (kein zweites Popup, kein COOP-Problem)
         setTimeout(async ()=>{
           try{
-            if(window.signInChangeFirebaseWithGoogle && typeof firebase!=='undefined' && firebase.auth && !firebase.auth().currentUser){
-              await window.signInChangeFirebaseWithGoogle({ silent:true });
+            if(typeof firebase!=='undefined' && firebase.auth && !firebase.auth().currentUser){
+              const cred = firebase.auth.GoogleAuthProvider.credential(null, accessToken);
+              const fbResult = await firebase.auth().signInWithCredential(cred);
+              if(fbResult && fbResult.user && window.applyChangeFirebaseAuthResult){
+                window.applyChangeFirebaseAuthResult(fbResult);
+              }
             }
-          }catch(e){}
+          }catch(e){ console.info('[Change] Firebase credential:', e.code||e.message||e); }
           try{ if(typeof initFirebaseLive==='function') initFirebaseLive().catch(()=>{}); }catch(e){}
-        }, 1200);
+        }, 800);
       }
     });
     tc.requestAccessToken({prompt:'consent'});
@@ -1406,13 +1410,16 @@ async function logout(){
       await throttledPlayerWrite({online:false,lastSeen:firebase.firestore.FieldValue.serverTimestamp()});
     }
   }catch(e){}
-  try{ if(window.firebase && firebase.auth) await firebase.auth().signOut(); lsDel('was_logged_in');; }catch(e){}
-  accessToken='';userInfo={};isDemoMode=false;gEvents=[];notifications=[];
+  try{ if(window.firebase && firebase.auth) await firebase.auth().signOut(); }catch(e){}
+  // Auth + Session-Daten löschen (Einstellungen bleiben erhalten)
+  lsDel('was_logged_in');
   lsDel('access_token');lsDel('user_info');lsDel('demo_mode');
+  lsDel('change_v1_user_info');lsDel('user_info_safe');lsDel('change_v1_user_email');lsDel('user_email');
   closePanel();
-  document.getElementById('main-app').style.display='none';
-  if(CLIENT_ID)showLogin();
-  else document.getElementById('setup-modal').classList.add('show');
+  // Seite neu laden: verhindert Freeze durch verbleibende Firestore-onSnapshot-Listener
+  // (Listener aus der alten Session würden nach signOut mit Auth-Fehlern laufen)
+  var url = window.location.href.split('?')[0].split('#')[0];
+  window.location.replace(url + '?logout=' + Date.now());
 }
 
 /* ==== KEYBOARD ==== */

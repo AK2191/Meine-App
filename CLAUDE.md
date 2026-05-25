@@ -48,6 +48,7 @@ Wenn eine Änderung fehlschlägt:
 | `challenge-sync.js` | 3 Layer übereinander | Nur Datumsfilter/Limits anpassen, nie Listener neu bauen |
 | `firebaseAuthBridge.js` | COOP bei signInWithPopup | Nur popup-blocked → redirect, keine anderen Fehler abfangen |
 | `firebase-messaging-sw.js` | SW-Scope = Root | Datei muss im Root bleiben |
+| `app.js:logout()` | Reload statt showLogin | Muss `window.location.replace` aufrufen – NICHT showLogin() – sonst bleiben Firestore-Listener aktiv und frieren Re-Login ein |
 
 ---
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
@@ -312,6 +313,9 @@ firebase deploy --only hosting
 
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
+| 2026-05-25 | **BUG-FIX:** `connectToGoogle` war nie definiert → "Verbinden"-Button in Sync-Einstellungen tat nichts. Neu: `window.connectToGoogle = handleGoogleLogin` am Ende von `settingsPanel.js` | Claude |
+| 2026-05-25 | **BUG-FIX:** Freeze nach Logout+Re-Login: `logout()` löst jetzt `window.location.replace(url + '?logout=...')` statt showLogin() — verhindert Konflikt zwischen alten Firestore-onSnapshot-Listenern und neuem Auth-Flow | Claude |
+| 2026-05-25 | **BUG-FIX:** Firebase-Auth "NICHT VERFÜGBAR": `handleGoogleLogin()` nutzt jetzt `firebase.auth().signInWithCredential(GoogleAuthProvider.credential(null, accessToken))` statt `signInChangeFirebaseWithGoogle({ silent:true })` → Firebase-Session wird nach GIS-Login automatisch ohne zweites Popup etabliert | Claude |
 | 2026-05-24 | settingsPanel.js: BY-AUX → BY-AUGSBURG in stateOptions (cleanState() erkannte BY-AUX nicht → fiel auf ALL zurück) | Claude |
 | 2026-05-24 | settingsPanel.js: saveCal nutzt window.setHolidayState() statt direktem localStorage.setItem → schreibt beide Keys (change_v1_holiday_state + holiday_state) + löst Firebase-Sync aus | Claude |
 | 2026-05-24 | settings-logic.js: CONTROL_IDS um settingsPanel.js-IDs erweitert (set-holiday-state, set-show-holidays, set-show-points, set-show-kw, set-friseur, set-friseur-weeks, set-urlaub, set-urlaub-days, set-live, set-auto, set-google) → DOM change-Events triggern jetzt Firebase-Save für alle Settings-Änderungen | Claude |

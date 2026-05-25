@@ -432,4 +432,15 @@
   window.openSettingsPanel = openSettingsPanel;
   window.openCalendarSettings = function(){ return openSettingsPanel('calendar'); };
   window.openPushSettingsPanel = function(){ return openSettingsPanel('sync'); };
+
+  // connectToGoogle: startet Google-OAuth-Flow um Calendar-Token + Firebase-Auth zu holen.
+  // Wird vom "Verbinden"-Button in den Sync-Einstellungen aufgerufen.
+  // Nutzt handleGoogleLogin() aus app.js (GIS Token Client, prompt:'consent').
+  window.connectToGoogle = function(){
+    if(typeof handleGoogleLogin === 'function'){
+      handleGoogleLogin();
+    } else {
+      if(typeof toast === 'function') toast('Google-Anmeldung nicht verfügbar – Seite neu laden', 'err');
+    }
+  };
 })();
