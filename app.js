@@ -238,35 +238,18 @@ const SecureTokenStore = (() => {
 
 // [FIX PERSISTENZ] Stille Google-Neuanmeldung nach F5 (kein Popup)
 function trySilentGoogleTokenRefresh(){
-  if(!CLIENT_ID || !window.google || !google.accounts) return;
-  try {
-    const tc = google.accounts.oauth2.initTokenClient({
-      client_id: cleanGoogleClientId(CLIENT_ID),
-      scope: GCAL_SCOPE,
-      prompt: 'none',
-      error_callback: () => {
-        // Stilles Scheitern — Token abgelaufen, Nutzer muss sich
-        // beim nächsten manuellen Google-Sync neu anmelden.
-      },
-      callback: async resp => {
-        if(resp && resp.access_token){
-          accessToken = resp.access_token;
-          SecureTokenStore.setToken(accessToken, 3600);
-          try{ await fetchUserInfo(); }catch(e){}
-          try{ updateAvatar(); }catch(e){}
-          if(typeof loadGoogleData === 'function') loadGoogleData();
-        }
-      }
-    });
-    // window.closed kann durch Cross-Origin-Opener-Policy (COOP) blockiert sein
-    try { tc.requestAccessToken({prompt: 'none'}); } catch(e){}
-  } catch(e){ /* silent */ }
+  // Deaktiviert: Google OAuth requestAccessToken mit prompt:'none' verursacht
+  // auf GitHub Pages (ohne COOP-Header) einen Polling-Loop der den Main Thread blockiert.
+  // Token-Refresh erfolgt stattdessen beim manuellen Google-Sync-Button.
+  return;
 }
 
 // [AUTO-REFRESH] Google Token alle 50 Min still erneuern
 // Token läuft nach 60 Min ab — 50 Min Intervall = immer gültig
 let _tokenRefreshTimer = null;
 function startTokenAutoRefresh(){
+  // Deaktiviert: ruft trySilentGoogleTokenRefresh auf – siehe dort
+  return;
   if(_tokenRefreshTimer) clearInterval(_tokenRefreshTimer);
   _tokenRefreshTimer = setInterval(() => {
     const fbUser = (typeof firebase !== 'undefined' && firebase.auth)
