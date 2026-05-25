@@ -90,8 +90,8 @@
       const reg = await navigator.serviceWorker.ready;
       await reg.showNotification('Change', {
         body:  'Test-Benachrichtigung funktioniert.',
-        icon:  './icons/icons/icon-change-192.png',
-        badge: './icons/icons/icon-change-192.png',
+        icon:  './icons/icon-change-192.png',
+        badge: './icons/icon-change-192.png',
         tag:   'change-test'
       });
       toastSafe('Test gesendet ✓','ok');

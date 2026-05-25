@@ -1278,7 +1278,7 @@ function fireNotification(ev,daysLeft){
   // Service Worker showNotification() – funktioniert auf iOS/Android (new Notification ist dort nicht erlaubt)
   if('serviceWorker' in navigator){
     navigator.serviceWorker.ready.then(reg=>{
-      reg.showNotification(title,{body:ev.desc||'Termin',icon:'./icons/icons/icon-change-192.png',badge:'./icons/icons/icon-change-192.png',tag:ev.id});
+      reg.showNotification(title,{body:ev.desc||'Termin',icon:'./icons/icon-change-192.png',badge:'./icons/icon-change-192.png',tag:ev.id});
     }).catch(()=>{});
   }
 }
@@ -1887,7 +1887,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
       const n=payload.notification||{};
       if(Notification.permission==='granted' && 'serviceWorker' in navigator){
         navigator.serviceWorker.ready.then(reg=>{
-          reg.showNotification(n.title||'Change',{body:n.body||'',icon:'./icons/icons/icon-change-192.png',badge:'./icons/icons/icon-change-192.png'});
+          reg.showNotification(n.title||'Change',{body:n.body||'',icon:'./icons/icon-change-192.png',badge:'./icons/icon-change-192.png'});
         }).catch(()=>{});
       }
       toast(n.title||'Neue Change-Nachricht','ok');
@@ -1898,7 +1898,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   function openLocalNotification(title,body){
     if('Notification' in window && Notification.permission==='granted' && 'serviceWorker' in navigator){
       navigator.serviceWorker.ready.then(reg=>{
-        reg.showNotification(title,{body,icon:'./icons/icons/icon-change-192.png',badge:'./icons/icons/icon-change-192.png'});
+        reg.showNotification(title,{body,icon:'./icons/icon-change-192.png',badge:'./icons/icon-change-192.png'});
       }).catch(()=>{});
     }
   }
