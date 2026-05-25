@@ -343,9 +343,9 @@ window.addEventListener('load', async () => {
             if(typeof window.initFirebaseLive === 'function') window.initFirebaseLive();
           }, 200);
         } else {
-          // Session abgelaufen — beim nächsten Firestore-Write wird Fehler kommen
-          // Nutzer muss sich neu anmelden wenn er Daten speichern will
-          lsDel('was_logged_in');
+          // Firebase-Session abgelaufen – aber Google OAuth Token koennte aktiv sein.
+          // was_logged_in nur loeschen wenn kein aktiver Google-Token vorhanden.
+          if(!accessToken) lsDel('was_logged_in');
         }
       });
     }
@@ -383,7 +383,13 @@ window.addEventListener('load', async () => {
         return;
       }
 
-      // Nicht eingeloggt → Login anzeigen
+      // Nicht eingeloggt via Firebase – aber Google OAuth Token koennte vorhanden sein.
+      // In diesem Fall App NICHT zurueck zum Login schicken (verhindert Redirect-Loop).
+      if(accessToken && userInfo && userInfo.email){
+        // Google-Session ist aktiv (OAuth Redirect) – Firebase-Auth-Status ignorieren
+        if(document.getElementById('main-app').style.display !== 'flex') bootMainApp();
+        return;
+      }
       lsDel('demo_mode'); isDemoMode = false;
       lsDel('was_logged_in');
       if(ls('demo_mode')){
