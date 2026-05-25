@@ -155,7 +155,12 @@
       var result = await auth.signInWithPopup(provider());
       return applyAuthResult(result) || { user: auth.currentUser, accessToken: '' };
     }catch(e){
-      if(e && (e.code === 'auth/popup-blocked' || e.code === 'auth/cancelled-popup-request')){
+      // COOP-Fehler (GitHub Pages) + geblockte Popups → Redirect als Fallback
+      var code = e && e.code ? e.code : '';
+      var msg = e && e.message ? e.message : '';
+      var isPopupBlocked = code === 'auth/popup-blocked' || code === 'auth/cancelled-popup-request';
+      var isCoop = msg.includes('cross-origin') || msg.includes('window.closed') || msg.includes('opener');
+      if(isPopupBlocked || isCoop){
         await auth.signInWithRedirect(provider());
         return { redirecting: true };
       }
@@ -173,15 +178,20 @@
         var auth = firebase.auth();
         var current = auth.currentUser || await waitForAuthState(options.waitMs || 1500);
         if(current && (sameUserOrNoEmail(current) || options.silent)){
-          // Bei silent=true: jede gültige Firebase-Session akzeptieren.
-          // Firestore Rules prüfen nur request.auth != null – die E-Mail spielt serverseitig keine Rolle.
           writeUser(current);
           return true;
         }
 
-        // Wichtig: Keine Google-Calendar access_tokens mehr gegen Firebase Auth tauschen.
-        // Diese Tokens gehören oft zu einem anderen OAuth-Client und erzeugen
-        // auth/invalid-credential: "access_token audience is not for this project".
+        // Kein Nutzer → Anonymous Sign-In als Fallback (silent-Modus)
+        // Ermöglicht Firestore-Zugriff (isAuth() = true) ohne Google-Login
+        if(options.silent){
+          try{
+            var anonResult = await firebase.auth().signInAnonymously();
+            if(anonResult && anonResult.user){ pendingAuth = null; return true; }
+          }catch(anonErr){ /* Anonymous Auth nicht aktiviert – ignorieren */ }
+          return false;
+        }
+
         if(!options.interactive){
           if(!options.silent){
             try{ if(typeof toast === 'function') toast('Firebase-Anmeldung fehlt. Bitte einmal neu mit Google anmelden.','err'); }catch(e){}
