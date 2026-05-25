@@ -559,14 +559,36 @@ async function firebaseMobileLoginFallback(){
 function handleGoogleOAuthRedirect(){
   try{
     var hash = window.location.hash || '';
-    if(!hash || hash.indexOf('access_token=') === -1) return null;
+    // Immer loggen was im Hash steht (hilft beim Debuggen)
+    if(hash && hash.length > 1){
+      console.info('[Change] URL-Hash erkannt:', hash.substring(0, 120) + (hash.length > 120 ? '...' : ''));
+    }
+    if(!hash || hash.indexOf('access_token=') === -1){
+      if(hash && hash.indexOf('state=') !== -1){
+        console.info('[Change] Hash hat state= aber kein access_token= – Google hat moeglicherweise einen Fehler zurueckgegeben');
+        // Fehlerparameter auslesen
+        var errParams = {};
+        hash.replace(/^#/, '').split('&').forEach(function(p){
+          var eq = p.indexOf('=');
+          if(eq >= 0) errParams[p.substring(0, eq)] = decodeURIComponent(p.substring(eq+1));
+        });
+        if(errParams['error']) console.warn('[Change] Google OAuth Fehler:', errParams['error'], errParams['error_description'] || '');
+      }
+      return null;
+    }
+    // Korrekte Hash-Parameter-Parsing: Werte koennen '=' enthalten (base64-Token!)
     var params = {};
     hash.replace(/^#/, '').split('&').forEach(function(pair){
-      var kv = pair.split('=');
-      if(kv[0]) params[decodeURIComponent(kv[0])] = decodeURIComponent((kv[1] || '').replace(/\+/g, ' '));
+      var eq = pair.indexOf('=');
+      if(eq >= 0){
+        var k = pair.substring(0, eq);
+        var v = pair.substring(eq + 1);
+        try{ params[decodeURIComponent(k)] = decodeURIComponent(v); }catch(e){ params[k] = v; }
+      }
     });
     var token = params['access_token'] || '';
     var state = params['state'] || '';
+    console.info('[Change] OAuth Hash params – token vorhanden:', !!token, '| state:', state, '| keys:', Object.keys(params).join(','));
     if(!token) return null;
     // Hash sofort aus URL entfernen – Token darf nicht im Browser-History bleiben
     try{ window.history.replaceState(null, '', window.location.href.split('#')[0]); }catch(e){}
