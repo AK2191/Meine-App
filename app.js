@@ -506,19 +506,16 @@ async function handleGoogleLogin(){
         try{ if(typeof startTokenAutoRefresh==='function') startTokenAutoRefresh(); }catch(e){}
         bootMainApp();
         loadGoogleData();
-        // Firebase Auth: signInWithCredential nutzt den GIS-Token direkt (kein zweites Popup, kein COOP-Problem)
+        // Firebase: erst nach 2s versuchen, mit kurzem Timeout damit at-Quota nicht einfiert
         setTimeout(async ()=>{
           try{
-            if(typeof firebase!=='undefined' && firebase.auth && !firebase.auth().currentUser){
-              const cred = firebase.auth.GoogleAuthProvider.credential(null, accessToken);
-              const fbResult = await firebase.auth().signInWithCredential(cred);
-              if(fbResult && fbResult.user && window.applyChangeFirebaseAuthResult){
-                window.applyChangeFirebaseAuthResult(fbResult);
-              }
-            }
-          }catch(e){ console.info('[Change] Firebase credential:', e.code||e.message||e); }
-          try{ if(typeof initFirebaseLive==='function') initFirebaseLive().catch(()=>{}); }catch(e){}
-        }, 800);
+            const fbOk = await Promise.race([
+              (async ()=>{ if(window.ensureChangeFirebaseAuth) return await window.ensureChangeFirebaseAuth({silent:true}); return false; })(),
+              new Promise(r=>setTimeout(()=>r(false), 3000))
+            ]);
+            if(fbOk && typeof initFirebaseLive==='function') initFirebaseLive().catch(()=>{});
+          }catch(e){}
+        }, 2000);
       }
     });
     tc.requestAccessToken({prompt:'consent'});

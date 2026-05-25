@@ -49,6 +49,7 @@ Wenn eine Änderung fehlschlägt:
 | `firebaseAuthBridge.js` | COOP bei signInWithPopup | Nur popup-blocked → redirect, keine anderen Fehler abfangen |
 | `firebase-messaging-sw.js` | SW-Scope = Root | Datei muss im Root bleiben |
 | `app.js:logout()` | Reload statt showLogin | Muss `window.location.replace` aufrufen – NICHT showLogin() – sonst bleiben Firestore-Listener aktiv und frieren Re-Login ein |
+| `connectToGoogle` in `settingsPanel.js` | Firebase at Quota → Freeze | `connectToGoogle` ist FIREBASE-FREI implementiert – nie `handleGoogleLogin()` aufrufen, nie `bootMainApp()`, nie `initFirebaseLive()` darin |
 
 ---
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
@@ -313,7 +314,8 @@ firebase deploy --only hosting
 
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
-| 2026-05-25 | **BUG-FIX:** `connectToGoogle` war nie definiert → "Verbinden"-Button in Sync-Einstellungen tat nichts. Neu: `window.connectToGoogle = handleGoogleLogin` am Ende von `settingsPanel.js` | Claude |
+| 2026-05-25 | **BUG-FIX (v2):** `connectToGoogle` neu implementiert als Firebase-freie Funktion in `settingsPanel.js` – ruft direkt GIS TokenClient auf, kein `bootMainApp()`, kein `initFirebaseLive()`, kein Firebase. Verhindert Freeze wenn Firebase at Quota ist. | Claude |
+| 2026-05-25 | **BUG-FIX (v2):** `handleGoogleLogin()`: `signInWithCredential` entfernt, stattdessen `ensureChangeFirebaseAuth({silent:true})` mit 3s-Timeout (verhindert Hang bei Firebase at Quota) | Claude |
 | 2026-05-25 | **BUG-FIX:** Freeze nach Logout+Re-Login: `logout()` löst jetzt `window.location.replace(url + '?logout=...')` statt showLogin() — verhindert Konflikt zwischen alten Firestore-onSnapshot-Listenern und neuem Auth-Flow | Claude |
 | 2026-05-25 | **BUG-FIX:** Firebase-Auth "NICHT VERFÜGBAR": `handleGoogleLogin()` nutzt jetzt `firebase.auth().signInWithCredential(GoogleAuthProvider.credential(null, accessToken))` statt `signInChangeFirebaseWithGoogle({ silent:true })` → Firebase-Session wird nach GIS-Login automatisch ohne zweites Popup etabliert | Claude |
 | 2026-05-24 | settingsPanel.js: BY-AUX → BY-AUGSBURG in stateOptions (cleanState() erkannte BY-AUX nicht → fiel auf ALL zurück) | Claude |

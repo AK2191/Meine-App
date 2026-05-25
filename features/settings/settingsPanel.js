@@ -433,14 +433,56 @@
   window.openCalendarSettings = function(){ return openSettingsPanel('calendar'); };
   window.openPushSettingsPanel = function(){ return openSettingsPanel('sync'); };
 
-  // connectToGoogle: startet Google-OAuth-Flow um Calendar-Token + Firebase-Auth zu holen.
-  // Wird vom "Verbinden"-Button in den Sync-Einstellungen aufgerufen.
-  // Nutzt handleGoogleLogin() aus app.js (GIS Token Client, prompt:'consent').
+  // connectToGoogle: Firebase-unabhängiger Google-Calendar-Verbindungsflow.
+  // Ruft NUR den GIS-TokenClient auf. Kein bootMainApp, kein initFirebaseLive, kein Firebase.
+  // Grund: Firebase kann bei Quota-Überschreitung Retry-Loops verursachen die die App einfrieren.
   window.connectToGoogle = function(){
-    if(typeof handleGoogleLogin === 'function'){
-      handleGoogleLogin();
-    } else {
-      if(typeof toast === 'function') toast('Google-Anmeldung nicht verfügbar – Seite neu laden', 'err');
+    var clientId = (typeof getGoogleClientId === 'function') ? getGoogleClientId() : (localStorage.getItem('change_v1_client_id') ? JSON.parse(localStorage.getItem('change_v1_client_id') || '""') : '');
+    if(!clientId){
+      if(typeof toast === 'function') toast('Keine Google Client-ID konfiguriert', 'err');
+      return;
+    }
+    if(!window.google || !window.google.accounts || !window.google.accounts.oauth2){
+      if(typeof toast === 'function') toast('Google-Bibliothek nicht geladen – Seite neu laden', 'err');
+      return;
+    }
+    try{
+      var calScope = 'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
+      var cleanId = (typeof cleanGoogleClientId === 'function') ? cleanGoogleClientId(clientId) : String(clientId).trim();
+      var tc = window.google.accounts.oauth2.initTokenClient({
+        client_id: cleanId,
+        scope: calScope,
+        callback: function(resp){
+          if(resp && resp.error){
+            if(typeof toast === 'function') toast('Google-Anmeldung: ' + resp.error, 'err');
+            return;
+          }
+          // Token speichern – KEIN Firebase, KEIN bootMainApp
+          var token = resp.access_token || '';
+          try{ if(typeof SecureTokenStore !== 'undefined') SecureTokenStore.setToken(token, 3600); }catch(e){}
+          try{ if(typeof ls === 'function') ls('access_token', token); else localStorage.setItem('access_token', JSON.stringify(token)); }catch(e){}
+          try{ window.accessToken = token; }catch(e){}
+          try{ if(typeof accessToken !== 'undefined') accessToken = token; }catch(e){}
+          try{ localStorage.setItem('was_logged_in', 'true'); }catch(e){}
+          // Status-Keys für Google-Sync aktualisieren
+          try{ localStorage.setItem('change_v1_google_calendar_sync', 'true'); }catch(e){}
+          try{ localStorage.setItem('change_google_sync_enabled', 'true'); }catch(e){}
+          try{ localStorage.removeItem('change_v1_google_last_error'); }catch(e){}
+          try{ localStorage.setItem('change_v1_google_last_sync_at', new Date().toISOString()); }catch(e){}
+          // Kalender-Daten laden (kein Firebase-Aufruf)
+          try{ if(typeof loadGoogleData === 'function') loadGoogleData(); }catch(e){}
+          // UI aktualisieren
+          try{ if(typeof renderCalendar === 'function') renderCalendar(); }catch(e){}
+          try{ if(typeof buildDashboard === 'function') buildDashboard(); }catch(e){}
+          if(typeof toast === 'function') toast('Google Kalender verbunden ✓', 'ok');
+          // Settings-Panel neu öffnen damit Status aktualisiert wird
+          setTimeout(function(){ openSettingsPanel('sync'); }, 400);
+        }
+      });
+      tc.requestAccessToken({ prompt: 'consent' });
+    }catch(e){
+      if(typeof toast === 'function') toast('Google-Verbindung konnte nicht gestartet werden', 'err');
+      console.warn('[Change] connectToGoogle:', e);
     }
   };
 })();
