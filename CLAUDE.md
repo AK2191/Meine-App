@@ -49,7 +49,7 @@ Wenn eine Änderung fehlschlägt:
 | `firebaseAuthBridge.js` | COOP bei signInWithPopup | Nur popup-blocked → redirect, keine anderen Fehler abfangen |
 | `firebase-messaging-sw.js` | SW-Scope = Root | Datei muss im Root bleiben |
 | `app.js:logout()` | Reload statt showLogin | Muss `window.location.replace` aufrufen – NICHT showLogin() – sonst bleiben Firestore-Listener aktiv und frieren Re-Login ein |
-| `connectToGoogle` in `settingsPanel.js` | Firebase at Quota → Freeze | `connectToGoogle` ist FIREBASE-FREI implementiert – nie `handleGoogleLogin()` aufrufen, nie `bootMainApp()`, nie `initFirebaseLive()` darin |
+| `connectToGoogle` in `settingsPanel.js` | GIS-Popup friert auf GitHub Pages ein (COOP) | `connectToGoogle` nutzt OAuth 2.0 Implicit Redirect (kein Popup). `handleGoogleOAuthRedirect()` liest Token aus URL-Hash beim Reload. Nie wieder auf GIS-TokenClient umstellen! |
 
 ---
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
@@ -314,7 +314,7 @@ firebase deploy --only hosting
 
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
-| 2026-05-25 | **BUG-FIX (v2):** `connectToGoogle` neu implementiert als Firebase-freie Funktion in `settingsPanel.js` – ruft direkt GIS TokenClient auf, kein `bootMainApp()`, kein `initFirebaseLive()`, kein Firebase. Verhindert Freeze wenn Firebase at Quota ist. | Claude |
+| 2026-05-25 | **BUG-FIX (v3 – FINAL):** `connectToGoogle` nutzt jetzt OAuth 2.0 Implicit Redirect statt GIS-TokenClient-Popup. GIS-Popup friert auf GitHub Pages wegen COOP ein (auch mit prompt:'consent'). Redirect zu `accounts.google.com` mit `state=gcal_connect` → Token kommt im URL-Hash zurück → neue Funktion `handleGoogleOAuthRedirect()` in `app.js` liest ihn beim Load, setzt Token, lädt Kalender, öffnet Settings. | Claude |
 | 2026-05-25 | **BUG-FIX (v2):** `handleGoogleLogin()`: `signInWithCredential` entfernt, stattdessen `ensureChangeFirebaseAuth({silent:true})` mit 3s-Timeout (verhindert Hang bei Firebase at Quota) | Claude |
 | 2026-05-25 | **BUG-FIX:** Freeze nach Logout+Re-Login: `logout()` löst jetzt `window.location.replace(url + '?logout=...')` statt showLogin() — verhindert Konflikt zwischen alten Firestore-onSnapshot-Listenern und neuem Auth-Flow | Claude |
 | 2026-05-25 | **BUG-FIX:** Firebase-Auth "NICHT VERFÜGBAR": `handleGoogleLogin()` nutzt jetzt `firebase.auth().signInWithCredential(GoogleAuthProvider.credential(null, accessToken))` statt `signInChangeFirebaseWithGoogle({ silent:true })` → Firebase-Session wird nach GIS-Login automatisch ohne zweites Popup etabliert | Claude |

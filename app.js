@@ -283,6 +283,20 @@ window.addEventListener('load', async () => {
   await handleFirebaseRedirectLogin();
   if(document.getElementById('main-app').style.display==='flex') { initPWA(); scheduleNotifCheck(); return; }
 
+  // Google OAuth Redirect: Token aus URL-Hash lesen (COOP-sicherer Weg für GitHub Pages)
+  if(handleGoogleOAuthRedirect()){
+    try{ await fetchUserInfo(); }catch(e){}
+    if(ls('was_logged_in') && ls('user_info_safe')?.email){
+      const cached = ls('user_info_safe');
+      userInfo = saveUserProfileInfo({ name: cached.name||'', email: cached.email||'', picture: cached.picture||'' });
+    }
+    bootMainApp();
+    try{ loadGoogleData(); }catch(e){}
+    setTimeout(()=>{ try{ if(typeof openSettingsPanel==='function') openSettingsPanel('sync'); }catch(e){} }, 600);
+    initPWA(); scheduleNotifCheck();
+    return;
+  }
+
   // [FIX PERSISTENZ] Firebase Auth State prüfen
   // Firebase speichert Session in IndexedDB → überlebt F5, bleibt 2+ Tage aktiv
   // [FIX F5] Wenn Nutzer vorher eingeloggt war: App sofort zeigen
@@ -534,6 +548,43 @@ async function firebaseMobileLoginFallback(){
     provider.addScope('https://www.googleapis.com/auth/calendar');
     await firebase.auth().signInWithRedirect(provider());
   }catch(e){console.warn('Mobile Firebase Login:',e);toast('Mobile Anmeldung konnte nicht gestartet werden: '+(e.message||e),'err');}
+}
+
+// OAuth 2.0 Implicit Flow – COOP-sicherer Redirect statt Popup für GitHub Pages
+// Liest access_token aus dem URL-Hash nach Google-Redirect zurück.
+function handleGoogleOAuthRedirect(){
+  try{
+    var hash = window.location.hash || '';
+    if(!hash || hash.indexOf('access_token=') === -1) return false;
+    if(hash.indexOf('state=gcal_connect') === -1) return false;
+    // Token aus Hash extrahieren
+    var params = {};
+    hash.replace(/^#/, '').split('&').forEach(function(pair){
+      var parts = pair.split('=');
+      params[decodeURIComponent(parts[0])] = decodeURIComponent(parts[1] || '');
+    });
+    var token = params['access_token'] || '';
+    if(!token) return false;
+    // Hash sofort aus der URL entfernen (verhindert Token im Browser-History)
+    try{
+      var cleanUrl = window.location.href.split('#')[0];
+      window.history.replaceState(null, '', cleanUrl);
+    }catch(e){}
+    // Token speichern
+    accessToken = token;
+    try{ if(typeof SecureTokenStore !== 'undefined') SecureTokenStore.setToken(token, 3600); }catch(e){}
+    try{ if(typeof ls === 'function') ls('access_token', token); }catch(e){}
+    try{ localStorage.setItem('was_logged_in', 'true'); }catch(e){}
+    try{ localStorage.setItem('change_v1_google_calendar_sync', 'true'); }catch(e){}
+    try{ localStorage.setItem('change_google_sync_enabled', 'true'); }catch(e){}
+    try{ localStorage.removeItem('change_v1_google_last_error'); }catch(e){}
+    try{ localStorage.setItem('change_v1_google_last_sync_at', new Date().toISOString()); }catch(e){}
+    console.info('[Change] Google OAuth Redirect: Token erhalten');
+    return true;
+  }catch(e){
+    console.warn('[Change] handleGoogleOAuthRedirect:', e);
+    return false;
+  }
 }
 
 async function handleFirebaseRedirectLogin(){
