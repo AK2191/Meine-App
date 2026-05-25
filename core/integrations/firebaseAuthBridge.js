@@ -158,9 +158,9 @@
       // COOP-Fehler (GitHub Pages) + geblockte Popups → Redirect als Fallback
       var code = e && e.code ? e.code : '';
       var msg = e && e.message ? e.message : '';
+      // Nur bei tatsächlich geblocktem Popup auf Redirect umschalten
       var isPopupBlocked = code === 'auth/popup-blocked' || code === 'auth/cancelled-popup-request';
-      var isCoop = msg.includes('cross-origin') || msg.includes('window.closed') || msg.includes('opener');
-      if(isPopupBlocked || isCoop){
+      if(isPopupBlocked){
         await auth.signInWithRedirect(provider());
         return { redirecting: true };
       }
@@ -176,20 +176,10 @@
     pendingAuth = (async function(){
       try{
         var auth = firebase.auth();
-        var current = auth.currentUser || await waitForAuthState(options.waitMs || 1500);
+        var current = auth.currentUser || await waitForAuthState(options.waitMs || 3000);
         if(current && (sameUserOrNoEmail(current) || options.silent)){
           writeUser(current);
           return true;
-        }
-
-        // Kein Nutzer → Anonymous Sign-In als Fallback (silent-Modus)
-        // Ermöglicht Firestore-Zugriff (isAuth() = true) ohne Google-Login
-        if(options.silent){
-          try{
-            var anonResult = await firebase.auth().signInAnonymously();
-            if(anonResult && anonResult.user){ pendingAuth = null; return true; }
-          }catch(anonErr){ /* Anonymous Auth nicht aktiviert – ignorieren */ }
-          return false;
         }
 
         if(!options.interactive){

@@ -1,38 +1,41 @@
 rules_version = '2';
 
-// ═══════════════════════════════════════════════════════════════
-// CHANGE APP — Firestore Rules v6
-// Angepasst für GitHub Pages (kein COOP-Header):
-// - Anonymous Auth als Fallback wenn Google-Login nicht möglich
-// - Settings: read/write für alle authentifizierten User (Google + Anonym)
-// ═══════════════════════════════════════════════════════════════
+// CHANGE APP — Firestore Rules v7
+// Nur Google-angemeldete User (kein Anonymous)
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Echter Google-User (nicht anonym)
+    function isGoogleUser() {
+      return request.auth != null
+        && request.auth.token.firebase.sign_in_provider == 'google.com';
+    }
+
+    // Jeder authentifizierte User (für Settings-Fallback)
     function isAuth() {
       return request.auth != null;
     }
 
-    // Spieler-Profile
+    // Spieler-Profile — nur Google-User dürfen schreiben
     match /change_players/{docId} {
       allow read: if true;
-      allow write: if isAuth();
+      allow write: if isGoogleUser();
     }
 
-    // Challenge-Completions (Punkte)
+    // Challenge-Completions
     match /change_completions/{docId} {
       allow read: if true;
-      allow write: if isAuth();
+      allow write: if isGoogleUser();
     }
 
-    // Challenges (Aufgaben)
+    // Challenges
     match /change_challenges/{challengeId} {
       allow read: if true;
-      allow write: if isAuth();
+      allow write: if isGoogleUser();
     }
 
-    // Settings — Google-User oder Anonymous-User (GitHub Pages Fallback)
+    // Settings — auth reicht (auch wenn kurz kein currentUser)
     match /change_settings/{docId} {
       allow read, write: if isAuth();
     }
@@ -42,7 +45,7 @@ service cloud.firestore {
       allow read, write: if isAuth();
     }
 
-    // Fallback: alles andere sperren
+    // Fallback sperren
     match /{document=**} {
       allow read, write: if false;
     }
