@@ -1,4 +1,55 @@
 # CLAUDE.md – Change App
+
+---
+
+## 🔒 Sicherheitsregeln für Claude (STRIKT, IMMER EINHALTEN)
+
+### Vor jeder Änderung
+1. **Nur eine Datei gleichzeitig ändern** – nie mehrere Systeme in einem Schritt
+2. **Syntaxprüfung** nach jeder JS-Änderung: `node --check <datei>`
+3. **Kritische Dateien** nie ohne explizite Erlaubnis anfassen:
+   - `app.js` – nur gezielte str_replace, nie rewrite
+   - `firebase-messaging-sw.js` – Service Worker, Scope-Regeln beachten
+   - `firestore.rules` – immer deployen nach Änderung
+
+### Nach jeder Änderung PFLICHT
+```
+node --check app.js
+node --check change-pre.js  
+node --check change-post.js
+node --check features/calendar/calendar-logic.js
+node --check features/challenges/challenge-sync.js
+```
+
+### Verboten ohne explizite Genehmigung
+- ❌ `let`/`const`-Deklarationen hinzufügen wenn Variable schon existiert
+- ❌ Datei-Header in Funktionskörper einfügen
+- ❌ Mehrere `onSnapshot`-Listener auf dieselbe Collection
+- ❌ `requestAccessToken({prompt:'none'})` – verursacht COOP-Freeze auf GitHub Pages
+- ❌ Firebase Anonymous Auth – erzeugt Fake-Spieler
+- ❌ REST-API-Calls auf Firestore (HTTP 429-Risiko, SDK reicht)
+
+### Firebase Quota Schutz
+- Max 1 `onSnapshot` pro Collection
+- Completions: immer mit Datumsfilter (letzte 60 Tage) + limit(200)
+- Players: onSnapshot ohne Limit ist ok (wenige Dokumente)
+- Nie `limit(500)` oder `limit(1000)` ohne Datumsfilter
+
+### Rückfall-Strategie
+Wenn eine Änderung fehlschlägt:
+1. Nicht weiter patchen – aus dem letzten ZIP wiederherstellen
+2. Zieldatei neu extrahieren: `unzip -p fixed_N.zip "*/datei.js" > datei.js`
+3. Nur die eine nötige Änderung sauber draufsetzen
+
+### Bekannte Problemzonen (nicht anfassen ohne guten Grund)
+| Datei | Problem | Workaround |
+|-------|---------|------------|
+| `app.js:trySilentGoogleTokenRefresh` | COOP-Freeze | Funktion ist deaktiviert (return;) – so lassen |
+| `challenge-sync.js` | 3 Layer übereinander | Nur Datumsfilter/Limits anpassen, nie Listener neu bauen |
+| `firebaseAuthBridge.js` | COOP bei signInWithPopup | Nur popup-blocked → redirect, keine anderen Fehler abfangen |
+| `firebase-messaging-sw.js` | SW-Scope = Root | Datei muss im Root bleiben |
+
+---
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
 > Zuletzt aktualisiert: 2026-05-24 (3)
 

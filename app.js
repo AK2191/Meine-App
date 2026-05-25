@@ -238,6 +238,8 @@ const SecureTokenStore = (() => {
 
 // [FIX PERSISTENZ] Stille Google-Neuanmeldung nach F5 (kein Popup)
 function trySilentGoogleTokenRefresh(){
+  // Deaktiviert: verursacht COOP-Freeze auf GitHub Pages
+  return;
   // Deaktiviert: Google OAuth requestAccessToken mit prompt:'none' verursacht
   // auf GitHub Pages (ohne COOP-Header) einen Polling-Loop der den Main Thread blockiert.
   // Token-Refresh erfolgt stattdessen beim manuellen Google-Sync-Button.
@@ -248,293 +250,9 @@ function trySilentGoogleTokenRefresh(){
 // Token läuft nach 60 Min ab — 50 Min Intervall = immer gültig
 let _tokenRefreshTimer = null;
 function startTokenAutoRefresh(){
-  // Prüft alle 30 Min ob der Google-Token noch gültig ist.
-  // Kein requestAccessToken(), kein Popup, kein COOP-Problem.
-  if(_tokenRefreshTimer) clearInterval(_tokenRefreshTimer);
-  _tokenRefreshTimer = setInterval(async () => {
-    const token = (typeof SecureTokenStore!=='undefined' && SecureTokenStore.getToken)
-      ? SecureTokenStore.getToken() : (window.accessToken || '');
-    if(!token) return;
-    try{
-      const r = await fetch('https://www.googleapis.com/oauth2/v3/tokeninfo?access_token='+encodeURIComponent(token));
-      if(r.status === 400 || r.status === 401){
-        window.accessToken = '';
-        try{ if(typeof SecureTokenStore!=='undefined') SecureTokenStore.clearToken(); }catch(e){}
-        if(typeof toast==='function') toast('Google-Anmeldung abgelaufen – bitte neu anmelden','');
-      }
-    }catch(e){}
-  }, 1800000); // alle 30 Minuten
-}pp · App · Hauptlogik
- * Aus index.html extrahiert — Code unverändert
- * NICHT direkt bearbeiten — stattdessen in die passende core/ oder features/ Datei
- */
-
-'use strict';
-
-/* CONSTANTS & STATE */
-const VER = '2.0';
-const LSK = 'change_v1';
-const GCAL_SCOPE = [
-  'https://www.googleapis.com/auth/calendar',
-  'https://www.googleapis.com/auth/userinfo.profile',
-  'https://www.googleapis.com/auth/userinfo.email'
-].join(' ');
-
-const DE_MONTHS = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
-const DE_MONTHS_S = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
-const DE_DAYS_F = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
-
-let CLIENT_ID = '';
-const DEFAULT_GOOGLE_CLIENT_ID = '357338141580-5m8f668fiih2pkuu6umj3j5hc2dsi78q.apps.googleusercontent.com';
-function cleanGoogleClientId(value){
-  return String(value || '')
-    .trim()
-    .replace(/^https?:\/\//i, '')
-    .replace(/^\/+/, '')
-    .split(/[/?#]/)[0];
-}
-function getGoogleClientId(){
-  const stored = cleanGoogleClientId(typeof ls === 'function' ? ls('client_id') : '');
-  const id = stored || DEFAULT_GOOGLE_CLIENT_ID;
-  try{ if(stored !== id) ls('client_id', id); }catch(e){}
-  return id;
-}
-let accessToken = '';
-let userInfo = {};
-let isDemoMode = false;
-let currentMainView = 'dashboard';
-let currentCalView = 'month';
-var curDate = new Date(); // var = global window.curDate für change-post.js
-
-// Data
-let events = [];
-let gEvents = [];
-let challenges = [];
-let challengeCompletions = [];
-let challengePlayers = [];
-let notifications = [];
-try{ window.notifications = notifications; }catch(_){}
-
-/* ==== CHALLENGE STATE BRIDGE ==== */
-function getChallengeStore(){
-  return (typeof window !== 'undefined' && window.ChangeChallengeStore) ? window.ChangeChallengeStore : null;
-}
-function syncChallengeStateFromStore(defaultFactory){
-  const store = getChallengeStore();
-  if(!store) return false;
-  try{
-    store.ensureDefaults(typeof defaultFactory === 'function' ? defaultFactory : (typeof window.buildDefaultChallenges === 'function' ? window.buildDefaultChallenges : null));
-    challenges = store.getChallenges();
-    challengeCompletions = store.getCompletions();
-    challengePlayers = store.getPlayers();
-    return true;
-  }catch(e){
-    console.warn('ChallengeStore sync:', e);
-    return false;
-  }
-}
-function persistChallengeStateToStore(){
-  const store = getChallengeStore();
-  if(!store) return false;
-  try{
-    const storeChallenges = store.getChallenges();
-    const storeCompletions = store.getCompletions();
-    const storePlayers = store.getPlayers();
-    if((!Array.isArray(challenges) || !challenges.length) && storeChallenges.length) challenges = storeChallenges;
-    else store.replaceChallenges(challenges || [], {persist:false});
-    if((!Array.isArray(challengeCompletions) || !challengeCompletions.length) && storeCompletions.length) challengeCompletions = storeCompletions;
-    else store.replaceCompletions(challengeCompletions || [], {persist:false});
-    if((!Array.isArray(challengePlayers) || !challengePlayers.length) && storePlayers.length) challengePlayers = storePlayers;
-    else store.replacePlayers(challengePlayers || [], {persist:false});
-    store.persistAll();
-    challenges = store.getChallenges();
-    challengeCompletions = store.getCompletions();
-    challengePlayers = store.getPlayers();
-    return true;
-  }catch(e){
-    console.warn('ChallengeStore persist:', e);
-    return false;
-  }
-}
-
-
-// Filter state
-let invFilter = 'alle';
-let conFilter = 'alle';
-
-/* ==== LOCAL STORAGE ==== */
-const ls = (k,v) => {
-  if(v===undefined){try{return JSON.parse(localStorage.getItem(LSK+'_'+k));}catch{return null;}}
-  try{localStorage.setItem(LSK+'_'+k,JSON.stringify(v));}catch{}
-};
-const lsDel = k => {try{localStorage.removeItem(LSK+'_'+k);}catch{}};
-try{ window.ls = ls; window.lsDel = lsDel; }catch(_){}
-
-
-/* ==== PROFILE AVATAR ==== */
-function readRawJson(key, fallback = null){
-  try{
-    const raw = localStorage.getItem(key);
-    return raw == null ? fallback : JSON.parse(raw);
-  }catch(e){ return fallback; }
-}
-function writeRawJson(key, value){
-  try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){}
-}
-function normalizeProfileInfo(info){
-  const current = (typeof userInfo !== 'undefined' && userInfo && typeof userInfo === 'object') ? userInfo : {};
-  const next = Object.assign({}, current, info || {});
-  const name = String(next.name || next.displayName || next.email || '').trim();
-  const email = String(next.email || next.mail || '').trim();
-  const picture = String(next.picture || next.photoURL || current.picture || '').trim();
-  return { name, email, picture };
-}
-function saveUserProfileInfo(info){
-  const normalized = normalizeProfileInfo(info);
-  if(!normalized.name && !normalized.email && !normalized.picture) return normalized;
-  userInfo = Object.assign({}, userInfo || {}, normalized);
-  try{ SecureTokenStore.setUser(userInfo); }catch(e){}
-  const safe = { name:userInfo.name||'', email:userInfo.email||'', picture:userInfo.picture||'' };
-  try{ ls('user_info_safe', safe); }catch(e){}
-  try{ ls('user_info', safe); }catch(e){}
-  writeRawJson('user_info_safe', safe);
-  writeRawJson('user_info', safe);
-  return normalized;
-}
-function resolveUserProfileInfo(){
-  let fbUser = null;
-  try{ fbUser = window.firebase && firebase.auth && firebase.auth().currentUser; }catch(e){}
-  const candidates = [
-    fbUser ? {name:fbUser.displayName||'', email:fbUser.email||'', picture:fbUser.photoURL||''} : null,
-    (typeof userInfo !== 'undefined' ? userInfo : null),
-    (typeof SecureTokenStore !== 'undefined' && SecureTokenStore.getUser ? SecureTokenStore.getUser() : null),
-    ls('user_info_safe'),
-    ls('user_info'),
-    readRawJson('change_v1_user_info_safe'),
-    readRawJson('change_v1_user_info'),
-    readRawJson('user_info_safe'),
-    readRawJson('user_info'),
-    readRawJson('google_user'),
-    readRawJson('current_user')
-  ].filter(Boolean);
-  const result = { name:'', email:'', picture:'' };
-  for(const c of candidates){
-    if(!result.name) result.name = String(c.name || c.displayName || '').trim();
-    if(!result.email) result.email = String(c.email || c.mail || '').trim();
-    const pic = String(c.picture || c.photoURL || '').trim();
-    if(!result.picture && /^https:\/\//i.test(pic)) result.picture = pic;
-  }
-  if(!result.name && result.email) result.name = result.email.split('@')[0];
-  return saveUserProfileInfo(result);
-}
-function renderAvatarInitials(av, initials){
-  while(av && av.firstChild) av.removeChild(av.firstChild);
-  if(!av) return;
-  const sp = document.createElement('span');
-  sp.id = 'avatar-initials';
-  sp.textContent = initials || '?';
-  av.appendChild(sp);
-}
-function updateAvatar(){
-  const av = document.getElementById('user-avatar');
-  if(!av) return;
-  const profile = resolveUserProfileInfo();
-  const rawName = String(profile.name || profile.email || '?');
-  const initials = rawName.split(/[\s._-]+/).filter(Boolean).map(w=>w[0]||'').join('').substring(0,2).toUpperCase() || '?';
-  while(av.firstChild) av.removeChild(av.firstChild);
-  if(profile.picture && /^https:\/\//i.test(profile.picture)){
-    const img = document.createElement('img');
-    img.alt = rawName;
-    img.referrerPolicy = 'no-referrer';
-    img.decoding = 'async';
-    img.src = profile.picture;
-    img.addEventListener('error', () => renderAvatarInitials(av, initials), {once:true});
-    av.appendChild(img);
-  } else {
-    renderAvatarInitials(av, initials);
-  }
-  try{ if(typeof updateAvatarDot === 'function') updateAvatarDot(); }catch(e){}
-}
-window.updateAvatar = updateAvatar;
-async function persistChangeState(){
-  try{
-    ls('events', events);
-    if(!persistChallengeStateToStore()){
-      ls('challenges', challenges);
-      ls('challenge_completions', challengeCompletions);
-      ls('challenge_players', challengePlayers);
-    }
-    // [FIX AUTH-GUARD] Firestore nur schreiben wenn Firebase Auth aktiv
-    const fbUser = (typeof firebase!=='undefined' && firebase.auth) ? firebase.auth().currentUser : null;
-    if(typeof registerLivePlayer==='function' && fbUser) registerLivePlayer();
-  }catch(e){console.warn('Persist local:',e);}
-}
-
-/* ==== DATE HELPERS ==== */
-const pad = n => String(n).padStart(2,'0');
-const dateKey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-const isToday = d => {const t=new Date();return d.getFullYear()===t.getFullYear()&&d.getMonth()===t.getMonth()&&d.getDate()===t.getDate();};
-const daysUntil = dk => {if(!dk)return 999;const d=new Date(dk+'T12:00:00'),t=new Date();t.setHours(0,0,0,0);d.setHours(0,0,0,0);return Math.round((d-t)/86400000);};
-const fmtDate = dk => {if(!dk)return'—';const d=new Date(dk+'T12:00:00');return`${d.getDate()}. ${DE_MONTHS_S[d.getMonth()]} ${d.getFullYear()}`;};
-const fmtMoney = v => {if(!v&&v!==0)return'—';return Number(v).toLocaleString('de-DE',{style:'currency',currency:'EUR'});};
-// [FIX CRIT-4] esc() — vollst. HTML-Escaping inkl. Apostrophe
-const esc = s => String(s??'').replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c]));
-// [FIX HIGH] safeUrl() — blockiert javascript:/data: URLs in href
-const safeUrl = u => { if(!u) return ''; const s=String(u).trim(); if(/^(javascript|data|vbscript):/i.test(s)) return ''; if(!/^https?:\/\//.test(s)) return ''; return s; };
-const uid = () => Math.random().toString(36).substring(2,10)+Date.now().toString(36);
-
-/* INIT */
-/* ==========================
-   [FIX CRIT-3] SECURE TOKEN STORE
-   Access-Token NUR im RAM – nie in localStorage
-========================== */
-const SecureTokenStore = (() => {
-  let _tok = null, _exp = 0, _usr = null;
-  // Alte unsichere Tokens sofort aus localStorage löschen
-  try { localStorage.removeItem(LSK+'_access_token'); } catch(_e) {}
-  return {
-    setToken(t, expiresIn = 3600) { _tok = t; _exp = Date.now() + expiresIn * 1000; },
-    getToken() { return (_tok && Date.now() < _exp) ? _tok : null; },
-    isValid() { return !!_tok && Date.now() < _exp; },
-    setUser(u) { _usr = { name: String(u.name||''), email: String(u.email||''), picture: String(u.picture||'') }; },
-    getUser() { return _usr ? {..._usr} : null; },
-    clear() { _tok = null; _exp = 0; _usr = null; }
-  };
-})();
-
-// [FIX PERSISTENZ] Stille Google-Neuanmeldung nach F5 (kein Popup)
-function trySilentGoogleTokenRefresh(){
-  // Deaktiviert: Google OAuth requestAccessToken mit prompt:'none' verursacht
-  // auf GitHub Pages (ohne COOP-Header) einen Polling-Loop der den Main Thread blockiert.
-  // Token-Refresh erfolgt stattdessen beim manuellen Google-Sync-Button.
+  // Deaktiviert: ruft trySilentGoogleTokenRefresh auf – siehe dort
   return;
-}
-
-// [AUTO-REFRESH] Google Token alle 50 Min still erneuern
-// Token läuft nach 60 Min ab — 50 Min Intervall = immer gültig
-let _tokenRefreshTimer = null;
-function startTokenAutoRefresh(){
-  // Token-Validität prüfen: alle 30 Min testen ob der Token noch gültig ist
-  // Kein requestAccessToken() – kein Popup, kein COOP-Problem
   if(_tokenRefreshTimer) clearInterval(_tokenRefreshTimer);
-  _tokenRefreshTimer = setInterval(async () => {
-    const token = (typeof SecureTokenStore!=='undefined' && SecureTokenStore.getToken)
-      ? SecureTokenStore.getToken() : (window.accessToken || '');
-    if(!token) return;
-    // Token via Google People API validieren (lightweight, kein Scope-Problem)
-    try{
-      const r = await fetch('https://www.googleapis.com/oauth2/v3/tokeninfo?access_token='+token);
-      if(r.status === 400 || r.status === 401){
-        // Token abgelaufen → User informieren, aber NICHT automatisch neu anmelden
-        window.accessToken = '';
-        try{ if(typeof SecureTokenStore!=='undefined') SecureTokenStore.clearToken(); }catch(e){}
-        if(typeof toast==='function') toast('Google-Anmeldung abgelaufen – bitte neu anmelden','');
-      }
-      // Token noch gültig → nichts tun
-    }catch(e){ /* Netzwerkfehler – ignorieren */ }
-  }, 1800000); // alle 30 Minuten prüfen
-  // Nicht mehr benutzt:
-  if(false){ if(_tokenRefreshTimer) clearInterval(_tokenRefreshTimer);
   _tokenRefreshTimer = setInterval(() => {
     const fbUser = (typeof firebase !== 'undefined' && firebase.auth)
       ? firebase.auth().currentUser : null;
@@ -775,9 +493,10 @@ async function handleGoogleLogin(){
         loadGoogleData();
         setTimeout(async () => {
           try{
-            // Firebase Auth: currentUser prüfen, dann silent – kein zweites Popup öffnen
+            // Firebase Auth interaktiv starten – Popup öffnet sich kurz (Google-Session bereits aktiv,
+            // daher meist automatisch ohne Nutzerinteraktion).
             if(window.signInChangeFirebaseWithGoogle){
-              // Nur wenn noch kein Firebase-User vorhanden ist
+              // Silent only - kein zweites Popup (verhindert COOP-Freeze)
               if(typeof firebase !== 'undefined' && firebase.auth && !firebase.auth().currentUser){
                 await window.signInChangeFirebaseWithGoogle({ silent: true });
               }
@@ -2055,17 +1774,15 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   }
 
   function isRealPlayer(p){
-    // Nur echte Google-User mit E-Mail-Adresse anzeigen
-    // Anonyme UIDs wie "46eqWWYouVO..." oder "0fWpGjK1..." herausfiltern
     var id = String(p.email || p.id || '').toLowerCase();
-    return id.includes('@') && id.length > 4 && !id.includes('demo') && !id.includes('example');
+    return id.includes('@') && id.length > 4;
   }
 
   function startLivePlayersListener(){
     if(ls('live_sync_enabled')===false) return;
     if(!db || unsubscribePlayers) return;
     unsubscribePlayers=db.collection('change_players').onSnapshot(snap=>{
-      snap.forEach(doc=>{const d={id:doc.id,...doc.data()};if(isRealPlayer(d)) mergePlayer(d);});
+      snap.forEach(doc=>mergePlayer({id:doc.id,...doc.data()}));
       persistChallengeStateToStore() || ls('challenge_players',challengePlayers);
       if(currentMainView==='challenges') renderChallenges();
       if(currentMainView==='dashboard') buildDashboard();
@@ -2276,7 +1993,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
 
   window.openParticipantPanel = function(){
     initFirebaseLive();
-    const players=[...(challengePlayers||[])].filter(isRealPlayer).sort((a,b)=>(b.online===true)-(a.online===true)||String(a.name||'').localeCompare(String(b.name||'')));
+    const players=[...(challengePlayers||[])].sort((a,b)=>(b.online===true)-(a.online===true)||String(a.name||'').localeCompare(String(b.name||'')));
     const html='<div class="section-label">Automatisch erkannte Mitspieler</div>'+
       (players.length?players.map(p=>'<div class="leader-row"><div class="leader-rank">'+(p.picture?'<img src="'+esc(p.picture)+'" style="width:28px;height:28px;border-radius:50%;object-fit:cover">':'👤')+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(p.email===userInfo.email?' · Du':'')+(p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>')+'</div><div class="leader-detail">'+esc(p.email||'')+'</div></div></div>').join(''):'<div class="dash-empty">Noch keine Mitspieler erkannt. Sobald sich jemand mit Google anmeldet, erscheint er hier automatisch.</div>')+
       '<div class="settings-hint">Manuelles Hinzufügen ist deaktiviert. Jeder Google-Login wird automatisch als Mitspieler registriert.</div>';
@@ -2355,7 +2072,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   function playerKey(p){return String((p&& (p.email||p.id))||'').toLowerCase();}
   function isDemoPlayer(p){const k=playerKey(p); return k===DEMO_EMAIL || String(p?.name||'').toLowerCase().includes('demo nutzer');}
   window.getVisibleContestPlayers=function(){
-    const list=(challengePlayers||[]).filter(p=>(isDemoMode || !isDemoPlayer(p)) && isRealPlayer(p));
+    const list=(challengePlayers||[]).filter(p=>isDemoMode || !isDemoPlayer(p));
     const seen=new Set();
     return list.filter(p=>{const k=playerKey(p); if(!k||seen.has(k)) return false; seen.add(k); return true;});
   };
