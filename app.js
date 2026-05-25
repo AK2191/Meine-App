@@ -516,24 +516,28 @@ function showLogin(){
   document.getElementById('login-screen').style.display='flex';
 }
 
-// handleGoogleLogin: OAuth 2.0 Implicit Flow via REDIRECT – KEIN GIS-Popup.
-// GIS requestAccessToken verursacht COOP-Freeze auf GitHub Pages:
-//   "Cross-Origin-Opener-Policy would block the window.closed call"
-// Loesung: Ganzseitiger Redirect zu Google. Token kommt im URL-Hash zurueck.
-// handleGoogleOAuthRedirect() im naechsten Seitenload verarbeitet ihn (state=main_login).
-// VORAUSSETZUNG: https://ak2191.github.io/Meine-App/ in Google Cloud Console registriert.
+// handleGoogleLogin: Firebase Auth signInWithRedirect – kein GIS-Popup, kein Implicit Flow.
+// GIS requestAccessToken → COOP-Freeze auf GitHub Pages.
+// OAuth Implicit Flow (response_type=token) → von Google fuer neue Apps deaktiviert.
+// Firebase Auth signInWithRedirect → funktioniert ohne COOP, ohne Implicit Flow.
+// handleFirebaseRedirectLogin() verarbeitet das Ergebnis und gibt auch den Calendar-Token zurueck.
 function handleGoogleLogin(){
-  CLIENT_ID = getGoogleClientId();
-  if(!CLIENT_ID){ document.getElementById('setup-modal').classList.add('show'); return; }
-  var redirectUri = window.location.href.split('?')[0].split('#')[0];
-  var authUrl = 'https://accounts.google.com/o/oauth2/auth'
-    + '?client_id=' + encodeURIComponent(cleanGoogleClientId(CLIENT_ID))
-    + '&redirect_uri=' + encodeURIComponent(redirectUri)
-    + '&response_type=token'
-    + '&scope=' + encodeURIComponent('https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email')
-    + '&prompt=select_account'
-    + '&state=main_login';
-  window.location.href = authUrl;
+  if(!window.firebase || !window.FIREBASE_CONFIG || !firebase.auth){
+    toast('Anmeldung wird geladen – bitte kurz warten und nochmal versuchen.','');
+    return;
+  }
+  try{
+    if(!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.addScope('https://www.googleapis.com/auth/calendar');
+    provider.addScope('https://www.googleapis.com/auth/userinfo.profile');
+    provider.addScope('https://www.googleapis.com/auth/userinfo.email');
+    provider.setCustomParameters({ prompt: 'select_account' });
+    firebase.auth().signInWithRedirect(provider);
+  }catch(e){
+    console.warn('[Change] handleGoogleLogin Firebase Redirect:', e);
+    toast('Anmeldung fehlgeschlagen – bitte Seite neu laden.','err');
+  }
 }
 
 
@@ -620,19 +624,32 @@ async function handleFirebaseRedirectLogin(){
       try{ sessionStorage.removeItem('firebase:redirectEventId'); }catch(_e){}
       return;
     }
-    if(result && result.user){
-      if(window.applyChangeFirebaseAuthResult) window.applyChangeFirebaseAuthResult(result);
-      else {
-        const u=result.user;
-        saveUserProfileInfo({name:u.displayName||u.email,email:u.email,picture:u.photoURL||''});
+    // Firebase Auth Redirect erfolgreich
+    const u = result.user;
+    saveUserProfileInfo({
+      name: u.displayName || u.email || '',
+      email: u.email || '',
+      picture: u.photoURL || ''
+    });
+    // Calendar-Token aus Firebase OAuth Credential
+    try{
+      const cred = firebase.auth.GoogleAuthProvider.credentialFromResult(result);
+      if(cred && cred.accessToken){
+        accessToken = cred.accessToken;
+        try{ if(typeof SecureTokenStore!=='undefined') SecureTokenStore.setToken(accessToken,3600); }catch(e){}
+        try{ if(typeof ls==='function') ls('access_token',accessToken); }catch(e){}
+        console.info('[Change] Firebase Redirect: Calendar-Token erhalten \u2713');
       }
-      isDemoMode=false; lsDel('demo_mode');
-      bootMainApp();
-      // Firebase nicht automatisch – nur ueber Sync-Schalter
-      if(accessToken) loadGoogleData();
-      toast('Mobile Anmeldung erfolgreich ✓','ok');
-    }
-  }catch(e){console.warn('Redirect Ergebnis:',e);}
+    }catch(e){ console.info('[Change] Firebase Redirect: credential:', e.message); }
+    ls('was_logged_in', true);
+    ls('user_info_safe', {name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''});
+    isDemoMode=false; lsDel('demo_mode');
+    try{ sessionStorage.setItem('change_oauth_ts', String(Date.now())); }catch(e){}
+    bootMainApp();
+    if(accessToken){ try{ loadGoogleData(); }catch(e){} }
+    toast('Anmeldung erfolgreich \u2713','ok');
+    console.info('[Change] Firebase Redirect Login: App gestartet \u2713');
+  }catch(e){ console.warn('[Change] Firebase Redirect Ergebnis:', e); }
 }
 
 async function fetchUserInfo(){
