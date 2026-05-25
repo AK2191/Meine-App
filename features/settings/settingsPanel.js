@@ -226,14 +226,19 @@
             : ''));
   }
   function firebaseStatus(){
-    // Firebase-Verbindungsstatus: prüft ob db/auth bereit ist
+    var status = window._firebaseSyncStatus || 'unknown';
     try{
       var hasUser = typeof firebase !== 'undefined' && firebase.auth && !!firebase.auth().currentUser;
-      var hasDb = typeof window.initFirebaseLive === 'function';
-      if(hasUser) return {ok:true, label:'VERBUNDEN', tone:'ok', detail:'Challenges · Rangliste · Einstellungen'};
-      if(hasDb)   return {ok:false, label:'NICHT VERBUNDEN', tone:'off', detail:'Bitte mit Google anmelden.'};
+      if(hasUser && status === 'connected')
+        return {ok:true,  label:'VERBUNDEN',          tone:'ok',  detail:'Challenges · Rangliste · Einstellungen'};
+      if(status === 'connecting')
+        return {ok:false, label:'VERBINDET...',        tone:'off', detail:'Verbindung wird hergestellt.'};
+      if(status === 'auth_failed')
+        return {ok:false, label:'NICHT VERFÜGBAR',    tone:'err', detail:'Bitte mit Google anmelden um Sync zu aktivieren.'};
+      if(hasUser)
+        return {ok:true,  label:'VERBUNDEN',          tone:'ok',  detail:'Challenges · Rangliste · Einstellungen'};
     }catch(e){}
-    return {ok:false, label:'AUS', tone:'off', detail:''};
+    return {ok:false, label:'NICHT ANGEMELDET', tone:'off', detail:'Bitte mit Google anmelden.'};
   }
 
   function syncPane(){

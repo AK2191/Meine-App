@@ -1134,7 +1134,7 @@ function openDayPanel(dt,dayEvs){
 async function loadGoogleData(){
   if(!accessToken)return;
   await loadGoogleEvents();
-  if(typeof initFirebaseLive==='function') initFirebaseLive();
+  if(typeof initFirebaseLive==='function') initFirebaseLive(); // fire-and-forget
 }
 
 async function loadGoogleEvents(){
@@ -1193,7 +1193,7 @@ async function saveToGoogleCal(existingId){
 /* ==== FIREBASE / LOCAL STORAGE BRIDGE ==== */
 async function loadFromDrive(){
   // Daten werden lokal und – sobald Firebase verbunden ist – in Firestore synchronisiert.
-  if(typeof initFirebaseLive==='function') await initFirebaseLive();
+  if(typeof initFirebaseLive==='function') initFirebaseLive().catch(()=>{}); // non-blocking
 }
 
 async function saveToDrive(){
@@ -1712,22 +1712,37 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     };
   }
 
-  window.initFirebaseLive = async function(){
+  window.initFirebaseLive = async function(opts){
+    opts = opts || {};
     if(!hasFirebaseConfig() || !window.firebase){
-      console.info('Firebase ist noch nicht konfiguriert. firebase-config.js ausfüllen.');
+      window._firebaseSyncStatus = 'not_configured';
       return false;
     }
     try{
       if(!firebase.apps.length) fbApp=firebase.initializeApp(getFirebaseConfig());
       else fbApp=firebase.app();
       db=firebase.firestore();
-      // iOS PWA: WebSocket-Verbindungen können abbrechen → Long Polling als Fallback aktivieren
-      // experimentalAutoDetectLongPolling: Firestore testet WebSocket und fällt auf HTTP-Polling zurück
       try { db.settings({ experimentalAutoDetectLongPolling: true, merge: true }); } catch(_e) {}
+      // Auth: immer versuchen, aber NIE blockieren
+      // Schlägt fehl → Sync zeigt "nicht verfügbar", App läuft normal weiter
+      window._firebaseSyncStatus = 'connecting';
       if(window.ensureChangeFirebaseAuth){
-        const authOk = await window.ensureChangeFirebaseAuth({ silent:true });
-        if(!authOk){ console.warn('Firebase Auth nicht bereit: Firestore-Sync/Push pausiert.'); return false; }
+        try{
+          const authOk = await Promise.race([
+            window.ensureChangeFirebaseAuth({ silent:true }),
+            new Promise(r => setTimeout(() => r(false), 4000)) // max 4s warten
+          ]);
+          if(!authOk){
+            window._firebaseSyncStatus = 'auth_failed';
+            console.info('[Change] Firebase Auth nicht verfügbar – Sync pausiert, App läuft normal.');
+            return false;
+          }
+        }catch(e){
+          window._firebaseSyncStatus = 'auth_failed';
+          return false;
+        }
       }
+      window._firebaseSyncStatus = 'connected';
       if(firebase.messaging && 'serviceWorker' in navigator && 'Notification' in window){ messaging=firebase.messaging(); }
       ls(FIREBASE_READY_KEY,true);
       installForegroundPushHandler();
