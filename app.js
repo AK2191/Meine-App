@@ -498,6 +498,20 @@ function startDemo(){
 }
 
 function showLogin(){
+  // Guard: nach OAuth-Redirect darf showLogin() 15 Sekunden lang nicht aufgerufen werden.
+  // Verhindert den Redirect-Loop: onAuthStateChanged(null) → showLogin() → Login → Loop.
+  try{
+    var oauthTs = parseInt(sessionStorage.getItem('change_oauth_ts') || '0');
+    if(oauthTs && (Date.now() - oauthTs) < 15000){
+      console.info('[Change] showLogin() blockiert – OAuth gerade abgeschlossen.');
+      return;
+    }
+  }catch(e){}
+  // Zweite Prüfung: wenn accessToken vorhanden, kein Login-Screen anzeigen
+  if(typeof accessToken !== 'undefined' && accessToken && typeof userInfo !== 'undefined' && userInfo && userInfo.email){
+    console.info('[Change] showLogin() blockiert – aktiver Google-Token vorhanden.');
+    return;
+  }
   hideLd();
   document.getElementById('login-screen').style.display='flex';
 }
@@ -566,6 +580,8 @@ function handleGoogleOAuthRedirect(){
     try{ localStorage.removeItem('change_v1_google_last_error'); }catch(e){}
     try{ localStorage.setItem('change_v1_google_last_sync_at', new Date().toISOString()); }catch(e){}
     console.info('[Change] OAuth Redirect OK – state:', state);
+    // Guard: verhindert dass showLogin() den naechsten 15s nach OAuth-Redirect aufgerufen wird
+    try{ sessionStorage.setItem('change_oauth_ts', String(Date.now())); }catch(e){}
     return state || 'main_login';
   }catch(e){
     console.warn('[Change] handleGoogleOAuthRedirect:', e);
