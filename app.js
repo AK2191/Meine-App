@@ -1765,17 +1765,28 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     };
   }
 
+  // Circuit Breaker fuer initFirebaseLive: verhindert Freeze bei Firebase-Quota-Erschoepfung.
+  // Nach 2 Fehlern wird Firebase 10 Minuten nicht mehr versucht.
+  window._firebaseCircuitBreaker = { failures: 0, blockedUntil: 0 };
+
   window.initFirebaseLive = async function(opts){
     opts = opts || {};
     if(!hasFirebaseConfig() || !window.firebase){
       window._firebaseSyncStatus = 'not_configured';
       return false;
     }
+    // Circuit Breaker: wenn Firebase zuletzt gefreezt hat, nicht nochmal versuchen
+    var cb = window._firebaseCircuitBreaker;
+    if(cb.failures >= 2 && Date.now() < cb.blockedUntil){
+      window._firebaseSyncStatus = 'quota_blocked';
+      return false;
+    }
     try{
       if(!firebase.apps.length) fbApp=firebase.initializeApp(getFirebaseConfig());
       else fbApp=firebase.app();
       db=firebase.firestore();
-      try { db.settings({ experimentalAutoDetectLongPolling: true, merge: true }); } catch(_e) {}
+      // KEIN experimentalAutoDetectLongPolling: verursacht Freeze bei Quota-Erschoepfung
+      // (Long-Polling-Verbindungen die der Browser nicht schliessen kann)
       // Auth: immer versuchen, aber NIE blockieren
       // Schlägt fehl → Sync zeigt "nicht verfügbar", App läuft normal weiter
       window._firebaseSyncStatus = 'connecting';
@@ -1808,7 +1819,16 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
       startLivePlayersListener();
       startLiveCompletionsListener();
       return true;
-    }catch(e){ console.warn('Firebase init fehlgeschlagen:',e); return false; }
+    }catch(e){
+      // Circuit Breaker: Fehler zaehlen, nach 2 Fehlern 10 Minuten pausieren
+      var cb2 = window._firebaseCircuitBreaker || { failures: 0, blockedUntil: 0 };
+      cb2.failures = (cb2.failures || 0) + 1;
+      if(cb2.failures >= 2) cb2.blockedUntil = Date.now() + 10 * 60 * 1000;
+      window._firebaseCircuitBreaker = cb2;
+      window._firebaseSyncStatus = 'error';
+      console.warn('[Change] Firebase init fehlgeschlagen (Circuit Breaker: ' + cb2.failures + '):', e && (e.code || e.message));
+      return false;
+    }
   };
 
   window.registerLivePlayer = async function(){
@@ -2069,11 +2089,19 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   };
 
   const _boot=window.bootMainApp;
-  window.bootMainApp=function(){ _boot.apply(this,arguments); setTimeout(()=>initFirebaseLive(),300); };
+  window.bootMainApp=function(){
+    _boot.apply(this,arguments);
+    // Delay 2s: stellt sicher dass GIS-Popup vollstaendig geschlossen ist bevor Firebase versucht wird
+    // Circuit Breaker wird in initFirebaseLive geprueft
+    setTimeout(function(){
+      try{ if(typeof initFirebaseLive==='function') initFirebaseLive(); }catch(e){}
+    }, 2000);
+  };
 
   const _fetchUserInfo=window.fetchUserInfo;
   if(_fetchUserInfo){
-    window.fetchUserInfo=async function(){ const r=await _fetchUserInfo.apply(this,arguments); setTimeout(()=>initFirebaseLive(),300); return r; };
+    // fetchUserInfo-Wrapper: KEIN zusaetzlicher initFirebaseLive-Call – bootMainApp macht das bereits
+    window.fetchUserInfo=async function(){ return await _fetchUserInfo.apply(this,arguments); };
   }
 
   const _complete=window.completeChallenge;

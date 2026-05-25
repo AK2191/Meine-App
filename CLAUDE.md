@@ -45,6 +45,7 @@ Wenn eine Änderung fehlschlägt:
 | Datei | Problem | Workaround |
 |-------|---------|------------|
 | `app.js:trySilentGoogleTokenRefresh` | COOP-Freeze | Funktion ist deaktiviert (return;) – so lassen |
+| `initFirebaseLive` | `experimentalAutoDetectLongPolling:true` friert Browser bei Quota-Erschöpfung ein | ENTFERNT – nie wieder hinzufügen. Circuit Breaker (2 Fehler→10 min Pause) verhindert Retry-Loops. |
 | `challenge-sync.js` | 3 Layer übereinander | Nur Datumsfilter/Limits anpassen, nie Listener neu bauen |
 | `firebaseAuthBridge.js` | COOP bei signInWithPopup | Nur popup-blocked → redirect, keine anderen Fehler abfangen |
 | `firebase-messaging-sw.js` | SW-Scope = Root | Datei muss im Root bleiben |
