@@ -310,10 +310,7 @@
     // Punkte-Kalender nach kurzer Pause nochmal rendern (Firebase-Daten laden asynchron)
     // Mehrere Versuche: iOS/Android Firebase kann 5–12 Sek. brauchen
     [1200, 3000, 6000, 12000].forEach(ms => setTimeout(renderWeekBar, ms));
-    // Direkter Firebase-Fetch (iOS-sicher: HTTP statt WebSocket, kein Auth nötig)
-    // change_players + change_completions haben allow read: if true in Firestore Rules
-    setTimeout(directFbFetch, 2500);
-    setTimeout(directFbFetch, 9000);
+    // directFbFetch wird aus DOMContentLoaded gestartet (800ms + 5s) – kein Duplikat hier
   };
 
   // ── Firestore REST Fetch (iOS-sicher) ──────────────────────────
@@ -326,7 +323,7 @@
 
   async function directFbFetch(){
     var now = Date.now();
-    if(now - _lastFetch < 15000) return;
+    if(now - _lastFetch < 45000) return; // max 1x alle 45s – verhindert HTTP 429
     _lastFetch = now;
     var projectId = window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.projectId;
     if(!projectId) return;
@@ -334,7 +331,7 @@
 
     // ─ Spieler laden ─────────────────────────────────────────
     try{
-      var resp = await fetch(base+'/change_players?pageSize=100');
+      var resp = await fetch(base+'/change_players?pageSize=50');
       if(resp.ok){
         var data = await resp.json();
         var docs = data.documents||[];
@@ -359,7 +356,7 @@
 
     // ─ Completions laden (für WeekBar) ───────────────────────
     try{
-      var resp = await fetch(base+'/change_completions?pageSize=300');
+      var resp = await fetch(base+'/change_completions?pageSize=200');
       if(resp.ok){
         var data = await resp.json();
         var docs = data.documents||[];
@@ -397,8 +394,8 @@
   // REST Fetch beim Start – unabhängig vom View, läuft auf iOS auch ohne Firebase SDK
   // Lädt Spieler + Punkte sofort wenn der Browser bereit ist
   document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(directFbFetch, 800);   // früh: nach 800ms
-    setTimeout(directFbFetch, 5000);  // spät: Retry nach 5s (iOS-Resilience)
+    setTimeout(directFbFetch, 2500);   // nach 2.5s – Auth hat Zeit sich zu stabilisieren
+    setTimeout(directFbFetch, 30000); // Retry nach 30s (iOS-Resilience, kein 429-Risiko)
     setTimeout(() => {
       try{ ensureWeekBar(); if(window.currentMainView==='challenges') window.renderChallenges(); }catch(e){}
     }, 600);

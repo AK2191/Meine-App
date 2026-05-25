@@ -243,13 +243,10 @@ function trySilentGoogleTokenRefresh(){
     const tc = google.accounts.oauth2.initTokenClient({
       client_id: cleanGoogleClientId(CLIENT_ID),
       scope: GCAL_SCOPE,
-      // prompt:'none' → GSI öffnet NIEMALS ein Browser-Fenster oder Popup.
-      // Wenn die Google-Session abgelaufen ist, wird error_callback aufgerufen.
-      // prompt:'' (leer) hingegen lässt Google entscheiden → kann Fenster öffnen.
       prompt: 'none',
       error_callback: () => {
         // Stilles Scheitern — Token abgelaufen, Nutzer muss sich
-        // beim nächsten manuellen Google-Sync neu anmelden. Kein Toast, kein Fenster.
+        // beim nächsten manuellen Google-Sync neu anmelden.
       },
       callback: async resp => {
         if(resp && resp.access_token){
@@ -259,11 +256,11 @@ function trySilentGoogleTokenRefresh(){
           try{ updateAvatar(); }catch(e){}
           if(typeof loadGoogleData === 'function') loadGoogleData();
         }
-        // Kein access_token → stilles Scheitern, kein Fehler-Toast
       }
     });
-    tc.requestAccessToken({prompt: 'none'});
-  } catch(e){ /* silent — kein Fehler wenn nicht möglich */ }
+    // window.closed kann durch Cross-Origin-Opener-Policy (COOP) blockiert sein
+    try { tc.requestAccessToken({prompt: 'none'}); } catch(e){}
+  } catch(e){ /* silent */ }
 }
 
 // [AUTO-REFRESH] Google Token alle 50 Min still erneuern
@@ -1803,8 +1800,8 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
         }
       }catch(e){ console.warn('Players one-shot fetch:', e); }
     };
-    fetchPlayersOnce(2000);
-    fetchPlayersOnce(8000);
+    fetchPlayersOnce(5000);  // nach 5s (directFbFetch läuft nach 2.5s – kein Overlap)
+    fetchPlayersOnce(60000); // Retry nach 60s (nicht 8s – verhindert 429)
   }
 
   function startLiveCompletionsListener(){
