@@ -512,14 +512,8 @@ async function handleGoogleLogin(){
         try{ ls('user_info_safe',{name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''}); ls('was_logged_in',true); }catch(e){}
         bootMainApp();
         loadGoogleData();
-        setTimeout(async ()=>{
-          try{
-            if(window.signInChangeFirebaseWithGoogle && typeof firebase!=='undefined' && firebase.auth && !firebase.auth().currentUser){
-              await window.signInChangeFirebaseWithGoogle({ silent:true });
-            }
-          }catch(e){}
-          try{ if(typeof initFirebaseLive==='function') initFirebaseLive().catch(()=>{}); }catch(e){}
-        }, 1200);
+        // Firebase: NICHT automatisch nach Login – nur wenn Nutzer Sync-Schalter aktiviert.
+        // Verhindert Freeze wenn Firebase at Quota ist.
       }
     });
     tc.requestAccessToken({prompt:'consent'});
@@ -590,7 +584,7 @@ async function handleFirebaseRedirectLogin(){
       }
       isDemoMode=false; lsDel('demo_mode');
       bootMainApp();
-      initFirebaseLive && initFirebaseLive();
+      // Firebase nicht automatisch – nur ueber Sync-Schalter
       if(accessToken) loadGoogleData();
       toast('Mobile Anmeldung erfolgreich ✓','ok');
     }
@@ -2091,11 +2085,8 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   const _boot=window.bootMainApp;
   window.bootMainApp=function(){
     _boot.apply(this,arguments);
-    // Delay 2s: stellt sicher dass GIS-Popup vollstaendig geschlossen ist bevor Firebase versucht wird
-    // Circuit Breaker wird in initFirebaseLive geprueft
-    setTimeout(function(){
-      try{ if(typeof initFirebaseLive==='function') initFirebaseLive(); }catch(e){}
-    }, 2000);
+    // Firebase wird NICHT automatisch nach bootMainApp gestartet.
+    // Nur explizit ueber den Live-Sync-Schalter in den Einstellungen.
   };
 
   const _fetchUserInfo=window.fetchUserInfo;
@@ -2116,7 +2107,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     try{ if(db && userInfo.email) db.collection('change_players').doc(safeDocId(currentEmail())).set({online:false,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); }catch(e){}
   });
 
-  setTimeout(()=>{ if(userInfo && userInfo.email) initFirebaseLive(); },1200);
+  // Firebase wird NICHT automatisch nach fetchUserInfo gestartet – nur ueber Sync-Schalter.
 })();
 
 /* ==== FIREBASE EXTENSION 2: Challenges live veröffentlichen ==== */
