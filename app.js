@@ -560,39 +560,30 @@ function showLogin(){
   document.getElementById('login-screen').style.display='flex';
 }
 
-// handleGoogleLogin: GIS-Popup + sofortiger Seitenneuladen nach Token-Erhalt.
-// Das GIS-Popup FUNKTIONIERT (Token kommt im Callback an).
-// Der Freeze passiert DANACH wenn GIS window.closed pollt (COOP-Block).
-// Fix: Nach Token-Erhalt sofort window.location navigieren → GIS-Prozess wird gekillt.
-// Der Token wird kurz in localStorage gepuffert und beim naechsten Load gelesen.
+// handleGoogleLogin: OAuth 2.0 Implicit Flow via REDIRECT (KEIN GIS-Popup!).
+// GIS-Popup friert auf GitHub Pages ein (COOP-Block nach window.closed-Polling).
+// Redirect ist COOP-sicher: Browser navigiert direkt zu Google, Token kommt im URL-Hash zurück.
+// handleGoogleOAuthRedirect() liest state=main_login beim nächsten Load.
 function handleGoogleLogin(){
   CLIENT_ID = getGoogleClientId();
   if(!CLIENT_ID){ document.getElementById('setup-modal').classList.add('show'); return; }
-  if(!window.google || !window.google.accounts || !window.google.accounts.oauth2){
-    toast('Google-Bibliothek wird geladen…',''); return;
-  }
-  try{
-    const tc = google.accounts.oauth2.initTokenClient({
-      client_id: cleanGoogleClientId(CLIENT_ID),
-      scope: GCAL_SCOPE,
-      callback: function(resp){
-        if(resp && resp.error){ toast('Anmeldung: ' + resp.error, 'err'); return; }
-        var token = resp.access_token || '';
-        if(!token){ toast('Kein Token erhalten – bitte nochmal versuchen.','err'); return; }
-        // Token sofort sichern BEVOR GIS window.closed-Polling beginnt
-        try{ localStorage.setItem('change_gis_token', token); }catch(e){}
-        try{ localStorage.setItem('change_gis_ts', String(Date.now())); }catch(e){}
-        console.info('[Change] GIS Token erhalten – navigiere sofort weg um Freeze zu verhindern');
-        // Sofortige Navigation toetet den GIS-Prozess vor dem window.closed-Polling
-        var base = window.location.href.split('?')[0].split('#')[0];
-        window.location.replace(base + '?gis_login=' + Date.now());
-      }
-    });
-    tc.requestAccessToken({ prompt: 'select_account' });
-  }catch(e){
-    toast('Anmeldung konnte nicht gestartet werden','err');
-    console.warn('[Change] handleGoogleLogin:', e);
-  }
+  var cleanId = cleanGoogleClientId(CLIENT_ID);
+  var redirectUri = window.location.href.split('?')[0].split('#')[0];
+  var scope = encodeURIComponent(
+    'https://www.googleapis.com/auth/calendar ' +
+    'https://www.googleapis.com/auth/userinfo.profile ' +
+    'https://www.googleapis.com/auth/userinfo.email'
+  );
+  // state=main_login → handleGoogleOAuthRedirect() verarbeitet den Rückruf beim App-Start
+  var authUrl = 'https://accounts.google.com/o/oauth2/auth'
+    + '?client_id=' + encodeURIComponent(cleanId)
+    + '&redirect_uri=' + encodeURIComponent(redirectUri)
+    + '&response_type=token'
+    + '&scope=' + scope
+    + '&prompt=select_account'
+    + '&state=main_login';
+  // Redirect – kein Popup, kein COOP-Freeze
+  window.location.href = authUrl;
 }
 
 

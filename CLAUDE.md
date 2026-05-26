@@ -50,11 +50,11 @@ Wenn eine Änderung fehlschlägt:
 | `firebaseAuthBridge.js` | COOP bei signInWithPopup | Nur popup-blocked → redirect, keine anderen Fehler abfangen |
 | `firebase-messaging-sw.js` | SW-Scope = Root | Datei muss im Root bleiben |
 | `app.js:logout()` | Reload statt showLogin | Muss `window.location.replace` aufrufen – NICHT showLogin() – sonst bleiben Firestore-Listener aktiv und frieren Re-Login ein |
-| `connectToGoogle` + `handleGoogleLogin` | GIS-Popup friert auf GitHub Pages ein (window.closed-Polling-Bug) | Beide nutzen OAuth 2.0 Implicit Redirect (kein Popup). Redirect-URI `https://ak2191.github.io/Meine-App/` muss in Google Cloud Console unter "Autorisierte Weiterleitungs-URIs" stehen. `handleGoogleOAuthRedirect()` liest Token aus URL-Hash (state=main_login oder gcal_connect). NIE wieder GIS TokenClient/requestAccessToken verwenden! |
+| `connectToGoogle` + `handleGoogleLogin` | GIS-Popup friert auf GitHub Pages ein (window.closed-Polling-Bug) | Beide nutzen OAuth 2.0 Implicit Redirect (kein Popup). Redirect-URI `https://ak2191.github.io/Meine-App/` muss in Google Cloud Console unter "Autorisierte Weiterleitungs-URIs" stehen. `handleGoogleOAuthRedirect()` liest Token aus URL-Hash (state=main_login oder gcal_connect). NIE wieder GIS TokenClient/requestAccessToken verwenden! `handleGoogleLogin()` in app.js: KEIN GIS TokenClient mehr – nur `window.location.href = authUrl` mit state=main_login (Fix 2026-05-26). |
 
 ---
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-05-24 (3)
+> Zuletzt aktualisiert: 2026-05-26
 
 ---
 
@@ -315,6 +315,7 @@ firebase deploy --only hosting
 
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
+| 2026-05-26 | **BUG-FIX (Login-Freeze FINAL):** `handleGoogleLogin()` in app.js komplett auf OAuth 2.0 Implicit Redirect umgestellt (GIS TokenClient/initTokenClient/requestAccessToken entfernt). Popup wurde nie wirklich entfernt trotz Changelog-Eintrag. Jetzt identisch zu `connectToGoogle()`: `window.location.href = authUrl` mit state=main_login. Freeze beim Login ist damit endgültig behoben. |
 | 2026-05-25 | **BUG-FIX (v4 – FINAL):** `handleGoogleLogin` + `connectToGoogle` beide auf OAuth 2.0 Implicit Redirect umgestellt. GIS requestAccessToken/Popup komplett entfernt. `handleGoogleOAuthRedirect()` liest state=main_login und state=gcal_connect. Voraussetzung: Redirect-URI in Google Cloud Console eintragen. |
 | 2026-05-25 | **BUG-FIX (v3):** `connectToGoogle` nutzt jetzt OAuth 2.0 Implicit Redirect statt GIS-TokenClient-Popup. GIS-Popup friert auf GitHub Pages wegen COOP ein (auch mit prompt:'consent'). Redirect zu `accounts.google.com` mit `state=gcal_connect` → Token kommt im URL-Hash zurück → neue Funktion `handleGoogleOAuthRedirect()` in `app.js` liest ihn beim Load, setzt Token, lädt Kalender, öffnet Settings. | Claude |
 | 2026-05-25 | **BUG-FIX (v2):** `handleGoogleLogin()`: `signInWithCredential` entfernt, stattdessen `ensureChangeFirebaseAuth({silent:true})` mit 3s-Timeout (verhindert Hang bei Firebase at Quota) | Claude |
