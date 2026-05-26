@@ -470,3 +470,11 @@ Einstellungen → App-Tab → Karte „Version": „Change · Version 0.1.0001"
 
 ### Versionierungsschema
 `0.MINOR.PATCH_4stellig` – z.B. `0.1.0002` für nächsten Bugfix, `0.2.0001` für neues Feature-Set.
+
+### 2026-05-26 · Login Freeze Fix #2
+
+- Nach erfolgreichem Login darf `bootMainApp()` das Benachrichtigungs-Panel nicht automatisch öffnen.
+- Die Glocke aktualisiert beim Start nur Badge/Status. Das Panel öffnet ausschließlich durch Nutzerklick auf die Glocke.
+- Grund: Ein automatisch geöffnetes Side-Panel legt `#panel-overlay.show` über die App und wirkt für Nutzer wie ein Freeze.
+- Keine doppelten Root-Kopien von Icons/Firebase-Dateien anlegen. Pfade bleiben: `icons/*` und `firebase/*`.
+

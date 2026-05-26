@@ -824,10 +824,11 @@ function bootMainApp(){
 
   setMainView('dashboard');
   checkNotifications();
-  // Keine automatische Push-Abfrage nach Login: Push wird ausschließlich
-  // über die zentrale Glocke aktiviert. Automatische Browser-Prompts können
-  // die Oberfläche nach dem Login blockieren.
-  try{ if(window.ChangeNotificationBell && typeof window.ChangeNotificationBell.render === 'function') window.ChangeNotificationBell.render(); }catch(e){}
+  // Keine automatische Panel-Öffnung nach Login: Die Glocke darf nur den
+  // Badge aktualisieren. Das Benachrichtigungs-Panel öffnet ausschließlich
+  // durch einen echten Klick auf die Glocke, damit kein Overlay die App blockiert.
+  try{ if(window.ChangeNotifications && typeof window.ChangeNotifications.updateBellIndicator === 'function') window.ChangeNotifications.updateBellIndicator(); }catch(e){}
+  try{ if(typeof window.updateBellIndicator === 'function') window.updateBellIndicator(); }catch(e){}
 
   // Greeting
   const h=new Date().getHours();
