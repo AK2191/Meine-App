@@ -478,10 +478,63 @@ window.addEventListener('load', async () => {
   scheduleNotifCheck();
 });
 
+function releaseUiLock(reason){
+  try{
+    const main=document.getElementById('main-app');
+    const loading=document.getElementById('loading');
+    const setup=document.getElementById('setup-modal');
+    const panel=document.getElementById('side-panel');
+    const overlay=document.getElementById('panel-overlay');
+
+    // Wichtig: Ein transparentes #loading mit z-index 9999 darf nach dem Boot
+    // nie Klicks abfangen. Genau das wirkt wie ein Freeze, obwohl kein JS-Fehler
+    // in der Konsole steht.
+    if(loading){
+      loading.style.pointerEvents='none';
+      loading.setAttribute('aria-hidden','true');
+      if(main && main.style.display==='flex'){
+        loading.classList.add('is-hidden');
+        loading.style.opacity='0';
+        loading.style.display='none';
+      }
+    }
+
+    if(overlay && panel && !panel.classList.contains('open')){
+      overlay.classList.remove('show');
+      overlay.style.pointerEvents='none';
+      overlay.setAttribute('aria-hidden','true');
+    }else if(overlay && panel && panel.classList.contains('open')){
+      overlay.style.pointerEvents='';
+      overlay.removeAttribute('aria-hidden');
+    }
+
+    if(setup && !setup.classList.contains('show')){
+      setup.style.pointerEvents='none';
+      setup.setAttribute('aria-hidden','true');
+    }else if(setup && setup.classList.contains('show')){
+      setup.style.pointerEvents='';
+      setup.removeAttribute('aria-hidden');
+    }
+
+    document.documentElement.classList.remove('change-ui-locked');
+    document.body.classList.remove('change-ui-locked','modal-open','panel-open');
+  }catch(e){
+    console.warn('[Change] UI-Lock konnte nicht bereinigt werden:', e);
+  }
+}
+
 function hideLd(){
   const el=document.getElementById('loading');
+  if(!el)return;
+  el.style.pointerEvents='none';
+  el.setAttribute('aria-hidden','true');
+  el.classList.add('is-hiding');
   el.style.opacity='0';
-  setTimeout(()=>el.style.display='none',400);
+  setTimeout(()=>{
+    el.classList.add('is-hidden');
+    el.style.display='none';
+    releaseUiLock('hideLd');
+  },250);
 }
 
 /* ==== PWA ==== */
@@ -807,11 +860,53 @@ function buildDemoEvents(){
 
 
 
+function wireCoreUiControls(){
+  if(window.__changeCoreUiControlsWired)return;
+  window.__changeCoreUiControlsWired=true;
+
+  function bindClick(id, handler){
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.addEventListener('click', function(e){
+      releaseUiLock('core-click');
+      handler(e);
+    }, false);
+  }
+
+  bindClick('htab-dashboard', function(e){ e.preventDefault(); setMainView('dashboard'); });
+  bindClick('htab-calendar', function(e){ e.preventDefault(); setMainView('calendar'); });
+  bindClick('htab-challenges', function(e){ e.preventDefault(); setMainView('challenges'); });
+  bindClick('bnav-dashboard', function(e){ e.preventDefault(); setMainView('dashboard'); });
+  bindClick('bnav-calendar', function(e){ e.preventDefault(); setMainView('calendar'); });
+  bindClick('bnav-challenges', function(e){ e.preventDefault(); setMainView('challenges'); });
+  bindClick('settings-btn', function(e){
+    e.preventDefault();
+    if(typeof window.openSettingsPanel==='function') window.openSettingsPanel('calendar');
+  });
+  bindClick('notif-bell-btn', function(e){
+    e.preventDefault();
+    if(typeof window.openNotifPanel==='function') window.openNotifPanel();
+  });
+  bindClick('user-avatar', function(e){
+    e.preventDefault();
+    if(typeof window.confirmLogout==='function') window.confirmLogout();
+  });
+  bindClick('fab', function(e){
+    e.preventDefault();
+    if(typeof window.fabAction==='function') window.fabAction();
+  });
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', wireCoreUiControls);
+else wireCoreUiControls();
+window.addEventListener('load', wireCoreUiControls);
+
 /* BOOT */
 function bootMainApp(){
   hideLd();
   document.getElementById('login-screen').style.display='none';
   document.getElementById('main-app').style.display='flex';
+  releaseUiLock('bootMainApp');
+  wireCoreUiControls();
   /* Bereinige Demo-Termine die beim ersten Start gesetzt wurden */
   try{
     var _dIds=new Set(['d1','d2','d3','d4']);
@@ -840,6 +935,7 @@ function bootMainApp(){
 
 /* MAIN VIEW CONTROLLER */
 function setMainView(v){
+  releaseUiLock('setMainView');
   currentMainView=v;
   const views=['dashboard','calendar'];
   views.forEach(vv=>{
@@ -1557,14 +1653,33 @@ function openNotifPanel(){
 
 /* PANEL SYSTEM */
 function openPanel(title,html){
+  const panel=document.getElementById('side-panel');
+  const overlay=document.getElementById('panel-overlay');
   document.getElementById('panel-title').textContent=title;
   document.getElementById('panel-body').innerHTML=html;
-  document.getElementById('side-panel').classList.add('open');
-  document.getElementById('panel-overlay').classList.add('show');
+  if(panel){
+    panel.classList.add('open');
+    panel.style.pointerEvents='auto';
+  }
+  if(overlay){
+    overlay.classList.add('show');
+    overlay.style.pointerEvents='';
+    overlay.removeAttribute('aria-hidden');
+  }
 }
 function closePanel(){
-  document.getElementById('side-panel').classList.remove('open');
-  document.getElementById('panel-overlay').classList.remove('show');
+  const panel=document.getElementById('side-panel');
+  const overlay=document.getElementById('panel-overlay');
+  if(panel){
+    panel.classList.remove('open');
+    panel.style.pointerEvents='none';
+  }
+  if(overlay){
+    overlay.classList.remove('show');
+    overlay.style.pointerEvents='none';
+    overlay.setAttribute('aria-hidden','true');
+  }
+  releaseUiLock('closePanel');
 }
 
 /* TOAST */

@@ -478,3 +478,12 @@ Einstellungen → App-Tab → Karte „Version": „Change · Version 0.1.0001"
 - Grund: Ein automatisch geöffnetes Side-Panel legt `#panel-overlay.show` über die App und wirkt für Nutzer wie ein Freeze.
 - Keine doppelten Root-Kopien von Icons/Firebase-Dateien anlegen. Pfade bleiben: `icons/*` und `firebase/*`.
 
+
+
+## 2026-05-26 · UI-Freeze nach Login dauerhaft abgesichert
+
+- Ursache/Klasse: Nach erfolgreichem Login kann ein transparentes, aber noch klickfangendes Overlay wie `#loading` oder `panel-overlay` die App blockieren, ohne dass die Konsole einen JavaScript-Fehler zeigt.
+- Änderung: `hideLd()` deaktiviert sofort `pointer-events`, markiert den Loader als `aria-hidden` und entfernt ihn zuverlässig.
+- Neue zentrale Absicherung: `releaseUiLock(reason)` räumt inaktive Overlays nach Boot, Navigation und Panel-Schließen auf.
+- Header-, Bottom-Nav-, Glocken-, Settings-, Avatar- und FAB-Controls werden zusätzlich per `addEventListener` verdrahtet. Inline-Handler bleiben kompatibel, aber die UI hängt nicht mehr an nur einem Mechanismus.
+- Keine doppelten Root-Dateien: Firebase bleibt unter `firebase/`, Icons bleiben unter `icons/`.
