@@ -184,7 +184,7 @@ if(localStorage.getItem('change_konfetti_date') !== _today){
    GRUPPEN-ZIEL DER WOCHE
 ==== */
 const GOAL_KEY = 'change_group_goal';
-const DEFAULT_GOAL = 350; // Standard-Punkteziel
+const DEFAULT_GOAL = 350; // Fallback, falls dynamische Berechnung nicht verfügbar ist
 
 function getWeekStart(){
   const d = new Date();
@@ -193,12 +193,50 @@ function getWeekStart(){
   return d.toISOString().slice(0,10);
 }
 
+function getCurrentChallengePlan(){
+  var difficulty = 'easy', count = 7;
+  try{
+    if(window.ChangeChallengeDifficulty){
+      difficulty = window.ChangeChallengeDifficulty.get ? window.ChangeChallengeDifficulty.get() : difficulty;
+      count = window.ChangeChallengeDifficulty.getDailyCount ? window.ChangeChallengeDifficulty.getDailyCount() : count;
+    }
+  }catch(e){}
+  return { challengeDifficulty: difficulty, autoChallengeCount: count };
+}
+
+function getGroupPlayersForGoal(){
+  var list = [];
+  try{ if(Array.isArray(window.challengePlayers)) list = list.concat(window.challengePlayers); }catch(e){}
+  try{ if(typeof challengePlayers !== 'undefined' && Array.isArray(challengePlayers)) list = list.concat(challengePlayers); }catch(e){}
+  var meEmail = '';
+  try{ meEmail = String((window.userInfo && window.userInfo.email) || (typeof userInfo !== 'undefined' && userInfo && userInfo.email) || '').toLowerCase(); }catch(e){}
+  var meName = '';
+  try{ meName = String((window.userInfo && window.userInfo.name) || (typeof userInfo !== 'undefined' && userInfo && userInfo.name) || 'Du'); }catch(e){ meName='Du'; }
+  var current = getCurrentChallengePlan();
+  list.push({ id: meEmail || 'local', email: meEmail, name: meName || 'Du', challengeDifficulty: current.challengeDifficulty, autoChallengeCount: current.autoChallengeCount });
+  var seen = new Set();
+  return list.filter(function(p){
+    if(!p) return false;
+    var key = String(p.email || p.id || p.uid || p.name || '').toLowerCase();
+    if(!key) key = 'p' + seen.size;
+    if(seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 function getGroupGoal(){
+  try{
+    if(window.ChangeChallengeDifficulty && typeof window.ChangeChallengeDifficulty.computeGroupGoal === 'function'){
+      var computed = window.ChangeChallengeDifficulty.computeGroupGoal(getGroupPlayersForGoal());
+      return Object.assign({ week: getWeekStart(), dynamic: true }, computed);
+    }
+  }catch(e){ console.warn('Dynamisches Gruppenziel:', e); }
   try{
     const saved = JSON.parse(localStorage.getItem(GOAL_KEY) || 'null');
     if(saved && saved.week === getWeekStart()) return saved;
-    return { week: getWeekStart(), target: DEFAULT_GOAL };
-  }catch(e){ return { week: getWeekStart(), target: DEFAULT_GOAL }; }
+    return { week: getWeekStart(), target: DEFAULT_GOAL, dynamic:false, players:1, subtitle:'Fallback-Ziel' };
+  }catch(e){ return { week: getWeekStart(), target: DEFAULT_GOAL, dynamic:false, players:1, subtitle:'Fallback-Ziel' }; }
 }
 
 function saveGroupGoal(target){
@@ -216,6 +254,9 @@ function saveGroupGoal(target){
   }catch(e){}
   renderGroupGoal();
 }
+
+window.getGroupGoal = getGroupGoal;
+window.getGroupPoints = getGroupPoints;
 
 function getGroupPoints(){
   const weekStart = getWeekStart();
@@ -248,22 +289,28 @@ window.renderGroupGoal = function(){
   card.id = 'group-goal-card';
   card.style.cssText = 'background:var(--s1);border:1px solid var(--b1);border-radius:var(--rlg,12px);padding:14px 16px;box-shadow:var(--sh)';
 
+  var subtitle = goal.subtitle || (goal.dynamic ? 'Dynamisch nach Schwierigkeit & Tagesumfang' : 'Wöchentliches Gruppenziel');
+  var modeLabel = goal.dynamic ? 'Dynamisch' : 'Fix';
+  var planLabel = goal.label ? ' · ' + goal.label : '';
   card.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-      <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:18px">🎯</span>
-        <div style="font-size:13px;font-weight:700;color:var(--t1)">Gruppen-Ziel · KW ${getWeekNumber()}</div>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:12px">
+      <div style="display:flex;align-items:flex-start;gap:9px;min-width:0">
+        <span style="font-size:18px;line-height:1.1">🎯</span>
+        <div style="min-width:0">
+          <div style="font-size:13px;font-weight:800;color:var(--t1)">Gruppen-Ziel · KW ${getWeekNumber()}</div>
+          <div style="font-size:10.5px;font-weight:650;color:var(--t4);margin-top:2px">${modeLabel}${planLabel} · ${subtitle}</div>
+        </div>
       </div>
-      <div style="text-align:right">
-        <div style="font-size:18px;font-weight:800;color:${done?'var(--grn)':'var(--acc)'}">${points}</div>
-        <div style="font-size:10px;color:var(--t4)">von ${goal.target} P</div>
+      <div style="text-align:right;flex:0 0 auto">
+        <div style="font-size:18px;font-weight:900;color:${done?'var(--grn)':'var(--acc)'}">${points}</div>
+        <div style="font-size:10px;color:var(--t4);font-weight:700">von ${goal.target} P</div>
       </div>
     </div>
     <div style="position:relative;background:var(--s3);border-radius:999px;height:20px;overflow:hidden">
       <div style="height:20px;border-radius:999px;background:${done?'var(--grn)':'var(--acc)'};width:${pct}%;transition:width .4s ease"></div>
-      <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${pct>18?'#fff':'var(--t2)'};">${pct}% erreicht</span>
+      <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:${pct>18?'#fff':'var(--t2)'};">${pct}% erreicht</span>
     </div>
-    ${done ? '<div style="font-size:12px;font-weight:600;color:var(--grn);margin-top:8px;text-align:center">🎉 Ziel erreicht! Ihr seid großartig!</div>' : ''}
+    ${done ? '<div style="font-size:12px;font-weight:700;color:var(--grn);margin-top:8px;text-align:center">🎉 Ziel erreicht! Ihr seid großartig!</div>' : ''}
   `;
 
   // Innerhalb des Challenge-Layouts als erstes Element einfügen (grid-column: 1/-1 per CSS)

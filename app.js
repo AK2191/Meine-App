@@ -3163,26 +3163,100 @@ window.getCurrentStreak = function(email){
    MEILENSTEINE & ABZEICHEN
 ==== */
 const BADGES = [
-  { id:'first_done',   icon:'🎯', name:'Erster Schritt',    desc:'Erste Challenge erledigt',        check: (s,p) => p.totalDone >= 1 },
-  { id:'streak3',      icon:'🔥', name:'3 Tage dabei',      desc:'3 Tage Streak',                   check: (s,p) => s >= 3 },
-  { id:'streak7',      icon:'⚡', name:'Eine Woche Feuer',   desc:'7 Tage Streak',                   check: (s,p) => s >= 7 },
-  { id:'streak30',     icon:'🌟', name:'Unaufhaltsam',       desc:'30 Tage Streak',                  check: (s,p) => s >= 30 },
-  { id:'points100',    icon:'💯', name:'100 Punkte',         desc:'100 Punkte gesammelt',            check: (s,p) => (p.totalPoints||0) >= 100 },
-  { id:'points500',    icon:'🏆', name:'500 Punkte',         desc:'500 Punkte gesammelt',            check: (s,p) => (p.totalPoints||0) >= 500 },
-  { id:'points1000',   icon:'👑', name:'1000 Punkte',        desc:'1000 Punkte gesammelt',           check: (s,p) => (p.totalPoints||0) >= 1000 },
-  { id:'done10',       icon:'💪', name:'Fleißig',            desc:'10 Challenges erledigt',          check: (s,p) => p.totalDone >= 10 },
-  { id:'done50',       icon:'🎖️', name:'Durchhalter',        desc:'50 Challenges erledigt',          check: (s,p) => p.totalDone >= 50 },
-  { id:'done100',      icon:'🦁', name:'Legende',            desc:'100 Challenges erledigt',         check: (s,p) => p.totalDone >= 100 },
+  { id:'first_done', icon:'🎯', name:'Erster Schritt', desc:'Erste Challenge erledigt', check:(s,p)=>p.totalDone>=1 },
+  { id:'done5', icon:'🌱', name:'Warm geworden', desc:'5 Challenges erledigt', check:(s,p)=>p.totalDone>=5 },
+  { id:'done10', icon:'💪', name:'Fleißig', desc:'10 Challenges erledigt', check:(s,p)=>p.totalDone>=10 },
+  { id:'done25', icon:'🥉', name:'Dranbleiber', desc:'25 Challenges erledigt', check:(s,p)=>p.totalDone>=25 },
+  { id:'done50', icon:'🎖️', name:'Durchhalter', desc:'50 Challenges erledigt', check:(s,p)=>p.totalDone>=50 },
+  { id:'done100', icon:'🦁', name:'Legende', desc:'100 Challenges erledigt', check:(s,p)=>p.totalDone>=100 },
+  { id:'done250', icon:'🛡️', name:'Veteran', desc:'250 Challenges erledigt', check:(s,p)=>p.totalDone>=250 },
+  { id:'done500', icon:'🐉', name:'Unfassbar', desc:'500 Challenges erledigt', check:(s,p)=>p.totalDone>=500 },
+
+  { id:'streak3', icon:'🔥', name:'3 Tage dabei', desc:'3 Tage Streak', check:(s,p)=>s>=3 },
+  { id:'streak7', icon:'⚡', name:'Eine Woche Feuer', desc:'7 Tage Streak', check:(s,p)=>s>=7 },
+  { id:'streak14', icon:'🌙', name:'Zwei Wochen Fokus', desc:'14 Tage Streak', check:(s,p)=>s>=14 },
+  { id:'streak30', icon:'🌟', name:'Unaufhaltsam', desc:'30 Tage Streak', check:(s,p)=>s>=30 },
+  { id:'streak60', icon:'☄️', name:'Routine-Monster', desc:'60 Tage Streak', check:(s,p)=>s>=60 },
+  { id:'streak100', icon:'💎', name:'100 Tage Disziplin', desc:'100 Tage Streak', check:(s,p)=>s>=100 },
+
+  { id:'points100', icon:'💯', name:'100 Punkte', desc:'100 Punkte gesammelt', check:(s,p)=>(p.totalPoints||0)>=100 },
+  { id:'points250', icon:'🧱', name:'250 Punkte', desc:'250 Punkte gesammelt', check:(s,p)=>(p.totalPoints||0)>=250 },
+  { id:'points500', icon:'🏆', name:'500 Punkte', desc:'500 Punkte gesammelt', check:(s,p)=>(p.totalPoints||0)>=500 },
+  { id:'points1000', icon:'👑', name:'1000 Punkte', desc:'1000 Punkte gesammelt', check:(s,p)=>(p.totalPoints||0)>=1000 },
+  { id:'points2500', icon:'🚀', name:'2500 Punkte', desc:'2500 Punkte gesammelt', check:(s,p)=>(p.totalPoints||0)>=2500 },
+  { id:'points5000', icon:'🏔️', name:'5000 Punkte', desc:'5000 Punkte gesammelt', check:(s,p)=>(p.totalPoints||0)>=5000 },
+  { id:'points10000', icon:'🌌', name:'10000 Punkte', desc:'10000 Punkte gesammelt', check:(s,p)=>(p.totalPoints||0)>=10000 },
+
+  { id:'day50', icon:'☀️', name:'Starker Tag', desc:'50 Punkte an einem Tag', check:(s,p)=>(p.bestDayPoints||0)>=50 },
+  { id:'day100', icon:'🔥', name:'Power-Tag', desc:'100 Punkte an einem Tag', check:(s,p)=>(p.bestDayPoints||0)>=100 },
+  { id:'day200', icon:'⚔️', name:'Monster-Tag', desc:'200 Punkte an einem Tag', check:(s,p)=>(p.bestDayPoints||0)>=200 },
+  { id:'week250', icon:'📈', name:'Starke Woche', desc:'250 Punkte in einer Woche', check:(s,p)=>(p.weekPoints||0)>=250 },
+  { id:'week500', icon:'🏅', name:'Elite-Woche', desc:'500 Punkte in einer Woche', check:(s,p)=>(p.weekPoints||0)>=500 },
+  { id:'week1000', icon:'🏹', name:'Wahnsinns-Woche', desc:'1000 Punkte in einer Woche', check:(s,p)=>(p.weekPoints||0)>=1000 },
+
+  { id:'hard5', icon:'🧗', name:'Schwer gestartet', desc:'5 schwere Challenges erledigt', check:(s,p)=>(p.hardDone||0)>=5 },
+  { id:'hard25', icon:'🪨', name:'Schwergewichtig', desc:'25 schwere Challenges erledigt', check:(s,p)=>(p.hardDone||0)>=25 },
+  { id:'hard100', icon:'🦾', name:'Stahlmodus', desc:'100 schwere Challenges erledigt', check:(s,p)=>(p.hardDone||0)>=100 },
+  { id:'hardcore1', icon:'💥', name:'Hardcore betreten', desc:'Erste Hardcore-Challenge erledigt', check:(s,p)=>(p.hardcoreDone||0)>=1 },
+  { id:'hardcore10', icon:'🧨', name:'Hardcore-Fan', desc:'10 Hardcore-Challenges erledigt', check:(s,p)=>(p.hardcoreDone||0)>=10 },
+  { id:'hardcore50', icon:'☠️', name:'Endgegner', desc:'50 Hardcore-Challenges erledigt', check:(s,p)=>(p.hardcoreDone||0)>=50 },
+
+  { id:'auto10', icon:'🤖', name:'Auto-Rhythmus', desc:'10 Auto-Challenges erledigt', check:(s,p)=>(p.autoDone||0)>=10 },
+  { id:'auto50', icon:'⚙️', name:'Maschine läuft', desc:'50 Auto-Challenges erledigt', check:(s,p)=>(p.autoDone||0)>=50 },
+  { id:'auto100', icon:'🏭', name:'Automatik-Legende', desc:'100 Auto-Challenges erledigt', check:(s,p)=>(p.autoDone||0)>=100 },
+  { id:'group_goal', icon:'🤝', name:'Teamziel erreicht', desc:'Aktuelles Gruppenziel erreicht', check:(s,p)=>p.groupGoalReached===true },
 ];
 
+function getWeekStartForBadges(){
+  const d = new Date();
+  const day = d.getDay() || 7;
+  d.setHours(0,0,0,0);
+  d.setDate(d.getDate() - (day - 1));
+  return d.toISOString().slice(0,10);
+}
+function challengeForCompletion(c){
+  const id = String(c && c.challengeId || '');
+  const list = [];
+  try{ if(Array.isArray(window.challenges)) list.push.apply(list, window.challenges); }catch(e){}
+  try{ if(typeof challenges !== 'undefined' && Array.isArray(challenges)) list.push.apply(list, challenges); }catch(e){}
+  for(let i=0;i<list.length;i++) if(String(list[i] && list[i].id) === id) return list[i];
+  try{ if(window.ChangeChallengeDifficulty && typeof window.ChangeChallengeDifficulty.findChallengeById === 'function') return window.ChangeChallengeDifficulty.findChallengeById(id); }catch(e){}
+  return null;
+}
 function getMyStats(){
   const me = (typeof userInfo !== 'undefined' ? userInfo.email : '') || '';
-  const completions = (window.challengeCompletions||[])
-    .filter(c => !me || String(c.playerId||c.email||'').toLowerCase() === me.toLowerCase());
-  const totalPoints = completions.reduce((s,c) => s + (parseInt(c.points)||0), 0);
-  const totalDone   = completions.length;
-  return { totalPoints, totalDone, email: me };
+  const meLower = String(me || '').toLowerCase();
+  const weekStart = getWeekStartForBadges();
+  const today = new Date().toISOString().slice(0,10);
+  const byDay = {};
+  let hardDone = 0, hardcoreDone = 0, autoDone = 0;
+  const completions = (window.challengeCompletions||[]).filter(c => {
+    const who = String(c.playerId||c.email||c.userEmail||'').toLowerCase();
+    return !meLower || who === meLower;
+  }).map(c => {
+    const ch = challengeForCompletion(c) || {};
+    const difficulty = String(c.difficulty || ch.difficulty || '').toLowerCase();
+    const source = String(c.source || ch.source || '').toLowerCase();
+    const isAuto = c.auto === true || ch.auto === true || source === 'auto' || /^auto_/.test(String(c.challengeId||''));
+    const pts = parseInt(c.points,10)||0;
+    const day = String(c.date || c.createdAt || '').slice(0,10);
+    if(day) byDay[day] = (byDay[day] || 0) + pts;
+    if(difficulty === 'hard') hardDone++;
+    if(difficulty === 'hardcore') hardcoreDone++;
+    if(isAuto) autoDone++;
+    return Object.assign({}, c, {points:pts, date:day, difficulty:difficulty, auto:isAuto});
+  });
+  const totalPoints = completions.reduce((sum,c)=>sum+(parseInt(c.points,10)||0),0);
+  const totalDone = completions.length;
+  const todayPoints = byDay[today] || 0;
+  const weekPoints = Object.keys(byDay).filter(d=>d>=weekStart).reduce((sum,d)=>sum+(byDay[d]||0),0);
+  const bestDayPoints = Object.keys(byDay).reduce((best,d)=>Math.max(best, byDay[d]||0),0);
+  let groupGoalReached = false;
+  try{ groupGoalReached = !!(window.getGroupGoal && window.getGroupPoints && window.getGroupPoints() >= window.getGroupGoal().target); }catch(e){}
+  return { totalPoints, totalDone, email: me, todayPoints, weekPoints, bestDayPoints, hardDone, hardcoreDone, autoDone, daysActive:Object.keys(byDay).length, groupGoalReached };
 }
+
+window.getEarnedBadges
 
 window.getEarnedBadges = function(){
   const streak = window.getCurrentStreak();
@@ -3379,11 +3453,28 @@ window.syncStreakToFirestore = async function(){
     const streak = window.getCurrentStreak();
     const badges = window.getEarnedBadges().map(b=>b.id);
     const stats  = getMyStats();
+    var difficulty = '';
+    var autoCount = 7;
+    var plan = null;
+    try{
+      if(window.ChangeChallengeDifficulty){
+        difficulty = window.ChangeChallengeDifficulty.get ? window.ChangeChallengeDifficulty.get() : '';
+        autoCount = window.ChangeChallengeDifficulty.getDailyCount ? window.ChangeChallengeDifficulty.getDailyCount() : autoCount;
+        if(typeof window.ChangeChallengeDifficulty.normalizePlayerPlan === 'function'){
+          plan = window.ChangeChallengeDifficulty.normalizePlayerPlan({challengeDifficulty:difficulty, autoChallengeCount:autoCount});
+        }
+      }
+    }catch(e){}
     await db.collection('change_players').doc(docId).set({
       streak,
       badges,
       totalPoints: stats.totalPoints,
       totalDone:   stats.totalDone,
+      challengeDifficulty: difficulty,
+      challengeDifficultyLabel: plan ? plan.difficultyLabel : '',
+      autoChallengeCount: autoCount,
+      weeklyTargetContribution: plan ? plan.targetContribution : null,
+      weeklyPointPotential: plan ? plan.weeklyPotential : null,
       streakUpdatedAt: new Date().toISOString()
     },{merge:true});
   }catch(e){ console.warn('[Streak Sync]', e.message); }

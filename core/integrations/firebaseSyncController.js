@@ -140,6 +140,14 @@
   async function ensurePlayer(database){
     var me = account();
     if(!database || !me.ready) return false;
+    var difficulty = readChallengeDifficulty();
+    var autoCount = readAutoChallengeCount();
+    var plan = null;
+    try{
+      if(window.ChangeChallengeDifficulty && typeof window.ChangeChallengeDifficulty.normalizePlayerPlan === 'function'){
+        plan = window.ChangeChallengeDifficulty.normalizePlayerPlan({challengeDifficulty:difficulty, autoChallengeCount:autoCount});
+      }
+    }catch(e){}
     var payload = {
       id: me.email,
       email: me.email,
@@ -149,6 +157,11 @@
       online: true,
       databaseSyncEnabled: true,
       liveSyncEnabled: true,
+      challengeDifficulty: difficulty,
+      challengeDifficultyLabel: plan ? plan.difficultyLabel : '',
+      autoChallengeCount: autoCount,
+      weeklyTargetContribution: plan ? plan.targetContribution : null,
+      weeklyPointPotential: plan ? plan.weeklyPotential : null,
       app: 'Change',
       updatedAtLocal: new Date().toISOString(),
       lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
@@ -208,6 +221,7 @@
         autoChallengesEnabled: readJson('change_v1_auto_challenges_enabled', readJson('auto_challenges_enabled', true)) !== false,
         autoChallengeCount: readAutoChallengeCount(),
         challengeDifficulty: readChallengeDifficulty(),
+        groupGoalMode: 'dynamic',
         googleCalendarSyncEnabled: String(localStorage.getItem('change_v1_google_calendar_sync') || 'true') !== 'false'
       },
       google: {

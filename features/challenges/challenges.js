@@ -274,6 +274,10 @@
       challengeId:String(id), playerId:me, userEmail:me, email:me,
       playerName:(window.userInfo&&window.userInfo.name)||me,
       date:todayStr(), points:pts,
+      difficulty: ch.difficulty || ch.level || (window.ChangeChallengeDifficulty&&window.ChangeChallengeDifficulty.get?window.ChangeChallengeDifficulty.get():''),
+      difficultyLabel: ch.difficultyLabel || ch.level || '',
+      source: ch.source || (ch.auto===true?'auto':''),
+      auto: ch.auto === true,
       createdAt:new Date().toISOString(), createdAtLocal:Date.now()
     };
     window.challengeCompletions=(window.challengeCompletions||[]).concat(rec);

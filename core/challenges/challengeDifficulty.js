@@ -372,6 +372,81 @@
   }
 
 
+
+  function avgPointsForDifficulty(difficulty){
+    var cfg = LEVELS[normalize(difficulty)] || LEVELS[DEFAULT_LEVEL];
+    var pool = cfg.pool || [];
+    if(!pool.length) return 10;
+    return Math.round(pool.reduce(function(sum, tuple){ return sum + (parseInt(tuple[3], 10) || 0); }, 0) / pool.length);
+  }
+  function completionFactorForDifficulty(difficulty){
+    difficulty = normalize(difficulty);
+    if(difficulty === 'easy') return 0.65;
+    if(difficulty === 'medium') return 0.55;
+    if(difficulty === 'hard') return 0.45;
+    if(difficulty === 'hardcore') return 0.38;
+    return 0.55;
+  }
+  function expectedDailyPoints(difficulty, count){
+    return avgPointsForDifficulty(difficulty) * normalizeCount(count || getDailyCount());
+  }
+  function normalizePlayerPlan(player){
+    player = player || {};
+    var difficulty = normalize(player.challengeDifficulty || player.difficulty || (player.sync && player.sync.challengeDifficulty) || getDifficulty());
+    var count = normalizeCount(player.autoChallengeCount || player.challengeCount || (player.sync && player.sync.autoChallengeCount) || getDailyCount());
+    var cfg = LEVELS[difficulty] || LEVELS[DEFAULT_LEVEL];
+    var dailyPotential = expectedDailyPoints(difficulty, count);
+    var weeklyPotential = dailyPotential * 7;
+    var target = Math.round(weeklyPotential * completionFactorForDifficulty(difficulty));
+    return {
+      id: String(player.email || player.id || player.uid || 'local'),
+      name: String(player.name || player.displayName || player.email || 'Mitspieler'),
+      difficulty: difficulty,
+      difficultyLabel: cfg.label,
+      autoChallengeCount: count,
+      dailyPotential: dailyPotential,
+      weeklyPotential: weeklyPotential,
+      targetContribution: target
+    };
+  }
+  function roundTarget(value){
+    value = Math.max(125, Number(value) || 0);
+    if(value < 500) return Math.round(value / 25) * 25;
+    return Math.round(value / 50) * 50;
+  }
+  function computeGroupGoal(players, options){
+    options = options || {};
+    players = Array.isArray(players) ? players.slice() : [];
+    if(!players.length) players.push({id:'local', name:'Du', challengeDifficulty:getDifficulty(), autoChallengeCount:getDailyCount()});
+    var seen = new Set();
+    var plans = [];
+    players.forEach(function(player){
+      var plan = normalizePlayerPlan(player);
+      var key = String(plan.id || plan.name || plans.length).toLowerCase();
+      if(seen.has(key)) return;
+      seen.add(key);
+      plans.push(plan);
+    });
+    if(!plans.length) plans.push(normalizePlayerPlan({id:'local', name:'Du'}));
+    var rawTarget = plans.reduce(function(sum, plan){ return sum + plan.targetContribution; }, 0);
+    var target = roundTarget(rawTarget);
+    var labels = plans.map(function(p){ return p.difficultyLabel; });
+    var counts = {};
+    labels.forEach(function(label){ counts[label] = (counts[label] || 0) + 1; });
+    var keys = Object.keys(counts);
+    var dominant = keys.sort(function(a,b){ return counts[b] - counts[a] || a.localeCompare(b); })[0] || (LEVELS[getDifficulty()] || LEVELS[DEFAULT_LEVEL]).label;
+    var mixed = keys.length > 1;
+    return {
+      target: target,
+      rawTarget: Math.round(rawTarget),
+      players: plans.length,
+      plans: plans,
+      dominantDifficultyLabel: dominant,
+      label: mixed ? 'Gemischte Schwierigkeit' : dominant,
+      subtitle: plans.length + ' Mitspieler · dynamisch nach Schwierigkeit & Tagesumfang'
+    };
+  }
+
   window.ChangeChallengeDifficulty = {
     levels: LEVELS,
     normalize: normalize,
@@ -392,6 +467,10 @@
     findChallengeById: findChallengeById,
     selectOptions: selectOptions,
     allTemplates: allTemplates,
+    avgPointsForDifficulty: avgPointsForDifficulty,
+    expectedDailyPoints: expectedDailyPoints,
+    normalizePlayerPlan: normalizePlayerPlan,
+    computeGroupGoal: computeGroupGoal,
     currentMeta: function(){ return LEVELS[getDifficulty()] || LEVELS[DEFAULT_LEVEL]; }
   };
 })();
