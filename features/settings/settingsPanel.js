@@ -51,6 +51,9 @@
       try{ localStorage.setItem(key, JSON.stringify(!!value)); }catch(e){}
     });
   }
+  function readDatabaseSyncEnabled(){
+    return readBoolMulti(['change_v1_database_sync_enabled','database_sync_enabled','change_v1_live_sync_enabled','live_sync_enabled'], false);
+  }
   function getAutoChallengesEnabled(){
     return readBoolMulti(['change_v1_auto_challenges_enabled','auto_challenges_enabled'], true);
   }
@@ -227,36 +230,35 @@
   }
   function firebaseStatus(){
     var status = window._firebaseSyncStatus || 'unknown';
+    var cfgOk = !!(window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey && !String(window.FIREBASE_CONFIG.apiKey).includes('HIER_'));
+    var enabled = readDatabaseSyncEnabled();
     try{
       var hasUser = typeof firebase !== 'undefined' && firebase.auth && !!firebase.auth().currentUser;
-      if(hasUser && status === 'connected')
-        return {ok:true,  label:'VERBUNDEN',          tone:'ok',  detail:'Challenges · Rangliste · Einstellungen'};
+      if(enabled && hasUser)
+        return {ok:cfgOk, label:'AKTIV', tone:'ok', detail:'Firebase speichert Mitspieler, Einstellungen, Challenges und Punkte.'};
       if(status === 'connecting')
-        return {ok:false, label:'VERBINDET...',        tone:'off', detail:'Verbindung wird hergestellt.'};
+        return {ok:cfgOk, label:'VERBINDET...', tone:'off', detail:'Firebase-Verbindung wird hergestellt.'};
       if(status === 'auth_failed')
-        return {ok:false, label:'NICHT VERFÜGBAR',    tone:'err', detail:'Bitte mit Google anmelden um Sync zu aktivieren.'};
-      if(hasUser)
-        return {ok:true,  label:'VERBUNDEN',          tone:'ok',  detail:'Challenges · Rangliste · Einstellungen'};
+        return {ok:cfgOk, label:'ANMELDUNG NÖTIG', tone:'err', detail:'Beim Aktivieren mit Google/Firebase anmelden.'};
+      if(enabled)
+        return {ok:cfgOk, label:'AKTIVIERT', tone:'off', detail:'Beim nächsten Aktivieren wird Firebase verbunden.'};
     }catch(e){}
-    return {ok:false, label:'NICHT ANGEMELDET', tone:'off', detail:'Bitte mit Google anmelden.'};
+    return {ok:cfgOk, label:'AUS', tone:'off', detail: cfgOk ? 'Startet nur über diesen Schalter.' : 'Firebase-Konfiguration nicht geladen.'};
   }
 
   function syncPane(){
-    var live   = readBool('live_sync_enabled', false);
+    var dbOn   = readDatabaseSyncEnabled();
     var auto   = getAutoChallengesEnabled();
     var google = googleStatus();
     var fb     = firebaseStatus();
 
-    // Firebase-Zeile
-    var fbRow = '<div class="change-settings-row">'
+    var dbRow = '<div class="change-settings-row">'
       + '<div><div class="change-settings-title"><span class="change-status-dot '+fb.tone+'"></span>Datenbank-Sync '+pill(fb.label, fb.tone)+'</div>'
       + '<div class="change-settings-sub">'+esc(fb.detail)+'</div></div>'
-      + (fb.ok
-          ? '<label class="switch"><input type="checkbox" id="set-live" '+(live?'checked':'')+'><span class="slider"></span></label>'
-          : '<button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" onclick="if(typeof connectToGoogle===\'function\')connectToGoogle()">Verbinden</button>')
-      + '</div>';
+      + '<label class="switch"><input type="checkbox" id="set-database-sync" '+(dbOn?'checked':'')+' '+(!fb.ok?'disabled':'')+'><span class="slider"></span></label>'
+      + '</div>'
+      + '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-database-sync-now" type="button" '+(!fb.ok?'disabled':'')+'>Jetzt in Firebase speichern</button></div>';
 
-    // Google-Zeile
     var gRow = '<div class="change-settings-row">'
       + '<div><div class="change-settings-title"><span class="change-status-dot '+google.tone+'"></span>Google Kalender '+pill(google.label, google.tone)+'</div>'
       + '<div class="change-settings-sub">'+esc(google.detail || (google.loggedIn ? 'Termine werden importiert.' : 'Klicke Verbinden zum Anmelden.'))+'</div></div>'
@@ -264,12 +266,11 @@
           ? '<label class="switch"><input type="checkbox" id="set-google" '+(google.enabled?'checked':'')+' ><span class="slider"></span></label>'
           : '<button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" id="btn-google-connect">Verbinden</button>')
       + '</div>'
-      + (google.loggedIn ? '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-sync-google" type="button">Jetzt synchronisieren</button></div>' : '');
+      + (google.loggedIn ? '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-sync-google" type="button">Google Kalender neu synchronisieren</button></div>' : '');
 
-    // Auto-Challenges-Zeile
     var autoRow = switchRow('Auto-Challenges '+pill(auto?'AKTIV':'AUS', auto?'ok':'off'), 'Erstellt die täglichen Standard-Challenges.', 'set-auto', auto);
 
-    return card('Synchronisierung', fbRow + gRow + autoRow);
+    return card('Synchronisierung', dbRow + gRow + autoRow);
   }
   var APP_VERSION = '0.1.0001';
 
@@ -360,7 +361,8 @@
       }catch(e){ if(typeof window.toast === 'function') window.toast(e.message || 'Standort konnte nicht aktualisiert werden','err'); }
       refreshSameTab();
     });
-    var live = $('set-live'); if(live) live.addEventListener('change', async function(){ if(window.setLiveSyncEnabled) await window.setLiveSyncEnabled(live.checked); else writeBool('live_sync_enabled', live.checked); refreshSameTab(); });
+    var dbSync = $('set-database-sync'); if(dbSync) dbSync.addEventListener('change', async function(){ if(window.setDatabaseSyncEnabled) await window.setDatabaseSyncEnabled(dbSync.checked); else if(window.setLiveSyncEnabled) await window.setLiveSyncEnabled(dbSync.checked); else writeBoolMulti(['change_v1_database_sync_enabled','database_sync_enabled','change_v1_live_sync_enabled','live_sync_enabled'], dbSync.checked); refreshSameTab('sync'); });
+    var dbSyncNow = $('set-database-sync-now'); if(dbSyncNow) dbSyncNow.addEventListener('click', async function(){ if(window.ChangeFirebaseSyncController && window.ChangeFirebaseSyncController.enable) await window.ChangeFirebaseSyncController.enable(); else if(window.setDatabaseSyncEnabled) await window.setDatabaseSyncEnabled(true); refreshSameTab('sync'); });
     var auto = $('set-auto'); if(auto) auto.addEventListener('change', function(){
       setAutoChallengesState(!!auto.checked);
       refreshSameTab('sync');
@@ -394,6 +396,7 @@
       // Wetter-Einstellungen
       'change_v1_weather_settings', 'change_v1_rain_alert_hours', 'change_v1_pollen_alert_hours',
       // Sync-Einstellungen
+      'database_sync_enabled', 'change_v1_database_sync_enabled',
       'live_sync_enabled', 'change_v1_live_sync_enabled',
       'auto_challenges_enabled', 'change_v1_auto_challenges_enabled',
       'change_v1_google_calendar_sync', 'change_google_sync_enabled',
@@ -435,7 +438,7 @@
 
 
   // connectToGoogle: sicherer Google-TokenClient ohne Firebase-Redirect.
-  // Wichtig: kein signInWithRedirect, kein versteckter Live-Sync-Start.
+  // Wichtig: kein signInWithRedirect, kein versteckter Datenbank-Sync-Start.
   window.connectToGoogle = function(){
     var clientId = (typeof getGoogleClientId === 'function') ? getGoogleClientId() : '';
     if(!clientId){

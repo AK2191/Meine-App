@@ -10,7 +10,7 @@ Eine saubere, erweiterbare Web-App namens **Change** mit:
 - Kalender (Monat, Jahr, Tagesdetail)
 - Challenges (Aufgaben + Punkte)
 - Push-Benachrichtigungen
-- Live-Sync zwischen Nutzern
+- Datenbank-Sync zwischen Nutzern über Firebase
 - Google Kalender Integration
 
 ---
@@ -75,7 +75,7 @@ Jeder Kalendertag enthält:
 | Funktion       | Steuerung              |
 |----------------|------------------------|
 | Push           | Zentrale Glocke (1×)   |
-| Live-Sync      | Eigener Schalter       |
+| Datenbank-Sync | Zentraler Firebase-Schalter |
 | Google Sync    | Eigener Schalter       |
 
 - Keine doppelten Buttons oder versteckten Funktionen
@@ -261,7 +261,7 @@ firebase deploy --only hosting
 
 - Stabile Basis ist die 68929ac-Version, nicht der kaputte Claude-Stand.
 - Google-Login läuft über Google Identity Services TokenClient; Firebase Redirect darf den Hauptlogin nicht übernehmen.
-- Nach Login startet kein automatischer Firebase-/Firestore-/Live-Sync. Live-Sync startet ausschließlich über den eigenen Schalter.
+- Nach Login startet kein automatischer Firebase-/Firestore-/Datenbank-Sync. Datenbank-Sync startet ausschließlich über den eigenen Schalter.
 - Push-Berechtigung wird nicht automatisch beim App-Start abgefragt; Push wird zentral über die Glocke gesteuert.
 - `#loading`, `#panel-overlay` und `#side-panel` dürfen geschlossen keine Klicks blockieren.
 - CSP-konform: `core/notifications/notificationCenter.js` darf kein `Function()`/`eval` verwenden.
@@ -274,7 +274,7 @@ Basis ist die funktionierende stabile Reparatur. Sichtbare Verbesserungen wurden
 
 Beibehaltene Sicherheitsregeln:
 - Hauptlogin bleibt Google Identity Services TokenClient; kein Firebase signInWithRedirect als Standard-Login.
-- Live-Sync startet nur über den eigenen Schalter, nicht automatisch nach Login.
+- Datenbank-Sync startet nur über den Datenbank-Sync-Schalter, nicht automatisch nach Login.
 - Push wird nur über die Glocke/Benachrichtigungssteuerung aktiviert.
 - Overlay/Loading/Sidepanel dürfen nach Login keine Klicks blockieren.
 
@@ -292,7 +292,7 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 ## 2026-05-26 Login-Freeze-Regel
 
 - Google-Kalender-Sync darf niemals `initFirebaseLive()` starten.
-- `initFirebaseLive()` darf nur durch den Live-Sync-Schalter mit `{ manual:true }` laufen.
+- `initFirebaseLive()` darf nur durch den Datenbank-Sync-Schalter mit `{ manual:true }` laufen.
 - Settings-Sync und Challenge-Firestore-Sync starten nicht beim App-Start, nicht nach Google-Login und nicht nach `loadGoogleData()`.
 - `live_sync_enabled` hat Default `false`; alte LocalStorage-Werte dürfen die App beim Login nicht automatisch in Firebase/Firestore ziehen.
 - Stiller Google-Token-Refresh ist deaktiviert; Google-Sync läuft über den eigenen Google-Kalender-Schalter/Sync-Button.
@@ -304,17 +304,26 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - `features/birthday-weather.js` wurde wieder entfernt: Die MutationObserver-basierte Nachbearbeitung lief nach dem Login zu riskant und kann die Oberfläche blockieren. Geburtstags-/Wetter-Erweiterungen dürfen künftig nur direkt in Dashboard-/Kalender-Renderlogik integriert werden, nicht als DOM-Patcher.
 - Automatischer Wetter-Refresh nutzt nur vorhandene Standortdaten. Nach Login/Fokus darf keine stille Geolocation-Abfrage starten. Standortabfrage nur durch bewusste Nutzeraktion.
 - `core/ui/interactionGuard.js` ist die zentrale UI-Freigabe für Loading-/Panel-Overlay und Header-Navigation. Keine zweiten Overlay-/Freeze-Workarounds bauen.
-- Live-Sync, Settings-Sync und Challenge-Firestore-Sync bleiben nach Login deaktiviert und starten nur über den eigenen Schalter.
+- Datenbank-Sync, Settings-Sync und Challenge-Firestore-Sync bleiben nach Login deaktiviert und starten nur über den Datenbank-Sync-Schalter.
 
 ## 2026-05-26 · Firebase-Sync kontrolliert reaktiviert
 
 - Neuer zentraler Controller: `core/integrations/firebaseSyncController.js`.
 - Firebase/Firestore startet weiterhin nicht automatisch nach Google-Login.
-- Der Live-Sync-Schalter ist der einzige Einstiegspunkt für Firestore-Sync.
-- Beim Aktivieren des Live-Sync-Schalters wird Firebase Auth interaktiv hergestellt und danach werden gezielt angelegt/aktualisiert:
+- Der Datenbank-Sync-Schalter ist der einzige Einstiegspunkt für Firebase/Firestore-Sync.
+- Beim Aktivieren des Datenbank-Sync-Schalters wird Firebase Auth interaktiv hergestellt und danach werden gezielt angelegt/aktualisiert:
   - `change_players/{email}` für den aktuellen Mitspieler
   - `change_settings/{email}` für Einstellungen
   - `change_challenges/*` für Challenge-Vorlagen
   - `change_completions/*` erst, wenn erledigte Aufgaben existieren
 - Settings-Sync und Challenge-Sync werden danach kontrolliert gestartet. Keine automatischen Startpfade über Google-Kalender, Dashboard oder Wetter.
 - Keine doppelten Firebase- oder Icon-Dateien im Root anlegen.
+
+
+## 2026-05-26 · Datenbank-Sync statt Live-Sync
+
+- Sichtbar gibt es keinen separaten Live-Sync-Schalter mehr.
+- Der Sync-Tab verwendet zentral den Schalter **Datenbank-Sync**.
+- Dieser Schalter steuert Firebase/Firestore für `change_players`, `change_settings`, `change_challenges` und `change_completions`.
+- Interne Legacy-Funktionen wie `setLiveSyncEnabled` bleiben nur als Kompatibilität erhalten und dürfen nicht als eigene UI-Funktion wieder auftauchen.
+- Google Kalender bleibt ein eigener Schalter und darf den Datenbank-Sync nicht automatisch starten.

@@ -1,6 +1,8 @@
 /* Change App · Firebase Sync Controller
  * Zentrale, manuell gestartete Firestore-Verbindung.
- * Startet niemals automatisch nach Google-Login, sondern nur über den Live-Sync-Schalter.
+ * Startet niemals automatisch nach Google-Login.
+ * Sichtbarer Einstiegspunkt ist ausschließlich der Datenbank-Sync-Schalter.
+ * Legacy-Namen wie setLiveSyncEnabled bleiben nur intern kompatibel.
  */
 (function(){
   'use strict';
@@ -21,10 +23,14 @@
   function writeJson(key, value){
     try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){}
   }
-  function writeLiveState(enabled){
+  function writeDatabaseSyncState(enabled){
+    writeJson('database_sync_enabled', !!enabled);
+    writeJson('change_v1_database_sync_enabled', !!enabled);
+    // Legacy-Keys bleiben erhalten, damit bestehende interne Module nicht brechen.
     writeJson('live_sync_enabled', !!enabled);
     writeJson('change_v1_live_sync_enabled', !!enabled);
     try{ if(typeof ls === 'function') ls('live_sync_enabled', !!enabled); }catch(e){}
+    try{ if(typeof ls === 'function') ls('database_sync_enabled', !!enabled); }catch(e){}
   }
   function cfgValid(){
     var cfg = window.FIREBASE_CONFIG || {};
@@ -122,6 +128,7 @@
       name: me.name || me.email.split('@')[0],
       picture: me.picture || '',
       online: true,
+      databaseSyncEnabled: true,
       liveSyncEnabled: true,
       app: 'Change',
       updatedAtLocal: new Date().toISOString(),
@@ -146,6 +153,13 @@
       return false;
     }
   }
+  function readDatabaseSyncEnabled(){
+    var direct = readJson('database_sync_enabled', null);
+    if(direct === true || direct === false) return direct;
+    direct = readJson('change_v1_database_sync_enabled', null);
+    if(direct === true || direct === false) return direct;
+    return readJson('live_sync_enabled', false) === true || readJson('change_v1_live_sync_enabled', false) === true;
+  }
   function fallbackSettingsPayload(){
     var me = account();
     var weatherSettings = readJson('change_v1_weather_settings', {}) || {};
@@ -169,7 +183,8 @@
         urlaubHalfDays: readJson('urlaub_half_days', []) || []
       },
       sync: {
-        liveSyncEnabled: true,
+        databaseSyncEnabled: true,
+      liveSyncEnabled: true,
         pushPreferenceEnabled: readJson('change_v1_push_enabled', false) === true,
         autoChallengesEnabled: readJson('change_v1_auto_challenges_enabled', readJson('auto_challenges_enabled', true)) !== false,
         googleCalendarSyncEnabled: String(localStorage.getItem('change_v1_google_calendar_sync') || 'true') !== 'false'
@@ -261,19 +276,19 @@
   async function enableFirebaseSync(){
     if(enabling) return false;
     enabling = true;
-    writeLiveState(true);
+    writeDatabaseSyncState(true);
     window.__changeLiveSyncManualStart = true;
     try{
       var database = await ensureDb(true);
       if(!database){
-        writeLiveState(false);
-        toastMsg('Firebase-Anmeldung fehlt. Live-Sync bleibt aus.', 'err');
+        writeDatabaseSyncState(false);
+        toastMsg('Firebase-Anmeldung fehlt. Datenbank-Sync bleibt aus.', 'err');
         return false;
       }
       await ensurePlayer(database);
 
       if(oldSetLiveSyncEnabled){
-        try{ await oldSetLiveSyncEnabled(true); }catch(e){ console.warn('Original Live-Sync start:', e); }
+        try{ await oldSetLiveSyncEnabled(true); }catch(e){ console.warn('Original Datenbank-Sync start:', e); }
       }else if(typeof window.initFirebaseLive === 'function'){
         window.__changeLiveSyncManualStart = true;
         try{ await window.initFirebaseLive({manual:true, live:true}); }catch(e){ console.warn('initFirebaseLive:', e); }
@@ -288,7 +303,7 @@
       try{ if(typeof buildDashboard === 'function') buildDashboard(); }catch(e){}
       try{ if(typeof renderChallenges === 'function') renderChallenges(); }catch(e){}
       try{ if(typeof window._refreshSyncPills === 'function') window._refreshSyncPills(); }catch(e){}
-      toastMsg('Firebase-Sync verbunden ✓', 'ok');
+      toastMsg('Datenbank-Sync verbunden ✓', 'ok');
       return true;
     }finally{
       window.__changeLiveSyncManualStart = false;
@@ -296,7 +311,7 @@
     }
   }
   async function disableFirebaseSync(){
-    writeLiveState(false);
+    writeDatabaseSyncState(false);
     try{ if(typeof window.stopGlobalChallengeSync === 'function') window.stopGlobalChallengeSync(); }catch(e){}
     try{
       var database = await ensureDb(false);
@@ -304,32 +319,37 @@
       if(database && me.ready){
         await database.collection('change_players').doc(safeDocId(me.email)).set({
           online: false,
+          databaseSyncEnabled: false,
           liveSyncEnabled: false,
           lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, {merge:true});
       }
     }catch(e){ console.warn('Firebase Sync Controller disable:', e); }
-    try{ if(oldSetLiveSyncEnabled) await oldSetLiveSyncEnabled(false); }catch(e){ console.warn('Original Live-Sync stop:', e); }
+    try{ if(oldSetLiveSyncEnabled) await oldSetLiveSyncEnabled(false); }catch(e){ console.warn('Original Datenbank-Sync stop:', e); }
     try{ if(typeof window._refreshSyncPills === 'function') window._refreshSyncPills(); }catch(e){}
-    toastMsg('Live-Sync deaktiviert', 'ok');
+    toastMsg('Datenbank-Sync deaktiviert', 'ok');
     return true;
   }
   function install(){
     if(window.__changeFirebaseSyncControllerInstalled) return;
     window.__changeFirebaseSyncControllerInstalled = true;
     oldSetLiveSyncEnabled = typeof window.setLiveSyncEnabled === 'function' ? window.setLiveSyncEnabled : null;
-    window.setLiveSyncEnabled = function(enabled){
+    function setDatabaseSyncEnabled(enabled){
       return enabled ? enableFirebaseSync() : disableFirebaseSync();
-    };
+    }
+    window.setDatabaseSyncEnabled = setDatabaseSyncEnabled;
+    // Legacy-Kompatibilität: vorhandene interne Module rufen diesen Namen noch auf.
+    window.setLiveSyncEnabled = setDatabaseSyncEnabled;
     window.ChangeFirebaseSyncController = {
       enable: enableFirebaseSync,
       disable: disableFirebaseSync,
+      setEnabled: setDatabaseSyncEnabled,
       ensurePlayer: function(){ return ensureDb(false).then(function(database){ return ensurePlayer(database); }); },
       ensureSettings: function(){ return ensureDb(false).then(function(database){ return ensureSettings(database); }); },
-      status: function(){ return { liveSyncEnabled: readJson('live_sync_enabled', false) === true, firebaseReady: cfgValid(), account: account() }; }
+      status: function(){ return { databaseSyncEnabled: readDatabaseSyncEnabled(), liveSyncEnabled: readDatabaseSyncEnabled(), firebaseReady: cfgValid(), account: account() }; }
     };
-    console.warn('[Firebase Sync] Controller geladen ✓');
+    console.warn('[Datenbank-Sync] Controller geladen ✓');
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(install, 300); });
   else setTimeout(install, 300);

@@ -315,8 +315,8 @@ window.addEventListener('load', async () => {
             picture: fbUser.photoURL || userInfo.picture || ''
           });
           updateAvatar();
-          // Kein automatischer Firestore-/Live-Sync nach Auth-Bestätigung.
-          // Live-Sync startet ausschließlich über den eigenen Schalter.
+          // Kein automatischer Firestore-/Datenbank-Sync nach Auth-Bestätigung.
+          // Datenbank-Sync startet ausschließlich über den eigenen Schalter.
         } else {
           // Session abgelaufen — beim nächsten Firestore-Write wird Fehler kommen
           // Nutzer muss sich neu anmelden wenn er Daten speichern will
@@ -345,7 +345,7 @@ window.addEventListener('load', async () => {
           bootMainApp();
         }
         // Kein automatischer Firestore-/Settings-Sync nach Login.
-        // Live-Sync und Settings-Sync starten nur durch den Live-Sync-Schalter.
+        // Datenbank-Sync und Settings-Sync starten nur durch den Datenbank-Sync-Schalter.
         setTimeout(trySilentGoogleTokenRefresh, 1500);
         startTokenAutoRefresh();
         initPWA(); scheduleNotifCheck();
@@ -485,8 +485,8 @@ async function handleGoogleLogin(){
         try{ if(typeof startTokenAutoRefresh === 'function') startTokenAutoRefresh(); }catch(e){}
         bootMainApp();
         loadGoogleData();
-        // Kein automatischer Firebase-/Live-Sync nach Login.
-        // Die App bleibt sofort bedienbar; Live-Sync startet nur über den eigenen Schalter.
+        // Kein automatischer Firebase-/Datenbank-Sync nach Login.
+        // Die App bleibt sofort bedienbar; Datenbank-Sync startet nur über den eigenen Schalter.
       }
     });
     tc.requestAccessToken({prompt:'consent'});
@@ -523,7 +523,7 @@ async function handleFirebaseRedirectLogin(){
       }
       isDemoMode=false; lsDel('demo_mode');
       bootMainApp();
-      // Kein automatischer Firestore-/Live-Sync nach Redirect-Login.
+      // Kein automatischer Firestore-/Datenbank-Sync nach Redirect-Login.
       if(accessToken) loadGoogleData();
       toast('Mobile Anmeldung erfolgreich ✓','ok');
     }
@@ -1146,7 +1146,7 @@ function openDayPanel(dt,dayEvs){
 async function loadGoogleData(){
   if(!accessToken)return;
   await loadGoogleEvents();
-  // Google-Kalender-Sync darf keinen Firestore-/Live-Sync starten.
+  // Google-Kalender-Sync darf keinen Firestore-/Datenbank-Sync starten.
 }
 
 async function loadGoogleEvents(){
@@ -1205,7 +1205,7 @@ async function saveToGoogleCal(existingId){
 /* ==== FIREBASE / LOCAL STORAGE BRIDGE ==== */
 async function loadFromDrive(){
   // Daten werden lokal und – sobald Firebase verbunden ist – in Firestore synchronisiert.
-  // Live-Sync startet nicht automatisch beim Speichern/Laden.
+  // Datenbank-Sync startet nicht automatisch beim Speichern/Laden.
 }
 
 async function saveToDrive(){
@@ -1993,14 +1993,14 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
         if(unsubscribePlayers){unsubscribePlayers(); unsubscribePlayers=null;}
         if(unsubscribeCompletions){unsubscribeCompletions(); unsubscribeCompletions=null;}
         if(db && userInfo.email){ await db.collection('change_players').doc(safeDocId(currentEmail())).set({online:false,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); }
-        toast('Live-Mitspieler deaktiviert','ok');
+        toast('Datenbank-Sync deaktiviert','ok');
       }else{
         window.__changeLiveSyncManualStart = true;
         const liveOk = await initFirebaseLive({manual:true, live:true});
         if(liveOk && typeof window.startChangeSettingsSync === 'function') await window.startChangeSettingsSync();
-        toast(liveOk ? 'Live-Mitspieler verbunden ✓' : 'Live-Sync ist aktuell nicht verfügbar','ok');
+        toast(liveOk ? 'Datenbank-Sync verbunden ✓' : 'Datenbank-Sync ist aktuell nicht verfügbar','ok');
       }
-    }catch(e){ console.warn('Live-Sync Umschalten:',e); toast('Live-Sync konnte nicht geändert werden','err'); }
+    }catch(e){ console.warn('Datenbank-Sync Umschalten:',e); toast('Datenbank-Sync konnte nicht geändert werden','err'); }
     openPushSettingsPanel();
   };
 
@@ -2010,7 +2010,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   };
 
   window.openParticipantPanel = function(){
-    // Live-Sync startet nicht beim Öffnen der Mitspieler-Ansicht.
+    // Datenbank-Sync startet nicht beim Öffnen der Mitspieler-Ansicht.
     const players=[...(challengePlayers||[])].sort((a,b)=>(b.online===true)-(a.online===true)||String(a.name||'').localeCompare(String(b.name||'')));
     const html='<div class="section-label">Automatisch erkannte Mitspieler</div>'+
       (players.length?players.map(p=>'<div class="leader-row"><div class="leader-rank">'+(p.picture?'<img src="'+esc(p.picture)+'" style="width:28px;height:28px;border-radius:50%;object-fit:cover">':'👤')+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(p.email===userInfo.email?' · Du':'')+(p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>')+'</div><div class="leader-detail">'+esc(p.email||'')+'</div></div></div>').join(''):'<div class="dash-empty">Noch keine Mitspieler erkannt. Sobald sich jemand mit Google anmeldet, erscheint er hier automatisch.</div>')+
@@ -2019,7 +2019,8 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   };
 
   const _boot=window.bootMainApp;
-  window.bootMainApp=function(){ _boot.apply(this,arguments); /* Live-Sync startet nur über den Schalter. */ };
+  window.bootMainApp=function(){ _boot.apply(this,arguments); /* Datenbank-Sync startet nur über den Schalter. */ };
+  if(typeof window.setDatabaseSyncEnabled !== 'function') window.setDatabaseSyncEnabled = window.setLiveSyncEnabled;
 
   const _fetchUserInfo=window.fetchUserInfo;
   if(_fetchUserInfo){
@@ -2038,7 +2039,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     try{ if(db && userInfo.email) db.collection('change_players').doc(safeDocId(currentEmail())).set({online:false,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); }catch(e){}
   });
 
-  // Kein automatischer Live-Sync nach Login.
+  // Kein automatischer Datenbank-Sync nach Login.
 })();
 
 /* ==== FIREBASE EXTENSION 2: Challenges live veröffentlichen ==== */
@@ -2613,7 +2614,7 @@ let css=document.createElement('style');css.textContent='.clean-range-row{positi
   window.openCalendarSettings=function(){const o=loadOpts(),st=(window.calendarSettings&&calendarSettings.state)||localStorage.getItem('holiday_state')||'ALL';const opts=Object.entries(window.STATE_OPTIONS).map(([k,v])=>'<option value="'+esc(k)+'" '+(k===st?'selected':'')+'>'+esc(v)+'</option>').join('');const row=(title,id,on,sub)=>'<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">'+title+'</div>'+(sub?'<div class="toggle-sub">'+sub+'</div>':'')+'</div><label class="switch"><input type="checkbox" id="'+id+'" '+(on?'checked':'')+'><span class="slider"></span></label></div>';const html='<div class="fg"><label class="flabel">Bundesland für Feiertage</label><select class="finput" id="holiday-state">'+opts+'</select></div>'+row('Feiertage anzeigen','toggle-holidays',o.showHolidays,'')+row('Challenge-Punkte anzeigen','toggle-dots',o.showChallengeDots,'')+row('Kalenderwochen anzeigen','toggle-kw',o.showWeekNumbers,'')+'<button class="btn btn-primary btn-full" onclick="saveCalSettings()">Speichern</button>';if(typeof openPanel==='function')openPanel('Kalender-Einstellungen',html)};
   window.saveCalSettings=function(){const o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked};saveOpts(o);try{if(!window.calendarSettings)window.calendarSettings={};calendarSettings.state=$('holiday-state')?.value||'ALL';if(typeof ls==='function'){ls('holiday_state',calendarSettings.state); localStorage.setItem('change_v1_holiday_state',calendarSettings.state);}else{localStorage.setItem('holiday_state',JSON.stringify(calendarSettings.state)); localStorage.setItem('change_v1_holiday_state',calendarSettings.state);}}catch(e){}if(typeof closePanel==='function')/* no close */
 renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gespeichert ✓','ok')};
-  function fixToolbarTitles(){document.querySelectorAll('[onclick="openPushSettingsPanel()"], [title="Live- & Kalender-Sync"], [title="Push & Live-Sync"]').forEach(b=>b.setAttribute('title','Sync'));document.querySelectorAll('[onclick="openCalendarSettings()"]').forEach(b=>b.setAttribute('title','Kalender-Einstellungen'))}fixToolbarTitles();setInterval(fixToolbarTitles,1000);
+  function fixToolbarTitles(){document.querySelectorAll('[onclick="openPushSettingsPanel()"], [title="Live- & Kalender-Sync"], [title="Push & Live-Sync"], [title="Datenbank- & Kalender-Sync"]').forEach(b=>b.setAttribute('title','Sync'));document.querySelectorAll('[onclick="openCalendarSettings()"]').forEach(b=>b.setAttribute('title','Kalender-Einstellungen'))}fixToolbarTitles();setInterval(fixToolbarTitles,1000);
   document.addEventListener('click',function(e){const btn=e.target.closest('[title="Kalender-Einstellungen"]');if(btn){e.preventDefault();e.stopImmediatePropagation();e.stopPropagation();openCalendarSettings()}},true);
   const style=document.createElement('style');style.id='calendar-polish-user-final-style';style.textContent=`.range-bar,.fx-range,.clean-range-row>.range-bar{display:none!important}.h-actions,.h-cal-controls{position:relative;z-index:80}.icon-btn{pointer-events:auto!important}.icon-btn[title="Kalender-Einstellungen"],.icon-btn[title="Sync"]{position:relative;z-index:90}#month-grid.month-grid-polished{overflow:hidden!important;background:#fff!important}.cal-week-polished{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr));min-height:122px;border-bottom:1px solid var(--b1);position:relative}.cal-day-polished{position:relative;min-width:0;padding:7px 8px 23px;background:#fff;border-right:1px solid var(--b1);overflow:hidden;cursor:pointer}.cal-day-polished.weekend{background:#fbfaf7}.cal-day-polished.other{opacity:.42}.cal-day-polished.today{box-shadow:inset 0 0 0 1px rgba(45,106,79,.25);background:#f7fbf9}.cal-day-head{display:flex;align-items:center;gap:6px;min-height:24px;padding-right:44px;min-width:0}.cal-day-num{font-size:13px;font-weight:850;color:var(--t2);line-height:1}.cal-day-polished.today .cal-day-num{display:inline-flex;align-items:center;justify-content:center;height:22px;min-width:22px;border-radius:999px;background:rgba(45,106,79,.12);border:1px solid rgba(45,106,79,.22);color:var(--acc);padding:0 6px}.cal-holiday-inline{font-size:10px;font-weight:850;color:#b85f00;background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.18);border-radius:999px;padding:2px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100% - 38px)}.cal-event-stack{display:flex;flex-direction:column;gap:3px;margin-top:5px}.cal-event-chip{height:20px;border:1px solid rgba(59,130,246,.17);background:rgba(59,130,246,.08);color:#2563eb;border-radius:7px;padding:0 6px;display:flex;align-items:center;gap:4px;min-width:0;text-align:left;font-size:11px;font-weight:760;line-height:18px;cursor:pointer}.cal-event-chip.is-range{order:-10;background:rgba(45,106,79,.09)!important;border-color:rgba(45,106,79,.18)!important;color:var(--acc)!important}.cal-event-chip.is-range:before{content:'↔';font-size:9px;font-weight:900;opacity:.65}.cal-event-chip.green{background:rgba(22,163,74,.10);border-color:rgba(22,163,74,.18);color:#15803d}.cal-event-chip.amber{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.20);color:#b45309}.cal-event-chip.red{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.18);color:#dc2626}.cal-event-chip.purple{background:rgba(124,58,237,.10);border-color:rgba(124,58,237,.18);color:#6d28d9}.cal-event-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}.cal-range-text{font-size:9px;font-weight:850;opacity:.8;white-space:nowrap}.cal-range-text.muted{opacity:.55}.cal-g{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;font-size:8px;font-weight:900;color:#4285f4;background:rgba(66,133,244,.13);flex:0 0 auto}.cal-g.ok{color:var(--grn);background:var(--grn-d)}.cal-more{font-size:10px;font-weight:800;color:var(--t3);padding:1px 6px}.cal-points{position:absolute;right:7px;bottom:5px;z-index:8;font-size:10px;font-weight:900;color:var(--grn);background:rgba(52,211,153,.14);border:1px solid rgba(52,211,153,.24);border-radius:999px;padding:2px 6px;line-height:1}.cal-points.done{background:rgba(45,106,79,.14);border-color:rgba(45,106,79,.24);color:var(--acc)}.cal-kw{position:absolute;left:7px;bottom:5px;z-index:8;font-size:10.5px;font-weight:900;color:var(--acc);background:rgba(45,106,79,.12);border:1px solid rgba(45,106,79,.20);border-radius:999px;padding:2px 7px}.year-grid-stacked{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important;padding:14px!important;overflow:auto!important}.year-card-stacked{background:#fff;border:1px solid var(--b1);border-radius:14px;padding:10px;text-align:left;cursor:pointer}.year-title-stacked{font-weight:850;font-size:13px;margin-bottom:7px}.year-days-stacked{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}.year-days-stacked b,.year-days-stacked span{height:18px;font-size:9px;color:var(--t4);display:flex;align-items:center;justify-content:center;position:relative}.year-days-stacked span.today{background:var(--acc);color:white;border-radius:50%}.year-days-stacked span i{position:absolute;bottom:0;width:5px;height:5px;border-radius:50%;background:var(--acc)}.year-days-stacked span.has-holiday i{background:#f59e0b}.year-days-stacked span.has-event.has-holiday i{background:linear-gradient(90deg,var(--acc) 50%,#f59e0b 50%)}@media(max-width:800px){.cal-week-polished{min-height:110px}.year-grid-stacked{grid-template-columns:1fr!important}.cal-holiday-inline{max-width:62px}.cal-event-chip{font-size:10px;padding:0 4px}}`;document.head.appendChild(style);setTimeout(()=>{try{fixToolbarTitles();renderCalendar()}catch(e){console.warn('calendar polish failed',e)}},120);
 })();

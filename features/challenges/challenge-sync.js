@@ -182,7 +182,7 @@
   const oldSetLive = window.setLiveSyncEnabled;
   window.setLiveSyncEnabled = async function(enabled){
     try{ localStorage.setItem('live_sync_enabled', JSON.stringify(!!enabled)); }catch(e){}
-    if(typeof oldSetLive === 'function'){ try{ await oldSetLive.apply(this, arguments); }catch(e){ console.warn('Live Sync Toggle:', e); } }
+    if(typeof oldSetLive === 'function'){ try{ await oldSetLive.apply(this, arguments); }catch(e){ console.warn('Datenbank-Sync Toggle:', e); } }
     if(enabled){ window.__changeLiveSyncManualStart = true; window.startGlobalChallengeSync({manual:true}); }
     else window.stopGlobalChallengeSync();
   };
@@ -532,7 +532,7 @@
       refresh();
     }, err => {
       console.warn('Challenge listener:', err);
-      try{ if(typeof toast === 'function') toast('Live-Punkte-Sync blockiert. Firestore-Regeln prüfen.','err'); }catch(_e){}
+      try{ if(typeof toast === 'function') toast('Datenbank-Punkte-Sync blockiert. Firestore-Regeln prüfen.','err'); }catch(_e){}
     });
     return true;
   };
@@ -729,7 +729,7 @@
           else {const row=normalizeCompletion(Object.assign({id:ch.doc.id},ch.doc.data()||{}),account());if(row)mergeLocal(row);}
         });
         persistCompletions();refresh();
-      },err=>{console.warn('Final Challenge listener failed:',err);toastMsg('Live-Punkte-Sync blockiert: '+(err.message||err),'err');});
+      },err=>{console.warn('Final Challenge listener failed:',err);toastMsg('Datenbank-Punkte-Sync blockiert: '+(err.message||err),'err');});
     }catch(e){console.warn('Final Challenge listener setup failed:',e);}
     syncing=false;return true;
   }

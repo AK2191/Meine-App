@@ -10,6 +10,23 @@
   const esc = s => String(s??'').replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c])); // [FIX: inkl. backtick]
   const lsRead  = k => { try{ return JSON.parse(localStorage.getItem('change_v1_'+k)); }catch(e){ return null; } };
   const lsWrite = (k,v) => { try{ localStorage.setItem('change_v1_'+k,JSON.stringify(v)); }catch(e){} };
+  function rawBool(keys, fallback){
+    keys = Array.isArray(keys) ? keys : [keys];
+    for(const key of keys){
+      try{
+        const raw = localStorage.getItem(key);
+        if(raw == null) continue;
+        if(raw === 'true' || raw === '1') return true;
+        if(raw === 'false' || raw === '0') return false;
+        const parsed = JSON.parse(raw);
+        if(parsed === true || parsed === false) return parsed;
+      }catch(e){}
+    }
+    return fallback;
+  }
+  function databaseSyncEnabled(){
+    return rawBool(['database_sync_enabled','change_v1_database_sync_enabled','live_sync_enabled','change_v1_live_sync_enabled'], false) === true;
+  }
   const $       = id => document.getElementById(id);
 
   function readOpt(){
@@ -162,7 +179,7 @@
     }());
 
     const hasCfg=!!(window.FIREBASE_CONFIG&&window.FIREBASE_CONFIG.apiKey&&!String(window.FIREBASE_CONFIG.apiKey).includes('HIER_'));
-    const liveOn=lsRead('live_sync_enabled')===true;
+    const liveOn=databaseSyncEnabled();
     const autoOn=lsRead('auto_challenges_enabled')!==false;
     const gIn=isGoogleLoggedIn();
     const gSync=typeof canSyncGoogleCalendar==='function'?canSyncGoogleCalendar():gIn;
@@ -175,7 +192,7 @@
     const syncPane=`
       <div class="settings-group">
         <div class="settings-group-label">Synchronisierung</div>
-        ${switchRow('Live-Mitspieler <span class="status-pill '+(liveOn?'status-on':'status-off')+'">'+(liveOn?'VERBUNDEN':'DEAKTIVIERT')+'</span>','','us-toggle-live',liveOn)}
+        ${switchRow('Datenbank-Sync <span class="status-pill '+(liveOn?'status-on':'status-off')+'">'+(liveOn?'AKTIV':'AUS')+'</span>','Firebase speichert Mitspieler, Einstellungen, Challenges und Punkte.','us-toggle-database',liveOn)}
         ${switchRow('Auto-Challenges <span class="status-pill '+(autoOn?'status-on':'status-off')+'">'+(autoOn?'AKTIV':'INAKTIV')+'</span>','','us-toggle-auto',autoOn)}
       </div>
       <div class="settings-group">
@@ -227,8 +244,8 @@
       // Calendar settings: auto-save on change
       ['us-toggle-holidays','us-toggle-dots','us-toggle-kw'].forEach(function(id){var el=document.getElementById(id);if(el&&!el._asBound){el._asBound=true;el.addEventListener('change',function(){window._saveCalSettings();});}});
       var _stEl=document.getElementById('us-holiday-state');if(_stEl&&!_stEl._asBound){_stEl._asBound=true;_stEl.addEventListener('change',function(){window._saveCalSettings();});}
-      const lT=$('us-toggle-live');
-      if(lT) lT.addEventListener('change',async e=>{if(typeof setLiveSyncEnabled==='function')await setLiveSyncEnabled(e.target.checked);else lsWrite('live_sync_enabled',e.target.checked);window._refreshSyncPills();});
+      const lT=$('us-toggle-database');
+      if(lT) lT.addEventListener('change',async e=>{if(typeof setDatabaseSyncEnabled==='function')await setDatabaseSyncEnabled(e.target.checked);else if(typeof setLiveSyncEnabled==='function')await setLiveSyncEnabled(e.target.checked);else{ try{localStorage.setItem('database_sync_enabled',JSON.stringify(e.target.checked));localStorage.setItem('change_v1_database_sync_enabled',JSON.stringify(e.target.checked));}catch(_e){} lsWrite('live_sync_enabled',e.target.checked); }window._refreshSyncPills();});
       const aT=$('us-toggle-auto');
       if(aT) aT.addEventListener('change',e=>{
         if(typeof setAutoChallengesEnabled==='function') setAutoChallengesEnabled(e.target.checked);
@@ -250,12 +267,12 @@
   // In-Place Sync-Status aktualisieren ohne Panel zu schließen
   window._refreshSyncPills=function(){
     try{
-      const liveOn=lsRead('live_sync_enabled')===true;
+      const liveOn=databaseSyncEnabled();
       const autoOn=lsRead('auto_challenges_enabled')!==false;
       const gIn=typeof isGoogleLoggedIn==='function'?isGoogleLoggedIn():false;
       const gOn=typeof isGoogleSyncEnabled==='function'&&isGoogleSyncEnabled()&&gIn;
       // Update live pill
-      const lTog=$('us-toggle-live');
+      const lTog=$('us-toggle-database');
       if(lTog) lTog.checked=liveOn;
       // Update auto-challenge pill
       const aTog=$('us-toggle-auto');
@@ -263,9 +280,9 @@
       // Update toggle title pills via label text
       document.querySelectorAll('[id^="us-pane-sync"] .toggle-title, #us-pane-sync .toggle-title').forEach(function(el){
         const txt=el.textContent||'';
-        if(txt.includes('Live')){
+        if(txt.includes('Datenbank-Sync')){
           const sp=el.querySelector('.status-pill');
-          if(sp){sp.className='status-pill '+(liveOn?'status-on':'status-off');sp.textContent=liveOn?'VERBUNDEN':'DEAKTIVIERT';}
+          if(sp){sp.className='status-pill '+(liveOn?'status-on':'status-off');sp.textContent=liveOn?'AKTIV':'AUS';}
         }
         if(txt.includes('Auto-Challenges')){
           const sp=el.querySelector('.status-pill');
@@ -737,12 +754,12 @@
     // Legacy-IDs (settings-logic.js / Fallback-Panel)
     'us-holiday-state','holiday-state','us-toggle-holidays','toggle-holidays','us-toggle-dots','toggle-dots','us-toggle-kw','toggle-kw',
     'holiday-notifications','us-friseur-on','us-friseur-weeks','us-urlaub-on','us-urlaub-days','us-half-date',
-    'us-toggle-live','us-toggle-auto','us-toggle-gsync','client-id-input',
+    'us-toggle-database','us-toggle-live','us-toggle-auto','us-toggle-gsync','client-id-input',
     // settingsPanel.js IDs (kanonischer Settings-Owner)
     'set-holiday-state','set-show-holidays','set-show-points','set-show-kw',
     'set-friseur','set-friseur-weeks',
     'set-urlaub','set-urlaub-days',
-    'set-live','set-auto','set-google',
+    'set-database-sync','set-live','set-auto','set-google',
     // Wetter (beide Panels)
     'set-weather','set-rain-alerts','set-rain-hours','set-pollen','set-pollen-alerts','set-pollen-hours'
   ]);
@@ -1006,7 +1023,7 @@
       setValue('us-friseur-weeks', dash.friseurWeeks);
       setChecked('us-urlaub-on', dash.urlaubEnabled);
       setValue('us-urlaub-days', dash.urlaubTotalDays);
-      setChecked('us-toggle-live', sync.liveSyncEnabled);
+      setChecked('us-toggle-database', sync.databaseSyncEnabled !== undefined ? sync.databaseSyncEnabled : sync.liveSyncEnabled);
       setChecked('us-toggle-auto', sync.autoChallengesEnabled);
       setChecked('us-toggle-gsync', sync.googleCalendarSyncEnabled);
       if(typeof window.renderUrlaubHalfDayList === 'function') window.renderUrlaubHalfDayList();
@@ -1124,7 +1141,7 @@
   function installHooks(){
     [
       '_saveCalSettings','saveCalSettings','setHolidayState','saveCalendarSettings',
-      'setPushNotificationsEnabled','enablePushNotifications','disablePushNotifications','setLiveSyncEnabled','setAutoChallengesEnabled',
+      'setPushNotificationsEnabled','enablePushNotifications','disablePushNotifications','setDatabaseSyncEnabled','setLiveSyncEnabled','setAutoChallengesEnabled',
       'setFriseurEnabled','setFriseurWeeks','setUrlaubEnabled','setUrlaubDays','addUrlaubHalfDay','removeUrlaubHalfDay'
     ].forEach(wrapSettingFunction);
 
@@ -1152,7 +1169,7 @@
     }
 
     // Settings-Sync wird nicht an initFirebaseLive gehängt.
-    // Er startet nur, wenn der Live-Sync-Schalter bewusst aktiviert wurde.
+    // Er startet nur, wenn der Datenbank-Sync-Schalter bewusst aktiviert wurde.
   }
 
   function boot(){
