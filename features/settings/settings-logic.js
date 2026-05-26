@@ -673,29 +673,32 @@
     var daysUntilNext = nextDate ? Math.round((new Date(nextDate+'T12:00:00')-Date.now())/86400000) : null;
 
     var leftColor = overdue ? '#ef4444' : warn ? '#f59e0b' : 'var(--acc)';
-    var leftText = lastDate
-      ? 'vor <span style="font-weight:800;color:'+leftColor+'">'+days+' Tagen</span>'
-        + '<span style="color:var(--t4)"> – zuletzt besucht am '+fmtS(lastDate)+'</span>'
+    // Kompaktes Format ohne Zeilenumbruch: "vor 17d · Do., 07. Mai"
+    var subLine = lastDate
+      ? 'vor <b style="color:'+leftColor+'">' + days + 'd</b> · ' + fmtS(lastDate)
       : '<span style="color:var(--t4)">Kein vergangener Termin</span>';
 
     var badge = '';
     if(nextDate){
-      var urgCls = daysUntilNext <= 3 ? 'rgba(245,158,11,.15);color:#b45309' : 'rgba(45,106,79,.1);color:var(--acc)';
-      var timeStr = nextInfo && nextInfo.time ? ' um '+nextInfo.time+' Uhr' : '';
-      badge = '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:'+urgCls+'">nächster Termin am '+fmtS(nextDate)+timeStr+'</span>';
+      var urgBg  = daysUntilNext <= 3 ? 'rgba(245,158,11,.15)' : 'rgba(45,106,79,.1)';
+      var urgCol = daysUntilNext <= 3 ? '#b45309' : 'var(--acc)';
+      var timeStr = nextInfo && nextInfo.time ? ' · ' + nextInfo.time : '';
+      badge = '<span class="dash-row-badge" style="background:'+urgBg+';color:'+urgCol+';white-space:nowrap;font-size:10px">→ '+fmtS(nextDate)+timeStr+'</span>';
     } else if(overdue){
-      badge = '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:rgba(239,68,68,.12);color:#dc2626">⚠ Überfällig</span>';
+      badge = '<span class="dash-row-badge badge-red" style="white-space:nowrap;font-size:10px">⚠ Überfällig</span>';
     } else if(warn){
-      badge = '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:rgba(245,158,11,.12);color:#b45309">⏰ Bald fällig</span>';
+      badge = '<span class="dash-row-badge badge-amber" style="white-space:nowrap;font-size:10px">⏰ Bald fällig</span>';
     } else {
-      badge = '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:rgba(156,163,175,.12);color:var(--t3)">Kein Termin geplant</span>';
+      badge = '<span class="dash-row-badge" style="white-space:nowrap;font-size:10px;background:var(--s2);color:var(--t4);border:1px solid var(--b1)">Kein Termin</span>';
     }
 
-    return '<div onclick="window.openFriseurPanel&&window.openFriseurPanel()" style="display:flex;align-items:center;gap:8px;padding:10px 14px 10px;border-top:1px solid var(--b1);margin-top:4px;cursor:pointer" onmouseover="this.style.background=\'var(--s2)\'" onmouseout="this.style.background=\'\'">'
-      + '<span style="font-size:12px;flex-shrink:0">✂️</span>'
-      + '<span style="font-size:11px;font-weight:700;color:var(--t2);white-space:nowrap;margin-right:2px">Friseur</span>'
-      + '<span style="font-size:11px;min-width:0">'+leftText+'</span>'
-      + '<span style="margin-left:auto">'+badge+'</span>'
+    return '<div class="dash-row" onclick="window.openFriseurPanel&&window.openFriseurPanel()" style="cursor:pointer;border-top:1px solid var(--b1);margin-top:4px">'
+      + '<div class="dash-row-icon" style="background:rgba(156,163,175,.1);font-size:14px">✂️</div>'
+      + '<div class="dash-row-body">'
+      + '<div class="dash-row-title">Friseur</div>'
+      + '<div class="dash-row-sub" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+subLine+'</div>'
+      + '</div>'
+      + badge
       + '</div>';
   };
 
@@ -731,9 +734,16 @@
   const LISTENER_KEY = '__changeSettingsSyncListener';
   const SAVE_DELAY = 650;
   const CONTROL_IDS = new Set([
+    // Legacy-IDs (settings-logic.js / Fallback-Panel)
     'us-holiday-state','holiday-state','us-toggle-holidays','toggle-holidays','us-toggle-dots','toggle-dots','us-toggle-kw','toggle-kw',
     'holiday-notifications','us-friseur-on','us-friseur-weeks','us-urlaub-on','us-urlaub-days','us-half-date',
     'us-toggle-live','us-toggle-auto','us-toggle-gsync','client-id-input',
+    // settingsPanel.js IDs (kanonischer Settings-Owner)
+    'set-holiday-state','set-show-holidays','set-show-points','set-show-kw',
+    'set-friseur','set-friseur-weeks',
+    'set-urlaub','set-urlaub-days',
+    'set-live','set-auto','set-google',
+    // Wetter (beide Panels)
     'set-weather','set-rain-alerts','set-rain-hours','set-pollen','set-pollen-alerts','set-pollen-hours'
   ]);
 

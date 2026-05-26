@@ -773,15 +773,21 @@ function renderTrackerRows(){
     // Icon-Hintergrund je Status
     var iconBg=overdue?'rgba(239,68,68,.12)':warn?'rgba(245,158,11,.12)':'rgba(156,163,175,.12)';
 
-    // Linke Seite: vergangener Termin
-    var sub=lastDate?'vor '+days+'d · '+fmtS(lastDate):'Kein vergangener Termin';
+    // Sub-Zeile: nächster Termin hat Priorität
+    var sub;
+    if(nextDate && daysUntilNext !== null){
+      var cd = daysUntilNext===0?'Heute!':daysUntilNext===1?'Morgen':daysUntilNext===2?'Übermorgen':'In '+daysUntilNext+' Tagen';
+      var timeStr=nextInfo&&nextInfo.time?' · '+nextInfo.time+' Uhr':'';
+      sub = '→ '+cd+timeStr+(lastDate?' · Letzter: '+fmtS(lastDate):'');
+    } else {
+      sub=lastDate?'Letzter: vor '+days+'d · '+fmtS(lastDate):'Noch kein Termin gefunden';
+    }
 
     // Rechtes Badge: nächster Termin
     var badge='';
-    if(nextDate){
-      var bc=daysUntilNext<=3?'badge-amber':'badge-blue';
-      var timeStr=nextInfo&&nextInfo.time?' · '+nextInfo.time:'';
-      badge='<span class="dash-row-badge '+bc+'">→ '+fmtS(nextDate)+timeStr+'</span>';
+    if(nextDate && daysUntilNext !== null){
+      var bc=daysUntilNext<=3?'badge-amber':'badge-green';
+      badge='<span class="dash-row-badge '+bc+'">'+fmtS(nextDate)+'</span>';
     } else if(overdue){
       badge='<span class="dash-row-badge badge-red">⚠ Überfällig</span>';
     } else if(warn){
@@ -1399,7 +1405,6 @@ function toast(msg,type){
 function confirmLogout(){
   const name=userInfo.name||userInfo.email||'Nutzer';
   const mail=userInfo.email||'';
-  // Bild aus userInfo ODER aus Firebase Auth (falls GSI-Bild fehlt)
   let picUrl = userInfo.picture || '';
   if(!picUrl){
     try{
@@ -1407,34 +1412,64 @@ function confirmLogout(){
       if(fbU && fbU.photoURL) picUrl = fbU.photoURL;
     }catch(_e){}
   }
-  const avatar = picUrl
-    ? `<img src="${esc(picUrl)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
-    : `<span style="font-size:14px;font-weight:700">${esc((name||'?').split(' ').map(x=>x[0]).join('').substring(0,2).toUpperCase()||'?')}</span>`;
+  const initials = (name||'?').split(' ').map(x=>x[0]).join('').substring(0,2).toUpperCase()||'?';
+  const avatarInner = picUrl
+    ? `<img src="${esc(picUrl)}" alt="" class="profile-panel-img">`
+    : `<span class="profile-panel-initials">${esc(initials)}</span>`;
   const html=`
-    <div class="logout-profile">
-      <div class="logout-avatar">${avatar}</div>
-      <div style="min-width:0">
-        <div class="logout-name">${esc(name)}</div>
-        <div class="logout-mail">${esc(mail)}</div>
-      </div>
+    <div class="profile-panel-hero">
+      <div class="profile-panel-avatar">${avatarInner}</div>
+      <div class="profile-panel-name">${esc(name)}</div>
+      <div class="profile-panel-mail">${esc(mail)}</div>
     </div>
-    <button class="btn btn-danger btn-full" onclick="logout()">Jetzt abmelden</button>
-    `;
-  openPanel('Abmelden',html);
+    <div class="change-settings-card">
+      <button class="profile-panel-row" onclick="if(typeof window.clearChangeAppCache==='function'){this.querySelector('.profile-panel-row-title').textContent='Wird gelöscht …';this.disabled=true;setTimeout(()=>window.clearChangeAppCache(),200)}">
+        <span class="profile-panel-row-icon">🗑️</span>
+        <div class="profile-panel-row-body">
+          <div class="profile-panel-row-title">Cache leeren &amp; neu laden</div>
+          <div class="profile-panel-row-sub">Alle Daten frisch aus Firebase laden. Login bleibt erhalten.</div>
+        </div>
+        <svg class="profile-panel-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <button class="profile-panel-row profile-panel-row--danger" onclick="logout()">
+        <span class="profile-panel-row-icon">🚪</span>
+        <div class="profile-panel-row-body">
+          <div class="profile-panel-row-title">Abmelden</div>
+          <div class="profile-panel-row-sub">${esc(mail)}</div>
+        </div>
+        <svg class="profile-panel-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>`;
+  openPanel(name, html);
 }
 async function logout(){
-  try{
-    if(typeof firebase!=='undefined' && typeof db!=='undefined' && db && userInfo.email){
-      await db.collection('change_players').doc(String(userInfo.email).toLowerCase().replace(/[^a-z0-9._-]/g,'_')).set({online:false,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+  // 1. Google-Token revozieren – WICHTIG: verhindert GIS-Freeze beim naechsten Login.
+  //    Wenn der Token NICHT revoziert wird, kennt Google den Nutzer noch.
+  //    GIS oeffnet dann einen Popup der sich sofort schliesst → window.closed-Polling → Freeze.
+  var tokenToRevoke = accessToken || (typeof ls==='function' ? ls('access_token') : '');
+  if(tokenToRevoke){
+    try{
+      // Fire-and-forget: Token revozieren ohne auf Antwort zu warten
+      navigator.sendBeacon('https://oauth2.googleapis.com/revoke?token=' + encodeURIComponent(tokenToRevoke));
+    }catch(e){
+      try{ fetch('https://oauth2.googleapis.com/revoke?token=' + encodeURIComponent(tokenToRevoke), {method:'POST', mode:'no-cors'}); }catch(_e){}
     }
-  }catch(e){}
-  try{ if(window.firebase && firebase.auth) await firebase.auth().signOut(); lsDel('was_logged_in');; }catch(e){}
-  accessToken='';userInfo={};isDemoMode=false;gEvents=[];notifications=[];
-  lsDel('access_token');lsDel('user_info');lsDel('demo_mode');
+  }
+  // 2. GIS-Zustand zuruecksetzen (falls Bibliothek geladen)
+  try{ if(window.google && google.accounts && google.accounts.oauth2) google.accounts.oauth2.revoke(tokenToRevoke || '', ()=>{}); }catch(e){}
+  // 3. Firebase signOut
+  try{ if(window.firebase && firebase.auth) await firebase.auth().signOut(); }catch(e){}
+  // 4. Alle Session-Daten loeschen
+  lsDel('was_logged_in');
+  lsDel('access_token'); lsDel('user_info'); lsDel('demo_mode');
+  lsDel('change_v1_user_info'); lsDel('user_info_safe'); lsDel('change_v1_user_email'); lsDel('user_email');
+  lsDel('change_gis_token'); lsDel('change_gis_ts');
+  try{ sessionStorage.clear(); }catch(e){}
+  accessToken = ''; userInfo = {};
   closePanel();
-  document.getElementById('main-app').style.display='none';
-  if(CLIENT_ID)showLogin();
-  else document.getElementById('setup-modal').classList.add('show');
+  // 5. Seitenreload – sauberer Start ohne alte Listener
+  var url = window.location.href.split('?')[0].split('#')[0];
+  window.location.replace(url + '?logout=' + Date.now());
 }
 
 /* ==== KEYBOARD ==== */
@@ -2506,7 +2541,11 @@ renderCalendar(); if(typeof toast==='function') toast('Kalender-Einstellungen ge
       }
       const range=r.end && r.end!==r.start;
       const sub=range ? fmt(r.start)+' – '+fmt(r.end) : (fmtLong(r.start)+(evTime(r.event)?' · '+esc(evTime(r.event)):''));
-      return '<div class="dash-row change-dashboard-row '+((r.start<=today()&&r.end>=today())?'change-today-row':'')+'" onclick="setMainView(\'calendar\')">'+dateBlock(r)+'<div class="dash-row-icon change-icon-event">📅</div><div class="dash-row-body"><div class="dash-row-title">'+esc(r.title)+'</div><div class="dash-row-sub">'+sub+'</div></div></div>';
+      const isBday = typeof window.isBirthday==='function' && window.isBirthday(r.title);
+      const evIcon = isBday ? '🎂' : '📅';
+      const evRowCls = isBday ? 'change-dashboard-row change-bday-row' : 'change-dashboard-row';
+      const evIconCls = isBday ? 'dash-row-icon change-icon-bday' : 'dash-row-icon change-icon-event';
+      return '<div class="dash-row '+evRowCls+' '+((r.start<=today()&&r.end>=today())?'change-today-row':'')+'" onclick="setMainView(\'calendar\')">'+dateBlock(r)+'<div class="'+evIconCls+'">'+evIcon+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(r.title)+'</div><div class="dash-row-sub">'+sub+'</div></div></div>';
     }).join('');
   }
   function challengeHtml(){
@@ -2908,27 +2947,31 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     var remaining = totalDays - used;
     var pct       = Math.min(100, Math.round((used / totalDays) * 100));
 
-    var usedColor = remaining < 0 ? '#ef4444' : remaining === 0 ? 'var(--acc)' : remaining <= 5 ? '#f59e0b' : 'var(--acc)';
-    var leftText  = '<span style="font-weight:800;color:'+usedColor+'">'+formatVacationDays(used)+' von '+formatVacationDays(totalDays)+'</span>'
-                  + '<span style="color:var(--t4)"> Tagen verbraucht</span>';
+    var usedColor = remaining < 0 ? '#ef4444' : remaining <= 5 ? '#f59e0b' : 'var(--acc)';
+    var barColor  = usedColor;
 
-    var barColor    = remaining < 0 ? '#ef4444' : remaining === 0 ? 'var(--acc)' : remaining <= 5 ? '#f59e0b' : 'var(--acc)';
-    var progressBar = '<div style="flex:1;max-width:80px;height:4px;background:var(--b1);border-radius:2px;overflow:hidden;margin:0 8px">'
-      + '<div style="width:'+pct+'%;height:100%;background:'+barColor+';border-radius:2px"></div>'
-      + '</div>';
+    // Kompakte Sub-Zeile: "26 von 30 Tagen verbraucht"
+    var subLine = '<b style="color:'+usedColor+'">'+formatVacationDays(used)+' von '+formatVacationDays(totalDays)+'</b>'
+              + '<span style="color:var(--t4)"> Tagen</span>';
+
+    // Fortschrittsbalken inline (klein, passt in Sub-Zeile)
+    var bar = '<span style="display:inline-block;width:48px;height:3px;background:var(--b1);border-radius:2px;vertical-align:middle;margin:0 6px">'
+            + '<span style="display:block;width:'+pct+'%;height:100%;background:'+barColor+';border-radius:2px"></span>'
+            + '</span>';
 
     var badge = remaining === 0
-      ? '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:rgba(45,106,79,.1);color:var(--acc)">✓ Urlaub vollständig verplant</span>'
+      ? '<span class="dash-row-badge badge-green" style="white-space:nowrap;font-size:10px">✓ Vollständig verplant</span>'
       : remaining < 0
-        ? '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:rgba(239,68,68,.12);color:#dc2626">⚠ '+Math.abs(remaining)+' Tage überzogen</span>'
-        : '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:'+(remaining<=5?'rgba(245,158,11,.12);color:#b45309':'rgba(45,106,79,.1);color:var(--acc)')+'">'+formatVacationDays(remaining)+' Tage übrig</span>';
+        ? '<span class="dash-row-badge badge-red" style="white-space:nowrap;font-size:10px">⚠ '+Math.abs(remaining)+' überzogen</span>'
+        : '<span class="dash-row-badge" style="white-space:nowrap;font-size:10px;background:'+(remaining<=5?'rgba(245,158,11,.15);color:#b45309':'rgba(45,106,79,.1);color:var(--acc)')+'">'+formatVacationDays(remaining)+' Tage übrig</span>';
 
-    return '<div onclick="window.openUrlaubPanel&&window.openUrlaubPanel()" style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--b1);cursor:pointer" onmouseover="this.style.background=\'var(--s2)\'" onmouseout="this.style.background=\'\'">'
-      + '<span style="font-size:12px;flex-shrink:0">🏖️</span>'
-      + '<span style="font-size:11px;font-weight:700;color:var(--t2);white-space:nowrap;margin-right:2px">Urlaub</span>'
-      + '<span style="font-size:11px;min-width:0">'+leftText+'</span>'
-      + progressBar
-      + '<span style="margin-left:auto">'+badge+'</span>'
+    return '<div class="dash-row" onclick="window.openUrlaubPanel&&window.openUrlaubPanel()" style="cursor:pointer;border-top:1px solid var(--b1);margin-top:4px">'
+      + '<div class="dash-row-icon" style="background:rgba(156,163,175,.1);font-size:14px">🏖️</div>'
+      + '<div class="dash-row-body">'
+      + '<div class="dash-row-title">Urlaub</div>'
+      + '<div class="dash-row-sub" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+subLine+bar+'</div>'
+      + '</div>'
+      + badge
       + '</div>';
   };
 })();

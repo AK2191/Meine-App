@@ -122,7 +122,7 @@
         new Notification('🎂 Geburtstag in 3 Tagen', {
           body: esc(ev.title || 'Geburtstag') + ' · ' + fmtShort(dk),
           tag: firedId,
-          icon: './icons/icon-change-192.png'
+          icon: '/icons/icon-change-192.png'
         });
         if (Store.markFired) Store.markFired(firedId);
       } catch (e) { }

@@ -266,3 +266,24 @@ firebase deploy --only hosting
 - `#loading`, `#panel-overlay` und `#side-panel` dürfen geschlossen keine Klicks blockieren.
 - CSP-konform: `core/notifications/notificationCenter.js` darf kein `Function()`/`eval` verwenden.
 - Icons und Firebase-Dateien liegen eindeutig in `icons/` und `firebase/`; keine zusätzlichen Root-Kopien erzeugen.
+
+
+## Stand 2026-05-26 – Stable Plus Merge
+
+Basis ist die funktionierende stabile Reparatur. Sichtbare Verbesserungen wurden kontrolliert zurückgeführt, ohne den Login erneut auf Firebase-Redirect umzustellen.
+
+Beibehaltene Sicherheitsregeln:
+- Hauptlogin bleibt Google Identity Services TokenClient; kein Firebase signInWithRedirect als Standard-Login.
+- Live-Sync startet nur über den eigenen Schalter, nicht automatisch nach Login.
+- Push wird nur über die Glocke/Benachrichtigungssteuerung aktiviert.
+- Overlay/Loading/Sidepanel dürfen nach Login keine Klicks blockieren.
+
+Zurückgeführte Verbesserungen:
+- Neues grünes App-Logo und saubere Icon-Pfade unter icons/.
+- Wetter-/Pollen-Dashboard inkl. kompakter mobiler Darstellung, Sonnenzeiten und stiller Aktualisierung.
+- Geburtstags-Wetter-Modul.
+- Kompakter Friseur-Tracker und Urlaub-Tracker im Dashboard.
+- Profilpanel mit Cache-leeren-Aktion und Abmelden.
+- Settings-Panel mit besserer Sync-Struktur; Google verbinden nutzt TokenClient, keinen Firebase-Redirect.
+
+Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.

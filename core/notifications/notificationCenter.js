@@ -99,7 +99,7 @@
       var dk = eventStart(ev);
       if(!dk) return null;
       var diff = daysUntilKey(dk);
-      if(diff < -1 || diff > 60) return null;
+      if(diff < -1 || diff > 1) return null;  // nur heute (0) und morgen (1)
       var rawId = String((ev && ev.id) || (ev && ev.googleEventId) || eventTitle(ev)+'_'+dk);
       var dedupe = rawId+'|'+dk+'|'+eventTitle(ev);
       if(seen.has(dedupe)) return null;
@@ -232,7 +232,7 @@
       .concat(buildPlayerActivityNotifications())
       .concat(buildWeatherHealthNotifications())
       .concat(buildChallengeNotifications())
-      .concat(buildDailySummaryNotifications())
+      // buildDailySummaryNotifications() → entfernt (Tageszusammenfassung nicht gewünscht)
       .concat(buildEventNotifications());
     notes.sort(function(a,b){
       return (a.priority - b.priority) || ((ORDER[a.urgency] || 9) - (ORDER[b.urgency] || 9)) || ((a.diff || 0) - (b.diff || 0)) || String(a.title).localeCompare(String(b.title));
