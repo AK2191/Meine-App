@@ -305,3 +305,16 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Automatischer Wetter-Refresh nutzt nur vorhandene Standortdaten. Nach Login/Fokus darf keine stille Geolocation-Abfrage starten. Standortabfrage nur durch bewusste Nutzeraktion.
 - `core/ui/interactionGuard.js` ist die zentrale UI-Freigabe für Loading-/Panel-Overlay und Header-Navigation. Keine zweiten Overlay-/Freeze-Workarounds bauen.
 - Live-Sync, Settings-Sync und Challenge-Firestore-Sync bleiben nach Login deaktiviert und starten nur über den eigenen Schalter.
+
+## 2026-05-26 · Firebase-Sync kontrolliert reaktiviert
+
+- Neuer zentraler Controller: `core/integrations/firebaseSyncController.js`.
+- Firebase/Firestore startet weiterhin nicht automatisch nach Google-Login.
+- Der Live-Sync-Schalter ist der einzige Einstiegspunkt für Firestore-Sync.
+- Beim Aktivieren des Live-Sync-Schalters wird Firebase Auth interaktiv hergestellt und danach werden gezielt angelegt/aktualisiert:
+  - `change_players/{email}` für den aktuellen Mitspieler
+  - `change_settings/{email}` für Einstellungen
+  - `change_challenges/*` für Challenge-Vorlagen
+  - `change_completions/*` erst, wenn erledigte Aufgaben existieren
+- Settings-Sync und Challenge-Sync werden danach kontrolliert gestartet. Keine automatischen Startpfade über Google-Kalender, Dashboard oder Wetter.
+- Keine doppelten Firebase- oder Icon-Dateien im Root anlegen.
