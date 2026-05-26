@@ -15,7 +15,9 @@
       '[data-theme="dark"] .challenge-done{background:rgba(22,163,74,.10)!important;border-left:3px solid rgba(74,222,128,.4)!important}' +
       '.btn-undo{background:rgba(220,38,38,.10)!important;border:1px solid rgba(220,38,38,.25)!important;color:#dc2626!important;min-width:36px!important;font-weight:800!important}' +
       '.btn-undo:hover{background:rgba(220,38,38,.20)!important}' +
-      '[data-theme="dark"] .btn-undo{background:rgba(248,113,113,.12)!important;border-color:rgba(248,113,113,.28)!important;color:#f87171!important}';
+      '[data-theme="dark"] .btn-undo{background:rgba(248,113,113,.12)!important;border-color:rgba(248,113,113,.28)!important;color:#f87171!important}' +
+      '.ch-difficulty-badge{display:inline-flex;align-items:center;border-radius:999px;background:rgba(15,118,110,.08);color:#0f766e;border:1px solid rgba(15,118,110,.16);font-size:10px;font-weight:800;line-height:1;padding:3px 7px;margin-left:6px;white-space:nowrap}' +
+      '[data-theme="dark"] .ch-difficulty-badge{background:rgba(45,212,191,.12);color:#5eead4;border-color:rgba(45,212,191,.20)}';
     document.head.appendChild(s);
   })();
 
@@ -69,8 +71,17 @@
     {id:'opt_walk_10',    icon:'🚶', title:'Spazieren · mind. 10 Min.', points:15, desc:'Gehe mindestens 10 Minuten locker spazieren.',               optional:true}
   ];
 
+  function difficultyApi(){
+    return window.ChangeChallengeDifficulty || null;
+  }
+
   function findById(id){
     id = String(id||'');
+    var D = difficultyApi();
+    if(D && typeof D.findChallengeById === 'function'){
+      var found = D.findChallengeById(id);
+      if(found) return found;
+    }
     for(var i=0;i<POOL.length;i++) if(String(POOL[i].id)===id) return POOL[i];
     for(var j=0;j<OPTIONAL.length;j++) if(String(OPTIONAL[j].id)===id) return OPTIONAL[j];
     return null;
@@ -110,13 +121,19 @@
     try{ var x=new URL(u); return (x.protocol==='https:'||x.protocol==='http:') ? u : ''; }catch(e){ return ''; }
   }
 
-  /* 7 deterministisch per Datum */
+  /* 7 deterministisch per Datum und eingestelltem Schwierigkeitsgrad */
   function getDailyPool(dk){
     dk=dk||todayStr();
+    var D = difficultyApi();
+    if(D && typeof D.buildDailyChallenges === 'function'){
+      return D.buildDailyChallenges(dk);
+    }
     var seed=dk.replace(/-/g,'').split('').reduce(function(a,c){return a*31+c.charCodeAt(0);},0);
     var arr=POOL.slice().sort(function(a,b){return String(a.id).localeCompare(String(b.id));});
     var off=((seed%arr.length)+arr.length)%arr.length;
-    return arr.slice(off).concat(arr.slice(0,off)).slice(0,7);
+    return arr.slice(off).concat(arr.slice(0,off)).slice(0,7).map(function(ch){
+      return Object.assign({difficulty:'easy', difficultyLabel:'Leicht', level:'Leicht'}, ch);
+    });
   }
 
   /* Spieler-ID – robust, alle Quellen */
@@ -323,7 +340,7 @@
         +'<div class="challenge-icon">'+esc(ch.icon||'🏆')+'</div>'
         +'<div class="challenge-body">'
           +'<div class="ch-top-row">'
-            +'<span class="challenge-name">'+esc(ch.title||'Challenge')+'</span>'
+            +'<span class="challenge-name">'+esc(ch.title||'Challenge')+(ch.difficultyLabel&&!ch.optional?' <span class="ch-difficulty-badge">'+esc(ch.difficultyLabel)+'</span>':'')+'</span>'
             +'<span class="points-pill">+'+pts+'</span>'
           +'</div>'
           +'<div class="challenge-meta">'+esc(ch.desc||'')+'</div>'
@@ -377,7 +394,7 @@
   /* ─── Exports ─── */
   // KEIN Object.defineProperty auf window.challenges — lässt anderen Code unberührt
   window.ChangeChallenges = {
-    pool: POOL,
+    pool: (difficultyApi() && difficultyApi().allTemplates ? difficultyApi().allTemplates() : POOL),
     optional: OPTIONAL,
     findById: findById,
     hydrate: hydrateLegacyChallenge,
@@ -408,13 +425,14 @@
     // window.challenges mit unserem Pool befüllen — inklusive YouTube-URLs,
     // damit Legacy-/Fallback-Renderer keine Link-Information verlieren.
     var today = todayStr();
-    var exportKey = today + ':' + getDailyPool(today).map(function(ch){return ch.id;}).join(',');
+    var exportKey = today + ':' + (difficultyApi() && difficultyApi().get ? difficultyApi().get() : 'fallback') + ':' + getDailyPool(today).map(function(ch){return ch.id;}).join(',');
     if(exportKey !== lastLegacyExportKey){
       window.challenges = getDailyPool(today).concat(OPTIONAL).map(function(ch){
         return {
           id: ch.id, title: ch.title, desc: ch.desc, icon: ch.icon,
           points: ch.points, url: ch.url || '', link: ch.url || '', youtubeUrl: ch.url || '',
-          active: true, date: today, recurrence: 'daily', type: 'Sport', optional: !!ch.optional
+          difficulty: ch.difficulty || 'easy', difficultyLabel: ch.difficultyLabel || ch.level || 'Leicht', level: ch.level || ch.difficultyLabel || '',
+          auto: ch.auto !== false, active: true, date: today, recurrence: 'daily', type: 'Sport', optional: !!ch.optional
         };
       });
       lastLegacyExportKey = exportKey;
@@ -439,5 +457,5 @@
     setTimeout(function(){ setInterval(assertOwnership, 10000); }, 7000);
   });
 
-  console.log('[Change] challenges.js ✓ — '+POOL.length+' Übungen, 7/Tag');
+  console.log('[Change] challenges.js ✓ — Schwierigkeitsgrade aktiv, 7/Tag');
 })();

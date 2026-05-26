@@ -23,6 +23,10 @@
   function writeJson(key, value){
     try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){}
   }
+  function readChallengeDifficulty(){
+    try{ if(window.ChangeChallengeDifficulty && window.ChangeChallengeDifficulty.get) return window.ChangeChallengeDifficulty.get(); }catch(e){}
+    return String(readJson('change_v1_challenge_difficulty', readJson('challenge_difficulty', 'easy')) || 'easy').toLowerCase();
+  }
   function writeDatabaseSyncState(enabled){
     writeJson('database_sync_enabled', !!enabled);
     writeJson('change_v1_database_sync_enabled', !!enabled);
@@ -187,6 +191,7 @@
       liveSyncEnabled: true,
         pushPreferenceEnabled: readJson('change_v1_push_enabled', false) === true,
         autoChallengesEnabled: readJson('change_v1_auto_challenges_enabled', readJson('auto_challenges_enabled', true)) !== false,
+        challengeDifficulty: readChallengeDifficulty(),
         googleCalendarSyncEnabled: String(localStorage.getItem('change_v1_google_calendar_sync') || 'true') !== 'false'
       },
       google: {
@@ -225,6 +230,10 @@
           desc: ch.desc || ch.description || '',
           points: parseInt(ch.points, 10) || 0,
           icon: ch.icon || '🏆',
+          difficulty: ch.difficulty || readChallengeDifficulty(),
+          difficultyLabel: ch.difficultyLabel || ch.level || '',
+          auto: ch.auto === true,
+          type: ch.type || 'Sport',
           date: ch.date || ch.startDate || '',
           recurrence: ch.recurrence || 'once',
           active: ch.active !== false,

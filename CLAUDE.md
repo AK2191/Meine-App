@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-05-17
+> Zuletzt aktualisiert: 2026-05-26
 
 ---
 
@@ -35,6 +35,7 @@ public/
 - UI → `features/`
 - Wiederverwendbare Komponenten → `components/`
 - Keine doppelte Logik (kein mehrfacher Sync, kein doppelter Kalender-Code)
+- Challenge-Schwierigkeitslogik gehört ausschließlich nach `core/challenges/challengeDifficulty.js`; UI-Dateien dürfen nur diese API nutzen.
 
 ---
 
@@ -59,6 +60,13 @@ Jeder Kalendertag enthält:
 - Punkte zählen **nur** bei erledigten Aufgaben
 - Anzeige im Kalender: kleines Badge unten rechts
 - Keine großen visuellen Elemente
+- Auto-Challenges werden zentral über `core/challenges/challengeDifficulty.js` erzeugt.
+- Schwierigkeitsgrade: `easy` (Leicht), `medium` (Mittel), `hard` (Schwer), `hardcore` (Hardcore).
+- Die Steigerung muss spürbar sein: höhere Wiederholungen, längere Haltezeiten und deutlich höhere Punkte.
+- Manuell angelegte Challenges bleiben unabhängig vom Schwierigkeitsgrad.
+- Speicherung: `change_v1_challenge_difficulty` und `challenge_difficulty`.
+- Firebase-Sync: `change_settings.sync.challengeDifficulty` wird über Datenbank-Sync synchronisiert.
+
 
 ### Layout (Desktop)
 - `.challenge-layout` → CSS Grid, 2 Spalten (`1.15fr / 0.85fr`), `align-items:stretch`

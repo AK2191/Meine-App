@@ -57,6 +57,29 @@
   function getAutoChallengesEnabled(){
     return readBoolMulti(['change_v1_auto_challenges_enabled','auto_challenges_enabled'], true);
   }
+  function getChallengeDifficulty(){
+    try{ if(window.ChangeChallengeDifficulty && window.ChangeChallengeDifficulty.get) return window.ChangeChallengeDifficulty.get(); }catch(e){}
+    try{ return JSON.parse(localStorage.getItem('change_v1_challenge_difficulty') || 'null') || localStorage.getItem('challenge_difficulty') || 'easy'; }catch(e){ return 'easy'; }
+  }
+  function setChallengeDifficulty(value){
+    var next = 'easy';
+    try{ next = window.ChangeChallengeDifficulty && window.ChangeChallengeDifficulty.set ? window.ChangeChallengeDifficulty.set(value) : String(value || 'easy'); }catch(e){ next = String(value || 'easy'); }
+    try{ localStorage.setItem('change_v1_challenge_difficulty', JSON.stringify(next)); localStorage.setItem('challenge_difficulty', JSON.stringify(next)); }catch(e){}
+    try{ if(typeof window.saveChangeSettings === 'function' && readDatabaseSyncEnabled()) window.saveChangeSettings(true); }catch(e){}
+    return next;
+  }
+  function challengeDifficultySelect(id){
+    var current = getChallengeDifficulty();
+    var options = '';
+    try{ if(window.ChangeChallengeDifficulty && window.ChangeChallengeDifficulty.selectOptions) options = window.ChangeChallengeDifficulty.selectOptions(current); }catch(e){}
+    if(!options){
+      options = '<option value="easy" '+(current==='easy'?'selected':'')+'>Leicht · 6–12 P</option>'+
+                '<option value="medium" '+(current==='medium'?'selected':'')+'>Mittel · 14–25 P</option>'+
+                '<option value="hard" '+(current==='hard'?'selected':'')+'>Schwer · 30–50 P</option>'+
+                '<option value="hardcore" '+(current==='hardcore'?'selected':'')+'>Hardcore · 60–100 P</option>';
+    }
+    return '<div class="change-settings-actions change-setting-field"><label class="flabel">Schwierigkeit der Auto-Challenges</label><select class="finput" id="'+id+'">'+options+'</select><div class="change-settings-sub" style="margin-top:6px">Steuert nur automatisch erzeugte Aufgaben. Manuelle Challenges bleiben unverändert.</div></div>';
+  }
   function setAutoChallengesState(on){
     on = !!on;
     writeBoolMulti(['change_v1_auto_challenges_enabled','auto_challenges_enabled'], on);
@@ -268,7 +291,8 @@
       + '</div>'
       + (google.loggedIn ? '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-sync-google" type="button">Google Kalender neu synchronisieren</button></div>' : '');
 
-    var autoRow = switchRow('Auto-Challenges '+pill(auto?'AKTIV':'AUS', auto?'ok':'off'), 'Erstellt die täglichen Standard-Challenges.', 'set-auto', auto);
+    var autoRow = switchRow('Auto-Challenges '+pill(auto?'AKTIV':'AUS', auto?'ok':'off'), 'Erstellt die täglichen Standard-Challenges.', 'set-auto', auto)
+      + challengeDifficultySelect('set-challenge-difficulty');
 
     return card('Synchronisierung', dbRow + gRow + autoRow);
   }
@@ -367,6 +391,10 @@
       setAutoChallengesState(!!auto.checked);
       refreshSameTab('sync');
     });
+    var diff = $('set-challenge-difficulty'); if(diff) diff.addEventListener('change', function(){
+      setChallengeDifficulty(diff.value);
+      refreshSameTab('sync');
+    });
     var google = $('set-google'); if(google) google.addEventListener('change', async function(){ if(window.ChangeGoogleSyncStatus){ if(google.checked) await window.ChangeGoogleSyncStatus.syncNow(); else window.ChangeGoogleSyncStatus.disconnect(); } refreshSameTab(); });
     var syncGoogle = $('set-sync-google'); if(syncGoogle) syncGoogle.addEventListener('click', async function(){ if(window.ChangeGoogleSyncStatus) await window.ChangeGoogleSyncStatus.syncNow(); refreshSameTab(); });
     var btnGoogleConnect = $('btn-google-connect'); if(btnGoogleConnect) btnGoogleConnect.addEventListener('click', function(){ if(typeof connectToGoogle==='function') connectToGoogle(); });
@@ -399,6 +427,7 @@
       'database_sync_enabled', 'change_v1_database_sync_enabled',
       'live_sync_enabled', 'change_v1_live_sync_enabled',
       'auto_challenges_enabled', 'change_v1_auto_challenges_enabled',
+      'challenge_difficulty', 'change_v1_challenge_difficulty',
       'change_v1_google_calendar_sync', 'change_google_sync_enabled',
       'push_enabled', 'change_v1_push_enabled',
       // Design
