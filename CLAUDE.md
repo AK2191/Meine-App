@@ -54,7 +54,7 @@ Wenn eine Änderung fehlschlägt:
 
 ---
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-05-26
+> Zuletzt aktualisiert: 2026-05-26 (2)
 
 ---
 
@@ -315,6 +315,7 @@ firebase deploy --only hosting
 
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
+| 2026-05-26 | **BUG-FIX (Login-Loop):** `handleGoogleOAuthRedirect()` wurde nach `handleFirebaseRedirectLogin()` aufgerufen. Firebase `getRedirectResult()` konsumiert+löscht den URL-Hash (`#access_token=`) bevor unser Code ihn lesen kann → `handleGoogleOAuthRedirect()` returnierte immer null → `showLogin()` → Endlosschleife. Fix: `handleGoogleOAuthRedirect()` jetzt VOR `handleFirebaseRedirectLogin()` – wenn Hash gefunden → return, Firebase wird nicht aufgerufen. Außerdem: `was_logged_in` + `user_info_safe` werden jetzt im oauthState-Branch gesetzt (fehlten vorher). |
 | 2026-05-26 | **BUG-FIX (Login-Freeze FINAL):** `handleGoogleLogin()` in app.js komplett auf OAuth 2.0 Implicit Redirect umgestellt (GIS TokenClient/initTokenClient/requestAccessToken entfernt). Popup wurde nie wirklich entfernt trotz Changelog-Eintrag. Jetzt identisch zu `connectToGoogle()`: `window.location.href = authUrl` mit state=main_login. Freeze beim Login ist damit endgültig behoben. |
 | 2026-05-25 | **BUG-FIX (v4 – FINAL):** `handleGoogleLogin` + `connectToGoogle` beide auf OAuth 2.0 Implicit Redirect umgestellt. GIS requestAccessToken/Popup komplett entfernt. `handleGoogleOAuthRedirect()` liest state=main_login und state=gcal_connect. Voraussetzung: Redirect-URI in Google Cloud Console eintragen. |
 | 2026-05-25 | **BUG-FIX (v3):** `connectToGoogle` nutzt jetzt OAuth 2.0 Implicit Redirect statt GIS-TokenClient-Popup. GIS-Popup friert auf GitHub Pages wegen COOP ein (auch mit prompt:'consent'). Redirect zu `accounts.google.com` mit `state=gcal_connect` → Token kommt im URL-Hash zurück → neue Funktion `handleGoogleOAuthRedirect()` in `app.js` liest ihn beim Load, setzt Token, lädt Kalender, öffnet Settings. | Claude |

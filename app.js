@@ -324,10 +324,9 @@ window.addEventListener('load', async () => {
     // Firebase wird NICHT aufgerufen – verhindert Freeze bei Firebase at Quota
   }
 
-  await handleFirebaseRedirectLogin();
-  if(document.getElementById('main-app').style.display==='flex') { initPWA(); scheduleNotifCheck(); return; }
-
-  // Google OAuth Redirect: Token aus URL-Hash lesen.
+  // Google OAuth Redirect: Token aus URL-Hash lesen – MUSS vor Firebase kommen!
+  // Firebase getRedirectResult() löscht den URL-Hash (#access_token=...) beim Verarbeiten.
+  // Wenn handleGoogleOAuthRedirect() erst nach Firebase aufgerufen wird, ist der Hash weg → null → showLogin-Loop.
   // Gilt fuer state=main_login (Login-Button) und state=gcal_connect (Verbinden-Button).
   // Kein GIS-Popup – kein COOP-Freeze. Redirect-URI in Google Console registriert.
   const oauthState = handleGoogleOAuthRedirect();
@@ -339,6 +338,9 @@ window.addEventListener('load', async () => {
       const cached = ls('user_info_safe') || {};
       if(cached.email) userInfo = saveUserProfileInfo({ name: cached.name||'', email: cached.email||'', picture: cached.picture||'' });
     }
+    if(!userInfo.email){ showLogin(); initPWA(); return; } // kein Nutzer → zurück zum Login
+    ls('was_logged_in', true);
+    ls('user_info_safe', {name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''});
     bootMainApp();
     try{ loadGoogleData(); }catch(e){}
     // Bei gcal_connect: Sync-Einstellungen oeffnen damit Nutzer Erfolg sieht
@@ -351,6 +353,9 @@ window.addEventListener('load', async () => {
     initPWA(); scheduleNotifCheck();
     return;
   }
+
+  await handleFirebaseRedirectLogin();
+  if(document.getElementById('main-app').style.display==='flex') { initPWA(); scheduleNotifCheck(); return; }
 
   // [FIX PERSISTENZ] Firebase Auth State prüfen
   // Firebase speichert Session in IndexedDB → überlebt F5, bleibt 2+ Tage aktiv
