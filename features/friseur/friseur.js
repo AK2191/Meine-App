@@ -11,6 +11,12 @@
   const LS_WEEKS = 'change_v1_friseur_weeks';
   const KEYWORD = 'friseur';
 
+  function esc(value){
+    return String(value == null ? '' : value).replace(/[&<>\"'`]/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;','`':'&#96;'}[c];
+    });
+  }
+
   function readRaw(key){ try{ return localStorage.getItem(key); }catch(e){ return null; } }
   function writeRaw(key, value){ try{ localStorage.setItem(key, value); }catch(e){} }
   function isEnabled(){
@@ -188,23 +194,48 @@
       + '</div>';
   };
 
+  function fmtPanelDate(k){
+    try{ return new Date(k+'T12:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'short'}); }catch(e){ return k; }
+  }
+  function formatTimeRange(item){
+    if(!item || !item.time) return 'Ganztägig';
+    var end = item.endTime && item.endTime !== item.time ? ' – ' + item.endTime : '';
+    return item.time + end + ' Uhr';
+  }
+  function friseurPanelRow(item){
+    var today = new Date(); today.setHours(0,0,0,0);
+    var d = new Date(item.date+'T12:00:00');
+    var past = d < today;
+    var isNext = !past && item.date === (findNextFriseurInfo() && findNextFriseurInfo().date);
+    var state = past ? 'past' : (isNext ? 'next' : 'upcoming');
+    var stateLabel = past ? 'Vergangen' : (isNext ? 'Nächster' : 'Kommend');
+    return '<div class="change-hair-row '+state+'">'
+      + '<div class="change-hair-dot"></div>'
+      + '<div class="change-hair-main">'
+      + '<div class="change-hair-title">'+esc(item.title || 'Friseur-Termin')+'</div>'
+      + '<div class="change-hair-meta">'+esc(fmtPanelDate(item.date))+' · '+esc(formatTimeRange(item))+'</div>'
+      + '</div>'
+      + '<div class="change-hair-state">'+stateLabel+'</div>'
+      + '</div>';
+  }
   window.openFriseurPanel = function(){
     var year = new Date().getFullYear();
     var lastDate = findLastFriseur();
     var nextInfo = findNextFriseurInfo();
     var all = findAllFriseurThisYear();
-    var visits = all.filter(function(item){ return new Date(item.date+'T12:00:00') <= new Date(); }).length;
-    var rows = all.map(function(item){
-      var d = new Date(item.date+'T12:00:00');
-      var past = d < new Date(new Date().setHours(0,0,0,0));
-      var time = item.time ? item.time + (item.endTime && item.endTime !== item.time ? ' – '+item.endTime : '') + ' Uhr' : 'Ganztägig';
-      return '<div class="vacation-row '+(past?'past':'upcoming')+'">'
-        + '<div class="vacation-row-dot"></div><div class="vacation-row-main"><strong>'+item.title+'</strong><span>'+fmtS(item.date)+' · '+time+'</span></div>'
-        + '<div class="vacation-row-days">'+(past?'vergangen':'kommend')+'</div></div>';
-    }).join('');
-    var summary = '<div class="vacation-summary-grid"><div><strong>'+visits+'</strong><span>Besuche</span></div><div><strong>'+(lastDate?fmtS(lastDate):'—')+'</strong><span>Letzter</span></div><div><strong>'+(nextInfo?fmtS(nextInfo.date):'—')+'</strong><span>Nächster</span></div></div>';
-    var empty = '<div style="color:var(--t4);font-size:13px;padding:16px 0">Noch kein Friseur-Termin in '+year+' gefunden.<br><span style="font-size:11px">Tipp: Termin muss „Friseur“ im Titel enthalten.</span></div>';
-    if(typeof openPanel === 'function') openPanel('✂️ Friseur '+year, summary + (rows || empty));
+    var now = new Date();
+    var visits = all.filter(function(item){ return new Date(item.date+'T12:00:00') <= now; }).length;
+    var rows = all.map(friseurPanelRow).join('');
+    var summary = '<div class="change-hair-panel">'
+      + '<div class="change-hair-summary">'
+      + '<div><strong>'+visits+'</strong><span>Besuche</span></div>'
+      + '<div><strong>'+(lastDate?esc(fmtPanelDate(lastDate)):'—')+'</strong><span>Letzter</span></div>'
+      + '<div><strong>'+(nextInfo?esc(fmtPanelDate(nextInfo.date)):'—')+'</strong><span>Nächster</span></div>'
+      + '</div>'
+      + (nextInfo ? '<div class="change-hair-next"><div class="change-hair-next-icon">✂</div><div><strong>'+esc(nextInfo.title || 'Friseur-Termin')+'</strong><span>'+esc(fmtPanelDate(nextInfo.date))+' · '+esc(formatTimeRange(nextInfo))+'</span></div></div>' : '')
+      + '<div class="change-hair-section-title">Termine '+year+'</div>';
+    var empty = '<div class="change-hair-empty">Noch kein Friseur-Termin in '+year+' gefunden.<br><span>Tipp: Der Termin muss „Friseur“ im Titel oder in der Beschreibung enthalten.</span></div>';
+    if(typeof openPanel === 'function') openPanel('✂ Friseur '+year, summary + '<div class="change-hair-list">' + (rows || empty) + '</div></div>');
   };
 
   var _origBD = window.buildDashboard;

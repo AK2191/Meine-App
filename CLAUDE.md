@@ -211,7 +211,7 @@ firebase deploy --only hosting
 - `change_v1_friseur_enabled` (localStorage) → boolean
 - `change_v1_friseur_weeks` (localStorage) → Zahl (Wochen bis Erinnerung, z. B. 3)
 
-### Logik (`features/settings/settings-logic.js`)
+### Logik (`features/friseur/friseur.js`)
 | Funktion                | Beschreibung                                                  |
 |-------------------------|---------------------------------------------------------------|
 | `findLastFriseur()`     | Letzter vergangener Termin mit „friseur" im Titel/Beschreibung |
@@ -438,3 +438,9 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Friseur darf nicht mehr an `features/settings/settings-logic.js` gekoppelt sein, damit der Dashboard-Punkt auch bei temporären Settings-/Sync-Ladeproblemen sichtbar bleibt.
 - Ohne gespeicherte Nutzerentscheidung ist Friseur standardmäßig sichtbar; ausgeblendet wird es nur über Einstellungen → Dashboard.
 - Das lokale Sync-Protokoll dedupliziert gleiche direkt aufeinanderfolgende Einträge innerhalb von 10 Minuten und zeigt Wiederholungen als Zähler statt als lange Liste.
+
+
+## Friseur-Panel UI
+- Das Friseur-Panel verwendet eigene Klassen in `features/friseur/friseur.css`.
+- Keine Wiederverwendung alter Urlaub-/Vacation-Klassen für Friseur, damit Layout und Abstände nicht brechen.
+- Panel-Aufbau: ruhige Summary-Kacheln, optionaler nächster Termin, danach Jahresliste als klare Karten.
