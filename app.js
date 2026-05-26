@@ -331,18 +331,26 @@ window.addEventListener('load', async () => {
   // Kein GIS-Popup – kein COOP-Freeze. Redirect-URI in Google Console registriert.
   const oauthState = handleGoogleOAuthRedirect();
   if(oauthState){
-    // Nutzerprofil laden (Name, Bild) – Token ist gueltig, API-Call funktioniert
+    // Token ist da → wir SIND eingeloggt. Niemals zurück zu showLogin (würde Endlosschleife auslösen).
+    // Nutzerprofil laden (Name, Bild). fetchUserInfo macht jetzt bis zu 3 Versuche.
     try{ await fetchUserInfo(); }catch(e){}
-    // Gecachte User-Info als Fallback wenn fetchUserInfo fehlschlaegt
+    // Fallback aus localStorage-Cache, falls API-Call kein Email lieferte
     if(!userInfo.email){
       const cached = ls('user_info_safe') || {};
       if(cached.email) userInfo = saveUserProfileInfo({ name: cached.name||'', email: cached.email||'', picture: cached.picture||'' });
     }
-    if(!userInfo.email){ showLogin(); initPWA(); return; } // kein Nutzer → zurück zum Login
+    // Selbst ohne Email weiter booten – Token ist gültig. Email wird im Hintergrund nachgeholt.
+    // KEIN showLogin() hier – das war die Loop-Ursache (Token da, aber Email-Fetch verzögert).
     ls('was_logged_in', true);
-    ls('user_info_safe', {name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''});
+    if(userInfo.email){
+      ls('user_info_safe', {name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''});
+    }
     bootMainApp();
     try{ loadGoogleData(); }catch(e){}
+    // Falls Email noch fehlt: im Hintergrund nachladen, ohne den Boot zu blockieren
+    if(!userInfo.email){
+      setTimeout(async ()=>{ try{ await fetchUserInfo(); if(userInfo.email) ls('user_info_safe',{name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''}); }catch(e){} }, 1500);
+    }
     // Bei gcal_connect: Sync-Einstellungen oeffnen damit Nutzer Erfolg sieht
     if(oauthState === 'gcal_connect'){
       setTimeout(()=>{ try{ if(typeof openSettingsPanel==='function') openSettingsPanel('sync'); }catch(e){} }, 800);
@@ -627,7 +635,18 @@ function handleGoogleOAuthRedirect(){
           var eq = p.indexOf('=');
           if(eq >= 0) errParams[p.substring(0, eq)] = decodeURIComponent(p.substring(eq+1));
         });
-        if(errParams['error']) console.warn('[Change] Google OAuth Fehler:', errParams['error'], errParams['error_description'] || '');
+        if(errParams['error']){
+          console.warn('[Change] Google OAuth Fehler:', errParams['error'], errParams['error_description'] || '');
+          // Fehler sichtbar machen statt still in den Login zu fallen (verhindert blinde Retry-Loops)
+          try{
+            var msg = errParams['error'] === 'redirect_uri_mismatch'
+              ? 'Google-Login: redirect_uri stimmt nicht. URI in Google Cloud Console eintragen: ' + (window.location.href.split('?')[0].split('#')[0])
+              : 'Google-Login fehlgeschlagen: ' + errParams['error'] + (errParams['error_description'] ? ' – ' + errParams['error_description'] : '');
+            if(typeof toast === 'function') setTimeout(function(){ toast(msg, 'err'); }, 600);
+          }catch(e){}
+          // Hash entfernen, damit ein Reload den Fehler nicht erneut auslöst
+          try{ window.history.replaceState(null, '', window.location.href.split('#')[0]); }catch(e){}
+        }
       }
       return null;
     }
@@ -704,18 +723,28 @@ async function handleFirebaseRedirectLogin(){
 }
 
 async function fetchUserInfo(){
-  try{
-    const r=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{'Authorization':'Bearer '+accessToken}});
-    if(!r.ok)return;
-    const u=await r.json();
-    const displayName = String(u.name || ((u.given_name||'') + ' ' + (u.family_name||'')) || u.email || '').trim();
-    saveUserProfileInfo({
-      name: displayName || u.email || userInfo.name || '',
-      email: u.email || userInfo.email || '',
-      picture: u.picture || userInfo.picture || ''
-    });
-    updateAvatar();
-  }catch{}
+  // Bis zu 3 Versuche – transiente Netzwerk-/Timing-Fehler dürfen nicht zum Login-Loop führen
+  for(var attempt=0; attempt<3; attempt++){
+    try{
+      const r=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{'Authorization':'Bearer '+accessToken}});
+      if(!r.ok){
+        if(r.status===401) return false; // Token ungültig – kein Retry
+        await new Promise(res=>setTimeout(res, 400)); continue;
+      }
+      const u=await r.json();
+      const displayName = String(u.name || ((u.given_name||'') + ' ' + (u.family_name||'')) || u.email || '').trim();
+      saveUserProfileInfo({
+        name: displayName || u.email || userInfo.name || '',
+        email: u.email || userInfo.email || '',
+        picture: u.picture || userInfo.picture || ''
+      });
+      updateAvatar();
+      return !!(userInfo && userInfo.email);
+    }catch(e){
+      await new Promise(res=>setTimeout(res, 400));
+    }
+  }
+  return !!(userInfo && userInfo.email);
 }
 
 /* ==== DEMO ==== */
