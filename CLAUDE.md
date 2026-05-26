@@ -297,3 +297,11 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - `live_sync_enabled` hat Default `false`; alte LocalStorage-Werte dürfen die App beim Login nicht automatisch in Firebase/Firestore ziehen.
 - Stiller Google-Token-Refresh ist deaktiviert; Google-Sync läuft über den eigenen Google-Kalender-Schalter/Sync-Button.
 - Kein automatischer Firebase-Redirect-Fallback bei blockiertem Popup.
+
+
+## 2026-05-26 · Login-Freeze Stabilisierung
+
+- `features/birthday-weather.js` wurde wieder entfernt: Die MutationObserver-basierte Nachbearbeitung lief nach dem Login zu riskant und kann die Oberfläche blockieren. Geburtstags-/Wetter-Erweiterungen dürfen künftig nur direkt in Dashboard-/Kalender-Renderlogik integriert werden, nicht als DOM-Patcher.
+- Automatischer Wetter-Refresh nutzt nur vorhandene Standortdaten. Nach Login/Fokus darf keine stille Geolocation-Abfrage starten. Standortabfrage nur durch bewusste Nutzeraktion.
+- `core/ui/interactionGuard.js` ist die zentrale UI-Freigabe für Loading-/Panel-Overlay und Header-Navigation. Keine zweiten Overlay-/Freeze-Workarounds bauen.
+- Live-Sync, Settings-Sync und Challenge-Firestore-Sync bleiben nach Login deaktiviert und starten nur über den eigenen Schalter.

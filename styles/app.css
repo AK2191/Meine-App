@@ -844,3 +844,10 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 #panel-overlay:not(.show){pointer-events:none!important}
 #side-panel:not(.open){pointer-events:none!important}
 #main-app{pointer-events:auto}
+
+/* Interaction Guard: verdeckte Layer blockieren nur im aktiven Zustand */
+#loading.is-hidden{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+#panel-overlay:not(.show){pointer-events:none!important}
+#side-panel:not(.open){pointer-events:none!important}
+#setup-modal:not(.show){pointer-events:none!important}
+#main-app{pointer-events:auto}

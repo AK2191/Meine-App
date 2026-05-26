@@ -296,11 +296,11 @@
     inFlight = (async function(){
       var loc = Store.getLocation();
       if(!loc) return {status:'needs_location', location:null, weather:null, pollen:null, savedAt:new Date().toISOString()};
-      // Wenn Standort veraltet ist: stille Neuabfrage im Hintergrund.
-      // navigator.geolocation nutzt maximumAge=30min → kein erneuter Berechtigungs-Dialog.
-      // Schlägt die Neuabfrage fehl (z.B. kein GPS), wird der vorhandene Standort weiter genutzt.
-      if(!force && !locationIsFresh(loc)){
-        try{ loc = await Store.requestLocation(); }catch(e){ /* still verwenden wenn fehlschlägt */ }
+      // Wichtig: keine automatische Geolocation nach dem Login.
+      // Ein veralteter Standort darf weiterhin genutzt werden; nur ein bewusster
+      // Nutzerklick auf Standort/Wetter-Refresh darf Store.requestLocation() öffnen.
+      if(force && !locationIsFresh(loc) && Store.requestLocation){
+        try{ loc = await Store.requestLocation(); }catch(e){ /* vorhandenen Standort weiter nutzen */ }
         if(!loc) return {status:'stale_location', location:null, weather:null, pollen:null, savedAt:new Date().toISOString()};
       }
       var settings = Store.settings();
