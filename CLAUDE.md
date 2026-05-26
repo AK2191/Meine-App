@@ -54,7 +54,7 @@ Wenn eine Änderung fehlschlägt:
 
 ---
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-05-26 (4)
+> Zuletzt aktualisiert: 2026-05-26 (5)
 
 ---
 
@@ -248,9 +248,22 @@ Bei neuen Eingabefeldern in `settingsPanel.js` immer `CONTROL_IDS` in `settings-
 
 ## 🚀 Deploy
 
+> ⚠️ **WICHTIG:** Die App MUSS über Firebase Hosting laufen, NICHT über GitHub Pages.
+> Grund: Firebase-Auth (`signInWithRedirect`) braucht `/__/firebase/init.json` + `/__/auth/handler`
+> auf derselben Domain wie `authDomain`. Auf GitHub Pages (Cross-Origin zu firebaseapp.com)
+> liefert init.json 404 → Login bleibt am Handler haengen. Chrome M115+ blockiert zusaetzlich
+> den Cross-Origin-Storage. App-Domain MUSS = Firebase-Hosting-Domain sein.
+
 ```bash
+firebase use meine-app-4ea9e      # einmalig, oder via .firebaserc (bereits angelegt)
 firebase deploy --only hosting
 ```
+
+App danach aufrufen unter: **https://meine-app-4ea9e.web.app** (NICHT ak2191.github.io)
+
+Voraussetzungen in der Firebase Console:
+- Authentication → Sign-in method → **Google aktiviert**
+- Authentication → Settings → Authorized domains → **meine-app-4ea9e.web.app** + **meine-app-4ea9e.firebaseapp.com** (Standard vorhanden)
 
 ---
 
@@ -315,6 +328,7 @@ firebase deploy --only hosting
 
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
+| 2026-05-26 | **ROOT CAUSE Login (init.json 404):** Console bewies: nach Kontoauswahl bleibt der Firebase-Auth-Handler auf `meine-app-4ea9e.firebaseapp.com` haengen – `GET /__/firebase/init.json 404` (handler.js:192). Diese `/__/`-Auth-Infrastruktur wird NUR ausgeliefert wenn Firebase Hosting fuer das Projekt deployed wurde. App liegt aber auf GitHub Pages (ak2191.github.io) → firebaseapp.com hat nichts deployed → Handler kann Config nicht laden → kommt nie zurueck. Zusaetzlich: seit Chrome M115+ braucht `signInWithRedirect` dass die App-Domain = authDomain ist (Cross-Origin-iframe-Storage-Blockierung, offizielle Firebase-Doku). LOESUNG: `.firebaserc` (default-Projekt meine-app-4ea9e) angelegt; App muss via Firebase Hosting deployed + ueber `meine-app-4ea9e.web.app` aufgerufen werden, NICHT GitHub Pages. firebase.json setzt bereits COOP `same-origin-allow-popups`. handleFirebaseRedirectLogin zeigt jetzt auth-Fehler (z.B. auth/unauthorized-domain) als Toast. | Claude |
 | 2026-05-26 | **BUG-FIX (Login-Loop #3 – ROOT CAUSE):** Console-Logs bewiesen: nach Google-Kontoauswahl kam KEIN `#access_token=` zurück (kein `[Change] URL-Hash erkannt`). Ursache: manueller Implicit-Flow (response_type=token) braucht exakte redirect_uri `https://ak2191.github.io/Meine-App/` in Google Cloud Console – war nicht eingetragen → Google kam ohne Token zurück. LÖSUNG: `handleGoogleLogin()` + `firebaseMobileLoginFallback()` auf Firebase `signInWithRedirect(GoogleAuthProvider)` umgestellt. Nutzt Firebase-Auth-Handler (meine-app-4ea9e.firebaseapp.com/__/auth/handler) → redirect_uri automatisch autorisiert, KEINE Google-Console-Registrierung nötig. Calendar-Token via credentialFromResult(). Voraussetzung: ak2191.github.io in Firebase Console → Authentication → Authorized domains. firebaseMobileLoginFallback hatte zusätzlich Bug `provider()` statt `provider` (TypeError) – gefixt. getRedirectResult mit 8s-Timeout gegen Boot-Hang. |
 | 2026-05-26 | **BUG-FIX (Login-Loop #2):** Eigener vorheriger Guard `if(!userInfo.email){ showLogin(); }` war neue Loop-Ursache: Token kam korrekt zurück, aber wenn `fetchUserInfo()` (Google-API) verzögert/transient fehlschlug, war Email leer → sofort zurück zu showLogin → Loop. Fix: bei vorhandenem Token IMMER booten, nie zu showLogin springen; Email wird im Hintergrund nachgeladen. `fetchUserInfo()` macht jetzt bis zu 3 Versuche + gibt Erfolg zurück. `handleGoogleOAuthRedirect()` zeigt Google-Fehler (z.B. redirect_uri_mismatch) als Toast + räumt Hash auf. |
 | 2026-05-26 | **BUG-FIX (Login-Loop):** `handleGoogleOAuthRedirect()` wurde nach `handleFirebaseRedirectLogin()` aufgerufen. Firebase `getRedirectResult()` konsumiert+löscht den URL-Hash (`#access_token=`) bevor unser Code ihn lesen kann → `handleGoogleOAuthRedirect()` returnierte immer null → `showLogin()` → Endlosschleife. Fix: `handleGoogleOAuthRedirect()` jetzt VOR `handleFirebaseRedirectLogin()` – wenn Hash gefunden → return, Firebase wird nicht aufgerufen. Außerdem: `was_logged_in` + `user_info_safe` werden jetzt im oauthState-Branch gesetzt (fehlten vorher). |

@@ -725,7 +725,21 @@ async function handleFirebaseRedirectLogin(){
     if(accessToken){ try{ loadGoogleData(); }catch(e){} }
     toast('Anmeldung erfolgreich \u2713','ok');
     console.info('[Change] Firebase Redirect Login: App gestartet \u2713');
-  }catch(e){ console.warn('[Change] Firebase Redirect Ergebnis:', e); }
+  }catch(e){
+    console.warn('[Change] Firebase Redirect Ergebnis:', e && e.code, e && e.message);
+    try{
+      var code = e && e.code || '';
+      var msg;
+      if(code === 'auth/unauthorized-domain'){
+        msg = 'Login-Fehler: Diese Domain ist nicht autorisiert. In Firebase Console → Authentication → Settings → Authorized domains eintragen: ' + location.hostname;
+      } else if(code){
+        msg = 'Google-Login fehlgeschlagen: ' + code;
+      } else {
+        msg = 'Google-Login fehlgeschlagen. Bitte erneut versuchen.';
+      }
+      if(typeof toast === 'function') setTimeout(function(){ toast(msg, 'err'); }, 600);
+    }catch(_e){}
+  }
 }
 
 async function fetchUserInfo(){
