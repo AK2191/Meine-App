@@ -367,3 +367,12 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
   - **Google Kalender** ist eine eigene Karte und darf optisch sowie technisch nicht wie ein Teil des Datenbank-Sync wirken.
 - App-Tab nutzt eine ruhige App-Info-Karte mit Versions-Badge statt eines großen leeren Versionsblocks.
 - Diese Änderung ist reine UI-/Strukturpflege im Settings-Panel. Keine neue Sync-Logik, kein automatischer Firebase-Start nach Login.
+
+
+## Änderung 2026-05-26: Google-Kalender bleibt nach F5 sichtbar
+
+- Google OAuth Access Tokens bleiben weiterhin nur im RAM und werden nicht in localStorage gespeichert.
+- Google-Kalendertermine werden nach erfolgreichem Sync als Cache gespeichert, damit Dashboard/Kalender nach F5 nicht leer sind.
+- Der Google-Kalender-Sync ist weiterhin getrennt vom Datenbank-Sync/Firebase.
+- Automatische stille OAuth-Refreshes bleiben deaktiviert, weil sie auf GitHub Pages Freeze-Risiken erzeugen können.
+- Manuelles Aktualisieren erfolgt über Sync → Google Kalender. Wenn der Token nach F5 fehlt, öffnet der Button bewusst die Google-Verbindung.

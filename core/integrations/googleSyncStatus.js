@@ -23,6 +23,22 @@
     try{ if(typeof window.setGoogleSyncEnabled === 'function') window.setGoogleSyncEnabled(!!on); }catch(e){}
     write(ENABLED_KEY, on ? '1' : '0');
     write('google_sync_enabled', on ? 'true' : 'false');
+    write('change_v1_google_calendar_sync', on ? 'true' : 'false');
+  }
+  function cacheInfo(){
+    try{ if(window.googleEventsCacheInfo) return window.googleEventsCacheInfo(); }catch(e){}
+    try{
+      var raw = localStorage.getItem('change_v1_google_events_cache') || localStorage.getItem('change_google_events_cache') || '[]';
+      var list = JSON.parse(raw) || [];
+      return {count:Array.isArray(list)?list.length:0, hasEvents:Array.isArray(list)&&list.length>0, updatedAt:''};
+    }catch(e){ return {count:0, hasEvents:false, updatedAt:''}; }
+  }
+  function loadCacheIntoApp(){
+    try{
+      var list = window.readGoogleEventsCache ? window.readGoogleEventsCache() : [];
+      if(Array.isArray(list) && list.length){ window.gEvents = list; return true; }
+    }catch(e){}
+    return false;
   }
   function formatRelative(iso){
     if(!iso) return 'noch nicht synchronisiert';
@@ -40,26 +56,41 @@
   function getStatus(){
     var isLoggedIn = loggedIn();
     var isEnabled = enabled();
+    var cache = cacheInfo();
     var error = read(ERROR_KEY);
-    var last = read(LAST_KEY);
-    var active = isLoggedIn && isEnabled && !error;
-    var label = !isLoggedIn ? 'NICHT ANGEMELDET' : (error ? 'FEHLER' : (isEnabled ? 'AKTIV' : 'AUS'));
-    var tone = !isLoggedIn || error ? 'error' : (isEnabled ? 'ok' : 'off');
-    var detail = !isLoggedIn
-      ? 'Google-Kalenderzugriff fehlt.'
-      : (error ? error : 'Letzter Sync: '+formatRelative(last));
-    return {loggedIn:isLoggedIn, enabled:isEnabled, active:active, error:error, lastSyncAt:last, label:label, tone:tone, detail:detail};
+    var last = read(LAST_KEY) || cache.updatedAt || '';
+    if(!isLoggedIn && cache.hasEvents && /Google-Kalenderzugriff fehlt|Google-Zugriff abgelaufen/i.test(error || '')) error = '';
+    var active = isEnabled && !error && (isLoggedIn || cache.hasEvents);
+    var label;
+    if(!isEnabled) label = 'AUS';
+    else if(error) label = 'FEHLER';
+    else if(isLoggedIn) label = 'AKTIV';
+    else if(cache.hasEvents) label = 'GESPEICHERT';
+    else label = 'VERBINDEN';
+    var tone = error ? 'error' : (active ? 'ok' : 'off');
+    var detail;
+    if(error) detail = error;
+    else if(isLoggedIn) detail = 'Letzter Sync: '+formatRelative(last);
+    else if(cache.hasEvents) detail = 'Gespeicherte Termine bleiben nach F5 sichtbar · '+cache.count+' Einträge';
+    else detail = 'Zum ersten Sync mit Google verbinden.';
+    return {loggedIn:isLoggedIn, enabled:isEnabled, active:active, cached:cache.hasEvents, cachedCount:cache.count, error:error, lastSyncAt:last, label:label, tone:tone, detail:detail};
   }
   function markSuccess(){ write(LAST_KEY, new Date().toISOString()); remove(ERROR_KEY); }
   function markError(message){ write(ERROR_KEY, String(message || 'Synchronisierung fehlgeschlagen')); }
   async function syncNow(){
     var status = getStatus();
+    setEnabled(true);
     if(!status.loggedIn){
-      markError('Google-Kalenderzugriff fehlt. Bitte neu anmelden.');
-      try{ if(typeof toast === 'function') toast('Google-Kalenderzugriff fehlt. Bitte neu anmelden.','err'); }catch(e){}
+      loadCacheIntoApp();
+      try{ if(typeof renderCalendar === 'function') renderCalendar(); }catch(e){}
+      try{ if(typeof buildDashboard === 'function') buildDashboard(); }catch(e){}
+      if(typeof window.connectToGoogle === 'function'){
+        try{ window.connectToGoogle(); }catch(e){}
+      }else{
+        try{ if(typeof toast === 'function') toast('Google verbinden, um den Kalender zu aktualisieren. Gespeicherte Termine bleiben sichtbar.',''); }catch(e){}
+      }
       return false;
     }
-    setEnabled(true);
     try{
       var result = true;
       if(typeof window.loadGoogleEvents === 'function') result = await window.loadGoogleEvents();
@@ -80,6 +111,8 @@
   function disconnect(){
     setEnabled(false);
     try{ window.gEvents = []; }catch(e){}
+    try{ if(window.clearGoogleEventsCache) window.clearGoogleEventsCache(); }catch(e){}
+    remove(ERROR_KEY);
     try{ if(typeof renderCalendar === 'function') renderCalendar(); }catch(e){}
     try{ if(typeof buildDashboard === 'function') buildDashboard(); }catch(e){}
     try{ if(typeof checkNotifications === 'function') checkNotifications(); }catch(e){}

@@ -49,6 +49,59 @@ let challengePlayers = [];
 let notifications = [];
 try{ window.notifications = notifications; }catch(_){}
 
+/* ==== GOOGLE KALENDER CACHE (F5-PERSISTENZ) ==== */
+const GOOGLE_EVENTS_CACHE_KEY = LSK + '_google_events_cache';
+const GOOGLE_EVENTS_CACHE_META_KEY = LSK + '_google_events_cache_meta';
+function isGoogleCalendarSyncWanted(){
+  try{
+    const keys = ['change_v1_google_calendar_sync','change_google_sync_enabled','google_sync_enabled'];
+    for(const key of keys){
+      const raw = localStorage.getItem(key);
+      if(raw !== null){
+        if(raw === 'false' || raw === '0') return false;
+        if(raw === 'true' || raw === '1') return true;
+      }
+    }
+  }catch(e){}
+  return true;
+}
+function readGoogleEventsCache(){
+  if(!isGoogleCalendarSyncWanted()) return [];
+  try{
+    const raw = localStorage.getItem(GOOGLE_EVENTS_CACHE_KEY) || localStorage.getItem('change_google_events_cache') || '';
+    const list = raw ? JSON.parse(raw) : [];
+    return Array.isArray(list) ? list : [];
+  }catch(e){ return []; }
+}
+function writeGoogleEventsCache(list){
+  const safe = Array.isArray(list) ? list : [];
+  try{
+    localStorage.setItem(GOOGLE_EVENTS_CACHE_KEY, JSON.stringify(safe));
+    localStorage.setItem('change_google_events_cache', JSON.stringify(safe));
+    localStorage.setItem(GOOGLE_EVENTS_CACHE_META_KEY, JSON.stringify({updatedAt:new Date().toISOString(), count:safe.length}));
+  }catch(e){}
+}
+function clearGoogleEventsCache(){
+  try{
+    localStorage.removeItem(GOOGLE_EVENTS_CACHE_KEY);
+    localStorage.removeItem('change_google_events_cache');
+    localStorage.removeItem(GOOGLE_EVENTS_CACHE_META_KEY);
+  }catch(e){}
+}
+function googleEventsCacheInfo(){
+  const list = readGoogleEventsCache();
+  let meta = null;
+  try{ meta = JSON.parse(localStorage.getItem(GOOGLE_EVENTS_CACHE_META_KEY) || 'null'); }catch(e){}
+  return {count:list.length, updatedAt: meta && meta.updatedAt || '', hasEvents:list.length > 0};
+}
+try{
+  window.readGoogleEventsCache = readGoogleEventsCache;
+  window.writeGoogleEventsCache = writeGoogleEventsCache;
+  window.clearGoogleEventsCache = clearGoogleEventsCache;
+  window.googleEventsCacheInfo = googleEventsCacheInfo;
+}catch(_e){}
+
+
 function exposeChangeGlobals(){
   try{
     window.userInfo = userInfo || {};
@@ -274,7 +327,8 @@ window.addEventListener('load', async () => {
 
   // Lokale Daten laden
   events              = ls('events')               || [];
-  gEvents             = Array.isArray(gEvents) ? gEvents : [];
+  // Google-Kalenderdaten bleiben nach F5 sichtbar. Der OAuth-Token bleibt bewusst nur im RAM.
+  gEvents             = readGoogleEventsCache();
   window.events       = events;
   window.gEvents      = gEvents;
   challenges          = ls('challenges')           || [];
@@ -1144,13 +1198,31 @@ function openDayPanel(dt,dayEvs){
 
 /* GOOGLE APIs */
 async function loadGoogleData(){
-  if(!accessToken)return;
-  await loadGoogleEvents();
+  if(!accessToken){
+    const cached = readGoogleEventsCache();
+    if(cached.length){
+      gEvents = cached;
+      window.gEvents = gEvents;
+      if(currentMainView==='calendar'){renderCalendar();renderUpcoming();}
+      if(currentMainView==='dashboard')buildDashboard();
+    }
+    return false;
+  }
+  return await loadGoogleEvents();
   // Google-Kalender-Sync darf keinen Firestore-/Datenbank-Sync starten.
 }
 
 async function loadGoogleEvents(){
-  if(!accessToken)return;
+  if(!accessToken){
+    const cached = readGoogleEventsCache();
+    if(cached.length){
+      gEvents = cached;
+      window.gEvents = gEvents;
+      if(currentMainView==='calendar'){renderCalendar();renderUpcoming();}
+      if(currentMainView==='dashboard')buildDashboard();
+    }
+    return false;
+  }
   try{
     // Wichtig für die erste Ansicht:
     // Urlaub und Friseur werden im Dashboard jahresbezogen ausgewertet.
@@ -1163,15 +1235,29 @@ async function loadGoogleEvents(){
       `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${encodeURIComponent(start)}&timeMax=${encodeURIComponent(end)}&singleEvents=true&orderBy=startTime&maxResults=2500`,
       {headers:{'Authorization':'Bearer '+accessToken}}
     );
-    if(r.status===401){lsDel('access_token');accessToken='';window.accessToken='';return;}
-    if(!r.ok)return;
+    if(r.status===401){
+      lsDel('access_token');accessToken='';window.accessToken='';
+      try{ if(window.ChangeGoogleSyncStatus && window.ChangeGoogleSyncStatus.markError) window.ChangeGoogleSyncStatus.markError('Google-Zugriff abgelaufen. Gespeicherte Kalenderdaten bleiben sichtbar.'); }catch(e){}
+      return false;
+    }
+    if(!r.ok){
+      try{ if(window.ChangeGoogleSyncStatus && window.ChangeGoogleSyncStatus.markError) window.ChangeGoogleSyncStatus.markError('Google Kalender '+r.status); }catch(e){}
+      return false;
+    }
     const data=await r.json();
     gEvents=data.items||[];
     window.gEvents=gEvents;
     window.events=events;
+    writeGoogleEventsCache(gEvents);
+    try{ if(window.ChangeGoogleSyncStatus && window.ChangeGoogleSyncStatus.markSuccess) window.ChangeGoogleSyncStatus.markSuccess(); }catch(e){}
     if(currentMainView==='calendar'){renderCalendar();renderUpcoming();}
     if(currentMainView==='dashboard')buildDashboard();
-  }catch(e){console.warn('GCal:',e);}
+    return true;
+  }catch(e){
+    console.warn('GCal:',e);
+    try{ if(window.ChangeGoogleSyncStatus && window.ChangeGoogleSyncStatus.markError) window.ChangeGoogleSyncStatus.markError(e && e.message ? e.message : String(e)); }catch(_e){}
+    return false;
+  }
 }
 
 async function saveToGoogleCal(existingId){

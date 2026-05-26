@@ -311,12 +311,13 @@
     var dbBody = '<div class="change-feature-chips"><span>Mitspieler</span><span>Einstellungen</span><span>Challenges</span><span>Punkte</span></div>'
       + '<button class="btn btn-secondary btn-full" id="set-database-sync-now" type="button" '+(!fb.ok?'disabled':'')+'>Jetzt in Firebase speichern</button>';
 
-    var googleControl = google.loggedIn
+    var googleCanToggle = !!(google.loggedIn || google.cached);
+    var googleControl = googleCanToggle
       ? '<label class="switch"><input type="checkbox" id="set-google" '+(google.enabled?'checked':'')+'><span class="slider"></span></label>'
       : '<button class="btn btn-secondary btn-compact" id="btn-google-connect" type="button">Verbinden</button>';
     var googleSub = google.detail || (google.loggedIn ? 'Importiert Kalendertermine. Getrennt vom Datenbank-Sync.' : 'Nur für Kalendertermine. Startet keinen Datenbank-Sync.');
-    var googleBody = google.loggedIn
-      ? '<button class="btn btn-secondary btn-full" id="set-sync-google" type="button">Google Kalender neu synchronisieren</button>'
+    var googleBody = googleCanToggle
+      ? '<button class="btn btn-secondary btn-full" id="set-sync-google" type="button">Google Kalender '+(google.loggedIn?'neu synchronisieren':'aktualisieren')+'</button>'
       : '<div class="change-feature-note">Google Kalender bleibt unabhängig von Firebase.</div>';
 
     return '<div class="change-settings-stack">'

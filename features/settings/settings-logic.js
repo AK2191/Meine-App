@@ -94,7 +94,7 @@
     return !!(at&&at!=='firebase-auth'&&at.length>10&&at!=='undefined');
   }
   function isGoogleSyncEnabled(){const v=localStorage.getItem('change_v1_google_calendar_sync');return v===null?true:v!=='false';}
-  function setGoogleSyncEnabled(on){localStorage.setItem('change_v1_google_calendar_sync',on?'true':'false');window.googleCalendarSyncEnabled=on;}
+  function setGoogleSyncEnabled(on){localStorage.setItem('change_v1_google_calendar_sync',on?'true':'false');localStorage.setItem('change_google_sync_enabled',on?'1':'0');localStorage.setItem('google_sync_enabled',on?'true':'false');window.googleCalendarSyncEnabled=on;}
 
   window.triggerGoogleCalendarSync=async function(){
     if(!isGoogleLoggedIn()){if(typeof toast==='function')toast('Bitte zuerst mit Google anmelden','err');return;}
@@ -291,7 +291,7 @@
       const diff=$('us-challenge-difficulty');
       if(diff) diff.addEventListener('change',e=>{applyChallengeDifficultySetting(e.target.value);setTimeout(()=>{try{if(typeof window.saveChangeSettings==='function'&&databaseSyncEnabled())window.saveChangeSettings(true);}catch(_e){}},120);window._refreshSyncPills();});
       const gT=$('us-toggle-gsync');
-      if(gT) gT.addEventListener('change',async e=>{setGoogleSyncEnabled(e.target.checked);if(e.target.checked){await window.triggerGoogleCalendarSync();}else{window.gEvents=[];if(typeof renderCalendar==='function')renderCalendar();if(typeof buildDashboard==='function')buildDashboard();if(typeof toast==='function')toast('Google Kalender getrennt','ok');}window._refreshSyncPills();});
+      if(gT) gT.addEventListener('change',async e=>{setGoogleSyncEnabled(e.target.checked);if(e.target.checked){await window.triggerGoogleCalendarSync();}else{window.gEvents=[];try{if(window.clearGoogleEventsCache)window.clearGoogleEventsCache();}catch(_e){}if(typeof renderCalendar==='function')renderCalendar();if(typeof buildDashboard==='function')buildDashboard();if(typeof toast==='function')toast('Google Kalender getrennt','ok');}window._refreshSyncPills();});
     },80);
   };
 
