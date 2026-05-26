@@ -242,7 +242,7 @@
   }
 
   function syncPane(){
-    var live   = readBool('live_sync_enabled', true);
+    var live   = readBoolMulti(['change_v1_live_sync_enabled','live_sync_enabled'], false);
     var auto   = getAutoChallengesEnabled();
     var google = googleStatus();
     var fb     = firebaseStatus();
@@ -360,7 +360,7 @@
       }catch(e){ if(typeof window.toast === 'function') window.toast(e.message || 'Standort konnte nicht aktualisiert werden','err'); }
       refreshSameTab();
     });
-    var live = $('set-live'); if(live) live.addEventListener('change', async function(){ if(window.setLiveSyncEnabled) await window.setLiveSyncEnabled(live.checked); else writeBool('live_sync_enabled', live.checked); refreshSameTab(); });
+    var live = $('set-live'); if(live) live.addEventListener('change', async function(){ if(window.setLiveSyncEnabled) await window.setLiveSyncEnabled(live.checked); else writeBoolMulti(['change_v1_live_sync_enabled','live_sync_enabled'], live.checked); refreshSameTab(); });
     var auto = $('set-auto'); if(auto) auto.addEventListener('change', function(){
       setAutoChallengesState(!!auto.checked);
       refreshSameTab('sync');

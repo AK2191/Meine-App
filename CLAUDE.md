@@ -487,3 +487,14 @@ Einstellungen → App-Tab → Karte „Version": „Change · Version 0.1.0001"
 - Neue zentrale Absicherung: `releaseUiLock(reason)` räumt inaktive Overlays nach Boot, Navigation und Panel-Schließen auf.
 - Header-, Bottom-Nav-, Glocken-, Settings-, Avatar- und FAB-Controls werden zusätzlich per `addEventListener` verdrahtet. Inline-Handler bleiben kompatibel, aber die UI hängt nicht mehr an nur einem Mechanismus.
 - Keine doppelten Root-Dateien: Firebase bleibt unter `firebase/`, Icons bleiben unter `icons/`.
+
+## 2026-05-26 · Login-Freeze durch automatische Firebase-/Live-Sync-Starts behoben
+
+- Ursache: Nach dem Google-Login wurde die App kurz angezeigt, danach starteten im Hintergrund weiterhin automatische Firebase-/Firestore-Routinen (`loadGoogleData() -> initFirebaseLive()`, Settings-Sync-Timer, Challenge-Sync-Timer). Bei langsamer/gebremster Firebase-Verbindung wirkt das wie ein Freeze, obwohl die Konsole keinen echten App-Crash zeigt.
+- Neue Regel: **Live-Sync startet nicht mehr automatisch nach Login oder Google-Kalender-Ladevorgang.** Live-Sync startet nur, wenn der eigene Live-Sync-Schalter aktiv ist oder der Nutzer Push/Live-Sync explizit auslöst.
+- `app.js`: `isLiveSyncExplicitlyEnabled()` eingeführt und alle automatischen `initFirebaseLive()`-/`startChangeSettingsSync()`-Starts nach Login, Firebase-Auth-State, `loadGoogleData()` und `loadFromDrive()` dahinter gelegt.
+- `features/settings/settingsPanel.js`: Live-Sync-UI liest beide Keys (`change_v1_live_sync_enabled`, `live_sync_enabled`) und ist standardmäßig aus, solange der Nutzer ihn nicht bewusst aktiviert hat.
+- `features/settings/settings-logic.js`: Settings-Firestore-Sync wird nur gestartet, wenn Live-Sync explizit aktiv ist. Keine Hintergrund-Listener direkt nach Login.
+- `features/challenges/challenge-sync.js`: Vorbereitend gehärtet, falls diese Datei später wieder geladen wird: keine automatischen Challenge-Firestore-Listener ohne aktiven Live-Sync-Schalter.
+- Push bleibt separat über die Glocke gesteuert. Google-Kalender-Sync bleibt separat über Google-Token/Google-Schalter gesteuert.
+- Keine doppelten Root-Dateien: Firebase bleibt unter `firebase/`, Icons bleiben unter `icons/`.

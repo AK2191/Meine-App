@@ -162,7 +162,7 @@
     }());
 
     const hasCfg=!!(window.FIREBASE_CONFIG&&window.FIREBASE_CONFIG.apiKey&&!String(window.FIREBASE_CONFIG.apiKey).includes('HIER_'));
-    const liveOn=lsRead('live_sync_enabled')!==false;
+    const liveOn=lsRead('live_sync_enabled')===true || readStored('change_v1_live_sync_enabled', false)===true;
     const autoOn=lsRead('auto_challenges_enabled')!==false;
     const gIn=isGoogleLoggedIn();
     const gSync=typeof canSyncGoogleCalendar==='function'?canSyncGoogleCalendar():gIn;
@@ -250,7 +250,7 @@
   // In-Place Sync-Status aktualisieren ohne Panel zu schließen
   window._refreshSyncPills=function(){
     try{
-      const liveOn=lsRead('live_sync_enabled')!==false;
+      const liveOn=lsRead('live_sync_enabled')===true || readStored('change_v1_live_sync_enabled', false)===true;
       const autoOn=lsRead('auto_challenges_enabled')!==false;
       const gIn=typeof isGoogleLoggedIn==='function'?isGoogleLoggedIn():false;
       const gOn=typeof isGoogleSyncEnabled==='function'&&isGoogleSyncEnabled()&&gIn;
@@ -843,7 +843,12 @@
     }
     return { id: email || uid || '', email, uid, name: name || email || '', ready: !!email || !!uid };
   }
+  function settingsLiveSyncAllowed(){
+    try{ if(typeof window.isChangeLiveSyncExplicitlyEnabled === 'function') return window.isChangeLiveSyncExplicitlyEnabled(); }catch(e){}
+    return readBool(['change_v1_live_sync_enabled','live_sync_enabled'], false) === true;
+  }
   async function ensureSettingsDb(){
+    if(!settingsLiveSyncAllowed()) return null;
     if(!window.firebase || !window.FIREBASE_CONFIG) return null;
     const cfg = window.FIREBASE_CONFIG || {};
     if(!cfg.apiKey || String(cfg.apiKey).includes('HIER_') || !cfg.projectId) return null;
@@ -902,7 +907,7 @@
       },
       sync: {
         pushPreferenceEnabled: readBool(['change_v1_push_enabled'], false),
-        liveSyncEnabled: readBool(['change_v1_live_sync_enabled','live_sync_enabled'], true),
+        liveSyncEnabled: readBool(['change_v1_live_sync_enabled','live_sync_enabled'], false),
         autoChallengesEnabled: readBool(['change_v1_auto_challenges_enabled','auto_challenges_enabled'], true),
         googleCalendarSyncEnabled: readBool(['change_v1_google_calendar_sync'], true)
       },
@@ -1165,7 +1170,7 @@
 
   function boot(){
     installHooks();
-    [500, 1500, 3500, 7000].forEach(ms => setTimeout(() => { installHooks(); window.startChangeSettingsSync(); }, ms));
+    [500, 1500, 3500, 7000].forEach(ms => setTimeout(() => { installHooks(); if(settingsLiveSyncAllowed()) window.startChangeSettingsSync(); }, ms));
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
