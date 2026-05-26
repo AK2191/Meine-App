@@ -96,6 +96,7 @@
     if(!source.length) source = readGlobal('events', []) || [];
     var seen = new Set();
     return (source || []).map(function(ev){
+      if(ev && ev.type === 'birthday') return null;
       var dk = eventStart(ev);
       if(!dk) return null;
       var diff = daysUntilKey(dk);
@@ -224,6 +225,13 @@
     }catch(e){ return []; }
   }
 
+  function buildBirthdayNotifications(){
+    try{
+      if(!window.ChangeBirthdays || typeof window.ChangeBirthdays.notificationItems !== 'function') return [];
+      return window.ChangeBirthdays.notificationItems() || [];
+    }catch(e){ return []; }
+  }
+
   function buildAll(options){
     options = options || {};
     var notes = []
@@ -231,6 +239,7 @@
       .concat(buildNudgeNotifications())
       .concat(buildPlayerActivityNotifications())
       .concat(buildWeatherHealthNotifications())
+      .concat(buildBirthdayNotifications())
       .concat(buildChallengeNotifications())
       // buildDailySummaryNotifications() → entfernt (Tageszusammenfassung nicht gewünscht)
       .concat(buildEventNotifications());
@@ -316,6 +325,8 @@
         try{ if(typeof setMainView === 'function') setMainView(note.action.view); }catch(e){}
       }else if(note.action.type === 'settings'){
         try{ if(typeof openSettingsPanel === 'function') openSettingsPanel(note.action.tab || 'sync'); }catch(e){}
+      }else if(note.action.type === 'birthday'){
+        try{ if(typeof openBirthdayPanel === 'function') openBirthdayPanel(); }catch(e){}
       }
     }
     if(!note || !note.action || note.action.type !== 'settings'){

@@ -210,6 +210,7 @@
       dashboard: {
         friseurEnabled: String(localStorage.getItem('change_v1_friseur_enabled') || 'false') === 'true',
         friseurWeeks: parseInt(localStorage.getItem('change_v1_friseur_weeks'), 10) || 3,
+        birthdaysEnabled: String(localStorage.getItem('change_v1_birthdays_enabled') || localStorage.getItem('birthdays_enabled') || 'true') !== 'false',
         urlaubEnabled: String(localStorage.getItem('urlaub_tracker_on') || 'true') !== 'false',
         urlaubTotalDays: parseInt(localStorage.getItem('urlaub_tracker_days'), 10) || 30,
         urlaubHalfDays: readJson('urlaub_half_days', []) || []

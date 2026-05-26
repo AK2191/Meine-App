@@ -931,10 +931,21 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
     } catch (e) {}
     const out = [], seenIds = new Set(), seenContent = new Set();
     raw.forEach(item => {
-      const normalized = normalizeEvent(item.ev, item.src);
+      var evForCalendar = item.ev;
+      var srcForCalendar = item.src;
+      try {
+        if (window.ChangeBirthdays && window.ChangeBirthdays.enabled && window.ChangeBirthdays.enabled() && window.ChangeBirthdayParser) {
+          var parsedBirthday = window.ChangeBirthdayParser.parseEvent(item.ev);
+          if (parsedBirthday) {
+            evForCalendar = window.ChangeBirthdayParser.toCalendarEvent(parsedBirthday, parsedBirthday.date);
+            srcForCalendar = 'birthday';
+          }
+        }
+      } catch (e) {}
+      const normalized = normalizeEvent(evForCalendar, srcForCalendar);
       if (!normalized) return;
       const r = getRange(normalized);
-      const ik = idKey(normalized, normalized.source, r);
+      const ik = idKey(normalized, normalized.source, r) || (normalized.source+':'+normalized.id+':'+r.start+':'+r.end);
       const ck = contentKey(normalized, normalized.source, r);
       if (ik && seenIds.has(ik)) return;
       if (seenContent.has(ck)) return;
@@ -1057,7 +1068,7 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
         bar.style.gridColumn = (seg.sIdx+1) + ' / span ' + seg.span;
         bar.style.setProperty('--cfx-lane', String(seg.lane));
         bar.title = getTitle(ev) + (r.isRange ? ' · '+fmt(r.start)+' – '+fmt(r.end) : (ev.time?' · '+ev.time:''));
-        bar.onclick = e => { e.stopPropagation(); try { if(typeof openEventPanel==='function') openEventPanel(ev.id); } catch(ex){} };
+        bar.onclick = e => { e.stopPropagation(); try { if(ev.type === 'birthday' && typeof openBirthdayPanel === 'function') openBirthdayPanel(); else if(typeof openEventPanel==='function') openEventPanel(ev.id); } catch(ex){} };
         bar.innerHTML = '<span class="cfx-bt">'+(seg.showTitle?esc(getTitle(ev)):'')+'</span>'+gMark(ev);
         row.appendChild(bar);
       });

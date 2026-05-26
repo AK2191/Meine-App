@@ -14,9 +14,19 @@
   /* ==== Vollständige getAllEvents mit endDate, startDate, title ==== */
   window.getAllEvents = function(){
     const out = [], seen = new Set();
+    function maybeBirthday(ev){
+      try{
+        if(window.ChangeBirthdays && window.ChangeBirthdays.enabled && window.ChangeBirthdays.enabled() && window.ChangeBirthdayParser){
+          const parsed = window.ChangeBirthdayParser.parseEvent(ev);
+          if(parsed) return window.ChangeBirthdayParser.toCalendarEvent(parsed, parsed.date);
+        }
+      }catch(e){}
+      return ev;
+    }
     function add(ev){
+      ev = maybeBirthday(ev);
       if(!ev || !ev.date) return;
-      const k = ev.googleEventId ? 'g:'+ev.googleEventId : 'l:'+ev.id;
+      const k = ev.source === 'birthday' ? 'b:'+ev.id : (ev.googleEventId ? 'g:'+ev.googleEventId : 'l:'+ev.id);
       if(seen.has(k)) return; seen.add(k);
       out.push(ev);
     }
@@ -145,8 +155,9 @@
           const isRange = r.start !== r.end;
           const sub = isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : (ev.time ? (ev.time+(ev.endTime&&ev.endTime!==ev.time?' – '+ev.endTime:'')+' Uhr') : 'Ganztägig');
           const colBg = ev.color==='red'?'var(--red-d)':ev.color==='green'?'var(--grn-d)':ev.color==='amber'?'var(--amb-d)':ev.color==='purple'?'var(--pur-d)':'var(--acc-d)';
+          const evIcon = ev.type === 'birthday' ? '🎂' : '📅';
           todayHtml += `<div class="dash-row dash-today-row" onclick="setMainView('calendar')">
-            <div class="dash-row-icon" style="background:${colBg}">📅</div>
+            <div class="dash-row-icon" style="background:${colBg}">${evIcon}</div>
             <div class="dash-row-body"><div class="dash-row-title" style="font-weight:800;color:var(--acc)">${evTitle(ev)}</div><div class="dash-row-sub">${sub}</div></div>
             <span class="dash-row-badge badge-green">${isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : 'Heute'}</span>
           </div>`;
@@ -173,8 +184,9 @@
           const bClass = diffDays(r.start)<=1 ? 'badge-red' : diffDays(r.start)<=3 ? 'badge-amber' : 'badge-blue';
           const sub = isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : (ev.time ? (ev.time+(ev.endTime&&ev.endTime!==ev.time?' – '+ev.endTime:'')+' Uhr') : 'Ganztägig');
           const colBg = ev.color==='red'?'var(--red-d)':ev.color==='green'?'var(--grn-d)':ev.color==='amber'?'var(--amb-d)':ev.color==='purple'?'var(--pur-d)':'var(--acc-d)';
+          const evIcon = ev.type === 'birthday' ? '🎂' : '📅';
           upcomingHtml += `<div class="dash-row" onclick="setMainView('calendar')">
-            <div class="dash-row-icon" style="background:${colBg}">📅</div>
+            <div class="dash-row-icon" style="background:${colBg}">${evIcon}</div>
             <div class="dash-row-body"><div class="dash-row-title">${evTitle(ev)}</div><div class="dash-row-sub">${sub}</div></div>
             <span class="dash-row-badge ${bClass}">${badge}</span>
           </div>`;
@@ -184,8 +196,9 @@
 
     /* Kalender-Karte zusammenbauen */
     const friseurHtml = (typeof window.getFriseurRowHtml==='function') ? window.getFriseurRowHtml() : '';
+    const birthdayHtml = (typeof window.getBirthdayRowHtml==='function') ? window.getBirthdayRowHtml() : '';
     const urlaubHtml  = (typeof window.getUrlaubRowHtml==='function')  ? window.getUrlaubRowHtml()  : '';
-    const calCardBody = `<div class="db-section">Heute &nbsp;·&nbsp; ${todayDateFmt}</div>${todayHtml}${upcomingHtml || (!todayRows.length ? '<div class="dash-empty">Keine Termine in den nächsten 90 Tagen</div>' : '')}${friseurHtml}${urlaubHtml}`;
+    const calCardBody = `<div class="db-section">Heute &nbsp;·&nbsp; ${todayDateFmt}</div>${todayHtml}${upcomingHtml || (!todayRows.length ? '<div class="dash-empty">Keine Termine in den nächsten 90 Tagen</div>' : '')}${friseurHtml}${birthdayHtml}${urlaubHtml}`;
 
     /* Challenges & Mitspieler */
     let chHtml = '';

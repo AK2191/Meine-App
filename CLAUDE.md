@@ -379,3 +379,15 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Der Google-Kalender-Sync ist weiterhin getrennt vom Datenbank-Sync/Firebase.
 - Automatische stille OAuth-Refreshes bleiben deaktiviert, weil sie auf GitHub Pages Freeze-Risiken erzeugen können.
 - Manuelles Aktualisieren erfolgt über Sync → Google Kalender. Wenn der Token nach F5 fehlt, öffnet der Button bewusst die Google-Verbindung.
+
+## Änderung 2026-05-26: Geburtstage als echtes Kalender-/Dashboard-Feature
+
+- Sichtbares Wording ist immer **Geburtstage**. Keine sichtbaren Labels wie Bday, B-Day oder Birthday.
+- Kalender-Import erkennt trotzdem diese Schreibweisen: `Bday`, `B-day`, `B-Day`, `BDay`, `Birthday`, `Geburtstag`, `Geb.`.
+- Erkannte Termine werden in der App normalisiert als `🎂 Name` dargestellt.
+- Neue zentrale Logik liegt in `core/birthdays/birthdayParser.js`.
+- UI/Panel liegt in `features/birthdays/birthdays.js`.
+- Geburtstage dürfen nicht per MutationObserver oder DOM-Patcher nachträglich ins Dashboard geschrieben werden. Dashboard und Kalender fragen das Feature direkt ab.
+- Dashboard-Settings enthalten einen eigenen Schalter **Geburtstage**. Dieser wird über `change_settings.dashboard.birthdaysEnabled` synchronisiert.
+- Kalender-Geburtstage sind normale, kleine Kalendereinträge mit `type: "birthday"`, `source: "birthday"`, `color: "purple"` und dürfen keine großen visuellen Elemente erzeugen.
+- Benachrichtigungen für Geburtstage laufen über die bestehende Glocke/Notification-Zentrale, kein eigener Push-Button.
