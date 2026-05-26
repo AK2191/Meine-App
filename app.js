@@ -573,30 +573,31 @@ function showLogin(){
   document.getElementById('login-screen').style.display='flex';
 }
 
-// handleGoogleLogin: OAuth 2.0 Implicit Flow via REDIRECT (KEIN GIS-Popup!).
-// GIS-Popup friert auf GitHub Pages ein (COOP-Block nach window.closed-Polling).
-// Redirect ist COOP-sicher: Browser navigiert direkt zu Google, Token kommt im URL-Hash zurück.
-// handleGoogleOAuthRedirect() liest state=main_login beim nächsten Load.
+// handleGoogleLogin: Firebase Auth signInWithRedirect (KEIN manueller Implicit-Flow, KEIN GIS-Popup!).
+// Warum: Der manuelle Implicit-Flow (response_type=token) liefert nur einen Token zurück, wenn die EXAKTE
+// redirect_uri (https://ak2191.github.io/Meine-App/) in der Google Cloud Console als "Autorisierte
+// Weiterleitungs-URI" eingetragen ist. War sie nicht → Google kam ohne Token zurück → Login-Loop.
+// Firebase signInWithRedirect nutzt stattdessen den Firebase-Auth-Handler
+// (meine-app-4ea9e.firebaseapp.com/__/auth/handler), dessen redirect_uri automatisch autorisiert ist.
+// Voraussetzung: ak2191.github.io muss in Firebase Console → Authentication → Settings → Authorized domains stehen.
+// COOP-sicher (Full-Page-Redirect, kein Popup). Rückkehr verarbeitet handleFirebaseRedirectLogin() beim Boot,
+// inkl. Google-Calendar-Token via credentialFromResult().
 function handleGoogleLogin(){
-  CLIENT_ID = getGoogleClientId();
-  if(!CLIENT_ID){ document.getElementById('setup-modal').classList.add('show'); return; }
-  var cleanId = cleanGoogleClientId(CLIENT_ID);
-  var redirectUri = window.location.href.split('?')[0].split('#')[0];
-  var scope = encodeURIComponent(
-    'https://www.googleapis.com/auth/calendar ' +
-    'https://www.googleapis.com/auth/userinfo.profile ' +
-    'https://www.googleapis.com/auth/userinfo.email'
-  );
-  // state=main_login → handleGoogleOAuthRedirect() verarbeitet den Rückruf beim App-Start
-  var authUrl = 'https://accounts.google.com/o/oauth2/auth'
-    + '?client_id=' + encodeURIComponent(cleanId)
-    + '&redirect_uri=' + encodeURIComponent(redirectUri)
-    + '&response_type=token'
-    + '&scope=' + scope
-    + '&prompt=select_account'
-    + '&state=main_login';
-  // Redirect – kein Popup, kein COOP-Freeze
-  window.location.href = authUrl;
+  if(!window.firebase || !window.FIREBASE_CONFIG || !firebase.auth){
+    toast('Firebase wird geladen…',''); return;
+  }
+  try{
+    if(!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
+    var provider = new firebase.auth.GoogleAuthProvider();
+    provider.addScope('profile');
+    provider.addScope('email');
+    provider.addScope('https://www.googleapis.com/auth/calendar');
+    provider.setCustomParameters({ prompt: 'select_account' });
+    firebase.auth().signInWithRedirect(provider);
+  }catch(e){
+    toast('Anmeldung konnte nicht gestartet werden','err');
+    console.warn('[Change] handleGoogleLogin:', e);
+  }
 }
 
 
@@ -608,7 +609,8 @@ async function firebaseMobileLoginFallback(){
     provider.addScope('profile');
     provider.addScope('email');
     provider.addScope('https://www.googleapis.com/auth/calendar');
-    await firebase.auth().signInWithRedirect(provider());
+    provider.setCustomParameters({ prompt: 'select_account' });
+    await firebase.auth().signInWithRedirect(provider); // FIX: provider statt provider() (war Bug → TypeError)
   }catch(e){console.warn('Mobile Firebase Login:',e);toast('Mobile Anmeldung konnte nicht gestartet werden: '+(e.message||e),'err');}
 }
 
@@ -689,7 +691,11 @@ async function handleFirebaseRedirectLogin(){
   try{
     if(!window.firebase || !window.FIREBASE_CONFIG || !firebase.auth) return;
     if(!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
-    const result = await firebase.auth().getRedirectResult();
+    // Timeout-Schutz: getRedirectResult darf den Boot nie blockieren (Firebase-Slow/Quota)
+    const result = await Promise.race([
+      firebase.auth().getRedirectResult(),
+      new Promise(res => setTimeout(() => res(null), 8000))
+    ]);
     if(!result || !result.user){
       try{ sessionStorage.removeItem('firebase:redirectEventId'); }catch(_e){}
       return;
