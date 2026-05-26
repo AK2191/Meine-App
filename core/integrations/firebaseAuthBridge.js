@@ -156,8 +156,8 @@
       return applyAuthResult(result) || { user: auth.currentUser, accessToken: '' };
     }catch(e){
       if(e && (e.code === 'auth/popup-blocked' || e.code === 'auth/cancelled-popup-request')){
-        await auth.signInWithRedirect(provider());
-        return { redirecting: true };
+        // Kein automatischer Redirect-Fallback auf GitHub Pages; der kann Login-Schleifen erzeugen.
+        return { user: auth.currentUser || null, accessToken: '', popupBlocked: true };
       }
       throw e;
     }

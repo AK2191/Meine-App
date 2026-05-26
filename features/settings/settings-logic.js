@@ -162,7 +162,7 @@
     }());
 
     const hasCfg=!!(window.FIREBASE_CONFIG&&window.FIREBASE_CONFIG.apiKey&&!String(window.FIREBASE_CONFIG.apiKey).includes('HIER_'));
-    const liveOn=lsRead('live_sync_enabled')!==false;
+    const liveOn=lsRead('live_sync_enabled')===true;
     const autoOn=lsRead('auto_challenges_enabled')!==false;
     const gIn=isGoogleLoggedIn();
     const gSync=typeof canSyncGoogleCalendar==='function'?canSyncGoogleCalendar():gIn;
@@ -250,7 +250,7 @@
   // In-Place Sync-Status aktualisieren ohne Panel zu schließen
   window._refreshSyncPills=function(){
     try{
-      const liveOn=lsRead('live_sync_enabled')!==false;
+      const liveOn=lsRead('live_sync_enabled')===true;
       const autoOn=lsRead('auto_challenges_enabled')!==false;
       const gIn=typeof isGoogleLoggedIn==='function'?isGoogleLoggedIn():false;
       const gOn=typeof isGoogleSyncEnabled==='function'&&isGoogleSyncEnabled()&&gIn;
@@ -902,7 +902,7 @@
       },
       sync: {
         pushPreferenceEnabled: readBool(['change_v1_push_enabled'], false),
-        liveSyncEnabled: readBool(['change_v1_live_sync_enabled','live_sync_enabled'], true),
+        liveSyncEnabled: readBool(['change_v1_live_sync_enabled','live_sync_enabled'], false),
         autoChallengesEnabled: readBool(['change_v1_auto_challenges_enabled','auto_challenges_enabled'], true),
         googleCalendarSyncEnabled: readBool(['change_v1_google_calendar_sync'], true)
       },
@@ -1151,21 +1151,13 @@
       }, true);
     }
 
-    const oldInit = window.initFirebaseLive;
-    if(typeof oldInit === 'function' && !oldInit.__settingsSyncWrapped){
-      const wrappedInit = async function(){
-        const res = await oldInit.apply(this, arguments);
-        setTimeout(() => window.startChangeSettingsSync(), 350);
-        return res;
-      };
-      wrappedInit.__settingsSyncWrapped = true;
-      window.initFirebaseLive = wrappedInit;
-    }
+    // Settings-Sync wird nicht an initFirebaseLive gehängt.
+    // Er startet nur, wenn der Live-Sync-Schalter bewusst aktiviert wurde.
   }
 
   function boot(){
     installHooks();
-    [500, 1500, 3500, 7000].forEach(ms => setTimeout(() => { installHooks(); window.startChangeSettingsSync(); }, ms));
+    [500, 1500, 3500, 7000].forEach(ms => setTimeout(installHooks, ms));
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();

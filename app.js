@@ -250,46 +250,18 @@ const SecureTokenStore = (() => {
 
 // [FIX PERSISTENZ] Stille Google-Neuanmeldung nach F5 (kein Popup)
 function trySilentGoogleTokenRefresh(){
-  if(!CLIENT_ID || !window.google || !google.accounts) return;
-  try {
-    const tc = google.accounts.oauth2.initTokenClient({
-      client_id: cleanGoogleClientId(CLIENT_ID),
-      scope: GCAL_SCOPE,
-      // prompt:'none' → GSI öffnet NIEMALS ein Browser-Fenster oder Popup.
-      // Wenn die Google-Session abgelaufen ist, wird error_callback aufgerufen.
-      // prompt:'' (leer) hingegen lässt Google entscheiden → kann Fenster öffnen.
-      prompt: 'none',
-      error_callback: () => {
-        // Stilles Scheitern — Token abgelaufen, Nutzer muss sich
-        // beim nächsten manuellen Google-Sync neu anmelden. Kein Toast, kein Fenster.
-      },
-      callback: async resp => {
-        if(resp && resp.access_token){
-          accessToken = resp.access_token;
-          SecureTokenStore.setToken(accessToken, 3600);
-          try{ await fetchUserInfo(); }catch(e){}
-          try{ updateAvatar(); }catch(e){}
-          if(typeof loadGoogleData === 'function') loadGoogleData();
-        }
-        // Kein access_token → stilles Scheitern, kein Fehler-Toast
-      }
-    });
-    tc.requestAccessToken({prompt: 'none'});
-  } catch(e){ /* silent — kein Fehler wenn nicht möglich */ }
+  // Bewusst deaktiviert: stille Google-OAuth-Refreshes können auf GitHub Pages
+  // nach dem Login kurz die Oberfläche blockieren. Google-Sync wird nur
+  // manuell über den eigenen Google-Kalender-Schalter/Sync-Button gestartet.
+  return;
 }
 
 // [AUTO-REFRESH] Google Token alle 50 Min still erneuern
 // Token läuft nach 60 Min ab — 50 Min Intervall = immer gültig
 let _tokenRefreshTimer = null;
 function startTokenAutoRefresh(){
-  if(_tokenRefreshTimer) clearInterval(_tokenRefreshTimer);
-  _tokenRefreshTimer = setInterval(() => {
-    const fbUser = (typeof firebase !== 'undefined' && firebase.auth)
-      ? firebase.auth().currentUser : null;
-    if(fbUser && CLIENT_ID){
-      trySilentGoogleTokenRefresh();
-    }
-  }, 50 * 60 * 1000); // 50 Minuten
+  // Kein Hintergrund-Refresh. Token werden bei manueller Google-Synchronisierung erneuert.
+  return;
 }
 
 window.addEventListener('load', async () => {
@@ -343,11 +315,8 @@ window.addEventListener('load', async () => {
             picture: fbUser.photoURL || userInfo.picture || ''
           });
           updateAvatar();
-          // Firebase Auth ist jetzt bestätigt → Sync anstoßen
-          // loadSettingsFromFirestore existiert nicht – korrekte Funktion: startChangeSettingsSync
-          setTimeout(() => {
-            if(ls('live_sync_enabled')===true && typeof window.initFirebaseLive === 'function') window.initFirebaseLive();
-          }, 200);
+          // Kein automatischer Firestore-/Live-Sync nach Auth-Bestätigung.
+          // Live-Sync startet ausschließlich über den eigenen Schalter.
         } else {
           // Session abgelaufen — beim nächsten Firestore-Write wird Fehler kommen
           // Nutzer muss sich neu anmelden wenn er Daten speichern will
@@ -375,14 +344,8 @@ window.addEventListener('load', async () => {
         if(document.getElementById('main-app').style.display !== 'flex'){
           bootMainApp();
         }
-        // Firebase Auth ist jetzt aktiv (fbUser gesetzt) → Sync sicherstellen
-        // initFirebaseLive wird vom bootMainApp-Wrapper nochmal mit 300ms aufgerufen,
-        // aber ensureChangeFirebaseAuth schlägt fehl wenn currentUser noch nicht gesetzt.
-        // Hier wissen wir sicher: Auth ist bereit → direkt aufrufen.
-        setTimeout(() => {
-          if(ls('live_sync_enabled')===true && typeof window.initFirebaseLive === 'function') window.initFirebaseLive();
-          if(typeof window.startChangeSettingsSync === 'function') window.startChangeSettingsSync();
-        }, 400);
+        // Kein automatischer Firestore-/Settings-Sync nach Login.
+        // Live-Sync und Settings-Sync starten nur durch den Live-Sync-Schalter.
         setTimeout(trySilentGoogleTokenRefresh, 1500);
         startTokenAutoRefresh();
         initPWA(); scheduleNotifCheck();
@@ -560,7 +523,7 @@ async function handleFirebaseRedirectLogin(){
       }
       isDemoMode=false; lsDel('demo_mode');
       bootMainApp();
-      if(ls('live_sync_enabled')===true && initFirebaseLive) initFirebaseLive();
+      // Kein automatischer Firestore-/Live-Sync nach Redirect-Login.
       if(accessToken) loadGoogleData();
       toast('Mobile Anmeldung erfolgreich ✓','ok');
     }
@@ -1183,7 +1146,7 @@ function openDayPanel(dt,dayEvs){
 async function loadGoogleData(){
   if(!accessToken)return;
   await loadGoogleEvents();
-  if(ls('live_sync_enabled')===true && typeof initFirebaseLive==='function') initFirebaseLive();
+  // Google-Kalender-Sync darf keinen Firestore-/Live-Sync starten.
 }
 
 async function loadGoogleEvents(){
@@ -1242,7 +1205,7 @@ async function saveToGoogleCal(existingId){
 /* ==== FIREBASE / LOCAL STORAGE BRIDGE ==== */
 async function loadFromDrive(){
   // Daten werden lokal und – sobald Firebase verbunden ist – in Firestore synchronisiert.
-  if(ls('live_sync_enabled')===true && typeof initFirebaseLive==='function') await initFirebaseLive();
+  // Live-Sync startet nicht automatisch beim Speichern/Laden.
 }
 
 async function saveToDrive(){
@@ -1253,7 +1216,7 @@ async function saveToDrive(){
     ls('challenge_completions', challengeCompletions);
     ls('challenge_players', challengePlayers);
   }
-  if(typeof registerLivePlayer==='function') registerLivePlayer();
+  if(ls('live_sync_enabled')===true && typeof registerLivePlayer==='function') registerLivePlayer();
 }
 
 function showDriveStatus(){ /* nicht mehr benötigt */ }
@@ -1531,7 +1494,7 @@ document.addEventListener('touchend',e=>{
     }
     // [FIX AUTH-GUARD] Firestore nur wenn Firebase Auth aktiv
     const _fbU = (typeof firebase!=='undefined' && firebase.auth) ? firebase.auth().currentUser : null;
-    if(typeof registerLivePlayer==='function' && _fbU) registerLivePlayer();
+    if(ls('live_sync_enabled')===true && typeof registerLivePlayer==='function' && _fbU) registerLivePlayer();
   }
 
   window.buildDefaultChallenges = function(){
@@ -1781,7 +1744,13 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     };
   }
 
-  window.initFirebaseLive = async function(){
+  window.initFirebaseLive = async function(options){
+    options = options || {};
+    const manualStart = options.manual === true || window.__changeLiveSyncManualStart === true;
+    if(!manualStart){
+      return false;
+    }
+    window.__changeLiveSyncManualStart = false;
     if(!hasFirebaseConfig() || !window.firebase){
       console.info('Firebase ist noch nicht konfiguriert. firebase-config.js ausfüllen.');
       return false;
@@ -1798,8 +1767,8 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
       ls(FIREBASE_READY_KEY,true);
       installForegroundPushHandler();
       startChallengeReminderLoop();
-      if(ls('live_sync_enabled')===false){
-        try{ if(userInfo.email) await db.collection('change_players').doc(safeDocId(currentEmail())).set({online:false,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); }catch(_e){}
+      const startLiveFeatures = options.live === true || (options.live !== false && ls('live_sync_enabled') === true);
+      if(!startLiveFeatures){
         return true;
       }
       await registerLivePlayer();
@@ -1810,7 +1779,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   };
 
   window.registerLivePlayer = async function(){
-    if(ls('live_sync_enabled')===false) return;
+    if(ls('live_sync_enabled')!==true) return;
     if(!db || !userInfo.email) return;
     // [FIX AUTH-GUARD] Firebase Auth muss aktiv sein
     const fbUser = (typeof firebase!=='undefined' && firebase.auth) ? firebase.auth().currentUser : null;
@@ -1830,7 +1799,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   }
 
   function startLivePlayersListener(){
-    if(ls('live_sync_enabled')===false) return;
+    if(ls('live_sync_enabled')!==true) return;
     if(!db || unsubscribePlayers) return;
     unsubscribePlayers=db.collection('change_players').onSnapshot(snap=>{
       snap.forEach(doc=>mergePlayer({id:doc.id,...doc.data()}));
@@ -1841,7 +1810,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   }
 
   function startLiveCompletionsListener(){
-    if(ls('live_sync_enabled')===false) return;
+    if(ls('live_sync_enabled')!==true) return;
     if(!db || unsubscribeCompletions) return;
     unsubscribeCompletions=db.collection('change_completions').orderBy('createdAt','desc').limit(500).onSnapshot(snap=>{
       snap.forEach(doc=>{
@@ -1862,6 +1831,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   }
 
   async function publishCompletionToFirestore(completion){
+    if(ls('live_sync_enabled')!==true) return;
     if(!db || !completion) return;
     try{
       await db.collection('change_completions').doc(completion.id).set({
@@ -1904,7 +1874,8 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     }
     const authReady = window.ensureChangeFirebaseAuth ? await window.ensureChangeFirebaseAuth({ silent:false, interactive:true }) : true;
     if(!authReady) return fail('Push braucht eine gültige Firebase-Anmeldung. Bitte einmal neu mit Google anmelden');
-    const ok = await initFirebaseLive();
+    window.__changeLiveSyncManualStart = true;
+    const ok = await initFirebaseLive({manual:true, live:false});
     if(!ok) return fail('Firebase konnte nicht gestartet werden');
     try{
       let perm = Notification.permission;
@@ -1993,7 +1964,8 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   window.disablePushNotifications = async function(options){
     options = options || {};
     try{
-      await initFirebaseLive();
+      window.__changeLiveSyncManualStart = true;
+      await initFirebaseLive({manual:true, live:false});
       if(messaging){
         const token=ls('fcm_token');
         if(token){ try{ await messaging.deleteToken(token); }catch(_e){} }
@@ -2023,8 +1995,10 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
         if(db && userInfo.email){ await db.collection('change_players').doc(safeDocId(currentEmail())).set({online:false,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); }
         toast('Live-Mitspieler deaktiviert','ok');
       }else{
-        await initFirebaseLive();
-        toast('Live-Mitspieler verbunden ✓','ok');
+        window.__changeLiveSyncManualStart = true;
+        const liveOk = await initFirebaseLive({manual:true, live:true});
+        if(liveOk && typeof window.startChangeSettingsSync === 'function') await window.startChangeSettingsSync();
+        toast(liveOk ? 'Live-Mitspieler verbunden ✓' : 'Live-Sync ist aktuell nicht verfügbar','ok');
       }
     }catch(e){ console.warn('Live-Sync Umschalten:',e); toast('Live-Sync konnte nicht geändert werden','err'); }
     openPushSettingsPanel();
@@ -2036,7 +2010,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   };
 
   window.openParticipantPanel = function(){
-    if(ls('live_sync_enabled')===true && typeof initFirebaseLive==='function') initFirebaseLive();
+    // Live-Sync startet nicht beim Öffnen der Mitspieler-Ansicht.
     const players=[...(challengePlayers||[])].sort((a,b)=>(b.online===true)-(a.online===true)||String(a.name||'').localeCompare(String(b.name||'')));
     const html='<div class="section-label">Automatisch erkannte Mitspieler</div>'+
       (players.length?players.map(p=>'<div class="leader-row"><div class="leader-rank">'+(p.picture?'<img src="'+esc(p.picture)+'" style="width:28px;height:28px;border-radius:50%;object-fit:cover">':'👤')+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(p.email===userInfo.email?' · Du':'')+(p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>')+'</div><div class="leader-detail">'+esc(p.email||'')+'</div></div></div>').join(''):'<div class="dash-empty">Noch keine Mitspieler erkannt. Sobald sich jemand mit Google anmeldet, erscheint er hier automatisch.</div>')+
@@ -2074,6 +2048,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   function chDueData(ch){return {id:ch.id,title:ch.title||'Challenge',desc:ch.desc||'',points:parseInt(ch.points)||0,icon:ch.icon||'🏆',date:ch.date||ch.startDate||dateKey(new Date()),recurrence:ch.recurrence||'once',active:ch.active!==false,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}}
   window.publishChallengesToFirestore=async function(){
     syncChallengeStateFromStore();
+    if(ls('live_sync_enabled')!==true) return;
     if(!hasCfg()) return;
     const db=getDb(); if(!db) return;
     if(window.ensureChangeFirebaseAuth){
@@ -2084,6 +2059,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   };
   window.listenLiveChallenges=function(){
     syncChallengeStateFromStore();
+    if(ls('live_sync_enabled')!==true) return;
     if(window._changeLiveChallengesListener || !hasCfg()) return;
     const db=getDb(); if(!db) return;
     window._changeLiveChallengesListener=db.collection('change_challenges').where('active','==',true).onSnapshot(snap=>{

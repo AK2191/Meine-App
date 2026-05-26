@@ -135,6 +135,7 @@
   }
 
   window.publishCompletionToFirestore = async function(completion){
+    try{ if(JSON.parse(localStorage.getItem('live_sync_enabled') || 'false') !== true) return false; }catch(e){ return false; }
     const database = await ensureFirebase();
     const me = account();
     if(!database || !completion || !completion.id || !me.id) return false;
@@ -159,8 +160,10 @@
     }catch(e){ console.warn('Completion Firestore Sync:', e); return false; }
   };
 
-  window.startGlobalChallengeSync = async function(){
-    if(readLs('live_sync_enabled', true) === false) return false;
+  window.startGlobalChallengeSync = async function(options){
+    options = options || {};
+    if(options.manual !== true && window.__changeLiveSyncManualStart !== true) return false;
+    if(readLs('live_sync_enabled', false) !== true) return false;
     const database = await ensureFirebase();
     if(!database || unsubscribe) return !!database;
     await registerPlayer();
@@ -180,14 +183,15 @@
   window.setLiveSyncEnabled = async function(enabled){
     try{ localStorage.setItem('live_sync_enabled', JSON.stringify(!!enabled)); }catch(e){}
     if(typeof oldSetLive === 'function'){ try{ await oldSetLive.apply(this, arguments); }catch(e){ console.warn('Live Sync Toggle:', e); } }
-    if(enabled) window.startGlobalChallengeSync(); else window.stopGlobalChallengeSync();
+    if(enabled){ window.__changeLiveSyncManualStart = true; window.startGlobalChallengeSync({manual:true}); }
+    else window.stopGlobalChallengeSync();
   };
 
   function boot(){
     if(initStarted) return;
     initStarted = true;
     window.challengeCompletions = Array.isArray(window.challengeCompletions) ? window.challengeCompletions : readLs('challenge_completions', []);
-    window.startGlobalChallengeSync();
+    // Kein automatischer Challenge-Firestore-Sync beim App-Start.
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(boot, 600));
   else setTimeout(boot, 600);
@@ -505,7 +509,10 @@
     }
   }
 
-  window.startGlobalChallengeSync = async function(){
+  window.startGlobalChallengeSync = async function(options){
+    options = options || {};
+    if(options.manual !== true && window.__changeLiveSyncManualStart !== true) return false;
+    try{ if(JSON.parse(localStorage.getItem('live_sync_enabled') || 'false') !== true) return false; }catch(e){ return false; }
     const db = await ensureDb();
     const me = account();
     if(db && me.ready) await registerPlayer(me);
@@ -537,7 +544,7 @@
       account();
       sanitizeLocalCompletions();
       cleanupBadRemote();
-      window.startGlobalChallengeSync();
+      // Kein automatischer Challenge-Firestore-Sync beim App-Start.
       refresh();
     };
     [250, 900, 1800, 3500, 6500].forEach(ms => setTimeout(run, ms));
@@ -675,7 +682,10 @@
     try{await database.collection(PLAYERS).doc(safe(me.email)).set({id:me.email,email:me.email,name:me.name||me.email.split('@')[0],picture:me.picture||'',online:true,app:'Change',lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});return true;}
     catch(e){console.warn('Final Player Sync:',e);return false;}
   }
-  async function uploadLocalCompletions(){
+  async function uploadLocalCompletions(options){
+    options = options || {};
+    if(options.manual !== true && window.__changeLiveSyncManualStart !== true) return false;
+    try{ if(JSON.parse(localStorage.getItem('live_sync_enabled') || 'false') !== true) return false; }catch(e){ return false; }
     const database=await ensureDb(); const me=account();
     if(!database||!me.ready)return false;
     const locals=allLocalCompletions().map(c=>normalizeCompletion(c,me)).filter(Boolean);
@@ -690,7 +700,10 @@
       return true;
     }catch(e){console.warn('Final Challenge upload failed:',e);toastMsg('Punkte konnten nicht online gespeichert werden: '+(e.message||e),'err');return false;}
   }
-  async function loadRemoteCompletions(){
+  async function loadRemoteCompletions(options){
+    options = options || {};
+    if(options.manual !== true && window.__changeLiveSyncManualStart !== true) return false;
+    try{ if(JSON.parse(localStorage.getItem('live_sync_enabled') || 'false') !== true) return false; }catch(e){ return false; }
     const database=await ensureDb(); if(!database)return false;
     try{
       const snap=await database.collection(COMPLETIONS).limit(1000).get();
@@ -698,13 +711,16 @@
       persistCompletions();refresh();return true;
     }catch(e){console.warn('Final Challenge remote load failed:',e);toastMsg('Punkte konnten nicht aus Firebase geladen werden: '+(e.message||e),'err');return false;}
   }
-  async function startSync(){
-    if(syncing)return; syncing=true;
+  async function startSync(options){
+    options = options || {};
+    if(options.manual !== true && window.__changeLiveSyncManualStart !== true) return false;
+    try{ if(JSON.parse(localStorage.getItem('live_sync_enabled') || 'false') !== true) return false; }catch(e){ return false; }
+    if(syncing)return false; syncing=true;
     const database=await ensureDb(); const me=account();
     if(!database){syncing=false;return false;}
     if(me.ready)await registerPlayer(me);
-    await uploadLocalCompletions();
-    await loadRemoteCompletions();
+    await uploadLocalCompletions({manual:true});
+    await loadRemoteCompletions({manual:true});
     if(unsub){try{unsub()}catch(e){}unsub=null;}
     try{
       unsub=database.collection(COMPLETIONS).limit(1000).onSnapshot(snap=>{
@@ -720,12 +736,13 @@
 
   const oldPublish=window.publishCompletionToFirestore;
   window.publishCompletionToFirestore=async function(completion){
+    try{ if(JSON.parse(localStorage.getItem('live_sync_enabled') || 'false') !== true) return false; }catch(e){ return false; }
     const me=account();
     const row=normalizeCompletion(completion,me);
     if(!row){toastMsg('Bitte erst mit Google anmelden – Punkte werden sonst keinem Konto zugeordnet.','err');return false;}
     mergeLocal(row);persistCompletions();
-    const ok=await uploadLocalCompletions();
-    setTimeout(loadRemoteCompletions,400);
+    const ok=await uploadLocalCompletions({manual:true});
+    setTimeout(function(){ loadRemoteCompletions({manual:true}); },400);
     return ok;
   };
 
@@ -735,18 +752,20 @@
     let res;
     if(typeof oldComplete==='function') res=await oldComplete.apply(this,arguments);
     setTimeout(async()=>{
-      await uploadLocalCompletions();
-      await loadRemoteCompletions();
+      try{ if(JSON.parse(localStorage.getItem('live_sync_enabled') || 'false') === true){
+        await uploadLocalCompletions({manual:true});
+        await loadRemoteCompletions({manual:true});
+      }}catch(e){}
       if((window.challengeCompletions||[]).length>before) refresh();
     },150);
     return res;
   };
 
-  window.startGlobalChallengeSync=startSync;
-  window.forceLoadChallengePoints=async function(){await uploadLocalCompletions();return loadRemoteCompletions();};
+  window.startGlobalChallengeSync=function(options){ return startSync(options || {}); };
+  window.forceLoadChallengePoints=async function(){window.__changeLiveSyncManualStart = true; await uploadLocalCompletions({manual:true}); return loadRemoteCompletions({manual:true});};
   window.debugChallengeSync=async function(){const me=account();const database=await ensureDb();let remote=-1;try{if(database){const s=await database.collection(COMPLETIONS).limit(1000).get();remote=s.size;}}catch(e){remote='Fehler: '+(e.message||e)};const local=allLocalCompletions().length;toastMsg('Sync-Status: lokal '+local+' · online '+remote+' · '+(me.email||'kein Konto'), remote===0?'err':'ok');return {account:me,local,remote};};
 
-  function boot(){[200,800,1800,3500,7000].forEach(ms=>setTimeout(startSync,ms));}
+  function boot(){ /* kein automatischer Firestore-Challenge-Sync beim Start */ }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot); else boot();
   window.addEventListener('load',boot);
 })();

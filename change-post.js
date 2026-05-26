@@ -193,7 +193,10 @@
     }catch(e){console.warn('Google Calendar load failed:',e);toastX('Google-Termine konnten nicht geladen werden.','err');return [];}
   };
 
-  window.loadGoogleData=async function(){await window.loadGoogleEvents();try{if(typeof initFirebaseLive==='function')initFirebaseLive();}catch(e){}};
+  window.loadGoogleData=async function(){
+    await window.loadGoogleEvents();
+    // Kein automatischer Firestore-/Live-Sync beim Google-Kalender-Laden.
+  };
 
   function addOneHour(time){if(!time)return '10:00';const parts=time.split(':').map(Number);const d=new Date(2000,0,1,parts[0]||9,parts[1]||0);d.setHours(d.getHours()+1);return pad(d.getHours())+':'+pad(d.getMinutes());}
   function nextDay(date){const d=new Date(date+'T12:00:00');d.setDate(d.getDate()+1);return dk(d);}

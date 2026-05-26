@@ -287,3 +287,13 @@ Zurückgeführte Verbesserungen:
 - Settings-Panel mit besserer Sync-Struktur; Google verbinden nutzt TokenClient, keinen Firebase-Redirect.
 
 Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
+
+
+## 2026-05-26 Login-Freeze-Regel
+
+- Google-Kalender-Sync darf niemals `initFirebaseLive()` starten.
+- `initFirebaseLive()` darf nur durch den Live-Sync-Schalter mit `{ manual:true }` laufen.
+- Settings-Sync und Challenge-Firestore-Sync starten nicht beim App-Start, nicht nach Google-Login und nicht nach `loadGoogleData()`.
+- `live_sync_enabled` hat Default `false`; alte LocalStorage-Werte dürfen die App beim Login nicht automatisch in Firebase/Firestore ziehen.
+- Stiller Google-Token-Refresh ist deaktiviert; Google-Sync läuft über den eigenen Google-Kalender-Schalter/Sync-Button.
+- Kein automatischer Firebase-Redirect-Fallback bei blockiertem Popup.
