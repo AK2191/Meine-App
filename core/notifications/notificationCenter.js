@@ -12,12 +12,12 @@
   }
   function readGlobal(name, fallback){
     try{
-      return Function('fallback','try{return (typeof '+name+'!=="undefined")?'+name+':fallback;}catch(e){return fallback;}')(fallback);
+      if(name && Object.prototype.hasOwnProperty.call(window, name)) return window[name];
+      return fallback;
     }catch(e){ return fallback; }
   }
   function writeGlobal(name, value){
-    try{ Function('value','try{'+name+'=value;}catch(e){}')(value); }catch(e){}
-    try{ window[name] = value; }catch(e){}
+    try{ if(name) window[name] = value; }catch(e){}
   }
   function pad(n){ return String(n).padStart(2,'0'); }
   function todayKey(){
@@ -99,7 +99,7 @@
       var dk = eventStart(ev);
       if(!dk) return null;
       var diff = daysUntilKey(dk);
-      if(diff < -1 || diff > 1) return null;  // nur heute (0) und morgen (1)
+      if(diff < -1 || diff > 60) return null;
       var rawId = String((ev && ev.id) || (ev && ev.googleEventId) || eventTitle(ev)+'_'+dk);
       var dedupe = rawId+'|'+dk+'|'+eventTitle(ev);
       if(seen.has(dedupe)) return null;
@@ -232,7 +232,7 @@
       .concat(buildPlayerActivityNotifications())
       .concat(buildWeatherHealthNotifications())
       .concat(buildChallengeNotifications())
-      // buildDailySummaryNotifications() → entfernt (Tageszusammenfassung nicht gewünscht)
+      .concat(buildDailySummaryNotifications())
       .concat(buildEventNotifications());
     notes.sort(function(a,b){
       return (a.priority - b.priority) || ((ORDER[a.urgency] || 9) - (ORDER[b.urgency] || 9)) || ((a.diff || 0) - (b.diff || 0)) || String(a.title).localeCompare(String(b.title));
@@ -285,32 +285,15 @@
   function browserNotificationAllowed(){ return Store.pushActive(); }
   function fireDueBrowserNotifications(){
     if(!browserNotificationAllowed()) return;
-    var firedToday = 'browser_fired_' + todayKey();
-    var fired = new Set(JSON.parse(sessionStorage.getItem(firedToday) || '[]'));
-    function send(id, title, body, tag){
-      if(fired.has(id) || Store.wasFired(id)) return;
-      try{
-        new Notification(title, {body: body || '', tag: tag || id, icon: './icons/icon-change-192.png'});
-        Store.markFired(id);
-        fired.add(id);
-        sessionStorage.setItem(firedToday, JSON.stringify(Array.from(fired)));
-      }catch(e){}
-    }
     buildAll({includeRead:false}).forEach(function(n){
-      if(n.kind === 'event'){
-        // Termin morgen oder heute
-        var rawEvent = null;
-        try{ rawEvent = typeof getEventById === 'function' ? getEventById(n.sourceId) : null; }catch(e){}
-        var threshold = rawEvent && rawEvent.notifDaysBefore != null ? parseInt(rawEvent.notifDaysBefore,10) : 1;
-        if(n.diff !== threshold) return;
-        send('browser:'+n.id+':'+n.diff, (n.diff===0?'Heute':'Morgen')+': '+n.title, n.body, n.id);
-      } else if(n.kind === 'weather' || n.kind === 'pollen'){
-        // Wetter/Pollen einmal pro Tag
-        send('browser:'+n.id, n.title, n.body, n.id);
-      } else if(n.kind === 'challenge'){
-        // Challenge-Erinnerung einmal pro Tag
-        send('browser:'+n.id, n.title, n.body, n.id);
-      }
+      if(n.kind !== 'event') return;
+      var rawEvent = null;
+      try{ rawEvent = typeof getEventById === 'function' ? getEventById(n.sourceId) : null; }catch(e){}
+      var threshold = rawEvent && rawEvent.notifDaysBefore != null ? parseInt(rawEvent.notifDaysBefore,10) : 1;
+      if(n.diff !== threshold) return;
+      var firedId = 'browser:'+n.id+':'+n.diff;
+      if(Store.wasFired(firedId)) return;
+      try{ new Notification(n.label+': '+n.title, {body:n.body || 'Termin', tag:n.id}); Store.markFired(firedId); }catch(e){}
     });
   }
   function checkNotifications(){

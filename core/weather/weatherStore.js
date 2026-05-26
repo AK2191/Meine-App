@@ -84,7 +84,7 @@
         if(err && err.code === 2) msg = 'Standort ist aktuell nicht verfügbar.';
         if(err && err.code === 3) msg = 'Standortabfrage hat zu lange gedauert.';
         reject(new Error(msg));
-      }, {enableHighAccuracy:false, maximumAge:15 * 60 * 1000, timeout:10000});
+      }, {enableHighAccuracy:false, maximumAge:30 * 60 * 1000, timeout:10000});
     });
   }
 

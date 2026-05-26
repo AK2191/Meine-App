@@ -160,14 +160,11 @@
   };
 
   window.startGlobalChallengeSync = async function(){
-    if(readLs('live_sync_enabled', false) !== true) return false;
+    if(readLs('live_sync_enabled', true) === false) return false;
     const database = await ensureFirebase();
     if(!database || unsubscribe) return !!database;
     await registerPlayer();
-    // Nur letzte 60 Tage – reduziert Reads massiv (statt alle 1000 Docs)
-    const since60 = new Date(); since60.setDate(since60.getDate()-60);
-    const since60Str = since60.toISOString().slice(0,10);
-    unsubscribe = database.collection(COMPLETIONS).where('date','>=',since60Str).limit(200).onSnapshot(snap => {
+    unsubscribe = database.collection(COMPLETIONS).orderBy('createdAt', 'desc').limit(1000).onSnapshot(snap => {
       snap.docChanges().forEach(change => {
         if(change.type === 'removed') removeCompletion(change.doc.id);
         else upsertCompletion(toLocalCompletion(change.doc.id, change.doc.data() || {}));
@@ -183,14 +180,14 @@
   window.setLiveSyncEnabled = async function(enabled){
     try{ localStorage.setItem('live_sync_enabled', JSON.stringify(!!enabled)); }catch(e){}
     if(typeof oldSetLive === 'function'){ try{ await oldSetLive.apply(this, arguments); }catch(e){ console.warn('Live Sync Toggle:', e); } }
-    if(enabled) if(readLs('live_sync_enabled', false)===true) window.startGlobalChallengeSync(); else window.stopGlobalChallengeSync();
+    if(enabled) window.startGlobalChallengeSync(); else window.stopGlobalChallengeSync();
   };
 
   function boot(){
     if(initStarted) return;
     initStarted = true;
     window.challengeCompletions = Array.isArray(window.challengeCompletions) ? window.challengeCompletions : readLs('challenge_completions', []);
-    if(readLs('live_sync_enabled', false)===true) window.startGlobalChallengeSync();
+    window.startGlobalChallengeSync();
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(boot, 600));
   else setTimeout(boot, 600);
@@ -516,7 +513,20 @@
     if(!db) return false;
     await loadAllRemoteCompletions();
     if(window.__changeChallengeUnsub){ try{ window.__changeChallengeUnsub(); }catch(e){} }
-    // Doppelter Listener entfernt – change-account-safe listener übernimmt;
+    window.__changeChallengeUnsub = db.collection(COMPLETIONS).orderBy('createdAt','desc').limit(1000).onSnapshot(snap => {
+      snap.docChanges().forEach(change => {
+        if(change.type === 'removed') window.challengeCompletions = (window.challengeCompletions || []).filter(c => String(c.id) !== String(change.doc.id));
+        else {
+          const row = toLocal(change.doc.id, change.doc.data() || {});
+          if(row) upsert(row);
+        }
+      });
+      sanitizeLocalCompletions();
+      refresh();
+    }, err => {
+      console.warn('Challenge listener:', err);
+      try{ if(typeof toast === 'function') toast('Live-Punkte-Sync blockiert. Firestore-Regeln prüfen.','err'); }catch(_e){}
+    });
     return true;
   };
 
@@ -527,7 +537,7 @@
       account();
       sanitizeLocalCompletions();
       cleanupBadRemote();
-      if(readLs('live_sync_enabled', false)===true) if(readLs('live_sync_enabled', false)===true) window.startGlobalChallengeSync();
+      window.startGlobalChallengeSync();
       refresh();
     };
     [250, 900, 1800, 3500, 6500].forEach(ms => setTimeout(run, ms));
@@ -689,7 +699,6 @@
     }catch(e){console.warn('Final Challenge remote load failed:',e);toastMsg('Punkte konnten nicht aus Firebase geladen werden: '+(e.message||e),'err');return false;}
   }
   async function startSync(){
-    if(readLs('live_sync_enabled', false)!==true)return false;
     if(syncing)return; syncing=true;
     const database=await ensureDb(); const me=account();
     if(!database){syncing=false;return false;}
@@ -698,9 +707,7 @@
     await loadRemoteCompletions();
     if(unsub){try{unsub()}catch(e){}unsub=null;}
     try{
-      // Nur letzte 60 Tage
-      const d60=new Date(); d60.setDate(d60.getDate()-60);
-      unsub=database.collection(COMPLETIONS).where('date','>=',d60.toISOString().slice(0,10)).limit(200).onSnapshot(snap=>{
+      unsub=database.collection(COMPLETIONS).limit(1000).onSnapshot(snap=>{
         snap.docChanges().forEach(ch=>{
           if(ch.type==='removed') window.challengeCompletions=(window.challengeCompletions||[]).filter(c=>String(c.id)!==String(ch.doc.id));
           else {const row=normalizeCompletion(Object.assign({id:ch.doc.id},ch.doc.data()||{}),account());if(row)mergeLocal(row);}
@@ -739,7 +746,7 @@
   window.forceLoadChallengePoints=async function(){await uploadLocalCompletions();return loadRemoteCompletions();};
   window.debugChallengeSync=async function(){const me=account();const database=await ensureDb();let remote=-1;try{if(database){const s=await database.collection(COMPLETIONS).limit(1000).get();remote=s.size;}}catch(e){remote='Fehler: '+(e.message||e)};const local=allLocalCompletions().length;toastMsg('Sync-Status: lokal '+local+' · online '+remote+' · '+(me.email||'kein Konto'), remote===0?'err':'ok');return {account:me,local,remote};};
 
-  function boot(){[200,800,1800,3500,7000,12000,20000].forEach(ms=>setTimeout(()=>{ if(readLs('live_sync_enabled', false)===true) startSync(); },ms));}
+  function boot(){[200,800,1800,3500,7000].forEach(ms=>setTimeout(startSync,ms));}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot); else boot();
   window.addEventListener('load',boot);
 })();

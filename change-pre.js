@@ -308,8 +308,7 @@
       : '<div class="dash-empty">Noch keine Mitspieler</div>';
 
     // Punkte-Kalender nach kurzer Pause nochmal rendern (Firebase-Daten laden asynchron)
-    // Mehrere Versuche: iOS/Android Firebase kann 5–12 Sek. brauchen
-    [1200, 3000, 6000, 12000].forEach(ms => setTimeout(renderWeekBar, ms));
+    setTimeout(renderWeekBar, 1200);
   };
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -327,21 +326,6 @@
         _comps = v;
         if(v && v.length > 0 && window.currentMainView==='challenges' && typeof renderWeekBar==='function')
           setTimeout(renderWeekBar, 50);
-      },
-      configurable: true
-    });
-  }catch(e){}
-
-  // Hook: Rangliste aktualisieren wenn Firebase challengePlayers lädt
-  // Kritisch auf iOS: WebSocket kann Spielerdaten verzögert liefern
-  let _players = window.challengePlayers || [];
-  try{
-    Object.defineProperty(window, 'challengePlayers', {
-      get: () => _players,
-      set: v => {
-        _players = v;
-        if(v && v.length > 0 && window.currentMainView==='challenges' && typeof window.renderChallenges==='function')
-          setTimeout(window.renderChallenges, 80);
       },
       configurable: true
     });
@@ -374,7 +358,6 @@
     if(v==='dashboard'  && typeof window.buildDashboard==='function')   window.buildDashboard();
     if(v==='calendar'   && typeof window.renderCalendar==='function')   window.renderCalendar();
     if(v==='challenges' && typeof window.renderChallenges==='function') window.renderChallenges();
-    // iOS: Direkter Firebase-Fetch wenn Challenges-View geöffnet wird
     if(!fromRoute){ try{ history.pushState({view:v},'','#/'+v); }catch(e){ location.hash='/'+v; } }
   };
 

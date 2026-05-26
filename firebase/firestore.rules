@@ -1,41 +1,45 @@
 rules_version = '2';
 
-// CHANGE APP — Firestore Rules v7
-// Nur Google-angemeldete User (kein Anonymous)
+// ═══════════════════════════════════════════════════════════════
+// CHANGE APP — Firestore Rules v5
+// Firestore-Zugriff nur mit Firebase Auth.
+// Die App meldet sich nach dem Google-Login zusätzlich per Firebase Auth an.
+// Wichtig: Keine offenen Schreibrechte ohne request.auth.
+// ═══════════════════════════════════════════════════════════════
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Echter Google-User (nicht anonym)
-    function isGoogleUser() {
-      return request.auth != null
-        && request.auth.token.firebase.sign_in_provider == 'google.com';
-    }
-
-    // Jeder authentifizierte User (für Settings-Fallback)
     function isAuth() {
       return request.auth != null;
     }
 
-    // Spieler-Profile — nur Google-User dürfen schreiben
+    // Spieler-Profile
+    // Lesen: offen (Rangliste)
+    // Schreiben: nur eingeloggte Nutzer
     match /change_players/{docId} {
       allow read: if true;
-      allow write: if isGoogleUser();
+      allow write: if isAuth();
     }
 
-    // Challenge-Completions
+    // Challenge-Completions (Punkte)
+    // Lesen: offen (Rangliste/Punkte)
+    // Schreiben: nur eingeloggte Nutzer
     match /change_completions/{docId} {
       allow read: if true;
-      allow write: if isGoogleUser();
+      allow write: if isAuth();
     }
 
-    // Challenges
+    // Challenges (Aufgaben)
+    // Lesen: offen
+    // Schreiben: nur eingeloggte Nutzer
     match /change_challenges/{challengeId} {
       allow read: if true;
-      allow write: if isGoogleUser();
+      allow write: if isAuth();
     }
 
-    // Settings — auth reicht (auch wenn kurz kein currentUser)
+    // Settings (Einstellungen)
+    // Nur eingeloggte Nutzer
     match /change_settings/{docId} {
       allow read, write: if isAuth();
     }
@@ -45,7 +49,7 @@ service cloud.firestore {
       allow read, write: if isAuth();
     }
 
-    // Fallback sperren
+    // Fallback: alles andere sperren
     match /{document=**} {
       allow read, write: if false;
     }

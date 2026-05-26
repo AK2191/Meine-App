@@ -11,7 +11,7 @@
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
     });
   }
-  var LOCATION_MAX_AGE = 2 * 60 * 60 * 1000;  // 2h – sync mit weatherService
+  var LOCATION_MAX_AGE = 6 * 60 * 60 * 1000;
 
   function fmtUpdated(iso){
     if(!iso) return '';
@@ -145,14 +145,7 @@
     var forecast = w.forecast && w.forecast[0] ? w.forecast[0] : null;
     var tempLine = (w.temperature != null ? w.temperature + ' °C' : 'Wetter') + ' · ' + (w.summary || 'heute');
     var range = forecast ? ((forecast.tempMax != null ? forecast.tempMax + '°' : '–') + ' / ' + (forecast.tempMin != null ? forecast.tempMin + '°' : '–')) : '';
-    var sunHtml = '';
-    if(w.sunrise || w.sunset){
-      sunHtml = '<div class="change-sun-row">'
-        + (w.sunrise ? '<span>🌅 '+esc(w.sunrise)+'</span>' : '')
-        + (w.sunset  ? '<span>🌇 '+esc(w.sunset) +'</span>' : '')
-        + '</div>';
-    }
-    return '<div class="change-weather-now"><div class="change-weather-now-icon">'+esc(w.icon || '🌦️')+'</div><div><strong>'+esc(tempLine)+'</strong><small>'+esc(rain)+' '+(range ? '· Tageswerte '+range : '')+'</small>'+sunHtml+'</div></div>';
+    return '<div class="change-weather-now"><div class="change-weather-now-icon">'+esc(w.icon || '🌦️')+'</div><div><strong>'+esc(tempLine)+'</strong><small>'+esc(rain)+' '+(range ? '· Tageswerte '+range : '')+'</small></div></div>';
   }
   function weatherHourlyHtml(data){
     var hourly = data && data.weather && data.weather.hourly || [];
@@ -176,8 +169,7 @@
     return '<section class="change-daily-section"><div class="change-section-head"><strong>7-Tage-Ausblick</strong></div><div class="change-forecast-list">' + forecast.map(function(day){
       var rain = day.rainProbability != null ? day.rainProbability + ' % Regen' : (day.precipitation ? day.precipitation + ' mm' : 'kaum Regen');
       var temp = (day.tempMax != null ? day.tempMax + '°' : '–') + ' / ' + (day.tempMin != null ? day.tempMin + '°' : '–');
-      var sunStr = (day.sunrise ? '🌅 '+esc(day.sunrise) : '') + (day.sunrise && day.sunset ? '  ' : '') + (day.sunset ? '🌇 '+esc(day.sunset) : '');
-      return '<div class="change-forecast-row"><div class="change-forecast-date"><strong>'+esc(fmtDay(day.date))+'</strong><span>'+esc(day.icon || '🌦️')+'</span></div><div class="change-forecast-main"><strong>'+esc(day.summary || 'Wetter')+'</strong><small>'+esc(rain)+(sunStr ? ' · '+sunStr : '')+'</small></div><div class="change-forecast-value">'+esc(temp)+'</div></div>';
+      return '<div class="change-forecast-row"><div class="change-forecast-date"><strong>'+esc(fmtDay(day.date))+'</strong><span>'+esc(day.icon || '🌦️')+'</span></div><div class="change-forecast-main"><strong>'+esc(day.summary || 'Wetter')+'</strong><small>'+esc(rain)+'</small></div><div class="change-forecast-value">'+esc(temp)+'</div></div>';
     }).join('') + '</div></section>';
   }
   function pollenForecastHtml(data){
@@ -278,45 +270,5 @@
     installDashboardHook: installDashboardHook
   };
 
-  // ── Auto-Standort & Wetter-Refresh ─────────────────────────────────────
-  // Strategie: kein watchPosition (Batterie), stattdessen:
-  //   • visibilitychange: stille Aktualisierung wenn App wieder sichtbar wird
-  //   • setInterval: alle 30 Min Hintergrund-Check
-  // Beide prüfen ob Standort oder Wetter-Cache veraltet ist (>2h / >30min).
-  // Kein UI, kein Popup – vollständig unsichtbar für den Nutzer.
-
-  function silentLocationRefresh(){
-    if(!Store || !Store.getLocation) return;
-    var loc = Store.getLocation();
-    // Standort älter als 2h → still neu abfragen
-    var locAge = loc && loc.savedAt ? Date.now() - Date.parse(loc.savedAt) : Infinity;
-    var needsLoc = !loc || !isFinite(locAge) || locAge > LOCATION_MAX_AGE;
-    if(needsLoc && Store.requestLocation){
-      Store.requestLocation()
-        .then(function(){
-          // Standort frisch → Wetter neu laden
-          if(Service && Service.refresh) Service.refresh(false).then(updateHero).catch(function(){});
-        })
-        .catch(function(){ /* still – kein GPS verfügbar */ });
-    } else {
-      // Standort ok → nur Wetter-Cache prüfen
-      if(Service && Service.needsRefresh && Service.needsRefresh()){
-        Service.ensureFresh().then(updateHero).catch(function(){});
-      }
-    }
-  }
-
-  function installAutoRefresh(){
-    // 1) Beim App-Fokus (Tab-Wechsel / Homescreen)
-    document.addEventListener('visibilitychange', function(){
-      if(document.visibilityState === 'visible') silentLocationRefresh();
-    });
-    // 2) Beim Fenster-Fokus (Desktop)
-    window.addEventListener('focus', function(){ silentLocationRefresh(); });
-    // 3) Interval alle 30 Minuten als Fallback
-    setInterval(silentLocationRefresh, 30 * 60 * 1000);
-  }
-
   setTimeout(installDashboardHook, 0);
-  setTimeout(installAutoRefresh, 500);
 })();

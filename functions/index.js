@@ -51,7 +51,7 @@ async function sendToTokens(tokens, title, body) {
     notification: { title, body },
     webpush: {
       fcmOptions: { link: 'https://ak2191.github.io/Meine-App/' },
-      notification: { icon: 'https://ak2191.github.io/Meine-App/icons/icon-change-192.png', badge: 'https://ak2191.github.io/Meine-App/icons/icon-change-192.png' }
+      notification: { icon: 'https://ak2191.github.io/Meine-App/icon-change-192.png', badge: 'https://ak2191.github.io/Meine-App/icon-change-192.png' }
     },
     data: { url: 'https://ak2191.github.io/Meine-App/' }
   });

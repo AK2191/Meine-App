@@ -38,21 +38,11 @@
     }
   }
 
-  function repairBlockingOverlay(){
-    try{
-      var panel = document.getElementById('side-panel');
-      var overlay = document.getElementById('panel-overlay');
-      if(!panel || !overlay) return;
-      if(!panel.classList.contains('open')) overlay.classList.remove('show');
-    }catch(e){}
-  }
-
   var handlerInstalled = false;
   function installSettingsHandler(){
     if(handlerInstalled) return;
     handlerInstalled = true;
     document.addEventListener('click', function(e){
-      repairBlockingOverlay();
       var el = e.target;
       while(el && el !== document.body){
         if(el.id === 'settings-btn' ||
@@ -66,8 +56,6 @@
   }
 
   installSettingsHandler();
-  window.addEventListener('load', function(){ setTimeout(repairBlockingOverlay, 300); });
-  setInterval(repairBlockingOverlay, 1500);
 
   console.log('[Change] firestore-guard.js ✓');
 })();

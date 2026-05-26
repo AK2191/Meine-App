@@ -49,6 +49,18 @@ let challengePlayers = [];
 let notifications = [];
 try{ window.notifications = notifications; }catch(_){}
 
+function exposeChangeGlobals(){
+  try{
+    window.userInfo = userInfo || {};
+    window.events = events || [];
+    window.gEvents = gEvents || [];
+    window.challenges = challenges || [];
+    window.challengeCompletions = challengeCompletions || [];
+    window.challengePlayers = challengePlayers || [];
+    window.notifications = notifications || [];
+  }catch(_e){}
+}
+
 /* ==== CHALLENGE STATE BRIDGE ==== */
 function getChallengeStore(){
   return (typeof window !== 'undefined' && window.ChangeChallengeStore) ? window.ChangeChallengeStore : null;
@@ -103,29 +115,6 @@ const ls = (k,v) => {
 };
 const lsDel = k => {try{localStorage.removeItem(LSK+'_'+k);}catch{}};
 try{ window.ls = ls; window.lsDel = lsDel; }catch(_){}
-
-// Live-Sync darf die App nicht automatisch beim Login starten.
-// Der Nutzer schaltet ihn bewusst in den Einstellungen ein. Das verhindert
-// nach dem Login blockierende Firestore-/Auth-Initialisierungen.
-function readBoolSetting(keys, fallback){
-  keys = Array.isArray(keys) ? keys : [keys];
-  for(const key of keys){
-    try{
-      const raw = localStorage.getItem(key);
-      if(raw !== null){
-        if(raw === 'true' || raw === '1') return true;
-        if(raw === 'false' || raw === '0') return false;
-        const parsed = JSON.parse(raw);
-        if(parsed === true || parsed === false) return parsed;
-      }
-    }catch(e){}
-  }
-  return fallback;
-}
-function isLiveSyncExplicitlyEnabled(){
-  return readBoolSetting(['change_v1_live_sync_enabled','live_sync_enabled'], false) === true;
-}
-try{ window.isChangeLiveSyncExplicitlyEnabled = isLiveSyncExplicitlyEnabled; }catch(_){}
 
 
 /* ==== PROFILE AVATAR ==== */
@@ -261,20 +250,38 @@ const SecureTokenStore = (() => {
 
 // [FIX PERSISTENZ] Stille Google-Neuanmeldung nach F5 (kein Popup)
 function trySilentGoogleTokenRefresh(){
-  // Deaktiviert: verursacht COOP-Freeze auf GitHub Pages
-  return;
-  // Deaktiviert: Google OAuth requestAccessToken mit prompt:'none' verursacht
-  // auf GitHub Pages (ohne COOP-Header) einen Polling-Loop der den Main Thread blockiert.
-  // Token-Refresh erfolgt stattdessen beim manuellen Google-Sync-Button.
-  return;
+  if(!CLIENT_ID || !window.google || !google.accounts) return;
+  try {
+    const tc = google.accounts.oauth2.initTokenClient({
+      client_id: cleanGoogleClientId(CLIENT_ID),
+      scope: GCAL_SCOPE,
+      // prompt:'none' → GSI öffnet NIEMALS ein Browser-Fenster oder Popup.
+      // Wenn die Google-Session abgelaufen ist, wird error_callback aufgerufen.
+      // prompt:'' (leer) hingegen lässt Google entscheiden → kann Fenster öffnen.
+      prompt: 'none',
+      error_callback: () => {
+        // Stilles Scheitern — Token abgelaufen, Nutzer muss sich
+        // beim nächsten manuellen Google-Sync neu anmelden. Kein Toast, kein Fenster.
+      },
+      callback: async resp => {
+        if(resp && resp.access_token){
+          accessToken = resp.access_token;
+          SecureTokenStore.setToken(accessToken, 3600);
+          try{ await fetchUserInfo(); }catch(e){}
+          try{ updateAvatar(); }catch(e){}
+          if(typeof loadGoogleData === 'function') loadGoogleData();
+        }
+        // Kein access_token → stilles Scheitern, kein Fehler-Toast
+      }
+    });
+    tc.requestAccessToken({prompt: 'none'});
+  } catch(e){ /* silent — kein Fehler wenn nicht möglich */ }
 }
 
 // [AUTO-REFRESH] Google Token alle 50 Min still erneuern
 // Token läuft nach 60 Min ab — 50 Min Intervall = immer gültig
 let _tokenRefreshTimer = null;
 function startTokenAutoRefresh(){
-  // Deaktiviert: ruft trySilentGoogleTokenRefresh auf – siehe dort
-  return;
   if(_tokenRefreshTimer) clearInterval(_tokenRefreshTimer);
   _tokenRefreshTimer = setInterval(() => {
     const fbUser = (typeof firebase !== 'undefined' && firebase.auth)
@@ -302,88 +309,7 @@ window.addEventListener('load', async () => {
   challengeCompletions= ls('challenge_completions')|| [];
   challengePlayers    = ls('challenge_players')    || [];
   syncChallengeStateFromStore();
-
-  // GIS-Login-Token lesen: nach handleGoogleLogin() wird mit ?gis_login= navigiert.
-  // Token liegt max. 60s in localStorage – danach wird er ignoriert.
-  (function(){
-    try{
-      var params = new URLSearchParams(window.location.search);
-      if(params.get('gis_login')){
-        var token = localStorage.getItem('change_gis_token') || '';
-        var ts = parseInt(localStorage.getItem('change_gis_ts') || '0');
-        var fresh = token && (Date.now() - ts) < 60000;
-        // URL bereinigen (kein Token in Browser-History)
-        try{ window.history.replaceState(null, '', window.location.href.split('?')[0]); }catch(e){}
-        if(fresh){
-          accessToken = token;
-          try{ localStorage.removeItem('change_gis_token'); localStorage.removeItem('change_gis_ts'); }catch(e){}
-          try{ if(typeof SecureTokenStore!=='undefined') SecureTokenStore.setToken(token,3600); }catch(e){}
-          try{ if(typeof ls==='function') ls('access_token',token); }catch(e){}
-          try{ localStorage.setItem('was_logged_in','true'); }catch(e){}
-          try{ sessionStorage.setItem('change_oauth_ts', String(Date.now())); }catch(e){}
-          console.info('[Change] GIS-Token aus localStorage geladen ✓');
-          window._gisTokenReady = true;
-        }
-      }
-    }catch(e){}
-  })();
-
-  // GIS-Token: ZUERST prüfen, BEVOR Firebase angefasst wird.
-  // Firebase (at Quota) würde sonst in handleFirebaseRedirectLogin() einfrieren.
-  if(window._gisTokenReady){
-    console.info('[Change] GIS-Login: starte App ohne Firebase');
-    try{ await fetchUserInfo(); }catch(e){}
-    if(!userInfo.email){
-      var _c = ls('user_info_safe') || {};
-      if(_c.email) userInfo = saveUserProfileInfo({name:_c.name||'',email:_c.email||'',picture:_c.picture||''});
-    }
-    ls('user_info_safe',{name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''});
-    ls('was_logged_in',true);
-    bootMainApp();
-    try{ loadGoogleData(); }catch(e){}
-    setTimeout(()=>{ try{ toast('Anmeldung erfolgreich ✓','ok'); }catch(e){}; },400);
-    initPWA(); scheduleNotifCheck();
-    return;
-    // Firebase wird NICHT aufgerufen – verhindert Freeze bei Firebase at Quota
-  }
-
-  // Google OAuth Redirect: Token aus URL-Hash lesen – MUSS vor Firebase kommen!
-  // Firebase getRedirectResult() löscht den URL-Hash (#access_token=...) beim Verarbeiten.
-  // Wenn handleGoogleOAuthRedirect() erst nach Firebase aufgerufen wird, ist der Hash weg → null → showLogin-Loop.
-  // Gilt fuer state=main_login (Login-Button) und state=gcal_connect (Verbinden-Button).
-  // Kein GIS-Popup – kein COOP-Freeze. Redirect-URI in Google Console registriert.
-  const oauthState = handleGoogleOAuthRedirect();
-  if(oauthState){
-    // Token ist da → wir SIND eingeloggt. Niemals zurück zu showLogin (würde Endlosschleife auslösen).
-    // Nutzerprofil laden (Name, Bild). fetchUserInfo macht jetzt bis zu 3 Versuche.
-    try{ await fetchUserInfo(); }catch(e){}
-    // Fallback aus localStorage-Cache, falls API-Call kein Email lieferte
-    if(!userInfo.email){
-      const cached = ls('user_info_safe') || {};
-      if(cached.email) userInfo = saveUserProfileInfo({ name: cached.name||'', email: cached.email||'', picture: cached.picture||'' });
-    }
-    // Selbst ohne Email weiter booten – Token ist gültig. Email wird im Hintergrund nachgeholt.
-    // KEIN showLogin() hier – das war die Loop-Ursache (Token da, aber Email-Fetch verzögert).
-    ls('was_logged_in', true);
-    if(userInfo.email){
-      ls('user_info_safe', {name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''});
-    }
-    bootMainApp();
-    try{ loadGoogleData(); }catch(e){}
-    // Falls Email noch fehlt: im Hintergrund nachladen, ohne den Boot zu blockieren
-    if(!userInfo.email){
-      setTimeout(async ()=>{ try{ await fetchUserInfo(); if(userInfo.email) ls('user_info_safe',{name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''}); }catch(e){} }, 1500);
-    }
-    // Bei gcal_connect: Sync-Einstellungen oeffnen damit Nutzer Erfolg sieht
-    if(oauthState === 'gcal_connect'){
-      setTimeout(()=>{ try{ if(typeof openSettingsPanel==='function') openSettingsPanel('sync'); }catch(e){} }, 800);
-    } else {
-      // main_login: kurze Bestaetigung
-      setTimeout(()=>{ try{ toast('Anmeldung erfolgreich ✓','ok'); }catch(e){}; }, 500);
-    }
-    initPWA(); scheduleNotifCheck();
-    return;
-  }
+  exposeChangeGlobals();
 
   await handleFirebaseRedirectLogin();
   if(document.getElementById('main-app').style.display==='flex') { initPWA(); scheduleNotifCheck(); return; }
@@ -420,12 +346,12 @@ window.addEventListener('load', async () => {
           // Firebase Auth ist jetzt bestätigt → Sync anstoßen
           // loadSettingsFromFirestore existiert nicht – korrekte Funktion: startChangeSettingsSync
           setTimeout(() => {
-            if(isLiveSyncExplicitlyEnabled() && typeof window.initFirebaseLive === 'function') window.initFirebaseLive();
+            if(ls('live_sync_enabled')===true && typeof window.initFirebaseLive === 'function') window.initFirebaseLive();
           }, 200);
         } else {
-          // Firebase-Session abgelaufen – aber Google OAuth Token koennte aktiv sein.
-          // was_logged_in nur loeschen wenn kein aktiver Google-Token vorhanden.
-          if(!accessToken) lsDel('was_logged_in');
+          // Session abgelaufen — beim nächsten Firestore-Write wird Fehler kommen
+          // Nutzer muss sich neu anmelden wenn er Daten speichern will
+          lsDel('was_logged_in');
         }
       });
     }
@@ -454,8 +380,8 @@ window.addEventListener('load', async () => {
         // aber ensureChangeFirebaseAuth schlägt fehl wenn currentUser noch nicht gesetzt.
         // Hier wissen wir sicher: Auth ist bereit → direkt aufrufen.
         setTimeout(() => {
-          if(isLiveSyncExplicitlyEnabled() && typeof window.initFirebaseLive === 'function') window.initFirebaseLive();
-          if(isLiveSyncExplicitlyEnabled() && typeof window.startChangeSettingsSync === 'function') window.startChangeSettingsSync();
+          if(ls('live_sync_enabled')===true && typeof window.initFirebaseLive === 'function') window.initFirebaseLive();
+          if(typeof window.startChangeSettingsSync === 'function') window.startChangeSettingsSync();
         }, 400);
         setTimeout(trySilentGoogleTokenRefresh, 1500);
         startTokenAutoRefresh();
@@ -463,13 +389,7 @@ window.addEventListener('load', async () => {
         return;
       }
 
-      // Nicht eingeloggt via Firebase – aber Google OAuth Token koennte vorhanden sein.
-      // In diesem Fall App NICHT zurueck zum Login schicken (verhindert Redirect-Loop).
-      if(accessToken && userInfo && userInfo.email){
-        // Google-Session ist aktiv (OAuth Redirect) – Firebase-Auth-Status ignorieren
-        if(document.getElementById('main-app').style.display !== 'flex') bootMainApp();
-        return;
-      }
+      // Nicht eingeloggt → Login anzeigen
       lsDel('demo_mode'); isDemoMode = false;
       lsDel('was_logged_in');
       if(ls('demo_mode')){
@@ -501,63 +421,10 @@ window.addEventListener('load', async () => {
   scheduleNotifCheck();
 });
 
-function releaseUiLock(reason){
-  try{
-    const main=document.getElementById('main-app');
-    const loading=document.getElementById('loading');
-    const setup=document.getElementById('setup-modal');
-    const panel=document.getElementById('side-panel');
-    const overlay=document.getElementById('panel-overlay');
-
-    // Wichtig: Ein transparentes #loading mit z-index 9999 darf nach dem Boot
-    // nie Klicks abfangen. Genau das wirkt wie ein Freeze, obwohl kein JS-Fehler
-    // in der Konsole steht.
-    if(loading){
-      loading.style.pointerEvents='none';
-      loading.setAttribute('aria-hidden','true');
-      if(main && main.style.display==='flex'){
-        loading.classList.add('is-hidden');
-        loading.style.opacity='0';
-        loading.style.display='none';
-      }
-    }
-
-    if(overlay && panel && !panel.classList.contains('open')){
-      overlay.classList.remove('show');
-      overlay.style.pointerEvents='none';
-      overlay.setAttribute('aria-hidden','true');
-    }else if(overlay && panel && panel.classList.contains('open')){
-      overlay.style.pointerEvents='';
-      overlay.removeAttribute('aria-hidden');
-    }
-
-    if(setup && !setup.classList.contains('show')){
-      setup.style.pointerEvents='none';
-      setup.setAttribute('aria-hidden','true');
-    }else if(setup && setup.classList.contains('show')){
-      setup.style.pointerEvents='';
-      setup.removeAttribute('aria-hidden');
-    }
-
-    document.documentElement.classList.remove('change-ui-locked');
-    document.body.classList.remove('change-ui-locked','modal-open','panel-open');
-  }catch(e){
-    console.warn('[Change] UI-Lock konnte nicht bereinigt werden:', e);
-  }
-}
-
 function hideLd(){
   const el=document.getElementById('loading');
-  if(!el)return;
-  el.style.pointerEvents='none';
-  el.setAttribute('aria-hidden','true');
-  el.classList.add('is-hiding');
   el.style.opacity='0';
-  setTimeout(()=>{
-    el.classList.add('is-hidden');
-    el.style.display='none';
-    releaseUiLock('hideLd');
-  },250);
+  setTimeout(()=>el.style.display='none',400);
 }
 
 /* ==== PWA ==== */
@@ -631,70 +498,36 @@ function startDemo(){
 }
 
 function showLogin(){
-  // Guard: nach OAuth-Redirect darf showLogin() 15 Sekunden lang nicht aufgerufen werden.
-  // Verhindert den Redirect-Loop: onAuthStateChanged(null) → showLogin() → Login → Loop.
-  try{
-    var oauthTs = parseInt(sessionStorage.getItem('change_oauth_ts') || '0');
-    if(oauthTs && (Date.now() - oauthTs) < 15000){
-      console.info('[Change] showLogin() blockiert – OAuth gerade abgeschlossen.');
-      return;
-    }
-  }catch(e){}
-  // Zweite Prüfung: wenn accessToken vorhanden, kein Login-Screen anzeigen
-  if(typeof accessToken !== 'undefined' && accessToken && typeof userInfo !== 'undefined' && userInfo && userInfo.email){
-    console.info('[Change] showLogin() blockiert – aktiver Google-Token vorhanden.');
-    return;
-  }
   hideLd();
   document.getElementById('login-screen').style.display='flex';
 }
 
 async function handleGoogleLogin(){
-  // Reparatur 2026-05-26:
-  // Haupt-Login wieder über Google Identity Services TokenClient.
-  // Firebase signInWithRedirect wurde entfernt, weil es auf GitHub Pages
-  // zu Redirect-/Login-Schleifen über den Firebase-Auth-Handler führen kann.
+  // Stabiler Google-Kalender-Login: Firebase darf die Anmeldung nicht blockieren.
   CLIENT_ID = getGoogleClientId();
   if(!CLIENT_ID){document.getElementById('setup-modal').classList.add('show');return;}
-  if(!window.google || !google.accounts || !google.accounts.oauth2){toast('Google-Bibliothek wird geladen…','');return;}
+  if(!window.google){toast('Google-Bibliothek wird geladen…','');return;}
   try{
-    const tc = google.accounts.oauth2.initTokenClient({
-      client_id: cleanGoogleClientId(CLIENT_ID),
-      scope: GCAL_SCOPE,
+    const tc=google.accounts.oauth2.initTokenClient({
+      client_id:cleanGoogleClientId(CLIENT_ID),
+      scope:GCAL_SCOPE,
       callback: async resp => {
-        if(resp && resp.error){toast('Anmeldung fehlgeschlagen: '+resp.error,'err');return;}
-        if(!resp || !resp.access_token){toast('Google-Anmeldung wurde nicht abgeschlossen','err');return;}
-        accessToken = resp.access_token;
+        if(resp.error){toast('Anmeldung fehlgeschlagen: '+resp.error,'err');return;}
+        accessToken=resp.access_token;
         try{ if(typeof SecureTokenStore !== 'undefined') SecureTokenStore.setToken(accessToken, 3600); else ls('access_token',accessToken); }catch(e){ try{ ls('access_token', accessToken); }catch(_e){} }
         isDemoMode=false; try{ lsDel('demo_mode'); }catch(e){}
         await fetchUserInfo();
-        if(!userInfo.email){
-          const cached = ls('user_info_safe') || {};
-          if(cached.email) userInfo = saveUserProfileInfo({name:cached.name||'',email:cached.email||'',picture:cached.picture||''});
-        }
         try{ if(typeof SecureTokenStore !== 'undefined') SecureTokenStore.setUser(userInfo); }catch(e){}
         try{ ls('user_info_safe', {name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''}); ls('was_logged_in', true); }catch(e){}
         try{ if(typeof startTokenAutoRefresh === 'function') startTokenAutoRefresh(); }catch(e){}
         bootMainApp();
-        try{ loadGoogleData(); }catch(e){}
-        setTimeout(async () => {
-          try{
-            // Nach dem Google-Login darf kein verstecktes Firebase-Popup starten.
-            // Vorhandene Firebase-Session nur still wiederverwenden; interaktive
-            // Anmeldung passiert ausschließlich über den Live-Sync-Schalter.
-            if(isLiveSyncExplicitlyEnabled() && window.ensureChangeFirebaseAuth){
-              const ok = await window.ensureChangeFirebaseAuth({ silent:true, waitMs:1800 });
-              if(ok && typeof initFirebaseLive === 'function') await initFirebaseLive({silent:true, auto:true});
-            }
-          }catch(e){ console.warn('Firebase Auth nach Login übersprungen:', e); }
-        }, 500);
+        loadGoogleData();
+        // Kein automatischer Firebase-/Live-Sync nach Login.
+        // Die App bleibt sofort bedienbar; Live-Sync startet nur über den eigenen Schalter.
       }
     });
     tc.requestAccessToken({prompt:'consent'});
-  }catch(e){
-    console.warn('[Change] handleGoogleLogin:', e);
-    toast('Google-Anmeldung konnte nicht gestartet werden','err');
-  }
+  }catch(e){toast('Google-Anmeldung konnte nicht gestartet werden','err');}
 }
 
 
@@ -706,162 +539,47 @@ async function firebaseMobileLoginFallback(){
     provider.addScope('profile');
     provider.addScope('email');
     provider.addScope('https://www.googleapis.com/auth/calendar');
-    provider.setCustomParameters({ prompt: 'select_account' });
-    await firebase.auth().signInWithRedirect(provider); // FIX: provider statt provider() (war Bug → TypeError)
+    await firebase.auth().signInWithRedirect(provider);
   }catch(e){console.warn('Mobile Firebase Login:',e);toast('Mobile Anmeldung konnte nicht gestartet werden: '+(e.message||e),'err');}
-}
-
-// OAuth 2.0 Implicit Flow – COOP-sicherer Redirect statt Popup für GitHub Pages
-// Liest access_token aus dem URL-Hash nach Google-Redirect zurück.
-// Liest Google Calendar Token aus URL-Hash nach gcal_connect Redirect.
-// Nur fuer connectToGoogle() aus den Sync-Einstellungen, NICHT fuer den Haupt-Login.
-// Liest Google OAuth Token aus URL-Hash nach Redirect.
-// Verarbeitet state=main_login (voller App-Start) und state=gcal_connect (nur Kalender).
-// Redirect-URI muss in Google Cloud Console registriert sein: https://ak2191.github.io/Meine-App/
-function handleGoogleOAuthRedirect(){
-  try{
-    var hash = window.location.hash || '';
-    // Immer loggen was im Hash steht (hilft beim Debuggen)
-    if(hash && hash.length > 1){
-      console.info('[Change] URL-Hash erkannt:', hash.substring(0, 120) + (hash.length > 120 ? '...' : ''));
-    }
-    if(!hash || hash.indexOf('access_token=') === -1){
-      if(hash && hash.indexOf('state=') !== -1){
-        console.info('[Change] Hash hat state= aber kein access_token= – Google hat moeglicherweise einen Fehler zurueckgegeben');
-        // Fehlerparameter auslesen
-        var errParams = {};
-        hash.replace(/^#/, '').split('&').forEach(function(p){
-          var eq = p.indexOf('=');
-          if(eq >= 0) errParams[p.substring(0, eq)] = decodeURIComponent(p.substring(eq+1));
-        });
-        if(errParams['error']){
-          console.warn('[Change] Google OAuth Fehler:', errParams['error'], errParams['error_description'] || '');
-          // Fehler sichtbar machen statt still in den Login zu fallen (verhindert blinde Retry-Loops)
-          try{
-            var msg = errParams['error'] === 'redirect_uri_mismatch'
-              ? 'Google-Login: redirect_uri stimmt nicht. URI in Google Cloud Console eintragen: ' + (window.location.href.split('?')[0].split('#')[0])
-              : 'Google-Login fehlgeschlagen: ' + errParams['error'] + (errParams['error_description'] ? ' – ' + errParams['error_description'] : '');
-            if(typeof toast === 'function') setTimeout(function(){ toast(msg, 'err'); }, 600);
-          }catch(e){}
-          // Hash entfernen, damit ein Reload den Fehler nicht erneut auslöst
-          try{ window.history.replaceState(null, '', window.location.href.split('#')[0]); }catch(e){}
-        }
-      }
-      return null;
-    }
-    // Korrekte Hash-Parameter-Parsing: Werte koennen '=' enthalten (base64-Token!)
-    var params = {};
-    hash.replace(/^#/, '').split('&').forEach(function(pair){
-      var eq = pair.indexOf('=');
-      if(eq >= 0){
-        var k = pair.substring(0, eq);
-        var v = pair.substring(eq + 1);
-        try{ params[decodeURIComponent(k)] = decodeURIComponent(v); }catch(e){ params[k] = v; }
-      }
-    });
-    var token = params['access_token'] || '';
-    var state = params['state'] || '';
-    console.info('[Change] OAuth Hash params – token vorhanden:', !!token, '| state:', state, '| keys:', Object.keys(params).join(','));
-    if(!token) return null;
-    // Hash sofort aus URL entfernen – Token darf nicht im Browser-History bleiben
-    try{ window.history.replaceState(null, '', window.location.href.split('#')[0]); }catch(e){}
-    // Token global setzen
-    accessToken = token;
-    try{ if(typeof SecureTokenStore !== 'undefined') SecureTokenStore.setToken(token, 3600); }catch(e){}
-    try{ if(typeof ls === 'function') ls('access_token', token); }catch(e){}
-    try{ localStorage.setItem('was_logged_in', 'true'); }catch(e){}
-    try{ localStorage.setItem('change_v1_google_calendar_sync', 'true'); }catch(e){}
-    try{ localStorage.setItem('change_google_sync_enabled', 'true'); }catch(e){}
-    try{ localStorage.removeItem('change_v1_google_last_error'); }catch(e){}
-    try{ localStorage.setItem('change_v1_google_last_sync_at', new Date().toISOString()); }catch(e){}
-    console.info('[Change] OAuth Redirect OK – state:', state);
-    // Guard: verhindert dass showLogin() den naechsten 15s nach OAuth-Redirect aufgerufen wird
-    try{ sessionStorage.setItem('change_oauth_ts', String(Date.now())); }catch(e){}
-    return state || 'main_login';
-  }catch(e){
-    console.warn('[Change] handleGoogleOAuthRedirect:', e);
-    return null;
-  }
 }
 
 async function handleFirebaseRedirectLogin(){
   try{
     if(!window.firebase || !window.FIREBASE_CONFIG || !firebase.auth) return;
     if(!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
-    // Timeout-Schutz: getRedirectResult darf den Boot nie blockieren (Firebase-Slow/Quota)
-    const result = await Promise.race([
-      firebase.auth().getRedirectResult(),
-      new Promise(res => setTimeout(() => res(null), 8000))
-    ]);
+    const result = await firebase.auth().getRedirectResult();
     if(!result || !result.user){
       try{ sessionStorage.removeItem('firebase:redirectEventId'); }catch(_e){}
       return;
     }
-    // Firebase Auth Redirect erfolgreich
-    const u = result.user;
-    saveUserProfileInfo({
-      name: u.displayName || u.email || '',
-      email: u.email || '',
-      picture: u.photoURL || ''
-    });
-    // Calendar-Token aus Firebase OAuth Credential
-    try{
-      const cred = firebase.auth.GoogleAuthProvider.credentialFromResult(result);
-      if(cred && cred.accessToken){
-        accessToken = cred.accessToken;
-        try{ if(typeof SecureTokenStore!=='undefined') SecureTokenStore.setToken(accessToken,3600); }catch(e){}
-        try{ if(typeof ls==='function') ls('access_token',accessToken); }catch(e){}
-        console.info('[Change] Firebase Redirect: Calendar-Token erhalten \u2713');
+    if(result && result.user){
+      if(window.applyChangeFirebaseAuthResult) window.applyChangeFirebaseAuthResult(result);
+      else {
+        const u=result.user;
+        saveUserProfileInfo({name:u.displayName||u.email,email:u.email,picture:u.photoURL||''});
       }
-    }catch(e){ console.info('[Change] Firebase Redirect: credential:', e.message); }
-    ls('was_logged_in', true);
-    ls('user_info_safe', {name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''});
-    isDemoMode=false; lsDel('demo_mode');
-    try{ sessionStorage.setItem('change_oauth_ts', String(Date.now())); }catch(e){}
-    bootMainApp();
-    if(accessToken){ try{ loadGoogleData(); }catch(e){} }
-    toast('Anmeldung erfolgreich \u2713','ok');
-    console.info('[Change] Firebase Redirect Login: App gestartet \u2713');
-  }catch(e){
-    console.warn('[Change] Firebase Redirect Ergebnis:', e && e.code, e && e.message);
-    try{
-      var code = e && e.code || '';
-      var msg;
-      if(code === 'auth/unauthorized-domain'){
-        msg = 'Login-Fehler: Diese Domain ist nicht autorisiert. In Firebase Console → Authentication → Settings → Authorized domains eintragen: ' + location.hostname;
-      } else if(code){
-        msg = 'Google-Login fehlgeschlagen: ' + code;
-      } else {
-        msg = 'Google-Login fehlgeschlagen. Bitte erneut versuchen.';
-      }
-      if(typeof toast === 'function') setTimeout(function(){ toast(msg, 'err'); }, 600);
-    }catch(_e){}
-  }
+      isDemoMode=false; lsDel('demo_mode');
+      bootMainApp();
+      if(ls('live_sync_enabled')===true && initFirebaseLive) initFirebaseLive();
+      if(accessToken) loadGoogleData();
+      toast('Mobile Anmeldung erfolgreich ✓','ok');
+    }
+  }catch(e){console.warn('Redirect Ergebnis:',e);}
 }
 
 async function fetchUserInfo(){
-  // Bis zu 3 Versuche – transiente Netzwerk-/Timing-Fehler dürfen nicht zum Login-Loop führen
-  for(var attempt=0; attempt<3; attempt++){
-    try{
-      const r=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{'Authorization':'Bearer '+accessToken}});
-      if(!r.ok){
-        if(r.status===401) return false; // Token ungültig – kein Retry
-        await new Promise(res=>setTimeout(res, 400)); continue;
-      }
-      const u=await r.json();
-      const displayName = String(u.name || ((u.given_name||'') + ' ' + (u.family_name||'')) || u.email || '').trim();
-      saveUserProfileInfo({
-        name: displayName || u.email || userInfo.name || '',
-        email: u.email || userInfo.email || '',
-        picture: u.picture || userInfo.picture || ''
-      });
-      updateAvatar();
-      return !!(userInfo && userInfo.email);
-    }catch(e){
-      await new Promise(res=>setTimeout(res, 400));
-    }
-  }
-  return !!(userInfo && userInfo.email);
+  try{
+    const r=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{'Authorization':'Bearer '+accessToken}});
+    if(!r.ok)return;
+    const u=await r.json();
+    const displayName = String(u.name || ((u.given_name||'') + ' ' + (u.family_name||'')) || u.email || '').trim();
+    saveUserProfileInfo({
+      name: displayName || u.email || userInfo.name || '',
+      email: u.email || userInfo.email || '',
+      picture: u.picture || userInfo.picture || ''
+    });
+    updateAvatar();
+  }catch{}
 }
 
 /* ==== DEMO ==== */
@@ -883,53 +601,40 @@ function buildDemoEvents(){
 
 
 
-function wireCoreUiControls(){
-  if(window.__changeCoreUiControlsWired)return;
-  window.__changeCoreUiControlsWired=true;
-
-  function bindClick(id, handler){
-    const el=document.getElementById(id);
-    if(!el)return;
-    el.addEventListener('click', function(e){
-      releaseUiLock('core-click');
-      handler(e);
-    }, false);
-  }
-
-  bindClick('htab-dashboard', function(e){ e.preventDefault(); setMainView('dashboard'); });
-  bindClick('htab-calendar', function(e){ e.preventDefault(); setMainView('calendar'); });
-  bindClick('htab-challenges', function(e){ e.preventDefault(); setMainView('challenges'); });
-  bindClick('bnav-dashboard', function(e){ e.preventDefault(); setMainView('dashboard'); });
-  bindClick('bnav-calendar', function(e){ e.preventDefault(); setMainView('calendar'); });
-  bindClick('bnav-challenges', function(e){ e.preventDefault(); setMainView('challenges'); });
-  bindClick('settings-btn', function(e){
-    e.preventDefault();
-    if(typeof window.openSettingsPanel==='function') window.openSettingsPanel('calendar');
-  });
-  bindClick('notif-bell-btn', function(e){
-    e.preventDefault();
-    if(typeof window.openNotifPanel==='function') window.openNotifPanel();
-  });
-  bindClick('user-avatar', function(e){
-    e.preventDefault();
-    if(typeof window.confirmLogout==='function') window.confirmLogout();
-  });
-  bindClick('fab', function(e){
-    e.preventDefault();
-    if(typeof window.fabAction==='function') window.fabAction();
-  });
+function releaseUiLock(reason){
+  try{
+    var main=document.getElementById('main-app');
+    var loading=document.getElementById('loading');
+    var setup=document.getElementById('setup-modal');
+    var panel=document.getElementById('side-panel');
+    var overlay=document.getElementById('panel-overlay');
+    if(loading){
+      loading.classList.add('is-hidden');
+      loading.style.display='none';
+      loading.style.visibility='hidden';
+      loading.style.opacity='0';
+      loading.style.pointerEvents='none';
+      loading.setAttribute('aria-hidden','true');
+    }
+    if(setup && !setup.classList.contains('show')) setup.style.pointerEvents='none';
+    if(panel && !panel.classList.contains('open')) panel.style.pointerEvents='none';
+    if(overlay && (!panel || !panel.classList.contains('open'))){
+      overlay.classList.remove('show');
+      overlay.style.pointerEvents='none';
+      overlay.setAttribute('aria-hidden','true');
+    }
+    if(main) main.style.pointerEvents='auto';
+  }catch(e){ console.warn('[Change] UI-Lock-Freigabe fehlgeschlagen:', reason, e); }
 }
-if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', wireCoreUiControls);
-else wireCoreUiControls();
-window.addEventListener('load', wireCoreUiControls);
+
 
 /* BOOT */
 function bootMainApp(){
   hideLd();
   document.getElementById('login-screen').style.display='none';
   document.getElementById('main-app').style.display='flex';
+  exposeChangeGlobals();
   releaseUiLock('bootMainApp');
-  wireCoreUiControls();
   /* Bereinige Demo-Termine die beim ersten Start gesetzt wurden */
   try{
     var _dIds=new Set(['d1','d2','d3','d4']);
@@ -942,11 +647,7 @@ function bootMainApp(){
 
   setMainView('dashboard');
   checkNotifications();
-  // Keine automatische Panel-Öffnung nach Login: Die Glocke darf nur den
-  // Badge aktualisieren. Das Benachrichtigungs-Panel öffnet ausschließlich
-  // durch einen echten Klick auf die Glocke, damit kein Overlay die App blockiert.
-  try{ if(window.ChangeNotifications && typeof window.ChangeNotifications.updateBellIndicator === 'function') window.ChangeNotifications.updateBellIndicator(); }catch(e){}
-  try{ if(typeof window.updateBellIndicator === 'function') window.updateBellIndicator(); }catch(e){}
+  // Push-Berechtigung wird nicht automatisch abgefragt. Steuerung nur über Glocke.
 
   // Greeting
   const h=new Date().getHours();
@@ -958,7 +659,6 @@ function bootMainApp(){
 
 /* MAIN VIEW CONTROLLER */
 function setMainView(v){
-  releaseUiLock('setMainView');
   currentMainView=v;
   const views=['dashboard','calendar'];
   views.forEach(vv=>{
@@ -1073,21 +773,15 @@ function renderTrackerRows(){
     // Icon-Hintergrund je Status
     var iconBg=overdue?'rgba(239,68,68,.12)':warn?'rgba(245,158,11,.12)':'rgba(156,163,175,.12)';
 
-    // Sub-Zeile: nächster Termin hat Priorität
-    var sub;
-    if(nextDate && daysUntilNext !== null){
-      var cd = daysUntilNext===0?'Heute!':daysUntilNext===1?'Morgen':daysUntilNext===2?'Übermorgen':'In '+daysUntilNext+' Tagen';
-      var timeStr=nextInfo&&nextInfo.time?' · '+nextInfo.time+' Uhr':'';
-      sub = '→ '+cd+timeStr+(lastDate?' · Letzter: '+fmtS(lastDate):'');
-    } else {
-      sub=lastDate?'Letzter: vor '+days+'d · '+fmtS(lastDate):'Noch kein Termin gefunden';
-    }
+    // Linke Seite: vergangener Termin
+    var sub=lastDate?'vor '+days+'d · '+fmtS(lastDate):'Kein vergangener Termin';
 
     // Rechtes Badge: nächster Termin
     var badge='';
-    if(nextDate && daysUntilNext !== null){
-      var bc=daysUntilNext<=3?'badge-amber':'badge-green';
-      badge='<span class="dash-row-badge '+bc+'">'+fmtS(nextDate)+'</span>';
+    if(nextDate){
+      var bc=daysUntilNext<=3?'badge-amber':'badge-blue';
+      var timeStr=nextInfo&&nextInfo.time?' · '+nextInfo.time:'';
+      badge='<span class="dash-row-badge '+bc+'">→ '+fmtS(nextDate)+timeStr+'</span>';
     } else if(overdue){
       badge='<span class="dash-row-badge badge-red">⚠ Überfällig</span>';
     } else if(warn){
@@ -1483,7 +1177,7 @@ function openDayPanel(dt,dayEvs){
 async function loadGoogleData(){
   if(!accessToken)return;
   await loadGoogleEvents();
-  if(isLiveSyncExplicitlyEnabled() && typeof initFirebaseLive==='function') initFirebaseLive({auto:true}); // Live-Sync nur nach aktivem Schalter
+  if(ls('live_sync_enabled')===true && typeof initFirebaseLive==='function') initFirebaseLive();
 }
 
 async function loadGoogleEvents(){
@@ -1542,7 +1236,7 @@ async function saveToGoogleCal(existingId){
 /* ==== FIREBASE / LOCAL STORAGE BRIDGE ==== */
 async function loadFromDrive(){
   // Daten werden lokal und – sobald Firebase verbunden ist – in Firestore synchronisiert.
-  if(isLiveSyncExplicitlyEnabled() && typeof initFirebaseLive==='function') initFirebaseLive({auto:true}).catch(()=>{}); // Live-Sync nur nach aktivem Schalter
+  if(ls('live_sync_enabled')===true && typeof initFirebaseLive==='function') await initFirebaseLive();
 }
 
 async function saveToDrive(){
@@ -1676,32 +1370,18 @@ function openNotifPanel(){
 
 /* PANEL SYSTEM */
 function openPanel(title,html){
-  const panel=document.getElementById('side-panel');
-  const overlay=document.getElementById('panel-overlay');
+  var panel=document.getElementById('side-panel');
+  var overlay=document.getElementById('panel-overlay');
   document.getElementById('panel-title').textContent=title;
   document.getElementById('panel-body').innerHTML=html;
-  if(panel){
-    panel.classList.add('open');
-    panel.style.pointerEvents='auto';
-  }
-  if(overlay){
-    overlay.classList.add('show');
-    overlay.style.pointerEvents='';
-    overlay.removeAttribute('aria-hidden');
-  }
+  if(panel){ panel.classList.add('open'); panel.style.pointerEvents='auto'; }
+  if(overlay){ overlay.classList.add('show'); overlay.style.pointerEvents='auto'; overlay.removeAttribute('aria-hidden'); }
 }
 function closePanel(){
-  const panel=document.getElementById('side-panel');
-  const overlay=document.getElementById('panel-overlay');
-  if(panel){
-    panel.classList.remove('open');
-    panel.style.pointerEvents='none';
-  }
-  if(overlay){
-    overlay.classList.remove('show');
-    overlay.style.pointerEvents='none';
-    overlay.setAttribute('aria-hidden','true');
-  }
+  var panel=document.getElementById('side-panel');
+  var overlay=document.getElementById('panel-overlay');
+  if(panel){ panel.classList.remove('open'); panel.style.pointerEvents='none'; }
+  if(overlay){ overlay.classList.remove('show'); overlay.style.pointerEvents='none'; overlay.setAttribute('aria-hidden','true'); }
   releaseUiLock('closePanel');
 }
 
@@ -1719,6 +1399,7 @@ function toast(msg,type){
 function confirmLogout(){
   const name=userInfo.name||userInfo.email||'Nutzer';
   const mail=userInfo.email||'';
+  // Bild aus userInfo ODER aus Firebase Auth (falls GSI-Bild fehlt)
   let picUrl = userInfo.picture || '';
   if(!picUrl){
     try{
@@ -1726,64 +1407,34 @@ function confirmLogout(){
       if(fbU && fbU.photoURL) picUrl = fbU.photoURL;
     }catch(_e){}
   }
-  const initials = (name||'?').split(' ').map(x=>x[0]).join('').substring(0,2).toUpperCase()||'?';
-  const avatarInner = picUrl
-    ? `<img src="${esc(picUrl)}" alt="" class="profile-panel-img">`
-    : `<span class="profile-panel-initials">${esc(initials)}</span>`;
+  const avatar = picUrl
+    ? `<img src="${esc(picUrl)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+    : `<span style="font-size:14px;font-weight:700">${esc((name||'?').split(' ').map(x=>x[0]).join('').substring(0,2).toUpperCase()||'?')}</span>`;
   const html=`
-    <div class="profile-panel-hero">
-      <div class="profile-panel-avatar">${avatarInner}</div>
-      <div class="profile-panel-name">${esc(name)}</div>
-      <div class="profile-panel-mail">${esc(mail)}</div>
+    <div class="logout-profile">
+      <div class="logout-avatar">${avatar}</div>
+      <div style="min-width:0">
+        <div class="logout-name">${esc(name)}</div>
+        <div class="logout-mail">${esc(mail)}</div>
+      </div>
     </div>
-    <div class="change-settings-card">
-      <button class="profile-panel-row" onclick="if(typeof window.clearChangeAppCache==='function'){this.querySelector('.profile-panel-row-title').textContent='Wird gelöscht …';this.disabled=true;setTimeout(()=>window.clearChangeAppCache(),200)}">
-        <span class="profile-panel-row-icon">🗑️</span>
-        <div class="profile-panel-row-body">
-          <div class="profile-panel-row-title">Cache leeren &amp; neu laden</div>
-          <div class="profile-panel-row-sub">Alle Daten frisch aus Firebase laden. Login bleibt erhalten.</div>
-        </div>
-        <svg class="profile-panel-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-      <button class="profile-panel-row profile-panel-row--danger" onclick="logout()">
-        <span class="profile-panel-row-icon">🚪</span>
-        <div class="profile-panel-row-body">
-          <div class="profile-panel-row-title">Abmelden</div>
-          <div class="profile-panel-row-sub">${esc(mail)}</div>
-        </div>
-        <svg class="profile-panel-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-    </div>`;
-  openPanel(name, html);
+    <button class="btn btn-danger btn-full" onclick="logout()">Jetzt abmelden</button>
+    `;
+  openPanel('Abmelden',html);
 }
 async function logout(){
-  // 1. Google-Token revozieren – WICHTIG: verhindert GIS-Freeze beim naechsten Login.
-  //    Wenn der Token NICHT revoziert wird, kennt Google den Nutzer noch.
-  //    GIS oeffnet dann einen Popup der sich sofort schliesst → window.closed-Polling → Freeze.
-  var tokenToRevoke = accessToken || (typeof ls==='function' ? ls('access_token') : '');
-  if(tokenToRevoke){
-    try{
-      // Fire-and-forget: Token revozieren ohne auf Antwort zu warten
-      navigator.sendBeacon('https://oauth2.googleapis.com/revoke?token=' + encodeURIComponent(tokenToRevoke));
-    }catch(e){
-      try{ fetch('https://oauth2.googleapis.com/revoke?token=' + encodeURIComponent(tokenToRevoke), {method:'POST', mode:'no-cors'}); }catch(_e){}
+  try{
+    if(typeof firebase!=='undefined' && typeof db!=='undefined' && db && userInfo.email){
+      await db.collection('change_players').doc(String(userInfo.email).toLowerCase().replace(/[^a-z0-9._-]/g,'_')).set({online:false,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
     }
-  }
-  // 2. GIS-Zustand zuruecksetzen (falls Bibliothek geladen)
-  try{ if(window.google && google.accounts && google.accounts.oauth2) google.accounts.oauth2.revoke(tokenToRevoke || '', ()=>{}); }catch(e){}
-  // 3. Firebase signOut
-  try{ if(window.firebase && firebase.auth) await firebase.auth().signOut(); }catch(e){}
-  // 4. Alle Session-Daten loeschen
-  lsDel('was_logged_in');
-  lsDel('access_token'); lsDel('user_info'); lsDel('demo_mode');
-  lsDel('change_v1_user_info'); lsDel('user_info_safe'); lsDel('change_v1_user_email'); lsDel('user_email');
-  lsDel('change_gis_token'); lsDel('change_gis_ts');
-  try{ sessionStorage.clear(); }catch(e){}
-  accessToken = ''; userInfo = {};
+  }catch(e){}
+  try{ if(window.firebase && firebase.auth) await firebase.auth().signOut(); lsDel('was_logged_in');; }catch(e){}
+  accessToken='';userInfo={};isDemoMode=false;gEvents=[];notifications=[];
+  lsDel('access_token');lsDel('user_info');lsDel('demo_mode');
   closePanel();
-  // 5. Seitenreload – sauberer Start ohne alte Listener
-  var url = window.location.href.split('?')[0].split('#')[0];
-  window.location.replace(url + '?logout=' + Date.now());
+  document.getElementById('main-app').style.display='none';
+  if(CLIENT_ID)showLogin();
+  else document.getElementById('setup-modal').classList.add('show');
 }
 
 /* ==== KEYBOARD ==== */
@@ -2068,7 +1719,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
 
 /* ==========================
    FIREBASE EXTENSION: echte Push Notifications + automatische Mitspieler-Erkennung
-   Voraussetzung: firebase/firebase-config.js ist eingebunden; firebase-messaging-sw.js und manifest.json bleiben im Repo-Root.
+   Voraussetzung: firebase/firebase-config.js, firebase-messaging-sw.js und manifest.json liegen im Repo.
 ========================== */
 (function(){
   let fbApp=null, db=null, messaging=null, unsubscribePlayers=null, unsubscribeCompletions=null;
@@ -2095,53 +1746,24 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     };
   }
 
-  // Circuit Breaker fuer initFirebaseLive: verhindert Freeze bei Firebase-Quota-Erschoepfung.
-  // Nach 2 Fehlern wird Firebase 10 Minuten nicht mehr versucht.
-  window._firebaseCircuitBreaker = { failures: 0, blockedUntil: 0 };
-
-  window.initFirebaseLive = async function(opts){
-    opts = opts || {};
+  window.initFirebaseLive = async function(){
     if(!hasFirebaseConfig() || !window.firebase){
-      window._firebaseSyncStatus = 'not_configured';
-      return false;
-    }
-    // Circuit Breaker: wenn Firebase zuletzt gefreezt hat, nicht nochmal versuchen
-    var cb = window._firebaseCircuitBreaker;
-    if(cb.failures >= 2 && Date.now() < cb.blockedUntil){
-      window._firebaseSyncStatus = 'quota_blocked';
+      console.info('Firebase ist noch nicht konfiguriert. firebase-config.js ausfüllen.');
       return false;
     }
     try{
       if(!firebase.apps.length) fbApp=firebase.initializeApp(getFirebaseConfig());
       else fbApp=firebase.app();
       db=firebase.firestore();
-      // KEIN experimentalAutoDetectLongPolling: verursacht Freeze bei Quota-Erschoepfung
-      // (Long-Polling-Verbindungen die der Browser nicht schliessen kann)
-      // Auth: immer versuchen, aber NIE blockieren
-      // Schlägt fehl → Sync zeigt "nicht verfügbar", App läuft normal weiter
-      window._firebaseSyncStatus = 'connecting';
       if(window.ensureChangeFirebaseAuth){
-        try{
-          const authOk = await Promise.race([
-            window.ensureChangeFirebaseAuth({ silent:true }),
-            new Promise(r => setTimeout(() => r(false), 4000)) // max 4s warten
-          ]);
-          if(!authOk){
-            window._firebaseSyncStatus = 'auth_failed';
-            console.info('[Change] Firebase Auth nicht verfügbar – Sync pausiert, App läuft normal.');
-            return false;
-          }
-        }catch(e){
-          window._firebaseSyncStatus = 'auth_failed';
-          return false;
-        }
+        const authOk = await window.ensureChangeFirebaseAuth({ silent:true });
+        if(!authOk){ console.warn('Firebase Auth nicht bereit: Firestore-Sync/Push pausiert.'); return false; }
       }
-      window._firebaseSyncStatus = 'connected';
       if(firebase.messaging && 'serviceWorker' in navigator && 'Notification' in window){ messaging=firebase.messaging(); }
       ls(FIREBASE_READY_KEY,true);
       installForegroundPushHandler();
       startChallengeReminderLoop();
-      if(!isLiveSyncExplicitlyEnabled()){
+      if(ls('live_sync_enabled')===false){
         try{ if(userInfo.email) await db.collection('change_players').doc(safeDocId(currentEmail())).set({online:false,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); }catch(_e){}
         return true;
       }
@@ -2149,20 +1771,11 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
       startLivePlayersListener();
       startLiveCompletionsListener();
       return true;
-    }catch(e){
-      // Circuit Breaker: Fehler zaehlen, nach 2 Fehlern 10 Minuten pausieren
-      var cb2 = window._firebaseCircuitBreaker || { failures: 0, blockedUntil: 0 };
-      cb2.failures = (cb2.failures || 0) + 1;
-      if(cb2.failures >= 2) cb2.blockedUntil = Date.now() + 10 * 60 * 1000;
-      window._firebaseCircuitBreaker = cb2;
-      window._firebaseSyncStatus = 'error';
-      console.warn('[Change] Firebase init fehlgeschlagen (Circuit Breaker: ' + cb2.failures + '):', e && (e.code || e.message));
-      return false;
-    }
+    }catch(e){ console.warn('Firebase init fehlgeschlagen:',e); return false; }
   };
 
   window.registerLivePlayer = async function(){
-    if(!isLiveSyncExplicitlyEnabled()) return;
+    if(ls('live_sync_enabled')===false) return;
     if(!db || !userInfo.email) return;
     // [FIX AUTH-GUARD] Firebase Auth muss aktiv sein
     const fbUser = (typeof firebase!=='undefined' && firebase.auth) ? firebase.auth().currentUser : null;
@@ -2181,23 +1794,8 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     if(i>=0) challengePlayers[i]={...challengePlayers[i],...entry}; else challengePlayers.push(entry);
   }
 
-  var _lastPlayerWrite = 0;
-  function throttledPlayerWrite(data, merge=true){
-    var now = Date.now();
-    if(now - _lastPlayerWrite < 30000) return; // max 1x alle 30s
-    _lastPlayerWrite = now;
-    if(db && userInfo.email){
-      db.collection('change_players').doc(safeDocId(currentEmail())).set(data,{merge}).catch(()=>{});
-    }
-  }
-
-  function isRealPlayer(p){
-    var id = String(p.email || p.id || '').toLowerCase();
-    return id.includes('@') && id.length > 4;
-  }
-
   function startLivePlayersListener(){
-    if(!isLiveSyncExplicitlyEnabled()) return;
+    if(ls('live_sync_enabled')===false) return;
     if(!db || unsubscribePlayers) return;
     unsubscribePlayers=db.collection('change_players').onSnapshot(snap=>{
       snap.forEach(doc=>mergePlayer({id:doc.id,...doc.data()}));
@@ -2205,34 +1803,27 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
       if(currentMainView==='challenges') renderChallenges();
       if(currentMainView==='dashboard') buildDashboard();
     },err=>console.warn('Players listener:',err));
-    // Spieler werden vollständig über den onSnapshot-Listener oben geladen.
   }
 
   function startLiveCompletionsListener(){
-    // Einmaliger GET statt onSnapshot – verhindert massenhaft Firestore-Reads.
-    // challenge-sync.js hat eigenen onSnapshot-Listener der live-Updates abdeckt.
-    if(!isLiveSyncExplicitlyEnabled()) return;
+    if(ls('live_sync_enabled')===false) return;
     if(!db || unsubscribeCompletions) return;
-    // Marker setzen damit kein zweiter Aufruf startet
-    unsubscribeCompletions = function(){ };
-    // Nur letzte 30 Tage laden
-    var cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - 30);
-    var cutoffStr = cutoff.toISOString().slice(0,10);
-    db.collection('change_completions').where('date','>=',cutoffStr).limit(200).get().then(snap=>{
+    unsubscribeCompletions=db.collection('change_completions').orderBy('createdAt','desc').limit(500).onSnapshot(snap=>{
       snap.forEach(doc=>{
         const d={id:doc.id,...doc.data()};
         if(!challengeCompletions.some(c=>c.id===d.id)){
           challengeCompletions.push({
             id:d.id, challengeId:d.challengeId, playerId:(d.playerId||d.email||'').toLowerCase(),
             playerName:d.playerName||d.email||'Mitspieler', date:d.date, points:parseInt(d.points)||0,
+            createdAt:d.createdAtLocal||new Date().toISOString()
           });
         }
       });
       persistChallengeStateToStore() || ls('challenge_completions',challengeCompletions);
       if(currentMainView==='challenges') renderChallenges();
       if(currentMainView==='dashboard') buildDashboard();
-    }).catch(err=>console.warn('Completions get:',err));
+      if(currentMainView==='calendar') renderCalendar();
+    },err=>console.warn('Completions listener:',err));
   }
 
   async function publishCompletionToFirestore(completion){
@@ -2268,7 +1859,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
       if(showToast !== false && typeof toast === 'function') toast(message, 'err');
       return false;
     }
-    if(!hasFirebaseConfig()) return fail('Firebase ist noch nicht eingerichtet: firebase/firebase-config.js ausfüllen');
+    if(!hasFirebaseConfig()) return fail('Firebase ist noch nicht eingerichtet: firebase-config.js ausfüllen');
     if(!('serviceWorker' in navigator)) return fail('Dieser Browser unterstützt keine Service Worker');
     if(!('Notification' in window)) return fail('Dieser Browser unterstützt keine Push-Mitteilungen');
     if(Notification.permission === 'denied') return fail('Benachrichtigungen sind im Browser blockiert');
@@ -2289,7 +1880,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
       const reg = await navigator.serviceWorker.ready;
 
       const vapid = getVapidKey();
-      if(!vapid || vapid.includes('HIER_')) return fail('VAPID Key fehlt in firebase/firebase-config.js');
+      if(!vapid || vapid.includes('HIER_')) return fail('VAPID Key fehlt in firebase-config.js');
       if(!messaging) messaging = firebase.messaging();
       const token = await messaging.getToken({vapidKey:vapid, serviceWorkerRegistration:reg});
       if(!token) throw new Error('Kein Push-Token erhalten');
@@ -2410,7 +2001,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   };
 
   window.openParticipantPanel = function(){
-    if(isLiveSyncExplicitlyEnabled()) initFirebaseLive();
+    if(ls('live_sync_enabled')===true && typeof initFirebaseLive==='function') initFirebaseLive();
     const players=[...(challengePlayers||[])].sort((a,b)=>(b.online===true)-(a.online===true)||String(a.name||'').localeCompare(String(b.name||'')));
     const html='<div class="section-label">Automatisch erkannte Mitspieler</div>'+
       (players.length?players.map(p=>'<div class="leader-row"><div class="leader-rank">'+(p.picture?'<img src="'+esc(p.picture)+'" style="width:28px;height:28px;border-radius:50%;object-fit:cover">':'👤')+'</div><div><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(p.email===userInfo.email?' · Du':'')+(p.online?'<span class="live-dot"></span>':'<span class="live-dot off"></span>')+'</div><div class="leader-detail">'+esc(p.email||'')+'</div></div></div>').join(''):'<div class="dash-empty">Noch keine Mitspieler erkannt. Sobald sich jemand mit Google anmeldet, erscheint er hier automatisch.</div>')+
@@ -2419,16 +2010,11 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   };
 
   const _boot=window.bootMainApp;
-  window.bootMainApp=function(){
-    _boot.apply(this,arguments);
-    // Firebase wird NICHT automatisch nach bootMainApp gestartet.
-    // Nur explizit ueber den Live-Sync-Schalter in den Einstellungen.
-  };
+  window.bootMainApp=function(){ _boot.apply(this,arguments); /* Live-Sync startet nur über den Schalter. */ };
 
   const _fetchUserInfo=window.fetchUserInfo;
   if(_fetchUserInfo){
-    // fetchUserInfo-Wrapper: KEIN zusaetzlicher initFirebaseLive-Call – bootMainApp macht das bereits
-    window.fetchUserInfo=async function(){ return await _fetchUserInfo.apply(this,arguments); };
+    window.fetchUserInfo=async function(){ const r=await _fetchUserInfo.apply(this,arguments); exposeChangeGlobals(); return r; };
   }
 
   const _complete=window.completeChallenge;
@@ -2443,7 +2029,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     try{ if(db && userInfo.email) db.collection('change_players').doc(safeDocId(currentEmail())).set({online:false,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}); }catch(e){}
   });
 
-  // Firebase wird NICHT automatisch nach fetchUserInfo gestartet – nur ueber Sync-Schalter.
+  // Kein automatischer Live-Sync nach Login.
 })();
 
 /* ==== FIREBASE EXTENSION 2: Challenges live veröffentlichen ==== */
@@ -2474,7 +2060,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     },e=>console.warn('Live challenges:',e));
   };
   const _init=window.initFirebaseLive;
-  if(_init){window.initFirebaseLive=async function(){const ok=await _init.apply(this,arguments); if(ok && isLiveSyncExplicitlyEnabled()){listenLiveChallenges(); publishChallengesToFirestore();} return ok;};}
+  if(_init){window.initFirebaseLive=async function(){const ok=await _init.apply(this,arguments); if(ok){listenLiveChallenges(); publishChallengesToFirestore();} return ok;};}
   const _save=window.saveChallenge;
   if(_save){window.saveChallenge=function(){_save.apply(this,arguments); setTimeout(()=>publishChallengesToFirestore(),200);};}
 })();
@@ -2920,11 +2506,7 @@ renderCalendar(); if(typeof toast==='function') toast('Kalender-Einstellungen ge
       }
       const range=r.end && r.end!==r.start;
       const sub=range ? fmt(r.start)+' – '+fmt(r.end) : (fmtLong(r.start)+(evTime(r.event)?' · '+esc(evTime(r.event)):''));
-      const isBday = typeof window.isBirthday==='function' && window.isBirthday(r.title);
-      const evIcon = isBday ? '🎂' : '📅';
-      const evRowCls = isBday ? 'change-dashboard-row change-bday-row' : 'change-dashboard-row';
-      const evIconCls = isBday ? 'dash-row-icon change-icon-bday' : 'dash-row-icon change-icon-event';
-      return '<div class="dash-row '+evRowCls+' '+((r.start<=today()&&r.end>=today())?'change-today-row':'')+'" onclick="setMainView(\'calendar\')">'+dateBlock(r)+'<div class="'+evIconCls+'">'+evIcon+'</div><div class="dash-row-body"><div class="dash-row-title">'+esc(r.title)+'</div><div class="dash-row-sub">'+sub+'</div></div></div>';
+      return '<div class="dash-row change-dashboard-row '+((r.start<=today()&&r.end>=today())?'change-today-row':'')+'" onclick="setMainView(\'calendar\')">'+dateBlock(r)+'<div class="dash-row-icon change-icon-event">📅</div><div class="dash-row-body"><div class="dash-row-title">'+esc(r.title)+'</div><div class="dash-row-sub">'+sub+'</div></div></div>';
     }).join('');
   }
   function challengeHtml(){
@@ -3326,31 +2908,27 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
     var remaining = totalDays - used;
     var pct       = Math.min(100, Math.round((used / totalDays) * 100));
 
-    var usedColor = remaining < 0 ? '#ef4444' : remaining <= 5 ? '#f59e0b' : 'var(--acc)';
-    var barColor  = usedColor;
+    var usedColor = remaining < 0 ? '#ef4444' : remaining === 0 ? 'var(--acc)' : remaining <= 5 ? '#f59e0b' : 'var(--acc)';
+    var leftText  = '<span style="font-weight:800;color:'+usedColor+'">'+formatVacationDays(used)+' von '+formatVacationDays(totalDays)+'</span>'
+                  + '<span style="color:var(--t4)"> Tagen verbraucht</span>';
 
-    // Kompakte Sub-Zeile: "26 von 30 Tagen verbraucht"
-    var subLine = '<b style="color:'+usedColor+'">'+formatVacationDays(used)+' von '+formatVacationDays(totalDays)+'</b>'
-              + '<span style="color:var(--t4)"> Tagen</span>';
-
-    // Fortschrittsbalken inline (klein, passt in Sub-Zeile)
-    var bar = '<span style="display:inline-block;width:48px;height:3px;background:var(--b1);border-radius:2px;vertical-align:middle;margin:0 6px">'
-            + '<span style="display:block;width:'+pct+'%;height:100%;background:'+barColor+';border-radius:2px"></span>'
-            + '</span>';
+    var barColor    = remaining < 0 ? '#ef4444' : remaining === 0 ? 'var(--acc)' : remaining <= 5 ? '#f59e0b' : 'var(--acc)';
+    var progressBar = '<div style="flex:1;max-width:80px;height:4px;background:var(--b1);border-radius:2px;overflow:hidden;margin:0 8px">'
+      + '<div style="width:'+pct+'%;height:100%;background:'+barColor+';border-radius:2px"></div>'
+      + '</div>';
 
     var badge = remaining === 0
-      ? '<span class="dash-row-badge badge-green" style="white-space:nowrap;font-size:10px">✓ Vollständig verplant</span>'
+      ? '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:rgba(45,106,79,.1);color:var(--acc)">✓ Urlaub vollständig verplant</span>'
       : remaining < 0
-        ? '<span class="dash-row-badge badge-red" style="white-space:nowrap;font-size:10px">⚠ '+Math.abs(remaining)+' überzogen</span>'
-        : '<span class="dash-row-badge" style="white-space:nowrap;font-size:10px;background:'+(remaining<=5?'rgba(245,158,11,.15);color:#b45309':'rgba(45,106,79,.1);color:var(--acc)')+'">'+formatVacationDays(remaining)+' Tage übrig</span>';
+        ? '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:rgba(239,68,68,.12);color:#dc2626">⚠ '+Math.abs(remaining)+' Tage überzogen</span>'
+        : '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:'+(remaining<=5?'rgba(245,158,11,.12);color:#b45309':'rgba(45,106,79,.1);color:var(--acc)')+'">'+formatVacationDays(remaining)+' Tage übrig</span>';
 
-    return '<div class="dash-row" onclick="window.openUrlaubPanel&&window.openUrlaubPanel()" style="cursor:pointer;border-top:1px solid var(--b1);margin-top:4px">'
-      + '<div class="dash-row-icon" style="background:rgba(156,163,175,.1);font-size:14px">🏖️</div>'
-      + '<div class="dash-row-body">'
-      + '<div class="dash-row-title">Urlaub</div>'
-      + '<div class="dash-row-sub" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+subLine+bar+'</div>'
-      + '</div>'
-      + badge
+    return '<div onclick="window.openUrlaubPanel&&window.openUrlaubPanel()" style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--b1);cursor:pointer" onmouseover="this.style.background=\'var(--s2)\'" onmouseout="this.style.background=\'\'">'
+      + '<span style="font-size:12px;flex-shrink:0">🏖️</span>'
+      + '<span style="font-size:11px;font-weight:700;color:var(--t2);white-space:nowrap;margin-right:2px">Urlaub</span>'
+      + '<span style="font-size:11px;min-width:0">'+leftText+'</span>'
+      + progressBar
+      + '<span style="margin-left:auto">'+badge+'</span>'
       + '</div>';
   };
 })();
@@ -3717,3 +3295,5 @@ window.loadSettingsFromFirestore = window.forceLoadChangeSettings || window.load
 console.warn('[Change] Streak · Badges · Dark Mode · Notif geladen ✓');
 })();
 
+
+try{ window.bootMainApp = bootMainApp; window.setMainView = setMainView; window.openPanel = openPanel; window.closePanel = closePanel; window.handleGoogleLogin = handleGoogleLogin; }catch(_e){}

@@ -85,7 +85,7 @@
   }
   function stateOptions(selected){
     var states = [
-      ['ALL','Alle Feiertage'],['BW','Baden-Württemberg'],['BY','Bayern'],['BY-AUGSBURG','Bayern · Augsburg'],['BE','Berlin'],['BB','Brandenburg'],['HB','Bremen'],['HH','Hamburg'],['HE','Hessen'],['MV','Mecklenburg-Vorpommern'],['NI','Niedersachsen'],['NW','Nordrhein-Westfalen'],['RP','Rheinland-Pfalz'],['SL','Saarland'],['SN','Sachsen'],['ST','Sachsen-Anhalt'],['SH','Schleswig-Holstein'],['TH','Thüringen']
+      ['ALL','Alle Feiertage'],['BW','Baden-Württemberg'],['BY','Bayern'],['BY-AUX','Bayern · Augsburg'],['BE','Berlin'],['BB','Brandenburg'],['HB','Bremen'],['HH','Hamburg'],['HE','Hessen'],['MV','Mecklenburg-Vorpommern'],['NI','Niedersachsen'],['NW','Nordrhein-Westfalen'],['RP','Rheinland-Pfalz'],['SL','Saarland'],['SN','Sachsen'],['ST','Sachsen-Anhalt'],['SH','Schleswig-Holstein'],['TH','Thüringen']
     ];
     return states.map(function(item){ return '<option value="'+item[0]+'" '+(selected === item[0] ? 'selected' : '')+'>'+item[1]+'</option>'; }).join('');
   }
@@ -225,66 +225,20 @@
               +'<div class="change-settings-actions change-setting-field"><label class="flabel">Halbe Urlaubstage</label><div class="change-halfday-controls"><select class="finput" id="set-half-month">'+monthOptions+'</select><select class="finput" id="set-half-day">'+dayOptions+'</select><button class="btn btn-secondary btn-sm" id="set-add-half" type="button">+ Hinzufügen</button></div>'+halfDayChips()+'</div>'
             : ''));
   }
-  function firebaseStatus(){
-    var status = window._firebaseSyncStatus || 'unknown';
-    try{
-      var hasUser = typeof firebase !== 'undefined' && firebase.auth && !!firebase.auth().currentUser;
-      if(hasUser && status === 'connected')
-        return {ok:true,  label:'VERBUNDEN',          tone:'ok',  detail:'Challenges · Rangliste · Einstellungen'};
-      if(status === 'connecting')
-        return {ok:false, label:'VERBINDET...',        tone:'off', detail:'Verbindung wird hergestellt.'};
-      if(status === 'auth_failed')
-        return {ok:false, label:'NICHT VERFÜGBAR',    tone:'err', detail:'Bitte mit Google anmelden um Sync zu aktivieren.'};
-      if(hasUser)
-        return {ok:true,  label:'VERBUNDEN',          tone:'ok',  detail:'Challenges · Rangliste · Einstellungen'};
-    }catch(e){}
-    return {ok:false, label:'NICHT ANGEMELDET', tone:'off', detail:'Bitte mit Google anmelden.'};
-  }
-
   function syncPane(){
-    var live   = readBoolMulti(['change_v1_live_sync_enabled','live_sync_enabled'], false);
-    var auto   = getAutoChallengesEnabled();
+    var live = readBool('live_sync_enabled', true);
+    var auto = getAutoChallengesEnabled();
     var google = googleStatus();
-    var fb     = firebaseStatus();
-
-    // Firebase-Zeile
-    var fbRow = '<div class="change-settings-row">'
-      + '<div><div class="change-settings-title"><span class="change-status-dot '+fb.tone+'"></span>Datenbank-Sync '+pill(fb.label, fb.tone)+'</div>'
-      + '<div class="change-settings-sub">'+esc(fb.detail)+'</div></div>'
-      + (fb.ok
-          ? '<label class="switch"><input type="checkbox" id="set-live" '+(live?'checked':'')+'><span class="slider"></span></label>'
-          : '<button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" onclick="if(typeof connectToGoogle===\'function\')connectToGoogle()">Verbinden</button>')
-      + '</div>';
-
-    // Google-Zeile
-    var gRow = '<div class="change-settings-row">'
-      + '<div><div class="change-settings-title"><span class="change-status-dot '+google.tone+'"></span>Google Kalender '+pill(google.label, google.tone)+'</div>'
-      + '<div class="change-settings-sub">'+esc(google.detail || (google.loggedIn ? 'Termine werden importiert.' : 'Klicke Verbinden zum Anmelden.'))+'</div></div>'
-      + (google.loggedIn
-          ? '<label class="switch"><input type="checkbox" id="set-google" '+(google.enabled?'checked':'')+' ><span class="slider"></span></label>'
-          : '<button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" id="btn-google-connect">Verbinden</button>')
-      + '</div>'
-      + (google.loggedIn ? '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-sync-google" type="button">Jetzt synchronisieren</button></div>' : '');
-
-    // Auto-Challenges-Zeile
-    var autoRow = switchRow('Auto-Challenges '+pill(auto?'AKTIV':'AUS', auto?'ok':'off'), 'Erstellt die täglichen Standard-Challenges.', 'set-auto', auto);
-
-    return card('Synchronisierung', fbRow + gRow + autoRow);
+    return card('Synchronisierung',
+        switchRow('Live-Mitspieler '+pill(live?'VERBUNDEN':'AUS', live?'ok':'off'), 'Aktualisiert Rangliste und Aktivität.', 'set-live', live)+
+        switchRow('Auto-Challenges '+pill(auto?'AKTIV':'AUS', auto?'ok':'off'), 'Erstellt die täglichen Standard-Challenges.', 'set-auto', auto))
+      + card('Google Kalender',
+        '<div class="change-settings-row"><div><div class="change-settings-title"><span class="change-status-dot '+google.tone+'"></span>Google Kalender '+pill(google.label, google.tone)+'</div><div class="change-settings-sub">'+esc(google.detail || '')+'</div></div><label class="switch"><input type="checkbox" id="set-google" '+(google.enabled && google.loggedIn ? 'checked' : '')+' '+(!google.loggedIn ? 'disabled' : '')+'><span class="slider"></span></label></div>'+
+        '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-sync-google" type="button" '+(!google.loggedIn ? 'disabled' : '')+'>Jetzt synchronisieren</button></div>');
   }
-  var APP_VERSION = '0.1.0001';
-
   function appPane(){
-    return card('App',
-      '<div class="change-settings-row"><div>'
-      +'<div class="change-settings-title">Change als App installieren '+pill(installedLabel(), installedLabel()==='Installiert'?'ok':'off')+'</div>'
-      +'<div class="change-settings-sub">Für Handy-Nutzung, Push und Startbildschirm.</div>'
-      +'</div></div>'
-      +'<div class="change-settings-actions"><button class="btn btn-secondary btn-full" onclick="if(typeof installChangeApp===\'function\')installChangeApp()">Change als App installieren</button></div>')
-      + card('Version',
-        '<div style="padding:4px 0">'
-        +'<div style="font-size:15px;font-weight:700;color:var(--t1)">Change</div>'
-        +'<div style="font-size:12px;color:var(--t3);margin-top:4px">Version '+APP_VERSION+'</div>'
-        +'</div>');
+    return card('App', '<div class="change-settings-row"><div><div class="change-settings-title">Change als App installieren '+pill(installedLabel(), installedLabel()==='Installiert'?'ok':'off')+'</div><div class="change-settings-sub">Für Handy-Nutzung, Push und Startbildschirm.</div></div></div><div class="change-settings-actions"><button class="btn btn-secondary btn-full" onclick="if(typeof installChangeApp===\'function\')installChangeApp()">Change als App installieren</button></div>')
+      + card('Daten', '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" onclick="try{localStorage.setItem(\'change_v1_manual_backup\', JSON.stringify({events:window.events||[],challenges:window.challenges||[],challengeCompletions:window.challengeCompletions||[],settings:{calendar:localStorage.getItem(\'calendar_settings\')}}));toast&&toast(\'Backup lokal erstellt ✓\',\'ok\')}catch(e){toast&&toast(\'Backup fehlgeschlagen\',\'err\')}">Lokales Backup erstellen</button></div>');
   }
   var currentSettingsTab = 'calendar';
   function tabButton(id, label, active){ return '<button class="change-settings-tab '+(active===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'+label+'</button>'; }
@@ -321,14 +275,7 @@
         showWeekNumbers: !!($('set-show-kw') && $('set-show-kw').checked),
         holidayState: ($('set-holiday-state') && $('set-holiday-state').value) || 'ALL'
       };
-      // setHolidayState schreibt change_v1_holiday_state + holiday_state (beide Keys),
-      // normalisiert via cleanState() und löst (gewrappt) Firebase-Sync aus.
-      if(typeof window.setHolidayState === 'function'){
-        window.setHolidayState(options.holidayState);
-      } else {
-        try{ localStorage.setItem('change_v1_holiday_state', options.holidayState); }catch(e){}
-        try{ localStorage.setItem('holiday_state', options.holidayState); }catch(e){}
-      }
+      try{ localStorage.setItem('holiday_state', options.holidayState); }catch(e){}
       saveCalendarOptions(options);
     };
     ['set-show-holidays','set-show-points','set-show-kw','set-holiday-state'].forEach(function(id){ var el=$(id); if(el) el.addEventListener('change', saveCal); });
@@ -360,118 +307,17 @@
       }catch(e){ if(typeof window.toast === 'function') window.toast(e.message || 'Standort konnte nicht aktualisiert werden','err'); }
       refreshSameTab();
     });
-    var live = $('set-live'); if(live) live.addEventListener('change', async function(){ if(window.setLiveSyncEnabled) await window.setLiveSyncEnabled(live.checked); else writeBoolMulti(['change_v1_live_sync_enabled','live_sync_enabled'], live.checked); refreshSameTab(); });
+    var live = $('set-live'); if(live) live.addEventListener('change', async function(){ if(window.setLiveSyncEnabled) await window.setLiveSyncEnabled(live.checked); else writeBool('live_sync_enabled', live.checked); refreshSameTab(); });
     var auto = $('set-auto'); if(auto) auto.addEventListener('change', function(){
       setAutoChallengesState(!!auto.checked);
       refreshSameTab('sync');
     });
     var google = $('set-google'); if(google) google.addEventListener('change', async function(){ if(window.ChangeGoogleSyncStatus){ if(google.checked) await window.ChangeGoogleSyncStatus.syncNow(); else window.ChangeGoogleSyncStatus.disconnect(); } refreshSameTab(); });
     var syncGoogle = $('set-sync-google'); if(syncGoogle) syncGoogle.addEventListener('click', async function(){ if(window.ChangeGoogleSyncStatus) await window.ChangeGoogleSyncStatus.syncNow(); refreshSameTab(); });
-    var btnGoogleConnect = $('btn-google-connect'); if(btnGoogleConnect) btnGoogleConnect.addEventListener('click', function(){ if(typeof connectToGoogle==='function') connectToGoogle(); });
-
   }
-
-  // ── Cache leeren ──────────────────────────────────────────────────────────
-  // Löscht alle Daten-Caches (Events, Completions, Players) aus localStorage.
-  // Bewahrt: Login-Session, Einstellungen, Push-Token.
-  // Löscht danach auch SW-Caches (Browser HTTP-Cache) und lädt neu.
-  window.clearChangeAppCache = async function() {
-    // Keys die NIEMALS gelöscht werden (Auth + Einstellungen)
-    var PRESERVE = new Set([
-      // Auth & Login
-      'change_v1_user_info', 'user_info', 'user_info_safe',
-      'change_v1_user_email', 'user_email',
-      'was_logged_in', 'access_token', 'change_v1_access_token',
-      'client_id', 'change_v1_client_id',
-      'fcm_token', 'change_v1_fcm_token',
-      // Kalender-Einstellungen
-      'change_v1_calendar_view_options', 'calendar_settings',
-      'change_v1_holiday_state', 'holiday_state',
-      'change_v1_holiday_notifications', 'holiday_notifications',
-      // Dashboard-Einstellungen
-      'change_v1_friseur_enabled', 'change_v1_friseur_weeks',
-      'urlaub_tracker_on', 'urlaub_tracker_days', 'urlaub_half_days',
-      // Wetter-Einstellungen
-      'change_v1_weather_settings', 'change_v1_rain_alert_hours', 'change_v1_pollen_alert_hours',
-      // Sync-Einstellungen
-      'live_sync_enabled', 'change_v1_live_sync_enabled',
-      'auto_challenges_enabled', 'change_v1_auto_challenges_enabled',
-      'change_v1_google_calendar_sync', 'change_google_sync_enabled',
-      'push_enabled', 'change_v1_push_enabled',
-      // Design
-      'change_v1_dark_mode',
-      // Settings-Sync-Timestamps
-      'change_v1_settings_updated_at', 'change_v1_settings_synced_at'
-    ]);
-
-    // 1. Alle zu löschenden Keys sammeln
-    var toDelete = [];
-    for (var i = 0; i < localStorage.length; i++) {
-      var key = localStorage.key(i);
-      if (key && !PRESERVE.has(key)) toDelete.push(key);
-    }
-    // Entfernen (separat, weil Iteration während Remove Index verschiebt)
-    toDelete.forEach(function(key) {
-      try { localStorage.removeItem(key); } catch(e) {}
-    });
-
-    // 2. Service Worker Caches leeren (Browser HTTP-Cache für App-Dateien)
-    if ('caches' in window) {
-      try {
-        var names = await caches.keys();
-        await Promise.all(names.map(function(n) { return caches.delete(n); }));
-      } catch(e) {}
-    }
-
-    // 3. Neu laden mit Cache-Bust-Parameter (iOS Safari + Android Chrome)
-    var url = window.location.href.split('?')[0].split('#')[0];
-    window.location.replace(url + '?v=' + Date.now());
-  };
 
   window.ChangeSettingsPanel = {open: openSettingsPanel, getAutoChallengesEnabled: getAutoChallengesEnabled, setAutoChallengesState: setAutoChallengesState};
   window.openSettingsPanel = openSettingsPanel;
   window.openCalendarSettings = function(){ return openSettingsPanel('calendar'); };
   window.openPushSettingsPanel = function(){ return openSettingsPanel('sync'); };
-
-  // connectToGoogle: gleicher stabiler TokenClient wie der Haupt-Login.
-  // Kein Firebase-Redirect und kein manueller response_type=token-Redirect,
-  // damit GitHub Pages nicht in eine Login-Schleife gerät.
-  window.connectToGoogle = function(){
-    var clientId = (typeof getGoogleClientId === 'function') ? getGoogleClientId() : '';
-    if(!clientId){
-      try{ clientId = JSON.parse(localStorage.getItem('change_v1_client_id') || '""') || localStorage.getItem('client_id') || ''; }catch(e){}
-    }
-    if(!clientId){
-      if(typeof toast === 'function') toast('Keine Google Client-ID – bitte in Einstellungen konfigurieren', 'err');
-      return;
-    }
-    if(!window.google || !google.accounts || !google.accounts.oauth2){
-      if(typeof toast === 'function') toast('Google-Bibliothek wird geladen…', '');
-      return;
-    }
-    try{
-      var cleanId = (typeof cleanGoogleClientId === 'function') ? cleanGoogleClientId(clientId) : String(clientId).trim();
-      var tc = google.accounts.oauth2.initTokenClient({
-        client_id: cleanId,
-        scope: 'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
-        callback: async function(resp){
-          if(resp && resp.error){ if(typeof toast === 'function') toast('Google-Verbindung fehlgeschlagen: '+resp.error, 'err'); return; }
-          if(!resp || !resp.access_token){ if(typeof toast === 'function') toast('Google-Verbindung wurde nicht abgeschlossen', 'err'); return; }
-          try{ if(typeof accessToken !== 'undefined') accessToken = resp.access_token; window.accessToken = resp.access_token; }catch(e){}
-          try{ if(typeof SecureTokenStore !== 'undefined') SecureTokenStore.setToken(resp.access_token, 3600); }catch(e){}
-          try{ if(typeof ls === 'function') ls('access_token', resp.access_token); }catch(e){}
-          try{ localStorage.setItem('change_v1_google_calendar_sync','true'); localStorage.setItem('change_google_sync_enabled','true'); localStorage.removeItem('change_v1_google_last_error'); localStorage.setItem('change_v1_google_last_sync_at', new Date().toISOString()); }catch(e){}
-          try{ if(typeof fetchUserInfo === 'function') await fetchUserInfo(); }catch(e){}
-          try{ if(typeof loadGoogleData === 'function') await loadGoogleData(); }catch(e){}
-          try{ if(window.ChangeGoogleSyncStatus && window.ChangeGoogleSyncStatus.syncNow) await window.ChangeGoogleSyncStatus.syncNow(); }catch(e){}
-          if(typeof toast === 'function') toast('Google Kalender verbunden ✓','ok');
-          try{ if(typeof openSettingsPanel === 'function') setTimeout(function(){ openSettingsPanel('sync'); }, 250); }catch(e){}
-        }
-      });
-      tc.requestAccessToken({prompt:'consent'});
-    }catch(e){
-      console.warn('[Change] connectToGoogle:', e);
-      if(typeof toast === 'function') toast('Google-Verbindung konnte nicht gestartet werden','err');
-    }
-  };
 })();

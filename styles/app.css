@@ -59,10 +59,8 @@ body{
 #loading{
   position:fixed;inset:0;background:var(--bg);z-index:9999;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
-  transition:opacity .25s;
+  transition:opacity .4s;
 }
-#loading.is-hiding,#loading.is-hidden{opacity:0!important;pointer-events:none!important}
-#loading.is-hidden{display:none!important;visibility:hidden!important}
 .ld-icon{
   width:80px;height:80px;border-radius:22px;background:transparent;
   display:flex;align-items:center;justify-content:center;
@@ -79,7 +77,6 @@ body{
   align-items:center;justify-content:center;padding:20px;
 }
 #setup-modal.show{display:flex}
-#setup-modal:not(.show){pointer-events:none!important}
 .modal-box{
   background:var(--s1);border:1px solid var(--b1);border-radius:var(--rxl);
   padding:36px 32px;width:min(520px,100%);box-shadow:var(--sh-lg);
@@ -173,16 +170,16 @@ body{
 
 /* ==== HEADER ==== */
 #header{
-  display:flex;align-items:center;gap:12px;padding:0 16px;height:52px;flex-shrink:0;
+  display:flex;align-items:center;gap:12px;padding:0 16px;height:56px;flex-shrink:0;
   background:var(--s1);border-bottom:1px solid var(--b1);z-index:100;position:relative;
 }
 .h-logo{display:flex;align-items:center;gap:9px;flex-shrink:0}
 .h-logo-icon{
   width:36px;height:36px;border-radius:10px;background:transparent;
   display:flex;align-items:center;justify-content:center;flex-shrink:0;
-  box-shadow:0 2px 10px rgba(45,106,79,.35);
+  box-shadow:0 2px 8px rgba(129,140,248,.25);
 }
-.h-logo-icon svg{width:36px;height:36px;stroke:none;display:block;}
+.h-logo-icon svg{width:36px;height:36px;stroke:none;}
 .h-logo-name{font-size:16px;font-weight:800;color:var(--t1);letter-spacing:-.3px}
 .h-sep{width:1px;height:20px;background:var(--b1);flex-shrink:0}
 .h-tabs{display:flex;align-items:center;gap:2px;flex:1}
@@ -214,29 +211,29 @@ body{
 .vbtn.active{background:var(--acc);color:#fff}
 .h-right{display:flex;align-items:center;gap:4px;flex-shrink:0;position:relative;z-index:120}
 .icon-btn{
-  width:38px;height:38px;display:flex;align-items:center;justify-content:center;
-  border:none;background:transparent;border-radius:10px;cursor:pointer;color:var(--t2);transition:all .15s;position:relative;
+  width:34px;height:34px;display:flex;align-items:center;justify-content:center;
+  border:none;background:transparent;border-radius:var(--rsm);cursor:pointer;color:var(--t3);transition:all .15s;position:relative;
 }
 .icon-btn:hover{background:var(--s2);color:var(--t1)}
-.icon-btn svg{width:22px;height:22px;stroke-width:1.75}
+.icon-btn svg{width:17px;height:17px;stroke-width:1.8}
 .notif-dot{
-  position:absolute;top:6px;right:6px;width:7px;height:7px;
+  position:absolute;top:5px;right:5px;width:7px;height:7px;
   background:var(--red);border-radius:50%;border:1.5px solid var(--s1);display:none;
 }
 .avatar{
-  width:38px;height:38px;border-radius:50%;background:var(--acc);
-  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;
+  width:32px;height:32px;border-radius:50%;background:var(--acc);
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;
   cursor:pointer;overflow:hidden;flex-shrink:0;transition:opacity .15s;
 }
 .avatar:hover{opacity:.85}
 .avatar img{width:100%;height:100%;object-fit:cover}
 @media(max-width:700px){
   .h-sep,.h-logo-name,.h-today-btn,.view-toggle,.h-tabs,.desktop-only{display:none!important}
-  #header{padding:0 14px;gap:8px}
+  #header{padding:0 12px;gap:8px}
   #cal-controls{flex:1}
   .h-month{font-size:15px;flex:1;text-align:center}
   /* Glocke, Einstellungen, Avatar immer ganz rechts */
-  .h-right{margin-left:auto;gap:4px}
+  .h-right{margin-left:auto}
 }
 
 /* ==== CONTENT ==== */
@@ -434,14 +431,12 @@ body{
 /* ==== PANEL ==== */
 #panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:300;opacity:0;pointer-events:none;transition:opacity .3s}
 #panel-overlay.show{opacity:1;pointer-events:all}
-#panel-overlay:not(.show){pointer-events:none!important}
 #side-panel{
   position:fixed;right:0;top:0;bottom:0;width:min(440px,100vw);
   background:var(--s1);border-left:1px solid var(--b1);z-index:301;
   display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.25,.8,.25,1);box-shadow:var(--sh-lg);
 }
-#side-panel{pointer-events:none}
-#side-panel.open{transform:translateX(0);pointer-events:auto}
+#side-panel.open{transform:translateX(0)}
 .panel-hd{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--b1);flex-shrink:0;background:var(--s1)}
 .panel-title{font-size:16px;font-weight:800;color:var(--t1);flex:1;letter-spacing:-.2px}
 .panel-close-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border:none;background:var(--s2);border-radius:var(--rsm);cursor:pointer;color:var(--t3);transition:all .15s}
@@ -571,25 +566,10 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 .switch input:checked + .slider:before{transform:translateX(20px)}
 .status-pill{display:inline-flex;align-items:center;border-radius:999px;padding:3px 8px;font-size:11px;font-weight:700}
 .status-on{background:var(--grn-d);color:var(--grn)}.status-off{background:var(--s2);color:var(--t3)}.status-warn{background:var(--amb-d);color:var(--amb)}
-/* Profil-Panel */
-.profile-panel-hero{display:flex;flex-direction:column;align-items:center;padding:4px 0 18px;gap:0}
-.profile-panel-avatar{width:72px;height:72px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:10px;box-shadow:0 4px 14px rgba(45,106,79,.22);flex-shrink:0}
-.profile-panel-img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-.profile-panel-initials{font-size:22px;font-weight:800;color:#fff;line-height:1}
-.profile-panel-name{font-size:16px;font-weight:800;color:var(--t1);text-align:center;letter-spacing:-.2px}
-.profile-panel-mail{font-size:12px;color:var(--t3);margin-top:3px;text-align:center}
-.profile-panel-row{width:100%;display:flex;align-items:center;gap:12px;padding:13px 14px;background:none;border:none;border-bottom:1px solid var(--b1);cursor:pointer;text-align:left;transition:background .12s;font-family:var(--font)}
-.profile-panel-row:last-child{border-bottom:0}
-.profile-panel-row:hover{background:var(--s2)}
-.profile-panel-row-icon{font-size:18px;flex-shrink:0;width:24px;text-align:center}
-.profile-panel-row-body{flex:1;min-width:0}
-.profile-panel-row-title{font-size:13px;font-weight:700;color:var(--t1)}
-.profile-panel-row-sub{font-size:11px;color:var(--t4);margin-top:2px}
-.profile-panel-chevron{width:14px;height:14px;flex-shrink:0;color:var(--t4);stroke-width:2}
-.profile-panel-row--danger .profile-panel-row-title{color:var(--red)}
-.profile-panel-row--danger .profile-panel-chevron{color:var(--red);opacity:.6}
-/* Legacy logout-* (nicht mehr genutzt, kann entfernt werden) */
-.logout-profile{display:none}.logout-avatar{display:none}.logout-name{display:none}.logout-mail{display:none}
+.logout-profile{display:flex;gap:12px;align-items:center;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:14px;margin-bottom:14px}
+.logout-avatar{width:48px;height:48px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;overflow:hidden;flex-shrink:0}
+.logout-avatar img{width:100%;height:100%;object-fit:cover}
+.logout-name{font-size:15px;font-weight:700;color:var(--t1)}.logout-mail{font-size:12px;color:var(--t3);margin-top:2px}
 
 
 /* ==== EXERCISE LINK ==== */
@@ -842,3 +822,9 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
   .friseur-badge-bad{background:rgba(239,68,68,.15);color:#dc2626}
   .friseur-badge-future{background:rgba(59,130,246,.15);color:#2563eb}
 
+
+/* Login/Overlay-Freeze-Sicherung */
+#loading.is-hidden{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+#panel-overlay:not(.show){pointer-events:none!important}
+#side-panel:not(.open){pointer-events:none!important}
+#main-app{pointer-events:auto}

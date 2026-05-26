@@ -143,16 +143,6 @@
     options = options || {};
     if(!initFirebase()) throw new Error('Firebase ist nicht bereit');
     var auth = firebase.auth();
-
-    // SILENT MODE: Nur vorhandene Session nutzen, NIE Popup öffnen
-    // Verhindert COOP-Freeze auf GitHub Pages
-    if(options.silent){
-      var user = auth.currentUser || await waitForAuthState(2000);
-      if(user){ writeUser(user); return { user: user, reused: true }; }
-      return { user: null, skipped: true }; // kein Fehler, kein Popup
-    }
-
-    // INTERACTIVE MODE: Popup oder Redirect (nur auf expliziten User-Klick)
     if(auth.currentUser && sameUserOrNoEmail(auth.currentUser)){
       writeUser(auth.currentUser);
       return { user: auth.currentUser, accessToken: '', reused: true };
@@ -165,14 +155,9 @@
       var result = await auth.signInWithPopup(provider());
       return applyAuthResult(result) || { user: auth.currentUser, accessToken: '' };
     }catch(e){
-      var code = e && e.code ? e.code : '';
-      var isPopupBlocked = code === 'auth/popup-blocked' || code === 'auth/cancelled-popup-request';
-      if(isPopupBlocked){
-        if(options.allowRedirect === true || options.redirect === true){
-          await auth.signInWithRedirect(provider());
-          return { redirecting: true };
-        }
-        return { user: auth.currentUser || null, skipped: true, popupBlocked: true };
+      if(e && (e.code === 'auth/popup-blocked' || e.code === 'auth/cancelled-popup-request')){
+        await auth.signInWithRedirect(provider());
+        return { redirecting: true };
       }
       throw e;
     }
@@ -186,12 +171,17 @@
     pendingAuth = (async function(){
       try{
         var auth = firebase.auth();
-        var current = auth.currentUser || await waitForAuthState(options.waitMs || 3000);
+        var current = auth.currentUser || await waitForAuthState(options.waitMs || 1500);
         if(current && (sameUserOrNoEmail(current) || options.silent)){
+          // Bei silent=true: jede gültige Firebase-Session akzeptieren.
+          // Firestore Rules prüfen nur request.auth != null – die E-Mail spielt serverseitig keine Rolle.
           writeUser(current);
           return true;
         }
 
+        // Wichtig: Keine Google-Calendar access_tokens mehr gegen Firebase Auth tauschen.
+        // Diese Tokens gehören oft zu einem anderen OAuth-Client und erzeugen
+        // auth/invalid-credential: "access_token audience is not for this project".
         if(!options.interactive){
           if(!options.silent){
             try{ if(typeof toast === 'function') toast('Firebase-Anmeldung fehlt. Bitte einmal neu mit Google anmelden.','err'); }catch(e){}
