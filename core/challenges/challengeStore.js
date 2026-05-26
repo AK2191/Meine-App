@@ -65,7 +65,7 @@
 
   function isOptionalLike(ch){
     var text = norm((ch && (ch.title || ch.name || ch.id)) || '');
-    return !!(ch && ch.optional) || /fitness|spazier|walk/.test(text);
+    return !!(ch && ch.optional) || /fitness|spazier|walk|fahrrad|radfahren|bike|joggen|jogging|laufen/.test(text);
   }
 
   function mergeChallenges(base, incoming){

@@ -392,7 +392,13 @@ const NUDGE_MESSAGES = [
   'schickt dir einen Schubs! 👊',
 ];
 
-function randomMessage(){
+function randomMessage(toEmail){
+  try{
+    if(window.ChangePlayerActivity && typeof window.ChangePlayerActivity.smartNudgeFor === 'function'){
+      const smart = window.ChangePlayerActivity.smartNudgeFor(toEmail);
+      if(smart && smart.message) return smart.message;
+    }
+  }catch(e){}
   return NUDGE_MESSAGES[Math.floor(Math.random()*NUDGE_MESSAGES.length)];
 }
 
@@ -446,13 +452,15 @@ window.sendNudge = async function(toEmail, toName){
   (targetBtns.length ? targetBtns : btns).forEach(b => { if((b.title||'').includes('Anfeuern')) b.classList.add('sent'); });
   setTimeout(()=>btns.forEach(b=>b.classList.remove('sent')), 1800);
 
-  const msg = randomMessage();
+  const smart = (window.ChangePlayerActivity && typeof window.ChangePlayerActivity.smartNudgeFor === 'function') ? window.ChangePlayerActivity.smartNudgeFor(toEmail) : null;
+  const msg = randomMessage(toEmail);
   const nudge = {
     from:      from,
     fromName:  myName(),
     to:        toEmail,
     toName:    toName,
     message:   msg,
+    reason:    smart && smart.reason ? smart.reason : '',
     sentAt:    new Date().toISOString(),
     seen:      false
   };
@@ -461,17 +469,20 @@ window.sendNudge = async function(toEmail, toName){
   if(db){
     try{
       await db.collection('change_nudges').add(nudge);
+      try{ if(window.ChangeAppStatus) window.ChangeAppStatus.markNudge(toName, nudge.reason); }catch(e){}
       if(typeof toast==='function')
         toast('💪 Anfeuern gesendet an '+toName+'!','ok');
     }catch(e){
       if(!(e && (e.code === 'permission-denied' || String(e.message||'').includes('Missing or insufficient permissions')))) console.warn('[Nudge]', e.message);
       // Fallback: lokal speichern
       _saveLocalNudge(nudge);
+      try{ if(window.ChangeAppStatus) window.ChangeAppStatus.markNudge(toName, nudge.reason); }catch(e){}
       if(typeof toast==='function')
         toast('💪 Anfeuern gesendet!','ok');
     }
   } else {
     _saveLocalNudge(nudge);
+    try{ if(window.ChangeAppStatus) window.ChangeAppStatus.markNudge(toName, nudge.reason); }catch(e){}
     if(typeof toast==='function')
       toast('💪 Anfeuern gespeichert!','ok');
   }

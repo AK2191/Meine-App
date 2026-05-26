@@ -404,3 +404,30 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Kalender-Einstellungen werden als eigene Feature-Karten dargestellt: Feiertage, Challengepunkte, Kalenderwochen.
 - Keine doppelten Divider/Trennstriche in Kalender-Settings; klare Apple/Notion-Card-Hierarchie.
 - Kalender-Logik bleibt unverändert: Feiertag klein neben Datum, Termine darunter, Challengepunkte nur als kleines Badge unten rechts.
+
+
+## Änderung 2026-05-26 – Optionale Challenge-Aufgaben
+
+- Optionale Aufgaben bleiben bewusst erhalten, werden aber nicht im Dashboard angezeigt und nicht als `change_challenges`-Vorlagen nach Firebase veröffentlicht.
+- Der feste optionale Satz ist:
+  - Fitness · mind. 30 Minuten = 30 Punkte
+  - Spazieren = 10 Punkte
+  - Fahrrad fahren = 12 Punkte
+  - Joggen = 12 Punkte
+- Optionale Aufgaben stehen nur in der Challenge-Ansicht unter „Optionale Punkte“ und zählen erst bei erledigter Aufgabe.
+- Deduplizierung erfolgt über zentrale optionale IDs `opt_fitness_30`, `opt_walk_10`, `opt_bike_12`, `opt_jog_12`; alte Legacy-IDs wie `sport_fitness_30_optional` dürfen nicht erneut als zusätzliche Aufgabe daneben entstehen.
+
+
+## Status, Diagnose & Anfeuern
+
+- Einstellungen → Sync enthält einen klaren Sync-Status für Datenbank-Sync und Google Kalender.
+- Einstellungen → Sync enthält ein lokales Sync-Protokoll. Es speichert nur lokale Statusereignisse wie Datenbank-Sync, Google-Kalender-Sync und Anfeuern-Aktionen.
+- Einstellungen → App enthält einen App-Gesundheitscheck für Login, Datenbank-Sync, Firebase Auth, Google-Kalender-Cache, Service Worker und blockierende Overlays.
+- Der Gesundheitscheck darf keine externen Dienste starten und keinen Login-/Sync-Fluss auslösen.
+- Anfeuern ist kontextbewusst: Vorschläge können aus Wochenzielnähe, Streaks, heutiger Aktivität oder Rückstand entstehen.
+- Anfeuern darf Firebase nur nutzen, wenn Firebase Auth bereits durch Datenbank-Sync bereit ist. Kein automatischer Firebase-Start nur für Anfeuern.
+
+## Settings UI Konsistenz
+- Alle Einstellungs-Tabs verwenden denselben Feature-Karten-Stil wie der Kalender-Tab.
+- Dashboard-, Challenges-, Sync- und App-Kacheln dürfen keine alten Header-/Zeilenkarten mit doppelten Trennlinien mehr erzeugen.
+- Jede Option ist als ruhige Feature-Karte aufgebaut: Icon, Titel, Status-Badge, Beschreibung, optionaler Toggle rechts und klar abgegrenzter Body.

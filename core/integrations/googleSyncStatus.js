@@ -75,8 +75,8 @@
     else detail = 'Zum ersten Sync mit Google verbinden.';
     return {loggedIn:isLoggedIn, enabled:isEnabled, active:active, cached:cache.hasEvents, cachedCount:cache.count, error:error, lastSyncAt:last, label:label, tone:tone, detail:detail};
   }
-  function markSuccess(){ write(LAST_KEY, new Date().toISOString()); remove(ERROR_KEY); }
-  function markError(message){ write(ERROR_KEY, String(message || 'Synchronisierung fehlgeschlagen')); }
+  function markSuccess(){ write(LAST_KEY, new Date().toISOString()); remove(ERROR_KEY); try{ if(window.ChangeAppStatus) window.ChangeAppStatus.markGoogleSuccess((cacheInfo()||{}).count); }catch(e){} }
+  function markError(message){ write(ERROR_KEY, String(message || 'Synchronisierung fehlgeschlagen')); try{ if(window.ChangeAppStatus) window.ChangeAppStatus.markGoogleError(message); }catch(e){} }
   async function syncNow(){
     var status = getStatus();
     setEnabled(true);
@@ -110,6 +110,7 @@
   }
   function disconnect(){
     setEnabled(false);
+    try{ if(window.ChangeAppStatus) window.ChangeAppStatus.record('google', 'Google Kalender getrennt', 'Kalender-Cache wurde geleert.', 'info'); }catch(e){}
     try{ window.gEvents = []; }catch(e){}
     try{ if(window.clearGoogleEventsCache) window.clearGoogleEventsCache(); }catch(e){}
     remove(ERROR_KEY);

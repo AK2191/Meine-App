@@ -52,3 +52,49 @@
 .change-feature-body>.change-feature-field+.change-feature-row,
 .change-feature-body>.change-feature-row+.change-feature-field,
 .change-feature-body>.change-feature-field+.change-feature-field{border-top:1px solid var(--b1);padding-top:12px;margin-top:2px}
+
+
+/* Status/Diagnose/Protokoll */
+.change-sync-status-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.change-sync-status-item{border:1px solid var(--b1);background:var(--s2);border-radius:14px;padding:11px;display:grid;gap:4px;min-width:0}
+.change-sync-status-item span{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--t4)}
+.change-sync-status-item strong{font-size:13px;font-weight:950;color:var(--t1)}
+.change-sync-status-item small{font-size:11px;line-height:1.35;color:var(--t4)}
+.change-sync-log-list{display:grid;gap:8px}
+.change-sync-log-row{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--b1);background:var(--s2);border-radius:14px;padding:10px}
+.change-sync-log-icon{width:22px;height:22px;border-radius:999px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;font-size:12px;font-weight:950;background:var(--s3);color:var(--t4)}
+.change-sync-log-icon.ok{background:var(--grn-d);color:var(--grn)}
+.change-sync-log-icon.error{background:var(--red-d);color:#dc2626}
+.change-sync-log-title{font-size:12.5px;font-weight:900;color:var(--t1);line-height:1.2}
+.change-sync-log-detail{font-size:11.2px;color:var(--t4);line-height:1.35;margin-top:2px}
+.change-sync-log-time{font-size:10.5px;color:var(--t4);margin-top:4px}
+.change-health-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.change-health-title{font-size:13.5px;font-weight:950;color:var(--t1)}
+.change-health-sub{font-size:11.5px;color:var(--t4);margin-top:3px}
+.change-health-list{display:grid;gap:8px}
+.change-health-row{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--b1);background:var(--s2);border-radius:14px;padding:10px}
+.change-health-dot{width:9px;height:9px;border-radius:999px;background:#9ca3af;margin-top:4px;flex:0 0 auto}
+.change-health-dot.ok{background:#22c55e}.change-health-dot.error{background:#ef4444}
+.change-health-name{font-size:12.5px;font-weight:900;color:var(--t1);line-height:1.2}
+.change-health-detail{font-size:11.2px;color:var(--t4);line-height:1.35;margin-top:2px}
+.smart-nudge-card{margin:0 0 10px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;border:1px solid var(--b1);background:linear-gradient(180deg,var(--s1),var(--s2));border-radius:15px}
+.smart-nudge-title{font-size:12px;font-weight:950;color:var(--t1)}
+.smart-nudge-sub{font-size:11px;color:var(--t4);margin-top:3px;line-height:1.3}
+@media(max-width:520px){.change-sync-status-grid{grid-template-columns:1fr}.smart-nudge-card{align-items:flex-start;flex-direction:column}.smart-nudge-card .nudge-btn{align-self:flex-start}}
+
+/* Settings · konsistenter Feature-Karten-Stil für alle Tabs */
+.change-settings-pane .change-settings-card{display:none}
+.change-settings-feature-card{margin:0}
+.change-feature-body .change-feature-field+.change-feature-field,
+.change-feature-body .change-feature-field+.change-feature-note,
+.change-feature-body .change-feature-note+.change-feature-field,
+.change-feature-body .change-feature-note+.btn,
+.change-feature-body .change-feature-row+.btn,
+.change-feature-body .change-feature-field+.btn{margin-top:2px}
+.change-feature-body .btn-full{width:100%}
+.change-feature-body .change-halfday-controls .finput{flex:1;min-width:82px}
+.change-feature-body .change-halfday-controls .btn{flex:1;min-width:120px}
+.change-feature-body .change-halfday-list{margin-top:9px}
+.change-feature-body .change-about-card{padding:0}
+.change-feature-body .change-about-meta{border:1px solid var(--b1);border-radius:14px;overflow:hidden;background:var(--s2);margin-top:12px}
+.change-feature-body .change-about-meta>div{padding:10px 12px}

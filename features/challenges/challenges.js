@@ -67,9 +67,28 @@
   ];
 
   var OPTIONAL = [
-    {id:'opt_fitness_30', icon:'🏋️', title:'Fitness · mind. 30 Min.',  points:30, desc:'Leichtes bis mittleres Training für mindestens 30 Minuten.', optional:true},
-    {id:'opt_walk_10',    icon:'🚶', title:'Spazieren · mind. 10 Min.', points:15, desc:'Gehe mindestens 10 Minuten locker spazieren.',               optional:true}
+    {id:'opt_fitness_30', icon:'🏋️', title:'Fitness · mind. 30 Min.', points:30, desc:'Freie Fitness-Einheit für mindestens 30 Minuten.', optional:true},
+    {id:'opt_walk_10',    icon:'🚶', title:'Spazieren',                points:10, desc:'Gehe bewusst eine Runde spazieren.', optional:true},
+    {id:'opt_bike_12',    icon:'🚲', title:'Fahrrad fahren',            points:12, desc:'Fahre eine lockere Runde Fahrrad.', optional:true},
+    {id:'opt_jog_12',     icon:'🏃', title:'Joggen',                    points:12, desc:'Gehe eine kurze Runde joggen.', optional:true}
   ];
+  var OPTIONAL_ALIASES = {
+    opt_fitness_30:'opt_fitness_30', sport_fitness_30_optional:'opt_fitness_30',
+    opt_walk_10:'opt_walk_10', sport_walk_10_optional:'opt_walk_10',
+    opt_bike_12:'opt_bike_12', sport_bike_12_optional:'opt_bike_12',
+    opt_jog_12:'opt_jog_12', sport_jog_12_optional:'opt_jog_12'
+  };
+  function optionalKey(ch){
+    if(!ch) return '';
+    var id = String(ch.id || '').trim();
+    if(OPTIONAL_ALIASES[id]) return OPTIONAL_ALIASES[id];
+    var text = String((ch.title || ch.name || '') + ' ' + (ch.desc || '')).toLowerCase();
+    if(/fitness/.test(text)) return 'opt_fitness_30';
+    if(/spazier|walk/.test(text)) return 'opt_walk_10';
+    if(/fahrrad|radfahren|bike|cycling/.test(text)) return 'opt_bike_12';
+    if(/joggen|jogging|laufen/.test(text)) return 'opt_jog_12';
+    return '';
+  }
 
   function difficultyApi(){
     return window.ChangeChallengeDifficulty || null;
@@ -385,7 +404,10 @@
               -pointsForDate(dk,String(a.email||a.id).toLowerCase());
       });
       var medals=['🥇','🥈','🥉'];
-      board.innerHTML=players.length?players.map(function(p,i){
+      var suggestions=[];
+      try{ if(window.ChangePlayerActivity && window.ChangePlayerActivity.smartNudgeSuggestions) suggestions=window.ChangePlayerActivity.smartNudgeSuggestions(2)||[]; }catch(e){}
+      var suggestionHtml = suggestions.length ? '<div class="smart-nudge-card"><div><div class="smart-nudge-title">Anfeuern vorgeschlagen</div><div class="smart-nudge-sub">'+esc(suggestions[0].playerName)+' · '+esc(suggestions[0].reason)+'</div></div><button class="nudge-btn" onclick="event.stopPropagation();window.sendNudge&&window.sendNudge(\''+esc(suggestions[0].playerId)+'\',\''+esc(suggestions[0].playerName)+'\')"><span class="nudge-btn-icon">💪</span><span class="nudge-btn-label">Anfeuern</span></button></div>' : '';
+      board.innerHTML=players.length?suggestionHtml+players.map(function(p,i){
         var id=String(p.email||p.id||'').toLowerCase(), me=id===myId();
         var pts=pointsForDate(dk,id);
         var tot=(window.challengeCompletions||[]).reduce(function(s,c){
@@ -395,11 +417,13 @@
           return String(c.playerId||c.email||c.userEmail||'').toLowerCase()===id;
         }).length;
         var live=p.online?'<span class="live-dot"></span>':'';
-        var nudge=me?'':'<button class="nudge-btn" onclick="event.stopPropagation();window.sendNudge&&window.sendNudge(\''+esc(id)+'\',\''+esc(p.name||id)+'\')" title="Anfeuern"><span class="nudge-btn-icon">💪</span><span class="nudge-btn-label">Anfeuern</span></button>';
+        var smart=null; try{ if(window.ChangePlayerActivity && window.ChangePlayerActivity.smartNudgeFor) smart=window.ChangePlayerActivity.smartNudgeFor(id,p); }catch(e){}
+        var smartTitle=smart&&smart.reason?('Anfeuern: '+smart.reason):'Anfeuern';
+        var nudge=me?'':'<button class="nudge-btn" onclick="event.stopPropagation();window.sendNudge&&window.sendNudge(\''+esc(id)+'\',\''+esc(p.name||id)+'\')" title="'+esc(smartTitle)+'"><span class="nudge-btn-icon">💪</span><span class="nudge-btn-label">Anfeuern</span></button>';
         return '<div class="leader-row clickable" style="pointer-events:auto;cursor:pointer" onclick="window.openPlayerRecentPanel&&window.openPlayerRecentPanel(\''+esc(id)+'\',\''+esc(p.name||p.email||'Mitspieler')+'\')">'
           +'<div class="leader-rank">'+(medals[i]||String(i+1))+'</div>'
           +'<div style="flex:1;min-width:0"><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+live+'</div>'
-          +'<div class="leader-detail">Heute: '+pts+' P · Gesamt: '+tot+' P · '+cnt+' erledigt</div></div>'
+          +'<div class="leader-detail">Heute: '+pts+' P · Gesamt: '+tot+' P · '+cnt+' erledigt'+(smart&&smart.reason?' · '+esc(smart.reason):'')+'</div></div>'
           +'<div style="display:flex;align-items:center;gap:8px">'+nudge+'<div class="leader-score">'+tot+'</div></div></div>';
       }).join(''):'<div class="dash-empty">Noch keine Mitspieler</div>';
     }catch(e){board.innerHTML='<div class="dash-empty">Rangliste wird geladen…</div>';}
@@ -457,8 +481,22 @@
     if(exportKey !== lastLegacyExportKey){
       var list = Array.isArray(window.challenges) ? window.challenges.slice() : [];
       var changed = false;
+      var canonical = {};
+      OPTIONAL.forEach(function(opt){ canonical[opt.id] = opt; });
+      var seenOptional = new Set();
+      list = list.filter(function(ch){
+        var key = optionalKey(ch);
+        if(!key) return true;
+        if(seenOptional.has(key)){ changed = true; return false; }
+        seenOptional.add(key);
+        var row = Object.assign({active:true, type:'Sport', recurrence:'daily', optional:true, auto:false}, canonical[key] || ch);
+        var before = JSON.stringify({id:ch.id,title:ch.title,points:ch.points,optional:ch.optional,active:ch.active});
+        Object.assign(ch, row);
+        if(JSON.stringify({id:ch.id,title:ch.title,points:ch.points,optional:ch.optional,active:ch.active}) !== before) changed = true;
+        return true;
+      });
       OPTIONAL.forEach(function(opt){
-        var existing = list.find(function(ch){ return String(ch.id) === String(opt.id); });
+        var existing = list.find(function(ch){ return optionalKey(ch) === opt.id; });
         var row = Object.assign({active:true, type:'Sport', recurrence:'daily', optional:true, auto:false}, opt);
         if(existing) Object.assign(existing, row);
         else { list.push(row); changed = true; }

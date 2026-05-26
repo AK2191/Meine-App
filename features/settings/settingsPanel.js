@@ -78,7 +78,7 @@
                 '<option value="hard" '+(current==='hard'?'selected':'')+'>Schwer · 30–50 P</option>'+
                 '<option value="hardcore" '+(current==='hardcore'?'selected':'')+'>Hardcore · 60–100 P</option>';
     }
-    return '<div class="change-settings-actions change-setting-field"><label class="flabel">Schwierigkeit der Auto-Challenges</label><select class="finput" id="'+id+'">'+options+'</select><div class="change-settings-sub" style="margin-top:6px">Steuert nur automatisch erzeugte Aufgaben. Manuelle Challenges bleiben unverändert.</div></div>';
+    return featureField('Schwierigkeit der Auto-Challenges', '<select class="finput" id="'+id+'">'+options+'</select>', 'Steuert nur automatisch erzeugte Aufgaben. Manuelle Challenges bleiben unverändert.');
   }
   function getAutoChallengeCount(){
     try{ if(window.ChangeChallengeDifficulty && window.ChangeChallengeDifficulty.getDailyCount) return window.ChangeChallengeDifficulty.getDailyCount(); }catch(e){}
@@ -98,7 +98,7 @@
     if(!options){
       [[3,'Kompakt'],[5,'Normal'],[7,'Aktiv'],[10,'Intensiv']].forEach(function(item){ options += '<option value="'+item[0]+'" '+(current===item[0]?'selected':'')+'>'+item[1]+' · '+item[0]+' Aufgaben</option>'; });
     }
-    return '<div class="change-settings-actions change-setting-field"><label class="flabel">Tagesumfang</label><select class="finput" id="'+id+'">'+options+'</select><div class="change-settings-sub" style="margin-top:6px">Bestimmt, wie viele Auto-Challenges pro Tag erzeugt und synchronisiert werden.</div></div>';
+    return featureField('Tagesumfang', '<select class="finput" id="'+id+'">'+options+'</select>', 'Bestimmt, wie viele Auto-Challenges pro Tag erzeugt und synchronisiert werden.');
   }
   function setAutoChallengesState(on){
     on = !!on;
@@ -249,7 +249,7 @@
     var opts = [1,2,3,6,12,24].map(function(h){
       return '<option value="'+h+'" '+(h===current?'selected':'')+'>'+h+' Std. vorher</option>';
     }).join('');
-    return '<div class="change-settings-actions change-setting-field"><label class="flabel">Erinnerung</label><select class="finput" id="'+id+'">'+opts+'</select></div>';
+    return featureField('Erinnerung', '<select class="finput" id="'+id+'">'+opts+'</select>', '');
   }
   function weatherHealthCard(){
     var weather = weatherHealthStatus();
@@ -261,30 +261,41 @@
     var rainHours   = weatherAlertHours('change_v1_rain_alert_hours', 2);
     var pollenHours = weatherAlertHours('change_v1_pollen_alert_hours', 2);
 
-    // Wetter-Karte
-    var rainSub = rainOn ? hoursSelect('set-rain-hours', rainHours) : '';
-    var wetterSub = wetterOn
-      ? switchRow('Regenwarnung', '', 'set-rain-alerts', rainOn)
-        + rainSub
-        + '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-weather-location" type="button">Standort aktualisieren</button></div>'
-      : '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-weather-location" type="button">Standort aktualisieren</button></div>';
+    var wetterBody = '';
+    if(wetterOn){
+      wetterBody += featureSwitch('Regenwarnung', 'Warnt nur, wenn Wetter aktiv ist.', 'set-rain-alerts', rainOn);
+      if(rainOn) wetterBody += hoursSelect('set-rain-hours', rainHours);
+    }else{
+      wetterBody += '<div class="change-feature-note">Wetter bleibt ausgeblendet. Standort wird erst nach bewusster Aktualisierung genutzt.</div>';
+    }
+    wetterBody += '<button class="btn btn-secondary btn-full" id="set-weather-location" type="button">Standort aktualisieren</button>';
 
-    var wetterCard = card('Wetter',
-        switchRow('Im Dashboard anzeigen '+pill(wetterOn?'AKTIV':'AUS', wetterOn?'ok':'off'), '', 'set-weather', wetterOn)+
-        wetterSub);
+    var pollenBody = '';
+    if(pollenOn){
+      pollenBody += featureSwitch('Pollenwarnung', 'Benachrichtigt nur bei starker Belastung.', 'set-pollen-alerts', pollWarnOn);
+      if(pollWarnOn) pollenBody += hoursSelect('set-pollen-hours', pollenHours);
+    }else{
+      pollenBody += '<div class="change-feature-note">Pollen bleiben ausgeblendet und erzeugen keine Dashboard-Karte.</div>';
+    }
 
-    // Pollen-Karte
-    var pollWarnSub = pollWarnOn ? hoursSelect('set-pollen-hours', pollenHours) : '';
-    var pollenSub = pollenOn
-      ? switchRow('Pollenwarnung '+pill('nur stark', 'off'), '', 'set-pollen-alerts', pollWarnOn)
-        + pollWarnSub
-      : '';
-
-    var pollenCard = card('Pollen',
-        switchRow('Im Dashboard anzeigen '+pill(pollenOn?'AKTIV':'AUS', pollenOn?'ok':'off'), '', 'set-pollen', pollenOn)+
-        pollenSub);
-
-    return wetterCard + pollenCard;
+    return settingsFeatureCard(
+        '🌦️',
+        'Wetter',
+        wetterOn ? 'AKTIV' : 'AUS',
+        wetterOn ? 'ok' : 'off',
+        'Zeigt Wetter kompakt im Dashboard.',
+        '<label class="switch"><input type="checkbox" id="set-weather" '+(wetterOn ? 'checked' : '')+'><span class="slider"></span></label>',
+        wetterBody
+      )
+      + settingsFeatureCard(
+        '🌿',
+        'Pollen',
+        pollenOn ? 'AKTIV' : 'AUS',
+        pollenOn ? 'ok' : 'off',
+        'Zeigt Pollenbelastung ruhig im Dashboard.',
+        '<label class="switch"><input type="checkbox" id="set-pollen" '+(pollenOn ? 'checked' : '')+'><span class="slider"></span></label>',
+        pollenBody
+      );
   }
   function dashboardPane(){
     var friseurOn = dashboardBool('getFriseurEnabled', 'change_v1_friseur_enabled', false);
@@ -295,22 +306,51 @@
     var months = [['01','Jan'],['02','Feb'],['03','Mär'],['04','Apr'],['05','Mai'],['06','Jun'],['07','Jul'],['08','Aug'],['09','Sep'],['10','Okt'],['11','Nov'],['12','Dez']];
     var monthOptions = months.map(function(item){ return '<option value="'+item[0]+'">'+item[1]+'</option>'; }).join('');
     var dayOptions = Array.from({length:31}, function(_, i){ var d = String(i+1).padStart(2,'0'); return '<option value="'+d+'">'+d+'.</option>'; }).join('');
-    return weatherHealthCard()
-      + card('Friseur',
-          switchRow('Im Dashboard anzeigen '+pill(friseurOn?'AKTIV':'AUS', friseurOn?'ok':'off'), '', 'set-friseur', friseurOn)+
-          (friseurOn
-            ? '<div class="change-settings-actions change-setting-field"><label class="flabel">Erinnerung nach</label><select class="finput" id="set-friseur-weeks">'+[2,3,4,5,6,8].map(function(n){ return '<option value="'+n+'" '+(n === friseurWeeks ? 'selected' : '')+'>'+n+' Wochen</option>'; }).join('')+'</select></div>'
-            : ''))
-      + card('Geburtstage',
-          switchRow('Im Dashboard anzeigen '+pill(birthdaysOn?'AKTIV':'AUS', birthdaysOn?'ok':'off'), 'Erkennt Bday, B-day, Birthday, Geburtstag und Geb. aus dem Kalender.', 'set-birthdays', birthdaysOn))
-      + card('Urlaub',
-          switchRow('Im Dashboard anzeigen '+pill(urlaubOn?'AKTIV':'AUS', urlaubOn?'ok':'off'), '', 'set-urlaub', urlaubOn)+
-          (urlaubOn
-            ? '<div class="change-settings-actions change-setting-field"><label class="flabel">Jahresurlaub</label><input type="number" class="finput" id="set-urlaub-days" min="1" max="365" value="'+urlaubDays+'"></div>'
-              +'<div class="change-settings-actions change-setting-field"><label class="flabel">Halbe Urlaubstage</label><div class="change-halfday-controls"><select class="finput" id="set-half-month">'+monthOptions+'</select><select class="finput" id="set-half-day">'+dayOptions+'</select><button class="btn btn-secondary btn-sm" id="set-add-half" type="button">+ Hinzufügen</button></div>'+halfDayChips()+'</div>'
-            : ''));
+
+    var friseurBody = friseurOn
+      ? featureField('Erinnerung nach', '<select class="finput" id="set-friseur-weeks">'+[2,3,4,5,6,8].map(function(n){ return '<option value="'+n+'" '+(n === friseurWeeks ? 'selected' : '')+'>'+n+' Wochen</option>'; }).join('')+'</select>', 'Steuert den nächsten empfohlenen Friseurtermin im Dashboard.')
+      : '<div class="change-feature-note">Friseur wird im Dashboard ausgeblendet.</div>';
+
+    var birthdaysBody = '<div class="change-feature-note">Erkennt Bday, B-day, Birthday, Geburtstag und Geb. aus dem Google Kalender. Sichtbar bleibt es als „Geburtstage“.</div>';
+
+    var urlaubBody = urlaubOn
+      ? featureField('Jahresurlaub', '<input type="number" class="finput" id="set-urlaub-days" min="1" max="365" value="'+urlaubDays+'">', 'Gezählt werden Urlaubstage. Wochenenden und Feiertage zählen nicht.')
+        + featureField('Halbe Urlaubstage', '<div class="change-halfday-controls"><select class="finput" id="set-half-month">'+monthOptions+'</select><select class="finput" id="set-half-day">'+dayOptions+'</select><button class="btn btn-secondary btn-sm" id="set-add-half" type="button">+ Hinzufügen</button></div>'+halfDayChips(), '')
+      : '<div class="change-feature-note">Urlaub wird im Dashboard ausgeblendet.</div>';
+
+    return '<div class="change-settings-stack">'
+      + weatherHealthCard()
+      + settingsFeatureCard(
+        '✂️',
+        'Friseur',
+        friseurOn ? 'AKTIV' : 'AUS',
+        friseurOn ? 'ok' : 'off',
+        'Zeigt den nächsten Friseurtermin als ruhige Dashboard-Karte.',
+        '<label class="switch"><input type="checkbox" id="set-friseur" '+(friseurOn ? 'checked' : '')+'><span class="slider"></span></label>',
+        friseurBody
+      )
+      + settingsFeatureCard(
+        '🎂',
+        'Geburtstage',
+        birthdaysOn ? 'AKTIV' : 'AUS',
+        birthdaysOn ? 'ok' : 'off',
+        'Zeigt kommende Geburtstage ähnlich wie Friseur.',
+        '<label class="switch"><input type="checkbox" id="set-birthdays" '+(birthdaysOn ? 'checked' : '')+'><span class="slider"></span></label>',
+        birthdaysBody
+      )
+      + settingsFeatureCard(
+        '🏖️',
+        'Urlaub',
+        urlaubOn ? 'AKTIV' : 'AUS',
+        urlaubOn ? 'ok' : 'off',
+        'Zeigt geplante Urlaubstage und Resturlaub.',
+        '<label class="switch"><input type="checkbox" id="set-urlaub" '+(urlaubOn ? 'checked' : '')+'><span class="slider"></span></label>',
+        urlaubBody
+      )
+      + '</div>';
   }
   function firebaseStatus(){
+    try{ if(window.ChangeAppStatus && window.ChangeAppStatus.getDatabaseStatus) return window.ChangeAppStatus.getDatabaseStatus(); }catch(e){}
     var status = window._firebaseSyncStatus || 'unknown';
     var cfgOk = !!(window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey && !String(window.FIREBASE_CONFIG.apiKey).includes('HIER_'));
     var enabled = readDatabaseSyncEnabled();
@@ -359,16 +399,31 @@
       ? '<button class="btn btn-secondary btn-full" id="set-sync-google" type="button">Google Kalender '+(google.loggedIn?'neu synchronisieren':'aktualisieren')+'</button>'
       : '<div class="change-feature-note">Google Kalender bleibt unabhängig von Firebase.</div>';
 
+    var statusBody = (window.ChangeAppStatus && window.ChangeAppStatus.syncStatusHtml) ? window.ChangeAppStatus.syncStatusHtml() : '<div class="change-feature-note">Status wird geladen.</div>';
+    var logBody = (window.ChangeAppStatus && window.ChangeAppStatus.logHtml) ? window.ChangeAppStatus.logHtml(6) + '<button class="btn btn-secondary btn-full" id="clear-sync-log" type="button">Protokoll leeren</button>' : '<div class="change-feature-note">Noch kein Protokoll vorhanden.</div>';
     return '<div class="change-settings-stack">'
       + settingsFeatureCard('☁️', 'Datenbank-Sync', fb.label, fb.tone, fb.detail, dbSwitch, dbBody)
       + settingsFeatureCard('📅', 'Google Kalender', google.label, google.tone, googleSub, googleControl, googleBody)
+      + settingsFeatureCard('🟢', 'Sync-Status', 'LIVE', 'ok', 'Zeigt, ob Datenbank und Google Kalender aktuell sind.', '', statusBody)
+      + settingsFeatureCard('🧾', 'Sync-Protokoll', 'LOKAL', 'off', 'Letzte Sync- und Anfeuern-Aktionen auf diesem Gerät.', '', logBody)
       + '</div>';
   }
   function challengesPane(){
     var auto = getAutoChallengesEnabled();
-    return card('Auto-Challenges',
-      switchRow('Auto-Challenges '+pill(auto?'AKTIV':'AUS', auto?'ok':'off'), 'Erstellt jeden Tag einen sauberen Aufgaben-Satz.', 'set-auto', auto)
-      + (auto ? autoChallengeCountSelect('set-auto-count') + challengeDifficultySelect('set-challenge-difficulty') : '<div class="change-settings-sub" style="padding:2px 0 8px">Automatische Tagesaufgaben sind ausgeschaltet.</div>'));
+    var body = auto
+      ? autoChallengeCountSelect('set-auto-count') + challengeDifficultySelect('set-challenge-difficulty')
+      : '<div class="change-feature-note">Automatische Tagesaufgaben sind ausgeschaltet. Manuelle Challenges bleiben unverändert.</div>';
+    return '<div class="change-settings-stack">'
+      + settingsFeatureCard(
+        '🏆',
+        'Auto-Challenges',
+        auto ? 'AKTIV' : 'AUS',
+        auto ? 'ok' : 'off',
+        'Erstellt jeden Tag genau einen sauberen Aufgaben-Satz.',
+        '<label class="switch"><input type="checkbox" id="set-auto" '+(auto ? 'checked' : '')+'><span class="slider"></span></label>',
+        body
+      )
+      + '</div>';
   }
   var APP_VERSION = '0.1.0001';
 
@@ -392,7 +447,9 @@
       + '<div><span>Version</span><strong>'+esc(APP_VERSION)+'</strong></div>'
       + '<div><span>Status</span><strong>'+esc(installed)+'</strong></div>'
       + '</div>';
-    return '<div class="change-settings-stack">' + installCard + card('App-Info', about) + '</div>';
+    var aboutCard = settingsFeatureCard('ℹ️', 'App-Info', 'v'+APP_VERSION, 'off', 'Ruhige Übersicht zu Version und Installationsstatus.', '', about);
+    var health = (window.ChangeAppStatus && window.ChangeAppStatus.healthHtml) ? settingsFeatureCard('🩺', 'App-Gesundheitscheck', 'DIAGNOSE', 'off', 'Prüft Login, Cache, Sync und blockierende Overlays.', '', window.ChangeAppStatus.healthHtml()) : '';
+    return '<div class="change-settings-stack">' + installCard + aboutCard + health + '</div>';
   }
   var currentSettingsTab = 'dashboard';
   function tabButton(id, label, active){ return '<button class="change-settings-tab '+(active===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'+label+'</button>'; }
@@ -487,6 +544,7 @@
     });
     var google = $('set-google'); if(google) google.addEventListener('change', async function(){ if(window.ChangeGoogleSyncStatus){ if(google.checked) await window.ChangeGoogleSyncStatus.syncNow(); else window.ChangeGoogleSyncStatus.disconnect(); } refreshSameTab(); });
     var syncGoogle = $('set-sync-google'); if(syncGoogle) syncGoogle.addEventListener('click', async function(){ if(window.ChangeGoogleSyncStatus) await window.ChangeGoogleSyncStatus.syncNow(); refreshSameTab(); });
+    var clearSyncLog = $('clear-sync-log'); if(clearSyncLog) clearSyncLog.addEventListener('click', function(){ try{ localStorage.removeItem('change_v1_sync_log'); }catch(e){} refreshSameTab('sync'); });
     var btnGoogleConnect = $('btn-google-connect'); if(btnGoogleConnect) btnGoogleConnect.addEventListener('click', function(){ if(typeof connectToGoogle==='function') connectToGoogle(); });
 
   }

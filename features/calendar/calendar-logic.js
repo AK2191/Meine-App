@@ -1355,17 +1355,21 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
   function stats(id){id=norm(id);const td=today();let totalPoints=0,todayPoints=0,totalCount=0,todayCount=0;completions().forEach(c=>{if(completionKey(c)!==id)return;const p=parseInt(c.points,10)||0;totalPoints+=p;totalCount++;if(String(c.date||'').slice(0,10)===td){todayPoints+=p;todayCount++;}});return{totalPoints,todayPoints,totalCount,todayCount};}
   function allChallenges(){let list=[];try{list=(typeof window.buildDefaultChallenges==='function'?window.buildDefaultChallenges():[])||[]}catch(e){}; if(!list.length) list=read('challenges',[])||[]; return list.filter(c=>c&&c.active!==false&&!/lesen|trinken|wasser|mail|haushalt|todo|meditation/i.test((c.title||c.name||'')+' '+(c.desc||''))).map(c=>Object.assign({},c,{category:'sport'}));}
   function ensureOptional(list){
-    // Dedupliziere anhand von ID und Titel-Keywords — verhindert doppelte spazieren/fitness
+    // Dedupliziere anhand von ID und Titel-Keywords — verhindert doppelte optionale Sportaufgaben
     const hasId=id=>list.some(c=>c.id===id);
     const hasKey=k=>list.some(c=>norm(c.title||c.name).includes(k));
     const out=list.slice();
-    if(!hasId('opt_walk_10')&&!hasId('sport_walk_10_optional')&&!hasKey('spazieren'))
-      out.push({id:'opt_walk_10',title:'10 Minuten spazieren',points:15,icon:'🚶',desc:'Gehe mindestens 10 Minuten locker spazieren.',optional:true,active:true});
     if(!hasId('opt_fitness_30')&&!hasId('sport_fitness_30_optional')&&!hasKey('fitness'))
-      out.push({id:'opt_fitness_30',title:'Fitness · mind. 30 Minuten',points:30,icon:'🏋️',desc:'Leichtes bis mittleres Training für mind. 30 Minuten.',optional:true,active:true});
+      out.push({id:'opt_fitness_30',title:'Fitness · mind. 30 Minuten',points:30,icon:'🏋️',desc:'Freie Fitness-Einheit für mindestens 30 Minuten.',optional:true,active:true});
+    if(!hasId('opt_walk_10')&&!hasId('sport_walk_10_optional')&&!hasKey('spazieren'))
+      out.push({id:'opt_walk_10',title:'Spazieren',points:10,icon:'🚶',desc:'Gehe bewusst eine Runde spazieren.',optional:true,active:true});
+    if(!hasId('opt_bike_12')&&!hasId('sport_bike_12_optional')&&!hasKey('fahrrad'))
+      out.push({id:'opt_bike_12',title:'Fahrrad fahren',points:12,icon:'🚲',desc:'Fahre eine lockere Runde Fahrrad.',optional:true,active:true});
+    if(!hasId('opt_jog_12')&&!hasId('sport_jog_12_optional')&&!hasKey('joggen'))
+      out.push({id:'opt_jog_12',title:'Joggen',points:12,icon:'🏃',desc:'Gehe eine kurze Runde joggen.',optional:true,active:true});
     return out;
   }
-  function dailyChallenges(){const all=ensureOptional(allChallenges()); const normal=all.filter(c=>!c.optional&&!/spazier|fitness/i.test(c.title||c.name||'')); const optional=all.filter(c=>c.optional||/spazier|fitness/i.test(c.title||c.name||'')); let saved=read('change_daily_sports',null); const td=today(); if(!saved||saved.date!==td){let seed=parseInt(td.replace(/-/g,''),10)||1; const rnd=()=>{seed=(seed*9301+49297)%233280;return seed/233280}; const ids=normal.slice().sort(()=>rnd()-.5).slice(0,7).map(c=>c.id); saved={date:td,ids}; write('change_daily_sports',saved);} const map=new Map(all.map(c=>[String(c.id),c])); const seven=(saved.ids||[]).map(id=>map.get(String(id))).filter(Boolean); return seven.concat(optional.filter(o=>!seven.some(x=>x.id===o.id)));}
+  function dailyChallenges(){const all=ensureOptional(allChallenges()); const normal=all.filter(c=>!c.optional&&!/spazier|fitness|fahrrad|radfahren|bike|joggen|jogging|laufen/i.test(c.title||c.name||'')); const optional=all.filter(c=>c.optional||/spazier|fitness|fahrrad|radfahren|bike|joggen|jogging|laufen/i.test(c.title||c.name||'')); let saved=read('change_daily_sports',null); const td=today(); if(!saved||saved.date!==td){let seed=parseInt(td.replace(/-/g,''),10)||1; const rnd=()=>{seed=(seed*9301+49297)%233280;return seed/233280}; const ids=normal.slice().sort(()=>rnd()-.5).slice(0,7).map(c=>c.id); saved={date:td,ids}; write('change_daily_sports',saved);} const map=new Map(all.map(c=>[String(c.id),c])); const seven=(saved.ids||[]).map(id=>map.get(String(id))).filter(Boolean); return seven.concat(optional.filter(o=>!seven.some(x=>x.id===o.id)));}
   function challengeById(id){return dailyChallenges().find(c=>String(c.id)===String(id))||allChallenges().find(c=>String(c.id)===String(id));}
   function done(id){const a=account(),td=today();return completions().some(c=>String(c.challengeId)===String(id)&&String(c.date||'').slice(0,10)===td&&completionKey(c)===a.id)}
   function weekDates(){const d=new Date();const day=(d.getDay()+6)%7;const mon=new Date(d);mon.setDate(d.getDate()-day);return Array.from({length:7},(_,i)=>{const x=new Date(mon);x.setDate(mon.getDate()+i);return x;});}
@@ -1566,7 +1570,7 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
   }
 
   /* ==== ACTIVE CHALLENGES: max 7 normal + optional ==== */
-  const isOptional=c=>/spazier|fitness/i.test(c.title||c.name||'')||!!c.optional;
+  const isOptional=c=>/spazier|fitness|fahrrad|radfahren|bike|joggen|jogging|laufen/i.test(c.title||c.name||'')||!!c.optional;
 
   // Remove these specific challenges from the list entirely
   const BLACKLIST=['spazieren gehen für 10'];
@@ -1975,7 +1979,7 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
     function chItem(ch){
       const done=isDoneToday(ch.id);
       const pts=parseInt(ch.points,10)||0;
-      // Optional challenges (spazieren/fitness) never show a link
+      // Optionale Sportaufgaben zeigen bewusst keinen Link
       const url=ch._optional?'':(ch.url||ch.video||ch.youtube||ch.youtubeUrl||ch.link||'');
       const linkHtml=url?`<a class="ch-link" href="${safeUrl(url)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">Übung ansehen ↗</a>`:'';
       const btnHtml=done

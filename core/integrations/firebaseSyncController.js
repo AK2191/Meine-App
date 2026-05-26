@@ -14,6 +14,11 @@
   function toastMsg(message, type){
     try{ if(typeof toast === 'function') toast(message, type || ''); }catch(e){}
   }
+  function syncLog(method){
+    try{
+      if(window.ChangeAppStatus && typeof window.ChangeAppStatus[method] === 'function') return window.ChangeAppStatus[method].apply(window.ChangeAppStatus, Array.prototype.slice.call(arguments, 1));
+    }catch(e){}
+  }
   function readJson(key, fallback){
     try{
       var raw = localStorage.getItem(key);
@@ -83,6 +88,7 @@
   async function ensureDb(interactive){
     if(!cfgValid()){
       toastMsg('Firebase-Konfiguration oder SDK fehlt.', 'err');
+      syncLog('markDatabaseError', 'Firebase-Konfiguration oder SDK fehlt.');
       return null;
     }
     try{
@@ -100,6 +106,7 @@
     }catch(e){
       console.warn('Firebase Sync Controller init:', e);
       toastMsg('Firebase konnte nicht verbunden werden: ' + (e.message || e), 'err');
+      syncLog('markDatabaseError', e.message || e);
       return null;
     }
   }
@@ -260,7 +267,7 @@
     return m ? m[1] : '';
   }
   function isOptionalChallenge(ch){
-    return !!(ch && (ch.optional === true || ch._optional === true || /^opt_/i.test(String(ch.id || ''))));
+    return !!(ch && (ch.optional === true || ch._optional === true || /^opt_/i.test(String(ch.id || '')) || /_optional$/i.test(String(ch.id || ''))));
   }
   function isAutoChallenge(ch){
     var id = String(ch && ch.id || '');
@@ -403,12 +410,16 @@
   async function enableFirebaseSync(){
     if(enabling) return false;
     enabling = true;
+    try{ window._firebaseSyncStatus = 'connecting'; }catch(e){}
+    syncLog('markDatabaseStart', 'Datenbank-Sync wurde manuell gestartet.');
     writeDatabaseSyncState(true);
     window.__changeLiveSyncManualStart = true;
     try{
       var database = await ensureDb(true);
       if(!database){
         writeDatabaseSyncState(false);
+        try{ window._firebaseSyncStatus = 'auth_failed'; }catch(e){}
+        syncLog('markDatabaseError', 'Firebase-Anmeldung fehlt.');
         toastMsg('Firebase-Anmeldung fehlt. Datenbank-Sync bleibt aus.', 'err');
         return false;
       }
@@ -429,9 +440,17 @@
       await startFeatureListeners();
       try{ if(typeof buildDashboard === 'function') buildDashboard(); }catch(e){}
       try{ if(typeof renderChallenges === 'function') renderChallenges(); }catch(e){}
+      try{ window._firebaseSyncStatus = 'ok'; }catch(e){}
+      syncLog('markDatabaseSuccess', 'Mitspieler, Einstellungen, Challenges und Punkte gespeichert.');
       try{ if(typeof window._refreshSyncPills === 'function') window._refreshSyncPills(); }catch(e){}
       toastMsg('Datenbank-Sync verbunden ✓', 'ok');
       return true;
+    }catch(e){
+      console.warn('Firebase Sync Controller enable:', e);
+      try{ window._firebaseSyncStatus = 'error'; }catch(_e){}
+      syncLog('markDatabaseError', e && e.message ? e.message : String(e));
+      toastMsg('Datenbank-Sync fehlgeschlagen.', 'err');
+      return false;
     }finally{
       window.__changeLiveSyncManualStart = false;
       enabling = false;
@@ -439,6 +458,8 @@
   }
   async function disableFirebaseSync(){
     writeDatabaseSyncState(false);
+    try{ window._firebaseSyncStatus = 'off'; }catch(e){}
+    try{ if(window.ChangeAppStatus) window.ChangeAppStatus.record('database', 'Datenbank-Sync deaktiviert', 'Firebase schreibt keine App-Daten mehr automatisch.', 'info'); }catch(e){}
     try{ if(typeof window.stopGlobalChallengeSync === 'function') window.stopGlobalChallengeSync(); }catch(e){}
     try{
       var database = await ensureDb(false);
@@ -474,7 +495,7 @@
       setEnabled: setDatabaseSyncEnabled,
       ensurePlayer: function(){ return ensureDb(false).then(function(database){ return ensurePlayer(database); }); },
       ensureSettings: function(){ return ensureDb(false).then(function(database){ return ensureSettings(database); }); },
-      status: function(){ return { databaseSyncEnabled: readDatabaseSyncEnabled(), liveSyncEnabled: readDatabaseSyncEnabled(), firebaseReady: cfgValid(), account: account() }; }
+      status: function(){ var s = null; try{ if(window.ChangeAppStatus) s = window.ChangeAppStatus.getDatabaseStatus(); }catch(e){} return Object.assign({ databaseSyncEnabled: readDatabaseSyncEnabled(), liveSyncEnabled: readDatabaseSyncEnabled(), firebaseReady: cfgValid(), account: account() }, s || {}); }
     };
     console.warn('[Datenbank-Sync] Controller geladen ✓');
   }

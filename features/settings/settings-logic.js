@@ -379,7 +379,10 @@
   /* ==== OPTIONALE CHALLENGES SICHERSTELLEN ==== */
   (function(){
     const OPTS=[
-      {id:'sport_fitness_30_optional',title:'Fitness · mind. 30 Minuten',points:30,icon:'🏋️',desc:'Leichtes bis mittleres Training für mind. 30 Minuten.',optional:true,active:true}
+      {id:'opt_fitness_30',title:'Fitness · mind. 30 Minuten',points:30,icon:'🏋️',desc:'Freie Fitness-Einheit für mindestens 30 Minuten.',optional:true,active:true},
+      {id:'opt_walk_10',title:'Spazieren',points:10,icon:'🚶',desc:'Gehe bewusst eine Runde spazieren.',optional:true,active:true},
+      {id:'opt_bike_12',title:'Fahrrad fahren',points:12,icon:'🚲',desc:'Fahre eine lockere Runde Fahrrad.',optional:true,active:true},
+      {id:'opt_jog_12',title:'Joggen',points:12,icon:'🏃',desc:'Gehe eine kurze Runde joggen.',optional:true,active:true}
     ];
     function ensure(){
       const chs=window.challenges||[];
