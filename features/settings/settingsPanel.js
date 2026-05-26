@@ -80,6 +80,26 @@
     }
     return '<div class="change-settings-actions change-setting-field"><label class="flabel">Schwierigkeit der Auto-Challenges</label><select class="finput" id="'+id+'">'+options+'</select><div class="change-settings-sub" style="margin-top:6px">Steuert nur automatisch erzeugte Aufgaben. Manuelle Challenges bleiben unverändert.</div></div>';
   }
+  function getAutoChallengeCount(){
+    try{ if(window.ChangeChallengeDifficulty && window.ChangeChallengeDifficulty.getDailyCount) return window.ChangeChallengeDifficulty.getDailyCount(); }catch(e){}
+    try{ return parseInt(JSON.parse(localStorage.getItem('change_v1_auto_challenge_count') || 'null'), 10) || parseInt(localStorage.getItem('auto_challenge_count'), 10) || 7; }catch(e){ return 7; }
+  }
+  function setAutoChallengeCount(value){
+    var next = parseInt(value, 10) || 7;
+    try{ if(window.ChangeChallengeDifficulty && window.ChangeChallengeDifficulty.setDailyCount) next = window.ChangeChallengeDifficulty.setDailyCount(next); }catch(e){}
+    try{ localStorage.setItem('change_v1_auto_challenge_count', JSON.stringify(next)); localStorage.setItem('auto_challenge_count', JSON.stringify(next)); }catch(e){}
+    try{ if(typeof window.saveChangeSettings === 'function' && readDatabaseSyncEnabled()) window.saveChangeSettings(true); }catch(e){}
+    return next;
+  }
+  function autoChallengeCountSelect(id){
+    var current = getAutoChallengeCount();
+    var options = '';
+    try{ if(window.ChangeChallengeDifficulty && window.ChangeChallengeDifficulty.countOptions) options = window.ChangeChallengeDifficulty.countOptions(current); }catch(e){}
+    if(!options){
+      [[3,'Kompakt'],[5,'Normal'],[7,'Aktiv'],[10,'Intensiv']].forEach(function(item){ options += '<option value="'+item[0]+'" '+(current===item[0]?'selected':'')+'>'+item[1]+' · '+item[0]+' Aufgaben</option>'; });
+    }
+    return '<div class="change-settings-actions change-setting-field"><label class="flabel">Tagesumfang</label><select class="finput" id="'+id+'">'+options+'</select><div class="change-settings-sub" style="margin-top:6px">Bestimmt, wie viele Auto-Challenges pro Tag erzeugt und synchronisiert werden.</div></div>';
+  }
   function setAutoChallengesState(on){
     on = !!on;
     writeBoolMulti(['change_v1_auto_challenges_enabled','auto_challenges_enabled'], on);
@@ -271,7 +291,6 @@
 
   function syncPane(){
     var dbOn   = readDatabaseSyncEnabled();
-    var auto   = getAutoChallengesEnabled();
     var google = googleStatus();
     var fb     = firebaseStatus();
 
@@ -291,10 +310,13 @@
       + '</div>'
       + (google.loggedIn ? '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-sync-google" type="button">Google Kalender neu synchronisieren</button></div>' : '');
 
-    var autoRow = switchRow('Auto-Challenges '+pill(auto?'AKTIV':'AUS', auto?'ok':'off'), 'Erstellt die täglichen Standard-Challenges.', 'set-auto', auto)
-      + challengeDifficultySelect('set-challenge-difficulty');
-
-    return card('Synchronisierung', dbRow + gRow + autoRow);
+    return card('Synchronisierung', dbRow + gRow);
+  }
+  function challengesPane(){
+    var auto = getAutoChallengesEnabled();
+    return card('Auto-Challenges',
+      switchRow('Auto-Challenges '+pill(auto?'AKTIV':'AUS', auto?'ok':'off'), 'Erstellt jeden Tag einen sauberen Aufgaben-Satz.', 'set-auto', auto)
+      + (auto ? autoChallengeCountSelect('set-auto-count') + challengeDifficultySelect('set-challenge-difficulty') : '<div class="change-settings-sub" style="padding:2px 0 8px">Automatische Tagesaufgaben sind ausgeschaltet.</div>'));
   }
   var APP_VERSION = '0.1.0001';
 
@@ -311,29 +333,31 @@
         +'<div style="font-size:12px;color:var(--t3);margin-top:4px">Version '+APP_VERSION+'</div>'
         +'</div>');
   }
-  var currentSettingsTab = 'calendar';
+  var currentSettingsTab = 'dashboard';
   function tabButton(id, label, active){ return '<button class="change-settings-tab '+(active===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'+label+'</button>'; }
   function openSettingsPanel(startTab){
-    startTab = ['calendar','dashboard','sync','app'].indexOf(startTab) >= 0 ? startTab : (currentSettingsTab || 'calendar');
+    startTab = ['dashboard','calendar','challenges','sync','app'].indexOf(startTab) >= 0 ? startTab : (currentSettingsTab || 'dashboard');
     currentSettingsTab = startTab;
     var html = '<div class="change-settings-tabs">'
-      + tabButton('calendar','📅 Kalender', startTab)
       + tabButton('dashboard','▦ Dashboard', startTab)
+      + tabButton('calendar','📅 Kalender', startTab)
+      + tabButton('challenges','🏆 Challenges', startTab)
       + tabButton('sync','↻ Sync', startTab)
       + tabButton('app','⚙︎ App', startTab)
       + '</div>'
-      + '<div class="change-settings-pane '+(startTab==='calendar'?'active':'')+'" data-pane="calendar">'+calendarPane()+'</div>'
       + '<div class="change-settings-pane '+(startTab==='dashboard'?'active':'')+'" data-pane="dashboard">'+dashboardPane()+'</div>'
+      + '<div class="change-settings-pane '+(startTab==='calendar'?'active':'')+'" data-pane="calendar">'+calendarPane()+'</div>'
+      + '<div class="change-settings-pane '+(startTab==='challenges'?'active':'')+'" data-pane="challenges">'+challengesPane()+'</div>'
       + '<div class="change-settings-pane '+(startTab==='sync'?'active':'')+'" data-pane="sync">'+syncPane()+'</div>'
       + '<div class="change-settings-pane '+(startTab==='app'?'active':'')+'" data-pane="app">'+appPane()+'</div>';
     if(typeof window.openPanel === 'function') window.openPanel('Einstellungen', html);
     setTimeout(bindSettings, 30);
   }
   function refreshSameTab(tab){
-    if(tab && ['calendar','dashboard','sync','app'].indexOf(tab) >= 0) currentSettingsTab = tab;
+    if(tab && ['dashboard','calendar','challenges','sync','app'].indexOf(tab) >= 0) currentSettingsTab = tab;
     var active = document.querySelector('.change-settings-tab.active');
     var next = active ? active.getAttribute('data-settings-tab') : currentSettingsTab;
-    openSettingsPanel(next || 'calendar');
+    openSettingsPanel(next || 'dashboard');
   }
   function bindSettings(){
     document.querySelectorAll('[data-settings-tab]').forEach(function(btn){
@@ -389,11 +413,15 @@
     var dbSyncNow = $('set-database-sync-now'); if(dbSyncNow) dbSyncNow.addEventListener('click', async function(){ if(window.ChangeFirebaseSyncController && window.ChangeFirebaseSyncController.enable) await window.ChangeFirebaseSyncController.enable(); else if(window.setDatabaseSyncEnabled) await window.setDatabaseSyncEnabled(true); refreshSameTab('sync'); });
     var auto = $('set-auto'); if(auto) auto.addEventListener('change', function(){
       setAutoChallengesState(!!auto.checked);
-      refreshSameTab('sync');
+      refreshSameTab('challenges');
+    });
+    var autoCount = $('set-auto-count'); if(autoCount) autoCount.addEventListener('change', function(){
+      setAutoChallengeCount(autoCount.value);
+      refreshSameTab('challenges');
     });
     var diff = $('set-challenge-difficulty'); if(diff) diff.addEventListener('change', function(){
       setChallengeDifficulty(diff.value);
-      refreshSameTab('sync');
+      refreshSameTab('challenges');
     });
     var google = $('set-google'); if(google) google.addEventListener('change', async function(){ if(window.ChangeGoogleSyncStatus){ if(google.checked) await window.ChangeGoogleSyncStatus.syncNow(); else window.ChangeGoogleSyncStatus.disconnect(); } refreshSameTab(); });
     var syncGoogle = $('set-sync-google'); if(syncGoogle) syncGoogle.addEventListener('click', async function(){ if(window.ChangeGoogleSyncStatus) await window.ChangeGoogleSyncStatus.syncNow(); refreshSameTab(); });
@@ -427,6 +455,7 @@
       'database_sync_enabled', 'change_v1_database_sync_enabled',
       'live_sync_enabled', 'change_v1_live_sync_enabled',
       'auto_challenges_enabled', 'change_v1_auto_challenges_enabled',
+      'auto_challenge_count', 'change_v1_auto_challenge_count',
       'challenge_difficulty', 'change_v1_challenge_difficulty',
       'change_v1_google_calendar_sync', 'change_google_sync_enabled',
       'push_enabled', 'change_v1_push_enabled',

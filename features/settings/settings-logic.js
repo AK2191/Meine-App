@@ -44,8 +44,20 @@
     try{ localStorage.setItem('change_v1_challenge_difficulty', JSON.stringify(next)); localStorage.setItem('challenge_difficulty', JSON.stringify(next)); }catch(e){}
     return next;
   }
+  function challengeDailyCountValue(){
+    try{ if(window.ChangeChallengeDifficulty && window.ChangeChallengeDifficulty.getDailyCount) return window.ChangeChallengeDifficulty.getDailyCount(); }catch(e){}
+    try{ return parseInt(JSON.parse(localStorage.getItem('change_v1_auto_challenge_count') || 'null'), 10) || parseInt(localStorage.getItem('auto_challenge_count'), 10) || 7; }catch(e){ return 7; }
+  }
+  function applyChallengeDailyCount(value){
+    var next = parseInt(value, 10) || 7;
+    try{ if(window.ChangeChallengeDifficulty && window.ChangeChallengeDifficulty.setDailyCount) next = window.ChangeChallengeDifficulty.setDailyCount(next); }catch(e){}
+    try{ localStorage.setItem('change_v1_auto_challenge_count', JSON.stringify(next)); localStorage.setItem('auto_challenge_count', JSON.stringify(next)); }catch(e){}
+    return next;
+  }
   window.getChallengeDifficultySetting = challengeDifficultyValue;
   window.setChallengeDifficulty = applyChallengeDifficultySetting;
+  window.getAutoChallengeCountSetting = challengeDailyCountValue;
+  window.setAutoChallengeCount = applyChallengeDailyCount;
   const $       = id => document.getElementById(id);
 
   function readOpt(){
@@ -782,12 +794,12 @@
     // Legacy-IDs (settings-logic.js / Fallback-Panel)
     'us-holiday-state','holiday-state','us-toggle-holidays','toggle-holidays','us-toggle-dots','toggle-dots','us-toggle-kw','toggle-kw',
     'holiday-notifications','us-friseur-on','us-friseur-weeks','us-urlaub-on','us-urlaub-days','us-half-date',
-    'us-toggle-database','us-toggle-live','us-toggle-auto','us-toggle-gsync','us-challenge-difficulty','client-id-input',
+    'us-toggle-database','us-toggle-live','us-toggle-auto','us-toggle-gsync','us-challenge-difficulty','us-auto-count','client-id-input',
     // settingsPanel.js IDs (kanonischer Settings-Owner)
     'set-holiday-state','set-show-holidays','set-show-points','set-show-kw',
     'set-friseur','set-friseur-weeks',
     'set-urlaub','set-urlaub-days',
-    'set-database-sync','set-live','set-auto','set-challenge-difficulty','set-google',
+    'set-database-sync','set-live','set-auto','set-auto-count','set-challenge-difficulty','set-google',
     // Wetter (beide Panels)
     'set-weather','set-rain-alerts','set-rain-hours','set-pollen','set-pollen-alerts','set-pollen-hours'
   ]);
@@ -819,6 +831,17 @@
     try{ next = window.ChangeChallengeDifficulty && window.ChangeChallengeDifficulty.set ? window.ChangeChallengeDifficulty.set(value) : String(value || 'easy'); }catch(e){ next = String(value || 'easy'); }
     writeJson('change_v1_challenge_difficulty', next);
     writeJson('challenge_difficulty', next);
+    return next;
+  }
+  function readAutoChallengeCountSetting(){
+    try{ if(window.ChangeChallengeDifficulty && window.ChangeChallengeDifficulty.getDailyCount) return window.ChangeChallengeDifficulty.getDailyCount(); }catch(e){}
+    return readNumber(['change_v1_auto_challenge_count','auto_challenge_count'], 7);
+  }
+  function applyAutoChallengeCountSettingSync(value){
+    let next = parseInt(value, 10) || 7;
+    try{ if(window.ChangeChallengeDifficulty && window.ChangeChallengeDifficulty.setDailyCount) next = window.ChangeChallengeDifficulty.setDailyCount(next, {render:false, publish:false}); }catch(e){}
+    writeJson('change_v1_auto_challenge_count', next);
+    writeJson('auto_challenge_count', next);
     return next;
   }
   function writeString(key, value){ try{ localStorage.setItem(key, String(value)); }catch(e){} }
@@ -959,8 +982,10 @@
       },
       sync: {
         pushPreferenceEnabled: readBool(['change_v1_push_enabled'], false),
+        databaseSyncEnabled: readBool(['change_v1_database_sync_enabled','database_sync_enabled'], false),
         liveSyncEnabled: readBool(['change_v1_live_sync_enabled','live_sync_enabled'], false),
         autoChallengesEnabled: readBool(['change_v1_auto_challenges_enabled','auto_challenges_enabled'], true),
+        autoChallengeCount: readAutoChallengeCountSetting(),
         challengeDifficulty: readChallengeDifficultySetting(),
         googleCalendarSyncEnabled: readBool(['change_v1_google_calendar_sync'], true)
       },
@@ -1029,11 +1054,16 @@
       }
 
       if(typeof sync.pushPreferenceEnabled === 'boolean') writeJson('change_v1_push_enabled', sync.pushPreferenceEnabled);
+      if(typeof sync.databaseSyncEnabled === 'boolean'){
+        writeJson('change_v1_database_sync_enabled', sync.databaseSyncEnabled);
+        writeJson('database_sync_enabled', sync.databaseSyncEnabled);
+      }
       if(typeof sync.liveSyncEnabled === 'boolean'){
         writeJson('change_v1_live_sync_enabled', sync.liveSyncEnabled);
         writeJson('live_sync_enabled', sync.liveSyncEnabled);
       }
       if(typeof sync.autoChallengesEnabled === 'boolean'){ writeJson('change_v1_auto_challenges_enabled', sync.autoChallengesEnabled); writeJson('auto_challenges_enabled', sync.autoChallengesEnabled); }
+      if(sync.autoChallengeCount){ applyAutoChallengeCountSettingSync(sync.autoChallengeCount); }
       if(sync.challengeDifficulty){ applyChallengeDifficultySettingSync(sync.challengeDifficulty); }
       if(typeof sync.googleCalendarSyncEnabled === 'boolean'){
         writeRaw('change_v1_google_calendar_sync', sync.googleCalendarSyncEnabled ? 'true' : 'false');
@@ -1067,6 +1097,8 @@
       setValue('us-urlaub-days', dash.urlaubTotalDays);
       setChecked('us-toggle-database', sync.databaseSyncEnabled !== undefined ? sync.databaseSyncEnabled : sync.liveSyncEnabled);
       setChecked('us-toggle-auto', sync.autoChallengesEnabled);
+      setValue('us-auto-count', sync.autoChallengeCount || readAutoChallengeCountSetting());
+      setValue('set-auto-count', sync.autoChallengeCount || readAutoChallengeCountSetting());
       setValue('us-challenge-difficulty', sync.challengeDifficulty || readChallengeDifficultySetting());
       setValue('set-challenge-difficulty', sync.challengeDifficulty || readChallengeDifficultySetting());
       setChecked('us-toggle-gsync', sync.googleCalendarSyncEnabled);
@@ -1185,7 +1217,7 @@
   function installHooks(){
     [
       '_saveCalSettings','saveCalSettings','setHolidayState','saveCalendarSettings',
-      'setPushNotificationsEnabled','enablePushNotifications','disablePushNotifications','setDatabaseSyncEnabled','setLiveSyncEnabled','setAutoChallengesEnabled','setChallengeDifficulty',
+      'setPushNotificationsEnabled','enablePushNotifications','disablePushNotifications','setDatabaseSyncEnabled','setLiveSyncEnabled','setAutoChallengesEnabled','setAutoChallengeCount','setChallengeDifficulty',
       'setFriseurEnabled','setFriseurWeeks','setUrlaubEnabled','setUrlaubDays','addUrlaubHalfDay','removeUrlaubHalfDay'
     ].forEach(wrapSettingFunction);
 

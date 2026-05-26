@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-05-26 · Step 2 Auto-Challenge Tagesplan
+> Zuletzt aktualisiert: 2026-05-26 · Step 3 Settings-Struktur + Auto-Challenge Umfang
 
 ---
 
@@ -63,13 +63,13 @@ Jeder Kalendertag enthält:
 - Auto-Challenges werden zentral über `core/challenges/challengeDifficulty.js` erzeugt.
 - Schwierigkeitsgrade: `easy` (Leicht), `medium` (Mittel), `hard` (Schwer), `hardcore` (Hardcore).
 - Die Steigerung muss spürbar sein: höhere Wiederholungen, längere Haltezeiten und deutlich höhere Punkte.
-- Pro Tag gibt es genau einen generierten Auto-Challenge-Satz je aktiver Schwierigkeit.
+- Pro Tag gibt es genau einen generierten Auto-Challenge-Satz je aktiver Schwierigkeit und eingestelltem Tagesumfang.
 - Auto-IDs folgen dem Schema `auto_YYYY-MM-DD_<difficulty>_<index>`.
 - Jeder Auto-Eintrag enthält `source:"auto"`, `generatedFor`, `generationKey`, `difficulty`, `difficultyLabel` und `autoVersion`.
 - Alte Auto-IDs/andere Schwierigkeitsgrade desselben Tages werden beim Generieren entfernt, damit keine doppelten `auto_YYYY-MM-DD...` Einträge entstehen.
 - Manuell angelegte Challenges bleiben unabhängig vom Schwierigkeitsgrad und werden nicht überschrieben.
-- Speicherung: `change_v1_challenge_difficulty`, `challenge_difficulty` und die täglichen Aufgaben in `change_v1_challenges`/`challenges`.
-- Firebase-Sync: `change_settings.sync.challengeDifficulty` und die generierten Tagesaufgaben in `change_challenges` werden über Datenbank-Sync synchronisiert.
+- Speicherung: `change_v1_challenge_difficulty`, `challenge_difficulty`, `change_v1_auto_challenge_count`, `auto_challenge_count` und die täglichen Aufgaben in `change_v1_challenges`/`challenges`.
+- Firebase-Sync: `change_settings.sync.challengeDifficulty`, `change_settings.sync.autoChallengeCount` und die generierten Tagesaufgaben in `change_challenges` werden über Datenbank-Sync synchronisiert.
 
 
 ### Layout (Desktop)
@@ -79,6 +79,24 @@ Jeder Kalendertag enthält:
 - **Heutige Aufgaben** (`.challenge-card`) + **Rangliste** (`.leader-card`): gleich hoch via `align-items:stretch` + `flex:1` auf Listen
 - **Mitspieler-Button** entfernt (war im `.leader-card-head`, Funktion `openParticipantPanel`)
 - Titel der rechten Karte: „Rangliste" (vorher „Kontest")
+
+
+---
+
+## ⚙️ Einstellungen
+
+Tab-Reihenfolge im Settings-Panel:
+- `▦ Dashboard`
+- `📅 Kalender`
+- `🏆 Challenges`
+- `↻ Sync`
+- `⚙︎ App`
+
+Regeln:
+- Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
+- Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
+- `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
+- `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
 
 ---
 

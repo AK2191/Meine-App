@@ -7,7 +7,9 @@
 
   var STORAGE_KEYS = ['change_v1_challenge_difficulty', 'challenge_difficulty'];
   var DEFAULT_LEVEL = 'easy';
-  var DAILY_COUNT = 7;
+  var DEFAULT_DAILY_COUNT = 7;
+  var COUNT_KEYS = ['change_v1_auto_challenge_count', 'auto_challenge_count'];
+  var COUNT_OPTIONS = [3, 5, 7, 10];
   var AUTO_VERSION = 2;
   var YT = 'https://www.youtube.com/results?search_query=';
 
@@ -96,6 +98,38 @@
   function writeRaw(key, value){
     try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){}
   }
+  function normalizeCount(value){
+    var n = parseInt(value, 10);
+    if(COUNT_OPTIONS.indexOf(n) >= 0) return n;
+    return DEFAULT_DAILY_COUNT;
+  }
+  function getDailyCount(){
+    for(var i=0;i<COUNT_KEYS.length;i++){
+      var v = readRaw(COUNT_KEYS[i]);
+      if(v !== null && v !== undefined && v !== '') return normalizeCount(v);
+    }
+    return DEFAULT_DAILY_COUNT;
+  }
+  function setDailyCount(value, options){
+    var next = normalizeCount(value);
+    COUNT_KEYS.forEach(function(key){ writeRaw(key, next); });
+    try{ if(typeof window.ls === 'function') window.ls('auto_challenge_count', next); }catch(e){}
+    try{ ensureDailyState(todayKey(), getDifficulty(), {persist:true, publish: !(options && options.publish === false)}); }catch(e){}
+    try{ window.dispatchEvent(new CustomEvent('change:auto-challenge-count', {detail:{count:next}})); }catch(e){}
+    if(!options || options.render !== false){
+      try{ if(typeof window.renderChallenges === 'function') window.renderChallenges(); }catch(e){}
+      try{ if(typeof window.renderCalendar === 'function') window.renderCalendar(); }catch(e){}
+      try{ if(typeof window.buildDashboard === 'function') window.buildDashboard(); }catch(e){}
+    }
+    return next;
+  }
+  function countOptions(selected){
+    selected = normalizeCount(selected || getDailyCount());
+    return COUNT_OPTIONS.map(function(n){
+      var label = n === 3 ? 'Kompakt' : n === 5 ? 'Normal' : n === 7 ? 'Aktiv' : 'Intensiv';
+      return '<option value="'+n+'" '+(selected===n?'selected':'')+'>'+label+' · '+n+' Aufgaben</option>';
+    }).join('');
+  }
   function getDifficulty(){
     for(var i=0;i<STORAGE_KEYS.length;i++){
       var v = readRaw(STORAGE_KEYS[i]);
@@ -183,7 +217,7 @@
     if(!isAutoChallengesEnabled()) return [];
     difficulty = normalize(difficulty || getDifficulty());
     var cfg = LEVELS[difficulty] || LEVELS[DEFAULT_LEVEL];
-    return rotateDeterministic(cfg.pool, dateKey+'|'+difficulty+'|v'+AUTO_VERSION).slice(0, DAILY_COUNT).map(function(tuple, index){
+    return rotateDeterministic(cfg.pool, dateKey+'|'+difficulty+'|v'+AUTO_VERSION).slice(0, getDailyCount()).map(function(tuple, index){
       return toChallenge(tuple, index, dateKey, difficulty);
     });
   }
@@ -349,7 +383,11 @@
     reconcileChallenges: reconcileChallenges,
     isManagedAutoChallenge: isManagedAutoChallenge,
     getDailyPlanKey: dailyPlanKey,
-    dailyCount: DAILY_COUNT,
+    dailyCount: DEFAULT_DAILY_COUNT,
+    getDailyCount: getDailyCount,
+    setDailyCount: setDailyCount,
+    countOptions: countOptions,
+    countChoices: COUNT_OPTIONS.slice(),
     autoVersion: AUTO_VERSION,
     findChallengeById: findChallengeById,
     selectOptions: selectOptions,

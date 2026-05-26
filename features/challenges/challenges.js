@@ -131,7 +131,7 @@
     try{ var x=new URL(u); return (x.protocol==='https:'||x.protocol==='http:') ? u : ''; }catch(e){ return ''; }
   }
 
-  /* 7 deterministisch per Datum und eingestelltem Schwierigkeitsgrad */
+  /* Dynamisch deterministisch per Datum, Schwierigkeit und eingestelltem Tagesumfang */
   function getDailyPool(dk){
     dk=dk||todayStr();
     var D = difficultyApi();
@@ -144,7 +144,8 @@
     var seed=dk.replace(/-/g,'').split('').reduce(function(a,c){return a*31+c.charCodeAt(0);},0);
     var arr=POOL.slice().sort(function(a,b){return String(a.id).localeCompare(String(b.id));});
     var off=((seed%arr.length)+arr.length)%arr.length;
-    return arr.slice(off).concat(arr.slice(0,off)).slice(0,7).map(function(ch){
+    var count = (D && D.getDailyCount) ? D.getDailyCount() : 7;
+    return arr.slice(off).concat(arr.slice(0,off)).slice(0,count).map(function(ch){
       return Object.assign({difficulty:'easy', difficultyLabel:'Leicht', level:'Leicht'}, ch);
     });
   }
@@ -444,7 +445,8 @@
     // Challenges zu überschreiben. Pro Tag gibt es genau einen generierten Satz.
     var today = todayStr();
     var daily = window.ensureDailyAutoChallenges ? window.ensureDailyAutoChallenges(today) : getDailyPool(today);
-    var exportKey = today + ':' + (difficultyApi() && difficultyApi().get ? difficultyApi().get() : 'fallback') + ':' + daily.map(function(ch){return ch.id;}).join(',');
+    var Dmeta = difficultyApi();
+    var exportKey = today + ':' + (Dmeta && Dmeta.get ? Dmeta.get() : 'fallback') + ':' + (Dmeta && Dmeta.getDailyCount ? Dmeta.getDailyCount() : daily.length) + ':' + daily.map(function(ch){return ch.id;}).join(',');
     if(exportKey !== lastLegacyExportKey){
       var list = Array.isArray(window.challenges) ? window.challenges.slice() : [];
       var changed = false;

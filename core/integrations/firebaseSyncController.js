@@ -27,6 +27,10 @@
     try{ if(window.ChangeChallengeDifficulty && window.ChangeChallengeDifficulty.get) return window.ChangeChallengeDifficulty.get(); }catch(e){}
     return String(readJson('change_v1_challenge_difficulty', readJson('challenge_difficulty', 'easy')) || 'easy').toLowerCase();
   }
+  function readAutoChallengeCount(){
+    try{ if(window.ChangeChallengeDifficulty && window.ChangeChallengeDifficulty.getDailyCount) return window.ChangeChallengeDifficulty.getDailyCount(); }catch(e){}
+    return parseInt(readJson('change_v1_auto_challenge_count', readJson('auto_challenge_count', 7)), 10) || 7;
+  }
   function writeDatabaseSyncState(enabled){
     writeJson('database_sync_enabled', !!enabled);
     writeJson('change_v1_database_sync_enabled', !!enabled);
@@ -202,6 +206,7 @@
         liveSyncEnabled: true,
         pushPreferenceEnabled: readJson('change_v1_push_enabled', false) === true,
         autoChallengesEnabled: readJson('change_v1_auto_challenges_enabled', readJson('auto_challenges_enabled', true)) !== false,
+        autoChallengeCount: readAutoChallengeCount(),
         challengeDifficulty: readChallengeDifficulty(),
         googleCalendarSyncEnabled: String(localStorage.getItem('change_v1_google_calendar_sync') || 'true') !== 'false'
       },
