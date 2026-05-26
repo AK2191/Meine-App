@@ -433,7 +433,10 @@
     var p=pointsForDate(dk,myId()); return p>0?{points:p,done:true,allDone:true}:null;
   };
   window.getOpenChallengesForDashboard = function(){
-    return getDailyPool(todayStr()).filter(function(ch){return !isDoneToday(ch.id);}).slice(0,4);
+    // Dashboard zeigt bewusst alle offenen Tagesaufgaben – aber keine optionalen Bonuspunkte.
+    return getDailyPool(todayStr()).filter(function(ch){
+      return ch && ch.active !== false && ch.optional !== true && !isDoneToday(ch.id);
+    });
   };
 
   /* ── Eigentümer der renderChallenges-Funktion bleiben ──

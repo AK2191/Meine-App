@@ -248,6 +248,75 @@
       return false;
     }
   }
+  function todayKey(){
+    var d = new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function challengeDocDate(ch){
+    if(!ch) return '';
+    var direct = String(ch.generatedFor || ch.date || ch.startDate || '').slice(0,10);
+    if(direct) return direct;
+    var m = String(ch.id || '').match(/^auto_(\d{4}-\d{2}-\d{2})/);
+    return m ? m[1] : '';
+  }
+  function isOptionalChallenge(ch){
+    return !!(ch && (ch.optional === true || ch._optional === true || /^opt_/i.test(String(ch.id || ''))));
+  }
+  function isAutoChallenge(ch){
+    var id = String(ch && ch.id || '');
+    return !!(ch && (ch.auto === true || ch.source === 'auto' || ch.generatedFor || /^auto_\d{4}-\d{2}-\d{2}/.test(id) || /^auto_.*_sport_/.test(id)));
+  }
+  function shouldPublishChallenge(ch){
+    if(!ch || !ch.id || ch.active === false || isOptionalChallenge(ch)) return false;
+    if(!isAutoChallenge(ch)) return true;
+    var day = todayKey();
+    if(challengeDocDate(ch) !== day) return false;
+    try{
+      if(window.ChangeChallengeDifficulty && typeof window.ChangeChallengeDifficulty.isManagedAutoChallenge === 'function'){
+        return window.ChangeChallengeDifficulty.isManagedAutoChallenge(ch, day) === true;
+      }
+    }catch(e){}
+    return true;
+  }
+  function filteredChallengesForPublish(){
+    ensureAutoChallengesForToday();
+    var list = currentChallenges().filter(shouldPublishChallenge);
+    var seen = new Set();
+    return list.filter(function(ch){
+      var id = String(ch.id || '');
+      if(!id || seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
+  }
+  async function cleanupOldAutoChallengeDocs(database){
+    if(!database) return;
+    var day = todayKey();
+    var refs = new Map();
+    async function collect(query){
+      try{
+        var snap = await query.limit(250).get();
+        snap.forEach(function(doc){
+          var data = doc.data() || {};
+          var docDate = challengeDocDate(Object.assign({id:doc.id}, data));
+          if(docDate && docDate !== day) refs.set(doc.id, doc.ref);
+        });
+      }catch(e){}
+    }
+    try{
+      await collect(database.collection('change_challenges').where('source','==','auto'));
+      await collect(database.collection('change_challenges').where('auto','==',true));
+      if(!refs.size) return;
+      var batch = database.batch();
+      var count = 0;
+      refs.forEach(function(ref){
+        if(count >= 450) return;
+        batch.delete(ref);
+        count++;
+      });
+      if(count) await batch.commit();
+    }catch(e){ console.warn('Firebase Sync Controller auto cleanup:', e); }
+  }
   function challengePayload(ch){
     return {
       id: String(ch.id),
@@ -276,12 +345,12 @@
   }
   async function publishChallengeTemplates(database){
     if(!database) return false;
-    ensureAutoChallengesForToday();
-    var list = currentChallenges().filter(function(ch){ return ch && ch.id; });
+    var list = filteredChallengesForPublish();
+    await cleanupOldAutoChallengeDocs(database);
     if(!list.length) return true;
     var seen = new Set();
     try{
-      for(var i=0; i<list.length && seen.size < 140; i++){
+      for(var i=0; i<list.length; i++){
         var ch = list[i];
         var id = String(ch.id);
         if(seen.has(id)) continue;

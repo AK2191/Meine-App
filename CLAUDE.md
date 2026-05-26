@@ -391,3 +391,16 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Dashboard-Settings enthalten einen eigenen Schalter **Geburtstage**. Dieser wird über `change_settings.dashboard.birthdaysEnabled` synchronisiert.
 - Kalender-Geburtstage sind normale, kleine Kalendereinträge mit `type: "birthday"`, `source: "birthday"`, `color: "purple"` und dürfen keine großen visuellen Elemente erzeugen.
 - Benachrichtigungen für Geburtstage laufen über die bestehende Glocke/Notification-Zentrale, kein eigener Push-Button.
+
+## Änderung 2026-05-26 – Dashboard-Challenges & Firestore-Begrenzung
+
+- Dashboard zeigt im Challenge-Bereich alle offenen Tages-Challenges, aber keine optionalen Bonusaufgaben.
+- Optionale Challenges bleiben nur in der Challenge-Ansicht unter „Optionale Punkte“.
+- Datenbank-Sync schreibt in `change_challenges` nur noch aktive manuelle Challenges sowie den aktuellen Auto-Challenge-Tagesplan.
+- Alte Auto-Challenge-Dokumente vergangener Tage werden beim Datenbank-Sync aus `change_challenges` bereinigt; Punkte bleiben ausschließlich in `change_completions`.
+- Keine Firebase-Flut: optionale Aufgaben und alte Auto-Pläne dürfen nicht erneut als aktive Challenge-Vorlagen veröffentlicht werden.
+
+### Settings · Kalender-Layout
+- Kalender-Einstellungen werden als eigene Feature-Karten dargestellt: Feiertage, Challengepunkte, Kalenderwochen.
+- Keine doppelten Divider/Trennstriche in Kalender-Settings; klare Apple/Notion-Card-Hierarchie.
+- Kalender-Logik bleibt unverändert: Feiertag klein neben Datum, Termine darunter, Challengepunkte nur als kleines Badge unten rechts.

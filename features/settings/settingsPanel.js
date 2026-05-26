@@ -167,13 +167,49 @@
     var detail = loc ? 'Standort freigegeben' : 'Standort noch nicht freigegeben';
     return {settings:settings, location:loc, active:active, label:active ? (loc ? 'AKTIV' : 'STANDORT FEHLT') : 'AUS', tone:active ? (loc ? 'ok' : 'error') : 'off', detail:detail};
   }
+  function featureSwitch(title, subtitle, id, checked, disabled){
+    var control = '<label class="switch"><input type="checkbox" id="'+id+'" '+(checked ? 'checked' : '')+' '+(disabled ? 'disabled' : '')+'><span class="slider"></span></label>';
+    return '<div class="change-feature-row"><div><div class="change-feature-row-title">'+title+'</div>'+(subtitle ? '<div class="change-feature-row-sub">'+subtitle+'</div>' : '')+'</div>'+control+'</div>';
+  }
+  function featureField(label, inner, hint){
+    return '<div class="change-feature-field"><label class="flabel">'+esc(label)+'</label>'+inner+(hint ? '<div class="change-feature-row-sub">'+esc(hint)+'</div>' : '')+'</div>';
+  }
   function calendarPane(){
     var options = calendarOptions();
-    return card('Region', '<div class="change-settings-actions"><label class="flabel">Bundesland für Feiertage</label><select class="finput" id="set-holiday-state">'+stateOptions(options.holidayState)+'</select></div>')
-      + card('Kalenderansicht',
-        switchRow('Feiertage anzeigen', '', 'set-show-holidays', options.showHolidays)+
-        switchRow('Challengepunkte im Kalender', '', 'set-show-points', options.showChallengeDots)+
-        switchRow('Kalenderwochen anzeigen', '', 'set-show-kw', options.showWeekNumbers));
+    var holidaysBody = featureField(
+      'Region',
+      '<select class="finput" id="set-holiday-state">'+stateOptions(options.holidayState)+'</select>',
+      'Bestimmt, welche gesetzlichen Feiertage klein im Kalender erscheinen.'
+    );
+    return '<div class="change-settings-stack">'
+      + settingsFeatureCard(
+        '🗓️',
+        'Feiertage',
+        options.showHolidays ? 'AKTIV' : 'AUS',
+        options.showHolidays ? 'ok' : 'off',
+        'Kleine Feiertags-Hinweise direkt am Tag.',
+        '<label class="switch"><input type="checkbox" id="set-show-holidays" '+(options.showHolidays ? 'checked' : '')+'><span class="slider"></span></label>',
+        holidaysBody
+      )
+      + settingsFeatureCard(
+        '🏆',
+        'Challengepunkte',
+        options.showChallengeDots ? 'AKTIV' : 'AUS',
+        options.showChallengeDots ? 'ok' : 'off',
+        'Zeigt erledigte Punkte nur als kleines Badge unten rechts.',
+        '<label class="switch"><input type="checkbox" id="set-show-points" '+(options.showChallengeDots ? 'checked' : '')+'><span class="slider"></span></label>',
+        '<div class="change-feature-note">Keine großen Elemente im Kalender. Die Tageszellen bleiben ruhig und übersichtlich.</div>'
+      )
+      + settingsFeatureCard(
+        '📌',
+        'Kalenderwochen',
+        options.showWeekNumbers ? 'AKTIV' : 'AUS',
+        options.showWeekNumbers ? 'ok' : 'off',
+        'Zeigt KW dezent für Monats- und Jahresplanung.',
+        '<label class="switch"><input type="checkbox" id="set-show-kw" '+(options.showWeekNumbers ? 'checked' : '')+'><span class="slider"></span></label>',
+        ''
+      )
+      + '</div>';
   }
   function dashboardBool(getterName, key, fallback){
     try{ if(typeof window[getterName] === 'function') return !!window[getterName](); }catch(e){}

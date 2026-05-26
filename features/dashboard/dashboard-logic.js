@@ -206,9 +206,19 @@
       const td2 = todayKey();
       const me = String((window.userInfo||{}).email||'').toLowerCase();
       const doneIds = new Set((window.challengeCompletions||[]).filter(c=>String(c.date||'').slice(0,10)===td2&&String(c.playerId||c.userEmail||c.email||'').toLowerCase()===me).map(c=>String(c.challengeId)));
-      const pending = (window.challenges||[]).filter(c=>c&&c.active!==false&&!doneIds.has(String(c.id))).slice(0,4);
+      const isOptionalChallenge = c => !!(c && (c.optional === true || c._optional === true || /^opt_/i.test(String(c.id||''))));
+      const isChallengeDueToday = c => {
+        if(!c || c.active === false || isOptionalChallenge(c)) return false;
+        const rec = String(c.recurrence || '').toLowerCase();
+        const dk = String(c.generatedFor || c.date || c.startDate || '').slice(0,10);
+        if(rec === 'daily') return !dk || dk <= td2;
+        return !dk || dk === td2;
+      };
+      const pending = (typeof window.getOpenChallengesForDashboard === 'function')
+        ? window.getOpenChallengesForDashboard()
+        : (window.challenges||[]).filter(c=>c&&isChallengeDueToday(c)&&!doneIds.has(String(c.id)));
       chHtml = pending.map(c=>`<div class="dash-row" onclick="setMainView('challenges')">
-        <div class="dash-row-icon" style="background:${c._optional?'var(--amb-d)':'var(--acc-d)'}">${c.icon||'🏆'}</div>
+        <div class="dash-row-icon" style="background:var(--acc-d)">${c.icon||'🏆'}</div>
         <div class="dash-row-body"><div class="dash-row-title">${c.title||c.name||'Challenge'}</div><div class="dash-row-sub">${parseInt(c.points,10)||0} Punkte</div></div>
         <span class="dash-row-badge badge-amber">offen</span>
       </div>`).join('') || '<div class="dash-empty">Alle Challenges heute erledigt ✓</div>';

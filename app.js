@@ -2132,6 +2132,32 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
 (function(){
   function hasCfg(){const c=window.FIREBASE_CONFIG||{};return !!(c.apiKey&&!String(c.apiKey).includes('HIER_')&&c.projectId&&window.firebase)}
   function getDb(){try{return firebase.firestore()}catch(e){return null}}
+  function publishTodayKey(){ return dateKey(new Date()); }
+  function publishChallengeDate(ch){
+    if(!ch) return '';
+    const raw = ch.generatedFor || ch.date || ch.startDate || '';
+    const direct = String(raw || '').slice(0,10);
+    if(direct) return direct;
+    const m = String(ch.id || '').match(/^auto_(\d{4}-\d{2}-\d{2})/);
+    return m ? m[1] : '';
+  }
+  function isOptionalChallengeForPublish(ch){
+    return !!(ch && (ch.optional === true || ch._optional === true || /^opt_/i.test(String(ch.id || ''))));
+  }
+  function shouldPublishChallengeDoc(ch){
+    if(!ch || !ch.id || ch.active === false || isOptionalChallengeForPublish(ch)) return false;
+    const id = String(ch.id || '');
+    const isAuto = ch.auto === true || ch.source === 'auto' || !!ch.generatedFor || /^auto_\d{4}-\d{2}-\d{2}/.test(id) || /^auto_.*_sport_/.test(id);
+    if(!isAuto) return true;
+    const today = publishTodayKey();
+    if(publishChallengeDate(ch) !== today) return false;
+    try{
+      if(window.ChangeChallengeDifficulty && typeof window.ChangeChallengeDifficulty.isManagedAutoChallenge === 'function'){
+        return window.ChangeChallengeDifficulty.isManagedAutoChallenge(ch, today) === true;
+      }
+    }catch(e){}
+    return true;
+  }
   function chDueData(ch){return {
     id:String(ch.id),
     title:ch.title||'Challenge',
@@ -2170,7 +2196,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     try{
       const seen = new Set();
       for(const ch of (challenges||[])){
-        if(!ch || !ch.id) continue;
+        if(!shouldPublishChallengeDoc(ch)) continue;
         const id = String(ch.id);
         if(seen.has(id)) continue;
         seen.add(id);
