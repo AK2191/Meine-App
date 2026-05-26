@@ -431,3 +431,10 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Alle Einstellungs-Tabs verwenden denselben Feature-Karten-Stil wie der Kalender-Tab.
 - Dashboard-, Challenges-, Sync- und App-Kacheln dürfen keine alten Header-/Zeilenkarten mit doppelten Trennlinien mehr erzeugen.
 - Jede Option ist als ruhige Feature-Karte aufgebaut: Icon, Titel, Status-Badge, Beschreibung, optionaler Toggle rechts und klar abgegrenzter Body.
+
+## Friseur & Sync-Protokoll Stabilität
+
+- Friseur ist ein eigenes Feature unter `features/friseur/friseur.js`.
+- Friseur darf nicht mehr an `features/settings/settings-logic.js` gekoppelt sein, damit der Dashboard-Punkt auch bei temporären Settings-/Sync-Ladeproblemen sichtbar bleibt.
+- Ohne gespeicherte Nutzerentscheidung ist Friseur standardmäßig sichtbar; ausgeblendet wird es nur über Einstellungen → Dashboard.
+- Das lokale Sync-Protokoll dedupliziert gleiche direkt aufeinanderfolgende Einträge innerhalb von 10 Minuten und zeigt Wiederholungen als Zähler statt als lange Liste.

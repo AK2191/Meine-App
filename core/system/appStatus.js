@@ -47,6 +47,32 @@
   }
   function nowIso(){ return new Date().toISOString(); }
 
+  function logKey(item){
+    return [item.kind || '', item.title || '', item.detail || '', item.tone || ''].join('|');
+  }
+  function collapseLog(list){
+    if(!Array.isArray(list)) return [];
+    var out = [];
+    list.forEach(function(raw){
+      if(!raw) return;
+      var item = Object.assign({kind:'sync',title:'Aktion',detail:'',tone:'info',at:nowIso(),count:1}, raw);
+      var prev = out[out.length - 1];
+      var same = prev && logKey(prev) === logKey(item);
+      var close = false;
+      if(same){
+        var a = new Date(prev.at || 0).getTime();
+        var b = new Date(item.at || 0).getTime();
+        close = Math.abs(a - b) <= 10 * 60 * 1000;
+      }
+      if(same && close){
+        prev.at = new Date(Math.max(new Date(prev.at || 0).getTime(), new Date(item.at || 0).getTime())).toISOString();
+        prev.count = (parseInt(prev.count, 10) || 1) + (parseInt(item.count, 10) || 1);
+      }else{
+        out.push(item);
+      }
+    });
+    return out.slice(0, MAX_LOG);
+  }
   function record(kind, title, detail, tone){
     var item = {
       id: 'log_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
@@ -54,11 +80,22 @@
       kind: String(kind || 'sync'),
       title: String(title || 'Aktion'),
       detail: String(detail || ''),
-      tone: String(tone || 'info')
+      tone: String(tone || 'info'),
+      count: 1
     };
     var list = readJson(LOG_KEY, []);
     if(!Array.isArray(list)) list = [];
-    list.unshift(item);
+    var first = list[0];
+    var firstAt = first ? new Date(first.at || 0).getTime() : 0;
+    var sameAsFirst = first && logKey(first) === logKey(item) && Math.abs(Date.now() - firstAt) <= 10 * 60 * 1000;
+    if(sameAsFirst){
+      first.at = item.at;
+      first.count = (parseInt(first.count, 10) || 1) + 1;
+      list[0] = first;
+    }else{
+      list.unshift(item);
+    }
+    list = collapseLog(list);
     writeJson(LOG_KEY, list.slice(0, MAX_LOG));
     try{ window.dispatchEvent(new CustomEvent('change:sync-log', {detail:item})); }catch(e){}
     return item;
@@ -180,14 +217,15 @@
       + '</div>';
   }
   function logItems(){
-    var list = readJson(LOG_KEY, []);
-    return Array.isArray(list) ? list : [];
+    var list = collapseLog(readJson(LOG_KEY, []));
+    try{ writeJson(LOG_KEY, list.slice(0, MAX_LOG)); }catch(e){}
+    return list;
   }
   function logHtml(limit){
     var list = logItems().slice(0, limit || 8);
     if(!list.length) return '<div class="change-feature-note">Noch kein Sync-Protokoll vorhanden.</div>';
     return '<div class="change-sync-log-list">'+list.map(function(item){
-      return '<div class="change-sync-log-row"><div class="change-sync-log-icon '+esc(item.tone || 'info')+'">'+(item.tone === 'ok'?'✓':item.tone === 'error'?'!':'•')+'</div><div><div class="change-sync-log-title">'+esc(item.title)+'</div><div class="change-sync-log-detail">'+esc(item.detail || '')+'</div><div class="change-sync-log-time">'+esc(formatRelative(item.at))+'</div></div></div>';
+      return '<div class="change-sync-log-row"><div class="change-sync-log-icon '+esc(item.tone || 'info')+'">'+(item.tone === 'ok'?'✓':item.tone === 'error'?'!':'•')+'</div><div><div class="change-sync-log-title">'+esc(item.title)+(item.count && item.count > 1 ? ' <span class="change-sync-log-count">×'+esc(item.count)+'</span>' : '')+'</div><div class="change-sync-log-detail">'+esc(item.detail || '')+'</div><div class="change-sync-log-time">'+esc(formatRelative(item.at))+'</div></div></div>';
     }).join('')+'</div>';
   }
 

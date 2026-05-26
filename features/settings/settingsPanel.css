@@ -98,3 +98,5 @@
 .change-feature-body .change-about-card{padding:0}
 .change-feature-body .change-about-meta{border:1px solid var(--b1);border-radius:14px;overflow:hidden;background:var(--s2);margin-top:12px}
 .change-feature-body .change-about-meta>div{padding:10px 12px}
+
+.change-sync-log-count{display:inline-flex;align-items:center;justify-content:center;margin-left:6px;padding:1px 6px;border-radius:999px;background:var(--s2);border:1px solid var(--b1);color:var(--t3);font-size:10px;font-weight:800;vertical-align:middle}

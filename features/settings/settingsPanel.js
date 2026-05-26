@@ -298,7 +298,7 @@
       );
   }
   function dashboardPane(){
-    var friseurOn = dashboardBool('getFriseurEnabled', 'change_v1_friseur_enabled', false);
+    var friseurOn = dashboardBool('getFriseurEnabled', 'change_v1_friseur_enabled', true);
     var birthdaysOn = dashboardBool('getBirthdaysEnabled', 'change_v1_birthdays_enabled', true);
     var urlaubOn = dashboardBool('getUrlaubEnabled', 'urlaub_tracker_on', true);
     var friseurWeeks = dashboardNumber('getFriseurWeeks', ['change_v1_friseur_weeks','friseur_weeks'], 3);
