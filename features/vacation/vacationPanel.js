@@ -61,6 +61,12 @@
       d.setDate(d.getDate() + 1);
     }
   }
+  function countCalendarDays(start, end){
+    var first = new Date(start + 'T12:00:00');
+    var last = new Date(end + 'T12:00:00');
+    if(isNaN(first) || isNaN(last) || last < first) return 0;
+    return Math.round((last - first) / 86400000) + 1;
+  }
   function dayValue(dateStr){ return isHalfDay(dateStr) ? 0.5 : 1; }
   function fmtNumber(value){
     var n = Math.round((Number(value) || 0) * 2) / 2;
@@ -90,7 +96,7 @@
       var end = r.end > yearEnd ? yearEnd : r.end;
       var days = 0;
       forEachWorkday(start, end, function(day){ days += dayValue(day); });
-      return {title:titleOf(ev), start:start, end:end, days:days, raw:ev};
+      return {title:titleOf(ev), start:start, end:end, days:days, calendarDays:countCalendarDays(start, end), raw:ev};
     }).sort(function(a,b){ return a.start.localeCompare(b.start) || a.title.localeCompare(b.title); });
   }
   function plannedDays(year, rows){
@@ -113,8 +119,11 @@
     if(!rows.length) return '<div class="change-vacation-empty">Noch keine Urlaubs-Einträge gefunden.<br><small>Tipp: Der Terminname muss „Urlaub“ enthalten.</small></div>';
     return '<div class="change-vacation-list">' + rows.map(function(row){
       var st = rowStatus(row, today);
-      var dayText = row.days === 0.5 ? '½ Tag' : row.days === 1 ? '1 Tag' : fmtNumber(row.days) + ' Tage';
-      return '<div class="change-vacation-row '+esc(st.cls)+'"><div class="change-vacation-dot"></div><div class="change-vacation-main"><div class="change-vacation-title">'+esc(row.title)+'</div><div class="change-vacation-date">'+esc(fmtRange(row.start, row.end))+'</div></div><div class="change-vacation-side"><span>'+esc(st.label)+'</span><strong>'+esc(dayText)+'</strong></div></div>';
+      var dayText = row.days === 0.5 ? '½ Urlaubstag' : row.days === 1 ? '1 Urlaubstag' : fmtNumber(row.days) + ' Urlaubstage';
+      var calText = row.calendarDays && row.calendarDays !== row.days
+        ? (row.calendarDays === 1 ? '1 Kalendertag' : row.calendarDays + ' Kalendertage')
+        : '';
+      return '<div class="change-vacation-row '+esc(st.cls)+'"><div class="change-vacation-dot"></div><div class="change-vacation-main"><div class="change-vacation-title">'+esc(row.title)+'</div><div class="change-vacation-date">'+esc(fmtRange(row.start, row.end))+'</div></div><div class="change-vacation-side"><span>'+esc(st.label)+'</span><strong>'+esc(dayText)+'</strong>'+(calText?'<small>'+esc(calText)+'</small>':'')+'</div></div>';
     }).join('') + '</div>';
   }
   function halfDayHtml(year){
@@ -134,8 +143,8 @@
     var remaining = total - planned;
     var pct = total > 0 ? Math.max(0, Math.min(100, Math.round(planned / total * 100))) : 0;
     var remainingClass = remaining < 0 ? 'bad' : remaining <= 3 ? 'warn' : 'ok';
-    var summary = '<div class="change-vacation-panel"><div class="change-vacation-summary"><div><strong>'+esc(fmtNumber(planned))+'</strong><span>Verplant</span></div><div class="'+remainingClass+'"><strong>'+esc(fmtNumber(remaining))+'</strong><span>Frei</span></div><div><strong>'+esc(fmtNumber(total))+'</strong><span>Jahresurlaub</span></div></div><div class="change-vacation-progress"><span style="width:'+pct+'%"></span></div><div class="change-vacation-caption">'+esc(fmtNumber(planned))+' von '+esc(fmtNumber(total))+' Tagen verplant</div>';
-    var body = summary + '<div class="change-vacation-section"><div class="change-vacation-section-title">Urlaube '+year+'</div>' + vacationRows(rows, today) + '</div>' + halfDayHtml(year) + '<div class="change-vacation-note">Wochenenden und gesetzliche Feiertage werden nicht gezählt. Halbe Urlaubstage zählen mit 0,5.</div></div>';
+    var summary = '<div class="change-vacation-panel"><div class="change-vacation-summary"><div><strong>'+esc(fmtNumber(planned))+'</strong><span>Verplant</span></div><div class="'+remainingClass+'"><strong>'+esc(fmtNumber(remaining))+'</strong><span>Frei</span></div><div><strong>'+esc(fmtNumber(total))+'</strong><span>Jahresurlaub</span></div></div><div class="change-vacation-progress"><span style="width:'+pct+'%"></span></div><div class="change-vacation-caption">'+esc(fmtNumber(planned))+' von '+esc(fmtNumber(total))+' Urlaubstagen verplant</div>';
+    var body = summary + '<div class="change-vacation-section"><div class="change-vacation-section-title">Urlaube '+year+'</div>' + vacationRows(rows, today) + '</div>' + halfDayHtml(year) + '<div class="change-vacation-note">Gezählt werden Urlaubstage: Wochenenden und gesetzliche Feiertage zählen nicht. Bei Zeitraum-Einträgen zeigen wir zusätzlich die Kalendertage.</div></div>';
     if(typeof window.openPanel === 'function') window.openPanel('🏖️ Urlaub ' + year, body);
   }
 

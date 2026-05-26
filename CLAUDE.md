@@ -313,6 +313,7 @@ Zurückgeführte Verbesserungen:
 - Wetter-/Pollen-Dashboard inkl. kompakter mobiler Darstellung, Sonnenzeiten und stiller Aktualisierung.
 - Geburtstags-Wetter-Modul.
 - Kompakter Friseur-Tracker und Urlaub-Tracker im Dashboard.
+- Urlaub zählt bewusst Urlaubstage/Arbeitstage: Wochenenden und gesetzliche Feiertage zählen nicht; Zeitraum-Einträge dürfen zusätzlich Kalendertage anzeigen, um Missverständnisse zu vermeiden.
 - Profilpanel mit Cache-leeren-Aktion und Abmelden.
 - Settings-Panel mit besserer Sync-Struktur; Google verbinden nutzt TokenClient, keinen Firebase-Redirect.
 

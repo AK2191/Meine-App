@@ -23,6 +23,7 @@
 .change-vacation-side{text-align:right;display:grid;gap:3px;justify-items:end;flex:0 0 auto}
 .change-vacation-side span{font-size:10px;font-weight:900;color:var(--t4);text-transform:uppercase;letter-spacing:.06em}
 .change-vacation-side strong{font-size:13px;font-weight:950;color:var(--t1)}
+.change-vacation-side small{font-size:10px;font-weight:750;color:var(--t4);white-space:nowrap}
 .change-vacation-row.now .change-vacation-side strong{color:var(--acc)}
 .change-vacation-halfdays{display:flex;gap:8px;flex-wrap:wrap}
 .change-vacation-halfday{display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(245,158,11,.24);background:rgba(245,158,11,.1);border-radius:999px;padding:5px 9px;color:#b45309}

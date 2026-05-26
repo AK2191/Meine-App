@@ -2950,7 +2950,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       + '</div>';
 
     var noteHtml = '<div style="font-size:10.5px;color:var(--t4);margin-top:12px;padding-top:10px;border-top:1px solid var(--b1)">'
-      + '⚠ Wochenenden &amp; gesetzliche Feiertage werden nicht gezählt. Halbe Tage zählen als 0,5.</div>';
+      + '⚠ Gezählt werden Urlaubstage: Wochenenden &amp; gesetzliche Feiertage zählen nicht. Halbe Tage zählen als 0,5.</div>';
 
     if(typeof openPanel === 'function'){
       openPanel('🏖️ Urlaubsübersicht ' + year, summaryHtml + listHtml + halfHtml + noteHtml);
@@ -2970,7 +2970,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
 
     // Kompakte Sub-Zeile: "26 von 30 Tagen verbraucht"
     var subLine = '<b style="color:'+usedColor+'">'+formatVacationDays(used)+' von '+formatVacationDays(totalDays)+'</b>'
-              + '<span style="color:var(--t4)"> Tagen</span>';
+              + '<span style="color:var(--t4)"> Urlaubstage</span>';
 
     // Fortschrittsbalken inline (klein, passt in Sub-Zeile)
     var bar = '<span style="display:inline-block;width:48px;height:3px;background:var(--b1);border-radius:2px;vertical-align:middle;margin:0 6px">'
@@ -2981,7 +2981,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
       ? '<span class="dash-row-badge badge-green" style="white-space:nowrap;font-size:10px">✓ Vollständig verplant</span>'
       : remaining < 0
         ? '<span class="dash-row-badge badge-red" style="white-space:nowrap;font-size:10px">⚠ '+Math.abs(remaining)+' überzogen</span>'
-        : '<span class="dash-row-badge" style="white-space:nowrap;font-size:10px;background:'+(remaining<=5?'rgba(245,158,11,.15);color:#b45309':'rgba(45,106,79,.1);color:var(--acc)')+'">'+formatVacationDays(remaining)+' Tage übrig</span>';
+        : '<span class="dash-row-badge" style="white-space:nowrap;font-size:10px;background:'+(remaining<=5?'rgba(245,158,11,.15);color:#b45309':'rgba(45,106,79,.1);color:var(--acc)')+'">'+formatVacationDays(remaining)+' Urlaubstage übrig</span>';
 
     return '<div class="dash-row" onclick="window.openUrlaubPanel&&window.openUrlaubPanel()" style="cursor:pointer;border-top:1px solid var(--b1);margin-top:4px">'
       + '<div class="dash-row-icon" style="background:rgba(156,163,175,.1);font-size:14px">🏖️</div>'
