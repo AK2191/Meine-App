@@ -290,7 +290,7 @@
     function send(id, title, body, tag){
       if(fired.has(id) || Store.wasFired(id)) return;
       try{
-        new Notification(title, {body: body || '', tag: tag || id, icon: '/icons/icon-change-192.png'});
+        new Notification(title, {body: body || '', tag: tag || id, icon: './icons/icon-change-192.png'});
         Store.markFired(id);
         fired.add(id);
         sessionStorage.setItem(firedToday, JSON.stringify(Array.from(fired)));

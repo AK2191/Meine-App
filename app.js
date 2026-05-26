@@ -573,30 +573,53 @@ function showLogin(){
   document.getElementById('login-screen').style.display='flex';
 }
 
-// handleGoogleLogin: Firebase Auth signInWithRedirect (KEIN manueller Implicit-Flow, KEIN GIS-Popup!).
-// Warum: Der manuelle Implicit-Flow (response_type=token) liefert nur einen Token zurück, wenn die EXAKTE
-// redirect_uri (https://ak2191.github.io/Meine-App/) in der Google Cloud Console als "Autorisierte
-// Weiterleitungs-URI" eingetragen ist. War sie nicht → Google kam ohne Token zurück → Login-Loop.
-// Firebase signInWithRedirect nutzt stattdessen den Firebase-Auth-Handler
-// (meine-app-4ea9e.firebaseapp.com/__/auth/handler), dessen redirect_uri automatisch autorisiert ist.
-// Voraussetzung: ak2191.github.io muss in Firebase Console → Authentication → Settings → Authorized domains stehen.
-// COOP-sicher (Full-Page-Redirect, kein Popup). Rückkehr verarbeitet handleFirebaseRedirectLogin() beim Boot,
-// inkl. Google-Calendar-Token via credentialFromResult().
-function handleGoogleLogin(){
-  if(!window.firebase || !window.FIREBASE_CONFIG || !firebase.auth){
-    toast('Firebase wird geladen…',''); return;
-  }
+async function handleGoogleLogin(){
+  // Reparatur 2026-05-26:
+  // Haupt-Login wieder über Google Identity Services TokenClient.
+  // Firebase signInWithRedirect wurde entfernt, weil es auf GitHub Pages
+  // zu Redirect-/Login-Schleifen über den Firebase-Auth-Handler führen kann.
+  CLIENT_ID = getGoogleClientId();
+  if(!CLIENT_ID){document.getElementById('setup-modal').classList.add('show');return;}
+  if(!window.google || !google.accounts || !google.accounts.oauth2){toast('Google-Bibliothek wird geladen…','');return;}
   try{
-    if(!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
-    var provider = new firebase.auth.GoogleAuthProvider();
-    provider.addScope('profile');
-    provider.addScope('email');
-    provider.addScope('https://www.googleapis.com/auth/calendar');
-    provider.setCustomParameters({ prompt: 'select_account' });
-    firebase.auth().signInWithRedirect(provider);
+    const tc = google.accounts.oauth2.initTokenClient({
+      client_id: cleanGoogleClientId(CLIENT_ID),
+      scope: GCAL_SCOPE,
+      callback: async resp => {
+        if(resp && resp.error){toast('Anmeldung fehlgeschlagen: '+resp.error,'err');return;}
+        if(!resp || !resp.access_token){toast('Google-Anmeldung wurde nicht abgeschlossen','err');return;}
+        accessToken = resp.access_token;
+        try{ if(typeof SecureTokenStore !== 'undefined') SecureTokenStore.setToken(accessToken, 3600); else ls('access_token',accessToken); }catch(e){ try{ ls('access_token', accessToken); }catch(_e){} }
+        isDemoMode=false; try{ lsDel('demo_mode'); }catch(e){}
+        await fetchUserInfo();
+        if(!userInfo.email){
+          const cached = ls('user_info_safe') || {};
+          if(cached.email) userInfo = saveUserProfileInfo({name:cached.name||'',email:cached.email||'',picture:cached.picture||''});
+        }
+        try{ if(typeof SecureTokenStore !== 'undefined') SecureTokenStore.setUser(userInfo); }catch(e){}
+        try{ ls('user_info_safe', {name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''}); ls('was_logged_in', true); }catch(e){}
+        try{ if(typeof startTokenAutoRefresh === 'function') startTokenAutoRefresh(); }catch(e){}
+        bootMainApp();
+        try{ loadGoogleData(); }catch(e){}
+        setTimeout(async () => {
+          try{
+            // Firebase darf den erfolgreichen Google-Login nicht mehr kaputt machen.
+            // Popup versuchen, aber NIEMALS automatisch in Redirect wechseln.
+            if(window.signInChangeFirebaseWithGoogle){
+              const fb = await window.signInChangeFirebaseWithGoogle({ popup: true, allowRedirect: false });
+              if(fb && (fb.user || fb.reused) && typeof initFirebaseLive === 'function') await initFirebaseLive();
+            } else if(window.ensureChangeFirebaseAuth){
+              const ok = await window.ensureChangeFirebaseAuth({ silent:true, waitMs:2000 });
+              if(ok && typeof initFirebaseLive === 'function') await initFirebaseLive();
+            }
+          }catch(e){ console.warn('Firebase Auth nach Login übersprungen:', e); }
+        }, 300);
+      }
+    });
+    tc.requestAccessToken({prompt:'consent'});
   }catch(e){
-    toast('Anmeldung konnte nicht gestartet werden','err');
     console.warn('[Change] handleGoogleLogin:', e);
+    toast('Google-Anmeldung konnte nicht gestartet werden','err');
   }
 }
 
@@ -1905,7 +1928,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
 
 /* ==========================
    FIREBASE EXTENSION: echte Push Notifications + automatische Mitspieler-Erkennung
-   Voraussetzung: firebase-config.js, firebase-messaging-sw.js und manifest.json liegen im Repo-Root.
+   Voraussetzung: firebase/firebase-config.js ist eingebunden; firebase-messaging-sw.js und manifest.json bleiben im Repo-Root.
 ========================== */
 (function(){
   let fbApp=null, db=null, messaging=null, unsubscribePlayers=null, unsubscribeCompletions=null;
@@ -2105,7 +2128,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
       if(showToast !== false && typeof toast === 'function') toast(message, 'err');
       return false;
     }
-    if(!hasFirebaseConfig()) return fail('Firebase ist noch nicht eingerichtet: firebase-config.js ausfüllen');
+    if(!hasFirebaseConfig()) return fail('Firebase ist noch nicht eingerichtet: firebase/firebase-config.js ausfüllen');
     if(!('serviceWorker' in navigator)) return fail('Dieser Browser unterstützt keine Service Worker');
     if(!('Notification' in window)) return fail('Dieser Browser unterstützt keine Push-Mitteilungen');
     if(Notification.permission === 'denied') return fail('Benachrichtigungen sind im Browser blockiert');
@@ -2126,7 +2149,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
       const reg = await navigator.serviceWorker.ready;
 
       const vapid = getVapidKey();
-      if(!vapid || vapid.includes('HIER_')) return fail('VAPID Key fehlt in firebase-config.js');
+      if(!vapid || vapid.includes('HIER_')) return fail('VAPID Key fehlt in firebase/firebase-config.js');
       if(!messaging) messaging = firebase.messaging();
       const token = await messaging.getToken({vapidKey:vapid, serviceWorkerRegistration:reg});
       if(!token) throw new Error('Kein Push-Token erhalten');

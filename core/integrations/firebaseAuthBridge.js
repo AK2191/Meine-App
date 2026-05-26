@@ -168,8 +168,11 @@
       var code = e && e.code ? e.code : '';
       var isPopupBlocked = code === 'auth/popup-blocked' || code === 'auth/cancelled-popup-request';
       if(isPopupBlocked){
-        await auth.signInWithRedirect(provider());
-        return { redirecting: true };
+        if(options.allowRedirect === true || options.redirect === true){
+          await auth.signInWithRedirect(provider());
+          return { redirecting: true };
+        }
+        return { user: auth.currentUser || null, skipped: true, popupBlocked: true };
       }
       throw e;
     }

@@ -433,31 +433,45 @@
   window.openCalendarSettings = function(){ return openSettingsPanel('calendar'); };
   window.openPushSettingsPanel = function(){ return openSettingsPanel('sync'); };
 
-  // connectToGoogle: OAuth 2.0 Implicit Flow via REDIRECT (kein Popup!).
-  // Popup friert auf GitHub Pages ein (COOP-Problem). Redirect ist COOP-sicher.
-  // Nach Google-Auth kommt die Seite mit #access_token=... zurück → handleGoogleOAuthRedirect liest es.
+  // connectToGoogle: gleicher stabiler TokenClient wie der Haupt-Login.
+  // Kein Firebase-Redirect und kein manueller response_type=token-Redirect,
+  // damit GitHub Pages nicht in eine Login-Schleife gerät.
   window.connectToGoogle = function(){
     var clientId = (typeof getGoogleClientId === 'function') ? getGoogleClientId() : '';
     if(!clientId){
-      // Fallback: direkt aus localStorage
       try{ clientId = JSON.parse(localStorage.getItem('change_v1_client_id') || '""') || localStorage.getItem('client_id') || ''; }catch(e){}
     }
     if(!clientId){
       if(typeof toast === 'function') toast('Keine Google Client-ID – bitte in Einstellungen konfigurieren', 'err');
       return;
     }
-    var cleanId = (typeof cleanGoogleClientId === 'function') ? cleanGoogleClientId(clientId) : String(clientId).trim();
-    var redirectUri = window.location.href.split('?')[0].split('#')[0];
-    var scope = encodeURIComponent('https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email');
-    // state=gcal_connect → handleGoogleOAuthRedirect erkennt den Rückruf
-    var authUrl = 'https://accounts.google.com/o/oauth2/auth'
-      + '?client_id=' + encodeURIComponent(cleanId)
-      + '&redirect_uri=' + encodeURIComponent(redirectUri)
-      + '&response_type=token'
-      + '&scope=' + scope
-      + '&prompt=consent'
-      + '&state=gcal_connect';
-    // Redirect – kein Popup, kein COOP-Freeze
-    window.location.href = authUrl;
+    if(!window.google || !google.accounts || !google.accounts.oauth2){
+      if(typeof toast === 'function') toast('Google-Bibliothek wird geladen…', '');
+      return;
+    }
+    try{
+      var cleanId = (typeof cleanGoogleClientId === 'function') ? cleanGoogleClientId(clientId) : String(clientId).trim();
+      var tc = google.accounts.oauth2.initTokenClient({
+        client_id: cleanId,
+        scope: 'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
+        callback: async function(resp){
+          if(resp && resp.error){ if(typeof toast === 'function') toast('Google-Verbindung fehlgeschlagen: '+resp.error, 'err'); return; }
+          if(!resp || !resp.access_token){ if(typeof toast === 'function') toast('Google-Verbindung wurde nicht abgeschlossen', 'err'); return; }
+          try{ if(typeof accessToken !== 'undefined') accessToken = resp.access_token; window.accessToken = resp.access_token; }catch(e){}
+          try{ if(typeof SecureTokenStore !== 'undefined') SecureTokenStore.setToken(resp.access_token, 3600); }catch(e){}
+          try{ if(typeof ls === 'function') ls('access_token', resp.access_token); }catch(e){}
+          try{ localStorage.setItem('change_v1_google_calendar_sync','true'); localStorage.setItem('change_google_sync_enabled','true'); localStorage.removeItem('change_v1_google_last_error'); localStorage.setItem('change_v1_google_last_sync_at', new Date().toISOString()); }catch(e){}
+          try{ if(typeof fetchUserInfo === 'function') await fetchUserInfo(); }catch(e){}
+          try{ if(typeof loadGoogleData === 'function') await loadGoogleData(); }catch(e){}
+          try{ if(window.ChangeGoogleSyncStatus && window.ChangeGoogleSyncStatus.syncNow) await window.ChangeGoogleSyncStatus.syncNow(); }catch(e){}
+          if(typeof toast === 'function') toast('Google Kalender verbunden ✓','ok');
+          try{ if(typeof openSettingsPanel === 'function') setTimeout(function(){ openSettingsPanel('sync'); }, 250); }catch(e){}
+        }
+      });
+      tc.requestAccessToken({prompt:'consent'});
+    }catch(e){
+      console.warn('[Change] connectToGoogle:', e);
+      if(typeof toast === 'function') toast('Google-Verbindung konnte nicht gestartet werden','err');
+    }
   };
 })();
