@@ -97,10 +97,20 @@
       icon: ch.icon || base.icon || '🏆',
       points: parseInt(ch.points,10) || parseInt(base.points,10) || 0,
       url: ch.url || ch.video || ch.youtube || ch.youtubeUrl || ch.link || base.url || '',
+      link: ch.link || ch.url || ch.youtubeUrl || base.url || '',
+      youtubeUrl: ch.youtubeUrl || ch.url || ch.link || base.url || '',
       active: ch.active !== false,
-      date: ch.date || todayStr(),
+      date: ch.date || ch.generatedFor || todayStr(),
+      generatedFor: ch.generatedFor || ch.date || '',
+      generationKey: ch.generationKey || '',
+      autoVersion: ch.autoVersion || '',
       recurrence: ch.recurrence || 'daily',
       type: ch.type || 'Sport',
+      source: ch.source || (ch.auto ? 'auto' : ''),
+      auto: ch.auto === true,
+      difficulty: ch.difficulty || base.difficulty || 'easy',
+      difficultyLabel: ch.difficultyLabel || ch.level || base.difficultyLabel || base.level || 'Leicht',
+      level: ch.level || ch.difficultyLabel || base.level || base.difficultyLabel || '',
       optional: !!(ch.optional || base.optional)
     };
   }
@@ -125,6 +135,9 @@
   function getDailyPool(dk){
     dk=dk||todayStr();
     var D = difficultyApi();
+    if(D && typeof D.ensureDailyState === 'function'){
+      return D.ensureDailyState(dk, null, {persist:true});
+    }
     if(D && typeof D.buildDailyChallenges === 'function'){
       return D.buildDailyChallenges(dk);
     }
@@ -403,8 +416,13 @@
   };
   window.renderChallenges           = renderChallenges;
   window.challengeScheduleForDate   = function(dk){ return getDailyPool(dk||todayStr()); };
-  window.ensureDailyAutoChallenges  = function(){ return getDailyPool(todayStr()); };
-  window.buildDefaultChallenges     = function(){ return getDailyPool(todayStr()); };
+  window.ensureDailyAutoChallenges  = function(dk){
+    var day = dk || todayStr();
+    var D = difficultyApi();
+    if(D && typeof D.ensureDailyState === 'function') return D.ensureDailyState(day, null, {persist:true, publish:true});
+    return getDailyPool(day);
+  };
+  window.buildDefaultChallenges     = function(){ return getDailyPool(todayStr()).concat(OPTIONAL); };
   window.getChallengePointsForDate  = function(dk){ return pointsForDate(dk,myId()); };
   window.getChallengeDayStatus      = function(dk){
     var p=pointsForDate(dk,myId()); return p>0?{points:p,done:true,allDone:true}:null;
@@ -422,21 +440,29 @@
   function assertOwnership(){
     window.renderChallenges = renderChallenges;
 
-    // window.challenges mit unserem Pool befüllen — inklusive YouTube-URLs,
-    // damit Legacy-/Fallback-Renderer keine Link-Information verlieren.
+    // Auto-Challenges sauber in den zentralen Store schreiben, ohne manuelle
+    // Challenges zu überschreiben. Pro Tag gibt es genau einen generierten Satz.
     var today = todayStr();
-    var exportKey = today + ':' + (difficultyApi() && difficultyApi().get ? difficultyApi().get() : 'fallback') + ':' + getDailyPool(today).map(function(ch){return ch.id;}).join(',');
+    var daily = window.ensureDailyAutoChallenges ? window.ensureDailyAutoChallenges(today) : getDailyPool(today);
+    var exportKey = today + ':' + (difficultyApi() && difficultyApi().get ? difficultyApi().get() : 'fallback') + ':' + daily.map(function(ch){return ch.id;}).join(',');
     if(exportKey !== lastLegacyExportKey){
-      window.challenges = getDailyPool(today).concat(OPTIONAL).map(function(ch){
-        return {
-          id: ch.id, title: ch.title, desc: ch.desc, icon: ch.icon,
-          points: ch.points, url: ch.url || '', link: ch.url || '', youtubeUrl: ch.url || '',
-          difficulty: ch.difficulty || 'easy', difficultyLabel: ch.difficultyLabel || ch.level || 'Leicht', level: ch.level || ch.difficultyLabel || '',
-          auto: ch.auto !== false, active: true, date: today, recurrence: 'daily', type: 'Sport', optional: !!ch.optional
-        };
+      var list = Array.isArray(window.challenges) ? window.challenges.slice() : [];
+      var changed = false;
+      OPTIONAL.forEach(function(opt){
+        var existing = list.find(function(ch){ return String(ch.id) === String(opt.id); });
+        var row = Object.assign({active:true, type:'Sport', recurrence:'daily', optional:true, auto:false}, opt);
+        if(existing) Object.assign(existing, row);
+        else { list.push(row); changed = true; }
       });
+      try{
+        if(window.ChangeChallengeStore && typeof window.ChangeChallengeStore.replaceChallenges === 'function'){
+          window.ChangeChallengeStore.replaceChallenges(list, {persist:true});
+        }else if(changed){
+          window.challenges = list;
+          if(typeof ls==='function') ls('challenges', window.challenges);
+        }
+      }catch(e){}
       lastLegacyExportKey = exportKey;
-      try{ if(typeof ls==='function') ls('challenges', window.challenges); }catch(e){}
     }
 
     // Nicht alle 10 Sekunden blind neu rendern: das setzt auf Mobile

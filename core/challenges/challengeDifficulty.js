@@ -8,6 +8,7 @@
   var STORAGE_KEYS = ['change_v1_challenge_difficulty', 'challenge_difficulty'];
   var DEFAULT_LEVEL = 'easy';
   var DAILY_COUNT = 7;
+  var AUTO_VERSION = 2;
   var YT = 'https://www.youtube.com/results?search_query=';
 
   var LEVELS = {
@@ -114,6 +115,7 @@
     var next = normalize(value);
     STORAGE_KEYS.forEach(function(key){ writeRaw(key, next); });
     try{ if(typeof window.ls === 'function') window.ls('challenge_difficulty', next); }catch(e){}
+    try{ ensureDailyState(todayKey(), next, {persist:true, publish:true}); }catch(e){}
     try{ window.dispatchEvent(new CustomEvent('change:challenge-difficulty', {detail:{difficulty:next}})); }catch(e){}
     if(!options || options.render !== false){
       try{ if(typeof window.renderChallenges === 'function') window.renderChallenges(); }catch(e){}
@@ -137,27 +139,43 @@
     var off = seedFor(key) % arr.length;
     return arr.slice(off).concat(arr.slice(0, off));
   }
+  function dailyPlanKey(dateKey, difficulty){
+    return String(dateKey || todayKey()).slice(0,10) + '|' + normalize(difficulty || getDifficulty()) + '|v' + AUTO_VERSION;
+  }
+  function autoId(dateKey, difficulty, index){
+    return 'auto_' + String(dateKey).slice(0,10) + '_' + normalize(difficulty) + '_' + String(index);
+  }
   function toChallenge(tuple, index, dateKey, difficulty){
+    dateKey = String(dateKey || todayKey()).slice(0,10);
+    difficulty = normalize(difficulty || getDifficulty());
     var cfg = LEVELS[difficulty] || LEVELS[DEFAULT_LEVEL];
     return {
-      id: 'auto_'+dateKey+'_sport_'+difficulty+'_'+tuple[0],
+      id: autoId(dateKey, difficulty, index),
+      source: 'auto',
       sourceId: tuple[0],
+      templateId: tuple[0],
       title: tuple[2],
       desc: tuple[4],
       points: tuple[3],
       icon: tuple[1],
       url: YT + tuple[5],
+      link: YT + tuple[5],
+      youtubeUrl: YT + tuple[5],
       level: cfg.label,
       difficulty: difficulty,
       difficultyLabel: cfg.label,
       difficultyTone: cfg.tone,
+      generatedFor: dateKey,
+      generationKey: dailyPlanKey(dateKey, difficulty),
+      autoVersion: AUTO_VERSION,
       date: dateKey,
       recurrence: 'once',
       active: true,
       auto: true,
       type: 'Sport',
       sortIndex: index,
-      createdAt: dateKey+'T00:00:00.000Z'
+      createdAt: dateKey+'T00:00:00.000Z',
+      updatedAt: new Date().toISOString()
     };
   }
   function buildDailyChallenges(dateKey, difficulty){
@@ -165,17 +183,142 @@
     if(!isAutoChallengesEnabled()) return [];
     difficulty = normalize(difficulty || getDifficulty());
     var cfg = LEVELS[difficulty] || LEVELS[DEFAULT_LEVEL];
-    return rotateDeterministic(cfg.pool, dateKey+'|'+difficulty).slice(0, DAILY_COUNT).map(function(tuple, index){
+    return rotateDeterministic(cfg.pool, dateKey+'|'+difficulty+'|v'+AUTO_VERSION).slice(0, DAILY_COUNT).map(function(tuple, index){
       return toChallenge(tuple, index, dateKey, difficulty);
     });
   }
+  function challengeDate(ch){
+    if(!ch) return '';
+    return String(ch.generatedFor || ch.date || ch.startDate || '').slice(0,10);
+  }
+  function isManagedAutoChallenge(ch, dateKey){
+    if(!ch) return false;
+    var id = String(ch.id || '');
+    var isAuto = ch.auto === true || ch.source === 'auto' || !!ch.generatedFor || /^auto_\d{4}-\d{2}-\d{2}/.test(id) || /^auto_.*_sport_/.test(id);
+    if(!isAuto) return false;
+    if(!dateKey) return true;
+    dateKey = String(dateKey).slice(0,10);
+    return challengeDate(ch) === dateKey || id.indexOf('auto_'+dateKey) === 0;
+  }
+  function isSameChallenge(a, b){
+    if(!a || !b) return false;
+    if(String(a.id || '') && String(a.id || '') === String(b.id || '')) return true;
+    if(a.source === 'auto' && b.source === 'auto' && a.generatedFor && b.generatedFor){
+      return String(a.generatedFor).slice(0,10) === String(b.generatedFor).slice(0,10)
+        && String(a.difficulty || '') === String(b.difficulty || '')
+        && String(a.sortIndex) === String(b.sortIndex);
+    }
+    return false;
+  }
+  function mergeUnique(list){
+    var out = [];
+    var seen = new Set();
+    (Array.isArray(list) ? list : []).forEach(function(ch){
+      if(!ch || !ch.id) return;
+      var key = String(ch.id);
+      if(seen.has(key)) return;
+      seen.add(key);
+      out.push(ch);
+    });
+    return out;
+  }
+  function reconcileChallenges(existing, daily, dateKey){
+    dateKey = String(dateKey || todayKey()).slice(0,10);
+    daily = Array.isArray(daily) ? daily : buildDailyChallenges(dateKey);
+    var out = [];
+    (Array.isArray(existing) ? existing : []).forEach(function(ch){
+      if(!ch || !ch.id) return;
+      // Für denselben Tag gibt es genau einen Auto-Satz. Alte IDs und andere Schwierigkeitsgrade fliegen raus.
+      if(isManagedAutoChallenge(ch, dateKey)) return;
+      // Alte generierte Auto-Einträge ohne Tagesbezug nicht weiter fortschreiben.
+      if(ch.auto === true && !ch.generatedFor && /^auto_/.test(String(ch.id || ''))) return;
+      out.push(ch);
+    });
+    daily.forEach(function(ch){ out.push(ch); });
+    return mergeUnique(out);
+  }
+  function currentChallengeList(){
+    try{
+      if(window.ChangeChallengeStore && typeof window.ChangeChallengeStore.getChallenges === 'function'){
+        return window.ChangeChallengeStore.getChallenges() || [];
+      }
+    }catch(e){}
+    return Array.isArray(window.challenges) ? window.challenges : [];
+  }
+  function persistChallengeList(list){
+    list = mergeUnique(list);
+    try{
+      if(window.ChangeChallengeStore && typeof window.ChangeChallengeStore.replaceChallenges === 'function'){
+        window.ChangeChallengeStore.replaceChallenges(list, {persist:true});
+        list = window.ChangeChallengeStore.getChallenges() || list;
+      }else{
+        window.challenges = list;
+        try{ if(typeof window.ls === 'function') window.ls('challenges', list); }catch(e){}
+        try{ localStorage.setItem('change_v1_challenges', JSON.stringify(list)); localStorage.setItem('challenges', JSON.stringify(list)); }catch(e){}
+      }
+    }catch(e){
+      try{ window.challenges = list; }catch(_){}
+    }
+    return list;
+  }
+  function sameIdList(a, b){
+    a = Array.isArray(a) ? a : [];
+    b = Array.isArray(b) ? b : [];
+    if(a.length !== b.length) return false;
+    for(var i=0;i<a.length;i++){
+      if(String(a[i] && a[i].id) !== String(b[i] && b[i].id)) return false;
+      if(String(a[i] && a[i].generationKey || '') !== String(b[i] && b[i].generationKey || '')) return false;
+    }
+    return true;
+  }
+  function databaseSyncEnabled(){
+    var keys = ['change_v1_database_sync_enabled','database_sync_enabled','change_v1_live_sync_enabled','live_sync_enabled'];
+    for(var i=0;i<keys.length;i++){
+      var v = readRaw(keys[i]);
+      if(v === true) return true;
+    }
+    return false;
+  }
+  function maybePublish(options){
+    options = options || {};
+    if(options.publish !== true && options.firebase !== true) return;
+    if(!databaseSyncEnabled()) return;
+    try{
+      if(typeof window.publishChallengesToFirestore === 'function'){
+        setTimeout(function(){ try{ window.publishChallengesToFirestore({manual:true, reason:'auto-challenge-generation'}); }catch(e){} }, 80);
+      }
+    }catch(e){}
+  }
+  function ensureDailyState(dateKey, difficulty, options){
+    options = options || {};
+    dateKey = String(dateKey || todayKey()).slice(0,10);
+    difficulty = normalize(difficulty || getDifficulty());
+    var before = currentChallengeList().slice();
+    var daily = buildDailyChallenges(dateKey, difficulty);
+    if(!daily.length){
+      if(options.cleanup === true){
+        var cleaned = before.filter(function(ch){ return !isManagedAutoChallenge(ch, dateKey); });
+        if(!sameIdList(before, cleaned)) persistChallengeList(cleaned);
+      }
+      return [];
+    }
+    var reconciled = reconcileChallenges(before, daily, dateKey);
+    if(!sameIdList(before, reconciled)){
+      persistChallengeList(reconciled);
+      try{ window.dispatchEvent(new CustomEvent('change:auto-challenges-generated', {detail:{date:dateKey,difficulty:difficulty,count:daily.length}})); }catch(e){}
+      maybePublish(options);
+    }
+    return daily;
+  }
   function findChallengeById(id){
     id = String(id || '');
+    var existing = currentChallengeList();
+    for(var k=0;k<existing.length;k++) if(String(existing[k] && existing[k].id) === id) return existing[k];
     var levels = Object.keys(LEVELS);
     var today = todayKey();
     for(var i=0;i<levels.length;i++){
       var built = buildDailyChallenges(today, levels[i]);
-      for(var j=0;j<built.length;j++) if(String(built[j].id) === id || String(built[j].sourceId) === id) return built[j];
+      for(var j=0;j<built.length;j++) if(String(built[j].id) === id || String(built[j].sourceId) === id || String(built[j].templateId) === id) return built[j];
     }
     return null;
   }
@@ -194,6 +337,7 @@
     return out;
   }
 
+
   window.ChangeChallengeDifficulty = {
     levels: LEVELS,
     normalize: normalize,
@@ -201,6 +345,12 @@
     set: setDifficulty,
     isAutoEnabled: isAutoChallengesEnabled,
     buildDailyChallenges: buildDailyChallenges,
+    ensureDailyState: ensureDailyState,
+    reconcileChallenges: reconcileChallenges,
+    isManagedAutoChallenge: isManagedAutoChallenge,
+    getDailyPlanKey: dailyPlanKey,
+    dailyCount: DAILY_COUNT,
+    autoVersion: AUTO_VERSION,
     findChallengeById: findChallengeById,
     selectOptions: selectOptions,
     allTemplates: allTemplates,

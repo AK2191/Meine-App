@@ -2046,17 +2046,51 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
 (function(){
   function hasCfg(){const c=window.FIREBASE_CONFIG||{};return !!(c.apiKey&&!String(c.apiKey).includes('HIER_')&&c.projectId&&window.firebase)}
   function getDb(){try{return firebase.firestore()}catch(e){return null}}
-  function chDueData(ch){return {id:ch.id,title:ch.title||'Challenge',desc:ch.desc||'',points:parseInt(ch.points)||0,icon:ch.icon||'🏆',date:ch.date||ch.startDate||dateKey(new Date()),recurrence:ch.recurrence||'once',active:ch.active!==false,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}}
-  window.publishChallengesToFirestore=async function(){
+  function chDueData(ch){return {
+    id:String(ch.id),
+    title:ch.title||'Challenge',
+    desc:ch.desc||'',
+    points:parseInt(ch.points)||0,
+    icon:ch.icon||'🏆',
+    url:ch.url||ch.link||ch.youtubeUrl||'',
+    source:ch.source || (ch.auto===true?'auto':''),
+    sourceId:ch.sourceId||ch.templateId||'',
+    templateId:ch.templateId||ch.sourceId||'',
+    difficulty:ch.difficulty||'',
+    difficultyLabel:ch.difficultyLabel||ch.level||'',
+    generatedFor:ch.generatedFor||ch.date||'',
+    generationKey:ch.generationKey||'',
+    autoVersion:ch.autoVersion||'',
+    sortIndex:ch.sortIndex!=null?ch.sortIndex:null,
+    auto:ch.auto===true,
+    type:ch.type||'Sport',
+    date:ch.date||ch.startDate||dateKey(new Date()),
+    recurrence:ch.recurrence||'once',
+    active:ch.active!==false,
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  }}
+  window.publishChallengesToFirestore=async function(options){
+    options = options || {};
     syncChallengeStateFromStore();
-    if(ls('live_sync_enabled')!==true) return;
+    try{ if(typeof window.ensureDailyAutoChallenges === 'function') window.ensureDailyAutoChallenges(dateKey(new Date())); }catch(e){}
+    const dbSyncOn = (ls('database_sync_enabled')===true || ls('live_sync_enabled')===true || options.manual===true);
+    if(!dbSyncOn) return;
     if(!hasCfg()) return;
     const db=getDb(); if(!db) return;
     if(window.ensureChangeFirebaseAuth){
       const authOk = await window.ensureChangeFirebaseAuth({silent:true});
       if(!authOk) return;
     }
-    try{for(const ch of (challenges||[])){await db.collection('change_challenges').doc(ch.id).set(chDueData(ch),{merge:true});}}catch(e){console.warn('Challenge live publish:',e)}
+    try{
+      const seen = new Set();
+      for(const ch of (challenges||[])){
+        if(!ch || !ch.id) continue;
+        const id = String(ch.id);
+        if(seen.has(id)) continue;
+        seen.add(id);
+        await db.collection('change_challenges').doc(id).set(chDueData(ch),{merge:true});
+      }
+    }catch(e){console.warn('Challenge live publish:',e)}
   };
   window.listenLiveChallenges=function(){
     syncChallengeStateFromStore();
@@ -2065,6 +2099,13 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     const db=getDb(); if(!db) return;
     window._changeLiveChallengesListener=db.collection('change_challenges').where('active','==',true).onSnapshot(snap=>{
       snap.forEach(doc=>{const ch={id:doc.id,...doc.data()}; const i=(challenges||[]).findIndex(x=>x.id===ch.id); if(i>=0) challenges[i]={...challenges[i],...ch}; else challenges.push(ch);});
+      try{
+        if(window.ChangeChallengeDifficulty && typeof window.ChangeChallengeDifficulty.reconcileChallenges === 'function'){
+          const dk = dateKey(new Date());
+          const daily = window.ChangeChallengeDifficulty.buildDailyChallenges(dk);
+          challenges = window.ChangeChallengeDifficulty.reconcileChallenges(challenges, daily, dk);
+        }
+      }catch(e){}
       persistChallengeStateToStore() || ls('challenges',challenges);
       if(currentMainView==='challenges') renderChallenges();
       if(currentMainView==='calendar') renderCalendar();

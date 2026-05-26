@@ -104,6 +104,17 @@
     try{ if(typeof challenges !== 'undefined' && Array.isArray(challenges)) return challenges; }catch(e){}
     return readJson('change_v1_challenges', readJson('challenges', [])) || [];
   }
+  function ensureAutoChallengesForToday(){
+    try{
+      if(window.ChangeChallengeDifficulty && typeof window.ChangeChallengeDifficulty.ensureDailyState === 'function'){
+        var d = new Date();
+        var day = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+        window.ChangeChallengeDifficulty.ensureDailyState(day, readChallengeDifficulty(), {persist:true});
+      }else if(typeof window.ensureDailyAutoChallenges === 'function'){
+        window.ensureDailyAutoChallenges();
+      }
+    }catch(e){ console.warn('Auto-Challenge Tagesplan:', e); }
+  }
   function currentCompletions(){
     var list = [];
     try{ if(Array.isArray(window.challengeCompletions)) list = list.concat(window.challengeCompletions); }catch(e){}
@@ -188,7 +199,7 @@
       },
       sync: {
         databaseSyncEnabled: true,
-      liveSyncEnabled: true,
+        liveSyncEnabled: true,
         pushPreferenceEnabled: readJson('change_v1_push_enabled', false) === true,
         autoChallengesEnabled: readJson('change_v1_auto_challenges_enabled', readJson('auto_challenges_enabled', true)) !== false,
         challengeDifficulty: readChallengeDifficulty(),
@@ -217,28 +228,45 @@
       return false;
     }
   }
+  function challengePayload(ch){
+    return {
+      id: String(ch.id),
+      title: ch.title || ch.name || 'Challenge',
+      desc: ch.desc || ch.description || '',
+      points: parseInt(ch.points, 10) || 0,
+      icon: ch.icon || '🏆',
+      url: ch.url || ch.link || ch.youtubeUrl || '',
+      source: ch.source || (ch.auto === true ? 'auto' : ''),
+      sourceId: ch.sourceId || ch.templateId || '',
+      templateId: ch.templateId || ch.sourceId || '',
+      difficulty: ch.difficulty || readChallengeDifficulty(),
+      difficultyLabel: ch.difficultyLabel || ch.level || '',
+      generatedFor: ch.generatedFor || ch.date || ch.startDate || '',
+      generationKey: ch.generationKey || '',
+      autoVersion: ch.autoVersion || '',
+      sortIndex: ch.sortIndex != null ? ch.sortIndex : null,
+      auto: ch.auto === true,
+      type: ch.type || 'Sport',
+      date: ch.date || ch.startDate || ch.generatedFor || '',
+      recurrence: ch.recurrence || 'once',
+      active: ch.active !== false,
+      updatedAtLocal: new Date().toISOString(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+  }
   async function publishChallengeTemplates(database){
     if(!database) return false;
-    var list = currentChallenges().filter(function(ch){ return ch && ch.id; }).slice(0, 100);
+    ensureAutoChallengesForToday();
+    var list = currentChallenges().filter(function(ch){ return ch && ch.id; });
     if(!list.length) return true;
+    var seen = new Set();
     try{
-      for(var i=0; i<list.length; i++){
+      for(var i=0; i<list.length && seen.size < 140; i++){
         var ch = list[i];
-        await database.collection('change_challenges').doc(String(ch.id)).set({
-          id: String(ch.id),
-          title: ch.title || ch.name || 'Challenge',
-          desc: ch.desc || ch.description || '',
-          points: parseInt(ch.points, 10) || 0,
-          icon: ch.icon || '🏆',
-          difficulty: ch.difficulty || readChallengeDifficulty(),
-          difficultyLabel: ch.difficultyLabel || ch.level || '',
-          auto: ch.auto === true,
-          type: ch.type || 'Sport',
-          date: ch.date || ch.startDate || '',
-          recurrence: ch.recurrence || 'once',
-          active: ch.active !== false,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        }, {merge:true});
+        var id = String(ch.id);
+        if(seen.has(id)) continue;
+        seen.add(id);
+        await database.collection('change_challenges').doc(id).set(challengePayload(ch), {merge:true});
       }
       return true;
     }catch(e){
@@ -246,6 +274,7 @@
       return false;
     }
   }
+
   async function publishOwnCompletions(database){
     var me = account();
     if(!database || !me.ready) return false;

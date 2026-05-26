@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-05-26
+> Zuletzt aktualisiert: 2026-05-26 · Step 2 Auto-Challenge Tagesplan
 
 ---
 
@@ -63,9 +63,13 @@ Jeder Kalendertag enthält:
 - Auto-Challenges werden zentral über `core/challenges/challengeDifficulty.js` erzeugt.
 - Schwierigkeitsgrade: `easy` (Leicht), `medium` (Mittel), `hard` (Schwer), `hardcore` (Hardcore).
 - Die Steigerung muss spürbar sein: höhere Wiederholungen, längere Haltezeiten und deutlich höhere Punkte.
-- Manuell angelegte Challenges bleiben unabhängig vom Schwierigkeitsgrad.
-- Speicherung: `change_v1_challenge_difficulty` und `challenge_difficulty`.
-- Firebase-Sync: `change_settings.sync.challengeDifficulty` wird über Datenbank-Sync synchronisiert.
+- Pro Tag gibt es genau einen generierten Auto-Challenge-Satz je aktiver Schwierigkeit.
+- Auto-IDs folgen dem Schema `auto_YYYY-MM-DD_<difficulty>_<index>`.
+- Jeder Auto-Eintrag enthält `source:"auto"`, `generatedFor`, `generationKey`, `difficulty`, `difficultyLabel` und `autoVersion`.
+- Alte Auto-IDs/andere Schwierigkeitsgrade desselben Tages werden beim Generieren entfernt, damit keine doppelten `auto_YYYY-MM-DD...` Einträge entstehen.
+- Manuell angelegte Challenges bleiben unabhängig vom Schwierigkeitsgrad und werden nicht überschrieben.
+- Speicherung: `change_v1_challenge_difficulty`, `challenge_difficulty` und die täglichen Aufgaben in `change_v1_challenges`/`challenges`.
+- Firebase-Sync: `change_settings.sync.challengeDifficulty` und die generierten Tagesaufgaben in `change_challenges` werden über Datenbank-Sync synchronisiert.
 
 
 ### Layout (Desktop)
