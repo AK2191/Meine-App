@@ -358,3 +358,12 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Dieser Schalter steuert Firebase/Firestore für `change_players`, `change_settings`, `change_challenges` und `change_completions`.
 - Interne Legacy-Funktionen wie `setLiveSyncEnabled` bleiben nur als Kompatibilität erhalten und dürfen nicht als eigene UI-Funktion wieder auftauchen.
 - Google Kalender bleibt ein eigener Schalter und darf den Datenbank-Sync nicht automatisch starten.
+
+## 2026-05-26 · Settings UI Cleanup
+
+- Settings-Tabs bleiben: Dashboard, Kalender, Challenges, Sync, App; Icons bleiben sichtbar, keine Nummerierung.
+- Sync-Tab ist visuell getrennt:
+  - **Datenbank-Sync** ist eine eigene Karte für Firebase (`change_players`, `change_settings`, `change_challenges`, `change_completions`).
+  - **Google Kalender** ist eine eigene Karte und darf optisch sowie technisch nicht wie ein Teil des Datenbank-Sync wirken.
+- App-Tab nutzt eine ruhige App-Info-Karte mit Versions-Badge statt eines großen leeren Versionsblocks.
+- Diese Änderung ist reine UI-/Strukturpflege im Settings-Panel. Keine neue Sync-Logik, kein automatischer Firebase-Start nach Login.

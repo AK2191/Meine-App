@@ -280,13 +280,26 @@
       if(enabled && hasUser)
         return {ok:cfgOk, label:'AKTIV', tone:'ok', detail:'Firebase speichert Mitspieler, Einstellungen, Challenges und Punkte.'};
       if(status === 'connecting')
-        return {ok:cfgOk, label:'VERBINDET...', tone:'off', detail:'Firebase-Verbindung wird hergestellt.'};
+        return {ok:cfgOk, label:'VERBINDET', tone:'off', detail:'Firebase-Verbindung wird hergestellt.'};
       if(status === 'auth_failed')
-        return {ok:cfgOk, label:'ANMELDUNG NÖTIG', tone:'err', detail:'Beim Aktivieren mit Google/Firebase anmelden.'};
+        return {ok:cfgOk, label:'ANMELDUNG NÖTIG', tone:'error', detail:'Beim Aktivieren mit Google/Firebase anmelden.'};
       if(enabled)
-        return {ok:cfgOk, label:'AKTIVIERT', tone:'off', detail:'Beim nächsten Aktivieren wird Firebase verbunden.'};
+        return {ok:cfgOk, label:'AKTIVIERT', tone:'off', detail:'Beim nächsten manuellen Speichern wird Firebase verbunden.'};
     }catch(e){}
     return {ok:cfgOk, label:'AUS', tone:'off', detail: cfgOk ? 'Startet nur über diesen Schalter.' : 'Firebase-Konfiguration nicht geladen.'};
+  }
+
+  function settingsFeatureCard(icon, title, badgeText, badgeTone, subtitle, controlHtml, bodyHtml){
+    return '<div class="change-settings-feature-card">'
+      + '<div class="change-feature-head">'
+      + '<div class="change-feature-left"><div class="change-feature-icon">'+esc(icon)+'</div><div>'
+      + '<div class="change-feature-title">'+esc(title)+' '+pill(badgeText, badgeTone)+'</div>'
+      + (subtitle ? '<div class="change-feature-sub">'+esc(subtitle)+'</div>' : '')
+      + '</div></div>'
+      + (controlHtml ? '<div class="change-feature-control">'+controlHtml+'</div>' : '')
+      + '</div>'
+      + (bodyHtml ? '<div class="change-feature-body">'+bodyHtml+'</div>' : '')
+      + '</div>';
   }
 
   function syncPane(){
@@ -294,23 +307,22 @@
     var google = googleStatus();
     var fb     = firebaseStatus();
 
-    var dbRow = '<div class="change-settings-row">'
-      + '<div><div class="change-settings-title"><span class="change-status-dot '+fb.tone+'"></span>Datenbank-Sync '+pill(fb.label, fb.tone)+'</div>'
-      + '<div class="change-settings-sub">'+esc(fb.detail)+'</div></div>'
-      + '<label class="switch"><input type="checkbox" id="set-database-sync" '+(dbOn?'checked':'')+' '+(!fb.ok?'disabled':'')+'><span class="slider"></span></label>'
-      + '</div>'
-      + '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-database-sync-now" type="button" '+(!fb.ok?'disabled':'')+'>Jetzt in Firebase speichern</button></div>';
+    var dbSwitch = '<label class="switch"><input type="checkbox" id="set-database-sync" '+(dbOn?'checked':'')+' '+(!fb.ok?'disabled':'')+'><span class="slider"></span></label>';
+    var dbBody = '<div class="change-feature-chips"><span>Mitspieler</span><span>Einstellungen</span><span>Challenges</span><span>Punkte</span></div>'
+      + '<button class="btn btn-secondary btn-full" id="set-database-sync-now" type="button" '+(!fb.ok?'disabled':'')+'>Jetzt in Firebase speichern</button>';
 
-    var gRow = '<div class="change-settings-row">'
-      + '<div><div class="change-settings-title"><span class="change-status-dot '+google.tone+'"></span>Google Kalender '+pill(google.label, google.tone)+'</div>'
-      + '<div class="change-settings-sub">'+esc(google.detail || (google.loggedIn ? 'Termine werden importiert.' : 'Klicke Verbinden zum Anmelden.'))+'</div></div>'
-      + (google.loggedIn
-          ? '<label class="switch"><input type="checkbox" id="set-google" '+(google.enabled?'checked':'')+' ><span class="slider"></span></label>'
-          : '<button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" id="btn-google-connect">Verbinden</button>')
-      + '</div>'
-      + (google.loggedIn ? '<div class="change-settings-actions"><button class="btn btn-secondary btn-full" id="set-sync-google" type="button">Google Kalender neu synchronisieren</button></div>' : '');
+    var googleControl = google.loggedIn
+      ? '<label class="switch"><input type="checkbox" id="set-google" '+(google.enabled?'checked':'')+'><span class="slider"></span></label>'
+      : '<button class="btn btn-secondary btn-compact" id="btn-google-connect" type="button">Verbinden</button>';
+    var googleSub = google.detail || (google.loggedIn ? 'Importiert Kalendertermine. Getrennt vom Datenbank-Sync.' : 'Nur für Kalendertermine. Startet keinen Datenbank-Sync.');
+    var googleBody = google.loggedIn
+      ? '<button class="btn btn-secondary btn-full" id="set-sync-google" type="button">Google Kalender neu synchronisieren</button>'
+      : '<div class="change-feature-note">Google Kalender bleibt unabhängig von Firebase.</div>';
 
-    return card('Synchronisierung', dbRow + gRow);
+    return '<div class="change-settings-stack">'
+      + settingsFeatureCard('☁️', 'Datenbank-Sync', fb.label, fb.tone, fb.detail, dbSwitch, dbBody)
+      + settingsFeatureCard('📅', 'Google Kalender', google.label, google.tone, googleSub, googleControl, googleBody)
+      + '</div>';
   }
   function challengesPane(){
     var auto = getAutoChallengesEnabled();
@@ -321,17 +333,26 @@
   var APP_VERSION = '0.1.0001';
 
   function appPane(){
-    return card('App',
-      '<div class="change-settings-row"><div>'
-      +'<div class="change-settings-title">Change als App installieren '+pill(installedLabel(), installedLabel()==='Installiert'?'ok':'off')+'</div>'
-      +'<div class="change-settings-sub">Für Handy-Nutzung, Push und Startbildschirm.</div>'
-      +'</div></div>'
-      +'<div class="change-settings-actions"><button class="btn btn-secondary btn-full" onclick="if(typeof installChangeApp===\'function\')installChangeApp()">Change als App installieren</button></div>')
-      + card('Version',
-        '<div style="padding:4px 0">'
-        +'<div style="font-size:15px;font-weight:700;color:var(--t1)">Change</div>'
-        +'<div style="font-size:12px;color:var(--t3);margin-top:4px">Version '+APP_VERSION+'</div>'
-        +'</div>');
+    var installed = installedLabel();
+    var installCard = settingsFeatureCard(
+      '📱',
+      'Change als App installieren',
+      installed,
+      installed === 'Installiert' ? 'ok' : 'off',
+      'Für Handy-Nutzung, Push und Startbildschirm.',
+      '',
+      '<button class="btn btn-secondary btn-full" onclick="if(typeof installChangeApp===\'function\')installChangeApp()">Change als App installieren</button>'
+    );
+    var about = '<div class="change-about-card">'
+      + '<div class="change-about-logo">C</div>'
+      + '<div class="change-about-copy"><div class="change-about-title">Change</div><div class="change-about-sub">Kalender, Challenges und Sync</div></div>'
+      + '<span class="change-version-chip">v'+esc(APP_VERSION)+'</span>'
+      + '</div>'
+      + '<div class="change-about-meta">'
+      + '<div><span>Version</span><strong>'+esc(APP_VERSION)+'</strong></div>'
+      + '<div><span>Status</span><strong>'+esc(installed)+'</strong></div>'
+      + '</div>';
+    return '<div class="change-settings-stack">' + installCard + card('App-Info', about) + '</div>';
   }
   var currentSettingsTab = 'dashboard';
   function tabButton(id, label, active){ return '<button class="change-settings-tab '+(active===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'+label+'</button>'; }
