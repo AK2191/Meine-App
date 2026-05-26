@@ -603,17 +603,15 @@ async function handleGoogleLogin(){
         try{ loadGoogleData(); }catch(e){}
         setTimeout(async () => {
           try{
-            // Firebase darf den erfolgreichen Google-Login nicht mehr kaputt machen.
-            // Popup versuchen, aber NIEMALS automatisch in Redirect wechseln.
-            if(window.signInChangeFirebaseWithGoogle){
-              const fb = await window.signInChangeFirebaseWithGoogle({ popup: true, allowRedirect: false });
-              if(fb && (fb.user || fb.reused) && typeof initFirebaseLive === 'function') await initFirebaseLive();
-            } else if(window.ensureChangeFirebaseAuth){
-              const ok = await window.ensureChangeFirebaseAuth({ silent:true, waitMs:2000 });
-              if(ok && typeof initFirebaseLive === 'function') await initFirebaseLive();
+            // Nach dem Google-Login darf kein verstecktes Firebase-Popup starten.
+            // Vorhandene Firebase-Session nur still wiederverwenden; interaktive
+            // Anmeldung passiert ausschließlich über den Live-Sync-Schalter.
+            if(window.ensureChangeFirebaseAuth){
+              const ok = await window.ensureChangeFirebaseAuth({ silent:true, waitMs:1800 });
+              if(ok && typeof initFirebaseLive === 'function') await initFirebaseLive({silent:true});
             }
           }catch(e){ console.warn('Firebase Auth nach Login übersprungen:', e); }
-        }, 300);
+        }, 500);
       }
     });
     tc.requestAccessToken({prompt:'consent'});
@@ -826,7 +824,10 @@ function bootMainApp(){
 
   setMainView('dashboard');
   checkNotifications();
-  reqNotifPermission();
+  // Keine automatische Push-Abfrage nach Login: Push wird ausschließlich
+  // über die zentrale Glocke aktiviert. Automatische Browser-Prompts können
+  // die Oberfläche nach dem Login blockieren.
+  try{ if(window.ChangeNotificationBell && typeof window.ChangeNotificationBell.render === 'function') window.ChangeNotificationBell.render(); }catch(e){}
 
   // Greeting
   const h=new Date().getHours();

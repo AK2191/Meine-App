@@ -47,14 +47,22 @@ Wenn eine Änderung fehlschlägt:
 | `app.js:trySilentGoogleTokenRefresh` | COOP-Freeze | Funktion ist deaktiviert (return;) – so lassen |
 | `initFirebaseLive` | `experimentalAutoDetectLongPolling:true` friert Browser bei Quota-Erschöpfung ein | ENTFERNT – nie wieder hinzufügen. Circuit Breaker (2 Fehler→10 min Pause) verhindert Retry-Loops. |
 | `challenge-sync.js` | 3 Layer übereinander | Nur Datumsfilter/Limits anpassen, nie Listener neu bauen |
-| `firebaseAuthBridge.js` | COOP bei signInWithPopup | Nur popup-blocked → redirect, keine anderen Fehler abfangen |
+| `firebaseAuthBridge.js` | COOP bei signInWithPopup | Kein automatischer Redirect. Popup/Redirect nur nach explizitem Nutzerklick; stiller Modus darf nie UI blockieren. |
 | `firebase-messaging-sw.js` | SW-Scope = Root | Datei muss im Root bleiben |
 | `app.js:logout()` | Reload statt showLogin | Muss `window.location.replace` aufrufen – NICHT showLogin() – sonst bleiben Firestore-Listener aktiv und frieren Re-Login ein |
-| `handleGoogleLogin` + `connectToGoogle` | GitHub-Pages-Login darf NICHT über Firebase `signInWithRedirect` laufen | Haupt-Login und Google-Kalender-Verbindung nutzen Google Identity Services `initTokenClient` auf Nutzerklick. Firebase Auth wird danach nur nicht-blockierend versucht und darf niemals automatisch in Redirect wechseln. Kein Login darf von Firebase Hosting abhängig sein. |
+| `handleGoogleLogin` + `connectToGoogle` | GitHub-Pages-Login darf NICHT über Firebase `signInWithRedirect` laufen | Haupt-Login und Google-Kalender-Verbindung nutzen Google Identity Services `initTokenClient` auf Nutzerklick. Nach Login wird Firebase nur still wiederverwendet; kein verstecktes Popup, kein Redirect, keine automatische Push-Abfrage. Kein Login darf von Firebase Hosting abhängig sein. |
 
 ---
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-05-26 (7)
+> Zuletzt aktualisiert: 2026-05-26 (8)
+
+
+### Login-/Interaktionsschutz
+- Nach erfolgreichem Google-Login darf **kein verstecktes Firebase-Popup** starten.
+- Firebase Auth wird nur still wiederverwendet (`ensureChangeFirebaseAuth({ silent:true })`).
+- Interaktive Firebase-Anmeldung nur über den Live-Sync-/Push-Schalter.
+- Push-Permission wird nie automatisch bei `bootMainApp()` abgefragt, sondern ausschließlich über die Glocke.
+- `firestore-guard.js` hält `panel-overlay` synchron: wenn das Side-Panel nicht offen ist, darf kein unsichtbares Overlay Klicks blockieren.
 
 ---
 
