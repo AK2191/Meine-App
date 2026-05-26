@@ -123,12 +123,92 @@
     };
   }
 
+
+  function startOfWeekKey(){
+    var d = new Date();
+    var day = d.getDay() || 7;
+    d.setDate(d.getDate() - day + 1);
+    d.setHours(0,0,0,0);
+    return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  }
+  function weeklyPointsFor(key){
+    var start = startOfWeekKey();
+    return completions().reduce(function(sum, c){
+      var who = String(c.playerId || c.userEmail || c.email || '').toLowerCase();
+      var date = dateOnly(c.date || c.completedDate || c.createdAt);
+      return who === String(key || '').toLowerCase() && date >= start ? sum + (parseInt(c.points,10) || 0) : sum;
+    }, 0);
+  }
+  function todayCountFor(key){
+    var today = todayKey();
+    return completions().filter(function(c){
+      var who = String(c.playerId || c.userEmail || c.email || '').toLowerCase();
+      return who === String(key || '').toLowerCase() && dateOnly(c.date || c.completedDate || c.createdAt) === today;
+    }).length;
+  }
+  function streakFor(key){
+    var dates = new Set();
+    completions().forEach(function(c){
+      var who = String(c.playerId || c.userEmail || c.email || '').toLowerCase();
+      if(who === String(key || '').toLowerCase()) dates.add(dateOnly(c.date || c.completedDate || c.createdAt));
+    });
+    var d = new Date();
+    var streak = 0;
+    for(var i=0;i<30;i++){
+      var k = d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+      if(!dates.has(k)) break;
+      streak++;
+      d.setDate(d.getDate()-1);
+    }
+    return streak;
+  }
+  function playerTarget(player){
+    var val = parseInt(player && (player.weeklyTargetContribution || player.weeklyPointPotential), 10);
+    if(val > 0) return val;
+    try{
+      if(window.ChangeChallengeDifficulty && typeof window.ChangeChallengeDifficulty.normalizePlayerPlan === 'function'){
+        var plan = window.ChangeChallengeDifficulty.normalizePlayerPlan(player || {});
+        return parseInt(plan && (plan.targetContribution || plan.weeklyPotential), 10) || 0;
+      }
+    }catch(e){}
+    return 350;
+  }
+  function smartNudgeFor(playerId, player){
+    var key = String(playerId || playerKey(player)).toLowerCase();
+    var me = currentKey();
+    if(!key || (me && key === me)) return null;
+    var p = player || players().find(function(item){ return playerKey(item) === key; }) || {id:key};
+    var name = p.name || p.displayName || p.email || key || 'Mitspieler';
+    var weekly = weeklyPointsFor(key);
+    var target = Math.max(1, playerTarget(p));
+    var pct = weekly / target;
+    var today = todayCountFor(key);
+    var streak = streakFor(key);
+    if(pct >= 0.9 && pct < 1.05) return {playerId:key, playerName:name, reason:'kurz vor dem Wochenziel', message:'ist kurz vor dem Wochenziel – ein letzter Schub! 🎯', priority:1};
+    if(streak >= 3) return {playerId:key, playerName:name, reason:streak+' Tage Streak', message:'hat '+streak+' Tage Streak – stark bleiben! 🔥', priority:2};
+    if(today > 0) return {playerId:key, playerName:name, reason:'heute aktiv', message:'war heute schon aktiv – weiter so! 💪', priority:3};
+    if(pct < 0.35) return {playerId:key, playerName:name, reason:'könnte einen Schub gebrauchen', message:'könnte heute einen kleinen Schub gebrauchen! 👊', priority:4};
+    return {playerId:key, playerName:name, reason:'Motivation senden', message:'du schaffst das! 🎯', priority:5};
+  }
+  function smartNudgeSuggestions(limit){
+    var me = currentKey();
+    var seen = new Set();
+    return players().map(function(p){
+      var key = playerKey(p);
+      if(!key || key === me || seen.has(key)) return null;
+      seen.add(key);
+      return smartNudgeFor(key, p);
+    }).filter(Boolean).sort(function(a,b){ return a.priority - b.priority; }).slice(0, limit || 3);
+  }
+
   window.ChangePlayerActivity = {
     recent: getRecent,
     todayStats: todayStats,
     summaryText: summaryText,
     inboxItems: inboxItems,
     panelHtml: panelHtml,
-    dailySummaryNotification: dailySummaryNotification
+    dailySummaryNotification: dailySummaryNotification,
+    smartNudgeFor: smartNudgeFor,
+    smartNudgeSuggestions: smartNudgeSuggestions
   };
 })();
