@@ -208,6 +208,24 @@
     return list;
   }
   function pollenViewCount(list, view){ return filterPollenByView(list, view).length; }
+  function weatherSummaryPanelHtml(data){
+    var w = data && data.weather;
+    if(!w) return '';
+    var forecast = w.forecast && w.forecast[0] ? w.forecast[0] : null;
+    var temp = w.temperature != null ? Math.round(Number(w.temperature)) + '°' : '–';
+    var rain = 'ruhig';
+    if(w.nextRain && w.nextRain.minutes != null){
+      rain = w.nextRain.minutes + ' Min.';
+    }else if(forecast && forecast.rainProbability != null){
+      rain = forecast.rainProbability + ' %';
+    }
+    var range = forecast ? ((forecast.tempMax != null ? Math.round(Number(forecast.tempMax)) + '°' : '–') + ' / ' + (forecast.tempMin != null ? Math.round(Number(forecast.tempMin)) + '°' : '–')) : '–';
+    return '<div class="change-weather-summary">'
+      + '<div><strong>'+esc(temp)+'</strong><span>Jetzt</span></div>'
+      + '<div><strong>'+esc(rain)+'</strong><span>Regen</span></div>'
+      + '<div><strong>'+esc(range)+'</strong><span>Max / Min</span></div>'
+      + '</div>';
+  }
   function weatherCurrentHtml(data){
     var w = data && data.weather;
     if(!w) return '';
@@ -222,7 +240,10 @@
         + (w.sunset  ? '<span>🌇 '+esc(w.sunset) +'</span>' : '')
         + '</div>';
     }
-    return '<div class="change-weather-now"><div class="change-weather-now-icon">'+esc(w.icon || '🌦️')+'</div><div><strong>'+esc(tempLine)+'</strong><small>'+esc(rain)+' '+(range ? '· Tageswerte '+range : '')+'</small>'+sunHtml+'</div></div>';
+    return '<div class="change-weather-now">'
+      + '<div class="change-weather-now-icon">'+esc(w.icon || '🌦️')+'</div>'
+      + '<div class="change-weather-now-main"><strong>'+esc(tempLine)+'</strong><span>'+esc(rain)+(range ? ' · Tageswerte '+esc(range) : '')+'</span>'+sunHtml+'</div>'
+      + '</div>';
   }
   function weatherHourlyHtml(data){
     var hourly = data && data.weather && data.weather.hourly || [];
@@ -247,7 +268,8 @@
       var rain = day.rainProbability != null ? day.rainProbability + ' % Regen' : (day.precipitation ? day.precipitation + ' mm' : 'kaum Regen');
       var temp = (day.tempMax != null ? day.tempMax + '°' : '–') + ' / ' + (day.tempMin != null ? day.tempMin + '°' : '–');
       var sunStr = (day.sunrise ? '🌅 '+esc(day.sunrise) : '') + (day.sunrise && day.sunset ? '  ' : '') + (day.sunset ? '🌇 '+esc(day.sunset) : '');
-      return '<div class="change-forecast-row"><div class="change-forecast-date"><div class="change-forecast-row-icon">'+esc(day.icon || '🌦️')+'</div><strong>'+esc(fmtDay(day.date))+'</strong></div><div class="change-forecast-main"><strong>'+esc(day.summary || 'Wetter')+'</strong><small>'+esc(rain)+(sunStr ? ' · '+sunStr : '')+'</small></div><div class="change-forecast-value">'+esc(temp)+'</div></div>';
+      var wet = day.rainProbability != null && Number(day.rainProbability) >= 50;
+      return '<div class="change-forecast-row '+(wet?'is-rain':'')+'"><div class="change-forecast-date"><strong>'+esc(fmtDay(day.date))+'</strong><span>'+esc(day.icon || '🌦️')+'</span></div><div class="change-forecast-main"><strong>'+esc(day.summary || 'Wetter')+'</strong><small>'+esc(rain)+(sunStr ? ' · '+sunStr : '')+'</small></div><div class="change-forecast-value">'+esc(temp)+'</div></div>';
     }).join('') + '</div></section>';
   }
   function pollenFilterChips(list, active){
@@ -277,7 +299,7 @@
     var status = pollenStatus(day);
     var diff = dayDiff(day.date);
     return '<div class="change-pollen-row '+esc(status.key)+'">'
-      + '<div class="change-pollen-row-icon">🌿</div>'
+      + '<div class="change-pollen-dot"></div>'
       + '<div class="change-pollen-main">'
       + '<div class="change-pollen-title">'+esc(status.title)+'</div>'
       + '<div class="change-pollen-meta">'+esc(fmtDay(day.date))+' · '+esc(pollenItemText(day))+'</div>'
@@ -326,11 +348,13 @@
         if(typeof window.openPanel === 'function') window.openPanel('🌿 Pollen', pollenForecastHtml(data, pollenPanelView, loc));
         return;
       }
-      var title = '🌦️ Wetter-Ausblick';
-      var sub = 'Heute · Stunden · 7 Tage · '+locationHint(loc);
-      var content = weatherCurrentHtml(data) + weatherHourlyHtml(data) + weatherForecastHtml(data);
-      var body = '<div class="change-forecast-panel"><div class="change-forecast-head"><div><div class="change-forecast-title">'+title+'</div><div class="change-forecast-sub">'+sub+'</div></div></div>' + content + '</div>';
-      if(typeof window.openPanel === 'function') window.openPanel('Wetter', body);
+      var content = weatherSummaryPanelHtml(data)
+        + weatherCurrentHtml(data)
+        + '<div class="change-weather-section-title">Stunden · '+esc(locationHint(loc))+'</div>'
+        + weatherHourlyHtml(data)
+        + weatherForecastHtml(data);
+      var body = '<div class="change-forecast-panel change-weather-panel">' + content + '</div>';
+      if(typeof window.openPanel === 'function') window.openPanel('🌦️ Wetter', body);
     }catch(e){ if(typeof toast === 'function') toast(e.message || 'Ausblick konnte nicht geladen werden','err'); }
   }
   async function refreshForecast(type){

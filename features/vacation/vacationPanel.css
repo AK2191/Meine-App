@@ -16,9 +16,7 @@
 .change-vacation-row.now{border-color:rgba(52,211,153,.35);background:rgba(52,211,153,.06)}
 .change-vacation-row.future .change-vacation-dot{background:var(--t4)}
 .change-vacation-row.past{opacity:.75}
-.change-vacation-row-icon{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(52,211,153,.12);color:var(--acc);font-size:17px;font-weight:900;flex:0 0 36px}
-.change-vacation-row.future .change-vacation-row-icon{background:var(--s2);color:var(--t4)}
-.change-vacation-row.past .change-vacation-row-icon{background:var(--s2);color:var(--t4)}
+.change-vacation-dot{width:8px;height:8px;border-radius:999px;background:var(--acc);flex:0 0 8px}
 .change-vacation-main{flex:1;min-width:0}
 .change-vacation-title{font-size:13px;font-weight:900;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .change-vacation-date{font-size:11.5px;font-weight:650;color:var(--t4);margin-top:2px}

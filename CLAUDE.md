@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-05-27 · Challenge-Trennlinie bereinigt
+> Zuletzt aktualisiert: 2026-05-27 · Wetter-Panel im Friseur-Stil
 
 ---
 
@@ -590,11 +590,10 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Keine Änderungen an Challenge-Logik, optionalen Aufgaben, Punkten, Datenbank-Sync, Login oder Kalender.
 
 
-## Änderung 2026-05-27: Feature-Icons im Friseur-Stil
+## Änderung 2026-05-27: Wetter-Panel im Friseur-Stil
 
-- Die Detail-Panels für **Geburtstage**, **Urlaub**, **Wetter**, **Pollen** und das **Mitspieler-Panel** nutzen jetzt links ruhige Icon-Kacheln im selben Stil wie das Friseur-Panel.
-- Geburtstags- und Pollen-Listen verwenden keine einfachen Punkte mehr, sondern kleine Icon-Flächen mit passender Farblogik.
-- Urlaubszeilen zeigen links jetzt ebenfalls eine ruhige Icon-Kachel statt eines Punktes.
-- Im Wetter-Ausblick wurde die Tageszeile links auf ein Icon+Datum-Layout im Friseur-Stil umgebaut, ohne die Wetterdaten zu vereinfachen.
-- Das Mitspieler-Panel behält seine Struktur, die Aufgaben-Icons wurden aber optisch auf die gleiche Kachel-Sprache vereinheitlicht.
-- Keine Änderungen an Logik, Sync, Firebase, Kalenderdaten, Challenges oder Datenmodell.
+- Die Wetter-Detailansicht (`features/weather/weatherCard.js` + `features/weather/weatherCard.css`) nutzt jetzt denselben ruhigen Panel-Aufbau wie Friseur/Geburtstage.
+- Oben stehen drei Summary-Kacheln: **Jetzt**, **Regen** und **Max / Min**.
+- Darunter bleibt eine Highlight-Karte für das aktuelle Wetter mit Temperatur, Zusammenfassung, Regenhinweis, Tageswerten und Sonnenzeiten.
+- Die Wetterlogik bleibt fachlich sinnvoll erhalten: Stundenansicht mit 12/24-h-Schalter, Regenmarkierungen und 7-Tage-Ausblick bleiben sichtbar.
+- Die Änderung betrifft nur die Darstellung des Wetter-Panels; Wetter-Service, Standortlogik, Pollen, Benachrichtigungen, Login, Sync, Kalender und Challenges bleiben unverändert.
