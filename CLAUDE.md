@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-05-26 · Challenge-Abzeichen erweitert + dynamisches Gruppenziel
+> Zuletzt aktualisiert: 2026-05-27 · Anfeuern-Push und change_nudges repariert
 
 ---
 
@@ -426,6 +426,9 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Der Gesundheitscheck darf keine externen Dienste starten und keinen Login-/Sync-Fluss auslösen.
 - Anfeuern ist kontextbewusst: Vorschläge können aus Wochenzielnähe, Streaks, heutiger Aktivität oder Rückstand entstehen.
 - Anfeuern darf Firebase nur nutzen, wenn Firebase Auth bereits durch Datenbank-Sync bereit ist. Kein automatischer Firebase-Start nur für Anfeuern.
+- Anfeuern wird in Firestore über `change_nudges` gespeichert. Diese Collection gehört zum Datenbank-Sync-Modell und darf nicht vom Fallback der Rules blockiert werden.
+- `sendNudge()` darf keinen Erfolg melden, wenn Firestore blockiert ist oder Datenbank-Sync nicht verbunden ist. Lokale Fallbacks dürfen nicht als „gesendet" angezeigt werden.
+- Echte Push-Zustellung für Anfeuern läuft serverseitig über `functions/index.js` → `pushWhenNudgeCreated`; Empfänger-Token kommen aus `change_players.fcmToken` mit `pushEnabled:true`.
 
 ## Settings UI Konsistenz
 - Alle Einstellungs-Tabs verwenden denselben Feature-Karten-Stil wie der Kalender-Tab.
@@ -456,4 +459,18 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - `openPanel()` setzt den Scrollzustand von Side-Panel und Panel-Body bei jedem Öffnen zurück. Dadurch bleiben oben stehende Einträge wie der nächste Geburtstag sichtbar und werden nicht durch einen alten Scrollstand verdeckt.
 - Das Geburtstags-Panel zeigt den nächsten Geburtstag zusätzlich als eigene Highlight-Karte und darunter alle erkannten Geburtstage.
 - Schreibweisen wie `Domi Bday`, `Bday Domi`, `Domi B-day`, `Birthday Domi`, `Geburtstag Domi` und `Geb. Domi` bleiben gültige Google-Kalender-Erkennungen. Sichtbar bleibt die normalisierte Anzeige `🎂 Name`.
+
+## Änderung 2026-05-27: Anfeuern-Benachrichtigungen repariert
+
+- Firestore-Regeln auf v6 erweitert: `change_nudges` ist jetzt explizit erlaubt.
+  - Create: nur eingeloggter Nutzer als eigener Absender.
+  - Read: nur Absender oder Empfänger.
+  - Update: nur Empfänger darf `seen`/`seenAt` setzen.
+- `core/misc.js` meldet beim Anfeuern nur noch dann Erfolg, wenn der Firestore-Schreibvorgang wirklich erfolgreich war.
+- Wenn Datenbank-Sync oder Firebase Auth nicht bereit sind, wird Anfeuern nicht mehr fälschlich als gesendet angezeigt.
+- `functions/index.js` enthält `pushWhenNudgeCreated`, damit ein neues `change_nudges`-Dokument direkt eine FCM-Push-Benachrichtigung an den Empfänger auslösen kann.
+- Push-Icons in Functions und Push-Test verwenden ausschließlich `icons/icon-change-192.png`; keine Root-Icon-Pfade.
+- `firebase.json` referenziert `firebase/firestore.rules`, damit die neuen `change_nudges`-Regeln deploybar sind.
+- Alte Browser-Push-Stellen in Notification-Center, Wetter/Pollen und Friseur nutzen jetzt `serviceWorker.ready.then(reg => reg.showNotification())` mit PNG-Icon statt `new Notification()`.
+- Kein automatischer Firebase-Start nach Login: Anfeuern nutzt Firebase nur, wenn Datenbank-Sync bereits aktiv und Firebase Auth bereit ist.
 

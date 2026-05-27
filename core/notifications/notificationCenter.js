@@ -302,7 +302,18 @@
       if(n.diff !== threshold) return;
       var firedId = 'browser:'+n.id+':'+n.diff;
       if(Store.wasFired(firedId)) return;
-      try{ new Notification(n.label+': '+n.title, {body:n.body || 'Termin', tag:n.id}); Store.markFired(firedId); }catch(e){}
+      try{
+        if('serviceWorker' in navigator){
+          navigator.serviceWorker.ready.then(function(reg){
+            return reg.showNotification(n.label+': '+n.title, {
+              body:n.body || 'Termin',
+              icon:'./icons/icon-change-192.png',
+              badge:'./icons/icon-change-192.png',
+              tag:n.id
+            });
+          }).then(function(){ Store.markFired(firedId); }).catch(function(){});
+        }
+      }catch(e){}
     });
   }
   function checkNotifications(){

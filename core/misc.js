@@ -377,9 +377,9 @@ window.setMainView = function(view){
 })();
 
 /* ==================================================
-   ANFEUERN / ANSTUPSEN — Firebase Nudge System
-   Ablauf: Klick → Firestore change_nudges → Empfänger
-   sieht Benachrichtigung beim nächsten App-Öffnen
+   ANFEUERN / ANSTUPSEN — Firestore + Push Nudge System
+   Ablauf: Klick → Firestore change_nudges → Cloud Function/Empfänger
+   Wichtig: Startet Firebase nicht selbst. Datenbank-Sync muss bereits aktiv sein.
 ================================================== */
 (function(){
 
@@ -391,6 +391,14 @@ const NUDGE_MESSAGES = [
   'ist stolz auf dich! 🌟',
   'schickt dir einen Schubs! 👊',
 ];
+
+function normEmail(value){
+  return String(value || '').trim().toLowerCase();
+}
+
+function isEmail(value){
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
+}
 
 function randomMessage(toEmail){
   try{
@@ -407,24 +415,43 @@ function getDb(){
   catch(e){ return null; }
 }
 
+function readJson(key, fallback){
+  try{ const raw = localStorage.getItem(key); return raw == null ? fallback : JSON.parse(raw); }catch(e){ return fallback; }
+}
+
+function readBool(key, fallback){
+  const raw = readJson(key, undefined);
+  if(raw === true || raw === false) return raw;
+  try{
+    const plain = localStorage.getItem(key);
+    if(plain === 'true' || plain === '1') return true;
+    if(plain === 'false' || plain === '0') return false;
+  }catch(e){}
+  return fallback;
+}
+
+function databaseSyncEnabled(){
+  return readBool('database_sync_enabled', false) === true ||
+         readBool('change_v1_database_sync_enabled', false) === true ||
+         readBool('live_sync_enabled', false) === true ||
+         readBool('change_v1_live_sync_enabled', false) === true;
+}
+
 function nudgeFirebaseReady(){
   try{
+    if(!databaseSyncEnabled()) return false;
     if(window.isChangeFirebaseAuthReady) return !!window.isChangeFirebaseAuthReady();
     return !!(window.firebase && firebase.auth && firebase.auth().currentUser);
   }catch(e){ return false; }
 }
 
-function readJson(key, fallback){
-  try{ const raw = localStorage.getItem(key); return raw == null ? fallback : JSON.parse(raw); }catch(e){ return fallback; }
-}
-
 function currentNudgeAccount(){
   let fu = null;
   try{ fu = window.firebase && firebase.auth && firebase.auth().currentUser; }catch(e){}
-  const stored = Object.assign({}, readJson('change_v1_user_info', {}) || {}, readJson('user_info', {}) || {});
+  const stored = Object.assign({}, readJson('change_v1_user_info', {}) || {}, readJson('user_info', {}) || {}, readJson('user_info_safe', {}) || {});
   const info = Object.assign({}, stored, window.userInfo || {});
   try{ if(typeof userInfo !== 'undefined') Object.assign(info, userInfo || {}); }catch(e){}
-  const email = String((fu && fu.email) || info.email || localStorage.getItem('change_v1_user_email') || localStorage.getItem('user_email') || '').trim().toLowerCase();
+  const email = normEmail((fu && fu.email) || info.email || localStorage.getItem('change_v1_user_email') || localStorage.getItem('user_email') || '');
   const name = String((fu && fu.displayName) || info.name || info.displayName || (email ? email.split('@')[0] : 'Jemand')).trim();
   return { email, name };
 }
@@ -437,69 +464,106 @@ function myName(){
   return currentNudgeAccount().name || 'Jemand';
 }
 
+function toastSafe(message, type){
+  try{ if(typeof toast === 'function') toast(message, type || ''); }catch(e){}
+}
+
+function setNudgeButtonState(toEmail, sent){
+  try{
+    const btns = Array.from(document.querySelectorAll('.nudge-btn'));
+    const targetKey = encodeURIComponent(String(toEmail || ''));
+    const targetBtns = btns.filter(b => {
+      const oc = b.getAttribute('onclick') || '';
+      return oc.includes(toEmail) || oc.includes(targetKey);
+    });
+    (targetBtns.length ? targetBtns : btns).forEach(b => {
+      if(!(b.title||'').includes('Anfeuern')) return;
+      if(sent) b.classList.add('sent');
+      else b.classList.remove('sent');
+    });
+  }catch(e){}
+}
+
+function rememberFailedNudge(nudge, error){
+  try{
+    const arr = JSON.parse(localStorage.getItem('change_nudges_failed')||'[]');
+    arr.push(Object.assign({}, nudge, { error:String((error && (error.code || error.message)) || error || ''), failedAt:new Date().toISOString() }));
+    localStorage.setItem('change_nudges_failed', JSON.stringify(arr.slice(-20)));
+  }catch(e){}
+}
+
 // ==== NUDGE SENDEN ====
 window.sendNudge = async function(toEmail, toName){
   const from = myEmail();
-  if(!from || from === toEmail){
-    if(typeof toast==='function') toast('Kannst du dir nicht selbst schicken 😄','');
-    return;
+  const to = normEmail(toEmail);
+  const cleanName = String(toName || to || 'Mitspieler').trim();
+
+  if(!isEmail(from)){
+    toastSafe('Anfeuern braucht eine gültige Anmeldung.', 'err');
+    return false;
+  }
+  if(!isEmail(to)){
+    toastSafe('Dieser Mitspieler hat keine gültige E-Mail für Anfeuern.', 'err');
+    return false;
+  }
+  if(from === to){
+    toastSafe('Kannst du dir nicht selbst schicken 😄','');
+    return false;
+  }
+  if(!databaseSyncEnabled()){
+    toastSafe('Anfeuern braucht aktiven Datenbank-Sync, damit es beim anderen ankommt.', 'err');
+    return false;
+  }
+  if(!nudgeFirebaseReady()){
+    toastSafe('Datenbank-Sync ist noch nicht verbunden. Bitte Sync kurz aktivieren.', 'err');
+    return false;
   }
 
-  // Button kurz deaktivieren (visuelles Feedback)
-  const btns = Array.from(document.querySelectorAll('.nudge-btn'));
-  const targetKey = encodeURIComponent(String(toEmail || ''));
-  const targetBtns = btns.filter(b => { const oc = b.getAttribute('onclick') || ''; return oc.includes(toEmail) || oc.includes(targetKey); });
-  (targetBtns.length ? targetBtns : btns).forEach(b => { if((b.title||'').includes('Anfeuern')) b.classList.add('sent'); });
-  setTimeout(()=>btns.forEach(b=>b.classList.remove('sent')), 1800);
+  setNudgeButtonState(to, true);
+  setTimeout(()=>setNudgeButtonState(to, false), 1800);
 
-  const smart = (window.ChangePlayerActivity && typeof window.ChangePlayerActivity.smartNudgeFor === 'function') ? window.ChangePlayerActivity.smartNudgeFor(toEmail) : null;
-  const msg = randomMessage(toEmail);
+  const smart = (window.ChangePlayerActivity && typeof window.ChangePlayerActivity.smartNudgeFor === 'function') ? window.ChangePlayerActivity.smartNudgeFor(to) : null;
+  const msg = randomMessage(to);
   const nudge = {
     from:      from,
     fromName:  myName(),
-    to:        toEmail,
-    toName:    toName,
+    to:        to,
+    toName:    cleanName,
     message:   msg,
-    reason:    smart && smart.reason ? smart.reason : '',
+    reason:    smart && smart.reason ? String(smart.reason) : '',
     sentAt:    new Date().toISOString(),
     seen:      false
   };
 
-  const db = nudgeFirebaseReady() ? getDb() : null;
-  if(db){
-    try{
-      await db.collection('change_nudges').add(nudge);
-      try{ if(window.ChangeAppStatus) window.ChangeAppStatus.markNudge(toName, nudge.reason); }catch(e){}
-      if(typeof toast==='function')
-        toast('💪 Anfeuern gesendet an '+toName+'!','ok');
-    }catch(e){
-      if(!(e && (e.code === 'permission-denied' || String(e.message||'').includes('Missing or insufficient permissions')))) console.warn('[Nudge]', e.message);
-      // Fallback: lokal speichern
-      _saveLocalNudge(nudge);
-      try{ if(window.ChangeAppStatus) window.ChangeAppStatus.markNudge(toName, nudge.reason); }catch(e){}
-      if(typeof toast==='function')
-        toast('💪 Anfeuern gesendet!','ok');
+  const db = getDb();
+  if(!db){
+    toastSafe('Datenbank-Sync ist nicht bereit. Anfeuern wurde nicht gesendet.', 'err');
+    return false;
+  }
+
+  try{
+    const payload = Object.assign({}, nudge);
+    try{ payload.createdAt = firebase.firestore.FieldValue.serverTimestamp(); }catch(e){}
+    await db.collection('change_nudges').add(payload);
+    try{ if(window.ChangeAppStatus) window.ChangeAppStatus.markNudge(cleanName, nudge.reason); }catch(e){}
+    toastSafe('💪 Anfeuern gesendet an '+cleanName+'!','ok');
+    return true;
+  }catch(e){
+    console.warn('[Nudge send]', e);
+    rememberFailedNudge(nudge, e);
+    if(e && (e.code === 'permission-denied' || String(e.message||'').includes('Missing or insufficient permissions'))){
+      toastSafe('Anfeuern wird noch von Firestore-Regeln blockiert. Bitte die neuen Rules deployen.', 'err');
+    }else{
+      toastSafe('Anfeuern konnte nicht gesendet werden.', 'err');
     }
-  } else {
-    _saveLocalNudge(nudge);
-    try{ if(window.ChangeAppStatus) window.ChangeAppStatus.markNudge(toName, nudge.reason); }catch(e){}
-    if(typeof toast==='function')
-      toast('💪 Anfeuern gespeichert!','ok');
+    return false;
   }
 };
-
-function _saveLocalNudge(nudge){
-  try{
-    const arr = JSON.parse(localStorage.getItem('change_nudges_out')||'[]');
-    arr.push(nudge);
-    localStorage.setItem('change_nudges_out', JSON.stringify(arr.slice(-20)));
-  }catch(e){}
-}
 
 // ==== NUDGES EMPFANGEN ====
 window.checkIncomingNudges = async function(){
   const me = myEmail();
-  if(!me) return;
+  if(!isEmail(me)) return;
   if(!nudgeFirebaseReady()) return;
   const db = getDb();
   if(!db) return;
@@ -512,30 +576,34 @@ window.checkIncomingNudges = async function(){
 
     if(snap.empty) return;
 
-    // Alle als gesehen markieren
-    const batch = db.batch();
-    snap.docs.forEach(doc => batch.update(doc.ref, {seen: true}));
-    await batch.commit();
-
-    // Neueste zuerst
     const nudges = snap.docs
-      .map(d => d.data())
-      .sort((a,b) => b.sentAt.localeCompare(a.sentAt));
+      .map(d => Object.assign({id:d.id}, d.data() || {}))
+      .sort((a,b) => String(b.sentAt || '').localeCompare(String(a.sentAt || '')));
 
-    // Toast für jede neue Nachricht
-    nudges.forEach((n, i) => {
-      setTimeout(()=>{
-        if(typeof toast==='function')
-          toast('💪 '+esc(n.fromName)+' '+n.message,'ok');
-      }, i * 1500);
-    });
-
-    // In Benachrichtigungs-Panel eintragen
     _storeNudgesForPanel(nudges);
 
-    if(typeof updateBellIndicator === 'function') updateBellIndicator();
+    // Erst nach lokalem Speichern als gesehen markieren.
+    const batch = db.batch();
+    snap.docs.forEach(doc => {
+      const update = {seen: true};
+      try{ update.seenAt = firebase.firestore.FieldValue.serverTimestamp(); }catch(e){}
+      batch.update(doc.ref, update);
+    });
+    await batch.commit();
 
-  }catch(e){ if(!(e && (e.code === 'permission-denied' || String(e.message||'').includes('Missing or insufficient permissions')))) console.warn('[Nudge check]', e.message); }
+    nudges.forEach((n, i) => {
+      setTimeout(()=>{
+        const sender = (typeof esc === 'function') ? esc(n.fromName || n.from || 'Jemand') : String(n.fromName || n.from || 'Jemand');
+        toastSafe('💪 '+sender+' '+(n.message || 'feuert dich an!'), 'ok');
+      }, i * 1200);
+    });
+
+    if(typeof updateBellIndicator === 'function') updateBellIndicator();
+    if(window.ChangeNotifications && typeof window.ChangeNotifications.updateBellIndicator === 'function') window.ChangeNotifications.updateBellIndicator();
+
+  }catch(e){
+    if(!(e && (e.code === 'permission-denied' || String(e.message||'').includes('Missing or insufficient permissions')))) console.warn('[Nudge check]', e.message || e);
+  }
 };
 
 function _storeNudgesForPanel(nudges){
@@ -556,6 +624,7 @@ function markNudgesRead(){
     const arr = JSON.parse(sessionStorage.getItem('change_nudges_in')||'[]');
     sessionStorage.setItem('change_nudges_in', JSON.stringify(arr.map(n => Object.assign({}, n, {localSeen:true}))));
     if(typeof updateBellIndicator === 'function') updateBellIndicator();
+    if(window.ChangeNotifications && typeof window.ChangeNotifications.updateBellIndicator === 'function') window.ChangeNotifications.updateBellIndicator();
   }catch(e){}
 }
 
@@ -567,10 +636,12 @@ window.getNudgesPanelHtml = function(){
 
     const items = arr.slice(0,5).map(n=>{
       const when = n.sentAt ? new Date(n.sentAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}) : '';
+      const sender = (typeof esc === 'function') ? esc(n.fromName||n.from||'Jemand') : String(n.fromName||n.from||'Jemand');
+      const message = (typeof esc === 'function') ? esc(n.message||'feuert dich an!') : String(n.message||'feuert dich an!');
       return `<div class="nudge-inbox-item">
         <div class="nudge-avatar">💪</div>
         <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:600;color:var(--t1)">${esc(n.fromName||n.from)} ${n.message||'feuert dich an!'}</div>
+          <div style="font-size:13px;font-weight:600;color:var(--t1)">${sender} ${message}</div>
           <div style="font-size:11px;color:var(--t4);margin-top:2px">${when}</div>
         </div>
       </div>`;
@@ -584,20 +655,19 @@ window.getNudgesPanelHtml = function(){
 };
 
 // ==== HOOKS ====
-// Nach Login: Nudges prüfen
 const _nudgeBoot = window.bootMainApp;
 window.bootMainApp = function(){
   if(typeof _nudgeBoot === 'function') _nudgeBoot.apply(this, arguments);
-  setTimeout(window.checkIncomingNudges, 2000);
-  // Alle 5 Minuten prüfen
-  setInterval(window.checkIncomingNudges, 5 * 60 * 1000);
+  if(!window._changeNudgePollInstalled){
+    window._changeNudgePollInstalled = true;
+    setTimeout(window.checkIncomingNudges, 2000);
+    setInterval(window.checkIncomingNudges, 5 * 60 * 1000);
+  }
 };
 
-// Nudges im Notif-Panel anzeigen
 const _nudgeNotif = window.openNotifPanel;
 window.openNotifPanel = function(){
   if(typeof _nudgeNotif === 'function') _nudgeNotif.apply(this, arguments);
-  // Nudge-HTML oben ins Panel einfügen
   setTimeout(()=>{
     const panelBody = document.getElementById('panel-body');
     if(!panelBody) return;
@@ -615,4 +685,3 @@ window.openNotifPanel = function(){
 
 console.warn('[Nudge] Anfeuern-System geladen ✓');
 })();
-

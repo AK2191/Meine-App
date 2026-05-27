@@ -114,11 +114,16 @@
     const key = 'friseur_notif_'+lastDate;
     if(readRaw(key)) return;
     writeRaw(key, '1');
-    if(typeof Notification !== 'undefined' && Notification.permission === 'granted'){
+    if(typeof Notification !== 'undefined' && Notification.permission === 'granted' && 'serviceWorker' in navigator){
       try{
-        new Notification('✂️ Friseur-Erinnerung', {
-          body: 'Dein letzter Friseur-Termin war vor '+days+' Tagen. Zeit für einen neuen Termin?'
-        });
+        navigator.serviceWorker.ready.then(function(reg){
+          return reg.showNotification('✂️ Friseur-Erinnerung', {
+            body: 'Dein letzter Friseur-Termin war vor '+days+' Tagen. Zeit für einen neuen Termin?',
+            icon: './icons/icon-change-192.png',
+            badge: './icons/icon-change-192.png',
+            tag: 'change-friseur-'+lastDate
+          });
+        }).catch(function(){});
       }catch(e){}
     }
   }

@@ -186,14 +186,16 @@
       if(now - lastFired < 55 * 60 * 1000) return; // 55 Min Cooldown
 
       try{
-        var icon = n.kind === 'weather' ? '🌧️' : '🌿';
-        new Notification('Change: ' + n.title, {
-          body: n.body || '',
-          icon: './icon-change-192.svg',
-          badge: './icon-change-192.svg',
-          tag: 'change-' + n.id
-        });
-        localStorage.setItem(firedKey, String(now));
+        if('serviceWorker' in navigator){
+          navigator.serviceWorker.ready.then(function(reg){
+            return reg.showNotification('Change: ' + n.title, {
+              body: n.body || '',
+              icon: './icons/icon-change-192.png',
+              badge: './icons/icon-change-192.png',
+              tag: 'change-' + n.id
+            });
+          }).then(function(){ localStorage.setItem(firedKey, String(now)); }).catch(function(){});
+        }
       }catch(e){}
     });
   }

@@ -1,7 +1,7 @@
 rules_version = '2';
 
 // ═══════════════════════════════════════════════════════════════
-// CHANGE APP — Firestore Rules v5
+// CHANGE APP — Firestore Rules v6
 // Firestore-Zugriff nur mit Firebase Auth.
 // Die App meldet sich nach dem Google-Login zusätzlich per Firebase Auth an.
 // Wichtig: Keine offenen Schreibrechte ohne request.auth.
@@ -13,6 +13,18 @@ service cloud.firestore {
     function isAuth() {
       return request.auth != null;
     }
+    function signedInEmail() {
+      return request.auth.token.email;
+    }
+
+    function isSignedInEmail(value) {
+      return value is string && request.auth.token.email is string && value == signedInEmail();
+    }
+
+    function isNudgeParticipant(data) {
+      return data.from == signedInEmail() || data.to == signedInEmail();
+    }
+
 
     // Spieler-Profile
     // Lesen: offen (Rangliste)
@@ -47,6 +59,29 @@ service cloud.firestore {
     // FCM Push Tokens
     match /change_push_tokens/{docId} {
       allow read, write: if isAuth();
+    }
+
+
+    // Anfeuern / Nudges
+    // Schreiben: nur eingeloggte Nutzer als eigener Absender.
+    // Lesen: nur Absender oder Empfänger.
+    // Update: nur Empfänger darf die Nachricht als gesehen markieren.
+    match /change_nudges/{nudgeId} {
+      allow create: if isAuth()
+        && request.resource.data.keys().hasOnly(['from','fromName','to','toName','message','reason','sentAt','seen','createdAt'])
+        && request.resource.data.keys().hasAll(['from','to','message','sentAt','seen'])
+        && isSignedInEmail(request.resource.data.from)
+        && request.resource.data.to is string
+        && request.resource.data.to != request.resource.data.from
+        && request.resource.data.message is string
+        && request.resource.data.sentAt is string
+        && request.resource.data.seen == false;
+      allow read: if isAuth() && isNudgeParticipant(resource.data);
+      allow update: if isAuth()
+        && resource.data.to == signedInEmail()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['seen','seenAt'])
+        && request.resource.data.seen == true;
+      allow delete: if isAuth() && resource.data.from == signedInEmail();
     }
 
     // Fallback: alles andere sperren

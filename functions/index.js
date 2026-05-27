@@ -10,6 +10,14 @@ function todayBerlinKey() {
   return fmt.format(new Date());
 }
 
+function safeDocId(id) {
+  return String(id || 'unknown').trim().toLowerCase().replace(/[^a-z0-9._-]/g, '_') || 'unknown';
+}
+
+function cleanText(value, fallback = '') {
+  return String(value || fallback || '').replace(/\s+/g, ' ').trim();
+}
+
 const AUTO_POOL = [
   { icon: '🏋️', title: '10 Kniebeugen', desc: 'Mache 10 saubere Kniebeugen. Langsam runter, stabil hoch.', points: 10 },
   { icon: '💪', title: '10 Wand-Liegestütze', desc: 'Mache 10 leichte Liegestütze an der Wand oder am Tisch.', points: 10 },
@@ -43,18 +51,53 @@ function dailyChallenges(dk) {
   });
 }
 
-async function sendToTokens(tokens, title, body) {
+async function sendToTokens(tokens, title, body, options = {}) {
   const clean = [...new Set(tokens.filter(Boolean))];
-  if (!clean.length) return;
-  await admin.messaging().sendEachForMulticast({
+  if (!clean.length) return null;
+  const url = options.url || 'https://ak2191.github.io/Meine-App/';
+  const iconUrl = 'https://ak2191.github.io/Meine-App/icons/icon-change-192.png';
+  const data = Object.assign({ url }, options.data || {});
+  Object.keys(data).forEach((key) => { data[key] = String(data[key] == null ? '' : data[key]); });
+  return admin.messaging().sendEachForMulticast({
     tokens: clean,
     notification: { title, body },
     webpush: {
-      fcmOptions: { link: 'https://ak2191.github.io/Meine-App/' },
-      notification: { icon: 'https://ak2191.github.io/Meine-App/icon-change-192.png', badge: 'https://ak2191.github.io/Meine-App/icon-change-192.png' }
+      fcmOptions: { link: url },
+      notification: {
+        icon: iconUrl,
+        badge: iconUrl,
+        tag: options.tag || 'change-push',
+        requireInteraction: options.requireInteraction === true
+      }
     },
-    data: { url: 'https://ak2191.github.io/Meine-App/' }
+    data
   });
+}
+
+async function tokensForPlayerEmail(email) {
+  const target = String(email || '').trim().toLowerCase();
+  if (!target) return [];
+  const tokens = new Set();
+
+  async function addDoc(doc) {
+    if (!doc || !doc.exists) return;
+    const data = doc.data() || {};
+    if (data.pushEnabled === true && data.fcmToken) tokens.add(String(data.fcmToken));
+  }
+
+  await addDoc(await db.collection('change_players').doc(safeDocId(target)).get());
+
+  const byEmail = await db.collection('change_players')
+    .where('email', '==', target)
+    .where('pushEnabled', '==', true)
+    .limit(10)
+    .get();
+  byEmail.forEach((doc) => {
+    const data = doc.data() || {};
+    if (data.fcmToken) tokens.add(String(data.fcmToken));
+  });
+
+  return [...tokens];
 }
 
 exports.createDailyChallengesAndPush = onSchedule({
@@ -81,4 +124,34 @@ exports.pushWhenChallengeCreated = onDocumentCreated({
   const players = await db.collection('change_players').where('pushEnabled', '==', true).get();
   const tokens = players.docs.map(d => d.data().fcmToken).filter(Boolean);
   await sendToTokens(tokens, 'Neue Challenge in Change', `${c.icon || '🏆'} ${c.title || 'Neue Challenge'} · ${c.points || 0} Punkte`);
+});
+
+exports.pushWhenNudgeCreated = onDocumentCreated({
+  document: 'change_nudges/{nudgeId}',
+  region: 'europe-west3'
+}, async (event) => {
+  const nudge = event.data && event.data.data ? event.data.data() : null;
+  if (!nudge) return;
+
+  const from = cleanText(nudge.from).toLowerCase();
+  const to = cleanText(nudge.to).toLowerCase();
+  if (!to || !from || to === from) return;
+
+  const tokens = await tokensForPlayerEmail(to);
+  if (!tokens.length) return;
+
+  const fromName = cleanText(nudge.fromName, 'Jemand');
+  const message = cleanText(nudge.message, 'feuert dich an! 💪');
+  const reason = cleanText(nudge.reason);
+  const body = reason ? `${message} · ${reason}` : message;
+
+  await sendToTokens(tokens, `💪 ${fromName} feuert dich an`, body, {
+    tag: `change-nudge-${event.params.nudgeId}`,
+    data: {
+      type: 'nudge',
+      nudgeId: event.params.nudgeId,
+      from,
+      to
+    }
+  });
 });
