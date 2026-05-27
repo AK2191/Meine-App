@@ -397,7 +397,7 @@
     list.setAttribute('data-render-owner','change-challenges');
 
     var html=daily.map(chItem).join('');
-    html+='<div class="ch-optional-section" style="margin:10px 0 4px;padding:8px 16px;font-size:10px;font-weight:800;color:var(--t4);text-transform:uppercase;letter-spacing:.07em;border-top:1px solid var(--b1)">Optionale Punkte</div>';
+    html+='<div class="ch-optional-section">Optionale Punkte</div>';
     html+=OPTIONAL.map(chItem).join('');
     list.innerHTML=html;
 

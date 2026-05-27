@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-05-27 · Dashboard-Trennlinien bereinigt
+> Zuletzt aktualisiert: 2026-05-27 · Wetter-Panel im Friseur-Stil
 
 ---
 
@@ -580,3 +580,20 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Zwischen normalen Terminen, Friseur, Geburtstage und Urlaub bleibt dadurch nur noch eine einzelne ruhige Trennlinie sichtbar.
 - Abschnittstrenner wie **Demnächst** verwenden ebenfalls keine doppelte obere Linie mehr.
 - Änderung betrifft nur Dashboard-CSS und die Dashboard-Row-Markups von Friseur/Urlaub; keine Änderungen an Kalenderdaten, Parsern, Sync, Login oder Challenge-Logik.
+
+
+## Änderung 2026-05-27: Challenge-Trennlinie vor optionalen Punkten
+
+- Zwischen den normalen Tagesaufgaben und **Optionale Punkte** gibt es jetzt nur noch eine ruhige Trennlinie.
+- Die Überschrift `.ch-optional-section` hat keine eigene obere Linie und keinen Extra-Abstand mehr; die bestehende untere Linie des letzten Aufgaben-Eintrags trennt den Bereich.
+- Die Änderung betrifft nur das Styling/Markup der Challenges-Ansicht.
+- Keine Änderungen an Challenge-Logik, optionalen Aufgaben, Punkten, Datenbank-Sync, Login oder Kalender.
+
+
+## Änderung 2026-05-27: Wetter-Panel im Friseur-Stil
+
+- Die Wetter-Detailansicht (`features/weather/weatherCard.js` + `features/weather/weatherCard.css`) nutzt jetzt denselben ruhigen Panel-Aufbau wie Friseur/Geburtstage.
+- Oben stehen drei Summary-Kacheln: **Jetzt**, **Regen** und **Max / Min**.
+- Darunter bleibt eine Highlight-Karte für das aktuelle Wetter mit Temperatur, Zusammenfassung, Regenhinweis, Tageswerten und Sonnenzeiten.
+- Die Wetterlogik bleibt fachlich sinnvoll erhalten: Stundenansicht mit 12/24-h-Schalter, Regenmarkierungen und 7-Tage-Ausblick bleiben sichtbar.
+- Die Änderung betrifft nur die Darstellung des Wetter-Panels; Wetter-Service, Standortlogik, Pollen, Benachrichtigungen, Login, Sync, Kalender und Challenges bleiben unverändert.

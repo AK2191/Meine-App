@@ -709,6 +709,10 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
   color:var(--amb)!important;
 }
 
+/* Challenge optionale Punkte: nur eine Trennlinie zwischen Tagesaufgaben und optionalem Abschnitt */
+#challenges-list .ch-optional-section{margin:0!important;border-top:0!important;border-bottom:1px solid var(--b1)!important}
+#challenges-list .challenge-item + .ch-optional-section{border-top:0!important}
+
 [data-theme="dark"] .challenge-done{
   background:rgba(22,163,74,.12)!important;
   border-left-color:rgba(74,222,128,.5)!important;

@@ -38,7 +38,7 @@
 .challenge-done .challenge-name{color:var(--grn)}
 .challenge-optional .challenge-name{color:var(--t3)}
 .challenge-optional .points-pill{background:var(--amb-d);color:var(--amb)}
-.ch-optional-section{padding:7px 18px 5px;font-size:10px;font-weight:700;color:var(--amb);text-transform:uppercase;letter-spacing:.6px;background:var(--amb-d);border-top:1px solid var(--b1);border-bottom:1px solid var(--b1)}
+.ch-optional-section{margin:0!important;padding:8px 18px 6px;font-size:10px;font-weight:800;color:var(--amb);text-transform:uppercase;letter-spacing:.6px;background:var(--amb-d);border-top:0!important;border-bottom:1px solid var(--b1)}
 
 /* ── Dashboard ─────────────────────────────────────────── */
 .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
