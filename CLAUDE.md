@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-05-27 · Geburtstags-Panel Breiten-Fix
+> Zuletzt aktualisiert: 2026-05-27 · Rangliste im Friseur-Stil
 
 ---
 
@@ -519,3 +519,12 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Filteransichten: **Heute**, **Morgen**, **Woche**, **Monat** und **Alle**. Die Filter arbeiten ausschließlich auf dem bereits geladenen Pollen-Forecast und starten keinen Neuabruf.
 - Die Summary zeigt geladene Forecast-Tage, Tage mit starker Belastung und Tage mit mittlerer Belastung.
 - Die vorhandene Wetter-Ansicht, Dashboard-Pillen, Wetter-/Pollen-Settings, Push-Regeln, Datenbank-Sync, Login, Kalender und Challenges bleiben unverändert.
+
+
+## Änderung 2026-05-27: Rangliste im Friseur-Stil
+
+- Die Rangliste im Challenges-Bereich nutzt jetzt denselben ruhigen Kartenstil wie das Friseur-Panel: einzelne Karten statt harter Tabellenzeilen.
+- Jeder Mitspieler-Eintrag zeigt Rang/Medaille links, Name mit Online-Status, Detailzeile mit **Heute / Gesamt / erledigt**, rechts den Gesamtpunktestand und darunter weiterhin **Anfeuern**.
+- Der eigene Eintrag wird dezent hervorgehoben und trägt ein kleines **Du**-Badge.
+- Die Änderung betrifft nur die UI der Rangliste (`#leaderboard-list`) und die Renderer in `features/challenges/challenges.js` sowie `features/challenges/challenge-sync.js`.
+- Keine Änderungen an Punktelogik, Datenmodell, Datenbank-Sync, Login, Kalender oder Challenge-Erledigungen.

@@ -420,11 +420,20 @@
         var smart=null; try{ if(window.ChangePlayerActivity && window.ChangePlayerActivity.smartNudgeFor) smart=window.ChangePlayerActivity.smartNudgeFor(id,p); }catch(e){}
         var smartTitle=smart&&smart.reason?('Anfeuern: '+smart.reason):'Anfeuern';
         var nudge=me?'':'<button class="nudge-btn" onclick="event.stopPropagation();window.sendNudge&&window.sendNudge(\''+esc(id)+'\',\''+esc(p.name||id)+'\')" title="'+esc(smartTitle)+'"><span class="nudge-btn-icon">💪</span><span class="nudge-btn-label">Anfeuern</span></button>';
-        return '<div class="leader-row clickable" style="pointer-events:auto;cursor:pointer" onclick="window.openPlayerRecentPanel&&window.openPlayerRecentPanel(\''+esc(id)+'\',\''+esc(p.name||p.email||'Mitspieler')+'\')">'
+        var stateLabel = me ? 'Du' : (smart&&smart.reason ? smart.reason : (p.online ? 'Aktiv' : 'Mitspieler'));
+        return '<div class="leader-row clickable'+(me?' leader-row-self':'')+'" style="pointer-events:auto;cursor:pointer" onclick="window.openPlayerRecentPanel&&window.openPlayerRecentPanel(\''+esc(id)+'\',\''+esc(p.name||p.email||'Mitspieler')+'\')">'
           +'<div class="leader-rank">'+(medals[i]||String(i+1))+'</div>'
-          +'<div style="flex:1;min-width:0"><div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+live+'</div>'
-          +'<div class="leader-detail">Heute: '+pts+' P · Gesamt: '+tot+' P · '+cnt+' erledigt'+(smart&&smart.reason?' · '+esc(smart.reason):'')+'</div></div>'
-          +'<div style="display:flex;align-items:center;gap:8px">'+nudge+'<div class="leader-score">'+tot+'</div></div></div>';
+          +'<div class="leader-main">'
+            +'<div class="leader-head">'
+              +'<div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(me?'<span class="leader-self-tag">Du</span>':'')+live+'</div>'
+              +'<div class="leader-score-box"><strong class="leader-score">'+tot+'</strong><span class="leader-score-label">Punkte</span></div>'
+            +'</div>'
+            +'<div class="leader-detail">Heute: '+pts+' P · Gesamt: '+tot+' P · '+cnt+' erledigt</div>'
+            +'<div class="leader-foot">'
+              +'<span class="leader-state">'+esc(stateLabel)+'</span>'
+              +(me?'':'<div class="leader-actions">'+nudge+'</div>')
+            +'</div>'
+          +'</div></div>';
       }).join(''):'<div class="dash-empty">Noch keine Mitspieler</div>';
     }catch(e){board.innerHTML='<div class="dash-empty">Rangliste wird geladen…</div>';}
 
