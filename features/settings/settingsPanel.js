@@ -262,6 +262,19 @@
     }).join('');
     return featureField('Erinnerung', '<select class="finput" id="'+id+'">'+opts+'</select>', '');
   }
+  function birthdayDaysSelect(id, current){
+    current = Math.max(0, Math.min(365, parseInt(current, 10) || 0));
+    var days = [];
+    for(var i=0;i<=30;i++) days.push(i);
+    [45,60,90,120,180,365].forEach(function(day){ if(days.indexOf(day) < 0) days.push(day); });
+    if(days.indexOf(current) < 0) days.push(current);
+    days.sort(function(a,b){ return a-b; });
+    var opts = days.map(function(day){
+      var label = day === 0 ? 'Am Geburtstag' : (day === 1 ? '1 Tag vorher' : day + ' Tage vorher');
+      return '<option value="'+day+'" '+(day===current?'selected':'')+'>'+label+'</option>';
+    }).join('');
+    return featureField('Erinnerung', '<select class="finput" id="'+id+'">'+opts+'</select>', 'Steuert, ab wie vielen Tagen vorher Geburtstage in Glocke/Benachrichtigung erscheinen.');
+  }
   function weatherHealthCard(){
     var weather = weatherHealthStatus();
     var ws = weather.settings || {};
@@ -324,7 +337,7 @@
       : '<div class="change-feature-note">Friseur wird im Dashboard ausgeblendet.</div>';
 
     var birthdaysBody = birthdaysOn
-      ? featureField('Benachrichtigung', '<input type="number" class="finput" id="set-birthday-notification-days" min="0" max="365" step="1" value="'+birthdayNotificationDays+'">', 'Anzahl Tage vorher. 0 = nur am Geburtstag.')
+      ? birthdayDaysSelect('set-birthday-notification-days', birthdayNotificationDays)
         + '<div class="change-feature-note">Erkennt Bday, B-day, Birthday, Geburtstag und Geb. aus dem Google Kalender. Sichtbar bleibt es als „Geburtstage“.</div>'
       : '<div class="change-feature-note">Geburtstage werden im Dashboard und in der Glocke ausgeblendet.</div>';
 

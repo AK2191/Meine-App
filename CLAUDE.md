@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-05-27 · Spieler-Panel und Rangliste kompakt
+> Zuletzt aktualisiert: 2026-05-27 · Geburtstags-Erinnerung als Auswahl
 
 ---
 
@@ -546,3 +546,20 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Das rechte Spieler-Detailpanel (`openPlayerRecentPanel`) ist jetzt im Friseur-/Geburtstage-Stil aufgebaut: drei Summary-Kacheln, Highlight-Karte für die letzte Aufgabe und ruhige Aufgabenliste darunter.
 - Die Änderung betrifft nur UI-Markup in `features/challenges/challenges.js` und Styling in `styles/app.css`.
 - Keine Änderungen an Punktelogik, Challenge-Erledigungen, Datenbank-Sync, Login, Kalender, Pollen oder Benachrichtigungen.
+
+
+## Änderung 2026-05-27: Geburtstags-Filter einzeilig
+
+- Im Geburtstags-Panel bleiben die Filter **Heute / Morgen / Woche / Monat / Alle** jetzt immer in **einer einzigen Zeile**.
+- Die Filterchips verwenden dafür ein festes 5-Spalten-Raster mit kompakteren Abständen und kleineren Label-/Zahlengrößen.
+- Auch auf schmalen Panelbreiten wird kein zweiter Filter-Umbruch mehr erzeugt.
+- Keine Änderungen an Geburtstags-Parser, Benachrichtigungen, Kalender, Login, Sync oder Challenge-Logik.
+
+
+## Änderung 2026-05-27: Geburtstags-Erinnerung als Auswahl
+
+- Einstellungen → Dashboard → Geburtstage nutzt jetzt wie Wetter/Pollen/Friseur ein klares Feld **Erinnerung** statt eines nackten Zahlenfelds.
+- Die Auswahl bleibt technisch in Tagen und speichert weiterhin `change_v1_birthday_notification_days` / `birthday_notification_days`.
+- Optionen: **Am Geburtstag**, 1–30 Tage vorher sowie 45, 60, 90, 120, 180 und 365 Tage vorher; vorhandene Sonderwerte werden automatisch als Option ergänzt.
+- Die Benachrichtigungslogik, Glocke und Datenbank-Sync verwenden unverändert denselben Tageswert.
+- Keine Änderungen an Geburtstags-Parser, Kalender, Login, Push-Steuerung oder Challenge-Logik.
