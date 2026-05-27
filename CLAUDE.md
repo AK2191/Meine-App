@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-05-27 · Anfeuern-Push und change_nudges repariert
+> Zuletzt aktualisiert: 2026-05-27 · Friseur-Panel relative Tagesangaben
 
 ---
 
@@ -459,6 +459,15 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - `openPanel()` setzt den Scrollzustand von Side-Panel und Panel-Body bei jedem Öffnen zurück. Dadurch bleiben oben stehende Einträge wie der nächste Geburtstag sichtbar und werden nicht durch einen alten Scrollstand verdeckt.
 - Das Geburtstags-Panel zeigt den nächsten Geburtstag zusätzlich als eigene Highlight-Karte und darunter alle erkannten Geburtstage.
 - Schreibweisen wie `Domi Bday`, `Bday Domi`, `Domi B-day`, `Birthday Domi`, `Geburtstag Domi` und `Geb. Domi` bleiben gültige Google-Kalender-Erkennungen. Sichtbar bleibt die normalisierte Anzeige `🎂 Name`.
+
+
+## Änderung 2026-05-27: Friseur-Panel relative Tagesangaben
+
+- Im Friseur-Panel zeigen die oberen Summary-Kacheln für **Letzter** und **Nächster** relative Tagesangaben statt reiner Datumswerte.
+- **Letzter** nutzt Formulierungen wie `vor 1 Tag` oder `vor 28 Tagen`.
+- **Nächster** nutzt Formulierungen wie `in 1 Tag` oder `in 6 Tagen`.
+- Die Jahresliste und die Highlight-Karte behalten Datum und Uhrzeit, damit die exakten Termine weiterhin sichtbar bleiben.
+- Die Berechnung erfolgt kalendertagsgenau über lokale Datumsschlüssel, nicht über Uhrzeit-Rundung.
 
 ## Änderung 2026-05-27: Anfeuern-Benachrichtigungen repariert
 

@@ -25,7 +25,37 @@
     return v === null ? true : v === 'true';
   }
   function getWeeks(){ return parseInt(readRaw(LS_WEEKS)||'3',10)||3; }
-  function daysSince(dateStr){ const d = new Date(dateStr+'T12:00:00'); return Math.floor((Date.now()-d.getTime())/86400000); }
+  function pad2(n){ return String(n).padStart(2, '0'); }
+  function todayKey(){
+    var d = new Date();
+    return d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate());
+  }
+  function dateFromKey(dateStr){ return new Date(String(dateStr || '') + 'T12:00:00'); }
+  function calendarDiffDays(fromKey, toKey){
+    var from = dateFromKey(fromKey);
+    var to = dateFromKey(toKey);
+    if(isNaN(from) || isNaN(to)) return null;
+    return Math.round((to.getTime() - from.getTime()) / 86400000);
+  }
+  function daysSince(dateStr){
+    var diff = calendarDiffDays(dateStr, todayKey());
+    return diff === null ? 0 : Math.max(0, diff);
+  }
+  function relativeFriseurText(dateStr, mode){
+    if(!dateStr) return '—';
+    var diff = calendarDiffDays(todayKey(), dateStr);
+    if(diff === null) return '—';
+    if(diff === 0) return 'Heute';
+    if(mode === 'past'){
+      var pastDays = Math.abs(diff);
+      return 'vor ' + pastDays + ' ' + (pastDays === 1 ? 'Tag' : 'Tagen');
+    }
+    if(diff < 0){
+      var agoDays = Math.abs(diff);
+      return 'vor ' + agoDays + ' ' + (agoDays === 1 ? 'Tag' : 'Tagen');
+    }
+    return 'in ' + diff + ' ' + (diff === 1 ? 'Tag' : 'Tagen');
+  }
   function toDateKey(value){
     value = String(value || '');
     return value.length >= 10 ? value.slice(0,10) : '';
@@ -234,8 +264,8 @@
     var summary = '<div class="change-hair-panel">'
       + '<div class="change-hair-summary">'
       + '<div><strong>'+visits+'</strong><span>Besuche</span></div>'
-      + '<div><strong>'+(lastDate?esc(fmtPanelDate(lastDate)):'—')+'</strong><span>Letzter</span></div>'
-      + '<div><strong>'+(nextInfo?esc(fmtPanelDate(nextInfo.date)):'—')+'</strong><span>Nächster</span></div>'
+      + '<div><strong>'+(lastDate?esc(relativeFriseurText(lastDate, 'past')):'—')+'</strong><span>Letzter</span></div>'
+      + '<div><strong>'+(nextInfo?esc(relativeFriseurText(nextInfo.date, 'future')):'—')+'</strong><span>Nächster</span></div>'
       + '</div>'
       + (nextInfo ? '<div class="change-hair-next"><div class="change-hair-next-icon">✂</div><div><strong>'+esc(nextInfo.title || 'Friseur-Termin')+'</strong><span>'+esc(fmtPanelDate(nextInfo.date))+' · '+esc(formatTimeRange(nextInfo))+'</span></div></div>' : '')
       + '<div class="change-hair-section-title">Termine '+year+'</div>';
