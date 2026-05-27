@@ -72,19 +72,29 @@
   }
   function panelRow(item){
     var badge = item.diff === 0 ? 'Heute' : diffLabel(item.diff);
-    return '<div class="dash-row" style="cursor:default">'
+    return '<div class="dash-row birthday-panel-row" style="cursor:default">'
       + '<div class="dash-row-icon" style="background:rgba(139,92,246,.11)">🎂</div>'
       + '<div class="dash-row-body"><div class="dash-row-title">'+esc(item.name)+'</div><div class="dash-row-sub">'+esc(fmt(item.nextDate))+' · erkannt aus „'+esc(item.rawTitle)+'“</div></div>'
       + '<span class="dash-row-badge '+(item.diff===0?'badge-amber':'badge-blue')+'">'+esc(badge)+'</span>'
+      + '</div>';
+  }
+  function nextHighlight(item){
+    if(!item) return '';
+    return '<div class="feature-card birthday-next-card" style="margin-bottom:14px;border-color:rgba(139,92,246,.22);background:rgba(139,92,246,.07)">'
+      + '<div class="feature-card-head">'
+      + '<div class="feature-icon" style="background:rgba(139,92,246,.12)">🎂</div>'
+      + '<div class="feature-title-wrap"><div class="feature-title">Nächster Geburtstag</div><div class="feature-sub">'+esc(item.name)+' · '+esc(fmt(item.nextDate))+' · erkannt aus „'+esc(item.rawTitle)+'“</div></div>'
+      + '<span class="feature-status">'+esc(diffLabel(item.diff))+'</span>'
+      + '</div>'
       + '</div>';
   }
   function openPanel(){
     var list = upcoming(370);
     var body = '';
     if(!list.length){
-      body = '<div class="dash-empty" style="padding:18px">Keine Geburtstage gefunden.<br><span style="font-size:12px;color:var(--t4)">Erkannt werden z. B. „Bday Alex“, „Alex B-day“, „Birthday Maria“ oder „Geburtstag Tom“ im Kalender.</span></div>';
+      body = '<div class="dash-empty" style="padding:18px">Keine Geburtstage gefunden.<br><span style="font-size:12px;color:var(--t4)">Erkannt werden z. B. „Bday Alex“, „Alex B-day“, „Birthday Maria“ oder „Geburtstag Tom" im Kalender.</span></div>';
     }else{
-      body = '<div class="db-section">Nächste Geburtstage</div>' + list.slice(0,20).map(panelRow).join('');
+      body = nextHighlight(list[0]) + '<div class="db-section">Alle erkannten Geburtstage</div>' + list.slice(0,30).map(panelRow).join('');
     }
     body += '<div style="margin-top:14px;padding:12px;border:1px solid var(--b1);border-radius:14px;background:var(--s2);font-size:12px;color:var(--t3);line-height:1.45">'
       + '<strong style="color:var(--t2)">Erkennung:</strong> Bday, B-day, Birthday, Geburtstag und Geb. werden automatisch als Geburtstage erkannt. In der App wird daraus sauber „🎂 Name“.'

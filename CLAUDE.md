@@ -451,3 +451,9 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Feature-Karten nutzen große Radien, klare Icon-Kacheln, kurze Meta-Texte, ruhige Trennlinien und deutliche Highlight-/Statusbereiche.
 - Keine zusammengeklebten Texte, keine doppelten Divider, keine unruhigen Emoji-Flächen als Layout-Ersatz.
 - Styling-Änderungen dürfen keine Sync-, Login- oder Challenge-Logik verändern.
+
+## Änderung 2026-05-27: Geburtstags-Panel und Panel-Scroll stabilisiert
+- `openPanel()` setzt den Scrollzustand von Side-Panel und Panel-Body bei jedem Öffnen zurück. Dadurch bleiben oben stehende Einträge wie der nächste Geburtstag sichtbar und werden nicht durch einen alten Scrollstand verdeckt.
+- Das Geburtstags-Panel zeigt den nächsten Geburtstag zusätzlich als eigene Highlight-Karte und darunter alle erkannten Geburtstage.
+- Schreibweisen wie `Domi Bday`, `Bday Domi`, `Domi B-day`, `Birthday Domi`, `Geburtstag Domi` und `Geb. Domi` bleiben gültige Google-Kalender-Erkennungen. Sichtbar bleibt die normalisierte Anzeige `🎂 Name`.
+

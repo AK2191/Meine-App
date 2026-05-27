@@ -1428,8 +1428,12 @@ function openPanel(title,html){
   var panel=document.getElementById('side-panel');
   var overlay=document.getElementById('panel-overlay');
   document.getElementById('panel-title').textContent=title;
-  document.getElementById('panel-body').innerHTML=html;
-  if(panel){ panel.classList.add('open'); panel.style.pointerEvents='auto'; }
+  var panelBody = document.getElementById('panel-body');
+  if(panelBody){
+    panelBody.innerHTML = html;
+    try{ panelBody.scrollTop = 0; }catch(e){}
+  }
+  if(panel){ panel.classList.add('open'); panel.style.pointerEvents='auto'; try{ panel.scrollTop = 0; }catch(e){} }
   if(overlay){ overlay.classList.add('show'); overlay.style.pointerEvents='auto'; overlay.removeAttribute('aria-hidden'); }
 }
 function closePanel(){
