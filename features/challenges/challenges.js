@@ -238,25 +238,33 @@
       try{ var dt=new Date(d+'T12:00:00'); return dt.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}); }catch(e){ return d; }
     }
 
-    var statsHtml = '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">'
-      +'<div style="background:var(--s2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--acc)">'+todayPts+'</div><div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px">Pkt. heute</div></div>'
-      +'<div style="background:var(--s2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--t1)">'+totalPts+'</div><div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px">Pkt. gesamt</div></div>'
-      +'<div style="background:var(--s2);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--t1)">'+done.length+'</div><div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px">Aufgaben</div></div>'
-      +'</div>';
+    function taskRows(items){
+      return items.length
+        ? items.map(function(c){
+            var pts=parseInt(c.points,10)||0;
+            return '<div class="change-player-row">'
+              +'<div class="change-player-row-icon">'+esc(chIcon(c))+'</div>'
+              +'<div class="change-player-row-main"><div class="change-player-row-title">'+esc(chName(c))+'</div>'
+              +'<div class="change-player-row-meta">'+fmtDate(c)+(pts?' · +'+pts+' P':'')+'</div></div>'
+              +'</div>';
+          }).join('')
+        : '<div class="change-player-empty">Noch keine erledigten Aufgaben</div>';
+    }
 
-    var rowsHtml = last5.length
-      ? last5.map(function(c){
-          return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--b1)">'
-            +'<div style="width:34px;height:34px;border-radius:10px;background:var(--acc-d);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">'+esc(chIcon(c))+'</div>'
-            +'<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(chName(c))+'</div>'
-            +'<div style="font-size:11px;color:var(--t3);margin-top:2px">'+fmtDate(c)+(parseInt(c.points,10)?' · +'+parseInt(c.points,10)+' P':'')+'</div></div>'
-            +'</div>';
-        }).join('')
-      : '<div class="dash-empty">Noch keine erledigten Aufgaben</div>';
+    var highlight = last5[0]
+      ? '<div class="change-player-highlight"><div class="change-player-highlight-icon">'+esc(chIcon(last5[0]))+'</div><div><strong>'+esc(chName(last5[0]))+'</strong><span>'+fmtDate(last5[0])+(parseInt(last5[0].points,10)?' · +'+parseInt(last5[0].points,10)+' P':'')+'</span></div></div>'
+      : '';
 
-    var html = statsHtml
-      +'<div style="font-size:10px;font-weight:800;color:var(--t4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Letzte Aufgaben</div>'
-      +rowsHtml;
+    var html = '<div class="change-player-panel">'
+      +'<div class="change-player-summary">'
+        +'<div><strong>'+todayPts+'</strong><span>Pkt. heute</span></div>'
+        +'<div><strong>'+totalPts+'</strong><span>Pkt. gesamt</span></div>'
+        +'<div><strong>'+done.length+'</strong><span>Aufgaben</span></div>'
+      +'</div>'
+      +highlight
+      +'<div class="change-player-section-title">Letzte Aufgaben</div>'
+      +'<div class="change-player-list">'+taskRows(last5)+'</div>'
+    +'</div>';
 
     if(typeof openPanel==='function') openPanel(name, html);
   };
@@ -420,20 +428,14 @@
         var smart=null; try{ if(window.ChangePlayerActivity && window.ChangePlayerActivity.smartNudgeFor) smart=window.ChangePlayerActivity.smartNudgeFor(id,p); }catch(e){}
         var smartTitle=smart&&smart.reason?('Anfeuern: '+smart.reason):'Anfeuern';
         var nudge=me?'':'<button class="nudge-btn" onclick="event.stopPropagation();window.sendNudge&&window.sendNudge(\''+esc(id)+'\',\''+esc(p.name||id)+'\')" title="'+esc(smartTitle)+'"><span class="nudge-btn-icon">💪</span><span class="nudge-btn-label">Anfeuern</span></button>';
-        var stateLabel = me ? 'Du' : (smart&&smart.reason ? smart.reason : (p.online ? 'Aktiv' : 'Mitspieler'));
         return '<div class="leader-row clickable'+(me?' leader-row-self':'')+'" style="pointer-events:auto;cursor:pointer" onclick="window.openPlayerRecentPanel&&window.openPlayerRecentPanel(\''+esc(id)+'\',\''+esc(p.name||p.email||'Mitspieler')+'\')">'
           +'<div class="leader-rank">'+(medals[i]||String(i+1))+'</div>'
           +'<div class="leader-main">'
-            +'<div class="leader-head">'
-              +'<div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(me?'<span class="leader-self-tag">Du</span>':'')+live+'</div>'
-              +'<div class="leader-score-box"><strong class="leader-score">'+tot+'</strong><span class="leader-score-label">Punkte</span></div>'
-            +'</div>'
+            +'<div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(me?'<span class="leader-self-tag">Du</span>':'')+live+'</div>'
             +'<div class="leader-detail">Heute: '+pts+' P · Gesamt: '+tot+' P · '+cnt+' erledigt</div>'
-            +'<div class="leader-foot">'
-              +'<span class="leader-state">'+esc(stateLabel)+'</span>'
-              +(me?'':'<div class="leader-actions">'+nudge+'</div>')
-            +'</div>'
-          +'</div></div>';
+          +'</div>'
+          +'<div class="leader-side">'+nudge+'<strong class="leader-score">'+tot+'</strong></div>'
+        +'</div>';
       }).join(''):'<div class="dash-empty">Noch keine Mitspieler</div>';
     }catch(e){board.innerHTML='<div class="dash-empty">Rangliste wird geladen…</div>';}
 

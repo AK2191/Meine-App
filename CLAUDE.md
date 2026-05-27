@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-05-27 · Pollen- und Friseur-Panel Breitenfix
+> Zuletzt aktualisiert: 2026-05-27 · Spieler-Panel und Rangliste kompakt
 
 ---
 
@@ -537,3 +537,12 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - `features/weather/weatherCard.js` zeigt im Pollen-Panel immer den geladenen Forecast ohne zusätzliche Panel-Filter; es wird kein Neuabruf und kein Sync gestartet.
 - `features/weather/weatherCard.css` und `features/friseur/friseur.css` begrenzen Panel-Inhalte konsequent auf `width/max-width:100%`, nutzen `minmax(0,1fr)` für Summary-Kacheln und verhindern horizontalen Overflow.
 - Die globale Side-Panel-Body-Fläche verhindert horizontales Überlaufen (`overflow-x:hidden`), ohne Login, Sync, Kalender, Challenges oder Datenmodell zu ändern.
+
+
+## Änderung 2026-05-27: Spieler-Panel und Rangliste kompakt
+
+- Die vorherige Ranglisten-Kartenansicht wurde korrigiert: `#leaderboard-list` nutzt wieder kompakte, nicht streckende Kartenzeilen (`display:block`, `align-content:start`) und füllt bei wenigen Mitspielern nicht mehr die komplette Kartenhöhe.
+- Die Rangliste links bleibt bewusst übersichtlich: Rang/Medaille, Name, Detailzeile, Gesamtpunkte und optional **Anfeuern** in einer kompakten Zeile.
+- Das rechte Spieler-Detailpanel (`openPlayerRecentPanel`) ist jetzt im Friseur-/Geburtstage-Stil aufgebaut: drei Summary-Kacheln, Highlight-Karte für die letzte Aufgabe und ruhige Aufgabenliste darunter.
+- Die Änderung betrifft nur UI-Markup in `features/challenges/challenges.js` und Styling in `styles/app.css`.
+- Keine Änderungen an Punktelogik, Challenge-Erledigungen, Datenbank-Sync, Login, Kalender, Pollen oder Benachrichtigungen.
