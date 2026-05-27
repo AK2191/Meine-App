@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-05-27 · Geburtstags-Panel im Friseur-Stil
+> Zuletzt aktualisiert: 2026-05-27 · Geburtstags-Panel Breiten-Fix
 
 ---
 
@@ -503,6 +503,13 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Im Panel gibt es Filteransichten für **Heute**, **Morgen**, **Woche**, **Monat** und **Alle**. Die Filter ändern nur die Panel-Ansicht und starten keinen Sync/Login/Push.
 - Geburtstags-Erkennung, Kalenderdarstellung und Benachrichtigungstage bleiben unverändert: `Bday`, `B-day`, `Birthday`, `Geburtstag`, `Geb.` werden akzeptiert; sichtbar bleibt `🎂 Name`.
 - Keine DOM-Patcher, keine MutationObserver-Fixes, keine Änderungen an Login-, Sync-, Kalender- oder Challenge-Logik.
+
+## Änderung 2026-05-27: Geburtstags-Panel Breiten-Fix
+
+- `features/birthdays/birthdays.css` begrenzt das Geburtstags-Panel jetzt konsequent auf die Breite des Side-Panels (`width/max-width/min-width`).
+- Die Filteransichten **Heute**, **Morgen**, **Woche**, **Monat** und **Alle** umbrechen kontrolliert in ein 3-/2-Spaltenraster statt horizontal aus der Ansicht zu laufen.
+- Summary-Kacheln, Highlight-Karte und Geburtstagszeilen bleiben im ruhigen Friseur-Stil und erzeugen keinen horizontalen Overflow.
+- Keine Änderungen an Parser, Kalenderdaten, Benachrichtigungen, Login, Sync oder Challenge-Logik.
 
 
 ## Änderung 2026-05-27: Pollen-Panel im Friseur-Stil
