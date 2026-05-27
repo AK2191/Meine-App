@@ -8,6 +8,7 @@
   var LS_ON_LEGACY = 'birthdays_enabled';
   var LS_NOTIFICATION_DAYS = 'change_v1_birthday_notification_days';
   var LS_NOTIFICATION_DAYS_LEGACY = 'birthday_notification_days';
+  var panelView = 'all';
 
   function esc(value){
     return String(value == null ? '' : value).replace(/[&<>"'`]/g, function(c){
@@ -65,6 +66,30 @@
     if(!p || typeof p.upcoming !== 'function') return [];
     try{ return p.upcoming(limit == null ? 90 : limit); }catch(e){ return []; }
   }
+  function pad2(n){ return String(n).padStart(2, '0'); }
+  function todayKey(){
+    var p = parser();
+    if(p && typeof p.todayKey === 'function'){
+      try{ return p.todayKey(); }catch(e){}
+    }
+    var d = new Date();
+    return d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate());
+  }
+  function dateFromKey(key){ return new Date(String(key || '') + 'T12:00:00'); }
+  function addDaysKey(key, days){
+    var d = dateFromKey(key);
+    if(isNaN(d)) return key;
+    d.setDate(d.getDate() + days);
+    return d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate());
+  }
+  function weekEndKey(key){
+    var d = dateFromKey(key || todayKey());
+    if(isNaN(d)) return key || todayKey();
+    var day = d.getDay();
+    var daysToSunday = day === 0 ? 0 : 7 - day;
+    d.setDate(d.getDate() + daysToSunday);
+    return d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate());
+  }
   function fmt(key){
     try{ return new Date(key+'T12:00:00').toLocaleDateString('de-DE', {weekday:'short', day:'2-digit', month:'2-digit'}).replace(',', ''); }
     catch(e){ return key; }
@@ -75,6 +100,30 @@
     if(diff === 2) return 'Übermorgen';
     return 'In ' + diff + ' Tagen';
   }
+  function rangeTitle(view){
+    if(view === 'today') return 'Heute';
+    if(view === 'tomorrow') return 'Morgen';
+    if(view === 'week') return 'Diese Woche';
+    if(view === 'month') return 'Dieser Monat';
+    return 'Alle Geburtstage';
+  }
+  function isInThisWeek(item){
+    var from = todayKey();
+    return item && item.nextDate >= from && item.nextDate <= weekEndKey(from);
+  }
+  function isInThisMonth(item){
+    var from = todayKey();
+    return !!(item && item.nextDate && item.nextDate.slice(0,7) === from.slice(0,7));
+  }
+  function filterByView(list, view){
+    var selected = view || 'all';
+    if(selected === 'today') return list.filter(function(item){ return item.diff === 0; });
+    if(selected === 'tomorrow') return list.filter(function(item){ return item.diff === 1; });
+    if(selected === 'week') return list.filter(isInThisWeek);
+    if(selected === 'month') return list.filter(isInThisMonth);
+    return list;
+  }
+  function viewCount(list, view){ return filterByView(list, view).length; }
   function getRowHtml(){
     if(!enabled()) return '';
     var list = upcoming(90);
@@ -96,35 +145,66 @@
       + badge
       + '</div>';
   }
-  function panelRow(item){
-    var badge = item.diff === 0 ? 'Heute' : diffLabel(item.diff);
-    return '<div class="dash-row birthday-panel-row" style="cursor:default">'
-      + '<div class="dash-row-icon" style="background:rgba(139,92,246,.11)">🎂</div>'
-      + '<div class="dash-row-body"><div class="dash-row-title">'+esc(item.name)+'</div><div class="dash-row-sub">'+esc(fmt(item.nextDate))+' · erkannt aus „'+esc(item.rawTitle)+'“</div></div>'
-      + '<span class="dash-row-badge '+(item.diff===0?'badge-amber':'badge-blue')+'">'+esc(badge)+'</span>'
+  function birthdayPanelRow(item){
+    var state = item.diff === 0 ? 'today' : (item.diff === 1 ? 'tomorrow' : (item.diff <= 7 ? 'soon' : 'later'));
+    var badge = diffLabel(item.diff);
+    return '<div class="change-bday-row '+state+'">'
+      + '<div class="change-bday-dot"></div>'
+      + '<div class="change-bday-main">'
+      + '<div class="change-bday-title">'+esc(item.name)+'</div>'
+      + '<div class="change-bday-meta">'+esc(fmt(item.nextDate))+' · erkannt aus „'+esc(item.rawTitle)+'“</div>'
+      + '</div>'
+      + '<div class="change-bday-state">'+esc(badge)+'</div>'
       + '</div>';
   }
   function nextHighlight(item){
     if(!item) return '';
-    return '<div class="feature-card birthday-next-card" style="margin-bottom:14px;border-color:rgba(139,92,246,.22);background:rgba(139,92,246,.07)">'
-      + '<div class="feature-card-head">'
-      + '<div class="feature-icon" style="background:rgba(139,92,246,.12)">🎂</div>'
-      + '<div class="feature-title-wrap"><div class="feature-title">Nächster Geburtstag</div><div class="feature-sub">'+esc(item.name)+' · '+esc(fmt(item.nextDate))+' · erkannt aus „'+esc(item.rawTitle)+'“</div></div>'
-      + '<span class="feature-status">'+esc(diffLabel(item.diff))+'</span>'
-      + '</div>'
+    return '<div class="change-bday-next">'
+      + '<div class="change-bday-next-icon">🎂</div>'
+      + '<div class="change-bday-next-main"><strong>'+esc(item.name)+'</strong><span>'+esc(fmt(item.nextDate))+' · '+esc(diffLabel(item.diff))+'</span></div>'
       + '</div>';
   }
-  function openPanel(){
+  function filterChips(list, active){
+    var views = [
+      {key:'today', label:'Heute'},
+      {key:'tomorrow', label:'Morgen'},
+      {key:'week', label:'Woche'},
+      {key:'month', label:'Monat'},
+      {key:'all', label:'Alle'}
+    ];
+    return '<div class="change-bday-filter" role="group" aria-label="Geburtstage filtern">' + views.map(function(view){
+      var count = viewCount(list, view.key);
+      var cls = view.key === active ? ' active' : '';
+      return '<button type="button" class="change-bday-chip'+cls+'" onclick="window.ChangeBirthdays&&window.ChangeBirthdays.openPanel(\''+view.key+'\')">'
+        + '<span>'+esc(view.label)+'</span><strong>'+count+'</strong></button>';
+    }).join('') + '</div>';
+  }
+  function emptyView(view){
+    return '<div class="change-bday-empty">Keine Geburtstage für „'+esc(rangeTitle(view))+'“ gefunden.<br><span>Wechsle auf „Alle“, um die nächsten erkannten Geburtstage zu sehen.</span></div>';
+  }
+  function openPanel(view){
+    panelView = view || 'all';
+    var activeView = panelView;
     var list = upcoming(370);
     var body = '';
     if(!list.length){
-      body = '<div class="dash-empty" style="padding:18px">Keine Geburtstage gefunden.<br><span style="font-size:12px;color:var(--t4)">Erkannt werden z. B. „Bday Alex“, „Alex B-day“, „Birthday Maria“ oder „Geburtstag Tom" im Kalender.</span></div>';
+      body = '<div class="change-bday-panel"><div class="change-bday-empty">Keine Geburtstage gefunden.<br><span>Erkannt werden z. B. „Bday Alex“, „Alex B-day“, „Birthday Maria“ oder „Geburtstag Tom“ im Kalender.</span></div></div>';
     }else{
-      body = nextHighlight(list[0]) + '<div class="db-section">Alle erkannten Geburtstage</div>' + list.slice(0,30).map(panelRow).join('');
+      var next = list[0];
+      var monthCount = viewCount(list, 'month');
+      var selected = filterByView(list, activeView);
+      body = '<div class="change-bday-panel">'
+        + '<div class="change-bday-summary">'
+        + '<div><strong>'+list.length+'</strong><span>Geburtstage</span></div>'
+        + '<div><strong>'+esc(String(next.diff))+'</strong><span>'+(next.diff === 0 ? 'Heute' : 'Tage bis')+'</span></div>'
+        + '<div><strong>'+monthCount+'</strong><span>Dieser Monat</span></div>'
+        + '</div>'
+        + nextHighlight(next)
+        + filterChips(list, activeView)
+        + '<div class="change-bday-section-title">'+esc(rangeTitle(activeView))+'</div>'
+        + '<div class="change-bday-list">' + (selected.length ? selected.slice(0, 40).map(birthdayPanelRow).join('') : emptyView(activeView)) + '</div>'
+        + '</div>';
     }
-    body += '<div style="margin-top:14px;padding:12px;border:1px solid var(--b1);border-radius:14px;background:var(--s2);font-size:12px;color:var(--t3);line-height:1.45">'
-      + '<strong style="color:var(--t2)">Erkennung:</strong> Bday, B-day, Birthday, Geburtstag und Geb. werden automatisch als Geburtstage erkannt. In der App wird daraus sauber „🎂 Name“.'
-      + '</div>';
     if(typeof window.openPanel === 'function') window.openPanel('🎂 Geburtstage', body);
   }
   function notificationTitle(item){

@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-05-27 · Friseur-Panel Tagesmetriken und Sortierung
+> Zuletzt aktualisiert: 2026-05-27 · Geburtstags-Panel im Friseur-Stil
 
 ---
 
@@ -494,3 +494,13 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Die Glocke zeigt Geburtstags-Hinweise ab `0..X` Tagen vor dem Geburtstag. `0` bedeutet nur am Geburtstag.
 - Browser-Push für Geburtstage wird über die bestehende Notification-Zentrale ausgelöst, wenn `diff === birthdayNotificationDays`; keine eigene Push-Steuerung, kein automatischer Firebase-Start.
 - Erkennung und Kalenderdarstellung bleiben unverändert: `Bday`, `B-day`, `Birthday`, `Geburtstag`, `Geb.` werden akzeptiert, sichtbar bleibt `🎂 Name`.
+
+## Änderung 2026-05-27: Geburtstags-Panel im Friseur-Stil
+
+- Das Geburtstags-Panel verwendet jetzt ein eigenes Feature-CSS unter `features/birthdays/birthdays.css`.
+- Die Darstellung folgt dem ruhigen Friseur-Panel-Stil: Summary-Kacheln oben, Highlight-Karte für den nächsten Geburtstag, darunter klare Termin-/Personenkarten.
+- Die Summary-Kacheln zeigen **Geburtstage**, **Tage bis** zum nächsten Geburtstag und **Dieser Monat**.
+- Im Panel gibt es Filteransichten für **Heute**, **Morgen**, **Woche**, **Monat** und **Alle**. Die Filter ändern nur die Panel-Ansicht und starten keinen Sync/Login/Push.
+- Geburtstags-Erkennung, Kalenderdarstellung und Benachrichtigungstage bleiben unverändert: `Bday`, `B-day`, `Birthday`, `Geburtstag`, `Geb.` werden akzeptiert; sichtbar bleibt `🎂 Name`.
+- Keine DOM-Patcher, keine MutationObserver-Fixes, keine Änderungen an Login-, Sync-, Kalender- oder Challenge-Logik.
+
