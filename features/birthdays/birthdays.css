@@ -22,8 +22,10 @@
 .change-bday-row{display:flex;align-items:center;gap:11px;width:100%;min-width:0;max-width:100%;border:1px solid var(--b1);background:var(--s1);border-radius:16px;padding:11px 12px;overflow:hidden}
 .change-bday-row.today,.change-bday-row.tomorrow{border-color:rgba(52,211,153,.36);background:rgba(52,211,153,.06)}
 .change-bday-row.soon{border-color:rgba(52,211,153,.22);background:rgba(52,211,153,.04)}
-.change-bday-dot{width:8px;height:8px;border-radius:999px;background:var(--t4);flex:0 0 8px}
-.change-bday-row.today .change-bday-dot,.change-bday-row.tomorrow .change-bday-dot,.change-bday-row.soon .change-bday-dot{background:var(--acc)}
+.change-bday-row-icon{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--s2);color:var(--t3);font-size:17px;font-weight:900;flex:0 0 36px}
+.change-bday-row.today .change-bday-row-icon{background:rgba(52,211,153,.13);color:var(--acc)}
+.change-bday-row.tomorrow .change-bday-row-icon,.change-bday-row.soon .change-bday-row-icon{background:rgba(139,92,246,.12);color:#8b5cf6}
+.change-bday-row.later .change-bday-row-icon{background:var(--s2);color:var(--t4)}
 .change-bday-main{flex:1;min-width:0;overflow:hidden}
 .change-bday-title{font-size:13px;font-weight:900;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .change-bday-meta{font-size:11.5px;font-weight:650;color:var(--t4);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}

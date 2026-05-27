@@ -149,7 +149,7 @@
     var state = item.diff === 0 ? 'today' : (item.diff === 1 ? 'tomorrow' : (item.diff <= 7 ? 'soon' : 'later'));
     var badge = diffLabel(item.diff);
     return '<div class="change-bday-row '+state+'">'
-      + '<div class="change-bday-dot"></div>'
+      + '<div class="change-bday-row-icon">🎂</div>'
       + '<div class="change-bday-main">'
       + '<div class="change-bday-title">'+esc(item.name)+'</div>'
       + '<div class="change-bday-meta">'+esc(fmt(item.nextDate))+' · erkannt aus „'+esc(item.rawTitle)+'“</div>'

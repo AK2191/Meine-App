@@ -123,7 +123,7 @@
       var calText = row.calendarDays && row.calendarDays !== row.days
         ? (row.calendarDays === 1 ? '1 Kalendertag' : row.calendarDays + ' Kalendertage')
         : '';
-      return '<div class="change-vacation-row '+esc(st.cls)+'"><div class="change-vacation-dot"></div><div class="change-vacation-main"><div class="change-vacation-title">'+esc(row.title)+'</div><div class="change-vacation-date">'+esc(fmtRange(row.start, row.end))+'</div></div><div class="change-vacation-side"><span>'+esc(st.label)+'</span><strong>'+esc(dayText)+'</strong>'+(calText?'<small>'+esc(calText)+'</small>':'')+'</div></div>';
+      return '<div class="change-vacation-row '+esc(st.cls)+'"><div class="change-vacation-row-icon">🏖️</div><div class="change-vacation-main"><div class="change-vacation-title">'+esc(row.title)+'</div><div class="change-vacation-date">'+esc(fmtRange(row.start, row.end))+'</div></div><div class="change-vacation-side"><span>'+esc(st.label)+'</span><strong>'+esc(dayText)+'</strong>'+(calText?'<small>'+esc(calText)+'</small>':'')+'</div></div>';
     }).join('') + '</div>';
   }
   function halfDayHtml(year){
