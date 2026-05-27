@@ -3099,7 +3099,7 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
         ? '<span class="dash-row-badge badge-red" style="white-space:nowrap;font-size:10px">⚠ '+Math.abs(remaining)+' überzogen</span>'
         : '<span class="dash-row-badge" style="white-space:nowrap;font-size:10px;background:'+(remaining<=5?'rgba(245,158,11,.15);color:#b45309':'rgba(45,106,79,.1);color:var(--acc)')+'">'+formatVacationDays(remaining)+' Urlaubstage übrig</span>';
 
-    return '<div class="dash-row" onclick="window.openUrlaubPanel&&window.openUrlaubPanel()" style="cursor:pointer;border-top:1px solid var(--b1);margin-top:4px">'
+    return '<div class="dash-row dashboard-feature-row" onclick="window.openUrlaubPanel&&window.openUrlaubPanel()" style="cursor:pointer">'
       + '<div class="dash-row-icon" style="background:rgba(156,163,175,.1);font-size:14px">🏖️</div>'
       + '<div class="dash-row-body">'
       + '<div class="dash-row-title">Urlaub</div>'

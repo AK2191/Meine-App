@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-05-27 · App-Info und Gesundheitscheck
+> Zuletzt aktualisiert: 2026-05-27 · Dashboard-Trennlinien bereinigt
 
 ---
 
@@ -572,3 +572,11 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Der **App-Gesundheitscheck** zeigt seine Detailprüfungen nicht mehr automatisch beim Öffnen des App-Tabs.
 - Erst der Button **App-Gesundheitscheck prüfen** öffnet die Detailprüfung für Login, Cache, Sync, Service Worker und blockierende Overlays.
 - Keine Änderungen an Login, Sync, Kalender, Challenges, Push oder Datenmodell.
+
+
+## Änderung 2026-05-27: Dashboard-Trennlinien bereinigt
+
+- In der Dashboard-Kalenderkarte erzeugen Friseur- und Urlaub-Zeilen keine eigene zusätzliche obere Linie und keinen Extra-Abstand mehr.
+- Zwischen normalen Terminen, Friseur, Geburtstage und Urlaub bleibt dadurch nur noch eine einzelne ruhige Trennlinie sichtbar.
+- Abschnittstrenner wie **Demnächst** verwenden ebenfalls keine doppelte obere Linie mehr.
+- Änderung betrifft nur Dashboard-CSS und die Dashboard-Row-Markups von Friseur/Urlaub; keine Änderungen an Kalenderdaten, Parsern, Sync, Login oder Challenge-Logik.

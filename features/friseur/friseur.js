@@ -232,7 +232,7 @@
       badge = '<span class="dash-row-badge" style="white-space:nowrap;font-size:10px;background:var(--s2);color:var(--t4);border:1px solid var(--b1)">Kein Termin</span>';
     }
 
-    return '<div class="dash-row" onclick="window.openFriseurPanel&&window.openFriseurPanel()" style="cursor:pointer;border-top:1px solid var(--b1);margin-top:4px">'
+    return '<div class="dash-row dashboard-feature-row" onclick="window.openFriseurPanel&&window.openFriseurPanel()" style="cursor:pointer">'
       + '<div class="dash-row-icon" style="background:rgba(156,163,175,.1);font-size:14px">✂️</div>'
       + '<div class="dash-row-body">'
       + '<div class="dash-row-title">Friseur</div>'

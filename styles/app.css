@@ -844,7 +844,7 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 .dash-today-header{padding:10px 18px 8px;border-bottom:1px solid var(--b1)}
 .dash-today-date{font-size:12px;font-weight:700;color:var(--t3)}
 .dash-today-free{display:flex;align-items:center;gap:7px;padding:11px 18px;font-size:13px;font-weight:600;color:var(--t4);border-bottom:1px solid var(--b1);background:var(--s2)}
-.dash-section-divider{padding:7px 18px 5px;font-size:10px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.6px;background:var(--s2);border-top:1px solid var(--b1);border-bottom:1px solid var(--b1)}
+.dash-section-divider{padding:7px 18px 5px;font-size:10px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.6px;background:var(--s2);border-top:0;border-bottom:1px solid var(--b1)}
 .dash-today-row{border-left:3px solid var(--acc)!important;background:linear-gradient(90deg,rgba(45,106,79,.04),transparent)!important}
 
 /* ── Abschnitt 6 ── */
@@ -924,4 +924,22 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
   .dash-card-head,.challenge-card-head,.leader-card-head{padding:14px 16px 12px}
   .dash-row,.challenge-item,.leader-row{padding:13px 16px}
   .panel-body{padding:18px}
+}
+
+
+/* Dashboard-Kalender: nur eine ruhige Trennlinie zwischen Zeilen */
+.dash-card-body > .dash-row + .dash-row,
+.dash-card-body > .dashboard-feature-row + .dashboard-feature-row{
+  border-top:0!important;
+  margin-top:0!important;
+}
+.dash-card-body > .dashboard-feature-row{
+  border-top:0!important;
+  margin-top:0!important;
+}
+.dash-card-body > .dash-section-divider{
+  border-top:0!important;
+}
+.dash-card-body > .dash-section-divider + .dash-row{
+  border-top:0!important;
 }
