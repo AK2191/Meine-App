@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-05-27 · Geburtstags-Benachrichtigung in Tagen
+> Zuletzt aktualisiert: 2026-05-27 · Friseur-Panel Tagesmetriken und Sortierung
 
 ---
 
@@ -462,12 +462,12 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Schreibweisen wie `Domi Bday`, `Bday Domi`, `Domi B-day`, `Birthday Domi`, `Geburtstag Domi` und `Geb. Domi` bleiben gültige Google-Kalender-Erkennungen. Sichtbar bleibt die normalisierte Anzeige `🎂 Name`.
 
 
-## Änderung 2026-05-27: Friseur-Panel relative Tagesangaben
+## Änderung 2026-05-27: Friseur-Panel Tagesmetriken und Sortierung
 
-- Im Friseur-Panel zeigen die oberen Summary-Kacheln für **Letzter** und **Nächster** relative Tagesangaben statt reiner Datumswerte.
-- **Letzter** nutzt Formulierungen wie `vor 1 Tag` oder `vor 28 Tagen`.
-- **Nächster** nutzt Formulierungen wie `in 1 Tag` oder `in 6 Tagen`.
+- Im Friseur-Panel zeigen die oberen Summary-Kacheln für **Besuche**, **Letzter** und **Nächster** dieselbe ruhige Metrik-Darstellung: große Zahl oben, kurzer Labeltext darunter.
+- **Letzter** wird als `20` / `Tage her` dargestellt; **Nächster** als `6` / `Tage bis`. `0` nutzt das Label `Heute`.
 - Die Jahresliste und die Highlight-Karte behalten Datum und Uhrzeit, damit die exakten Termine weiterhin sichtbar bleiben.
+- Die Jahresliste `Termine YYYY` ist chronologisch absteigend sortiert: neueste Termine oben, älteste unten.
 - Die Berechnung erfolgt kalendertagsgenau über lokale Datumsschlüssel, nicht über Uhrzeit-Rundung.
 
 ## Änderung 2026-05-27: Anfeuern-Benachrichtigungen repariert

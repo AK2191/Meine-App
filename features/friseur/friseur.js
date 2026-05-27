@@ -56,6 +56,15 @@
     }
     return 'in ' + diff + ' ' + (diff === 1 ? 'Tag' : 'Tagen');
   }
+  function friseurSummaryMetric(dateStr, mode){
+    if(!dateStr) return { value:'—', label: mode === 'next' ? 'Nächster' : 'Letzter' };
+    var diff = mode === 'last' ? calendarDiffDays(dateStr, todayKey()) : calendarDiffDays(todayKey(), dateStr);
+    if(diff === null) return { value:'—', label: mode === 'next' ? 'Nächster' : 'Letzter' };
+    var days = Math.max(0, Math.abs(diff));
+    if(days === 0) return { value:'0', label:'Heute' };
+    if(mode === 'last') return { value:String(days), label: days === 1 ? 'Tag her' : 'Tage her' };
+    return { value:String(days), label: days === 1 ? 'Tag bis' : 'Tage bis' };
+  }
   function toDateKey(value){
     value = String(value || '');
     return value.length >= 10 ? value.slice(0,10) : '';
@@ -171,7 +180,11 @@
       seen[key] = true;
       arr.push({date:ev.date,title:ev.title,time:ev.time,endTime:ev.endTime});
     });
-    arr.sort(function(a,b){ return String(a.date+a.time).localeCompare(String(b.date+b.time)); });
+    arr.sort(function(a,b){
+      var ak = String(a.date || '') + 'T' + String(a.time || '00:00');
+      var bk = String(b.date || '') + 'T' + String(b.time || '00:00');
+      return bk.localeCompare(ak);
+    });
     return arr;
   }
   window.renderFriseurBanner = renderFriseurBanner;
@@ -260,12 +273,14 @@
     var all = findAllFriseurThisYear();
     var now = new Date();
     var visits = all.filter(function(item){ return new Date(item.date+'T12:00:00') <= now; }).length;
+    var lastMetric = friseurSummaryMetric(lastDate, 'last');
+    var nextMetric = friseurSummaryMetric(nextInfo && nextInfo.date, 'next');
     var rows = all.map(friseurPanelRow).join('');
     var summary = '<div class="change-hair-panel">'
       + '<div class="change-hair-summary">'
       + '<div><strong>'+visits+'</strong><span>Besuche</span></div>'
-      + '<div><strong>'+(lastDate?esc(relativeFriseurText(lastDate, 'past')):'—')+'</strong><span>Letzter</span></div>'
-      + '<div><strong>'+(nextInfo?esc(relativeFriseurText(nextInfo.date, 'future')):'—')+'</strong><span>Nächster</span></div>'
+      + '<div><strong>'+esc(lastMetric.value)+'</strong><span>'+esc(lastMetric.label)+'</span></div>'
+      + '<div><strong>'+esc(nextMetric.value)+'</strong><span>'+esc(nextMetric.label)+'</span></div>'
       + '</div>'
       + (nextInfo ? '<div class="change-hair-next"><div class="change-hair-next-icon">✂</div><div><strong>'+esc(nextInfo.title || 'Friseur-Termin')+'</strong><span>'+esc(fmtPanelDate(nextInfo.date))+' · '+esc(formatTimeRange(nextInfo))+'</span></div></div>' : '')
       + '<div class="change-hair-section-title">Termine '+year+'</div>';
