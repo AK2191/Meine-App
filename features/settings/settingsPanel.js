@@ -464,22 +464,24 @@
       installed === 'Installiert' ? 'ok' : 'off',
       'Für Handy-Nutzung, Push und Startbildschirm.',
       '',
-      '<button class="btn btn-secondary btn-full" onclick="if(typeof installChangeApp===\'function\')installChangeApp()">Change als App installieren</button>'
+      '<button class="btn btn-secondary btn-full" onclick="window.installChangeApp&&window.installChangeApp()">Change als App installieren</button>'
     );
-    var about = '<div class="change-about-card">'
-      + '<div class="change-about-logo">C</div>'
-      + '<div class="change-about-copy"><div class="change-about-title">Change</div><div class="change-about-sub">Kalender, Challenges und Sync</div></div>'
-      + '<span class="change-version-chip">v'+esc(APP_VERSION)+'</span>'
-      + '</div>'
-      + '<div class="change-about-meta">'
-      + '<div><span>Version</span><strong>'+esc(APP_VERSION)+'</strong></div>'
-      + '<div><span>Status</span><strong>'+esc(installed)+'</strong></div>'
+    var versionCard = '<div class="change-settings-feature-card change-version-simple-card">'
+      + '<div class="change-version-simple-head"><div><div class="change-version-simple-label">Version</div><div class="change-version-simple-title">Change</div><div class="change-version-simple-sub">Kalender, Challenges und Sync</div></div><strong>'+esc(APP_VERSION)+'</strong></div>'
+      + '<div class="change-version-simple-meta"><span>Installationsstatus</span><strong>'+esc(installed)+'</strong></div>'
       + '</div>';
-    var aboutCard = settingsFeatureCard('ℹ️', 'App-Info', 'v'+APP_VERSION, 'off', 'Ruhige Übersicht zu Version und Installationsstatus.', '', about);
-    var health = (window.ChangeAppStatus && window.ChangeAppStatus.healthHtml) ? settingsFeatureCard('🩺', 'App-Gesundheitscheck', 'DIAGNOSE', 'off', 'Prüft Login, Cache, Sync und blockierende Overlays.', '', window.ChangeAppStatus.healthHtml()) : '';
-    return '<div class="change-settings-stack">' + installCard + aboutCard + health + '</div>';
+    var health = '';
+    if(window.ChangeAppStatus && window.ChangeAppStatus.healthHtml){
+      var healthBody = appHealthExpanded
+        ? window.ChangeAppStatus.healthHtml() + '<button class="btn btn-secondary btn-full" id="run-app-health" type="button">Erneut prüfen</button>'
+        : '<div class="change-feature-note">Der Check wird erst angezeigt, wenn du ihn bewusst startest.</div><button class="btn btn-secondary btn-full" id="run-app-health" type="button">App-Gesundheitscheck prüfen</button>';
+      health = settingsFeatureCard('🩺', 'App-Gesundheitscheck', appHealthExpanded ? 'GEPRÜFT' : 'BEREIT', appHealthExpanded ? 'ok' : 'off', 'Prüft Login, Cache, Sync und blockierende Overlays.', '', healthBody);
+    }
+    return '<div class="change-settings-stack">' + installCard + versionCard + health + '</div>';
   }
+
   var currentSettingsTab = 'dashboard';
+  var appHealthExpanded = false;
   function tabButton(id, label, active){ return '<button class="change-settings-tab '+(active===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'+label+'</button>'; }
   function openSettingsPanel(startTab){
     startTab = ['dashboard','calendar','challenges','sync','app'].indexOf(startTab) >= 0 ? startTab : (currentSettingsTab || 'dashboard');
@@ -574,6 +576,7 @@
     var google = $('set-google'); if(google) google.addEventListener('change', async function(){ if(window.ChangeGoogleSyncStatus){ if(google.checked) await window.ChangeGoogleSyncStatus.syncNow(); else window.ChangeGoogleSyncStatus.disconnect(); } refreshSameTab(); });
     var syncGoogle = $('set-sync-google'); if(syncGoogle) syncGoogle.addEventListener('click', async function(){ if(window.ChangeGoogleSyncStatus) await window.ChangeGoogleSyncStatus.syncNow(); refreshSameTab(); });
     var clearSyncLog = $('clear-sync-log'); if(clearSyncLog) clearSyncLog.addEventListener('click', function(){ try{ localStorage.removeItem('change_v1_sync_log'); }catch(e){} refreshSameTab('sync'); });
+    var runHealth = $('run-app-health'); if(runHealth) runHealth.addEventListener('click', function(){ appHealthExpanded = true; refreshSameTab('app'); });
     var btnGoogleConnect = $('btn-google-connect'); if(btnGoogleConnect) btnGoogleConnect.addEventListener('click', function(){ if(typeof connectToGoogle==='function') connectToGoogle(); });
 
   }

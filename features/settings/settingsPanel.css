@@ -187,3 +187,17 @@
   .change-feature-title{font-size:14px}
   .change-feature-sub{font-size:11.5px;max-width:none}
 }
+
+
+/* App-Tab: Version schlicht sichtbar, Gesundheitscheck bewusst startbar */
+.change-version-simple-card{display:grid;gap:12px}
+.change-version-simple-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.change-version-simple-label{font-size:10px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;color:var(--t4);margin-bottom:5px}
+.change-version-simple-title{font-size:15px;font-weight:950;color:var(--t1);line-height:1.15}
+.change-version-simple-sub{font-size:11.5px;color:var(--t4);margin-top:4px;line-height:1.35}
+.change-version-simple-head>strong{font-family:var(--mono);font-size:15px;font-weight:950;color:var(--acc);line-height:1.2;white-space:nowrap}
+.change-version-simple-meta{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--b1);border-radius:14px;background:var(--s2);padding:10px 12px}
+.change-version-simple-meta span{font-size:10px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;color:var(--t4)}
+.change-version-simple-meta strong{font-size:12.5px;font-weight:900;color:var(--t1);text-align:right}
+.change-settings-feature-card .change-health-head{margin-bottom:10px}
+.change-settings-feature-card #run-app-health{margin-top:2px}

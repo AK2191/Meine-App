@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-05-27 · Geburtstags-Erinnerung als Auswahl
+> Zuletzt aktualisiert: 2026-05-27 · App-Info und Gesundheitscheck
 
 ---
 
@@ -563,3 +563,12 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Optionen: **Am Geburtstag**, 1–30 Tage vorher sowie 45, 60, 90, 120, 180 und 365 Tage vorher; vorhandene Sonderwerte werden automatisch als Option ergänzt.
 - Die Benachrichtigungslogik, Glocke und Datenbank-Sync verwenden unverändert denselben Tageswert.
 - Keine Änderungen an Geburtstags-Parser, Kalender, Login, Push-Steuerung oder Challenge-Logik.
+
+
+## Änderung 2026-05-27: App-Info und Gesundheitscheck
+
+- Im Einstellungen-Tab **App** ist die Version jetzt als schlichte App-Info-Karte ohne doppelte Icon-/Logo-Ebene sichtbar.
+- Die Versionskarte zeigt nur **Change**, die Versionsnummer und den Installationsstatus.
+- Der **App-Gesundheitscheck** zeigt seine Detailprüfungen nicht mehr automatisch beim Öffnen des App-Tabs.
+- Erst der Button **App-Gesundheitscheck prüfen** öffnet die Detailprüfung für Login, Cache, Sync, Service Worker und blockierende Overlays.
+- Keine Änderungen an Login, Sync, Kalender, Challenges, Push oder Datenmodell.
