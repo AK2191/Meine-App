@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-05-27 · Friseur-Panel relative Tagesangaben
+> Zuletzt aktualisiert: 2026-05-27 · Geburtstags-Benachrichtigung in Tagen
 
 ---
 
@@ -389,6 +389,7 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - UI/Panel liegt in `features/birthdays/birthdays.js`.
 - Geburtstage dürfen nicht per MutationObserver oder DOM-Patcher nachträglich ins Dashboard geschrieben werden. Dashboard und Kalender fragen das Feature direkt ab.
 - Dashboard-Settings enthalten einen eigenen Schalter **Geburtstage**. Dieser wird über `change_settings.dashboard.birthdaysEnabled` synchronisiert.
+- Dashboard-Settings enthalten zusätzlich **Benachrichtigung X Tage vorher** für Geburtstage. Wert `0` bedeutet nur am Geburtstag, Werte bis `365` zeigen Hinweise entsprechend früher. Speicherung: `change_v1_birthday_notification_days` / `birthday_notification_days`, Sync: `change_settings.dashboard.birthdayNotificationDays`.
 - Kalender-Geburtstage sind normale, kleine Kalendereinträge mit `type: "birthday"`, `source: "birthday"`, `color: "purple"` und dürfen keine großen visuellen Elemente erzeugen.
 - Benachrichtigungen für Geburtstage laufen über die bestehende Glocke/Notification-Zentrale, kein eigener Push-Button.
 
@@ -483,3 +484,13 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Alte Browser-Push-Stellen in Notification-Center, Wetter/Pollen und Friseur nutzen jetzt `serviceWorker.ready.then(reg => reg.showNotification())` mit PNG-Icon statt `new Notification()`.
 - Kein automatischer Firebase-Start nach Login: Anfeuern nutzt Firebase nur, wenn Datenbank-Sync bereits aktiv und Firebase Auth bereit ist.
 
+
+
+## Änderung 2026-05-27: Geburtstags-Benachrichtigung in Tagen
+
+- Einstellungen → Dashboard → Geburtstage enthält nun ein Zahlenfeld **Benachrichtigung** in Tagen.
+- Der Wert wird lokal in `change_v1_birthday_notification_days` und `birthday_notification_days` gespeichert.
+- Bei aktivem Datenbank-Sync wird der Wert über `change_settings.dashboard.birthdayNotificationDays` synchronisiert.
+- Die Glocke zeigt Geburtstags-Hinweise ab `0..X` Tagen vor dem Geburtstag. `0` bedeutet nur am Geburtstag.
+- Browser-Push für Geburtstage wird über die bestehende Notification-Zentrale ausgelöst, wenn `diff === birthdayNotificationDays`; keine eigene Push-Steuerung, kein automatischer Firebase-Start.
+- Erkennung und Kalenderdarstellung bleiben unverändert: `Bday`, `B-day`, `Birthday`, `Geburtstag`, `Geb.` werden akzeptiert, sichtbar bleibt `🎂 Name`.

@@ -6,6 +6,8 @@
 
   var LS_ON = 'change_v1_birthdays_enabled';
   var LS_ON_LEGACY = 'birthdays_enabled';
+  var LS_NOTIFICATION_DAYS = 'change_v1_birthday_notification_days';
+  var LS_NOTIFICATION_DAYS_LEGACY = 'birthday_notification_days';
 
   function esc(value){
     return String(value == null ? '' : value).replace(/[&<>"'`]/g, function(c){
@@ -24,6 +26,30 @@
     return fallback;
   }
   function writeBool(key, value){ try{ localStorage.setItem(key, value ? 'true' : 'false'); }catch(e){} }
+  function readNumber(key, fallback){
+    try{
+      var raw = localStorage.getItem(key);
+      if(raw === null || raw === '') return fallback;
+      var parsed = parseInt(raw, 10);
+      return Number.isFinite(parsed) ? parsed : fallback;
+    }catch(e){ return fallback; }
+  }
+  function clampNotificationDays(value){
+    var next = parseInt(value, 10);
+    if(!Number.isFinite(next)) next = 1;
+    return Math.max(0, Math.min(365, next));
+  }
+  function notificationDays(){
+    return clampNotificationDays(readNumber(LS_NOTIFICATION_DAYS, readNumber(LS_NOTIFICATION_DAYS_LEGACY, 1)));
+  }
+  function setNotificationDays(value){
+    var next = clampNotificationDays(value);
+    try{ localStorage.setItem(LS_NOTIFICATION_DAYS, String(next)); }catch(e){}
+    try{ localStorage.setItem(LS_NOTIFICATION_DAYS_LEGACY, String(next)); }catch(e){}
+    try{ if(typeof window.checkNotifications === 'function') window.checkNotifications(); }catch(e){}
+    try{ if(window.ChangeNotificationBell && typeof window.ChangeNotificationBell.render === 'function') window.ChangeNotificationBell.render(); }catch(e){}
+    return next;
+  }
   function enabled(){ return readBool(LS_ON, readBool(LS_ON_LEGACY, true)) !== false; }
   function setEnabled(on){
     writeBool(LS_ON, !!on);
@@ -37,7 +63,7 @@
     if(!enabled()) return [];
     var p = parser();
     if(!p || typeof p.upcoming !== 'function') return [];
-    try{ return p.upcoming(limit || 90); }catch(e){ return []; }
+    try{ return p.upcoming(limit == null ? 90 : limit); }catch(e){ return []; }
   }
   function fmt(key){
     try{ return new Date(key+'T12:00:00').toLocaleDateString('de-DE', {weekday:'short', day:'2-digit', month:'2-digit'}).replace(',', ''); }
@@ -101,19 +127,31 @@
       + '</div>';
     if(typeof window.openPanel === 'function') window.openPanel('🎂 Geburtstage', body);
   }
+  function notificationTitle(item){
+    if(item.diff === 0) return item.name + ' hat heute Geburtstag';
+    if(item.diff === 1) return item.name + ' hat morgen Geburtstag';
+    return item.name + ' hat in ' + item.diff + ' Tagen Geburtstag';
+  }
+  function notificationBody(item){
+    if(item.diff === 0) return 'Heute gratulieren 🎂';
+    if(item.diff === 1) return 'Morgen gratulieren 🎂';
+    return 'Am ' + fmt(item.nextDate) + ' gratulieren 🎂';
+  }
   function notificationItems(){
-    return upcoming(1).map(function(item){
+    var days = notificationDays();
+    return upcoming(days).map(function(item){
       return {
         id: 'birthday:'+item.name.toLowerCase()+':'+item.nextDate,
         kind: 'birthday',
-        title: item.diff === 0 ? item.name + ' hat heute Geburtstag' : item.name + ' hat morgen Geburtstag',
-        body: item.diff === 0 ? 'Heute gratulieren 🎂' : 'Morgen gratulieren 🎂',
+        title: notificationTitle(item),
+        body: notificationBody(item),
         date: item.nextDate,
         diff: item.diff,
-        label: item.diff === 0 ? 'Heute' : 'Morgen',
+        label: diffLabel(item.diff),
         urgency: item.diff === 0 ? 'warn' : 'info',
         icon: '🎂',
-        priority: item.diff === 0 ? 12 : 35,
+        priority: item.diff === 0 ? 12 : (item.diff === 1 ? 35 : 45 + Math.min(item.diff, 20)),
+        reminderDays: days,
         action: {type:'birthday'}
       };
     });
@@ -122,6 +160,8 @@
   window.ChangeBirthdays = {
     enabled: enabled,
     setEnabled: setEnabled,
+    notificationDays: notificationDays,
+    setNotificationDays: setNotificationDays,
     upcoming: upcoming,
     getRowHtml: getRowHtml,
     openPanel: openPanel,
@@ -129,6 +169,8 @@
   };
   window.getBirthdaysEnabled = enabled;
   window.setBirthdaysEnabled = setEnabled;
+  window.getBirthdayNotificationDays = notificationDays;
+  window.setBirthdayNotificationDays = setNotificationDays;
   window.getBirthdayRowHtml = getRowHtml;
   window.openBirthdayPanel = openPanel;
 })();

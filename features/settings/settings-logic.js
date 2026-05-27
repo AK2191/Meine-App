@@ -454,6 +454,7 @@
     // settingsPanel.js IDs (kanonischer Settings-Owner)
     'set-holiday-state','set-show-holidays','set-show-points','set-show-kw',
     'set-friseur','set-friseur-weeks',
+    'set-birthdays','set-birthday-notification-days','us-birthdays-on','us-birthday-notification-days',
     'set-urlaub','set-urlaub-days',
     'set-database-sync','set-live','set-auto','set-auto-count','set-challenge-difficulty','set-google',
     // Wetter (beide Panels)
@@ -633,6 +634,7 @@
         friseurEnabled: typeof window.getFriseurEnabled === 'function' ? !!window.getFriseurEnabled() : readBool(['change_v1_friseur_enabled'], false),
         friseurWeeks: typeof window.getFriseurWeeks === 'function' ? parseInt(window.getFriseurWeeks(), 10) || 3 : readNumber(['change_v1_friseur_weeks'], 3),
         birthdaysEnabled: typeof window.getBirthdaysEnabled === 'function' ? !!window.getBirthdaysEnabled() : readBool(['change_v1_birthdays_enabled','birthdays_enabled'], true),
+        birthdayNotificationDays: Math.max(0, Math.min(365, typeof window.getBirthdayNotificationDays === 'function' ? parseInt(window.getBirthdayNotificationDays(), 10) || 0 : readNumber(['change_v1_birthday_notification_days','birthday_notification_days'], 1))),
         urlaubEnabled: typeof window.getUrlaubEnabled === 'function' ? !!window.getUrlaubEnabled() : readBool(['urlaub_tracker_on'], true),
         urlaubTotalDays: typeof window.getUrlaubTotalDays === 'function' ? parseInt(window.getUrlaubTotalDays(), 10) || 30 : readNumber(['urlaub_tracker_days'], 30),
         urlaubHalfDays: typeof window.getUrlaubHalfDays === 'function' ? (window.getUrlaubHalfDays() || []) : readArray(['urlaub_half_days'], [])
@@ -687,6 +689,11 @@
       if(typeof dash.birthdaysEnabled === 'boolean'){
         writeString('change_v1_birthdays_enabled', dash.birthdaysEnabled ? 'true' : 'false');
         writeString('birthdays_enabled', dash.birthdaysEnabled ? 'true' : 'false');
+      }
+      if(dash.birthdayNotificationDays !== undefined){
+        const days = Math.max(0, Math.min(365, parseInt(dash.birthdayNotificationDays, 10) || 0));
+        writeString('change_v1_birthday_notification_days', days);
+        writeString('birthday_notification_days', days);
       }
       if(typeof dash.urlaubEnabled === 'boolean') writeString('urlaub_tracker_on', dash.urlaubEnabled ? 'true' : 'false');
       if(dash.urlaubTotalDays) writeString('urlaub_tracker_days', parseInt(dash.urlaubTotalDays, 10) || 30);
@@ -756,6 +763,8 @@
       setValue('us-friseur-weeks', dash.friseurWeeks);
       setChecked('set-birthdays', dash.birthdaysEnabled);
       setChecked('us-birthdays-on', dash.birthdaysEnabled);
+      setValue('set-birthday-notification-days', dash.birthdayNotificationDays);
+      setValue('us-birthday-notification-days', dash.birthdayNotificationDays);
       setChecked('us-urlaub-on', dash.urlaubEnabled);
       setValue('us-urlaub-days', dash.urlaubTotalDays);
       setChecked('us-toggle-database', sync.databaseSyncEnabled !== undefined ? sync.databaseSyncEnabled : sync.liveSyncEnabled);

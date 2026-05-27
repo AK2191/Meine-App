@@ -295,10 +295,17 @@
   function fireDueBrowserNotifications(){
     if(!browserNotificationAllowed()) return;
     buildAll({includeRead:false}).forEach(function(n){
-      if(n.kind !== 'event') return;
-      var rawEvent = null;
-      try{ rawEvent = typeof getEventById === 'function' ? getEventById(n.sourceId) : null; }catch(e){}
-      var threshold = rawEvent && rawEvent.notifDaysBefore != null ? parseInt(rawEvent.notifDaysBefore,10) : 1;
+      var threshold = null;
+      if(n.kind === 'event'){
+        var rawEvent = null;
+        try{ rawEvent = typeof getEventById === 'function' ? getEventById(n.sourceId) : null; }catch(e){}
+        threshold = rawEvent && rawEvent.notifDaysBefore != null ? parseInt(rawEvent.notifDaysBefore,10) : 1;
+      }else if(n.kind === 'birthday'){
+        threshold = n.reminderDays != null ? parseInt(n.reminderDays, 10) : 1;
+      }else{
+        return;
+      }
+      if(!Number.isFinite(threshold)) threshold = 1;
       if(n.diff !== threshold) return;
       var firedId = 'browser:'+n.id+':'+n.diff;
       if(Store.wasFired(firedId)) return;
@@ -306,7 +313,7 @@
         if('serviceWorker' in navigator){
           navigator.serviceWorker.ready.then(function(reg){
             return reg.showNotification(n.label+': '+n.title, {
-              body:n.body || 'Termin',
+              body:n.body || (n.kind === 'birthday' ? 'Geburtstag' : 'Termin'),
               icon:'./icons/icon-change-192.png',
               badge:'./icons/icon-change-192.png',
               tag:n.id
