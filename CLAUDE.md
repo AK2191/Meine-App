@@ -504,3 +504,11 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Geburtstags-Erkennung, Kalenderdarstellung und Benachrichtigungstage bleiben unverändert: `Bday`, `B-day`, `Birthday`, `Geburtstag`, `Geb.` werden akzeptiert; sichtbar bleibt `🎂 Name`.
 - Keine DOM-Patcher, keine MutationObserver-Fixes, keine Änderungen an Login-, Sync-, Kalender- oder Challenge-Logik.
 
+
+## Änderung 2026-05-27: Pollen-Panel im Friseur-Stil
+
+- Das Pollen-Panel wird weiterhin über `features/weather/weatherCard.js` gesteuert und bleibt Teil von Wetter & Gesundheit; keine neue Sync- oder Login-Logik.
+- Die Pollen-Ansicht nutzt jetzt denselben ruhigen Panel-Aufbau wie Friseur/Geburtstage: Summary-Kacheln oben, Highlight-Karte für die nächste relevante Belastung, Filterchips und klare Tageskarten.
+- Filteransichten: **Heute**, **Morgen**, **Woche**, **Monat** und **Alle**. Die Filter arbeiten ausschließlich auf dem bereits geladenen Pollen-Forecast und starten keinen Neuabruf.
+- Die Summary zeigt geladene Forecast-Tage, Tage mit starker Belastung und Tage mit mittlerer Belastung.
+- Die vorhandene Wetter-Ansicht, Dashboard-Pillen, Wetter-/Pollen-Settings, Push-Regeln, Datenbank-Sync, Login, Kalender und Challenges bleiben unverändert.

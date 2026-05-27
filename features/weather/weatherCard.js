@@ -5,6 +5,7 @@
   var Service = window.ChangeWeatherService;
   var Rules = window.ChangeWeatherRules;
   var installed = false;
+  var pollenPanelView = 'all';
 
   function esc(value){
     return String(value == null ? '' : value).replace(/[&<>"']/g, function(c){
@@ -138,6 +139,75 @@
   }
   function levelClass(level){ return level === 'high' ? 'high' : level === 'medium' ? 'medium' : level === 'low' ? 'low' : 'none'; }
   function levelLabel(level){ return level === 'high' ? 'hoch' : level === 'medium' ? 'mittel' : level === 'low' ? 'niedrig' : 'ruhig'; }
+  function pad2(n){ return String(n).padStart(2, '0'); }
+  function todayKey(){
+    var d = new Date();
+    return d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate());
+  }
+  function dateFromKey(key){ return new Date(String(key || '') + 'T12:00:00'); }
+  function dayDiff(key){
+    var a = dateFromKey(todayKey());
+    var b = dateFromKey(key);
+    if(isNaN(a) || isNaN(b)) return 0;
+    return Math.round((b.getTime() - a.getTime()) / 86400000);
+  }
+  function weekEndKey(key){
+    var d = dateFromKey(key || todayKey());
+    if(isNaN(d)) return key || todayKey();
+    var day = d.getDay();
+    var daysToSunday = day === 0 ? 0 : 7 - day;
+    d.setDate(d.getDate() + daysToSunday);
+    return d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate());
+  }
+  function pollenRangeTitle(view){
+    if(view === 'today') return 'Heute';
+    if(view === 'tomorrow') return 'Morgen';
+    if(view === 'week') return 'Diese Woche';
+    if(view === 'month') return 'Dieser Monat';
+    return 'Alle Pollentage';
+  }
+  function pollenDiffLabel(diff){
+    if(diff === 0) return 'Heute';
+    if(diff === 1) return 'Morgen';
+    if(diff === 2) return 'Übermorgen';
+    if(diff > 0) return 'In ' + diff + ' Tagen';
+    return 'Heute';
+  }
+  function pollenStatus(day){
+    var strong = day && day.strong && day.strong.length;
+    var medium = day && day.elevated && day.elevated.length;
+    if(strong) return {key:'high', title:'Pollen stark', state:'Stark'};
+    if(medium) return {key:'medium', title:'Pollen mittel', state:'Mittel'};
+    return {key:'none', title:'Pollen ruhig', state:'Ruhig'};
+  }
+  function pollenTopItems(day){
+    var items = [];
+    if(day && day.top && day.top.length) items = day.top.slice();
+    else if(day && day.items && day.items.length) items = day.items.filter(function(x){ return x.rank > 0; }).slice(0, 3);
+    return items;
+  }
+  function pollenItemText(day){
+    var top = pollenTopItems(day);
+    if(!top.length) return 'keine starke Belastung';
+    return top.slice(0, 3).map(function(p){ return p.name + ' · ' + (p.levelLabel || levelLabel(p.level)); }).join(', ');
+  }
+  function isPollenInWeek(day){
+    var from = todayKey();
+    return !!(day && day.date >= from && day.date <= weekEndKey(from));
+  }
+  function isPollenInMonth(day){
+    var from = todayKey();
+    return !!(day && day.date && day.date.slice(0,7) === from.slice(0,7));
+  }
+  function filterPollenByView(list, view){
+    var selected = view || 'all';
+    if(selected === 'today') return list.filter(function(day){ return dayDiff(day.date) === 0; });
+    if(selected === 'tomorrow') return list.filter(function(day){ return dayDiff(day.date) === 1; });
+    if(selected === 'week') return list.filter(isPollenInWeek);
+    if(selected === 'month') return list.filter(isPollenInMonth);
+    return list;
+  }
+  function pollenViewCount(list, view){ return filterPollenByView(list, view).length; }
   function weatherCurrentHtml(data){
     var w = data && data.weather;
     if(!w) return '';
@@ -180,16 +250,63 @@
       return '<div class="change-forecast-row"><div class="change-forecast-date"><strong>'+esc(fmtDay(day.date))+'</strong><span>'+esc(day.icon || '🌦️')+'</span></div><div class="change-forecast-main"><strong>'+esc(day.summary || 'Wetter')+'</strong><small>'+esc(rain)+(sunStr ? ' · '+sunStr : '')+'</small></div><div class="change-forecast-value">'+esc(temp)+'</div></div>';
     }).join('') + '</div></section>';
   }
-  function pollenForecastHtml(data){
-    var forecast = data && data.pollen && data.pollen.forecast || [];
-    if(!forecast.length) return '<div class="change-forecast-empty">Noch kein Pollen-Ausblick geladen.</div>';
-    return '<div class="change-forecast-list">' + forecast.map(function(day){
-      var top = (day.top && day.top.length ? day.top : (day.items || []).slice(0,2)).filter(function(x){ return x.rank > 0; });
-      var strong = day.strong && day.strong.length;
-      var label = strong ? 'stark' : (day.elevated && day.elevated.length ? 'mittel' : 'ruhig');
-      var chips = top.length ? top.map(function(p){ return '<span class="change-pollen-chip '+esc(levelClass(p.level))+'">'+esc(p.name)+' · '+esc(p.levelLabel || levelLabel(p.level))+'</span>'; }).join('') : '<span class="change-pollen-chip none">keine starke Belastung</span>';
-      return '<div class="change-forecast-row"><div class="change-forecast-date"><strong>'+esc(fmtDay(day.date))+'</strong><span>🌿</span></div><div class="change-forecast-main"><strong>Pollen '+esc(label)+'</strong><div class="change-pollen-chips">'+chips+'</div></div></div>';
+  function pollenFilterChips(list, active){
+    var views = [
+      {key:'today', label:'Heute'},
+      {key:'tomorrow', label:'Morgen'},
+      {key:'week', label:'Woche'},
+      {key:'month', label:'Monat'},
+      {key:'all', label:'Alle'}
+    ];
+    return '<div class="change-pollen-filter" role="group" aria-label="Pollen filtern">' + views.map(function(view){
+      var cls = view.key === active ? ' active' : '';
+      return '<button type="button" class="change-pollen-view-chip'+cls+'" onclick="window.ChangeWeatherCard&&window.ChangeWeatherCard.openPollenForecast(\''+view.key+'\')">'
+        + '<span>'+esc(view.label)+'</span><strong>'+pollenViewCount(list, view.key)+'</strong></button>';
     }).join('') + '</div>';
+  }
+  function pollenHighlight(day){
+    if(!day) return '';
+    var status = pollenStatus(day);
+    var diff = dayDiff(day.date);
+    return '<div class="change-pollen-next '+esc(status.key)+'">'
+      + '<div class="change-pollen-next-icon">🌿</div>'
+      + '<div class="change-pollen-next-main"><strong>'+esc(status.title)+'</strong><span>'+esc(fmtDay(day.date))+' · '+esc(pollenDiffLabel(diff))+' · '+esc(pollenItemText(day))+'</span></div>'
+      + '</div>';
+  }
+  function pollenPanelRow(day){
+    var status = pollenStatus(day);
+    var diff = dayDiff(day.date);
+    return '<div class="change-pollen-row '+esc(status.key)+'">'
+      + '<div class="change-pollen-dot"></div>'
+      + '<div class="change-pollen-main">'
+      + '<div class="change-pollen-title">'+esc(status.title)+'</div>'
+      + '<div class="change-pollen-meta">'+esc(fmtDay(day.date))+' · '+esc(pollenItemText(day))+'</div>'
+      + '</div>'
+      + '<div class="change-pollen-state">'+esc(pollenDiffLabel(diff))+'</div>'
+      + '</div>';
+  }
+  function pollenEmpty(view){
+    return '<div class="change-pollen-empty">Keine Pollenwerte für „'+esc(pollenRangeTitle(view))+'“ gefunden.<br><span>Wechsle auf „Alle“, um den geladenen 7-Tage-Ausblick zu sehen.</span></div>';
+  }
+  function pollenForecastHtml(data, view, loc){
+    var forecast = data && data.pollen && data.pollen.forecast || [];
+    if(!forecast.length) return '<div class="change-pollen-panel"><div class="change-pollen-empty">Noch kein Pollen-Ausblick geladen.<br><span>Aktualisiere Standort oder Pollen in den Einstellungen.</span></div></div>';
+    var activeView = view || pollenPanelView || 'all';
+    var highCount = forecast.filter(function(day){ return day && day.strong && day.strong.length; }).length;
+    var mediumCount = forecast.filter(function(day){ return day && !(day.strong && day.strong.length) && day.elevated && day.elevated.length; }).length;
+    var highlight = forecast.find(function(day){ return day && ((day.strong && day.strong.length) || (day.elevated && day.elevated.length)); }) || forecast[0];
+    var selected = filterPollenByView(forecast, activeView);
+    return '<div class="change-pollen-panel">'
+      + '<div class="change-pollen-summary">'
+      + '<div><strong>'+forecast.length+'</strong><span>Tage</span></div>'
+      + '<div><strong>'+highCount+'</strong><span>Stark</span></div>'
+      + '<div><strong>'+mediumCount+'</strong><span>Mittel</span></div>'
+      + '</div>'
+      + pollenHighlight(highlight)
+      + pollenFilterChips(forecast, activeView)
+      + '<div class="change-pollen-section-title">'+esc(pollenRangeTitle(activeView))+' · '+esc(locationHint(loc))+'</div>'
+      + '<div class="change-pollen-list">' + (selected.length ? selected.map(pollenPanelRow).join('') : pollenEmpty(activeView)) + '</div>'
+      + '</div>';
   }
   async function getData(force){
     if(force && Service && Service.refresh) return Service.refresh(true);
@@ -206,12 +323,17 @@
       var data = await getData(options.forceRefresh === false ? false : true);
       updateHero();
       var isPollen = type === 'pollen';
-      var title = isPollen ? '🌿 Pollen-Ausblick' : '🌦️ Wetter-Ausblick';
       var loc = Store && Store.getLocation ? Store.getLocation() : null;
-      var sub = isPollen ? 'Nächste 7 Tage · '+locationHint(loc) : 'Heute · Stunden · 7 Tage · '+locationHint(loc);
-      var content = isPollen ? pollenForecastHtml(data) : (weatherCurrentHtml(data) + weatherHourlyHtml(data) + weatherForecastHtml(data));
+      if(isPollen){
+        pollenPanelView = options.view || pollenPanelView || 'all';
+        if(typeof window.openPanel === 'function') window.openPanel('🌿 Pollen', pollenForecastHtml(data, pollenPanelView, loc));
+        return;
+      }
+      var title = '🌦️ Wetter-Ausblick';
+      var sub = 'Heute · Stunden · 7 Tage · '+locationHint(loc);
+      var content = weatherCurrentHtml(data) + weatherHourlyHtml(data) + weatherForecastHtml(data);
       var body = '<div class="change-forecast-panel"><div class="change-forecast-head"><div><div class="change-forecast-title">'+title+'</div><div class="change-forecast-sub">'+sub+'</div></div></div>' + content + '</div>';
-      if(typeof window.openPanel === 'function') window.openPanel(isPollen ? 'Pollen' : 'Wetter', body);
+      if(typeof window.openPanel === 'function') window.openPanel('Wetter', body);
     }catch(e){ if(typeof toast === 'function') toast(e.message || 'Ausblick konnte nicht geladen werden','err'); }
   }
   async function refreshForecast(type){
@@ -273,6 +395,7 @@
     updateLocation: updateLocation,
     enableAll: enableAll,
     openForecast: openForecast,
+    openPollenForecast: function(view){ return openForecast('pollen', {forceRefresh:false, view:view || 'all'}); },
     refreshForecast: refreshForecast,
     setHourlyRange: setHourlyRange,
     installDashboardHook: installDashboardHook
