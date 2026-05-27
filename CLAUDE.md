@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-05-27 · Rangliste im Friseur-Stil
+> Zuletzt aktualisiert: 2026-05-27 · Pollen- und Friseur-Panel Breitenfix
 
 ---
 
@@ -528,3 +528,12 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Der eigene Eintrag wird dezent hervorgehoben und trägt ein kleines **Du**-Badge.
 - Die Änderung betrifft nur die UI der Rangliste (`#leaderboard-list`) und die Renderer in `features/challenges/challenges.js` sowie `features/challenges/challenge-sync.js`.
 - Keine Änderungen an Punktelogik, Datenmodell, Datenbank-Sync, Login, Kalender oder Challenge-Erledigungen.
+
+
+## Änderung 2026-05-27: Pollen-Panel ohne Filter und Friseur-Breitenfix
+
+- Das Pollen-Panel folgt jetzt wieder strikt dem Friseur-Aufbau: Summary-Kacheln, Highlight-Karte und darunter eine einfache Liste des geladenen Ausblicks.
+- Die Filter **Heute**, **Morgen**, **Woche**, **Monat** und **Alle** wurden aus dem Pollen-Panel entfernt.
+- `features/weather/weatherCard.js` zeigt im Pollen-Panel immer den geladenen Forecast ohne zusätzliche Panel-Filter; es wird kein Neuabruf und kein Sync gestartet.
+- `features/weather/weatherCard.css` und `features/friseur/friseur.css` begrenzen Panel-Inhalte konsequent auf `width/max-width:100%`, nutzen `minmax(0,1fr)` für Summary-Kacheln und verhindern horizontalen Overflow.
+- Die globale Side-Panel-Body-Fläche verhindert horizontales Überlaufen (`overflow-x:hidden`), ohne Login, Sync, Kalender, Challenges oder Datenmodell zu ändern.

@@ -285,17 +285,15 @@
       + '<div class="change-pollen-state">'+esc(pollenDiffLabel(diff))+'</div>'
       + '</div>';
   }
-  function pollenEmpty(view){
-    return '<div class="change-pollen-empty">Keine Pollenwerte für „'+esc(pollenRangeTitle(view))+'“ gefunden.<br><span>Wechsle auf „Alle“, um den geladenen 7-Tage-Ausblick zu sehen.</span></div>';
+  function pollenEmpty(){
+    return '<div class="change-pollen-empty">Keine Pollenwerte im geladenen Ausblick gefunden.<br><span>Aktualisiere Standort oder Pollen in den Einstellungen.</span></div>';
   }
   function pollenForecastHtml(data, view, loc){
     var forecast = data && data.pollen && data.pollen.forecast || [];
     if(!forecast.length) return '<div class="change-pollen-panel"><div class="change-pollen-empty">Noch kein Pollen-Ausblick geladen.<br><span>Aktualisiere Standort oder Pollen in den Einstellungen.</span></div></div>';
-    var activeView = view || pollenPanelView || 'all';
     var highCount = forecast.filter(function(day){ return day && day.strong && day.strong.length; }).length;
     var mediumCount = forecast.filter(function(day){ return day && !(day.strong && day.strong.length) && day.elevated && day.elevated.length; }).length;
     var highlight = forecast.find(function(day){ return day && ((day.strong && day.strong.length) || (day.elevated && day.elevated.length)); }) || forecast[0];
-    var selected = filterPollenByView(forecast, activeView);
     return '<div class="change-pollen-panel">'
       + '<div class="change-pollen-summary">'
       + '<div><strong>'+forecast.length+'</strong><span>Tage</span></div>'
@@ -303,9 +301,8 @@
       + '<div><strong>'+mediumCount+'</strong><span>Mittel</span></div>'
       + '</div>'
       + pollenHighlight(highlight)
-      + pollenFilterChips(forecast, activeView)
-      + '<div class="change-pollen-section-title">'+esc(pollenRangeTitle(activeView))+' · '+esc(locationHint(loc))+'</div>'
-      + '<div class="change-pollen-list">' + (selected.length ? selected.map(pollenPanelRow).join('') : pollenEmpty(activeView)) + '</div>'
+      + '<div class="change-pollen-section-title">Pollen-Ausblick · '+esc(locationHint(loc))+'</div>'
+      + '<div class="change-pollen-list">' + (forecast.length ? forecast.map(pollenPanelRow).join('') : pollenEmpty()) + '</div>'
       + '</div>';
   }
   async function getData(force){
@@ -395,7 +392,7 @@
     updateLocation: updateLocation,
     enableAll: enableAll,
     openForecast: openForecast,
-    openPollenForecast: function(view){ return openForecast('pollen', {forceRefresh:false, view:view || 'all'}); },
+    openPollenForecast: function(){ return openForecast('pollen', {forceRefresh:false, view:'all'}); },
     refreshForecast: refreshForecast,
     setHourlyRange: setHourlyRange,
     installDashboardHook: installDashboardHook
