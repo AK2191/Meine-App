@@ -851,3 +851,39 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 #side-panel:not(.open){pointer-events:none!important}
 #setup-modal:not(.show){pointer-events:none!important}
 #main-app{pointer-events:auto}
+
+
+/* Change UI Card System · ruhige Kacheln nach Friseur-Panel-Stil */
+.dash-card,.db-card,.challenge-card,.leader-card,.note-box{
+  border-radius:22px;
+  border:1px solid var(--b1);
+  background:var(--s1);
+  box-shadow:0 1px 0 rgba(255,255,255,.04) inset,0 10px 28px rgba(0,0,0,.05);
+}
+.dash-card{overflow:hidden}
+.dash-card-head,.challenge-card-head,.leader-card-head{
+  padding:15px 18px 13px;
+  border-bottom:1px solid var(--b1);
+}
+.dash-card-title,.challenge-title{font-size:14px;font-weight:950;letter-spacing:-.12px}
+.dash-row,.challenge-item,.leader-row{
+  padding:13px 18px;
+  border-bottom:1px solid var(--b1);
+}
+.dash-row-icon,.challenge-icon,.leader-rank{
+  border-radius:14px;
+  background:rgba(52,211,153,.10);
+  color:var(--acc);
+}
+.dash-row-title,.challenge-name,.leader-name{font-weight:850;letter-spacing:-.05px}
+.points-pill,.dash-row-badge{font-weight:950;border-radius:999px}
+.panel-hd{padding:17px 20px;border-bottom:1px solid var(--b1)}
+.panel-title{font-size:17px;font-weight:950;letter-spacing:-.25px}
+.panel-close-btn{width:34px;height:34px;border-radius:13px}
+.panel-body{padding:20px}
+@media(max-width:520px){
+  .dash-card,.db-card,.challenge-card,.leader-card,.note-box{border-radius:20px}
+  .dash-card-head,.challenge-card-head,.leader-card-head{padding:14px 16px 12px}
+  .dash-row,.challenge-item,.leader-row{padding:13px 16px}
+  .panel-body{padding:18px}
+}

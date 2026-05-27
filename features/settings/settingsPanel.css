@@ -100,3 +100,90 @@
 .change-feature-body .change-about-meta>div{padding:10px 12px}
 
 .change-sync-log-count{display:inline-flex;align-items:center;justify-content:center;margin-left:6px;padding:1px 6px;border-radius:999px;background:var(--s2);border:1px solid var(--b1);color:var(--t3);font-size:10px;font-weight:800;vertical-align:middle}
+
+
+/* Change UI Card System · Friseur-Panel-Stil appweit für Settings-Kacheln */
+.change-settings-stack{gap:14px}
+.change-settings-feature-card{
+  border-radius:22px;
+  padding:16px;
+  border:1px solid var(--b1);
+  background:linear-gradient(180deg,var(--s1),var(--s1));
+  box-shadow:0 1px 0 rgba(255,255,255,.04) inset,0 10px 28px rgba(0,0,0,.06);
+}
+.change-feature-head{align-items:center;gap:14px}
+.change-feature-left{align-items:center;gap:12px}
+.change-feature-icon{
+  width:40px;height:40px;border-radius:15px;
+  background:rgba(52,211,153,.10);
+  color:var(--acc);
+  font-size:17px;
+  box-shadow:0 1px 0 rgba(255,255,255,.06) inset;
+}
+.change-feature-title{font-size:14.5px;font-weight:950;letter-spacing:-.15px;gap:8px}
+.change-feature-sub{font-size:11.8px;line-height:1.42;color:var(--t4);margin-top:3px;max-width:340px}
+.change-feature-body{
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px solid var(--b1);
+  gap:12px;
+}
+.change-status-pill{padding:3px 7px;font-size:9.5px;font-weight:950;letter-spacing:.02em}
+.change-feature-chips span,
+.change-version-chip{
+  border-radius:999px;
+  padding:5px 9px;
+  background:var(--s2);
+  border:1px solid var(--b1);
+  color:var(--t3);
+  font-weight:900;
+}
+.change-feature-note,
+.change-sync-status-item,
+.change-sync-log-row,
+.change-health-row{
+  border-radius:17px;
+  border:1px solid var(--b1);
+  background:var(--s2);
+  padding:13px 14px;
+}
+.change-sync-status-grid{gap:10px}
+.change-sync-status-item{min-height:72px;align-content:center}
+.change-sync-status-item strong{font-size:14px;font-weight:950;letter-spacing:-.1px}
+.change-sync-status-item span{font-size:9.8px;font-weight:950;letter-spacing:.09em}
+.change-sync-log-list,.change-health-list{gap:10px}
+.change-sync-log-row{align-items:flex-start;gap:12px}
+.change-sync-log-icon{
+  width:27px;height:27px;border-radius:999px;
+  margin-top:1px;
+  background:var(--s3);
+}
+.change-sync-log-title,.change-health-name{font-size:13px;font-weight:950;letter-spacing:-.1px}
+.change-sync-log-detail,.change-health-detail{font-size:11.5px;line-height:1.38}
+.change-sync-log-time{font-size:10.8px;margin-top:5px}
+.change-health-dot{width:10px;height:10px;margin-top:5px}
+.change-about-card{padding:2px 0 0;gap:13px}
+.change-about-logo{width:42px;height:42px;border-radius:15px;box-shadow:0 8px 20px rgba(0,0,0,.14)}
+.change-about-title{font-size:15.5px;font-weight:950;letter-spacing:-.2px}
+.change-about-sub{font-size:11.8px;line-height:1.4}
+.change-feature-body .change-about-meta{border-radius:17px;background:var(--s2)}
+.change-feature-body .btn,
+.change-feature-body .btn-full,
+.change-settings-feature-card .btn{
+  border-radius:14px;
+  min-height:38px;
+  font-weight:900;
+}
+.change-feature-row{align-items:center}
+.change-feature-row-title{font-size:13.5px;font-weight:950;letter-spacing:-.1px}
+.change-feature-row-sub{font-size:11.8px;line-height:1.4;color:var(--t4)}
+.change-feature-field .finput{border-radius:13px;min-height:39px;background:var(--bg)}
+.change-settings-tabs{padding-bottom:17px;margin-bottom:17px;border-bottom:1px solid var(--b1)}
+.change-settings-tab{border-radius:999px;padding:9px 14px;font-weight:900}
+@media(max-width:520px){
+  .change-settings-feature-card{border-radius:22px;padding:15px}
+  .change-feature-icon{width:38px;height:38px;border-radius:14px}
+  .change-feature-head{align-items:center}
+  .change-feature-title{font-size:14px}
+  .change-feature-sub{font-size:11.5px;max-width:none}
+}

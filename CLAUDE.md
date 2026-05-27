@@ -444,3 +444,10 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Das Friseur-Panel verwendet eigene Klassen in `features/friseur/friseur.css`.
 - Keine Wiederverwendung alter Urlaub-/Vacation-Klassen für Friseur, damit Layout und Abstände nicht brechen.
 - Panel-Aufbau: ruhige Summary-Kacheln, optionaler nächster Termin, danach Jahresliste als klare Karten.
+
+
+## UI Card System · Friseur-Panel-Stil
+- Kacheln in Einstellungen und App-Bereichen sollen dem ruhigen Friseur-Panel-Stil folgen.
+- Feature-Karten nutzen große Radien, klare Icon-Kacheln, kurze Meta-Texte, ruhige Trennlinien und deutliche Highlight-/Statusbereiche.
+- Keine zusammengeklebten Texte, keine doppelten Divider, keine unruhigen Emoji-Flächen als Layout-Ersatz.
+- Styling-Änderungen dürfen keine Sync-, Login- oder Challenge-Logik verändern.
