@@ -209,21 +209,30 @@
     if(!lastDate && !nextDate) return '';
 
     var weeks = getWeeks();
-    var days = lastDate ? Math.round((Date.now()-new Date(lastDate+'T12:00:00'))/86400000) : null;
+    var days = lastDate ? calendarDiffDays(lastDate, todayKey()) : null;
     var warn = days !== null && days >= weeks*7;
     var overdue = days !== null && days >= weeks*7+7;
-    var daysUntilNext = nextDate ? Math.round((new Date(nextDate+'T12:00:00')-Date.now())/86400000) : null;
+    var daysUntilNext = nextDate ? calendarDiffDays(todayKey(), nextDate) : null;
     var leftColor = overdue ? '#ef4444' : warn ? '#f59e0b' : 'var(--acc)';
-    var subLine = lastDate
-      ? 'vor <b style="color:'+leftColor+'">' + days + 'd</b> · ' + fmtS(lastDate)
-      : '<span style="color:var(--t4)">Kein vergangener Termin</span>';
+    var subLine = '';
+
+    if(nextDate && daysUntilNext !== null){
+      var nextText = daysUntilNext === 0
+        ? 'Heute geplant'
+        : (daysUntilNext === 1 ? 'Morgen geplant' : 'in ' + daysUntilNext + ' Tagen');
+      var nextTime = nextInfo && nextInfo.time ? ' · ' + esc(nextInfo.time) + ' Uhr' : '';
+      subLine = '<b style="color:var(--acc)">' + esc(nextText) + '</b>'
+        + '<span style="color:var(--t4)"> · ' + esc(fmtS(nextDate)) + nextTime + '</span>';
+    } else if(lastDate){
+      subLine = 'vor <b style="color:'+leftColor+'">' + days + 'd</b> · ' + esc(fmtS(lastDate));
+    } else {
+      subLine = '<span style="color:var(--t4)">Kein vergangener Termin</span>';
+    }
 
     var badge = '';
     if(nextDate){
-      var urgBg  = daysUntilNext <= 3 ? 'rgba(245,158,11,.15)' : 'rgba(45,106,79,.1)';
-      var urgCol = daysUntilNext <= 3 ? '#b45309' : 'var(--acc)';
-      var timeStr = nextInfo && nextInfo.time ? ' · ' + nextInfo.time : '';
-      badge = '<span class="dash-row-badge" style="background:'+urgBg+';color:'+urgCol+';white-space:nowrap;font-size:10px">→ '+fmtS(nextDate)+timeStr+'</span>';
+      var timeStr = nextInfo && nextInfo.time ? ' · ' + esc(nextInfo.time) : '';
+      badge = '<span class="dash-row-badge" style="background:rgba(45,106,79,.1);color:var(--acc);white-space:nowrap;font-size:10px">→ '+esc(fmtS(nextDate))+timeStr+'</span>';
     } else if(overdue){
       badge = '<span class="dash-row-badge badge-red" style="white-space:nowrap;font-size:10px">⚠ Überfällig</span>';
     } else if(warn){

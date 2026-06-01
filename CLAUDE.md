@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-05-27 · Wetter-Panel im Friseur-Stil
+> Zuletzt aktualisiert: 2026-06-01 · Friseur-Dashboard zeigt geplanten Termin positiv
 
 ---
 
@@ -231,6 +231,11 @@ firebase deploy --only hosting
    - Aktive Fenster (Datum bereits erreicht) → farbig hervorgehoben
 4. **Besuchsliste**: vergangene Termine (neueste zuerst)
 
+### Dashboard-Zeile
+- Wenn ein zukünftiger Friseur-Termin vorhanden ist, hat dieser Status Priorität vor der Rückschau auf den letzten Termin.
+- Die Sub-Zeile zeigt dann positiv in Grün, in wie vielen Tagen der nächste Termin ist, z. B. `in 25 Tagen · Di., 02. Juni · 17:15 Uhr`.
+- Warnfarben für `Bald fällig` oder `Überfällig` erscheinen nur noch, wenn **kein** zukünftiger Friseur-Termin geplant ist.
+
 ---
 
 ## 🖼 Icons (Push-relevant)
@@ -258,6 +263,7 @@ firebase deploy --only hosting
 
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
+| 2026-06-01 | Friseur-Dashboard: geplante zukünftige Termine werden in der Sub-Zeile grün als „in X Tagen“ angezeigt; Überfällig-/Warnstatus nur noch ohne geplanten Termin | ChatGPT |
 | 2026-05-23 | PNG-Icons erstellt (192px + 512px) aus SVG konvertiert            | Claude |
 | 2026-05-23 | manifest.json: SVG → PNG Icons (Mobile PWA-Kompatibilität)        | Claude |
 | 2026-05-23 | firebase-messaging-sw.js: icon/badge SVG → PNG                   | Claude |
