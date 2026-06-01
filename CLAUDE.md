@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-01 · Friseur-Dashboard zeigt geplanten Termin positiv
+> Zuletzt aktualisiert: 2026-06-01 · Version 0.1.0002 und scrollbare Einstellungen-Tabs
 
 ---
 
@@ -97,6 +97,8 @@ Tab-Reihenfolge im Settings-Panel:
 
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
+- Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0002`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -263,6 +265,7 @@ firebase deploy --only hosting
 
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
+| 2026-06-01 | Version auf `0.1.0002` erhöht; Einstellungen-Tabs in einen horizontal scrollbaren Tab-Bereich mit Links-/Rechts-Steuerung gelegt | ChatGPT |
 | 2026-06-01 | Friseur-Dashboard: geplante zukünftige Termine werden in der Sub-Zeile grün als „in X Tagen“ angezeigt; Überfällig-/Warnstatus nur noch ohne geplanten Termin | ChatGPT |
 | 2026-05-23 | PNG-Icons erstellt (192px + 512px) aus SVG konvertiert            | Claude |
 | 2026-05-23 | manifest.json: SVG → PNG Icons (Mobile PWA-Kompatibilität)        | Claude |
@@ -431,6 +434,7 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Einstellungen → Sync enthält ein lokales Sync-Protokoll. Es speichert nur lokale Statusereignisse wie Datenbank-Sync, Google-Kalender-Sync und Anfeuern-Aktionen.
 - Einstellungen → App enthält einen App-Gesundheitscheck für Login, Datenbank-Sync, Firebase Auth, Google-Kalender-Cache, Service Worker und blockierende Overlays.
 - Der Gesundheitscheck darf keine externen Dienste starten und keinen Login-/Sync-Fluss auslösen.
+- Die Interaktionsprüfung bewertet geöffnete, bewusst aktive Panels wie Einstellungen nicht als Fehler; rot ist nur für hängende/geschlossene klickblockierende Ebenen vorgesehen.
 - Anfeuern ist kontextbewusst: Vorschläge können aus Wochenzielnähe, Streaks, heutiger Aktivität oder Rückstand entstehen.
 - Anfeuern darf Firebase nur nutzen, wenn Firebase Auth bereits durch Datenbank-Sync bereit ist. Kein automatischer Firebase-Start nur für Anfeuern.
 - Anfeuern wird in Firestore über `change_nudges` gespeichert. Diese Collection gehört zum Datenbank-Sync-Modell und darf nicht vom Fallback der Rules blockiert werden.
@@ -603,3 +607,19 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Darunter bleibt eine Highlight-Karte für das aktuelle Wetter mit Temperatur, Zusammenfassung, Regenhinweis, Tageswerten und Sonnenzeiten.
 - Die Wetterlogik bleibt fachlich sinnvoll erhalten: Stundenansicht mit 12/24-h-Schalter, Regenmarkierungen und 7-Tage-Ausblick bleiben sichtbar.
 - Die Änderung betrifft nur die Darstellung des Wetter-Panels; Wetter-Service, Standortlogik, Pollen, Benachrichtigungen, Login, Sync, Kalender und Challenges bleiben unverändert.
+
+
+## Änderung 2026-06-01: App-Gesundheitscheck Interaktion
+
+- Die Prüfung **Interaktion** im App-Gesundheitscheck ignoriert bewusst geöffnete Panels wie Einstellungen samt aktivem Panel-Overlay.
+- Rot wird nur noch angezeigt, wenn eine geschlossene oder hängende Ebene Klicks blockiert.
+- Keine Änderung an Login, Datenbank-Sync, Google Kalender, Push, Challenges oder Datenmodell.
+
+## Änderung 2026-06-01: Version 0.1.0002 und scrollbare Einstellungen-Tabs
+
+- Die sichtbare App-Version im Einstellungen-Tab **App** wurde von `0.1.0001` auf `0.1.0002` erhöht.
+- Regel festgelegt: Bei jeder zukünftigen Code-Anpassung wird die App-Version mit hochgezogen und in `CLAUDE.md` dokumentiert.
+- Die Einstellungen-Tabs sitzen jetzt in einem horizontal scrollbaren Bereich mit kleinen Links-/Rechts-Buttons.
+- Auf schmalen Ansichten bleiben die Tab-Labels mit Icons unverändert; es werden keine nummerierten Tabs eingeführt.
+- Änderung betrifft nur `features/settings/settingsPanel.js`, `features/settings/settingsPanel.css` und diese Dokumentation.
+- Keine Änderung an Login, Datenbank-Sync, Google Kalender, Push, Challenges, Kalenderdaten oder Datenmodell.

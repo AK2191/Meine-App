@@ -142,19 +142,35 @@
     try{ if(window.ChangeGoogleSyncStatus && window.ChangeGoogleSyncStatus.getStatus) return window.ChangeGoogleSyncStatus.getStatus(); }catch(e){}
     return {label:'UNBEKANNT', tone:'off', cached:false, cachedCount:0, lastSyncAt:'', detail:'Google-Status wird geladen.'};
   }
-  function overlayState(){
+  function interactionState(){
     var blockers = [];
+    var panel = document.getElementById('side-panel');
+    var overlay = document.getElementById('panel-overlay');
+    var panelOpen = !!(panel && panel.classList && panel.classList.contains('open'));
+    var overlayOpen = !!(overlay && overlay.classList && overlay.classList.contains('show'));
+
+    function isIntentional(sel, el){
+      if(sel === '#side-panel' && panelOpen) return true;
+      if(sel === '#panel-overlay' && panelOpen && overlayOpen) return true;
+      return false;
+    }
     function check(sel){
       var el = document.querySelector(sel);
-      if(!el) return;
+      if(!el || isIntentional(sel, el)) return;
       var s = getComputedStyle(el);
       var r = el.getBoundingClientRect();
-      var visible = s.display !== 'none' && s.visibility !== 'hidden' && parseFloat(s.opacity || '1') > 0.01 && r.width > 8 && r.height > 8;
-      var blocks = visible && s.pointerEvents !== 'none';
+      var hasBox = s.display !== 'none' && s.visibility !== 'hidden' && r.width > 8 && r.height > 8;
+      var acceptsClicks = s.pointerEvents !== 'none';
+      var blocks = hasBox && acceptsClicks;
       if(blocks) blockers.push(sel);
     }
     ['#loading','#setup-modal','#panel-overlay','#side-panel','.modal','.overlay'].forEach(check);
-    return blockers;
+    return {
+      ok: blockers.length === 0,
+      detail: blockers.length
+        ? 'Blockierende Ebene: '+blockers.join(', ')
+        : (panelOpen ? 'Aktives Panel geöffnet; keine hängenden Overlays erkannt.' : 'Keine blockierenden Overlays erkannt.')
+    };
   }
   function serviceWorkerState(){
     try{
@@ -182,14 +198,14 @@
     var db = databaseStatus();
     var g = googleStatus();
     var sw = serviceWorkerState();
-    var blockers = overlayState();
+    var interaction = interactionState();
     return [
       {name:'Login', ok:userLoggedIn(), detail:userLoggedIn() ? 'Profil lokal vorhanden.' : 'Nicht angemeldet oder Profil fehlt.'},
       {name:'Datenbank-Sync', ok:db.tone !== 'error', detail:db.label+' · '+db.detail},
       {name:'Firebase Auth', ok:!db.enabled || db.authReady, detail:db.authReady ? 'Firebase-Nutzer aktiv.' : (db.enabled ? 'Noch nicht verbunden.' : 'Ausgeschaltet.')},
       {name:'Google Kalender Cache', ok:!!(g.cached || g.loggedIn || g.active), detail:g.cached ? (g.cachedCount+' gespeicherte Termine.') : (g.detail || 'Kein Cache erkannt.')},
       {name:'Service Worker', ok:sw.ok, detail:sw.detail},
-      {name:'Interaktion', ok:blockers.length === 0, detail:blockers.length ? ('Blockierende Ebene: '+blockers.join(', ')) : 'Keine blockierenden Overlays erkannt.'}
+      {name:'Interaktion', ok:interaction.ok, detail:interaction.detail}
     ];
   }
   function healthScore(){

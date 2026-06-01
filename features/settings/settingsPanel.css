@@ -201,3 +201,66 @@
 .change-version-simple-meta strong{font-size:12.5px;font-weight:900;color:var(--t1);text-align:right}
 .change-settings-feature-card .change-health-head{margin-bottom:10px}
 .change-settings-feature-card #run-app-health{margin-top:2px}
+
+/* Änderung 2026-06-01: Einstellungen-Tabs horizontal steuerbar */
+.change-settings-tab-shell{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;
+  gap:7px;
+  padding:0 0 13px;
+  margin-bottom:17px;
+  border-bottom:1px solid var(--b1);
+}
+.change-settings-tab-shell .change-settings-tabs{
+  display:flex;
+  gap:8px;
+  min-width:0;
+  margin:0;
+  padding:0 0 7px;
+  border-bottom:0;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scroll-behavior:smooth;
+  scrollbar-width:thin;
+  scrollbar-color:var(--b2) transparent;
+  -webkit-overflow-scrolling:touch;
+}
+.change-settings-tab-shell .change-settings-tabs::-webkit-scrollbar{
+  display:block;
+  height:6px;
+}
+.change-settings-tab-shell .change-settings-tabs::-webkit-scrollbar-track{
+  background:transparent;
+}
+.change-settings-tab-shell .change-settings-tabs::-webkit-scrollbar-thumb{
+  background:var(--b2);
+  border-radius:999px;
+}
+.change-settings-tab-scroll{
+  width:28px;
+  height:28px;
+  border:1px solid var(--b1);
+  border-radius:999px;
+  background:var(--s2);
+  color:var(--t3);
+  font-family:var(--font);
+  font-size:18px;
+  font-weight:950;
+  line-height:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  transition:background .15s,color .15s,border-color .15s;
+}
+.change-settings-tab-scroll:hover{
+  background:var(--s3);
+  color:var(--t1);
+  border-color:var(--b2);
+}
+@media(max-width:520px){
+  .change-settings-tab-shell{gap:6px;padding-bottom:12px}
+  .change-settings-tab-scroll{width:26px;height:26px;font-size:17px}
+  .change-settings-tab-shell .change-settings-tabs{gap:7px}
+}

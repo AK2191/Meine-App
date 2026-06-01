@@ -453,7 +453,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0001';
+  var APP_VERSION = '0.1.0002';
 
   function appPane(){
     var installed = installedLabel();
@@ -486,12 +486,16 @@
   function openSettingsPanel(startTab){
     startTab = ['dashboard','calendar','challenges','sync','app'].indexOf(startTab) >= 0 ? startTab : (currentSettingsTab || 'dashboard');
     currentSettingsTab = startTab;
-    var html = '<div class="change-settings-tabs">'
+    var html = '<div class="change-settings-tab-shell">'
+      + '<button class="change-settings-tab-scroll" type="button" aria-label="Tabs nach links scrollen" data-settings-tab-left>‹</button>'
+      + '<div class="change-settings-tabs" data-settings-tabs-scroll>'
       + tabButton('dashboard','▦ Dashboard', startTab)
       + tabButton('calendar','📅 Kalender', startTab)
       + tabButton('challenges','🏆 Challenges', startTab)
       + tabButton('sync','↻ Sync', startTab)
       + tabButton('app','⚙︎ App', startTab)
+      + '</div>'
+      + '<button class="change-settings-tab-scroll" type="button" aria-label="Tabs nach rechts scrollen" data-settings-tab-right>›</button>'
       + '</div>'
       + '<div class="change-settings-pane '+(startTab==='dashboard'?'active':'')+'" data-pane="dashboard">'+dashboardPane()+'</div>'
       + '<div class="change-settings-pane '+(startTab==='calendar'?'active':'')+'" data-pane="calendar">'+calendarPane()+'</div>'
@@ -507,7 +511,30 @@
     var next = active ? active.getAttribute('data-settings-tab') : currentSettingsTab;
     openSettingsPanel(next || 'dashboard');
   }
+  function bindSettingsTabScroller(){
+    var scroller = document.querySelector('[data-settings-tabs-scroll]');
+    if(!scroller) return;
+    var scrollTabs = function(direction){
+      var amount = Math.max(128, Math.round(scroller.clientWidth * 0.7));
+      try{
+        scroller.scrollBy({left: direction * amount, behavior: 'smooth'});
+      }catch(e){
+        scroller.scrollLeft += direction * amount;
+      }
+    };
+    var left = document.querySelector('[data-settings-tab-left]');
+    var right = document.querySelector('[data-settings-tab-right]');
+    if(left) left.addEventListener('click', function(){ scrollTabs(-1); });
+    if(right) right.addEventListener('click', function(){ scrollTabs(1); });
+    var active = scroller.querySelector('.change-settings-tab.active');
+    if(active && active.scrollIntoView){
+      setTimeout(function(){
+        try{ active.scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'center'}); }catch(e){ active.scrollIntoView(false); }
+      }, 0);
+    }
+  }
   function bindSettings(){
+    bindSettingsTabScroller();
     document.querySelectorAll('[data-settings-tab]').forEach(function(btn){
       btn.addEventListener('click', function(){ currentSettingsTab = btn.getAttribute('data-settings-tab') || currentSettingsTab; openSettingsPanel(currentSettingsTab); });
     });
