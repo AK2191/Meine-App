@@ -2280,7 +2280,8 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
   function fmtEventDate(k){try{if(typeof fmtDate==='function')return fmtDate(k);}catch(e){}try{return new Date(String(k)+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});}catch(e){return String(k||'');}}
   function eventDateLabel(ev){var r=range(ev);return r.start===r.end?fmtEventDate(r.start):(fmtEventDate(r.start)+' – '+fmtEventDate(r.end));}
   function googleBadge(){return '<span class="cal-g" title="von Google">G</span>';}
-  function readonlyEventHtml(ev){return '<div class="day-detail-list"><div class="day-detail-event" style="margin-bottom:12px"><div class="day-detail-time">'+esc(eventTimeLabel(ev))+'</div><div class="day-detail-main"><div class="day-detail-title">'+esc(eventTitle(ev))+googleBadge()+'</div><div class="day-detail-sub">'+esc(eventDateLabel(ev))+'</div></div></div></div><button class="btn btn-ghost btn-full" onclick="closePanel()">Schließen</button>';}
+  function shareActionsHtml(ev){try{return window.ChangeEventShare?window.ChangeEventShare.actionsHtml(ev):'';}catch(e){return '';}}
+  function readonlyEventHtml(ev){return '<div class="day-detail-list"><div class="day-detail-event" style="margin-bottom:12px"><div class="day-detail-time">'+esc(eventTimeLabel(ev))+'</div><div class="day-detail-main"><div class="day-detail-title">'+esc(eventTitle(ev))+googleBadge()+'</div><div class="day-detail-sub">'+esc(eventDateLabel(ev))+'</div></div></div></div>'+shareActionsHtml(ev)+'<button class="btn btn-ghost btn-full" onclick="closePanel()">Schließen</button>';}
 
   window.syncEventToGoogleReliable = async function(ev){
     var token=getToken();
@@ -2337,6 +2338,7 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
       +'<div class="fr"><div class="fg"><label class="flabel">Von Uhrzeit</label><input type="time" class="finput" id="ev-time" value="'+esc(ev&&ev.time||'')+'"></div><div class="fg"><label class="flabel">Bis Uhrzeit</label><input type="time" class="finput" id="ev-end" value="'+esc(ev&&ev.endTime||'')+'"></div></div>'
       +'<div class="fg"><label class="flabel">Farbe</label><select class="finput" id="ev-color">'+[['blue','Blau'],['green','Grün'],['amber','Gelb'],['red','Rot'],['purple','Lila']].map(function(x){return '<option value="'+x[0]+'" '+(((ev&&ev.color)||'blue')===x[0]?'selected':'')+'>'+x[1]+'</option>';}).join('')+'</select></div>'
       +'<div class="fg"><label class="flabel">Beschreibung</label><textarea class="finput" id="ev-desc" rows="4">'+esc(ev&&ev.desc||'')+'</textarea></div>'
+      +(ev?shareActionsHtml(ev):'')
       +'<div class="toggle-row" style="margin:8px 0 12px"><div class="toggle-copy"><div class="toggle-title">Mit Google Kalender synchronisieren</div><div class="settings-hint">Nur für diesen selbst erstellten Termin.</div></div><label class="switch"><input type="checkbox" id="ev-google-sync" '+(syncOn?'checked':'')+'><span class="slider"></span></label></div>'+googleState
       +'<div class="fa"><button class="btn btn-primary" style="flex:1" onclick="saveEvent(\''+esc(ev&&ev.id||'')+'\')">Speichern</button>'+(ev?'<button class="btn btn-danger" onclick="deleteEvent(\''+esc(ev.id)+'\')">Löschen</button>':'')+'</div>';
     openPanel(ev?'Termin bearbeiten':'Neuer Termin',html);

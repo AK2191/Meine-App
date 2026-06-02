@@ -355,23 +355,7 @@
     var isNext = !temporal.past && itemKey === nextKey;
     var state = temporal.past ? 'past' : (isNext || temporal.running ? 'next' : 'upcoming');
     var stateLabel = temporal.running ? 'Läuft' : (temporal.past ? 'Vergangen' : (isNext ? 'Nächster' : 'Kommend'));
-    var shareKey = '';
-    try{
-      if(window.ChangeEventShare){
-        shareKey = window.ChangeEventShare.register(Object.assign({}, item, {
-          title: item.title || 'Friseur-Termin',
-          startDate: item.date,
-          date: item.date,
-          endDate: item.endDate || item.date,
-          desc: item.desc || item.description || '',
-          location: item.location || ''
-        }));
-      }
-    }catch(e){}
-    var shareAttrs = shareKey
-      ? ' role="button" tabindex="0" title="Termin teilen" onclick="window.ChangeEventShare&&window.ChangeEventShare.openByKey(\''+esc(shareKey)+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();window.ChangeEventShare&&window.ChangeEventShare.openByKey(\''+esc(shareKey)+'\')}"'
-      : '';
-    return '<div class="change-hair-row '+state+'"'+shareAttrs+'>'
+    return '<div class="change-hair-row '+state+'">'
       + '<div class="change-hair-dot"></div>'
       + '<div class="change-hair-main">'
       + '<div class="change-hair-title">'+esc(item.title || 'Friseur-Termin')+'</div>'
