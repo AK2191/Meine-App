@@ -260,14 +260,11 @@
   function actionsHtml(event){
     var key = register(event);
     return '<div class="change-share-card">'
-      + '<div class="change-share-head"><div><strong>Termin teilen</strong><span>Als Kalenderdatei für iOS, Android, Google Kalender und Outlook.</span></div><div class="change-share-icon">↗</div></div>'
+      + '<div class="change-share-head"><div><strong>Termin teilen</strong><span>Teilt den Termin über WhatsApp und gibt die Kalenderdatei mit, wenn dein Gerät es unterstützt.</span></div><div class="change-share-icon">↗</div></div>'
       + '<div class="change-share-actions">'
-      + '<button class="btn btn-primary btn-full" onclick="window.ChangeEventShare.shareByKey(\''+esc(key)+'\')">Teilen · WhatsApp auswählen</button>'
-      + '<button class="btn btn-ghost btn-full" onclick="window.ChangeEventShare.whatsappByKey(\''+esc(key)+'\')">WhatsApp mit Kalenderdatei</button>'
-      + '<button class="btn btn-ghost btn-full" onclick="window.ChangeEventShare.downloadByKey(\''+esc(key)+'\')">Kalenderdatei laden</button>'
-      + '<button class="btn btn-ghost btn-full" onclick="window.ChangeEventShare.copyByKey(\''+esc(key)+'\')">Text kopieren</button>'
+      + '<button class="btn btn-primary btn-full" onclick="window.ChangeEventShare.whatsappByKey(\''+esc(key)+'\')">Auf WhatsApp teilen</button>'
       + '</div>'
-      + '<div class="change-share-note">Wenn dein Gerät Datei-Sharing unterstützt, wird die .ics Datei direkt mitgegeben. Sonst lädt die App die Kalenderdatei und öffnet WhatsApp mit dem Termintext.</div>'
+      + '<div class="change-share-note">Der Empfänger kann den Termin danach selbst in den Kalender übernehmen.</div>'
       + '</div>';
   }
   function detailHtml(event){
