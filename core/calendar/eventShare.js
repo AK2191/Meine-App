@@ -177,6 +177,18 @@
     var name = safeFileName(n.title) + '-' + (n.startDate || 'termin') + '.ics';
     return new File([createIcs(event)], name, {type:'text/calendar;charset=utf-8'});
   }
+  function canShareFile(file){
+    try{
+      return !!(navigator && navigator.share && navigator.canShare && file && navigator.canShare({files:[file]}));
+    }catch(e){ return false; }
+  }
+  async function shareNativeFile(event, text){
+    var n = normalizeEvent(event);
+    var file = fileFor(event);
+    if(!canShareFile(file)) return false;
+    await navigator.share({title:n.title, text:text || shareText(event), files:[file]});
+    return true;
+  }
   function downloadIcs(event){
     var file = fileFor(event);
     var url = URL.createObjectURL(file);
@@ -205,19 +217,29 @@
     try{ document.execCommand('copy'); toast('Termintext kopiert ✓','ok'); }catch(e){ toast('Kopieren nicht möglich','err'); }
     try{ ta.remove(); }catch(e){}
   }
-  function openWhatsApp(event){
+  function openWhatsAppText(event){
     var url = 'https://wa.me/?text=' + encodeURIComponent(shareText(event));
     try{ window.open(url, '_blank', 'noopener'); }catch(e){ location.href = url; }
+  }
+  async function shareWhatsApp(event){
+    try{
+      if(await shareNativeFile(event, shareText(event))){
+        toast('WhatsApp auswählen – Kalenderdatei ist dabei ✓', 'ok');
+        return true;
+      }
+    }catch(err){
+      if(err && err.name === 'AbortError') return false;
+    }
+    downloadIcs(event);
+    openWhatsAppText(event);
+    toast('ICS geladen. WhatsApp kann hier nur den Text öffnen.', 'ok');
+    return true;
   }
   async function shareEvent(event){
     var n = normalizeEvent(event);
     var text = shareText(event);
-    var file = fileFor(event);
     try{
-      if(navigator.canShare && navigator.canShare({files:[file]}) && navigator.share){
-        await navigator.share({title:n.title, text:text, files:[file]});
-        return true;
-      }
+      if(await shareNativeFile(event, text)) return true;
       if(navigator.share){
         await navigator.share({title:n.title, text:text});
         toast('Text geteilt. Kalenderdatei bei Bedarf separat laden.','ok');
@@ -241,11 +263,11 @@
       + '<div class="change-share-head"><div><strong>Termin teilen</strong><span>Als Kalenderdatei für iOS, Android, Google Kalender und Outlook.</span></div><div class="change-share-icon">↗</div></div>'
       + '<div class="change-share-actions">'
       + '<button class="btn btn-primary btn-full" onclick="window.ChangeEventShare.shareByKey(\''+esc(key)+'\')">Teilen · WhatsApp auswählen</button>'
+      + '<button class="btn btn-ghost btn-full" onclick="window.ChangeEventShare.whatsappByKey(\''+esc(key)+'\')">WhatsApp mit Kalenderdatei</button>'
       + '<button class="btn btn-ghost btn-full" onclick="window.ChangeEventShare.downloadByKey(\''+esc(key)+'\')">Kalenderdatei laden</button>'
-      + '<button class="btn btn-ghost btn-full" onclick="window.ChangeEventShare.whatsappByKey(\''+esc(key)+'\')">WhatsApp-Text öffnen</button>'
       + '<button class="btn btn-ghost btn-full" onclick="window.ChangeEventShare.copyByKey(\''+esc(key)+'\')">Text kopieren</button>'
       + '</div>'
-      + '<div class="change-share-note">Der Empfänger bestätigt den Termin selbst im Kalender. Direktes automatisches Eintragen ist auf iOS und Android nicht erlaubt.</div>'
+      + '<div class="change-share-note">Wenn dein Gerät Datei-Sharing unterstützt, wird die .ics Datei direkt mitgegeben. Sonst lädt die App die Kalenderdatei und öffnet WhatsApp mit dem Termintext.</div>'
       + '</div>';
   }
   function detailHtml(event){
@@ -274,15 +296,17 @@
     detailHtml: detailHtml,
     createIcs: createIcs,
     shareEvent: shareEvent,
+    shareWhatsApp: shareWhatsApp,
     downloadIcs: downloadIcs,
     shareText: shareText,
     copyText: copyText,
-    openWhatsApp: openWhatsApp,
+    openWhatsApp: shareWhatsApp,
+    openWhatsAppText: openWhatsAppText,
     openPanel: openPanelFor,
     openByKey: openByKey,
     shareByKey: function(key){ runByKey(key, shareEvent); },
     downloadByKey: function(key){ runByKey(key, downloadIcs); },
     copyByKey: function(key){ runByKey(key, copyText); },
-    whatsappByKey: function(key){ runByKey(key, openWhatsApp); }
+    whatsappByKey: function(key){ runByKey(key, shareWhatsApp); }
   };
 })();
