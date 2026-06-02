@@ -27,3 +27,6 @@
 .change-hair-empty{border:1px dashed var(--b2);border-radius:16px;padding:18px;text-align:center;color:var(--t4);font-size:13px;line-height:1.45;background:var(--s1)}
 .change-hair-empty span{font-size:11.5px;color:var(--t4)}
 @media(max-width:420px){.change-hair-summary strong{font-size:22px}.change-hair-state{font-size:9.5px;max-width:30%}.change-hair-row{gap:9px;padding:10px 11px}}
+.change-hair-row[role="button"]{cursor:pointer}
+.change-hair-row[role="button"]:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(16,24,40,.08);border-color:rgba(52,211,153,.24)}
+.change-hair-row[role="button"]:focus-visible{outline:2px solid var(--acc);outline-offset:2px}

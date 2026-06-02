@@ -91,7 +91,8 @@
   function openEventPanel(id, preDate){
     var event = id ? M.eventById(id) : null;
     if(event && M.sourceOf(event) === 'google'){
-      if(typeof window.openPanel === 'function') window.openPanel(M.titleOf(event), eventRow(event, {detail:true})+'<button class="btn btn-ghost btn-full" onclick="closePanel()">Schließen</button>');
+      var googleShare = window.ChangeEventShare ? window.ChangeEventShare.actionsHtml(event) : '';
+      if(typeof window.openPanel === 'function') window.openPanel(M.titleOf(event), eventRow(event, {detail:true})+googleShare+'<button class="btn btn-ghost btn-full" onclick="closePanel()">Schließen</button>');
       return;
     }
     var start = event ? (event.startDate || event.date) : M.dateKey(preDate || new Date());
@@ -105,6 +106,7 @@
       + '<div class="fr"><div class="fg"><label class="flabel">Von Uhrzeit</label><input type="time" class="finput" id="ev-time" value="'+esc(event && event.time || '')+'"></div><div class="fg"><label class="flabel">Bis Uhrzeit</label><input type="time" class="finput" id="ev-end" value="'+esc(event && event.endTime || '')+'"></div></div>'
       + '<div class="fg"><label class="flabel">Farbe</label><select class="finput" id="ev-color">'+[['blue','Blau'],['green','Grün'],['amber','Gelb'],['red','Rot'],['purple','Lila']].map(function(pair){ return '<option value="'+pair[0]+'" '+(((event && event.color) || 'blue') === pair[0] ? 'selected' : '')+'>'+pair[1]+'</option>'; }).join('')+'</select></div>'
       + '<div class="fg"><label class="flabel">Beschreibung</label><textarea class="finput" id="ev-desc" rows="4">'+esc(event && event.desc || '')+'</textarea></div>'
+      + (event && window.ChangeEventShare ? window.ChangeEventShare.actionsHtml(event) : '')
       + '<div class="toggle-row" style="margin:8px 0 12px"><div class="toggle-copy"><div class="toggle-title">Mit Google Kalender synchronisieren</div><div class="settings-hint">Nur für diesen selbst erstellten Termin.</div></div><label class="switch"><input type="checkbox" id="ev-google-sync" '+(syncOn ? 'checked' : '')+'><span class="slider"></span></label></div>'+googleHint
       + '<div class="fa"><button class="btn btn-primary" style="flex:1" onclick="window.saveEvent(\''+esc(event && event.id || '')+'\')">Speichern</button>'+(event ? '<button class="btn btn-danger" onclick="window.deleteEvent(\''+esc(event.id)+'\')">Löschen</button>' : '')+'</div>';
     if(typeof window.openPanel === 'function') window.openPanel(event ? 'Termin bearbeiten' : 'Neuer Termin', html);

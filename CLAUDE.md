@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-02 · Version 0.1.0003 und Friseur-Endzeitlogik
+> Zuletzt aktualisiert: 2026-06-02 · Version 0.1.0004 und Termin-Teilen
 
 ---
 
@@ -98,7 +98,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0003`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0004`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -269,6 +269,7 @@ firebase deploy --only hosting
 
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
+| 2026-06-02 | Version auf `0.1.0004` erhöht; Termine können als `.ics` Kalenderdatei über native Teilen-Funktion, WhatsApp-Text, Kopieren und Download geteilt werden | ChatGPT |
 | 2026-06-02 | Version auf `0.1.0003` erhöht; Friseur-Tracker nutzt Start-/Enduhrzeit: nach Terminende `Heute erledigt`, danach `Neuer Termin offen`, erst ab Erinnerungsgrenze `Überfällig` | ChatGPT |
 | 2026-06-01 | Version auf `0.1.0002` erhöht; Einstellungen-Tabs in einen horizontal scrollbaren Tab-Bereich mit Links-/Rechts-Steuerung gelegt | ChatGPT |
 | 2026-06-01 | Friseur-Dashboard: geplante zukünftige Termine werden in der Sub-Zeile grün als „in X Tagen“ angezeigt; Überfällig-/Warnstatus nur noch ohne geplanten Termin | ChatGPT |
@@ -640,3 +641,16 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Änderung betrifft `features/friseur/friseur.js`, den alten Fallback in `app.js`, `features/settings/settingsPanel.js` und diese Dokumentation.
 - Keine Änderung an Login, Datenbank-Sync, Google Kalender, Push, Challenges, Kalenderdatenmodell oder Firebase-Struktur.
 
+
+
+## Änderung 2026-06-02: Version 0.1.0004 und Termin-Teilen
+
+- Die sichtbare App-Version im Einstellungen-Tab **App** wurde von `0.1.0003` auf `0.1.0004` erhöht.
+- Neue Datei `core/calendar/eventShare.js` ergänzt: Termine können als `.ics` Kalenderdatei erzeugt werden.
+- Die Teilen-Funktion nutzt zuerst die native Gerätefreigabe. Dadurch können iOS und Android WhatsApp, Nachrichten, Mail, AirDrop oder andere Apps anbieten.
+- Zusätzlich gibt es Fallbacks für Kalenderdatei laden, WhatsApp-Text öffnen und Text kopieren.
+- Empfänger müssen den Termin aus Sicherheitsgründen selbst im eigenen Kalender bestätigen; automatisches Eintragen ohne Bestätigung wird nicht erzwungen.
+- Kalender-Terminpanels zeigen bei bestehenden lokalen und Google-Terminen jetzt die neue Teilen-Karte an.
+- Friseur-Termine im Friseur-Panel sind antippbar und öffnen direkt die Teilen-Ansicht für diesen Termin.
+- Änderung betrifft `core/calendar/eventShare.js`, `index.html`, `features/calendar/calendarPanels.js`, `features/calendar/calendarPanels.css`, `features/friseur/friseur.js`, `features/friseur/friseur.css`, `features/settings/settingsPanel.js` und diese Dokumentation.
+- Keine Änderung an Login, Datenbank-Sync, Push, Challenges, Wetter, Pollen oder Firebase-Struktur.

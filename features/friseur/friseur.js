@@ -155,9 +155,13 @@
       if(seen.has(key)) return;
       seen.add(key);
       fn({
+        id: String(ev.id || ev.googleEventId || [source, date, title, eventTime(ev)].join('_')),
         title: String(title || 'Friseur-Termin'),
         desc: String(desc || ''),
+        description: String(desc || ''),
+        location: String(ev.location || ev.place || ev.venue || ev.address || ''),
         date: date,
+        startDate: date,
         time: eventTime(ev),
         endDate: eventEndDate(ev),
         endTime: eventEndTime(ev),
@@ -244,7 +248,7 @@
       var key = ev.date+'|'+ev.title+'|'+ev.time;
       if(seen[key]) return;
       seen[key] = true;
-      arr.push({date:ev.date,title:ev.title,time:ev.time,endDate:ev.endDate,endTime:ev.endTime});
+      arr.push({id:ev.id,date:ev.date,startDate:ev.date,title:ev.title,desc:ev.desc,description:ev.description,location:ev.location,time:ev.time,endDate:ev.endDate,endTime:ev.endTime,source:ev.source});
     });
     arr.sort(function(a,b){
       var ak = String(a.date || '') + 'T' + String(a.time || '00:00');
@@ -351,7 +355,23 @@
     var isNext = !temporal.past && itemKey === nextKey;
     var state = temporal.past ? 'past' : (isNext || temporal.running ? 'next' : 'upcoming');
     var stateLabel = temporal.running ? 'Läuft' : (temporal.past ? 'Vergangen' : (isNext ? 'Nächster' : 'Kommend'));
-    return '<div class="change-hair-row '+state+'">'
+    var shareKey = '';
+    try{
+      if(window.ChangeEventShare){
+        shareKey = window.ChangeEventShare.register(Object.assign({}, item, {
+          title: item.title || 'Friseur-Termin',
+          startDate: item.date,
+          date: item.date,
+          endDate: item.endDate || item.date,
+          desc: item.desc || item.description || '',
+          location: item.location || ''
+        }));
+      }
+    }catch(e){}
+    var shareAttrs = shareKey
+      ? ' role="button" tabindex="0" title="Termin teilen" onclick="window.ChangeEventShare&&window.ChangeEventShare.openByKey(\''+esc(shareKey)+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();window.ChangeEventShare&&window.ChangeEventShare.openByKey(\''+esc(shareKey)+'\')}"'
+      : '';
+    return '<div class="change-hair-row '+state+'"'+shareAttrs+'>'
       + '<div class="change-hair-dot"></div>'
       + '<div class="change-hair-main">'
       + '<div class="change-hair-title">'+esc(item.title || 'Friseur-Termin')+'</div>'
