@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-01 · Version 0.1.0002 und scrollbare Einstellungen-Tabs
+> Zuletzt aktualisiert: 2026-06-02 · Version 0.1.0003 und Friseur-Endzeitlogik
 
 ---
 
@@ -98,7 +98,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0002`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0003`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -234,9 +234,13 @@ firebase deploy --only hosting
 4. **Besuchsliste**: vergangene Termine (neueste zuerst)
 
 ### Dashboard-Zeile
-- Wenn ein zukünftiger Friseur-Termin vorhanden ist, hat dieser Status Priorität vor der Rückschau auf den letzten Termin.
-- Die Sub-Zeile zeigt dann positiv in Grün, in wie vielen Tagen der nächste Termin ist, z. B. `in 25 Tagen · Di., 02. Juni · 17:15 Uhr`.
-- Warnfarben für `Bald fällig` oder `Überfällig` erscheinen nur noch, wenn **kein** zukünftiger Friseur-Termin geplant ist.
+- Die Friseur-Logik bewertet Termine nach Start- und Enduhrzeit, nicht nur nach dem Tagesdatum.
+- Wenn ein aktueller oder zukünftiger Friseur-Termin vorhanden ist, hat dieser Status Priorität vor der Rückschau auf den letzten Termin.
+- Vor dem Termin erscheint z. B. `Heute geplant · Di., 02. Juni · 17:15 Uhr`.
+- Während des Termins erscheint `Läuft gerade · bis 18:00 Uhr`.
+- Nach der Enduhrzeit am selben Tag erscheint `Heute erledigt · 18:00 Uhr`.
+- Ab dem Folgetag ohne neuen Termin erscheint `Neuer Termin offen · Letzter Termin gestern · 18:00 Uhr`; ab dem übernächsten Tag `Neuer Termin offen · Letzter Termin vor 2 Tagen`.
+- `Friseurtermin überfällig` erscheint erst, wenn **kein** zukünftiger Friseur-Termin geplant ist und die eingestellte Erinnerungsgrenze erreicht wurde.
 
 ---
 
@@ -265,6 +269,7 @@ firebase deploy --only hosting
 
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
+| 2026-06-02 | Version auf `0.1.0003` erhöht; Friseur-Tracker nutzt Start-/Enduhrzeit: nach Terminende `Heute erledigt`, danach `Neuer Termin offen`, erst ab Erinnerungsgrenze `Überfällig` | ChatGPT |
 | 2026-06-01 | Version auf `0.1.0002` erhöht; Einstellungen-Tabs in einen horizontal scrollbaren Tab-Bereich mit Links-/Rechts-Steuerung gelegt | ChatGPT |
 | 2026-06-01 | Friseur-Dashboard: geplante zukünftige Termine werden in der Sub-Zeile grün als „in X Tagen“ angezeigt; Überfällig-/Warnstatus nur noch ohne geplanten Termin | ChatGPT |
 | 2026-05-23 | PNG-Icons erstellt (192px + 512px) aus SVG konvertiert            | Claude |
@@ -623,3 +628,15 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Auf schmalen Ansichten bleiben die Tab-Labels mit Icons unverändert; es werden keine nummerierten Tabs eingeführt.
 - Änderung betrifft nur `features/settings/settingsPanel.js`, `features/settings/settingsPanel.css` und diese Dokumentation.
 - Keine Änderung an Login, Datenbank-Sync, Google Kalender, Push, Challenges, Kalenderdaten oder Datenmodell.
+
+## Änderung 2026-06-02: Version 0.1.0003 und Friseur-Endzeitlogik
+
+- Die sichtbare App-Version im Einstellungen-Tab **App** wurde von `0.1.0002` auf `0.1.0003` erhöht.
+- Der Friseur-Tracker bewertet Termine jetzt nach Start- und Enduhrzeit, nicht mehr nur nach dem Tagesdatum.
+- Während eines Termins erscheint **Läuft gerade**, nach der Enduhrzeit am selben Tag **Heute erledigt · HH:MM Uhr**.
+- Ab dem Folgetag ohne neuen Termin erscheint **Neuer Termin offen** mit Bezug auf den letzten Termin, z. B. **Letzter Termin gestern · HH:MM Uhr** oder **Letzter Termin vor 2 Tagen**.
+- **Friseurtermin überfällig** wird erst angezeigt, wenn kein neuer Termin geplant ist und die eingestellte Erinnerungsgrenze erreicht wurde.
+- Das Friseur-Panel nutzt dieselbe Zeitlogik, sodass ein Termin nach seiner Enduhrzeit direkt als **Vergangen** statt als **Nächster** markiert wird.
+- Änderung betrifft `features/friseur/friseur.js`, den alten Fallback in `app.js`, `features/settings/settingsPanel.js` und diese Dokumentation.
+- Keine Änderung an Login, Datenbank-Sync, Google Kalender, Push, Challenges, Kalenderdatenmodell oder Firebase-Struktur.
+

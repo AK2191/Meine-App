@@ -756,71 +756,72 @@ function renderTrackerRows(){
   var rows='';
 
   // ==== Friseur-Tracker ====
-  var friseurOn=typeof window.getFriseurEnabled==='function'?window.getFriseurEnabled():false;
-  if(friseurOn){
-    var lastDate=typeof window._friseurFindLast==='function'?window._friseurFindLast():null;
-    var nextInfo=typeof window._friseurFindNext==='function'?window._friseurFindNext():null;
+  // Wenn das eigenständige Feature geladen ist, nutzen wir bewusst dessen
+  // Zeitlogik. Dort wird nicht nur das Datum, sondern auch Start-/Enduhrzeit
+  // berücksichtigt, damit ein Termin nach der Endzeit nicht mehr als geplant gilt.
+  if(typeof window.getFriseurRowHtml === 'function'){
+    try{ rows += window.getFriseurRowHtml() || ''; }catch(e){}
+  } else {
+    var friseurOn=typeof window.getFriseurEnabled==='function'?window.getFriseurEnabled():false;
+    if(friseurOn){
+      var lastDate=typeof window._friseurFindLast==='function'?window._friseurFindLast():null;
+      var nextInfo=typeof window._friseurFindNext==='function'?window._friseurFindNext():null;
 
-    // Fallback: search events directly
-    if(!lastDate&&!nextInfo){
-      var kw='friseur', today=new Date(); today.setHours(0,0,0,0);
-      var pastBest=null, futureBest=null;
-      var allEvts=(window.events||[]).concat(window.gEvents||[]).concat(typeof window.getAllEvents==='function'?window.getAllEvents():[]);
-      allEvts.forEach(function(e){
-        var t=String(e.title||e.summary||'').toLowerCase();
-        if(!t.includes(kw)) return;
-        var dk=(e.startDate||e.date||(e.start&&(e.start.date||e.start.dateTime))||'').slice(0,10);
-        if(!dk) return;
-        var d=new Date(dk+'T12:00:00');
-        if(d<today){if(!pastBest||d>new Date(pastBest+'T12:00:00'))pastBest=dk;}
-        else{if(!futureBest||d<new Date(futureBest.date+'T12:00:00'))futureBest={date:dk,title:String(e.title||e.summary||''),time:e.time||''};}
-      });
-      lastDate=pastBest;
-      nextInfo=futureBest;
+      // Fallback: search events directly
+      if(!lastDate&&!nextInfo){
+        var kw='friseur', today=new Date(); today.setHours(0,0,0,0);
+        var pastBest=null, futureBest=null;
+        var allEvts=(window.events||[]).concat(window.gEvents||[]).concat(typeof window.getAllEvents==='function'?window.getAllEvents():[]);
+        allEvts.forEach(function(e){
+          var t=String(e.title||e.summary||'').toLowerCase();
+          if(!t.includes(kw)) return;
+          var dk=(e.startDate||e.date||(e.start&&(e.start.date||e.start.dateTime))||'').slice(0,10);
+          if(!dk) return;
+          var d=new Date(dk+'T12:00:00');
+          if(d<today){if(!pastBest||d>new Date(pastBest+'T12:00:00'))pastBest=dk;}
+          else{if(!futureBest||d<new Date(futureBest.date+'T12:00:00'))futureBest={date:dk,title:String(e.title||e.summary||''),time:e.time||''};}
+        });
+        lastDate=pastBest;
+        nextInfo=futureBest;
+      }
+
+      var nextDate=nextInfo&&nextInfo.date;
+      var fmtS=function(k){try{return new Date(k+'T12:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'short'});}catch(e){return k;}};
+      var weeks=typeof window.getFriseurWeeks==='function'?window.getFriseurWeeks():3;
+      var days=lastDate?Math.round((Date.now()-new Date(lastDate+'T12:00:00'))/86400000):null;
+      var overdue=days!==null&&days>=weeks*7;
+      var daysUntilNext=nextDate?Math.round((new Date(nextDate+'T12:00:00')-Date.now())/86400000):null;
+
+      var iconBg=overdue?'rgba(239,68,68,.12)':'rgba(156,163,175,.12)';
+      var sub;
+      if(nextDate && daysUntilNext !== null){
+        var cd = daysUntilNext===0?'Heute geplant':daysUntilNext===1?'Morgen geplant':daysUntilNext===2?'Übermorgen geplant':'in '+daysUntilNext+' Tagen';
+        var timeStr=nextInfo&&nextInfo.time?' · '+nextInfo.time+' Uhr':'';
+        sub = cd+timeStr+(lastDate?' · Letzter: '+fmtS(lastDate):'');
+      } else if(lastDate) {
+        sub = overdue ? 'Friseurtermin überfällig · Letzter Termin vor '+days+' Tagen' : (days===0?'Heute erledigt':'Neuer Termin offen · Letzter Termin vor '+days+' Tagen');
+      } else {
+        sub='Neuer Termin offen';
+      }
+
+      var badge='';
+      if(nextDate && daysUntilNext !== null){
+        badge='<span class="dash-row-badge badge-green">'+fmtS(nextDate)+'</span>';
+      } else if(overdue){
+        badge='<span class="dash-row-badge badge-red">⚠ Überfällig</span>';
+      } else {
+        badge='<span class="dash-row-badge" style="background:var(--s2);color:var(--t4);border:1px solid var(--b1)">Offen</span>';
+      }
+
+      rows+=`<div class="dash-row" style="cursor:default">
+        <div class="dash-row-icon" style="background:${iconBg};font-size:14px">✂️</div>
+        <div class="dash-row-body">
+          <div class="dash-row-title">Friseur</div>
+          <div class="dash-row-sub">${sub}</div>
+        </div>
+        ${badge}
+      </div>`;
     }
-
-    var nextDate=nextInfo&&nextInfo.date;
-    var fmtS=function(k){try{return new Date(k+'T12:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'short'});}catch(e){return k;}};
-    var weeks=typeof window.getFriseurWeeks==='function'?window.getFriseurWeeks():3;
-    var days=lastDate?Math.round((Date.now()-new Date(lastDate+'T12:00:00'))/86400000):null;
-    var warn=days!==null&&days>=weeks*7;
-    var overdue=days!==null&&days>=weeks*7+7;
-    var daysUntilNext=nextDate?Math.round((new Date(nextDate+'T12:00:00')-Date.now())/86400000):null;
-
-    // Icon-Hintergrund je Status
-    var iconBg=overdue?'rgba(239,68,68,.12)':warn?'rgba(245,158,11,.12)':'rgba(156,163,175,.12)';
-
-    // Sub-Zeile: nächster Termin hat Priorität
-    var sub;
-    if(nextDate && daysUntilNext !== null){
-      var cd = daysUntilNext===0?'Heute!':daysUntilNext===1?'Morgen':daysUntilNext===2?'Übermorgen':'In '+daysUntilNext+' Tagen';
-      var timeStr=nextInfo&&nextInfo.time?' · '+nextInfo.time+' Uhr':'';
-      sub = '→ '+cd+timeStr+(lastDate?' · Letzter: '+fmtS(lastDate):'');
-    } else {
-      sub=lastDate?'Letzter: vor '+days+'d · '+fmtS(lastDate):'Noch kein Termin gefunden';
-    }
-
-    // Rechtes Badge: nächster Termin
-    var badge='';
-    if(nextDate && daysUntilNext !== null){
-      var bc=daysUntilNext<=3?'badge-amber':'badge-green';
-      badge='<span class="dash-row-badge '+bc+'">'+fmtS(nextDate)+'</span>';
-    } else if(overdue){
-      badge='<span class="dash-row-badge badge-red">⚠ Überfällig</span>';
-    } else if(warn){
-      badge='<span class="dash-row-badge badge-amber">Bald fällig</span>';
-    } else {
-      badge='<span class="dash-row-badge" style="background:var(--s2);color:var(--t4);border:1px solid var(--b1)">Kein Termin</span>';
-    }
-
-    rows+=`<div class="dash-row" style="cursor:default">
-      <div class="dash-row-icon" style="background:${iconBg};font-size:14px">✂️</div>
-      <div class="dash-row-body">
-        <div class="dash-row-title">Friseur</div>
-        <div class="dash-row-sub">${sub}</div>
-      </div>
-      ${badge}
-    </div>`;
   }
 
   // ==== Weitere Tracker hier ergänzen ====

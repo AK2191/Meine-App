@@ -85,6 +85,58 @@
     if(ev.end && ev.end.dateTime){ try{ return new Date(ev.end.dateTime).toTimeString().slice(0,5); }catch(e){} }
     return '';
   }
+  function eventEndDate(ev){
+    if(!ev) return '';
+    if(ev.endDate) return toDateKey(ev.endDate);
+    if(ev.end && (ev.end.date || ev.end.dateTime)) return toDateKey(ev.end.date || ev.end.dateTime);
+    return eventDate(ev);
+  }
+  function makeLocalDateTime(dateKey, time, fallback){
+    if(!dateKey) return null;
+    var t = String(time || '').trim();
+    var m = t.match(/^(\d{1,2}):(\d{2})/);
+    var iso = '';
+    if(m){
+      var h = Math.max(0, Math.min(23, parseInt(m[1],10) || 0));
+      var min = Math.max(0, Math.min(59, parseInt(m[2],10) || 0));
+      iso = dateKey + 'T' + pad2(h) + ':' + pad2(min) + ':00';
+    } else {
+      iso = dateKey + (fallback === 'end' ? 'T23:59:59' : 'T00:00:00');
+    }
+    var d = new Date(iso);
+    return isNaN(d) ? null : d;
+  }
+  function friseurDateTimes(item){
+    if(!item || !item.date) return { start:null, end:null };
+    var start = makeLocalDateTime(item.date, item.time, 'start');
+    var end = null;
+    if(item.endTime){
+      end = makeLocalDateTime(item.endDate || item.date, item.endTime, 'end');
+    } else if(item.endDate && item.endDate !== item.date){
+      var exclusiveEnd = new Date(item.endDate + 'T00:00:00');
+      end = isNaN(exclusiveEnd) ? null : new Date(exclusiveEnd.getTime() - 1);
+    } else if(item.time){
+      end = start ? new Date(start.getTime()) : null;
+    } else {
+      end = makeLocalDateTime(item.date, '', 'end');
+    }
+    if(start && end && end < start) end = new Date(end.getTime() + 86400000);
+    return { start:start, end:end };
+  }
+  function friseurTemporalState(item, now){
+    now = now || new Date();
+    var dt = friseurDateTimes(item);
+    var running = !!(dt.start && dt.end && dt.start <= now && dt.end > now);
+    var future = !!(dt.start && dt.start > now);
+    var past = !!(dt.end && dt.end <= now);
+    return { start:dt.start, end:dt.end, running:running, future:future, past:past };
+  }
+  function clockLabel(time){
+    return time ? String(time) + ' Uhr' : '';
+  }
+  function lastDoneClock(item){
+    return clockLabel((item && (item.endTime || item.time)) || '');
+  }
   function isFriseur(title, desc){
     const t = String(title || '').toLowerCase();
     const d = String(desc || '').toLowerCase();
@@ -107,6 +159,7 @@
         desc: String(desc || ''),
         date: date,
         time: eventTime(ev),
+        endDate: eventEndDate(ev),
         endTime: eventEndTime(ev),
         source: source
       });
@@ -119,23 +172,36 @@
       }
     }catch(e){}
   }
-  function findLastFriseur(){
-    const today = new Date(); today.setHours(23,59,59,0);
-    let best = null;
+  function findLastFriseurInfo(){
+    var now = new Date();
+    var best = null;
     eachFriseurEvent(function(ev){
-      const d = new Date(ev.date+'T12:00:00');
-      if(isNaN(d) || d > today) return;
-      if(!best || d > new Date(best+'T12:00:00')) best = ev.date;
+      var state = friseurTemporalState(ev, now);
+      if(!state.past || !state.end) return;
+      if(!best || state.end > best._endDateTime){
+        ev._endDateTime = state.end;
+        ev._startDateTime = state.start;
+        best = ev;
+      }
     });
     return best;
   }
+  function findLastFriseur(){
+    var best = findLastFriseurInfo();
+    return best && best.date ? best.date : null;
+  }
   function findNextFriseurInfo(){
-    const today = new Date(); today.setHours(0,0,0,0);
-    let best = null;
+    var now = new Date();
+    var best = null;
     eachFriseurEvent(function(ev){
-      const d = new Date(ev.date+'T12:00:00');
-      if(isNaN(d) || d < today) return;
-      if(!best || d < new Date(best.date+'T12:00:00')) best = ev;
+      var state = friseurTemporalState(ev, now);
+      if(!(state.running || state.future) || !state.end) return;
+      if(!best || state.start < best._startDateTime){
+        ev._startDateTime = state.start;
+        ev._endDateTime = state.end;
+        ev._running = state.running;
+        best = ev;
+      }
     });
     return best;
   }
@@ -178,7 +244,7 @@
       var key = ev.date+'|'+ev.title+'|'+ev.time;
       if(seen[key]) return;
       seen[key] = true;
-      arr.push({date:ev.date,title:ev.title,time:ev.time,endTime:ev.endTime});
+      arr.push({date:ev.date,title:ev.title,time:ev.time,endDate:ev.endDate,endTime:ev.endTime});
     });
     arr.sort(function(a,b){
       var ak = String(a.date || '') + 'T' + String(a.time || '00:00');
@@ -189,6 +255,7 @@
   }
   window.renderFriseurBanner = renderFriseurBanner;
   window._friseurFindLast = findLastFriseur;
+  window._friseurFindLastInfo = findLastFriseurInfo;
   window._friseurFindNext = findNextFriseurInfo;
   window.getFriseurEnabled = isEnabled;
   window.setFriseurEnabled = function(on){
@@ -203,46 +270,62 @@
 
   window.getFriseurRowHtml = function(){
     if(!isEnabled()) return '';
-    var lastDate = findLastFriseur();
+    var lastInfo = findLastFriseurInfo();
+    var lastDate = lastInfo && lastInfo.date;
     var nextInfo = findNextFriseurInfo();
     var nextDate = nextInfo && nextInfo.date;
     if(!lastDate && !nextDate) return '';
 
     var weeks = getWeeks();
     var days = lastDate ? calendarDiffDays(lastDate, todayKey()) : null;
-    var warn = days !== null && days >= weeks*7;
-    var overdue = days !== null && days >= weeks*7+7;
+    var overdue = days !== null && days >= weeks*7;
     var daysUntilNext = nextDate ? calendarDiffDays(todayKey(), nextDate) : null;
-    var leftColor = overdue ? '#ef4444' : warn ? '#f59e0b' : 'var(--acc)';
+    var nextState = nextInfo ? friseurTemporalState(nextInfo, new Date()) : null;
+    var iconBg = overdue && !nextDate ? 'rgba(239,68,68,.12)' : 'rgba(156,163,175,.1)';
     var subLine = '';
+    var badge = '';
 
     if(nextDate && daysUntilNext !== null){
-      var nextText = daysUntilNext === 0
-        ? 'Heute geplant'
-        : (daysUntilNext === 1 ? 'Morgen geplant' : 'in ' + daysUntilNext + ' Tagen');
-      var nextTime = nextInfo && nextInfo.time ? ' · ' + esc(nextInfo.time) + ' Uhr' : '';
+      var nextText = '';
+      var nextDetail = '';
+      if(nextState && nextState.running){
+        nextText = 'Läuft gerade';
+        nextDetail = nextInfo.endTime ? 'bis ' + nextInfo.endTime + ' Uhr' : 'heute';
+        badge = '<span class="dash-row-badge" style="background:rgba(45,106,79,.1);color:var(--acc);white-space:nowrap;font-size:10px">Läuft</span>';
+      } else {
+        nextText = daysUntilNext === 0
+          ? 'Heute geplant'
+          : (daysUntilNext === 1 ? 'Morgen geplant' : 'in ' + daysUntilNext + ' Tagen');
+        nextDetail = fmtS(nextDate) + (nextInfo.time ? ' · ' + nextInfo.time + ' Uhr' : '');
+        var badgeTime = nextInfo.time ? ' · ' + esc(nextInfo.time) : '';
+        badge = '<span class="dash-row-badge" style="background:rgba(45,106,79,.1);color:var(--acc);white-space:nowrap;font-size:10px">→ '+esc(fmtS(nextDate))+badgeTime+'</span>';
+      }
       subLine = '<b style="color:var(--acc)">' + esc(nextText) + '</b>'
-        + '<span style="color:var(--t4)"> · ' + esc(fmtS(nextDate)) + nextTime + '</span>';
-    } else if(lastDate){
-      subLine = 'vor <b style="color:'+leftColor+'">' + days + 'd</b> · ' + esc(fmtS(lastDate));
+        + (nextDetail ? '<span style="color:var(--t4)"> · ' + esc(nextDetail) + '</span>' : '');
+    } else if(lastInfo){
+      var doneClock = lastDoneClock(lastInfo);
+      var detail = '';
+      if(days === 0){
+        subLine = '<b style="color:var(--acc)">Heute erledigt</b>'
+          + (doneClock ? '<span style="color:var(--t4)"> · ' + esc(doneClock) + '</span>' : '');
+        badge = '<span class="dash-row-badge" style="background:rgba(45,106,79,.1);color:var(--acc);white-space:nowrap;font-size:10px">Erledigt</span>';
+      } else if(overdue){
+        detail = 'Letzter Termin vor ' + days + ' ' + (days === 1 ? 'Tag' : 'Tagen');
+        subLine = '<b style="color:#ef4444">Friseurtermin überfällig</b><span style="color:var(--t4)"> · ' + esc(detail) + '</span>';
+        badge = '<span class="dash-row-badge badge-red" style="white-space:nowrap;font-size:10px">⚠ Überfällig</span>';
+      } else {
+        detail = days === 1 ? 'Letzter Termin gestern' : 'Letzter Termin vor ' + days + ' Tagen';
+        if(days === 1 && doneClock) detail += ' · ' + doneClock;
+        subLine = '<b style="color:var(--t2)">Neuer Termin offen</b><span style="color:var(--t4)"> · ' + esc(detail) + '</span>';
+        badge = '<span class="dash-row-badge" style="white-space:nowrap;font-size:10px;background:var(--s2);color:var(--t4);border:1px solid var(--b1)">Offen</span>';
+      }
     } else {
-      subLine = '<span style="color:var(--t4)">Kein vergangener Termin</span>';
-    }
-
-    var badge = '';
-    if(nextDate){
-      var timeStr = nextInfo && nextInfo.time ? ' · ' + esc(nextInfo.time) : '';
-      badge = '<span class="dash-row-badge" style="background:rgba(45,106,79,.1);color:var(--acc);white-space:nowrap;font-size:10px">→ '+esc(fmtS(nextDate))+timeStr+'</span>';
-    } else if(overdue){
-      badge = '<span class="dash-row-badge badge-red" style="white-space:nowrap;font-size:10px">⚠ Überfällig</span>';
-    } else if(warn){
-      badge = '<span class="dash-row-badge badge-amber" style="white-space:nowrap;font-size:10px">⏰ Bald fällig</span>';
-    } else {
-      badge = '<span class="dash-row-badge" style="white-space:nowrap;font-size:10px;background:var(--s2);color:var(--t4);border:1px solid var(--b1)">Kein Termin</span>';
+      subLine = '<b style="color:var(--t2)">Neuer Termin offen</b><span style="color:var(--t4)"> · Noch kein vergangener Termin</span>';
+      badge = '<span class="dash-row-badge" style="white-space:nowrap;font-size:10px;background:var(--s2);color:var(--t4);border:1px solid var(--b1)">Offen</span>';
     }
 
     return '<div class="dash-row dashboard-feature-row" onclick="window.openFriseurPanel&&window.openFriseurPanel()" style="cursor:pointer">'
-      + '<div class="dash-row-icon" style="background:rgba(156,163,175,.1);font-size:14px">✂️</div>'
+      + '<div class="dash-row-icon" style="background:'+iconBg+';font-size:14px">✂️</div>'
       + '<div class="dash-row-body">'
       + '<div class="dash-row-title">Friseur</div>'
       + '<div class="dash-row-sub" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+subLine+'</div>'
@@ -260,12 +343,14 @@
     return item.time + end + ' Uhr';
   }
   function friseurPanelRow(item){
-    var today = new Date(); today.setHours(0,0,0,0);
-    var d = new Date(item.date+'T12:00:00');
-    var past = d < today;
-    var isNext = !past && item.date === (findNextFriseurInfo() && findNextFriseurInfo().date);
-    var state = past ? 'past' : (isNext ? 'next' : 'upcoming');
-    var stateLabel = past ? 'Vergangen' : (isNext ? 'Nächster' : 'Kommend');
+    var now = new Date();
+    var temporal = friseurTemporalState(item, now);
+    var next = findNextFriseurInfo();
+    var itemKey = String(item.date || '') + '|' + String(item.title || '') + '|' + String(item.time || '');
+    var nextKey = next ? String(next.date || '') + '|' + String(next.title || '') + '|' + String(next.time || '') : '';
+    var isNext = !temporal.past && itemKey === nextKey;
+    var state = temporal.past ? 'past' : (isNext || temporal.running ? 'next' : 'upcoming');
+    var stateLabel = temporal.running ? 'Läuft' : (temporal.past ? 'Vergangen' : (isNext ? 'Nächster' : 'Kommend'));
     return '<div class="change-hair-row '+state+'">'
       + '<div class="change-hair-dot"></div>'
       + '<div class="change-hair-main">'
@@ -281,7 +366,7 @@
     var nextInfo = findNextFriseurInfo();
     var all = findAllFriseurThisYear();
     var now = new Date();
-    var visits = all.filter(function(item){ return new Date(item.date+'T12:00:00') <= now; }).length;
+    var visits = all.filter(function(item){ return friseurTemporalState(item, now).past; }).length;
     var lastMetric = friseurSummaryMetric(lastDate, 'last');
     var nextMetric = friseurSummaryMetric(nextInfo && nextInfo.date, 'next');
     var rows = all.map(friseurPanelRow).join('');
