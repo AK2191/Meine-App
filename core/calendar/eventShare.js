@@ -218,8 +218,17 @@
     try{ ta.remove(); }catch(e){}
   }
   function openWhatsAppText(event){
-    var url = 'https://wa.me/?text=' + encodeURIComponent(shareText(event));
-    try{ window.open(url, '_blank', 'noopener'); }catch(e){ location.href = url; }
+    var text = encodeURIComponent(shareText(event));
+    var mobileUrl = 'whatsapp://send?text=' + text;
+    var fallbackUrl = 'https://wa.me/?text=' + text;
+    try{
+      location.href = mobileUrl;
+      setTimeout(function(){
+        if(document.visibilityState === 'visible') location.href = fallbackUrl;
+      },1200);
+    }catch(e){
+      location.href = fallbackUrl;
+    }
   }
   async function shareWhatsApp(event){
     try{
@@ -230,9 +239,9 @@
     }catch(err){
       if(err && err.name === 'AbortError') return false;
     }
-    downloadIcs(event);
     openWhatsAppText(event);
-    toast('ICS geladen. WhatsApp kann hier nur den Text öffnen.', 'ok');
+    downloadIcs(event);
+    toast('WhatsApp wird geöffnet ✓', 'ok');
     return true;
   }
   async function shareEvent(event){

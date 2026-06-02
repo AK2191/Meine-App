@@ -663,3 +663,9 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Die Teilen-Funktion ist jetzt im Kalender-Terminpanel verfügbar.
 - Lokale Termine, an Google übertragene Termine und direkt aus Google geladene Termine können dort als `.ics` Kalenderdatei geteilt, heruntergeladen, als WhatsApp-Text geöffnet oder als Text kopiert werden.
 - Der Aufruf erfolgt über Kalender > Tag oder Termin anklicken > Bereich **Termin teilen**.
+
+
+## Version 0.1.0006
+- WhatsApp-Terminfreigabe öffnet bevorzugt direkt die WhatsApp-App per Deep-Link.
+- Fallback auf wa.me nur wenn keine App verfügbar ist.
+- ICS-Datei wird weiterhin automatisch erzeugt und bereitgestellt.
