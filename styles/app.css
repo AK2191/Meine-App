@@ -974,3 +974,30 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
   body.neo-pollen-shell #content,body.change-view-pollen #content{padding:24px 28px 28px;overflow:hidden;background:linear-gradient(180deg,rgba(4,9,14,.98),rgba(4,9,14,.98))}
   body.neo-pollen-shell #dashboard-view,body.neo-pollen-shell #challenges-view,body.neo-pollen-shell #cal-body,body.neo-pollen-shell #pollen-view,body.change-view-pollen #dashboard-view,body.change-view-pollen #challenges-view,body.change-view-pollen #cal-body,body.change-view-pollen #pollen-view{border-radius:0;background:transparent}
 }
+
+
+/* ==== POLLEN FOUNDATION PASS v0.1.0018 ==== */
+@media(min-width:701px){
+  body.change-view-pollen,
+  body.neo-pollen-shell{background:#04090e;}
+  body.change-view-pollen #main-app,
+  body.neo-pollen-shell #main-app{grid-template-columns:112px minmax(0,1fr);background:#04090e;}
+  body.change-view-pollen #header,
+  body.neo-pollen-shell #header{padding:18px 0 18px;gap:18px;background:linear-gradient(180deg,rgba(7,12,18,.98),rgba(4,9,14,.98));border-right:1px solid rgba(255,255,255,.045);box-shadow:none;}
+  body.change-view-pollen .h-logo,
+  body.neo-pollen-shell .h-logo{min-height:58px;padding:4px 18px 0;justify-content:center;align-items:center;}
+  body.change-view-pollen .h-logo-icon,
+  body.neo-pollen-shell .h-logo-icon{width:48px;height:48px;border-radius:13px;box-shadow:0 12px 28px rgba(74,222,128,.14);}
+  body.change-view-pollen .h-logo-icon svg,
+  body.neo-pollen-shell .h-logo-icon svg{width:48px;height:48px;display:block;}
+  body.change-view-pollen .h-tabs,
+  body.neo-pollen-shell .h-tabs{padding:0 11px;gap:8px;}
+  body.change-view-pollen .h-tab,
+  body.neo-pollen-shell .h-tab{border-radius:17px;padding:14px 8px;font-size:12px;letter-spacing:-.01em;}
+  body.change-view-pollen .h-tab svg,
+  body.neo-pollen-shell .h-tab svg{width:23px;height:23px;}
+  body.change-view-pollen .h-tab.active,
+  body.neo-pollen-shell .h-tab.active{background:linear-gradient(180deg,rgba(24,83,40,.68),rgba(13,45,24,.88));box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 12px 28px rgba(0,0,0,.20);}
+  body.change-view-pollen #content,
+  body.neo-pollen-shell #content{padding:24px 28px 28px;background:radial-gradient(circle at 18% 8%,rgba(21,99,56,.12),transparent 28%),linear-gradient(180deg,#04090e,#04090e);}
+}

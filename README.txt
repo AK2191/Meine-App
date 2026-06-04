@@ -1,16 +1,12 @@
-Change App · Pollen Premium Style · Version 0.1.0017
+Change App · Pollen Premium Style · Version 0.1.0018
 
-Enthaltene Änderungen:
-- features/pollen/pollenView.js
-- features/pollen/pollenView.css
-- features/weather/pollenSymptoms.js
-- styles/app.css
-- features/settings/settingsPanel.js
-- CLAUDE.md
-- README.txt
+Schritt 1 dieser Redesign-Runde:
+- Design-Fundament für Pollen beruhigt
+- Hintergrund und harte Kanten reduziert
+- Desktop-Raster sauberer gesetzt
+- Typografie-Stack und Gewichte angeglichen
+- Sidebar/App-Icon optisch weiter zentriert
+- Sichtbare App-Version auf 0.1.0018 erhöht
 
-Anpassungen in diesem Update:
-- Linke Pollen-Desktop-Leiste oben bereinigt, damit das App-Icon sauber sitzt
-- Hintergrund und Shell im Pollen-Bereich beruhigt, harte Kanten reduziert
-- Symptome reagieren weiterhin interaktiv, aber ohne Speicher- oder Sync-Toast
-- Sichtbare App-Version auf 0.1.0017 erhöht und in CLAUDE.md dokumentiert
+Nächster Schritt:
+Icon-Set gezielt überarbeiten und Hero-/Metrik-Karten näher an das Referenzbild bringen.

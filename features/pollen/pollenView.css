@@ -1,4 +1,4 @@
-/* Pollen View · Premium Redesign · v0.1.0017 */
+/* Pollen View · Premium Redesign · v0.1.0018 */
 #pollen-view{position:relative;background:#04090e;color:#f4f7f4;overflow:hidden}
 #pollen-view::before{content:"";position:absolute;inset:0;background:
   radial-gradient(circle at 21% 10%,rgba(16,110,54,.35),transparent 28%),
@@ -368,3 +368,105 @@ body.neo-pollen-shell #content{
 #pollen-view .list-title{font-size:22px;line-height:1.05;letter-spacing:-.5px}
 #pollen-view .pollen-neo-top{grid-template-columns:minmax(0,1.18fr) minmax(360px,.82fr);gap:18px}
 #pollen-view .pollen-neo-main-grid{grid-template-columns:minmax(0,1fr) minmax(420px,.94fr);gap:18px}
+
+
+/* v0.1.0018 design foundation: grid, type, calm background */
+#pollen-view{
+  --pollen-bg:#04090e;
+  --pollen-card:#0c1319;
+  --pollen-card-2:#101820;
+  --pollen-line:rgba(255,255,255,.075);
+  --pollen-text:#f6f8f7;
+  --pollen-muted:rgba(246,248,247,.62);
+  --pollen-green:#4fda6d;
+  --pollen-yellow:#f2b331;
+  --pollen-red:#ff604f;
+  --pollen-radius:24px;
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI",Roboto,Arial,sans-serif;
+  background:transparent;
+}
+#pollen-view::before{
+  inset:-24px -28px -32px -28px;
+  background:
+    radial-gradient(circle at 9% 8%,rgba(18,100,55,.16),transparent 34%),
+    radial-gradient(circle at 76% 2%,rgba(224,166,35,.04),transparent 18%),
+    linear-gradient(180deg,rgba(4,9,14,.98),rgba(4,9,14,.98));
+}
+#pollen-view .pollen-neo-shell{
+  width:min(100%,1380px);
+  max-width:1380px;
+  margin:0 auto;
+  gap:20px;
+}
+#pollen-view .list-header{
+  min-height:54px;
+  padding:0 0 18px;
+  align-items:center;
+}
+#pollen-view .list-title{
+  font-size:25px;
+  font-weight:850;
+  letter-spacing:-.7px;
+  line-height:1.05;
+}
+#pollen-view .list-title::before{
+  width:22px;height:22px;
+  transform:translateY(1px);
+}
+#pollen-view .pollen-neo-header-settings{
+  height:44px;
+  padding:0 18px;
+  border-radius:14px;
+  font-size:13px;
+  font-weight:750;
+  background:rgba(7,12,18,.70);
+  border-color:rgba(255,255,255,.085);
+  box-shadow:0 10px 26px rgba(0,0,0,.14),inset 0 1px 0 rgba(255,255,255,.025);
+}
+#pollen-view .pollen-neo-card,
+#pollen-view .pollen-neo-forecast-list,
+#pollen-view .change-symptom-card{
+  border-color:var(--pollen-line);
+  background:linear-gradient(180deg,rgba(14,21,27,.82),rgba(8,12,17,.96));
+  box-shadow:0 12px 32px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.025);
+}
+#pollen-view .pollen-neo-top{
+  grid-template-columns:minmax(620px,1.12fr) minmax(440px,.88fr);
+  gap:20px;
+}
+#pollen-view .pollen-neo-main-grid{
+  grid-template-columns:minmax(620px,1.02fr) minmax(440px,.98fr);
+  gap:20px;
+}
+#pollen-view .pollen-neo-left{gap:20px;}
+#pollen-view .pollen-neo-hero{
+  min-height:252px;
+  border-radius:26px;
+  box-shadow:0 14px 36px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.025);
+}
+#pollen-view .pollen-neo-hero-title{
+  font-size:48px;
+  letter-spacing:-1.6px;
+  font-weight:850;
+}
+#pollen-view .pollen-neo-label,
+#pollen-view .pollen-neo-section-head span,
+#pollen-view .change-symptom-head strong{
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.055em;
+}
+#pollen-view .pollen-neo-subline{font-size:18px;font-weight:760;}
+#pollen-view .pollen-neo-cta{font-size:13px;font-weight:780;}
+#pollen-view .pollen-neo-profile-card strong,
+#pollen-view .pollen-neo-forecast-main strong{font-weight:800;}
+#pollen-view .pollen-neo-sidecards{gap:18px;}
+#pollen-view .pollen-neo-metric{min-height:252px;border-radius:24px;}
+#pollen-view .pollen-neo-ring strong{font-weight:850;letter-spacing:-.7px;}
+#pollen-view .pollen-neo-ring span{font-weight:800;}
+#pollen-view .pollen-neo-chart strong,
+#pollen-view .pollen-neo-quiet-card strong{font-weight:850;letter-spacing:-.7px;}
+@media(max-width:1180px){
+  #pollen-view .pollen-neo-top,
+  #pollen-view .pollen-neo-main-grid{grid-template-columns:1fr;}
+}
