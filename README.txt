@@ -1,23 +1,17 @@
-Change App – Icon Package
-═════════════════════════
+Change App · Pollen Premium Style · Version 0.1.0014
 
-INHALT:
-  CLAUDE.md                        → Wahrheitsdatei (ins Repo-Root)
-  public/
-    manifest.json                  → PWA Manifest (ins public/ Verzeichnis)
-    icons/
-      change-icon-512.svg          → Haupt-Icon
-      change-icon-192.svg          → PWA / Homescreen Icon
+Enthaltene Dateien:
+features/pollen/pollenView.js
+features/pollen/pollenView.css
+README.txt
 
-INTEGRATION IN 4 SCHRITTEN:
-  1. Ordner public/icons/ in dein Repo kopieren
-  2. public/manifest.json in dein Repo kopieren
-  3. CLAUDE.md ins Repo-Root kopieren (oder Inhalt einfügen)
-  4. In index.html <head> einfügen:
+Anpassungen in diesem Update:
+- Stil deutlich näher an den gelieferten Screenshot angepasst
+- Hero-Karte optisch beruhigt und klarer aufgebaut
+- Profil-Karten Gräser/Birke/etc. sind jetzt statisch und öffnen kein Panel mehr
+- Emoji-/Fallback-Icons durch ruhigere Inline-SVG-Icons ersetzt
+- Das bisherige Gras-Symbol in der Hero-Karte durch eine sauberere Illustration ersetzt
 
-     <link rel="icon" type="image/svg+xml" href="/icons/change-icon-512.svg">
-     <link rel="apple-touch-icon" href="/icons/change-icon-512.svg">
-     <link rel="manifest" href="/manifest.json">
-     <meta name="theme-color" content="#0F172A">
-
-  5. firebase deploy --only hosting
+Hinweis:
+Dies ist ein aktualisiertes ZIP-Paket für den Pollen-Bereich. GitHub konnte in diesem Durchlauf nicht direkt angepasst werden.
+Die Pollen-Ansicht selbst trägt intern Version 0.1.0014.
