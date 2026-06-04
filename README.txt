@@ -1,18 +1,14 @@
-Change App · Pollen Premium Style · Version 0.1.0022
+Change App · Pollen Premium Style · Version 0.1.0024
 
 Enthaltene Änderungen:
-- features/pollen/pollenView.js
 - features/pollen/pollenView.css
-- features/weather/pollenSymptoms.js
-- styles/app.css
+- features/pollen/pollenView.js
 - features/settings/settingsPanel.js
 - CLAUDE.md
 - README.txt
 
 Anpassungen in diesem Update:
-- Finale Typografie-/Spacing-Runde für den Pollen-Reiter
-- Header, Settings-Button und Seitenleiste ruhiger ausgerichtet
-- Hero-Karte, Metrik-Karten, Allergieprofil, Symptome und 7-Tage-Ausblick auf ein einheitlicheres Raster gebracht
-- Forecast-Zeilen und Symptom-Zeilen kompakter und gleichmäßiger gesetzt
-- Die Auswertung in Symptome heute bleibt erhalten
-- Sichtbare App-Version auf 0.1.0022 erhöht und in CLAUDE.md dokumentiert
+- Hintergrund im Pollen-Reiter füllt jetzt den gesamten Content-Bereich ohne sichtbaren Abstand oben/links.
+- Symptom-Labels Niesen, Augen, Nase und Atmung sind wieder klar lesbar.
+- Symptom-Zeilen bekommen mehr Label-Breite, ohne die vier Buttons zu verlieren.
+- Sichtbare App-Version auf 0.1.0024 erhöht und in CLAUDE.md dokumentiert.

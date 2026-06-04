@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0022 und Pollen-Typografie-Feinschliff
+> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0024 und Pollen-Hintergrund/Lesbarkeit
 
 ---
 
@@ -98,7 +98,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0022`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0024`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -719,3 +719,18 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Für den Pollen-Reiter wurde ein eigener Icon-Pass umgesetzt. Pollen-Icons und Symptom-Icons wurden stilistisch vereinheitlicht und hochwertiger ausgearbeitet.
 - Die Symbolsprache im Allergieprofil, in der Hero-Karte und bei `Symptome heute` ist jetzt ruhiger, größer und konsistenter.
 - Keine Änderung an Login, Auto-Start, Firebase-Start, Kalenderlogik oder Push-Dialogen.
+
+
+## Version 0.1.0023
+- Die sichtbare App-Version wurde auf `0.1.0023` erhöht.
+- Im Pollen-Hero bleibt die Unterzeile mit den aktiven Pollenarten auf Desktop wieder in einer Zeile.
+- Der Footer-Text `Pollenindex` wurde aus der Belastung-heute-Karte entfernt, da die Prozentanzeige bereits selbsterklärend ist.
+- Die aktiven Symptom-Farben wurden korrigiert: `Mittel` nutzt jetzt deutlich Gelb/Orange und `Stark` Rot statt blasser Gelbtöne.
+- Keine Änderung an Login, Auto-Start, Firebase-Start, Kalenderlogik oder Push-Dialogen.
+
+
+## Version 0.1.0024
+- Die sichtbare App-Version wurde auf `0.1.0024` erhöht.
+- Der Pollen-Reiter füllt den Desktop-Contentbereich jetzt vollständig mit dem eigenen dunklen Hintergrund, damit oben und links keine sichtbaren Abstandskanten mehr entstehen.
+- Die Symptom-Labels `Niesen`, `Augen`, `Nase` und `Atmung` sind wieder klar lesbar und erhalten mehr feste Label-Breite.
+- Keine Änderung an Login, Auto-Start, Firebase-Start, Kalenderlogik, Sync oder Push-Dialogen.

@@ -1,4 +1,4 @@
-/* Pollen View · Premium Redesign · v0.1.0022 */
+/* Pollen View · Premium Redesign · v0.1.0023 */
 #pollen-view{position:relative;background:#04090e;color:#f4f7f4;overflow:hidden}
 #pollen-view::before{content:"";position:absolute;inset:0;background:
   radial-gradient(circle at 21% 10%,rgba(16,110,54,.35),transparent 28%),
@@ -908,4 +908,126 @@ body.neo-pollen-shell #content{
   #pollen-view .list-header{align-items:flex-start;}
   #pollen-view .pollen-neo-hero-title{font-size:40px;}
   #pollen-view .pollen-neo-forecast-row{grid-template-columns:14px 104px minmax(0,1fr);}
+}
+
+
+/* v0.1.0023 targeted visual correction */
+#pollen-view .pollen-neo-hero{
+  grid-template-columns:minmax(240px,1.08fr) minmax(132px,.58fr) minmax(196px,.86fr);
+}
+#pollen-view .pollen-neo-subline{
+  display:flex;
+  align-items:center;
+  flex-wrap:nowrap;
+  white-space:nowrap;
+  gap:7px;
+  font-size:15.5px;
+  line-height:1.2;
+  max-width:100%;
+}
+#pollen-view .pollen-neo-word{
+  white-space:nowrap;
+  display:inline-flex;
+  align-items:center;
+}
+#pollen-view .pollen-neo-dotsep{
+  flex:0 0 auto;
+}
+#pollen-view .pollen-neo-metric-foot{
+  display:none;
+}
+#pollen-view .pollen-neo-metric:has(.pollen-neo-ring){
+  grid-template-rows:auto 1fr;
+}
+#pollen-view .pollen-neo-ring{
+  align-self:center;
+  margin-top:8px;
+}
+#pollen-view .change-symptom-level.active{
+  background:#1f7a4b;
+  border-color:#4ade80;
+  color:#ffffff;
+  box-shadow:0 0 0 1px rgba(74,222,128,.18), inset 0 1px 0 rgba(255,255,255,.08);
+}
+#pollen-view .change-symptom-level[data-level="1"].active{
+  background:#286b4a;
+  border-color:#4ade80;
+  color:#ffffff;
+  box-shadow:0 0 0 1px rgba(74,222,128,.14), inset 0 1px 0 rgba(255,255,255,.07);
+}
+#pollen-view .change-symptom-level[data-level="2"].active{
+  background:#b7791f;
+  border-color:#fbbf24;
+  color:#ffffff;
+  box-shadow:0 0 0 1px rgba(251,191,36,.20), inset 0 1px 0 rgba(255,255,255,.09);
+}
+#pollen-view .change-symptom-level[data-level="3"].active{
+  background:#a43a30;
+  border-color:#ff6656;
+  color:#ffffff;
+  box-shadow:0 0 0 1px rgba(255,102,86,.22), inset 0 1px 0 rgba(255,255,255,.09);
+}
+#pollen-view .change-symptom-level[data-level="2"].active:hover,
+#pollen-view .change-symptom-level[data-level="3"].active:hover{
+  filter:brightness(1.03);
+}
+@media (max-width:1200px){
+  #pollen-view .pollen-neo-hero{grid-template-columns:1fr;}
+  #pollen-view .pollen-neo-subline{flex-wrap:wrap;white-space:normal;}
+}
+
+
+/* v0.1.0024 background coverage + symptom label readability */
+@media(min-width:701px){
+  body.change-view-pollen,
+  body.neo-pollen-shell,
+  body.change-view-pollen #main-app,
+  body.neo-pollen-shell #main-app{
+    background:#04090e!important;
+  }
+  body.change-view-pollen #content,
+  body.neo-pollen-shell #content{
+    padding:0!important;
+    background:#04090e!important;
+  }
+}
+#pollen-view{
+  min-height:100vh;
+  box-sizing:border-box;
+  padding:24px 26px 28px!important;
+  background:
+    radial-gradient(circle at 8% 6%,rgba(18,100,55,.16),transparent 32%),
+    radial-gradient(circle at 72% 0%,rgba(224,166,35,.035),transparent 18%),
+    linear-gradient(180deg,#04090e,#04090e)!important;
+}
+#pollen-view::before{
+  inset:0!important;
+  background:transparent!important;
+}
+#pollen-view .change-symptom-row{
+  grid-template-columns:116px minmax(0,1fr)!important;
+}
+#pollen-view .change-symptom-label{
+  color:#f4f7f4!important;
+  opacity:1!important;
+  min-width:0;
+}
+#pollen-view .change-symptom-label strong{
+  color:#f4f7f4!important;
+  opacity:1!important;
+  display:block;
+  overflow:visible;
+  white-space:nowrap;
+  font-weight:820!important;
+}
+#pollen-view .change-symptom-icon{
+  flex:0 0 auto;
+  opacity:1!important;
+}
+#pollen-view .change-symptom-levels{
+  min-width:0;
+}
+@media(max-width:900px){
+  #pollen-view{padding:20px 18px 26px!important;}
+  #pollen-view .change-symptom-row{grid-template-columns:1fr!important;}
 }
