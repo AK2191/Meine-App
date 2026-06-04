@@ -3694,3 +3694,15 @@ body.change-theme-light #pollen-view .pollen-neo-forecast-row.none .pollen-neo-b
 [data-theme="light"] #pollen-view .pollen-neo-forecast-row.none .pollen-neo-bars span.on{
   background:#35c966!important;
 }
+
+
+/* v0.1.0040 mobile: remove local allergy profile header button */
+@media (max-width: 760px){
+  #pollen-view .pollen-neo-header-actions,
+  #pollen-view .pollen-neo-header-settings{
+    display:none!important;
+  }
+  #pollen-view .list-header{
+    grid-template-columns:1fr!important;
+  }
+}
