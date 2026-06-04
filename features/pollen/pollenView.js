@@ -3,8 +3,9 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0026';
+  var APP_VERSION = '0.1.0028';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
+  var SELECTED_KEY = 'change_v1_pollen_selected_keys';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
 
   function esc(value){
@@ -49,12 +50,33 @@
       return ((b.rank || 0) - (a.rank || 0)) || (clampNum(b.value) - clampNum(a.value));
     });
   }
-  function overallSubline(day){
-    var active = activeItems(day).slice(0, 2);
-    if(!active.length) return '<span class="pollen-neo-muted">Keine Belastung</span>';
-    return active.map(function(p){
+  function selectedItems(day, keys){
+    var valid = Array.isArray(keys) ? keys : [];
+    return valid.map(function(key){ return itemByKey(day, key); }).filter(Boolean);
+  }
+  function dominantItem(day, keys){
+    var items = selectedItems(day, keys);
+    if(!items.length) items = activeItems(day).slice(0, 1);
+    return items.sort(function(a,b){
+      return clampNum(b.value) - clampNum(a.value) || ((b.rank || 0) - (a.rank || 0));
+    })[0] || null;
+  }
+  function summaryForItems(items){
+    var list = (items || []).filter(Boolean);
+    if(!list.length) return '<span class="pollen-neo-muted">Keine Belastung</span>';
+    return list.map(function(p){
       return '<span class="pollen-neo-word '+esc(p.level || 'none')+'">'+esc(p.name)+' '+esc(levelLabel(p.level))+'</span>';
     }).join('<span class="pollen-neo-dotsep">·</span>');
+  }
+  function summaryTextForItems(items){
+    var list = (items || []).filter(Boolean);
+    if(!list.length) return 'keine Belastung';
+    return list.map(function(p){ return String(p.name || 'Pollen') + ' ' + levelLabel(p.level); }).join(', ');
+  }
+  function overallSubline(day, keys){
+    var items = selectedItems(day, keys).filter(function(p){ return clampNum(p && p.value) > 0; });
+    if(!items.length && selectedItems(day, keys).length) items = selectedItems(day, keys).slice(0, 2);
+    return summaryForItems(items.slice(0, 3));
   }
   function levelLabel(level){ return level === 'high' ? 'hoch' : level === 'medium' ? 'mittel' : level === 'low' ? 'niedrig' : 'keine'; }
   function intensityTitle(level){ return level === 'high' ? 'Hoch' : level === 'medium' ? 'Mittel' : level === 'low' ? 'Niedrig' : 'Ruhig'; }
@@ -72,34 +94,63 @@
   function writeFocus(key){
     try{ localStorage.setItem(FOCUS_KEY, String(key || '')); }catch(e){}
   }
-  function readEditMode(){
-    try{ return String(localStorage.getItem(EDIT_KEY) || '').trim(); }catch(e){ return ''; }
+  function readSelectedRaw(){
+    try{
+      var raw = localStorage.getItem(SELECTED_KEY);
+      var parsed = raw ? JSON.parse(raw) : null;
+      return Array.isArray(parsed) ? parsed.map(String) : [];
+    }catch(e){ return []; }
   }
-  function writeEditMode(value){
-    try{ localStorage.setItem(EDIT_KEY, String(value || '')); }catch(e){}
+  function writeSelectedKeys(keys){
+    var clean = Array.from(new Set((Array.isArray(keys) ? keys : []).map(String).filter(Boolean)));
+    try{ localStorage.setItem(SELECTED_KEY, JSON.stringify(clean)); }catch(e){}
+    if(clean[0]) writeFocus(clean[0]);
   }
-  function resolveFocus(today){
+  function resolveSelectedKeys(today){
     var items = itemsOf(today);
-    if(!items.length) return '';
-    var saved = readFocus();
-    if(saved && items.some(function(p){ return String(p.key) === saved; })) return saved;
+    var validKeys = items.map(function(p){ return String(p.key || ''); }).filter(Boolean);
+    if(!validKeys.length) return [];
+    var saved = readSelectedRaw().filter(function(key){ return validKeys.indexOf(String(key)) >= 0; });
+    if(saved.length) return saved;
+    var legacy = readFocus();
+    if(legacy && validKeys.indexOf(legacy) >= 0) return [legacy];
     var top = activeItems(today)[0] || items[0];
-    return top ? String(top.key || '') : '';
+    return top && top.key ? [String(top.key)] : [validKeys[0]];
   }
-  function selectedForecast(forecast, key){
-    return (forecast || []).map(function(day){
-      var item = itemByKey(day, key);
-      var state = selectedStatus(item);
-      return {
-        date: day.date,
-        item: item,
-        key: key,
-        name: item && item.name || '',
-        level: state.key,
-        title: state.title,
-        score: state.score
-      };
-    });
+  function toggleSelectedKey(today, key){
+    var current = resolveSelectedKeys(today);
+    var value = String(key || '');
+    if(!value) return current;
+    var exists = current.indexOf(value) >= 0;
+    var next = exists ? current.filter(function(k){ return k !== value; }) : current.concat(value);
+    if(!next.length) next = [value];
+    writeSelectedKeys(next);
+    return next;
+  }
+  function selectedDaySummary(day, keys){
+    var items = selectedItems(day, keys);
+    if(!items.length){
+      var fallback = activeItems(day)[0] || itemsOf(day)[0] || null;
+      if(fallback) items = [fallback];
+    }
+    var main = (items || []).slice().sort(function(a,b){
+      return clampNum(b.value) - clampNum(a.value) || ((b.rank || 0) - (a.rank || 0));
+    })[0] || null;
+    var state = selectedStatus(main);
+    return {
+      date: day && day.date,
+      items: items,
+      item: main,
+      keys: keys,
+      name: main && main.name || '',
+      level: state.key,
+      title: state.title,
+      score: state.score,
+      summary: summaryTextForItems(items)
+    };
+  }
+  function selectedForecast(forecast, keys){
+    return (forecast || []).map(function(day){ return selectedDaySummary(day, keys); });
   }
   function forecastPeak(days){
     if(!days || !days.length) return null;
@@ -159,13 +210,13 @@
   function metricCardHtml(type, label, body, tone){
     return '<div class="pollen-neo-card pollen-neo-metric '+esc(tone || 'none')+'"><div class="pollen-neo-label">'+esc(label)+'</div>'+body+'</div>';
   }
-  function topHtml(forecast, selectedKey, loc){
+  function topHtml(forecast, selectedKeys, loc){
     var today = forecast[0] || {};
-    var selected = selectedForecast(forecast, selectedKey);
-    var todaySelected = selected[0] || {score:0, level:'none', title:'Pollen ruhig'};
+    var selected = selectedForecast(forecast, selectedKeys);
+    var todaySelected = selected[0] || {score:0, level:'none', title:'Pollen ruhig', items:[]};
     var peak = forecastPeak(selected);
     var quiet = quietestDay(selected);
-    var selectedItem = itemByKey(today, selectedKey) || {key:selectedKey, name:'Pollen', level:'none', value:0};
+    var selectedItem = todaySelected.item || dominantItem(today, selectedKeys) || {key:selectedKeys && selectedKeys[0], name:'Pollen', level:'none', value:0};
     var nextTrend = trendText(selected);
     var score = Math.round(todaySelected.score || 0);
     var intensity = intensityTitle(todaySelected.level);
@@ -175,7 +226,7 @@
         + '<div class="pollen-neo-hero-main">'
           + '<div class="pollen-neo-label">Deine Pollen heute</div>'
           + '<div class="pollen-neo-hero-title">'+esc(intensity)+'</div>'
-          + '<div class="pollen-neo-subline">'+overallSubline(today)+'</div>'
+          + '<div class="pollen-neo-subline">'+overallSubline(today, selectedKeys)+'</div>'
           + '<div class="pollen-neo-cta">↗ '+esc(nextTrend)+'</div>'
         + '</div>'
         + heroArtSvg()
@@ -192,14 +243,14 @@
       + '</div>'
     + '</section>';
   }
-  function profileHtml(today, selectedKey){
+  function profileHtml(today, selectedKeys){
     var items = itemsOf(today);
     if(!items.length) return '<div class="pollen-neo-card pollen-neo-empty">Keine Einzelwerte geladen.</div>';
     return '<section class="pollen-neo-section">'
       + '<div class="pollen-neo-section-head"><div><span>Allergieprofil</span></div></div>'
       + '<div class="pollen-neo-profile-grid">'
       + items.map(function(p){
-        return '<button type="button" class="pollen-neo-profile-card '+esc(p.level || 'none')+' '+(String(selectedKey)===String(p.key)?'active':'')+'" data-pollen-select="'+esc(p.key)+'">'
+        return '<button type="button" class="pollen-neo-profile-card '+esc(p.level || 'none')+' '+((selectedKeys || []).indexOf(String(p.key)) >= 0 ? 'active' : '')+'" data-pollen-select="'+esc(p.key)+'">'
           + glyphSvg(p.key)
           + '<strong>'+esc(p.name)+'</strong>'
           + '<span>'+esc(levelLabel(p.level))+'</span>'
@@ -213,16 +264,17 @@
     return '<div class="pollen-neo-forecast-row '+esc(day.level || 'none')+'">'
       + '<div class="pollen-neo-forecast-dot"></div>'
       + '<div class="pollen-neo-forecast-date"><strong>'+esc(fmtDay(day.date))+'</strong><span>'+esc(diffLabel(dayDiff(day.date)))+'</span></div>'
-      + '<div class="pollen-neo-forecast-main"><strong>'+esc(day.title)+' · '+esc(day.score)+'%</strong><span>'+esc(day.item ? day.item.name + ' ' + levelLabel(day.item.level) : 'keine Belastung')+'</span></div>'
+      + '<div class="pollen-neo-forecast-main"><strong>'+esc(day.title)+' · '+esc(day.score)+'%</strong><span>'+esc(day.summary || (day.item ? day.item.name + ' ' + levelLabel(day.item.level) : 'keine Belastung'))+'</span></div>'
       + '<div class="pollen-neo-bars">'+miniBars(day.score, day.level)+'</div>'
     + '</div>';
   }
-  function forecastHtml(forecast, selectedKey){
+  function forecastHtml(forecast, selectedKeys){
     var today = forecast[0] || {};
-    var currentItem = itemByKey(today, selectedKey) || {name:'Pollen'};
-    var list = selectedForecast(forecast, selectedKey);
+    var selected = selectedItems(today, selectedKeys);
+    var title = selected.length === 1 ? selected[0].name : 'Auswahl';
+    var list = selectedForecast(forecast, selectedKeys);
     return '<section class="pollen-neo-section pollen-neo-forecast">'
-      + '<div class="pollen-neo-section-head"><div><span>7-Tage-Ausblick – '+esc(String((currentItem.name || 'Pollen')).toUpperCase())+'</span></div></div>'
+      + '<div class="pollen-neo-section-head"><div><span>7-Tage-Ausblick – '+esc(String((title || 'Pollen')).toUpperCase())+'</span></div></div>'
       + '<div class="pollen-neo-forecast-list">'+list.slice(0,7).map(forecastRow).join('')+'</div>'
     + '</section>';
   }
@@ -232,16 +284,21 @@
       return '<div class="pollen-neo-shell"><div class="pollen-neo-card pollen-neo-empty"><strong>Noch kein Pollen-Ausblick geladen.</strong><span>Aktualisiere den Standort, um die Ansicht aufzubauen.</span><button class="btn btn-primary" type="button" onclick="ChangeWeatherCard&&ChangeWeatherCard.updateLocation&&ChangeWeatherCard.updateLocation()">Standort aktualisieren</button></div></div>';
     }
     var today = forecast[0];
-    var selectedKey = resolveFocus(today);
-    writeFocus(selectedKey);
+    var selectedKeys = resolveSelectedKeys(today);
+    writeSelectedKeys(selectedKeys);
+    var symptomForecast = selectedKeys.length ? (forecast || []).map(function(day){
+      var copy = Object.assign({}, day || {});
+      copy.items = selectedItems(day, selectedKeys);
+      return copy;
+    }) : forecast;
     return '<div class="pollen-neo-shell">'
-      + topHtml(forecast, selectedKey, loc)
+      + topHtml(forecast, selectedKeys, loc)
       + '<div class="pollen-neo-main-grid">'
         + '<div class="pollen-neo-left">'
-          + profileHtml(today, selectedKey)
-          + (window.ChangePollenSymptoms && window.ChangePollenSymptoms.panelHtml ? '<section class="pollen-neo-section pollen-neo-symptoms">'+window.ChangePollenSymptoms.panelHtml(todayKey(), forecast)+'</section>' : '')
+          + profileHtml(today, selectedKeys)
+          + (window.ChangePollenSymptoms && window.ChangePollenSymptoms.panelHtml ? '<section class="pollen-neo-section pollen-neo-symptoms">'+window.ChangePollenSymptoms.panelHtml(todayKey(), symptomForecast)+'</section>' : '')
         + '</div>'
-        + forecastHtml(forecast, selectedKey)
+        + forecastHtml(forecast, selectedKeys)
       + '</div>'
     + '</div>';
   }
@@ -251,13 +308,29 @@
     var header = view.querySelector('.list-header');
     if(!header) return;
     header.classList.add('pollen-neo-headerbar');
-    if(!header.querySelector('.pollen-neo-header-settings')){
+    var actions = header.querySelector('.pollen-neo-header-actions');
+    if(!actions){
+      actions = document.createElement('div');
+      actions.className = 'pollen-neo-header-actions';
+      header.appendChild(actions);
+    }
+    if(!actions.querySelector('.pollen-neo-header-notify')){
+      var notify = document.createElement('button');
+      notify.type = 'button';
+      notify.className = 'pollen-neo-header-notify';
+      notify.setAttribute('data-pollen-notify','');
+      notify.setAttribute('aria-label','Pollen-Benachrichtigungen');
+      notify.title = 'Pollen-Benachrichtigungen';
+      notify.innerHTML = '<span class="pollen-neo-header-settings-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 9.7c0-3.3-2.1-5.7-5.1-6.2V2.8a.9.9 0 0 0-1.8 0v.7C8.1 4 6 6.4 6 9.7v3.5c0 1.4-.6 2.5-1.5 3.4a.9.9 0 0 0 .6 1.5h13.8a.9.9 0 0 0 .6-1.5c-.9-.9-1.5-2-1.5-3.4V9.7Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path><path d="M9.8 19.5a2.4 2.4 0 0 0 4.4 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path></svg></span>';
+      actions.appendChild(notify);
+    }
+    if(!actions.querySelector('.pollen-neo-header-settings')){
       var action = document.createElement('button');
       action.type = 'button';
       action.className = 'pollen-neo-header-settings';
       action.setAttribute('data-pollen-settings','');
       action.innerHTML = '<span class="pollen-neo-header-settings-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 8.6a3.4 3.4 0 1 0 0 6.8 3.4 3.4 0 0 0 0-6.8Zm9 3-.13-.03-1.78-.7a7.15 7.15 0 0 0-.53-1.27l.76-1.74a.9.9 0 0 0-.19-.98l-1.66-1.66a.9.9 0 0 0-.98-.19l-1.74.76c-.4-.21-.83-.39-1.27-.53L12.43 3.1a.9.9 0 0 0-.84-.6h-2.18a.9.9 0 0 0-.84.6l-.68 1.74c-.44.14-.87.32-1.27.53l-1.74-.76a.9.9 0 0 0-.98.19L2.24 6.46a.9.9 0 0 0-.19.98l.76 1.74c-.21.4-.39.83-.53 1.27l-1.74.68a.9.9 0 0 0-.6.84v2.18c0 .38.23.72.6.84l1.74.68c.14.44.32.87.53 1.27l-.76 1.74a.9.9 0 0 0 .19.98l1.66 1.66c.27.27.68.35.98.19l1.74-.76c.4.21.83.39 1.27.53l.68 1.74c.13.36.47.6.84.6h2.18c.37 0 .71-.24.84-.6l.68-1.74c.44-.14.87-.32 1.27-.53l1.74.76c.3.16.71.08.98-.19l1.66-1.66a.9.9 0 0 0 .19-.98l-.76-1.74c.21-.4.39-.83.53-1.27l1.78-.7.13-.03a.9.9 0 0 0 .6-.84v-2.18a.9.9 0 0 0-.6-.84Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"></path></svg></span><span>Pollen-Settings</span>';
-      header.appendChild(action);
+      actions.appendChild(action);
     }
   }
   function setShellMode(active){ return !!active; }
@@ -298,18 +371,29 @@
     if(window.__changePollenNeoBound) return;
     window.__changePollenNeoBound = true;
     document.addEventListener('click', function(ev){
+      var notifyBtn = ev.target && ev.target.closest ? ev.target.closest('#pollen-view [data-pollen-notify]') : null;
+      if(notifyBtn){
+        ev.preventDefault();
+        ev.stopPropagation();
+        if(window.openSettingsPanel) window.openSettingsPanel('dashboard');
+        return;
+      }
       var settingsBtn = ev.target && ev.target.closest ? ev.target.closest('#pollen-view [data-pollen-settings]') : null;
       if(settingsBtn){
         ev.preventDefault();
         ev.stopPropagation();
-        if(window.openSettingsPanel) window.openSettingsPanel('app');
+        if(window.openSettingsPanel) window.openSettingsPanel('dashboard');
         return;
       }
       var pick = ev.target && ev.target.closest ? ev.target.closest('#pollen-view [data-pollen-select]') : null;
       if(pick){
         ev.preventDefault();
         ev.stopPropagation();
-        writeFocus(pick.getAttribute('data-pollen-select') || '');
+        var cached = null;
+        try{ cached = window.ChangeWeatherService && window.ChangeWeatherService.getCached ? window.ChangeWeatherService.getCached() : null; }catch(e){}
+        var today = cached && cached.pollen && cached.pollen.forecast && cached.pollen.forecast[0] || null;
+        if(today) toggleSelectedKey(today, pick.getAttribute('data-pollen-select') || '');
+        else writeSelectedKeys([pick.getAttribute('data-pollen-select') || '']);
         render();
         return;
       }

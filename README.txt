@@ -1,21 +1,16 @@
-Change App · Pollen Premium Style · Version 0.1.0026
+Change App · Pollen Premium Style · Version 0.1.0028
 
 Enthaltene Änderungen:
-- app.js
-- features/settings/settingsPanel.js
-- features/settings/settingsPanel.css
 - features/pollen/pollenView.js
 - features/pollen/pollenView.css
+- features/settings/settingsPanel.js
 - CLAUDE.md
 - README.txt
 
 Anpassungen in diesem Update:
-- Darstellung als globale App-Einstellung ergänzt
-- Einstellungen → App → Darstellung mit System, Hell und Dunkel
-- Theme wird in localStorage unter change_v1_theme gespeichert
-- Bestehender Darkmode bleibt kompatibel
-- Pollen unterstützt jetzt Darkmode und Hellmode
-- Keine Auto-Starts, kein Login-Eingriff, kein automatischer Push-Dialog
-- Sichtbare App-Version auf 0.1.0026 erhöht und in CLAUDE.md dokumentiert
-
-- Allergieprofil-Werte werden ohne Kommazahlen gerundet angezeigt
+- Hellmodus-Lesbarkeit im Pollen-Reiter verbessert
+- Texte in Symptome heute, Allergieprofil, Peak und ruhigster Tag stärker kontrastiert
+- Settings-Icon im Hellmodus sichtbar gemacht
+- Pollen-Glocke oben rechts ergänzt
+- Glocke und Pollen-Settings öffnen die Einstellungen, ohne automatisch Push-Berechtigungen anzufragen
+- Sichtbare App-Version auf 0.1.0028 erhöht und in CLAUDE.md dokumentiert

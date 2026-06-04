@@ -1161,3 +1161,98 @@ body.neo-pollen-shell #content{
 [data-theme="light"] #pollen-view .change-symptom-note::placeholder{
   color:rgba(23,35,27,.34);
 }
+
+
+/* v0.1.0028 light readability + notification action */
+#pollen-view .pollen-neo-header-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:10px;
+  margin-left:auto;
+}
+#pollen-view .pollen-neo-header-notify{
+  appearance:none;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(7,12,18,.72);
+  color:#f4f7f4;
+  border-radius:14px;
+  width:48px;
+  height:48px;
+  padding:0;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-family:var(--font);
+  box-shadow:0 10px 26px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.03);
+  cursor:pointer;
+}
+#pollen-view .pollen-neo-header-notify:hover{background:rgba(11,18,25,.88)}
+#pollen-view .pollen-neo-header-notify .pollen-neo-header-settings-icon{width:19px;height:19px;color:currentColor}
+@media (max-width:900px){
+  #pollen-view .pollen-neo-header-actions{margin-left:0;justify-content:flex-start;flex-wrap:wrap}
+}
+[data-theme="light"] #pollen-view .pollen-neo-header-actions .pollen-neo-header-notify,
+[data-theme="light"] #pollen-view .pollen-neo-header-actions .pollen-neo-header-settings{
+  background:rgba(255,255,255,.92)!important;
+  border-color:rgba(20,35,24,.16)!important;
+  color:#17231b!important;
+  box-shadow:0 12px 28px rgba(22,44,28,.11),inset 0 1px 0 rgba(255,255,255,.95)!important;
+}
+[data-theme="light"] #pollen-view .pollen-neo-header-settings-icon,
+[data-theme="light"] #pollen-view .pollen-neo-header-settings-icon svg{
+  color:#17231b!important;
+  opacity:1!important;
+}
+[data-theme="light"] #pollen-view .pollen-neo-chart span,
+[data-theme="light"] #pollen-view .pollen-neo-quiet-card span,
+[data-theme="light"] #pollen-view .pollen-neo-hero-stats strong,
+[data-theme="light"] #pollen-view .pollen-neo-muted,
+[data-theme="light"] #pollen-view .pollen-neo-forecast-date span,
+[data-theme="light"] #pollen-view .pollen-neo-forecast-main span{
+  color:#314036!important;
+  opacity:1!important;
+}
+[data-theme="light"] #pollen-view .pollen-neo-profile-card.none span,
+[data-theme="light"] #pollen-view .pollen-neo-profile-card.none em,
+[data-theme="light"] #pollen-view .pollen-neo-profile-card.none .pollen-neo-icon-svg{
+  color:#5f6b63!important;
+  opacity:1!important;
+}
+[data-theme="light"] #pollen-view .pollen-neo-profile-card.high span,
+[data-theme="light"] #pollen-view .pollen-neo-profile-card.high em{color:#ef3f34!important;opacity:1!important}
+[data-theme="light"] #pollen-view .pollen-neo-profile-card.medium span,
+[data-theme="light"] #pollen-view .pollen-neo-profile-card.medium em{color:#c88400!important;opacity:1!important}
+[data-theme="light"] #pollen-view .pollen-neo-profile-card.low span,
+[data-theme="light"] #pollen-view .pollen-neo-profile-card.low em{color:#18a952!important;opacity:1!important}
+[data-theme="light"] #pollen-view .change-symptom-insight,
+[data-theme="light"] #pollen-view .change-symptom-insight.empty,
+[data-theme="light"] #pollen-view .change-symptom-insight.strong{
+  background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(247,250,245,.96))!important;
+  border-color:rgba(20,35,24,.13)!important;
+  color:#17231b!important;
+  opacity:1!important;
+}
+[data-theme="light"] #pollen-view .change-symptom-insight strong{
+  color:#17231b!important;
+  opacity:1!important;
+}
+[data-theme="light"] #pollen-view .change-symptom-insight span{
+  color:#48564d!important;
+  opacity:1!important;
+}
+[data-theme="light"] #pollen-view .change-symptom-insight-icon{
+  background:rgba(45,106,79,.10)!important;
+  color:#2d6a4f!important;
+  opacity:1!important;
+}
+[data-theme="light"] #pollen-view .change-symptom-label,
+[data-theme="light"] #pollen-view .change-symptom-label strong{
+  color:#17231b!important;
+  opacity:1!important;
+}
+[data-theme="light"] #pollen-view .change-symptom-note-action,
+[data-theme="light"] #pollen-view .change-symptom-note-action svg{
+  color:#506056!important;
+  opacity:1!important;
+}
