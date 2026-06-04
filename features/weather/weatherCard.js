@@ -5,8 +5,10 @@
   var Service = window.ChangeWeatherService;
   var Rules = window.ChangeWeatherRules;
   var installed = false;
+  var focusHandlerInstalled = false;
   var pollenPanelView = 'all';
   var LOCATION_MAX_AGE = 2 * 60 * 60 * 1000;
+  var POLLEN_FOCUS_KEY = 'change_v1_pollen_focus';
 
   function esc(value){
     return String(value == null ? '' : value).replace(/[&<>"']/g, function(c){
@@ -51,6 +53,32 @@
     var s = settings();
     return !!(s.weatherEnabled || s.rainAlertsEnabled || s.pollenEnabled || s.pollenAlertsEnabled);
   }
+  function readPollenFocus(){
+    try{
+      var list = JSON.parse(localStorage.getItem(POLLEN_FOCUS_KEY) || '[]');
+      return Array.isArray(list) ? list.filter(Boolean) : [];
+    }catch(e){ return []; }
+  }
+  function writePollenFocus(list){
+    try{ localStorage.setItem(POLLEN_FOCUS_KEY, JSON.stringify((list || []).filter(Boolean))); }catch(e){}
+  }
+  function hasPollenFocus(key){ return readPollenFocus().indexOf(String(key || '')) >= 0; }
+  function togglePollenFocus(key){
+    key = String(key || '');
+    if(!key) return;
+    var list = readPollenFocus();
+    var idx = list.indexOf(key);
+    if(idx >= 0) list.splice(idx, 1); else list.push(key);
+    writePollenFocus(list);
+    updateHero();
+    openForecast('pollen', {forceRefresh:false});
+  }
+  function filteredPollenItems(day){
+    var items = day && day.items ? day.items.slice() : [];
+    var focus = readPollenFocus();
+    if(!focus.length) return items;
+    return items.filter(function(p){ return p && focus.indexOf(p.key) >= 0; });
+  }
   function todayPollen(data){
     var p = data && data.pollen;
     if(!p) return null;
@@ -63,12 +91,13 @@
     return {items:p.items || [], strong:p.strong || [], elevated:p.elevated || [], top:(p.items || []).filter(function(x){ return x.rank >= 2; }).slice(0,3)};
   }
   function allActivePollen(day){
-    var items = (day && day.items ? day.items : []).slice();
+    var items = filteredPollenItems(day);
     return items.filter(function(p){ return Number(p.value) > 0; }).sort(function(a,b){ return (b.rank-a.rank) || (Number(b.value)-Number(a.value)); });
   }
   function pollenStatus(day){
-    var strong = day && day.strong && day.strong.length;
-    var medium = day && day.elevated && day.elevated.length;
+    var items = filteredPollenItems(day);
+    var strong = items.filter(function(p){ return p && p.level === 'high'; }).length;
+    var medium = items.filter(function(p){ return p && p.level === 'medium'; }).length;
     if(strong) return {key:'high', title:'Pollen stark', state:'Stark'};
     if(medium) return {key:'medium', title:'Pollen mittel', state:'Mittel'};
     return {key:'none', title:'Pollen ruhig', state:'Ruhig'};
@@ -77,14 +106,16 @@
     var day = todayPollen(data);
     if(!day) return 'Pollen werden geladen';
     var active = allActivePollen(day);
-    if(day.strong && day.strong.length) return 'Pollen stark · '+active.length+' Arten';
-    if(day.elevated && day.elevated.length) return 'Pollen mittel · '+active.length+' Arten';
-    return 'Pollen ruhig';
+    var status = pollenStatus(day);
+    var prefix = readPollenFocus().length ? 'Deine Pollen' : 'Pollen';
+    if(status.key === 'high') return prefix + ' stark · '+active.length+' Arten';
+    if(status.key === 'medium') return prefix + ' mittel · '+active.length+' Arten';
+    return prefix + ' ruhig';
   }
   function pollenSubline(data){
     var active = allActivePollen(todayPollen(data)).slice(0,3);
     if(active.length) return active.map(function(x){ return x.name + ' ' + (x.levelLabel || levelLabel(x.level)); }).join(', ');
-    return '7-Tage-Ausblick';
+    return readPollenFocus().length ? 'keine deiner Arten aktiv' : '7-Tage-Ausblick';
   }
   function weatherSummary(data){
     var w = data && data.weather;
@@ -133,7 +164,7 @@
     }
     if(s.pollenEnabled || s.pollenAlertsEnabled){
       var day = todayPollen(data);
-      var hasStrong = day && day.strong && day.strong.length;
+      var hasStrong = pollenStatus(day).key === 'high';
       html += '<button class="change-health-pill '+(hasStrong?'is-warning':'')+'" type="button" onclick="ChangeWeatherCard.openForecast(\'pollen\')"><span>🌿</span><span><strong>'+esc(pollenSummary(data))+'</strong><small>'+esc(pollenSubline(data))+'</small></span></button>';
     }
     return html;
@@ -186,7 +217,7 @@
     }).join('') + '</div></section>';
   }
   function pollenScore(day){
-    var items = day && day.items || [];
+    var items = filteredPollenItems(day);
     if(!items.length) return 0;
     var total = items.reduce(function(sum,p){ return sum + Math.min(100, Math.max(0, Number(p.value) || 0)); }, 0);
     return Math.round(Math.min(100, total / Math.max(1, items.length) * 1.6));
@@ -212,7 +243,7 @@
   }
   function pollenInsightText(day){
     var active = allActivePollen(day);
-    if(!active.length) return 'Heute sind keine relevanten Pollenwerte sichtbar.';
+    if(!active.length) return readPollenFocus().length ? 'Bei deinem Allergieprofil ist heute kaum Belastung sichtbar.' : 'Heute sind keine relevanten Pollenwerte sichtbar.';
     var top = active[0];
     if(top && top.key === 'grass_pollen') return 'Gräser werden von der Gratis-API als Sammelwert geliefert. Roggen und einzelne Grasarten sind darin nicht getrennt enthalten.';
     return 'Haupttreiber heute: ' + top.name + ' mit Belastung ' + (top.levelLabel || levelLabel(top.level)) + '.';
@@ -228,7 +259,8 @@
     var items = day && day.items || [];
     if(!items.length) return '<div class="change-pollen-empty">Keine Einzelwerte geladen.</div>';
     return '<div class="change-pollen-chips">' + items.map(function(p){
-      return '<span class="change-pollen-chip '+esc(p.level || 'none')+'">'+esc(p.name)+' · '+esc(p.levelLabel || levelLabel(p.level))+' · '+esc(p.value)+'</span>';
+      var focus = hasPollenFocus(p.key);
+      return '<button type="button" class="change-pollen-chip '+esc(p.level || 'none')+'" data-pollen-focus="'+esc(p.key)+'">'+(focus ? '★ ' : '')+esc(p.name)+' · '+esc(p.levelLabel || levelLabel(p.level))+' · '+esc(p.value)+'</button>';
     }).join('') + '</div>';
   }
   function pollenAdviceHtml(forecast){
@@ -238,6 +270,11 @@
     var peakText = peak ? fmtDay(peak.date) + ' · ' + pollenScore(peak) + '%' : 'nicht verfügbar';
     var quietText = quiet ? fmtDay(quiet.date) + ' · ' + pollenScore(quiet) + '%' : 'nicht verfügbar';
     return '<div class="change-pollen-next none"><div class="change-pollen-next-icon">🧭</div><div class="change-pollen-next-main"><strong>Ausblick & Empfehlung</strong><span>'+esc(trend)+' Peak: '+esc(peakText)+'. Ruhigster Tag: '+esc(quietText)+'.</span></div></div>';
+  }
+  function pollenFocusHintHtml(){
+    var focus = readPollenFocus();
+    if(!focus.length) return '<div class="change-feature-note">Tippe auf eine Pollenart, um sie als Allergieprofil zu markieren. Danach bewertet Dashboard und Index nur diese Arten.</div>';
+    return '<div class="change-feature-note">Allergieprofil aktiv: '+focus.length+' Pollenart(en). Markierte Arten erkennst du am Stern. Erneut antippen entfernt sie.</div>';
   }
   function pollenPanelRow(day){
     var status = pollenStatus(day);
@@ -257,6 +294,7 @@
       + pollenAdviceHtml(forecast)
       + '<div class="change-pollen-section-title">Heute nach Pollenart · '+esc(locationHint(loc))+'</div>'
       + pollenChipsHtml(today)
+      + pollenFocusHintHtml()
       + '<div class="change-pollen-section-title">7-Tage-Ausblick</div>'
       + '<div class="change-pollen-list">'+forecast.map(pollenPanelRow).join('')+'</div>'
       + '<div class="change-feature-note">Kostenlose Datenquelle: Open-Meteo CAMS Europe. Einzelne Gräserarten werden dort nicht getrennt ausgewiesen.</div>'
@@ -314,9 +352,20 @@
       try{ if(typeof window.updateBellIndicator === 'function') window.updateBellIndicator(); }catch(e){}
     }catch(e){ if(typeof toast === 'function') toast(e.message || 'Wetterdaten konnten nicht geladen werden','err'); }
   }
+  function installPollenFocusHandler(){
+    if(focusHandlerInstalled) return;
+    focusHandlerInstalled = true;
+    document.addEventListener('click', function(ev){
+      var target = ev.target && ev.target.closest ? ev.target.closest('[data-pollen-focus]') : null;
+      if(!target) return;
+      ev.preventDefault();
+      togglePollenFocus(target.getAttribute('data-pollen-focus'));
+    });
+  }
   function installDashboardHook(){
     if(installed) return;
     installed = true;
+    installPollenFocusHandler();
     var original = window.buildDashCards;
     window.buildDashCards = function(){
       var result;
@@ -345,6 +394,7 @@
     openPollenForecast: function(view){ return openForecast('pollen', {forceRefresh:false, view:view || 'all'}); },
     refreshForecast: refreshForecast,
     setHourlyRange: setHourlyRange,
+    togglePollenFocus: togglePollenFocus,
     installDashboardHook: installDashboardHook
   };
 
