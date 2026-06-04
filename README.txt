@@ -1,16 +1,17 @@
-Change App · Pollen Premium Style · Version 0.1.0035
+Change App · Pollen Premium Style · Version 0.1.0036
 
 Enthaltene Änderungen:
-- index.html
 - features/pollen/pollenView.js
 - features/pollen/pollenView.css
+- features/weather/pollenSymptoms.js
 - features/settings/settingsPanel.js
+- app.js
 - CLAUDE.md
 - README.txt
 
 Anpassungen in diesem Update:
-- Globales Hell-/Dunkelmodus-Symbol aus der Kopfzeile entfernt
-- Theme bleibt über Einstellungen → App → Darstellung steuerbar
-- Pollen-Desktop-Button Allergieprofil oben rechts entfernt
-- Mobile Pollen-Struktur bleibt erhalten
-- Sichtbare App-Version auf 0.1.0035 erhöht und in CLAUDE.md dokumentiert
+- Mobile Pollen Layout weiter an App-Design angepasst
+- Allergieprofil mobil flacher und ruhiger
+- 7-Tage-Ausblick mobil bündiger als Feed
+- Hellmode für Pollen lesbarer gemacht
+- Sichtbare App-Version auf 0.1.0036 erhöht und in CLAUDE.md dokumentiert
