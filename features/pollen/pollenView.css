@@ -483,3 +483,120 @@ body.neo-pollen-shell #content{
 #pollen-view .change-symptom-row[data-symptom-row="eyes"] .change-symptom-icon{color:#e2c67c}
 #pollen-view .change-symptom-row[data-symptom-row="nose"] .change-symptom-icon{color:#ec93ab}
 #pollen-view .change-symptom-row[data-symptom-row="breath"] .change-symptom-icon{color:#ef7d85}
+
+/* v0.1.0021 symptoms + forecast alignment */
+#pollen-view .change-symptom-card{
+  display:grid;
+  gap:14px;
+}
+#pollen-view .change-symptom-insight{
+  display:grid;
+  grid-template-columns:34px minmax(0,1fr);
+  gap:12px;
+  align-items:center;
+  padding:12px 14px;
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:16px;
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.022));
+  color:rgba(244,247,244,.72);
+}
+#pollen-view .change-symptom-insight-icon{
+  width:28px;
+  height:28px;
+  border-radius:12px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  color:#5bde7b;
+  background:rgba(74,222,128,.10);
+}
+#pollen-view .change-symptom-insight-icon svg{
+  width:17px;
+  height:17px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+#pollen-view .change-symptom-insight strong{
+  display:block;
+  font-size:13px;
+  font-weight:900;
+  color:#f4f7f4;
+  letter-spacing:-.01em;
+}
+#pollen-view .change-symptom-insight span{
+  display:block;
+  margin-top:3px;
+  font-size:12px;
+  font-weight:700;
+  line-height:1.35;
+  color:rgba(244,247,244,.56);
+}
+#pollen-view .change-symptom-insight.strong{
+  border-color:rgba(74,222,128,.20);
+  background:linear-gradient(180deg,rgba(74,222,128,.09),rgba(255,255,255,.025));
+}
+#pollen-view .change-symptom-insight.empty .change-symptom-insight-icon{
+  color:#f2b331;
+  background:rgba(242,179,49,.10);
+}
+#pollen-view .change-symptom-body{
+  padding-top:0;
+}
+#pollen-view .change-symptom-list{
+  gap:9px;
+}
+#pollen-view .change-symptom-row{
+  min-height:54px;
+  padding:9px 12px;
+  border-radius:14px;
+}
+#pollen-view .change-symptom-level{
+  height:34px;
+  padding:0 14px;
+  font-size:11px;
+}
+#pollen-view .change-symptom-note-wrap{
+  margin-top:2px;
+}
+#pollen-view .change-symptom-note{
+  min-height:116px;
+}
+#pollen-view .pollen-neo-forecast-list{
+  border-radius:22px;
+}
+#pollen-view .pollen-neo-forecast-row{
+  min-height:74px;
+  grid-template-columns:18px 132px minmax(0,1fr) 150px;
+  gap:14px;
+  padding:12px 18px;
+}
+#pollen-view .pollen-neo-forecast-date strong{
+  font-size:14px;
+  letter-spacing:-.01em;
+}
+#pollen-view .pollen-neo-forecast-date span,
+#pollen-view .pollen-neo-forecast-main span{
+  font-size:11px;
+}
+#pollen-view .pollen-neo-forecast-main strong{
+  font-size:15px;
+  letter-spacing:-.01em;
+}
+#pollen-view .pollen-neo-bars{
+  gap:7px;
+}
+#pollen-view .pollen-neo-bars span{
+  width:18px;
+  height:5px;
+}
+@media (max-width: 900px){
+  #pollen-view .pollen-neo-forecast-row{
+    grid-template-columns:16px 110px minmax(0,1fr);
+  }
+  #pollen-view .pollen-neo-bars{
+    grid-column:3;
+  }
+}

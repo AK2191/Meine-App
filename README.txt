@@ -1,4 +1,4 @@
-Change App · Pollen Premium Style · Version 0.1.0020
+Change App · Pollen Premium Style · Version 0.1.0021
 
 Enthaltene Änderungen:
 - features/pollen/pollenView.js
@@ -9,8 +9,9 @@ Enthaltene Änderungen:
 - README.txt
 
 Anpassungen in diesem Update:
-- Eigenen Icon-Pass für Pollen umgesetzt
-- Pollen-Icons neu aufgebaut und besser unterscheidbar gemacht
-- Symptom-Icons neu aufgebaut und im Stil vereinheitlicht
-- Icon-Größe, Gewichtung und ruhiger Premium-Look verbessert
-- Sichtbare App-Version auf 0.1.0020 erhöht und in CLAUDE.md dokumentiert
+- Auswertung in Symptome heute wieder eingebaut
+- Auswertung optisch an den neuen Pollen-Stil angepasst
+- Symptome-heute-Kachel kompakter und ruhiger ausgerichtet
+- 7-Tage-Ausblick feiner ausgerichtet
+- Keine Speicher- oder Sync-Toast-Meldungen bei Symptom-Klicks
+- Sichtbare App-Version auf 0.1.0021 erhöht und in CLAUDE.md dokumentiert
