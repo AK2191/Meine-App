@@ -2595,3 +2595,9 @@ body.has-notifications #pollen-view .pollen-neo-header-notify::after,
     min-width:7px!important;
   }
 }
+
+
+/* v0.1.0035 header cleanup */
+@media (min-width: 761px){
+  #pollen-view .pollen-neo-header-settings{display:none!important;}
+}

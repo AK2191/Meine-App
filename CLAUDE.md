@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0034 und Pollen-Mobile-App-Layout
+> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0035 und Header-Bereinigung
 
 ---
 
@@ -98,7 +98,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0034`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0035`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -769,10 +769,9 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Keine Änderung an Login, Firebase-Auto-Start, Kalenderlogik oder Datenmodell.
 
 
-## Version 0.1.0034
-- Die sichtbare App-Version wurde auf `0.1.0034` erhöht.
-- Pollen hat jetzt ausdrücklich zwei eigenständige Layouts: Desktop-Version und Mobile-Version.
-- Die Mobile-Version orientiert sich an einer echten Handy-App-Struktur: kompakter Header, rechtsbündiges Allergieprofil, schlanke Heute-Karte, horizontales Allergieprofil, kompakte Symptome inklusive Notiz und dichter 7-Tage-Feed.
-- Auf Mobile wird keine zweite lokale Benachrichtigungsglocke im Pollen-Header angezeigt; die globale Glocke der App bleibt maßgeblich.
-- In der unteren mobilen Navigation bleibt die bestehende Reihenfolge erhalten: Dashboard, Kalender, Challenges, Pollen. Es wird keine Einstellungen-Kachel für Pollen ergänzt.
-- Keine Änderung an Login, Firebase-Auto-Start, Kalenderlogik oder Push-Permission-Dialogen.
+## Version 0.1.0035
+- Die sichtbare App-Version wurde auf `0.1.0035` erhöht.
+- Der globale Hell-/Dunkelmodus-Button wurde aus der Kopfzeile entfernt, weil die Darstellung jetzt zentral unter `Einstellungen → App → Darstellung` gesteuert wird.
+- Im Pollen-Desktop-Layout wurde der obere Button `Allergieprofil` entfernt; das Allergieprofil bleibt als Inhalt auf der Seite sichtbar.
+- Die Pollen-Mobile- und Desktop-Versionen bleiben getrennt dokumentiert und werden weiterhin getrennt über responsive Regeln geführt.
+- Keine Änderung an Login, Auto-Start, Firebase-Start, Kalenderlogik oder Push-Dialogen.
