@@ -677,7 +677,7 @@ function bootMainApp(){
 /* MAIN VIEW CONTROLLER */
 function setMainView(v){
   currentMainView=v;
-  const views=['dashboard','calendar'];
+  const views=['dashboard','calendar','challenges','pollen'];
   views.forEach(vv=>{
     const el=document.getElementById(vv==='calendar'?'cal-body':vv+'-view');
     if(el) el.style.display='none';
@@ -692,6 +692,10 @@ function setMainView(v){
     if(v==='challenges'){
       document.getElementById('challenges-view')?.style.setProperty('display','flex');
       renderChallenges?.();
+
+    } else if(v==='pollen'){
+      document.getElementById('pollen-view')?.style.setProperty('display','flex');
+      if(typeof window.renderPollenView === 'function') window.renderPollenView();
 
     } else {
       document.getElementById('dashboard-view').style.display='block';

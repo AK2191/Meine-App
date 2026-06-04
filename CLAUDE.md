@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0009 und Pollen-Symptom-Auswertung
+> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0010 und persönliche Pollen-Benachrichtigungen
 
 ---
 
@@ -98,7 +98,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0009`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0010`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -270,6 +270,7 @@ firebase deploy --only hosting
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
 
+| 2026-06-04 | Version auf `0.1.0010` erhöht; persönliche Pollen-Benachrichtigungen ergänzt. Bei aktivem Pollenalarm nutzt Change gespeicherte Symptom-Muster und aktuelle/morgige Pollenwerte, um Hinweise wie erhöhte Gräserbelastung + frühere Nasensymptome über die bestehende Glocke/Push-Logik anzuzeigen. Kein neuer Push-Dialog, kein Firebase-Auto-Start. | ChatGPT |
 | 2026-06-04 | Version auf `0.1.0009` erhöht; Pollen-Symptom-Auswertung ergänzt. Symptomtage speichern jetzt einen Pollen-Snapshot, damit Change Muster wie erhöhte Gräserbelastung + starke Nasensymptome lokal erkennt und bei aktivem Datenbank-Sync nach Firebase übernimmt. Keine Auto-Starts nach Login. | ChatGPT |
 | 2026-06-04 | Version auf `0.1.0008` erhöht; Pollen-Symptom-Tracker für Niesen, Augen, Nase, Atmung und Notiz ergänzt. Speicherung lokal und bei aktivem Datenbank-Sync zusätzlich in `change_pollen_symptoms` in Firebase. | ChatGPT |
 | 2026-06-02 | Version auf `0.1.0005` erhöht; Termin-Teilen aus dem Friseur-Panel entfernt und in das Kalender-Terminpanel für lokale, synchronisierte und von Google übertragene Termine eingebaut | ChatGPT |
@@ -672,3 +673,17 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - WhatsApp-Terminfreigabe öffnet bevorzugt direkt die WhatsApp-App per Deep-Link.
 - Fallback auf wa.me nur wenn keine App verfügbar ist.
 - ICS-Datei wird weiterhin automatisch erzeugt und bereitgestellt.
+
+
+## Persönliche Pollen-Benachrichtigungen
+- Die bestehende Benachrichtigungslogik in `core/weather/weatherRules.js` darf Hinweise aus `features/weather/pollenSymptoms.js` einbeziehen.
+- Es wird kein neuer Push-Dialog gestartet und kein Firebase-Auto-Start ausgelöst.
+- Hinweise erscheinen nur, wenn Pollenalarme aktiv sind und lokale Symptom-Muster ausreichend Daten haben.
+
+
+## Version 0.1.0011
+- Pollen ist ein eigener Hauptreiter nach Challenges.
+- Dashboard bleibt als kompakte Zusammenfassung erhalten.
+- Große Pollenbereiche wie Allergieprofil, Symptome, Auswertung, Peak, Trend und 7-Tage-Ausblick liegen im Pollen-Reiter.
+- Unnötige erklärende Infotexte zur Datenquelle, zum Antippen des Allergieprofils und zum Firebase-Sync wurden aus der UI entfernt.
+- FAB bleibt weiterhin nur im Kalender sichtbar.

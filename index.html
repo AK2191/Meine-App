@@ -50,6 +50,7 @@
   <link rel="stylesheet" href="./features/settings/settingsPanel.css">
   <link rel="stylesheet" href="./features/challenges/challenges-mobile.css">
   <link rel="stylesheet" href="./features/weather/weatherCard.css">
+  <link rel="stylesheet" href="./features/pollen/pollenView.css">
   <link rel="stylesheet" href="./features/vacation/vacationPanel.css">
   <link rel="stylesheet" href="./features/friseur/friseur.css">
   <link rel="stylesheet" href="./features/birthdays/birthdays.css">
@@ -162,6 +163,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/></svg>
           Challenges
         </button>
+        <button class="h-tab" id="htab-pollen" onclick="setMainView('pollen')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22c4-4 7-8 7-13a7 7 0 0 0-14 0c0 5 3 9 7 13z"/><path d="M12 14c-2-2-3-4-3-7"/><path d="M12 14c2-2 3-4 3-7"/></svg>
+          Pollen
+        </button>
       </div>
 
       <!-- Cal controls (only shown in calendar) -->
@@ -252,6 +257,17 @@
         </div>
       </div>
 
+      <!-- POLLEN -->
+      <div id="pollen-view" style="display:none;flex:1;overflow:hidden;flex-direction:column">
+        <div class="list-header">
+          <div>
+            <div class="list-title">Pollen</div>
+            <div class="pollen-view-sub">Allergieprofil, Symptome und persönlicher Ausblick</div>
+          </div>
+        </div>
+        <div id="pollen-view-body" class="pollen-view-body"></div>
+      </div>
+
     </div><!-- /content -->
 
     <!-- Bottom Nav -->
@@ -268,6 +284,10 @@
         <button class="bnav-item" id="bnav-challenges" onclick="setMainView('challenges')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/></svg>
           <span class="bnav-label">Challenges</span>
+        </button>
+        <button class="bnav-item" id="bnav-pollen" onclick="setMainView('pollen')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22c4-4 7-8 7-13a7 7 0 0 0-14 0c0 5 3 9 7 13z"/><path d="M12 14c-2-2-3-4-3-7"/><path d="M12 14c2-2 3-4 3-7"/></svg>
+          <span class="bnav-label">Pollen</span>
         </button>
       </div>
     </div>
@@ -361,6 +381,7 @@
   <script src="./features/calendar/calendar-logic.js"></script>
   <script src="./features/weather/pollenSymptoms.js"></script>
   <script src="./features/weather/weatherCard.js"></script>
+  <script src="./features/pollen/pollenView.js"></script>
   <script src="./features/vacation/vacationPanel.js"></script>
   <script src="./features/friseur/friseur.js"></script>
   <script src="./features/birthdays/birthdays.js"></script>

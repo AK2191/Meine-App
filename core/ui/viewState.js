@@ -3,7 +3,7 @@
 
   var current = '';
   function normalize(view){
-    return ['dashboard','calendar','challenges'].indexOf(view) >= 0 ? view : 'dashboard';
+    return ['dashboard','calendar','challenges','pollen'].indexOf(view) >= 0 ? view : 'dashboard';
   }
   function apply(view){
     current = normalize(view || current || (location.hash || '').replace('#/','').replace('#','') || 'dashboard');
@@ -11,6 +11,7 @@
       document.body.classList.toggle('change-view-dashboard', current === 'dashboard');
       document.body.classList.toggle('change-view-calendar', current === 'calendar');
       document.body.classList.toggle('change-view-challenges', current === 'challenges');
+      document.body.classList.toggle('change-view-pollen', current === 'pollen');
     }
     var fab = document.getElementById('fab');
     if(fab) fab.style.display = current === 'calendar' ? 'flex' : 'none';

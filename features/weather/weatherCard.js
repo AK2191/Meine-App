@@ -165,7 +165,7 @@
     if(s.pollenEnabled || s.pollenAlertsEnabled){
       var day = todayPollen(data);
       var hasStrong = pollenStatus(day).key === 'high';
-      html += '<button class="change-health-pill '+(hasStrong?'is-warning':'')+'" type="button" onclick="ChangeWeatherCard.openForecast(\'pollen\')"><span>🌿</span><span><strong>'+esc(pollenSummary(data))+'</strong><small>'+esc(pollenSubline(data))+'</small></span></button>';
+      html += '<button class="change-health-pill '+(hasStrong?'is-warning':'')+'" type="button" onclick="setMainView(\'pollen\')"><span>🌿</span><span><strong>'+esc(pollenSummary(data))+'</strong><small>'+esc(pollenSubline(data))+'</small></span></button>';
     }
     return html;
   }
@@ -292,11 +292,7 @@
     var quietText = quiet ? fmtDay(quiet.date) + ' · ' + pollenScore(quiet) + '%' : 'nicht verfügbar';
     return '<div class="change-pollen-next none"><div class="change-pollen-next-icon">🧭</div><div class="change-pollen-next-main"><strong>Ausblick & Empfehlung</strong><span>'+esc(trend)+' Peak: '+esc(peakText)+'. Ruhigster Tag: '+esc(quietText)+'.</span></div></div>';
   }
-  function pollenFocusHintHtml(){
-    var focus = readPollenFocus();
-    if(!focus.length) return '<div class="change-feature-note">Tippe auf eine Pollenart, um sie als Allergieprofil zu markieren. Danach bewertet Dashboard und Index nur diese Arten.</div>';
-    return '<div class="change-feature-note">Allergieprofil aktiv: '+focus.length+' Pollenart(en). Markierte Arten erkennst du am Stern. Erneut antippen entfernt sie.</div>';
-  }
+  function pollenFocusHintHtml(){ return ''; }
   function pollenPanelRow(day){
     var status = pollenStatus(day);
     var diff = dayDiff(day.date);
@@ -317,7 +313,6 @@
       + pollenFocusHintHtml()
       + '<div class="change-pollen-section-title">7-Tage-Ausblick</div>'
       + '<div class="change-pollen-list">'+forecast.map(pollenPanelRow).join('')+'</div>'
-      + '<div class="change-feature-note">Kostenlose Datenquelle: Open-Meteo CAMS Europe. Einzelne Gräserarten werden dort nicht getrennt ausgewiesen.</div>'
       + '</div>';
   }
   async function getData(force){
@@ -405,6 +400,23 @@
     setTimeout(updateHero, 700);
   }
 
+  async function renderPollenInto(container){
+    container = typeof container === 'string' ? document.getElementById(container) : container;
+    if(!container) return;
+    container.innerHTML = '<div class="change-pollen-panel"><div class="change-pollen-empty">Pollen werden geladen…</div></div>';
+    try{
+      var s = settings();
+      if(!(s.pollenEnabled || s.pollenAlertsEnabled)) Store.writeSettings({pollenEnabled:true});
+      if(Store && !Store.getLocation()) await Store.requestLocation();
+      var data = await getData(true);
+      updateHero();
+      var loc = Store && Store.getLocation ? Store.getLocation() : null;
+      container.innerHTML = pollenForecastHtml(data, 'page', loc);
+    }catch(e){
+      container.innerHTML = '<div class="change-pollen-panel"><div class="change-pollen-empty">Pollen konnten nicht geladen werden.<br><span>'+esc(e.message || e || 'Bitte später erneut versuchen.')+'</span></div></div>';
+    }
+  }
+
   window.ChangeWeatherCard = {
     update: updateHero,
     refresh: refresh,
@@ -415,6 +427,7 @@
     refreshForecast: refreshForecast,
     setHourlyRange: setHourlyRange,
     togglePollenFocus: togglePollenFocus,
+    renderPollenInto: renderPollenInto,
     installDashboardHook: installDashboardHook
   };
 

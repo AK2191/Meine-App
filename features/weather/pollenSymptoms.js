@@ -239,7 +239,7 @@
       var value = rec.symptoms && rec.symptoms[field.key] != null ? rec.symptoms[field.key] : 0;
       return '<div class="change-symptom-row"><div class="change-symptom-label"><span>'+esc(field.icon)+'</span><strong>'+esc(field.label)+'</strong></div><div class="change-symptom-options">'+levelButtons(field.key, value, key)+'</div></div>';
     }).join('');
-    var syncText = sync ? 'Firebase-Sync aktiv: wird beim Speichern mit deiner Anmeldung synchronisiert.' : 'Lokal gespeichert. Firebase erst bei aktivem Datenbank-Sync.';
+    var syncText = sync ? '' : 'Lokal gespeichert. Firebase erst bei aktivem Datenbank-Sync.';
     return '<div class="change-symptom-card" data-symptom-card="'+esc(key)+'">'
       + '<div class="change-symptom-head"><div><strong>🤧 Symptome heute</strong><span>'+esc(statusText(rec))+'</span></div><small>'+esc(syncText)+'</small></div>'
       + insightHtml()
@@ -287,6 +287,51 @@
     });
   }
 
+
+  function pollenItemFor(day, key){
+    var items = day && day.items || [];
+    for(var i=0;i<items.length;i++){
+      if(String(items[i].key || items[i].name) === String(key)) return items[i];
+    }
+    return null;
+  }
+  function pollenLevelText(item){
+    if(!item) return 'nicht auffällig';
+    if(item.level === 'high') return 'hoch';
+    if(item.level === 'medium') return 'mittel';
+    if(item.level === 'low') return 'niedrig';
+    return 'ruhig';
+  }
+  function notificationItems(forecast){
+    forecast = Array.isArray(forecast) ? forecast : latestForecast;
+    var result = strongestCorrelation();
+    if(!result || !result.best || result.records.length < 3) return [];
+    if(!forecast || !forecast.length) return [];
+    var target = forecast[1] || forecast[0];
+    var b = result.best;
+    var item = pollenItemFor(target, b.key);
+    if(!item) return [];
+    var value = Number(item.value || 0);
+    var relevant = item.level === 'medium' || item.level === 'high' || value >= 30;
+    if(!relevant) return [];
+    var date = target.date || todayKey();
+    var urgency = item.level === 'high' || b.strongHits ? 'warn' : 'info';
+    var label = date === todayKey() ? 'Heute' : 'Morgen';
+    return [{
+      id: 'pollen-symptom:'+date+':'+String(b.key).replace(/[^a-z0-9_-]/gi,'_')+':'+String(b.symptomKey || ''),
+      kind: 'pollen-symptom',
+      title: b.name + ' kann dich belasten',
+      body: b.name + ' ist ' + pollenLevelText(item) + '. Bei ähnlicher Belastung hattest du vor allem ' + b.symptomLabel + '.',
+      date: date,
+      diff: date === todayKey() ? 0 : 1,
+      label: label,
+      urgency: urgency,
+      icon: '🤧',
+      priority: 13,
+      action: {type:'settings', tab:'sync'}
+    }];
+  }
+
   window.ChangePollenSymptoms = {
     panelHtml: panelHtml,
     get: get,
@@ -295,6 +340,7 @@
     loadFromFirebase: loadFromFirebase,
     setForecast: setForecast,
     insightHtml: insightHtml,
+    notificationItems: notificationItems,
     install: install
   };
 

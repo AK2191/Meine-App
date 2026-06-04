@@ -356,7 +356,7 @@
   const $$ = s => Array.from(document.querySelectorAll(s));
 
   function showView(v){
-    [['dashboard','#dashboard-view'],['calendar','#cal-body'],['challenges','#challenges-view']].forEach(([name,sel])=>{
+    [['dashboard','#dashboard-view'],['calendar','#cal-body'],['challenges','#challenges-view'],['pollen','#pollen-view']].forEach(([name,sel])=>{
       const el=$(sel); if(!el) return;
       if(name===v){ el.style.display='flex'; el.classList.remove('route-hidden'); }
       else { el.style.display='none'; el.classList.add('route-hidden'); }
@@ -368,9 +368,10 @@
   }
 
   window.setMainView = function(v, fromRoute){
-    if(!['dashboard','calendar','challenges'].includes(v)) v='dashboard';
+    if(!['dashboard','calendar','challenges','pollen'].includes(v)) v='dashboard';
     window.currentMainView = v; showView(v);
     var _fab=document.getElementById('fab');if(_fab)_fab.style.display=v==='calendar'?'flex':'none';
+    if(v==='pollen' && typeof window.renderPollenView==='function') window.renderPollenView();
     if(v==='dashboard'  && typeof window.buildDashboard==='function')   window.buildDashboard();
     if(v==='calendar'   && typeof window.renderCalendar==='function')   window.renderCalendar();
     if(v==='challenges' && typeof window.renderChallenges==='function') window.renderChallenges();

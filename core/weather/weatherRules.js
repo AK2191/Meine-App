@@ -72,6 +72,12 @@
         action: {type:'settings', tab:'sync'}
       });
     }
+
+    if(settings.pollenAlertsEnabled && window.ChangePollenSymptoms && typeof window.ChangePollenSymptoms.notificationItems === 'function'){
+      try{
+        notes = notes.concat(window.ChangePollenSymptoms.notificationItems((data.pollen && data.pollen.forecast) || []));
+      }catch(e){}
+    }
     return notes;
   }
 
