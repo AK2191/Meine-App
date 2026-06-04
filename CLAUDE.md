@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0032 und eigenständiges Pollen-Mobile-Layout
+> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0033 und Pollen-Mobile-App-Layout
 
 ---
 
@@ -98,7 +98,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0032`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0033`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -762,9 +762,17 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 
 ## Version 0.1.0032
 - Die sichtbare App-Version wurde auf `0.1.0032` erhöht.
-- Der Pollen-Reiter nutzt auf mobilen Geräten ein eigenständiges App-Layout statt einer verkleinerten Desktop-Ansicht.
-- Mobile wurde strukturell beruhigt: kompakter Header, kleinere Statuskarte, horizontales Allergieprofil, kompakter Symptome-Tracker und reduzierter 7-Tage-Feed.
-- Die Glocke im Pollen-Header zeigt weiterhin die Anzahl der globalen Benachrichtigungen und öffnet die globale Benachrichtigungsübersicht.
-- Das Wording des kontextuellen Buttons bleibt `Allergieprofil`.
-- Das Desktop-Layout bleibt unverändert.
-- Keine Änderung an Login, Datenbank-Sync, Firebase-Start, Push-Dialogen oder Kalenderlogik.
+- Die Glocke im Pollen-Header zeigt jetzt die Anzahl der globalen Benachrichtigungen wie die normale App-Glocke.
+- Glocke und kontextueller Button wurden im Pollen-Header auf eine einheitliche Höhe gebracht.
+- Das Wording `Pollen-Settings` wurde zu `Allergieprofil` geändert.
+- Die Glocke öffnet weiterhin die globale Benachrichtigungsübersicht. Es wird kein automatischer Push-Dialog ausgelöst.
+- Keine Änderung an Login, Firebase-Auto-Start, Kalenderlogik oder Datenmodell.
+
+
+## Version 0.1.0033
+- Die sichtbare App-Version wurde auf `0.1.0033` erhöht.
+- Pollen hat jetzt ausdrücklich zwei eigenständige Layouts: Desktop-Version und Mobile-Version.
+- Die Mobile-Version orientiert sich an einer echten Handy-App-Struktur: kompakter Header, rechtsbündiges Allergieprofil, schlanke Heute-Karte, horizontales Allergieprofil, kompakte Symptome inklusive Notiz und dichter 7-Tage-Feed.
+- Auf Mobile wird keine zweite lokale Benachrichtigungsglocke im Pollen-Header angezeigt; die globale Glocke der App bleibt maßgeblich.
+- In der unteren mobilen Navigation bleibt die bestehende Reihenfolge erhalten: Dashboard, Kalender, Challenges, Pollen. Es wird keine Einstellungen-Kachel für Pollen ergänzt.
+- Keine Änderung an Login, Firebase-Auto-Start, Kalenderlogik oder Push-Permission-Dialogen.

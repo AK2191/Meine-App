@@ -3,7 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0032';
+  var APP_VERSION = '0.1.0033';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var SELECTED_KEY = 'change_v1_pollen_selected_keys';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
@@ -368,15 +368,25 @@
     }
     var settingsExisting = actions.querySelector('.pollen-neo-header-settings');
     if(settingsExisting){
-      var settingsLabel = settingsExisting.querySelector('span:last-child');
-      if(settingsLabel) settingsLabel.textContent = 'Allergieprofil';
+      settingsExisting.setAttribute('aria-label','Allergieprofil');
+      settingsExisting.title = 'Allergieprofil';
+      var label = settingsExisting.querySelector('.pollen-neo-header-settings-label');
+      if(!label){
+        Array.prototype.slice.call(settingsExisting.childNodes).forEach(function(node){
+          if(node.nodeType === 3 && String(node.textContent || '').trim()){ node.textContent = ''; }
+        });
+        label = document.createElement('span');
+        label.className = 'pollen-neo-header-settings-label';
+        settingsExisting.appendChild(label);
+      }
+      label.textContent = 'Allergieprofil';
     }
     if(!actions.querySelector('.pollen-neo-header-settings')){
       var action = document.createElement('button');
       action.type = 'button';
       action.className = 'pollen-neo-header-settings';
       action.setAttribute('data-pollen-settings','');
-      action.innerHTML = '<span class="pollen-neo-header-settings-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.33 1.82V22a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1.82-.33H2a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-.6 1.65 1.65 0 0 0 .33-1.82V2a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.12.69.31 1 .6.31.29.51.64.6 1H22a2 2 0 1 1 0 4h-.09c-.37.09-.72.29-1 .6-.29.31-.48.64-.51 1z"></path></svg></span><span>Allergieprofil</span>';
+      action.innerHTML = '<span class="pollen-neo-header-settings-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.33 1.82V22a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1.82-.33H2a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-.6 1.65 1.65 0 0 0 .33-1.82V2a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.12.69.31 1 .6.31.29.51.64.6 1H22a2 2 0 1 1 0 4h-.09c-.37.09-.72.29-1 .6-.29.31-.48.64-.51 1z"></path></svg></span><span class="pollen-neo-header-settings-label">Allergieprofil</span>';
       actions.appendChild(action);
     }
     updateHeaderNotificationBadge();
