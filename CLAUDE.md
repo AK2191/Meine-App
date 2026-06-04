@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0045 und einheitliche App-Navigation
+> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0046 und Pollen-/Challenge-Header Feinschliff
 
 ---
 
@@ -85,6 +85,7 @@ Jeder Kalendertag enthält:
 - Ab Version `0.1.0041`: Challenge-Ansicht verwendet den ruhigen Pollen-Stil mit dunklem View-Hintergrund, radialen Akzenten, Premium-Karten, Gruppen-Ziel als Hero-Karte, Punkte-Kalender als volle Kartenzeile und mobilen Kartenabständen wie Pollen. Die Challenge-Logik, Auto-Challenges, Punkte, Sync, Rangliste, Anfeuern, Rückgängig und Heute-zurücksetzen bleiben unverändert.
 - Ab Version `0.1.0043`: Challenge-Ansicht nutzt auf Desktop die gleiche seitliche auswählbare Navigation wie Pollen und auf Mobil die gleiche aktive Bottom-Navigation. Hellmodus ist wieder unterstützt. Der grüne Hintergrundakzent wurde reduziert. Erledigen und Rückgängig zeigen keine Toast-/Banner-Meldung mehr; Anfeuern zeigt weiterhin Banner über die bestehende Anfeuern-Logik.
 - Ab Version `0.1.0045`: Die Navigation wird zentral über `styles/appShell.css` vereinheitlicht. Dashboard, Kalender, Challenges und Pollen nutzen auf Desktop dieselbe seitliche App-Bar und mobil dieselbe Bottom-Bar. Die Kalender-Steuerung bleibt als eigene Kopfleiste sichtbar. Challenges nutzt den Pollen-artigen Header; „Heute zurücksetzen“ bleibt eine Header-Aktion.
+- Ab Version `0.1.0046`: Der Challenge-Kopf wird wie bei Pollen ohne breite Hintergrundleiste dargestellt. „Heute zurücksetzen“ bleibt rechts als kleine Aktion im Kopfbereich. Layout und Logik bleiben unverändert.
 
 
 ---
@@ -101,7 +102,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0045`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0046`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -272,6 +273,8 @@ firebase deploy --only hosting
 
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
+
+| 2026-06-04 | Version auf `0.1.0046` erhöht; Pollen-Hero zeigt keine doppelte Gräser-Kachel mehr. Der 7-Tage-Ausblick zeigt bei Mehrfachauswahl die ausgewählten Pollen als klare Chips pro Tag. Challenge-Kopf wurde an die Pollen-Kopfzeile angeglichen; „Heute zurücksetzen“ bleibt rechts als kleine Aktion. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik. | ChatGPT |
 
 | 2026-06-04 | Version auf `0.1.0045` erhöht; gemeinsame App-Navigation ergänzt. Dashboard, Kalender, Challenges und Pollen nutzen auf Desktop dieselbe seitliche App-Bar und mobil dieselbe Bottom-Bar. Challenge-Header und „Heute zurücksetzen“ wurden an Pollen angeglichen. Kalender-Steuerung bleibt sichtbar. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten oder Challenge-Logik. | ChatGPT |
 
@@ -834,3 +837,11 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Challenges-Header wurde an Pollen angepasst; „Heute zurücksetzen“ sitzt als ruhige Header-Aktion statt als störender Balken.
 - Die Kalender-Steuerung bleibt im Desktop-Sidebar-Modus als eigene Kopfleiste bedienbar.
 - Keine Änderung an Challenge-Datenmodell, Auto-Challenges, Punkte-Logik, Firebase, Datenbank-Sync, Push-Permission-Dialog, Login oder Kalenderdaten.
+
+
+## Version 0.1.0046
+- Die sichtbare App-Version wurde auf `0.1.0046` erhöht.
+- Pollen: Die doppelte Belastungs-Kachel unter dem Hauptschriftzug wurde entfernt; der Hauptschriftzug reicht als Status.
+- Pollen: Der 7-Tage-Ausblick zeigt bei mehreren ausgewählten Allergieprofilen alle ausgewählten Pollen pro Tag als Chips mit Prozentwerten, damit nicht nur der höchste Wert sichtbar ist.
+- Challenges: Die Kopfzeile wurde an Pollen angeglichen; keine breite Hintergrundleiste mehr, „Heute zurücksetzen“ bleibt als kleine Aktion rechts.
+- Keine Änderung an Pollen-Datenlogik, Wetter-API, Challenge-Logik, Firebase, Sync, Push, Login oder Kalenderlogik.

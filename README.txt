@@ -1,8 +1,8 @@
-Change App · Einheitliche Navigation · Version 0.1.0045
+Change App · Einheitliche Navigation · Version 0.1.0046
 
 Enthaltene Änderungen:
 - styles/appShell.css
-- index.html
+- features/pollen/pollenUiPolish.css
 - features/pollen/pollenView.js
 - features/settings/settingsPanel.js
 - CLAUDE.md
@@ -18,4 +18,10 @@ Umsetzung:
 
 Wichtig:
 - Keine Änderung an Challenge-Datenmodell, Auto-Challenge-Generierung, Punkte-Logik, Firebase, Datenbank-Sync, Push, Login oder Kalenderdaten.
-- Sichtbare App-Version auf 0.1.0045 erhöht und in CLAUDE.md dokumentiert.
+- Sichtbare App-Version auf 0.1.0046 erhöht und in CLAUDE.md dokumentiert.
+
+
+v0.1.0046:
+- Pollen-Hero ohne doppelte Gräser-Kachel
+- 7-Tage-Ausblick mit klaren Chips bei Mehrfachauswahl
+- Challenge-Kopfzeile wie Pollen

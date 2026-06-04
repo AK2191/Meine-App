@@ -3,7 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0045';
+  var APP_VERSION = '0.1.0046';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var SELECTED_KEY = 'change_v1_pollen_selected_keys';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
@@ -247,7 +247,6 @@
           + '<div class="pollen-neo-label">Deine Pollen heute</div>'
           + '<div class="pollen-neo-hero-title">'+esc(intensity)+'</div>'
           + '<div class="pollen-neo-subline">'+overallSubline(today, selectedKeys)+'</div>'
-          + relevantLoadHtml(today)
           + '<div class="pollen-neo-cta">↗ '+esc(nextTrend)+'</div>'
         + '</div>'
         + heroArtSvg()
@@ -281,18 +280,28 @@
       + '</div>'
     + '</section>';
   }
+  function forecastItemChips(day){
+    var items = (day && Array.isArray(day.items) ? day.items.slice() : []).filter(Boolean);
+    if(!items.length && day && day.item) items = [day.item];
+    if(!items.length) return '<span class="pollen-neo-forecast-empty">keine Belastung</span>';
+    return '<div class="pollen-neo-forecast-items">' + items.map(function(p){
+      return '<span class="'+esc(p.level || 'none')+'"><strong>'+esc(p.name || 'Pollen')+'</strong><em>'+esc(Math.round(clampNum(p.value)))+' %</em></span>';
+    }).join('') + '</div>';
+  }
   function forecastRow(day){
-    return '<div class="pollen-neo-forecast-row '+esc(day.level || 'none')+'">'
+    var count = day && Array.isArray(day.items) ? day.items.length : 0;
+    var isMulti = count > 1;
+    return '<div class="pollen-neo-forecast-row '+esc(day.level || 'none')+' '+(isMulti ? 'multi' : 'single')+'">'
       + '<div class="pollen-neo-forecast-dot"></div>'
       + '<div class="pollen-neo-forecast-date"><strong>'+esc(fmtDay(day.date))+'</strong><span>'+esc(diffLabel(dayDiff(day.date)))+'</span></div>'
-      + '<div class="pollen-neo-forecast-main"><strong>'+esc(day.title)+' · '+esc(day.score)+'%</strong><span>'+esc(day.summary || (day.item ? day.item.name + ' ' + levelLabel(day.item.level) : 'keine Belastung'))+'</span></div>'
+      + '<div class="pollen-neo-forecast-main"><strong>'+(isMulti ? 'Ausgewählte Pollen' : esc(day.title)+' · '+esc(day.score)+'%')+'</strong>'+(isMulti ? forecastItemChips(day) : '<span>'+esc(day.summary || (day.item ? day.item.name + ' ' + levelLabel(day.item.level) : 'keine Belastung'))+'</span>')+'</div>'
       + '<div class="pollen-neo-bars">'+miniBars(day.score, day.level)+'</div>'
     + '</div>';
   }
   function forecastHtml(forecast, selectedKeys){
     var today = forecast[0] || {};
     var selected = selectedItems(today, selectedKeys);
-    var title = selected.length === 1 ? selected[0].name : 'Auswahl';
+    var title = selected.length === 1 ? selected[0].name : (selected.length ? selected.length + ' Profile' : 'Auswahl');
     var list = selectedForecast(forecast, selectedKeys);
     return '<section class="pollen-neo-section pollen-neo-forecast">'
       + '<div class="pollen-neo-section-head"><div><span>7-Tage-Ausblick – '+esc(String((title || 'Pollen')).toUpperCase())+'</span></div></div>'

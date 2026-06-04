@@ -275,3 +275,69 @@ body.change-theme-light #pollen-view .pollen-neo-profile-card,
     min-height:64px!important;
   }
 }
+
+
+/* v0.1.0046 · Pollen: keine Hero-Dopplung, klarer Mehrfach-Ausblick */
+#pollen-view .pollen-neo-hero-main > .pollen-neo-loadline{
+  display:none!important;
+}
+#pollen-view .pollen-neo-forecast-row.multi .pollen-neo-forecast-main{
+  gap:7px!important;
+}
+#pollen-view .pollen-neo-forecast-items{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:6px;
+  min-width:0;
+}
+#pollen-view .pollen-neo-forecast-items span{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  min-height:24px;
+  padding:4px 8px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.045);
+  color:rgba(244,247,244,.82);
+  font-size:11px;
+  font-weight:850;
+  line-height:1;
+  white-space:nowrap;
+}
+#pollen-view .pollen-neo-forecast-items span.high{color:#ff6555;background:rgba(255,101,85,.10);border-color:rgba(255,101,85,.16)}
+#pollen-view .pollen-neo-forecast-items span.medium{color:#f4b32f;background:rgba(244,179,47,.10);border-color:rgba(244,179,47,.16)}
+#pollen-view .pollen-neo-forecast-items span.low{color:#55d86b;background:rgba(85,216,107,.10);border-color:rgba(85,216,107,.16)}
+#pollen-view .pollen-neo-forecast-items span.none{color:rgba(244,247,244,.54)}
+#pollen-view .pollen-neo-forecast-items em{font-style:normal;font-weight:950;color:inherit}
+#pollen-view .pollen-neo-forecast-empty{font-size:12px;font-weight:750;color:rgba(244,247,244,.52)}
+body.theme-light #pollen-view .pollen-neo-forecast-items span,
+body.change-theme-light #pollen-view .pollen-neo-forecast-items span,
+[data-theme="light"] #pollen-view .pollen-neo-forecast-items span{
+  background:rgba(255,255,255,.74);
+  border-color:rgba(23,35,27,.09);
+  color:#17231b;
+}
+body.theme-light #pollen-view .pollen-neo-forecast-items span.high,
+body.change-theme-light #pollen-view .pollen-neo-forecast-items span.high,
+[data-theme="light"] #pollen-view .pollen-neo-forecast-items span.high{color:#ef3f34;background:rgba(255,93,74,.10);border-color:rgba(255,93,74,.20)}
+body.theme-light #pollen-view .pollen-neo-forecast-items span.medium,
+body.change-theme-light #pollen-view .pollen-neo-forecast-items span.medium,
+[data-theme="light"] #pollen-view .pollen-neo-forecast-items span.medium{color:#c88400;background:rgba(242,179,49,.12);border-color:rgba(242,179,49,.20)}
+body.theme-light #pollen-view .pollen-neo-forecast-items span.low,
+body.change-theme-light #pollen-view .pollen-neo-forecast-items span.low,
+[data-theme="light"] #pollen-view .pollen-neo-forecast-items span.low{color:#18a952;background:rgba(39,202,102,.11);border-color:rgba(39,202,102,.20)}
+@media (max-width:760px){
+  #pollen-view .pollen-neo-forecast-row.multi{
+    grid-template-columns:12px minmax(66px,.46fr) minmax(0,1fr)!important;
+    align-items:flex-start!important;
+  }
+  #pollen-view .pollen-neo-forecast-row.multi .pollen-neo-bars{
+    grid-column:3!important;
+    justify-self:start!important;
+    margin-top:2px!important;
+  }
+  #pollen-view .pollen-neo-forecast-items{gap:5px!important;}
+  #pollen-view .pollen-neo-forecast-items span{font-size:10px!important;padding:4px 7px!important;min-height:22px!important;}
+}

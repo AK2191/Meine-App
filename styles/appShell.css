@@ -572,3 +572,95 @@ body.change-theme-light #challenges-view .list-header .btn{
   border-color:rgba(20,35,24,.10)!important;
   color:#4a574f!important;
 }
+
+
+/* v0.1.0046 · Einheitlicher Reiter-Kopf: Challenges wie Pollen */
+@media (min-width:701px){
+  body.change-view-challenges #challenges-view{
+    max-width:none!important;
+    width:100%!important;
+    margin:0!important;
+    background:transparent!important;
+  }
+  body.change-view-challenges #challenges-view .list-header,
+  body.change-view-challenges #challenges-view .challenge-neo-header{
+    max-width:none!important;
+    width:100%!important;
+    margin:0!important;
+    padding:0 0 18px!important;
+    border:0!important;
+    border-bottom:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:18px!important;
+  }
+  body.change-view-challenges #challenges-view .list-header::before,
+  body.change-view-challenges #challenges-view .list-header::after{
+    display:none!important;
+    content:none!important;
+  }
+  body.change-view-challenges #challenges-view .list-title{
+    font-size:25px!important;
+    line-height:1!important;
+    font-weight:950!important;
+    letter-spacing:-.7px!important;
+    color:#fff!important;
+  }
+  body.change-view-challenges #challenges-view .list-header .btn,
+  body.change-view-challenges #challenges-view .challenge-view-actions .btn{
+    min-height:34px!important;
+    padding:0 14px!important;
+    border-radius:13px!important;
+    border:1px solid rgba(255,255,255,.10)!important;
+    background:rgba(7,12,18,.72)!important;
+    color:rgba(244,247,244,.84)!important;
+    box-shadow:none!important;
+    backdrop-filter:blur(12px)!important;
+  }
+  body.change-view-challenges #challenges-view .challenge-layout{
+    max-width:1320px!important;
+    margin:0 auto!important;
+    padding-top:0!important;
+  }
+  body.change-view-challenges #group-goal-card{
+    margin-top:0!important;
+  }
+}
+@media (max-width:700px){
+  body.change-view-challenges #challenges-view .list-header,
+  body.change-view-challenges #challenges-view .challenge-neo-header{
+    padding:18px 18px 10px!important;
+    background:transparent!important;
+    border:0!important;
+    box-shadow:none!important;
+  }
+}
+[data-theme="light"] body.change-view-challenges #challenges-view .list-header,
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-neo-header,
+body.theme-light.change-view-challenges #challenges-view .list-header,
+body.theme-light.change-view-challenges #challenges-view .challenge-neo-header,
+body.change-theme-light.change-view-challenges #challenges-view .list-header,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-neo-header{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+[data-theme="light"] body.change-view-challenges #challenges-view .list-title,
+body.theme-light.change-view-challenges #challenges-view .list-title,
+body.change-theme-light.change-view-challenges #challenges-view .list-title{
+  color:#142018!important;
+}
+[data-theme="light"] body.change-view-challenges #challenges-view .list-header .btn,
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-view-actions .btn,
+body.theme-light.change-view-challenges #challenges-view .list-header .btn,
+body.theme-light.change-view-challenges #challenges-view .challenge-view-actions .btn,
+body.change-theme-light.change-view-challenges #challenges-view .list-header .btn,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-view-actions .btn{
+  background:rgba(255,255,255,.82)!important;
+  border-color:rgba(20,35,24,.10)!important;
+  color:#4a574f!important;
+}
