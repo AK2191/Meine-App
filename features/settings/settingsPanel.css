@@ -264,3 +264,53 @@
   .change-settings-tab-scroll{width:26px;height:26px;font-size:17px}
   .change-settings-tab-shell .change-settings-tabs{gap:7px}
 }
+
+/* v0.1.0025 · App-Darstellung: System / Hell / Dunkel */
+.change-theme-options{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:9px;
+}
+.change-theme-option{
+  appearance:none;
+  border:1px solid var(--b1);
+  background:var(--s2);
+  color:var(--t2);
+  border-radius:16px;
+  padding:12px 10px;
+  display:grid;
+  gap:4px;
+  text-align:left;
+  cursor:pointer;
+  font-family:var(--font);
+  transition:background .15s ease,border-color .15s ease,transform .15s ease,color .15s ease;
+}
+.change-theme-option:hover{
+  background:var(--s3);
+  color:var(--t1);
+}
+.change-theme-option.active{
+  border-color:rgba(74,222,128,.58);
+  background:linear-gradient(180deg,rgba(74,222,128,.15),rgba(74,222,128,.08));
+  color:var(--t1);
+  box-shadow:0 0 0 1px rgba(74,222,128,.12) inset;
+}
+[data-theme="light"] .change-theme-option.active{
+  border-color:rgba(45,106,79,.38);
+  background:linear-gradient(180deg,rgba(45,106,79,.10),rgba(45,106,79,.05));
+  box-shadow:0 0 0 1px rgba(45,106,79,.08) inset;
+}
+.change-theme-option strong{
+  font-size:12.5px;
+  font-weight:950;
+  letter-spacing:-.02em;
+}
+.change-theme-option span{
+  font-size:10.8px;
+  line-height:1.35;
+  color:var(--t4);
+  font-weight:720;
+}
+@media(max-width:520px){
+  .change-theme-options{grid-template-columns:1fr;}
+}

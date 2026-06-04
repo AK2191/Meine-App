@@ -3126,33 +3126,81 @@ renderCalendar();if(typeof toast==='function')toast('Kalender-Einstellungen gesp
    DARK MODE
 ==== */
 const DM_KEY = 'change_v1_dark_mode';
+const THEME_KEY = 'change_v1_theme'; // system | light | dark
+let changeThemeMediaListenerBound = false;
 
-function applyTheme(dark){
-  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+function normalizedTheme(value){
+  value = String(value || '').toLowerCase();
+  return value === 'light' || value === 'dark' || value === 'system' ? value : 'system';
+}
+function preferredSystemTheme(){
+  try{ return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }catch(e){ return 'light'; }
+}
+function storedThemePreference(){
+  try{
+    const next = localStorage.getItem(THEME_KEY);
+    if(next) return normalizedTheme(next);
+    const legacy = localStorage.getItem(DM_KEY);
+    if(legacy !== null) return legacy === '1' ? 'dark' : 'light';
+  }catch(e){}
+  return 'system';
+}
+function syncThemeIcon(resolved){
   const moon = document.getElementById('dm-moon');
   const sun  = document.getElementById('dm-sun');
-  if(moon) moon.style.display = dark ? 'none' : '';
-  if(sun)  sun.style.display  = dark ? '' : 'none';
+  if(moon) moon.style.display = resolved === 'dark' ? 'none' : '';
+  if(sun)  sun.style.display  = resolved === 'dark' ? '' : 'none';
+}
+function applyThemePreference(preference, persist){
+  const pref = normalizedTheme(preference);
+  const resolved = pref === 'system' ? preferredSystemTheme() : pref;
+  document.documentElement.setAttribute('data-theme', resolved);
+  document.documentElement.setAttribute('data-theme-preference', pref);
+  if(document.body){
+    document.body.classList.remove('theme-system','theme-light','theme-dark');
+    document.body.classList.add('theme-' + pref);
+  }
+  syncThemeIcon(resolved);
+  if(persist){
+    try{ localStorage.setItem(THEME_KEY, pref); }catch(e){}
+    try{ localStorage.setItem(DM_KEY, resolved === 'dark' ? '1' : '0'); }catch(e){}
+  }
+  return {preference:pref, resolved:resolved};
+}
+function bindSystemThemeListener(){
+  if(changeThemeMediaListenerBound || !window.matchMedia) return;
+  changeThemeMediaListenerBound = true;
+  try{
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const onChange = function(){
+      if(storedThemePreference() === 'system') applyThemePreference('system', false);
+    };
+    if(media.addEventListener) media.addEventListener('change', onChange);
+    else if(media.addListener) media.addListener(onChange);
+  }catch(e){}
+}
+function applyTheme(dark){
+  return applyThemePreference(dark ? 'dark' : 'light', true);
 }
 
+window.ChangeTheme = {
+  get:function(){ return storedThemePreference(); },
+  resolved:function(){ return document.documentElement.getAttribute('data-theme') || preferredSystemTheme(); },
+  set:function(value){ return applyThemePreference(value, true); },
+  apply:function(value){ return applyThemePreference(value || storedThemePreference(), false); }
+};
 window.toggleDarkMode = function(){
-  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  const next = !isDark;
-  localStorage.setItem(DM_KEY, next ? '1' : '0');
-  applyTheme(next);
-  // Firebase sync
-  setTimeout(() => window.saveSettingsToFirestore && window.saveSettingsToFirestore(), 300);
+  const resolved = document.documentElement.getAttribute('data-theme') || preferredSystemTheme();
+  const next = resolved === 'dark' ? 'light' : 'dark';
+  applyThemePreference(next, true);
 };
 
 // Init on load
 (function initDark(){
-  const stored = localStorage.getItem(DM_KEY);
-  if(stored !== null){
-    applyTheme(stored === '1');
-  } else {
-    // Systemeinstellung respektieren
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    applyTheme(prefersDark);
+  bindSystemThemeListener();
+  applyThemePreference(storedThemePreference(), false);
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', function(){ applyThemePreference(storedThemePreference(), false); }, {once:true});
   }
 })();
 

@@ -157,6 +157,37 @@
     try{ installed = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches; }catch(e){}
     return installed ? 'Installiert' : 'Nicht installiert';
   }
+  function appThemePreference(){
+    try{ if(window.ChangeTheme && window.ChangeTheme.get) return window.ChangeTheme.get(); }catch(e){}
+    try{
+      var value = localStorage.getItem('change_v1_theme');
+      if(value === 'system' || value === 'light' || value === 'dark') return value;
+      var legacy = localStorage.getItem('change_v1_dark_mode');
+      if(legacy !== null) return legacy === '1' ? 'dark' : 'light';
+    }catch(e){}
+    return 'system';
+  }
+  function appThemeResolved(){
+    try{ if(window.ChangeTheme && window.ChangeTheme.resolved) return window.ChangeTheme.resolved(); }catch(e){}
+    try{ return document.documentElement.getAttribute('data-theme') || 'light'; }catch(e){ return 'light'; }
+  }
+  function setAppTheme(value){
+    value = value === 'light' || value === 'dark' || value === 'system' ? value : 'system';
+    try{ if(window.ChangeTheme && window.ChangeTheme.set) return window.ChangeTheme.set(value); }catch(e){}
+    try{ localStorage.setItem('change_v1_theme', value); }catch(e){}
+    try{
+      var resolved = value === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : (value === 'dark' ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', resolved);
+      document.documentElement.setAttribute('data-theme-preference', value);
+      if(document.body){
+        document.body.classList.remove('theme-system','theme-light','theme-dark');
+        document.body.classList.add('theme-' + value);
+      }
+    }catch(e){}
+  }
+  function themeOptionButton(value, title, subtitle, active){
+    return '<button type="button" class="change-theme-option '+(active===value?'active':'')+'" data-change-theme="'+esc(value)+'"><strong>'+esc(title)+'</strong><span>'+esc(subtitle)+'</span></button>';
+  }
   function weatherHealthStatus(){
     var store = window.ChangeWeatherStore;
     var service = window.ChangeWeatherService;
@@ -453,7 +484,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0024';
+  var APP_VERSION = '0.1.0026';
 
   function appPane(){
     var installed = installedLabel();
@@ -470,6 +501,15 @@
       + '<div class="change-version-simple-head"><div><div class="change-version-simple-label">Version</div><div class="change-version-simple-title">Change</div><div class="change-version-simple-sub">Kalender, Challenges und Sync</div></div><strong>'+esc(APP_VERSION)+'</strong></div>'
       + '<div class="change-version-simple-meta"><span>Installationsstatus</span><strong>'+esc(installed)+'</strong></div>'
       + '</div>';
+    var theme = appThemePreference();
+    var themeLabel = theme === 'system' ? 'SYSTEM' : (theme === 'light' ? 'HELL' : 'DUNKEL');
+    var themeBody = '<div class="change-theme-options">'
+      + themeOptionButton('system','System','Folgt deinem Gerät', theme)
+      + themeOptionButton('light','Hell','Ruhiger heller Look', theme)
+      + themeOptionButton('dark','Dunkel','Aktueller Darkmode', theme)
+      + '</div>'
+      + '<div class="change-feature-note">Aktuell aktiv: '+esc(appThemeResolved()==='dark'?'Dunkel':'Hell')+'. Diese Einstellung gilt global für die App. Pollen unterstützt bereits Hell und Dunkel.</div>';
+    var themeCard = settingsFeatureCard('◐','Darstellung',themeLabel,theme === 'dark' ? 'ok' : (theme === 'light' ? 'ok' : 'off'),'Steuert Hellmodus, Dunkelmodus oder die Systemeinstellung.','',themeBody);
     var health = '';
     if(window.ChangeAppStatus && window.ChangeAppStatus.healthHtml){
       var healthBody = appHealthExpanded
@@ -477,7 +517,7 @@
         : '<div class="change-feature-note">Der Check wird erst angezeigt, wenn du ihn bewusst startest.</div><button class="btn btn-secondary btn-full" id="run-app-health" type="button">App-Gesundheitscheck prüfen</button>';
       health = settingsFeatureCard('🩺', 'App-Gesundheitscheck', appHealthExpanded ? 'GEPRÜFT' : 'BEREIT', appHealthExpanded ? 'ok' : 'off', 'Prüft Login, Cache, Sync und blockierende Overlays.', '', healthBody);
     }
-    return '<div class="change-settings-stack">' + installCard + versionCard + health + '</div>';
+    return '<div class="change-settings-stack">' + installCard + themeCard + versionCard + health + '</div>';
   }
 
   var currentSettingsTab = 'dashboard';
@@ -603,6 +643,7 @@
     var google = $('set-google'); if(google) google.addEventListener('change', async function(){ if(window.ChangeGoogleSyncStatus){ if(google.checked) await window.ChangeGoogleSyncStatus.syncNow(); else window.ChangeGoogleSyncStatus.disconnect(); } refreshSameTab(); });
     var syncGoogle = $('set-sync-google'); if(syncGoogle) syncGoogle.addEventListener('click', async function(){ if(window.ChangeGoogleSyncStatus) await window.ChangeGoogleSyncStatus.syncNow(); refreshSameTab(); });
     var clearSyncLog = $('clear-sync-log'); if(clearSyncLog) clearSyncLog.addEventListener('click', function(){ try{ localStorage.removeItem('change_v1_sync_log'); }catch(e){} refreshSameTab('sync'); });
+    document.querySelectorAll('[data-change-theme]').forEach(function(btn){ btn.addEventListener('click', function(){ setAppTheme(btn.getAttribute('data-change-theme') || 'system'); refreshSameTab('app'); }); });
     var runHealth = $('run-app-health'); if(runHealth) runHealth.addEventListener('click', function(){ appHealthExpanded = true; refreshSameTab('app'); });
     var btnGoogleConnect = $('btn-google-connect'); if(btnGoogleConnect) btnGoogleConnect.addEventListener('click', function(){ if(typeof connectToGoogle==='function') connectToGoogle(); });
 

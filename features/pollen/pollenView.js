@@ -3,7 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0024';
+  var APP_VERSION = '0.1.0026';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
 
@@ -203,7 +203,7 @@
           + glyphSvg(p.key)
           + '<strong>'+esc(p.name)+'</strong>'
           + '<span>'+esc(levelLabel(p.level))+'</span>'
-          + '<em>'+esc(Number(p.value || 0))+'</em>'
+          + '<em>'+esc(Math.round(clampNum(p.value)))+'</em>'
         + '</button>';
       }).join('')
       + '</div>'
