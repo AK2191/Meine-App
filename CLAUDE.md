@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0040 und Pollen Mobile Header Cleanup
+> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0041 und Challenges im Pollen-Stil
 
 ---
 
@@ -82,6 +82,7 @@ Jeder Kalendertag enthält:
 - **Heutige Aufgaben** (`.challenge-card`) + **Rangliste** (`.leader-card`): gleich hoch via `align-items:stretch` + `flex:1` auf Listen
 - **Mitspieler-Button** entfernt (war im `.leader-card-head`, Funktion `openParticipantPanel`)
 - Titel der rechten Karte: „Rangliste" (vorher „Kontest")
+- Ab Version `0.1.0041`: Challenge-Ansicht verwendet den ruhigen Pollen-Stil mit dunklem View-Hintergrund, radialen Akzenten, Premium-Karten, Gruppen-Ziel als Hero-Karte, Punkte-Kalender als volle Kartenzeile und mobilen Kartenabständen wie Pollen. Die Challenge-Logik, Auto-Challenges, Punkte, Sync, Rangliste, Anfeuern, Rückgängig und Heute-zurücksetzen bleiben unverändert.
 
 
 ---
@@ -98,7 +99,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0040`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0041`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -269,6 +270,8 @@ firebase deploy --only hosting
 
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
+
+| 2026-06-04 | Version auf `0.1.0041` erhöht; Challenge-Ansicht optisch an den Pollen-Stil angeglichen. Desktop und Mobile nutzen nun dunklen View-Hintergrund, ruhige Premium-Karten, Gruppen-Ziel als Hero-Karte, Pollen-artige Abstände und stabile mobile Reihenfolge. Funktionen und Challenge-Logik bleiben unverändert. | ChatGPT |
 
 | 2026-06-04 | Version auf `0.1.0010` erhöht; persönliche Pollen-Benachrichtigungen ergänzt. Bei aktivem Pollenalarm nutzt Change gespeicherte Symptom-Muster und aktuelle/morgige Pollenwerte, um Hinweise wie erhöhte Gräserbelastung + frühere Nasensymptome über die bestehende Glocke/Push-Logik anzuzeigen. Kein neuer Push-Dialog, kein Firebase-Auto-Start. | ChatGPT |
 | 2026-06-04 | Version auf `0.1.0009` erhöht; Pollen-Symptom-Auswertung ergänzt. Symptomtage speichern jetzt einen Pollen-Snapshot, damit Change Muster wie erhöhte Gräserbelastung + starke Nasensymptome lokal erkennt und bei aktivem Datenbank-Sync nach Firebase übernimmt. Keine Auto-Starts nach Login. | ChatGPT |
@@ -782,3 +785,10 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Das mobile Pollen-Layout wurde nach dem App-orientierten Design stabilisiert: Hero-Reihenfolge korrigiert, Kartenhöhe reduziert, Allergieprofil kompakter und 7-Tage-Ausblick bündiger.
 - Im Pollen-Hellmodus wurden Tabellenlinien und Forecast-Balken deutlicher gemacht.
 - Keine Änderungen an Login, Firebase-Autostart, Sync-Start, Push-Permission-Dialog oder Kalenderlogik.
+
+
+## Version 0.1.0041
+- Die sichtbare App-Version wurde auf `0.1.0041` erhöht.
+- Die Challenge-Ansicht wurde optisch an den Pollen-Stil angeglichen: dunkler View-Hintergrund, ruhige radiale Akzente, Premium-Karten, Gruppen-Ziel als Hero-Karte, Punkte-Kalender als volle Kartenzeile und mobile Abstände wie im Pollen-Reiter.
+- Bestehende Challenge-Funktionen bleiben erhalten: Tagesaufgaben, optionale Punkte, Erledigen, Rückgängig, Heute zurücksetzen, Punkte-Kalender, Rangliste, Spieler-Panel, Anfeuern, Auto-Challenges und Sync-Logik.
+- Keine Änderung an Challenge-Datenmodell, Auto-Challenge-Generierung, Firebase-Autostart, Datenbank-Sync-Start, Push-Permission-Dialog, Kalenderlogik oder Login.
