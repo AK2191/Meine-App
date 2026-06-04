@@ -84,6 +84,16 @@ service cloud.firestore {
       allow delete: if isAuth() && resource.data.from == signedInEmail();
     }
 
+    // Pollen-Symptome
+    // Nutzer dürfen nur eigene Tages-Symptome lesen und schreiben.
+    match /change_pollen_symptoms/{docId} {
+      allow create, update: if isAuth()
+        && request.resource.data.userEmail == signedInEmail();
+      allow read, delete: if isAuth()
+        && resource.data.userEmail == signedInEmail();
+    }
+
+
     // Fallback: alles andere sperren
     match /{document=**} {
       allow read, write: if false;

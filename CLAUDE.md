@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0007 und Pollen-Detailkarten
+> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0009 und Pollen-Symptom-Auswertung
 
 ---
 
@@ -98,7 +98,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0007`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0009`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -269,6 +269,9 @@ firebase deploy --only hosting
 
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
+
+| 2026-06-04 | Version auf `0.1.0009` erhöht; Pollen-Symptom-Auswertung ergänzt. Symptomtage speichern jetzt einen Pollen-Snapshot, damit Change Muster wie erhöhte Gräserbelastung + starke Nasensymptome lokal erkennt und bei aktivem Datenbank-Sync nach Firebase übernimmt. Keine Auto-Starts nach Login. | ChatGPT |
+| 2026-06-04 | Version auf `0.1.0008` erhöht; Pollen-Symptom-Tracker für Niesen, Augen, Nase, Atmung und Notiz ergänzt. Speicherung lokal und bei aktivem Datenbank-Sync zusätzlich in `change_pollen_symptoms` in Firebase. | ChatGPT |
 | 2026-06-02 | Version auf `0.1.0005` erhöht; Termin-Teilen aus dem Friseur-Panel entfernt und in das Kalender-Terminpanel für lokale, synchronisierte und von Google übertragene Termine eingebaut | ChatGPT |
 | 2026-06-02 | Version auf `0.1.0004` erhöht; Termine können als `.ics` Kalenderdatei über native Teilen-Funktion, WhatsApp-Text, Kopieren und Download geteilt werden | ChatGPT |
 | 2026-06-02 | Version auf `0.1.0003` erhöht; Friseur-Tracker nutzt Start-/Enduhrzeit: nach Terminende `Heute erledigt`, danach `Neuer Termin offen`, erst ab Erinnerungsgrenze `Überfällig` | ChatGPT |

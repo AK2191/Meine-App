@@ -311,6 +311,7 @@
     return '<div class="change-pollen-panel">'
       + pollenSummaryPanelHtml(forecast)
       + pollenTodayCardsHtml(forecast)
+      + (window.ChangePollenSymptoms && window.ChangePollenSymptoms.panelHtml ? window.ChangePollenSymptoms.panelHtml(todayKey(), forecast) : '')
       + '<div class="change-pollen-section-title">Allergieprofil · '+esc(locationHint(loc))+'</div>'
       + pollenChipsHtml(today)
       + pollenFocusHintHtml()
