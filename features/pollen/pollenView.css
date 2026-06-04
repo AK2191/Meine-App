@@ -1163,7 +1163,7 @@ body.neo-pollen-shell #content{
 }
 
 
-/* v0.1.0028 light readability + notification action */
+/* v0.1.0029 notification action + local symptom interaction */
 #pollen-view .pollen-neo-header-actions{
   display:flex;
   align-items:center;
@@ -1255,4 +1255,36 @@ body.neo-pollen-shell #content{
 [data-theme="light"] #pollen-view .change-symptom-note-action svg{
   color:#506056!important;
   opacity:1!important;
+}
+
+
+/* v0.1.0029 header icons */
+#pollen-view .pollen-neo-header-settings-icon svg{
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.9;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+#pollen-view .pollen-neo-header-notify{
+  position:relative;
+}
+#pollen-view .pollen-neo-header-notify::after{
+  content:"";
+  position:absolute;
+  top:11px;
+  right:11px;
+  width:6px;
+  height:6px;
+  border-radius:999px;
+  background:#ef4444;
+  box-shadow:0 0 0 2px rgba(8,13,19,.95);
+  opacity:0;
+}
+body.has-notifications #pollen-view .pollen-neo-header-notify::after,
+#pollen-view .pollen-neo-header-notify.has-items::after{
+  opacity:1;
+}
+[data-theme="light"] #pollen-view .pollen-neo-header-notify::after{
+  box-shadow:0 0 0 2px rgba(255,255,255,.96);
 }

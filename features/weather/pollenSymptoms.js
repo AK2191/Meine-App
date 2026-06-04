@@ -284,7 +284,7 @@
       rec.pollenSnapshot = snapshotFor(date) || rec.pollenSnapshot;
       saveLocal(rec);
       refreshVisibleCard(date);
-      await publish(rec);
+      // Lokale Interaktion: kein automatischer Firebase-Write pro Klick.
     });
     document.addEventListener('change', async function(ev){
       var note = ev.target && ev.target.matches && ev.target.matches('[data-symptom-note]') ? ev.target : null;
@@ -295,7 +295,7 @@
       rec.pollenSnapshot = snapshotFor(date) || rec.pollenSnapshot;
       saveLocal(rec);
       refreshVisibleCard(date);
-      await publish(rec);
+      // Lokale Notiz: kein automatischer Firebase-Write beim Verlassen des Feldes.
     });
   }
 

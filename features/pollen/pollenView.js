@@ -3,7 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0028';
+  var APP_VERSION = '0.1.0029';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var SELECTED_KEY = 'change_v1_pollen_selected_keys';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
@@ -93,6 +93,12 @@
   }
   function writeFocus(key){
     try{ localStorage.setItem(FOCUS_KEY, String(key || '')); }catch(e){}
+  }
+  function readEditMode(){
+    try{ return String(localStorage.getItem(EDIT_KEY) || '').trim(); }catch(e){ return ''; }
+  }
+  function writeEditMode(value){
+    try{ localStorage.setItem(EDIT_KEY, String(value || '')); }catch(e){}
   }
   function readSelectedRaw(){
     try{
@@ -319,8 +325,8 @@
       notify.type = 'button';
       notify.className = 'pollen-neo-header-notify';
       notify.setAttribute('data-pollen-notify','');
-      notify.setAttribute('aria-label','Pollen-Benachrichtigungen');
-      notify.title = 'Pollen-Benachrichtigungen';
+      notify.setAttribute('aria-label','Benachrichtigungen');
+      notify.title = 'Benachrichtigungen';
       notify.innerHTML = '<span class="pollen-neo-header-settings-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 9.7c0-3.3-2.1-5.7-5.1-6.2V2.8a.9.9 0 0 0-1.8 0v.7C8.1 4 6 6.4 6 9.7v3.5c0 1.4-.6 2.5-1.5 3.4a.9.9 0 0 0 .6 1.5h13.8a.9.9 0 0 0 .6-1.5c-.9-.9-1.5-2-1.5-3.4V9.7Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path><path d="M9.8 19.5a2.4 2.4 0 0 0 4.4 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path></svg></span>';
       actions.appendChild(notify);
     }
@@ -329,7 +335,7 @@
       action.type = 'button';
       action.className = 'pollen-neo-header-settings';
       action.setAttribute('data-pollen-settings','');
-      action.innerHTML = '<span class="pollen-neo-header-settings-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 8.6a3.4 3.4 0 1 0 0 6.8 3.4 3.4 0 0 0 0-6.8Zm9 3-.13-.03-1.78-.7a7.15 7.15 0 0 0-.53-1.27l.76-1.74a.9.9 0 0 0-.19-.98l-1.66-1.66a.9.9 0 0 0-.98-.19l-1.74.76c-.4-.21-.83-.39-1.27-.53L12.43 3.1a.9.9 0 0 0-.84-.6h-2.18a.9.9 0 0 0-.84.6l-.68 1.74c-.44.14-.87.32-1.27.53l-1.74-.76a.9.9 0 0 0-.98.19L2.24 6.46a.9.9 0 0 0-.19.98l.76 1.74c-.21.4-.39.83-.53 1.27l-1.74.68a.9.9 0 0 0-.6.84v2.18c0 .38.23.72.6.84l1.74.68c.14.44.32.87.53 1.27l-.76 1.74a.9.9 0 0 0 .19.98l1.66 1.66c.27.27.68.35.98.19l1.74-.76c.4.21.83.39 1.27.53l.68 1.74c.13.36.47.6.84.6h2.18c.37 0 .71-.24.84-.6l.68-1.74c.44-.14.87-.32 1.27-.53l1.74.76c.3.16.71.08.98-.19l1.66-1.66a.9.9 0 0 0 .19-.98l-.76-1.74c.21-.4.39-.83.53-1.27l1.78-.7.13-.03a.9.9 0 0 0 .6-.84v-2.18a.9.9 0 0 0-.6-.84Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"></path></svg></span><span>Pollen-Settings</span>';
+      action.innerHTML = '<span class="pollen-neo-header-settings-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.33 1.82V22a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1.82-.33H2a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-.6 1.65 1.65 0 0 0 .33-1.82V2a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.12.69.31 1 .6.31.29.51.64.6 1H22a2 2 0 1 1 0 4h-.09c-.37.09-.72.29-1 .6-.29.31-.48.64-.51 1z"></path></svg></span><span>Pollen-Settings</span>';
       actions.appendChild(action);
     }
   }
@@ -375,7 +381,7 @@
       if(notifyBtn){
         ev.preventDefault();
         ev.stopPropagation();
-        if(window.openSettingsPanel) window.openSettingsPanel('dashboard');
+        if(window.openNotifPanel) window.openNotifPanel();
         return;
       }
       var settingsBtn = ev.target && ev.target.closest ? ev.target.closest('#pollen-view [data-pollen-settings]') : null;
