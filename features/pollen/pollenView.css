@@ -3122,3 +3122,340 @@ body.theme-light #pollen-view .pollen-neo-bars span.on,
 body.change-theme-light #pollen-view .pollen-neo-bars span.on{
   box-shadow:0 0 0 1px rgba(255,255,255,.55),0 4px 8px rgba(255,93,74,.16)!important;
 }
+
+/* v0.1.0038 mobile + light mode stabilization */
+#pollen-view .pollen-neo-bars span{
+  width:13px;
+  min-width:13px;
+  height:5px;
+  border-radius:999px;
+}
+#pollen-view .pollen-neo-bars{
+  gap:5px;
+}
+#pollen-view .pollen-neo-forecast-row{
+  overflow:hidden;
+}
+#pollen-view .pollen-neo-forecast-list{
+  overflow:hidden;
+}
+body.theme-light #pollen-view,
+body.change-theme-light #pollen-view{
+  color:#0b1712;
+}
+body.theme-light #pollen-view .pollen-neo-card,
+body.theme-light #pollen-view .pollen-neo-metric,
+body.theme-light #pollen-view .pollen-neo-profile-card,
+body.theme-light #pollen-view .change-symptom-panel,
+body.theme-light #pollen-view .change-symptom-note-frame,
+body.change-theme-light #pollen-view .pollen-neo-card,
+body.change-theme-light #pollen-view .pollen-neo-metric,
+body.change-theme-light #pollen-view .pollen-neo-profile-card,
+body.change-theme-light #pollen-view .change-symptom-panel,
+body.change-theme-light #pollen-view .change-symptom-note-frame{
+  background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(246,250,244,.94))!important;
+  border-color:rgba(18,38,28,.16)!important;
+  color:#0b1712!important;
+  box-shadow:0 12px 28px rgba(20,35,25,.08)!important;
+}
+body.theme-light #pollen-view .pollen-neo-hero,
+body.change-theme-light #pollen-view .pollen-neo-hero{
+  background:linear-gradient(120deg,rgba(255,242,237,.96),rgba(255,255,250,.98) 58%,rgba(244,250,240,.96))!important;
+  border-color:rgba(255,94,74,.22)!important;
+  color:#0b1712!important;
+  box-shadow:0 16px 34px rgba(37,49,38,.10)!important;
+}
+body.theme-light #pollen-view .pollen-neo-label,
+body.theme-light #pollen-view .pollen-neo-section-head span,
+body.theme-light #pollen-view .change-symptom-title,
+body.change-theme-light #pollen-view .pollen-neo-label,
+body.change-theme-light #pollen-view .pollen-neo-section-head span,
+body.change-theme-light #pollen-view .change-symptom-title{
+  color:rgba(9,24,17,.78)!important;
+}
+body.theme-light #pollen-view .pollen-neo-hero-stats strong,
+body.change-theme-light #pollen-view .pollen-neo-hero-stats strong{
+  color:rgba(9,24,17,.68)!important;
+}
+body.theme-light #pollen-view .pollen-neo-hero-stats em,
+body.change-theme-light #pollen-view .pollen-neo-hero-stats em{
+  color:#07140f!important;
+}
+body.theme-light #pollen-view .pollen-neo-subline,
+body.change-theme-light #pollen-view .pollen-neo-subline{
+  color:#111c17!important;
+}
+body.theme-light #pollen-view .pollen-neo-profile-card strong,
+body.theme-light #pollen-view .change-symptom-label strong,
+body.theme-light #pollen-view .pollen-neo-forecast-date strong,
+body.change-theme-light #pollen-view .pollen-neo-profile-card strong,
+body.change-theme-light #pollen-view .change-symptom-label strong,
+body.change-theme-light #pollen-view .pollen-neo-forecast-date strong{
+  color:#07140f!important;
+}
+body.theme-light #pollen-view .pollen-neo-profile-card span,
+body.theme-light #pollen-view .pollen-neo-profile-card em,
+body.change-theme-light #pollen-view .pollen-neo-profile-card span,
+body.change-theme-light #pollen-view .pollen-neo-profile-card em{
+  opacity:1!important;
+}
+body.theme-light #pollen-view .pollen-neo-chart,
+body.theme-light #pollen-view .pollen-neo-quiet-card,
+body.change-theme-light #pollen-view .pollen-neo-chart,
+body.change-theme-light #pollen-view .pollen-neo-quiet-card{
+  color:#0b1712!important;
+}
+body.theme-light #pollen-view .pollen-neo-chart strong,
+body.theme-light #pollen-view .pollen-neo-quiet-card strong,
+body.change-theme-light #pollen-view .pollen-neo-chart strong,
+body.change-theme-light #pollen-view .pollen-neo-quiet-card strong{
+  opacity:1!important;
+}
+body.theme-light #pollen-view .pollen-neo-quiet-card .pollen-neo-icon-svg,
+body.change-theme-light #pollen-view .pollen-neo-quiet-card .pollen-neo-icon-svg{
+  color:#5fdc58!important;
+  filter:drop-shadow(0 8px 14px rgba(59,174,75,.16))!important;
+}
+body.theme-light #pollen-view .pollen-neo-quiet-card .pollen-neo-icon-svg svg path[stroke="#102313"],
+body.change-theme-light #pollen-view .pollen-neo-quiet-card .pollen-neo-icon-svg svg path[stroke="#102313"]{
+  stroke:#0f2c16!important;
+}
+body.theme-light #pollen-view .pollen-neo-forecast-list,
+body.change-theme-light #pollen-view .pollen-neo-forecast-list{
+  background:rgba(255,255,255,.96)!important;
+  border:1px solid rgba(15,32,23,.18)!important;
+}
+body.theme-light #pollen-view .pollen-neo-forecast-row,
+body.change-theme-light #pollen-view .pollen-neo-forecast-row{
+  border-bottom:1px solid rgba(15,32,23,.16)!important;
+}
+body.theme-light #pollen-view .pollen-neo-bars span,
+body.change-theme-light #pollen-view .pollen-neo-bars span{
+  background:rgba(21,39,31,.16)!important;
+}
+
+@media (max-width: 760px){
+  html,body{overflow-x:hidden!important;}
+  #pollen-view,
+  #pollen-view .pollen-view-body,
+  #pollen-view .pollen-neo-shell{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    overflow-x:hidden!important;
+    box-sizing:border-box!important;
+  }
+  #pollen-view .pollen-view-body{
+    padding:14px 18px calc(110px + env(safe-area-inset-bottom))!important;
+  }
+  #pollen-view .list-header{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    align-items:center!important;
+    gap:12px!important;
+    padding:2px 0 10px!important;
+    margin:0!important;
+  }
+  #pollen-view .list-title{
+    font-size:22px!important;
+    line-height:1.05!important;
+    min-width:0!important;
+  }
+  #pollen-view .list-subtitle{display:none!important;}
+  #pollen-view .pollen-neo-header-actions{
+    display:flex!important;
+    justify-content:flex-end!important;
+    align-items:center!important;
+    margin:0!important;
+    gap:0!important;
+    min-width:0!important;
+  }
+  #pollen-view .pollen-neo-header-notify{display:none!important;}
+  #pollen-view .pollen-neo-header-settings{
+    height:36px!important;
+    min-height:36px!important;
+    padding:0 12px!important;
+    border-radius:14px!important;
+    font-size:12px!important;
+    white-space:nowrap!important;
+  }
+  #pollen-view .pollen-neo-header-settings-icon{width:16px!important;height:16px!important;}
+  #pollen-view .pollen-neo-top{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:10px!important;
+    width:100%!important;
+    max-width:100%!important;
+  }
+  #pollen-view .pollen-neo-hero{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) 98px!important;
+    grid-template-areas:"main art" "stats stats"!important;
+    gap:12px!important;
+    min-height:0!important;
+    width:100%!important;
+    max-width:100%!important;
+    padding:18px 16px 13px!important;
+    border-radius:20px!important;
+    overflow:hidden!important;
+  }
+  #pollen-view .pollen-neo-hero-main{
+    grid-area:main!important;
+    display:block!important;
+    align-self:start!important;
+    min-width:0!important;
+  }
+  #pollen-view .pollen-neo-hero-illustration{
+    grid-area:art!important;
+    position:static!important;
+    width:96px!important;
+    max-width:96px!important;
+    height:120px!important;
+    align-self:center!important;
+    justify-self:end!important;
+    opacity:.62!important;
+    transform:none!important;
+  }
+  #pollen-view .pollen-neo-hero .pollen-neo-label{
+    display:block!important;
+    font-size:10px!important;
+    letter-spacing:.08em!important;
+    margin:0 0 8px!important;
+    text-align:left!important;
+  }
+  #pollen-view .pollen-neo-hero-title{
+    display:block!important;
+    font-size:36px!important;
+    line-height:.96!important;
+    margin:0!important;
+    text-align:left!important;
+  }
+  #pollen-view .pollen-neo-subline{
+    display:block!important;
+    font-size:14px!important;
+    line-height:1.2!important;
+    margin:8px 0 0!important;
+    text-align:left!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  #pollen-view .pollen-neo-cta{
+    margin-top:14px!important;
+    padding:8px 12px!important;
+    font-size:11.5px!important;
+  }
+  #pollen-view .pollen-neo-hero-stats{
+    grid-area:stats!important;
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:0!important;
+    width:100%!important;
+    padding-top:11px!important;
+    margin-top:2px!important;
+    border-top:1px solid rgba(255,255,255,.10)!important;
+    border-left:0!important;
+    min-width:0!important;
+  }
+  #pollen-view .pollen-neo-hero-stats>div{
+    min-width:0!important;
+    padding:0 6px!important;
+    grid-template-columns:15px minmax(0,1fr)!important;
+    gap:5px!important;
+    background:transparent!important;
+    border-radius:0!important;
+    border-right:1px solid rgba(255,255,255,.08)!important;
+  }
+  #pollen-view .pollen-neo-hero-stats>div:last-child{border-right:0!important;}
+  #pollen-view .pollen-neo-hero-stats strong,
+  #pollen-view .pollen-neo-hero-stats em{
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  #pollen-view .pollen-neo-hero-stats strong{font-size:9px!important;line-height:1.05!important;}
+  #pollen-view .pollen-neo-hero-stats em{font-size:11px!important;line-height:1.05!important;}
+  #pollen-view .pollen-neo-sidecards{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:8px!important;
+    width:100%!important;
+  }
+  #pollen-view .pollen-neo-metric{
+    min-height:82px!important;
+    height:auto!important;
+    padding:10px!important;
+    border-radius:15px!important;
+    overflow:hidden!important;
+  }
+  #pollen-view .pollen-neo-metric .pollen-neo-label{font-size:10px!important;letter-spacing:0!important;text-transform:none!important;margin:0 0 6px!important;}
+  #pollen-view .pollen-neo-ring{width:46px!important;height:46px!important;}
+  #pollen-view .pollen-neo-ring strong{font-size:13px!important;}
+  #pollen-view .pollen-neo-chart svg{height:28px!important;max-width:62px!important;}
+  #pollen-view .pollen-neo-chart strong,
+  #pollen-view .pollen-neo-quiet-card strong{font-size:12px!important;}
+  #pollen-view .pollen-neo-quiet-card .pollen-neo-icon-svg{width:25px!important;height:25px!important;}
+  #pollen-view .pollen-neo-section-head span{font-size:11px!important;letter-spacing:.08em!important;}
+  #pollen-view .pollen-neo-profile-grid{
+    display:flex!important;
+    gap:8px!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    padding:2px 0 8px!important;
+    -webkit-overflow-scrolling:touch!important;
+    scrollbar-width:none!important;
+    width:100%!important;
+  }
+  #pollen-view .pollen-neo-profile-grid::-webkit-scrollbar{display:none!important;}
+  #pollen-view .pollen-neo-profile-card{
+    flex:0 0 86px!important;
+    min-width:86px!important;
+    min-height:86px!important;
+    max-height:86px!important;
+    padding:9px 7px!important;
+    border-radius:14px!important;
+    gap:4px!important;
+  }
+  #pollen-view .pollen-neo-profile-card .pollen-neo-icon-svg{width:20px!important;height:20px!important;}
+  #pollen-view .pollen-neo-profile-card strong{font-size:11px!important;line-height:1.05!important;}
+  #pollen-view .pollen-neo-profile-card span{font-size:9.5px!important;line-height:1.05!important;}
+  #pollen-view .pollen-neo-profile-card em{font-size:11px!important;line-height:1.05!important;}
+  #pollen-view .pollen-neo-forecast-list{
+    width:100%!important;
+    max-width:100%!important;
+    border-radius:16px!important;
+    overflow:hidden!important;
+  }
+  #pollen-view .pollen-neo-forecast-row{
+    display:grid!important;
+    grid-template-columns:10px 70px minmax(0,1fr) 88px!important;
+    gap:7px!important;
+    padding:10px 10px!important;
+    min-height:48px!important;
+    width:100%!important;
+    max-width:100%!important;
+  }
+  #pollen-view .pollen-neo-forecast-date strong{font-size:11px!important;}
+  #pollen-view .pollen-neo-forecast-date span{font-size:9px!important;}
+  #pollen-view .pollen-neo-forecast-main strong{font-size:11px!important;}
+  #pollen-view .pollen-neo-bars{gap:4px!important;justify-content:flex-end!important;overflow:hidden!important;}
+  #pollen-view .pollen-neo-bars span{width:10px!important;min-width:10px!important;height:5px!important;}
+  body.theme-light #pollen-view .pollen-neo-hero-stats,
+  body.change-theme-light #pollen-view .pollen-neo-hero-stats{border-top-color:rgba(9,24,17,.14)!important;}
+  body.theme-light #pollen-view .pollen-neo-hero-stats>div,
+  body.change-theme-light #pollen-view .pollen-neo-hero-stats>div{border-right-color:rgba(9,24,17,.12)!important;}
+  body.theme-light #pollen-view .pollen-neo-chart svg,
+  body.change-theme-light #pollen-view .pollen-neo-chart svg{filter:none!important;}
+}
+
+@media (max-width:390px){
+  #pollen-view .pollen-view-body{padding-left:14px!important;padding-right:14px!important;}
+  #pollen-view .pollen-neo-hero{grid-template-columns:minmax(0,1fr) 82px!important;padding:16px 14px 12px!important;}
+  #pollen-view .pollen-neo-hero-illustration{width:82px!important;max-width:82px!important;height:108px!important;}
+  #pollen-view .pollen-neo-hero-title{font-size:32px!important;}
+  #pollen-view .pollen-neo-sidecards{gap:7px!important;}
+  #pollen-view .pollen-neo-metric{padding:9px!important;}
+  #pollen-view .pollen-neo-profile-card{flex-basis:80px!important;min-width:80px!important;}
+  #pollen-view .pollen-neo-forecast-row{grid-template-columns:9px 58px minmax(0,1fr) 68px!important;gap:6px!important;}
+  #pollen-view .pollen-neo-bars span{width:8px!important;min-width:8px!important;}
+}
