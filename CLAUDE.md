@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0014 und ruhigeres Pollen-Redesign
+> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0015 und ruhigeres Pollen-Redesign
 
 ---
 
@@ -98,7 +98,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0014`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0015`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -698,8 +698,8 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Es wurden keine Auto-Starts nach Login ergänzt, kein zusätzlicher Push-Dialog eingeführt und keine Firebase-Initialisierung erzwungen.
 
 
-## Version 0.1.0014
-- Die sichtbare App-Version wurde auf `0.1.0014` erhöht.
+## Version 0.1.0015
+- Die sichtbare App-Version wurde auf `0.1.0015` erhöht.
 - Pollen wurde weiter an die Referenz angenähert: Bearbeiten-Aktionen im Allergieprofil, in Symptome heute und die Auswahl-Aktion im 7-Tage-Ausblick wurden entfernt.
 - Die Pollen-Ansicht wurde ruhiger gestaltet: reduzierte Glows, harmonischere Flächen, weniger visuelles Rauschen und dezentere High-/Medium-Farbflächen.
 - Pollen- und Symptom-Icons wurden überarbeitet, um näher am gewünschten Symbolstil zu liegen.

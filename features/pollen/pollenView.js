@@ -3,7 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0014';
+  var APP_VERSION = '0.1.0015';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
 
@@ -186,7 +186,7 @@
         + '</div>'
       + '</div>'
       + '<div class="pollen-neo-sidecards">'
-        + metricCardHtml('ring', 'Belastung heute', '<div class="pollen-neo-ring '+esc(todaySelected.level)+'" style="--p:'+score+'"><strong>'+esc(score)+' %</strong><span>'+esc(intensity)+'</span></div><div class="pollen-neo-metric-foot">Pollenindex</div>', todaySelected.level)
+        + metricCardHtml('ring', 'Belastung heute', '<div class="pollen-neo-ring '+esc(todaySelected.level)+'" style="--p:'+score+'"><div class="pollen-neo-ring-center"><strong>'+esc(score)+' %</strong><span>'+esc(intensity)+'</span></div></div><div class="pollen-neo-metric-foot">Pollenindex</div>', todaySelected.level)
         + metricCardHtml('peak', 'Peak', '<div class="pollen-neo-chart '+esc(peakTone)+'">'+trendSvg(selected)+'<strong>'+esc(peak ? diffLabel(dayDiff(peak.date)) : '–')+'</strong><span>'+esc(peak ? fmtLongDay(peak.date) : 'Kein Peak erkannt')+'</span><div class="pollen-neo-link">Mehr dazu →</div></div>', peakTone)
         + metricCardHtml('quiet', 'Ruhigster Tag', '<div class="pollen-neo-quiet-card">'+glyphSvg('leaf')+'<strong>'+esc(quiet ? fmtLongDay(quiet.date).split(',')[0] : '–')+'</strong><span>'+esc(quiet ? fmtDay(quiet.date).replace('.', '') : '')+'</span><div class="pollen-neo-link">Mehr dazu →</div></div>', 'none')
       + '</div>'

@@ -212,3 +212,90 @@
 #pollen-view .change-symptom-level[data-level="2"].active,#pollen-view .change-symptom-level[data-level="3"].active{background:#43413a;border-color:#a99361}
 #pollen-view .change-symptom-note{background:rgba(255,255,255,.03);min-height:188px}
 #pollen-view .change-symptom-note::placeholder{color:rgba(244,247,244,.20)}
+
+/* v0.1.0015 layout polish */
+#pollen-view .pollen-neo-sidecards{
+  align-items:stretch;
+}
+#pollen-view .pollen-neo-metric{
+  min-height:228px;
+  grid-template-rows:auto 1fr auto;
+  align-items:stretch;
+  padding:20px 20px 18px;
+}
+#pollen-view .pollen-neo-metric .pollen-neo-label{
+  margin-bottom:8px;
+}
+#pollen-view .pollen-neo-ring{
+  margin:0 auto;
+  align-self:center;
+  justify-self:center;
+}
+#pollen-view .pollen-neo-ring-center{
+  position:relative;
+  z-index:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  gap:4px;
+}
+#pollen-view .pollen-neo-ring strong,
+#pollen-view .pollen-neo-ring span{
+  margin:0;
+  display:block;
+  text-align:center;
+}
+#pollen-view .pollen-neo-chart,
+#pollen-view .pollen-neo-quiet-card{
+  min-height:0;
+  height:100%;
+  display:grid;
+  grid-template-rows:88px auto auto 1fr;
+  align-content:start;
+  justify-items:start;
+}
+#pollen-view .pollen-neo-chart .pollen-neo-trend-svg{
+  align-self:start;
+}
+#pollen-view .pollen-neo-chart strong,
+#pollen-view .pollen-neo-quiet-card strong{
+  margin-top:2px;
+}
+#pollen-view .pollen-neo-link{
+  align-self:end;
+  margin-top:8px;
+}
+#pollen-view .change-symptom-body{
+  grid-template-columns:1fr;
+  gap:16px;
+}
+#pollen-view .change-symptom-list{
+  gap:10px;
+}
+#pollen-view .change-symptom-row{
+  grid-template-columns:88px minmax(0,1fr);
+  gap:18px;
+}
+#pollen-view .change-symptom-levels{
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0, 1fr));
+  gap:8px;
+  width:100%;
+}
+#pollen-view .change-symptom-level{
+  width:100%;
+  min-width:0;
+}
+#pollen-view .change-symptom-note-wrap{
+  width:100%;
+}
+#pollen-view .change-symptom-note{
+  min-height:132px;
+}
+@media (max-width: 760px){
+  #pollen-view .change-symptom-levels{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
