@@ -2038,9 +2038,9 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
      SET MAIN VIEW
   ==== */
   function setMainView(v){
-    if(!['dashboard','calendar','challenges'].includes(v)) v='dashboard';
+    if(!['dashboard','calendar','challenges','pollen'].includes(v)) v='dashboard';
     window.currentMainView=v;
-    const views={'dashboard-view':v==='dashboard'?'block':'none','cal-body':v==='calendar'?'flex':'none','challenges-view':v==='challenges'?'flex':'none','cal-controls':v==='calendar'?'flex':'none'};
+    const views={'dashboard-view':v==='dashboard'?'block':'none','cal-body':v==='calendar'?'flex':'none','challenges-view':v==='challenges'?'flex':'none','pollen-view':v==='pollen'?'flex':'none','cal-controls':v==='calendar'?'flex':'none'};
     Object.entries(views).forEach(([id,disp])=>{const el=document.getElementById(id);if(el)el.style.display=disp;});
     document.querySelectorAll('.h-tab').forEach(t=>t.classList.remove('active'));
     document.querySelectorAll('.bnav-item').forEach(t=>t.classList.remove('active'));
@@ -2052,6 +2052,7 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
       if(typeof window.renderChallenges==='function') window.renderChallenges();
       else renderChallenges();
     }
+    if(v==='pollen' && typeof window.renderPollenView === 'function') window.renderPollenView();
     try{history.pushState({view:v},'','#/'+v);}catch(e){}
   }
 
@@ -2082,10 +2083,10 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
   }
   // setMainView: always use window.buildDashboard (patch version)
   window.setMainView=function(v,fr){
-    if(!['dashboard','calendar','challenges'].includes(v))v='dashboard';
+    if(!['dashboard','calendar','challenges','pollen'].includes(v))v='dashboard';
     currentMainView=v;
-    ['dashboard','calendar','challenges'].forEach(function(n){
-      var el=document.getElementById(n+'-view')||document.getElementById(n==='calendar'?'cal-body':n+'-view');
+    ['dashboard','calendar','challenges','pollen'].forEach(function(n){
+      var el=document.getElementById(n==='calendar'?'cal-body':n+'-view');
       if(el){el.style.display=(n===v)?'flex':'none';el.classList.toggle('route-hidden',n!==v);}
     });
     var cc=document.getElementById('cal-controls');if(cc)cc.style.display=v==='calendar'?'flex':'none';
@@ -2100,6 +2101,7 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
       if(typeof window.renderChallenges==='function') window.renderChallenges();
       else if(typeof renderChallenges==='function') renderChallenges();
     }
+    if(v==='pollen' && typeof window.renderPollenView === 'function') window.renderPollenView();
     if(!fr){try{history.pushState({view:v},'','#/'+v);}catch(e){location.hash='/'+v;}}
   };
 
@@ -2112,7 +2114,7 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
   function init(){
     injectFinalStyle();
     const route=location.hash.replace('#/','').replace('#','')||'dashboard';
-    setMainView(['dashboard','calendar','challenges'].includes(route)?route:'dashboard');
+    setMainView(['dashboard','calendar','challenges','pollen'].includes(route)?route:'dashboard');
   }
 
   if(document.readyState==='loading'){

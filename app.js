@@ -706,6 +706,7 @@ function setMainView(v){
   document.getElementById('htab-'+v)?.classList.add('active');
   document.querySelectorAll('.bnav-item').forEach(t=>t.classList.remove('active'));
   document.getElementById('bnav-'+v)?.classList.add('active');
+  const fab=document.getElementById('fab'); if(fab) fab.style.display = v==='calendar' ? 'flex' : 'none';
 }
 
 function fabAction(){

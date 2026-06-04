@@ -681,7 +681,7 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Hinweise erscheinen nur, wenn Pollenalarme aktiv sind und lokale Symptom-Muster ausreichend Daten haben.
 
 
-## Version 0.1.0011
+## Version 0.1.0012
 - Pollen ist ein eigener Hauptreiter nach Challenges.
 - Dashboard bleibt als kompakte Zusammenfassung erhalten.
 - Große Pollenbereiche wie Allergieprofil, Symptome, Auswertung, Peak, Trend und 7-Tage-Ausblick liegen im Pollen-Reiter.
