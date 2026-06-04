@@ -299,3 +299,58 @@
     grid-template-columns:repeat(2,minmax(0,1fr));
   }
 }
+
+
+/* v0.1.0016 header + inactive card cleanup */
+body.change-view-pollen #content,
+body.neo-pollen-shell #content{
+  padding-top:28px!important;
+}
+#pollen-view .list-header{
+  min-height:54px;
+  padding:0 0 22px!important;
+  align-items:center!important;
+  margin:0;
+}
+#pollen-view .list-title{
+  font-size:30px!important;
+  line-height:1.1!important;
+  gap:12px!important;
+}
+#pollen-view .list-title::before{
+  width:24px!important;
+  height:24px!important;
+}
+#pollen-view .pollen-neo-header-settings{
+  padding:13px 18px!important;
+  border-radius:14px!important;
+  font-size:14px!important;
+}
+#pollen-view .pollen-neo-shell{
+  gap:20px;
+}
+#pollen-view .pollen-neo-sidecards{
+  align-items:stretch;
+}
+#pollen-view .pollen-neo-metric{
+  min-height:214px!important;
+  grid-template-rows:auto 1fr!important;
+  gap:12px;
+}
+#pollen-view .pollen-neo-chart,
+#pollen-view .pollen-neo-quiet-card{
+  grid-template-rows:82px auto auto!important;
+  align-content:center!important;
+  justify-content:start;
+  height:auto!important;
+}
+#pollen-view .pollen-neo-chart strong,
+#pollen-view .pollen-neo-quiet-card strong{
+  margin-top:0!important;
+}
+#pollen-view .pollen-neo-link{
+  display:none!important;
+}
+#pollen-view .pollen-neo-metric-foot{
+  margin-top:10px;
+}
