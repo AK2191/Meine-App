@@ -3,7 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0021';
+  var APP_VERSION = '0.1.0022';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
 

@@ -1001,3 +1001,30 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
   body.change-view-pollen #content,
   body.neo-pollen-shell #content{padding:24px 28px 28px;background:radial-gradient(circle at 18% 8%,rgba(21,99,56,.12),transparent 28%),linear-gradient(180deg,#04090e,#04090e);}
 }
+
+
+/* ==== POLLEN FINAL TYPE + SPACING PASS v0.1.0022 ==== */
+@media(min-width:701px){
+  body.change-view-pollen #main-app,
+  body.neo-pollen-shell #main-app{grid-template-columns:108px minmax(0,1fr);}
+  body.change-view-pollen #header,
+  body.neo-pollen-shell #header{gap:16px;padding:17px 0;border-right-color:rgba(255,255,255,.04);}
+  body.change-view-pollen .h-logo,
+  body.neo-pollen-shell .h-logo{min-height:56px;padding:4px 17px 0;}
+  body.change-view-pollen .h-logo-icon,
+  body.neo-pollen-shell .h-logo-icon{width:46px;height:46px;border-radius:13px;}
+  body.change-view-pollen .h-logo-icon svg,
+  body.neo-pollen-shell .h-logo-icon svg{width:46px;height:46px;}
+  body.change-view-pollen .h-tabs,
+  body.neo-pollen-shell .h-tabs{padding:0 10px;gap:7px;}
+  body.change-view-pollen .h-tab,
+  body.neo-pollen-shell .h-tab{padding:13px 8px;border-radius:16px;font-size:11.5px;font-weight:690;}
+  body.change-view-pollen .h-tab svg,
+  body.neo-pollen-shell .h-tab svg{width:22px;height:22px;}
+  body.change-view-pollen #settings-btn,
+  body.neo-pollen-shell #settings-btn{padding:12px 8px;border-radius:16px;font-size:11.5px;}
+  body.change-view-pollen #settings-btn::after,
+  body.neo-pollen-shell #settings-btn::after{font-size:11.5px;font-weight:690;}
+  body.change-view-pollen #content,
+  body.neo-pollen-shell #content{padding:22px 26px 26px;}
+}
