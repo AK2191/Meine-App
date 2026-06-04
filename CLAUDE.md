@@ -704,3 +704,11 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Die Pollen-Ansicht wurde ruhiger gestaltet: reduzierte Glows, harmonischere Flächen, weniger visuelles Rauschen und dezentere High-/Medium-Farbflächen.
 - Pollen- und Symptom-Icons wurden überarbeitet, um näher am gewünschten Symbolstil zu liegen.
 - Keine Änderung an Login, Auto-Start, Firebase-Start oder Push-Dialogen.
+
+
+## Version 0.1.0017
+- Die sichtbare App-Version wurde auf `0.1.0017` erhöht.
+- Die linke Desktop-Seitenleiste im Pollen-Reiter wurde oben bereinigt, damit das App-Icon ruhiger und korrekt positioniert wirkt.
+- Der Pollen-Hintergrund und die Shell-Ausrichtung wurden beruhigt; harte Kanten und unruhige Übergänge wurden reduziert.
+- Interaktionen in `Symptome heute` bleiben direkt klickbar, zeigen aber keine Speicher- oder Sync-Toast-Meldungen mehr.
+- Keine Änderung an Login, Auto-Start, Firebase-Start oder Push-Dialogen.

@@ -1,4 +1,4 @@
-Change App · Pollen Premium Style · Version 0.1.0016
+Change App · Pollen Premium Style · Version 0.1.0017
 
 Enthaltene Änderungen:
 - features/pollen/pollenView.js
@@ -10,7 +10,7 @@ Enthaltene Änderungen:
 - README.txt
 
 Anpassungen in diesem Update:
-- Inaktive Texte "Mehr dazu →" aus Peak und Ruhigster Tag entfernt
-- Pollen-Header kompakter und klarer ausgerichtet
-- Rechte Metrik-Karten ruhiger ausgerichtet
-- Sichtbare App-Version auf 0.1.0016 erhöht und in CLAUDE.md dokumentiert
+- Linke Pollen-Desktop-Leiste oben bereinigt, damit das App-Icon sauber sitzt
+- Hintergrund und Shell im Pollen-Bereich beruhigt, harte Kanten reduziert
+- Symptome reagieren weiterhin interaktiv, aber ohne Speicher- oder Sync-Toast
+- Sichtbare App-Version auf 0.1.0017 erhöht und in CLAUDE.md dokumentiert

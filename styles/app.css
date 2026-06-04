@@ -951,8 +951,8 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 /* ==== POLLEN DESKTOP SHELL ==== */
 @media(min-width:701px){
   body.neo-pollen-shell #main-app,body.change-view-pollen #main-app{display:grid!important;grid-template-columns:118px minmax(0,1fr);grid-template-rows:1fr;height:100vh;overflow:hidden;background:#04090e}
-  body.neo-pollen-shell #header,body.change-view-pollen #header{height:100vh;padding:22px 0 18px;flex-direction:column;align-items:stretch;gap:22px;border-right:1px solid rgba(255,255,255,.06);border-bottom:0;background:linear-gradient(180deg,rgba(7,12,18,.98),rgba(4,9,14,.96));position:relative;z-index:2}
-  body.neo-pollen-shell .h-logo,body.change-view-pollen .h-logo{padding:0 18px 0 18px;justify-content:flex-start}
+  body.neo-pollen-shell #header,body.change-view-pollen #header{height:100vh;padding:18px 0 18px;flex-direction:column;align-items:stretch;gap:18px;border-right:1px solid rgba(255,255,255,.04);border-bottom:0;background:linear-gradient(180deg,rgba(7,12,18,.99),rgba(4,9,14,.97));position:relative;z-index:2;box-sizing:border-box}
+  body.neo-pollen-shell .h-logo,body.change-view-pollen .h-logo{padding:8px 18px 0 18px;justify-content:center;align-items:center;min-height:64px;box-sizing:border-box}
   body.neo-pollen-shell .h-logo-icon,body.change-view-pollen .h-logo-icon{width:52px;height:52px;border-radius:14px;box-shadow:0 14px 36px rgba(74,222,128,.18)}
   body.neo-pollen-shell .h-logo-icon svg,body.change-view-pollen .h-logo-icon svg{width:52px;height:52px}
   body.neo-pollen-shell .h-logo-name,body.change-view-pollen .h-logo-name{display:none}
@@ -971,6 +971,6 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
   body.neo-pollen-shell #settings-btn::after,body.change-view-pollen #settings-btn::after{content:"Einstellungen";font-size:13px;font-weight:700;line-height:1.1}
 
   body.neo-pollen-shell .avatar + *,body.change-view-pollen .avatar + *{display:none}
-  body.neo-pollen-shell #content,body.change-view-pollen #content{padding:24px 28px 28px;overflow:hidden;background:transparent}
+  body.neo-pollen-shell #content,body.change-view-pollen #content{padding:24px 28px 28px;overflow:hidden;background:linear-gradient(180deg,rgba(4,9,14,.98),rgba(4,9,14,.98))}
   body.neo-pollen-shell #dashboard-view,body.neo-pollen-shell #challenges-view,body.neo-pollen-shell #cal-body,body.neo-pollen-shell #pollen-view,body.change-view-pollen #dashboard-view,body.change-view-pollen #challenges-view,body.change-view-pollen #cal-body,body.change-view-pollen #pollen-view{border-radius:0;background:transparent}
 }

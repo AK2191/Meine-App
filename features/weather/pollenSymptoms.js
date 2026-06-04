@@ -353,8 +353,7 @@
       rec.pollenSnapshot = snapshotFor(date) || rec.pollenSnapshot;
       saveLocal(rec);
       refreshVisibleCard(date);
-      var ok = await publish(rec);
-      try{ if(typeof toast === 'function') toast(ok ? 'Symptome gespeichert und synchronisiert ✓' : 'Symptome lokal gespeichert ✓', 'ok'); }catch(e){}
+      await publish(rec);
     });
     document.addEventListener('change', async function(ev){
       var note = ev.target && ev.target.matches && ev.target.matches('[data-symptom-note]') ? ev.target : null;
@@ -366,7 +365,6 @@
       saveLocal(rec);
       refreshVisibleCard(date);
       await publish(rec);
-      try{ if(typeof toast === 'function') toast('Symptom-Notiz gespeichert ✓', 'ok'); }catch(e){}
     });
   }
 

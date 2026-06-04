@@ -1,4 +1,4 @@
-/* Pollen View · Premium Redesign · v0.1.0013 */
+/* Pollen View · Premium Redesign · v0.1.0017 */
 #pollen-view{position:relative;background:#04090e;color:#f4f7f4;overflow:hidden}
 #pollen-view::before{content:"";position:absolute;inset:0;background:
   radial-gradient(circle at 21% 10%,rgba(16,110,54,.35),transparent 28%),
@@ -354,3 +354,17 @@ body.neo-pollen-shell #content{
 #pollen-view .pollen-neo-metric-foot{
   margin-top:10px;
 }
+
+
+/* v0.1.0017 shell cleanup */
+#pollen-view{background:linear-gradient(180deg,#04090e,#04090e)}
+#pollen-view::before{background:
+  radial-gradient(circle at 12% 10%,rgba(13,99,49,.14),transparent 34%),
+  radial-gradient(circle at 74% 8%,rgba(217,164,35,.04),transparent 18%),
+  radial-gradient(circle at 96% 10%,rgba(118,22,34,.05),transparent 18%),
+  linear-gradient(180deg,rgba(6,11,16,.12),rgba(4,9,14,0))}
+#pollen-view .pollen-neo-shell{max-width:none;margin:0;gap:20px}
+#pollen-view .list-header{padding:4px 0 16px;align-items:center}
+#pollen-view .list-title{font-size:22px;line-height:1.05;letter-spacing:-.5px}
+#pollen-view .pollen-neo-top{grid-template-columns:minmax(0,1.18fr) minmax(360px,.82fr);gap:18px}
+#pollen-view .pollen-neo-main-grid{grid-template-columns:minmax(0,1fr) minmax(420px,.94fr);gap:18px}
