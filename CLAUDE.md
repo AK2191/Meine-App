@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0019 und Pollen-Icon-Set
+> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0020 und Pollen-Design-Fundament
 
 ---
 
@@ -98,7 +98,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0019`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0020`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -714,9 +714,8 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Keine Änderung an Login, Auto-Start, Firebase-Start oder Push-Dialogen.
 
 
-## Version 0.1.0019
-- Die sichtbare App-Version wurde auf `0.1.0019` erhöht.
-- Der Pollen-Reiter hat einen ersten sauberen Foundation-Pass erhalten: gemeinsame Designwerte, ruhigerer Hintergrund, klareres Desktop-Raster und konsistentere Typografie.
-- Die linke Pollen-Seitenleiste wurde im Desktop-Raster weiter beruhigt; das App-Icon sitzt zentrierter und die aktiven Navigationsflächen sind weicher.
-- Die Hauptkarten nutzen ein konsistenteres Card-System mit weniger Schatten und weniger harten Übergängen.
-- Keine Änderung an Login, Auto-Start, Firebase-Start oder Push-Dialogen.
+## Version 0.1.0020
+- Die sichtbare App-Version wurde auf `0.1.0020` erhöht.
+- Für den Pollen-Reiter wurde ein eigener Icon-Pass umgesetzt. Pollen-Icons und Symptom-Icons wurden stilistisch vereinheitlicht und hochwertiger ausgearbeitet.
+- Die Symbolsprache im Allergieprofil, in der Hero-Karte und bei `Symptome heute` ist jetzt ruhiger, größer und konsistenter.
+- Keine Änderung an Login, Auto-Start, Firebase-Start, Kalenderlogik oder Push-Dialogen.
