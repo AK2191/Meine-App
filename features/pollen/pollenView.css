@@ -1671,3 +1671,355 @@ body.has-notifications #pollen-view .pollen-neo-header-notify::after,
   #pollen-view .pollen-neo-header-notify{width:56px!important;min-width:56px!important}
   #pollen-view .pollen-neo-header-settings{font-size:14px!important;padding:0 14px!important}
 }
+
+/* v0.1.0032 mobile app layout: eigener Mobile-Aufbau statt Desktop-Skalierung */
+@media (max-width:700px){
+  html, body{overflow-x:hidden!important;}
+  body.change-view-pollen #content,
+  body.neo-pollen-shell #content{padding:0!important;overflow:hidden!important;}
+  #pollen-view{
+    width:100%!important;
+    min-height:100dvh!important;
+    overflow:hidden!important;
+    background:#050b0f!important;
+  }
+  #pollen-view::before{
+    background:
+      radial-gradient(circle at 0% 10%,rgba(20,120,72,.16),transparent 42%),
+      linear-gradient(180deg,#071014 0%,#050b0f 38%,#04090d 100%)!important;
+  }
+  .pollen-view-body{
+    padding:0 16px calc(118px + env(safe-area-inset-bottom,0px))!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    -webkit-overflow-scrolling:touch;
+  }
+  #pollen-view .list-header,
+  #pollen-view .pollen-neo-headerbar{
+    position:relative!important;
+    top:auto!important;
+    margin:0 -16px 10px!important;
+    padding:22px 16px 16px!important;
+    background:linear-gradient(180deg,rgba(5,11,15,.98),rgba(5,11,15,.76) 72%,rgba(5,11,15,0))!important;
+    backdrop-filter:none!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    gap:12px!important;
+    text-align:center!important;
+  }
+  #pollen-view .list-title{
+    width:auto!important;
+    justify-content:center!important;
+    gap:10px!important;
+    font-size:34px!important;
+    line-height:1!important;
+    letter-spacing:-.9px!important;
+  }
+  #pollen-view .list-title::before{width:18px!important;height:18px!important;}
+  #pollen-view .pollen-neo-header-actions{
+    width:100%!important;
+    justify-content:center!important;
+    gap:10px!important;
+    margin-top:2px!important;
+  }
+  #pollen-view .pollen-neo-header-notify,
+  #pollen-view .pollen-neo-header-settings{
+    height:42px!important;
+    min-height:42px!important;
+    border-radius:14px!important;
+    background:rgba(10,17,23,.72)!important;
+    border-color:rgba(255,255,255,.10)!important;
+    box-shadow:none!important;
+  }
+  #pollen-view .pollen-neo-header-notify{
+    width:52px!important;
+    min-width:52px!important;
+  }
+  #pollen-view .pollen-neo-header-settings{
+    width:auto!important;
+    max-width:210px!important;
+    padding:0 14px!important;
+    font-size:14px!important;
+    font-weight:850!important;
+    letter-spacing:-.02em!important;
+  }
+  #pollen-view .pollen-neo-header-settings-icon{width:19px!important;height:19px!important;}
+  #pollen-view .pollen-neo-notify-count{top:3px!important;right:3px!important;}
+
+  #pollen-view .pollen-neo-shell{
+    display:flex!important;
+    flex-direction:column!important;
+    gap:14px!important;
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+  }
+  #pollen-view .pollen-neo-top,
+  #pollen-view .pollen-neo-main-grid,
+  #pollen-view .pollen-neo-left{
+    display:flex!important;
+    flex-direction:column!important;
+    gap:14px!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+  #pollen-view .pollen-neo-top{order:1!important;}
+  #pollen-view .pollen-neo-main-grid{order:2!important;}
+  #pollen-view .pollen-neo-left{display:contents!important;}
+
+  /* Mobile Statuskarte */
+  #pollen-view .pollen-neo-hero{
+    order:1!important;
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:12px!important;
+    min-height:0!important;
+    padding:16px!important;
+    border-radius:22px!important;
+    background:linear-gradient(145deg,rgba(15,28,24,.92),rgba(7,14,18,.94))!important;
+    box-shadow:0 12px 28px rgba(0,0,0,.20)!important;
+  }
+  #pollen-view .pollen-neo-hero.high{background:linear-gradient(145deg,rgba(38,23,21,.92),rgba(7,14,18,.94))!important;}
+  #pollen-view .pollen-neo-hero.medium{background:linear-gradient(145deg,rgba(35,32,19,.92),rgba(7,14,18,.94))!important;}
+  #pollen-view .pollen-neo-label{font-size:10px!important;letter-spacing:.095em!important;}
+  #pollen-view .pollen-neo-hero-title{
+    margin:8px 0 0!important;
+    font-size:38px!important;
+    line-height:.95!important;
+    letter-spacing:-1.1px!important;
+  }
+  #pollen-view .pollen-neo-subline{
+    margin-top:8px!important;
+    font-size:15px!important;
+    line-height:1.25!important;
+    white-space:normal!important;
+    gap:5px!important;
+  }
+  #pollen-view .pollen-neo-dotsep{opacity:.55!important;}
+  #pollen-view .pollen-neo-cta{
+    margin-top:12px!important;
+    width:max-content!important;
+    max-width:100%!important;
+    padding:9px 12px!important;
+    font-size:12px!important;
+    border-radius:999px!important;
+  }
+  #pollen-view .pollen-neo-hero-illustration{display:none!important;}
+  #pollen-view .pollen-neo-hero-stats{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:8px!important;
+    padding:10px 0 0!important;
+    border-top:1px solid rgba(255,255,255,.08)!important;
+  }
+  #pollen-view .pollen-neo-hero-stats>div{
+    min-height:0!important;
+    display:grid!important;
+    grid-template-columns:22px minmax(0,1fr) auto!important;
+    gap:8px!important;
+    padding:9px 10px!important;
+    border-radius:14px!important;
+    background:rgba(255,255,255,.045)!important;
+  }
+  #pollen-view .pollen-neo-hero-stats .dot,
+  #pollen-view .pollen-neo-hero-stats .mark{
+    display:flex!important;
+    width:20px!important;
+    height:20px!important;
+    grid-row:1/2!important;
+  }
+  #pollen-view .pollen-neo-hero-stats strong{
+    font-size:11px!important;
+    line-height:1.2!important;
+    color:rgba(255,255,255,.62)!important;
+  }
+  #pollen-view .pollen-neo-hero-stats em{
+    font-size:14px!important;
+    line-height:1.15!important;
+    color:#fff!important;
+    align-self:center!important;
+  }
+
+  /* Mobile Metrik-Karten als dünne Kurzinfos */
+  #pollen-view .pollen-neo-sidecards{
+    order:2!important;
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:8px!important;
+  }
+  #pollen-view .pollen-neo-metric,
+  #pollen-view .pollen-neo-chart,
+  #pollen-view .pollen-neo-quiet-card{
+    min-height:0!important;
+    height:auto!important;
+    padding:12px 8px!important;
+    border-radius:18px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:flex-start!important;
+    justify-content:flex-start!important;
+    gap:6px!important;
+    background:rgba(10,17,23,.72)!important;
+    box-shadow:none!important;
+  }
+  #pollen-view .pollen-neo-metric .pollen-neo-label,
+  #pollen-view .pollen-neo-chart .pollen-neo-label,
+  #pollen-view .pollen-neo-quiet-card .pollen-neo-label{
+    font-size:9px!important;
+    line-height:1.1!important;
+  }
+  #pollen-view .pollen-neo-ring{
+    width:64px!important;
+    height:64px!important;
+    margin:0!important;
+  }
+  #pollen-view .pollen-neo-ring strong{font-size:16px!important;}
+  #pollen-view .pollen-neo-ring span{font-size:9px!important;}
+  #pollen-view .pollen-neo-metric-foot{display:none!important;}
+  #pollen-view .pollen-neo-trend-svg{height:34px!important;width:100%!important;}
+  #pollen-view .pollen-neo-chart strong,
+  #pollen-view .pollen-neo-quiet-card strong{
+    font-size:15px!important;
+    line-height:1.05!important;
+    white-space:normal!important;
+  }
+  #pollen-view .pollen-neo-chart span,
+  #pollen-view .pollen-neo-quiet-card span{font-size:10px!important;line-height:1.2!important;}
+  #pollen-view .pollen-neo-quiet-card .pollen-neo-icon-svg{width:28px!important;height:28px!important;}
+
+  /* Reihenfolge: Allergieprofil, Symptome, Ausblick */
+  #pollen-view .pollen-neo-left > .pollen-neo-section:nth-child(1),
+  #pollen-view .pollen-neo-section:first-child{order:3!important;}
+  #pollen-view .pollen-neo-symptoms{order:4!important;}
+  #pollen-view .pollen-neo-forecast{order:5!important;}
+  #pollen-view .pollen-neo-section-head{padding:2px 0 0!important;}
+  #pollen-view .pollen-neo-section-head span{
+    font-size:12px!important;
+    letter-spacing:.08em!important;
+    color:rgba(255,255,255,.68)!important;
+  }
+
+  /* Allergieprofil als scrollbare Chips */
+  #pollen-view .pollen-neo-profile-grid{
+    display:flex!important;
+    gap:10px!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    scroll-snap-type:x proximity;
+    padding:2px 2px 6px!important;
+    margin:0 -2px!important;
+    -webkit-overflow-scrolling:touch;
+  }
+  #pollen-view .pollen-neo-profile-grid::-webkit-scrollbar{display:none;}
+  #pollen-view .pollen-neo-profile-card{
+    flex:0 0 108px!important;
+    min-width:108px!important;
+    min-height:118px!important;
+    max-height:118px!important;
+    padding:13px 10px!important;
+    border-radius:18px!important;
+    gap:7px!important;
+    scroll-snap-align:start;
+  }
+  #pollen-view .pollen-neo-icon-svg{width:26px!important;height:26px!important;}
+  #pollen-view .pollen-neo-profile-card strong{font-size:13px!important;line-height:1.15!important;}
+  #pollen-view .pollen-neo-profile-card span{font-size:11px!important;line-height:1.1!important;}
+  #pollen-view .pollen-neo-profile-card em{font-size:13px!important;line-height:1.1!important;}
+
+  /* Symptome als kompakter Tracker */
+  #pollen-view .change-symptom-card{
+    padding:15px!important;
+    border-radius:22px!important;
+    background:rgba(10,17,23,.72)!important;
+    box-shadow:none!important;
+  }
+  #pollen-view .change-symptom-head{padding:0 0 10px!important;margin:0!important;}
+  #pollen-view .change-symptom-head strong{font-size:13px!important;letter-spacing:.08em!important;}
+  #pollen-view .change-symptom-insight{
+    grid-template-columns:30px 1fr!important;
+    gap:9px!important;
+    padding:11px!important;
+    border-radius:16px!important;
+    margin-bottom:10px!important;
+  }
+  #pollen-view .change-symptom-insight strong{font-size:14px!important;line-height:1.2!important;}
+  #pollen-view .change-symptom-insight span{font-size:12px!important;line-height:1.35!important;}
+  #pollen-view .change-symptom-list{gap:8px!important;}
+  #pollen-view .change-symptom-row{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:9px!important;
+    padding:11px!important;
+    border-radius:16px!important;
+  }
+  #pollen-view .change-symptom-label{font-size:13px!important;line-height:1.15!important;}
+  #pollen-view .change-symptom-icon{width:20px!important;height:20px!important;}
+  #pollen-view .change-symptom-levels{
+    display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:6px!important;
+  }
+  #pollen-view .change-symptom-level{
+    min-height:32px!important;
+    padding:0 5px!important;
+    border-radius:999px!important;
+    font-size:11px!important;
+    font-weight:800!important;
+  }
+  #pollen-view .change-symptom-note-wrap{margin-top:10px!important;}
+  #pollen-view .change-symptom-note-label{font-size:11px!important;}
+  #pollen-view .change-symptom-note{min-height:74px!important;font-size:12px!important;border-radius:16px!important;}
+
+  /* Forecast als Handy-Feed */
+  #pollen-view .pollen-neo-forecast-list{
+    border-radius:20px!important;
+    overflow:hidden!important;
+    background:rgba(10,17,23,.62)!important;
+    box-shadow:none!important;
+  }
+  #pollen-view .pollen-neo-forecast-row{
+    display:grid!important;
+    grid-template-columns:12px minmax(72px,.55fr) minmax(0,1fr)!important;
+    gap:10px!important;
+    padding:12px!important;
+    min-height:0!important;
+    align-items:center!important;
+  }
+  #pollen-view .pollen-neo-forecast-dot{width:10px!important;height:10px!important;margin-top:0!important;}
+  #pollen-view .pollen-neo-forecast-date{border:0!important;padding:0!important;min-width:0!important;}
+  #pollen-view .pollen-neo-forecast-date strong{font-size:13px!important;line-height:1.15!important;white-space:normal!important;}
+  #pollen-view .pollen-neo-forecast-date span{font-size:10px!important;line-height:1.15!important;}
+  #pollen-view .pollen-neo-forecast-main{grid-column:auto!important;min-width:0!important;}
+  #pollen-view .pollen-neo-forecast-main strong{
+    font-size:13px!important;
+    line-height:1.15!important;
+    max-width:100%!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  #pollen-view .pollen-neo-forecast-main span{
+    font-size:10px!important;
+    line-height:1.2!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  #pollen-view .pollen-neo-bars{
+    grid-column:3!important;
+    justify-content:flex-start!important;
+    margin-top:5px!important;
+    gap:4px!important;
+  }
+  #pollen-view .pollen-neo-bars span{width:16px!important;height:4px!important;border-radius:999px!important;}
+}
+
+@media (max-width:390px){
+  #pollen-view .list-title{font-size:31px!important;}
+  #pollen-view .pollen-neo-header-settings{max-width:190px!important;font-size:13px!important;}
+  #pollen-view .pollen-neo-profile-card{flex-basis:102px!important;min-width:102px!important;}
+  #pollen-view .change-symptom-level{font-size:10px!important;}
+  #pollen-view .pollen-neo-forecast-row{grid-template-columns:10px minmax(62px,.5fr) minmax(0,1fr)!important;gap:8px!important;}
+  #pollen-view .pollen-neo-bars span{width:13px!important;}
+}

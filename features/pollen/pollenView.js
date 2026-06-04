@@ -3,7 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0031';
+  var APP_VERSION = '0.1.0032';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var SELECTED_KEY = 'change_v1_pollen_selected_keys';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
@@ -365,6 +365,11 @@
       notify.title = 'Benachrichtigungen';
       notify.innerHTML = '<span class="pollen-neo-header-settings-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 9.7c0-3.3-2.1-5.7-5.1-6.2V2.8a.9.9 0 0 0-1.8 0v.7C8.1 4 6 6.4 6 9.7v3.5c0 1.4-.6 2.5-1.5 3.4a.9.9 0 0 0 .6 1.5h13.8a.9.9 0 0 0 .6-1.5c-.9-.9-1.5-2-1.5-3.4V9.7Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path><path d="M9.8 19.5a2.4 2.4 0 0 0 4.4 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path></svg></span><span class="pollen-neo-notify-count" data-pollen-notify-count style="display:none"></span>';
       actions.appendChild(notify);
+    }
+    var settingsExisting = actions.querySelector('.pollen-neo-header-settings');
+    if(settingsExisting){
+      var settingsLabel = settingsExisting.querySelector('span:last-child');
+      if(settingsLabel) settingsLabel.textContent = 'Allergieprofil';
     }
     if(!actions.querySelector('.pollen-neo-header-settings')){
       var action = document.createElement('button');
