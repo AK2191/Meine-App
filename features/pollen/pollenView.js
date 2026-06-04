@@ -3,7 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0041';
+  var APP_VERSION = '0.1.0042';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var SELECTED_KEY = 'change_v1_pollen_selected_keys';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
@@ -77,6 +77,18 @@
     var items = selectedItems(day, keys).filter(function(p){ return clampNum(p && p.value) > 0; });
     if(!items.length && selectedItems(day, keys).length) items = selectedItems(day, keys).slice(0, 2);
     return summaryForItems(items.slice(0, 3));
+  }
+  function relevantLoadItems(day){
+    return activeItems(day).filter(function(p){ return clampNum(p && p.value) >= 1; }).slice(0, 4);
+  }
+  function relevantLoadHtml(day){
+    var items = relevantLoadItems(day);
+    if(!items.length){
+      return '<div class="pollen-neo-loadline empty"><span>Aktuell ab 1 %</span><strong>Keine relevanten Werte</strong></div>';
+    }
+    return '<div class="pollen-neo-loadline"><span>Aktuell ab 1 %</span><div>' + items.map(function(p){
+      return '<strong class="'+esc(p.level || 'none')+'">'+esc(p.name)+' <em>'+esc(Math.round(clampNum(p.value)))+' %</em></strong>';
+    }).join('') + '</div></div>';
   }
   function levelLabel(level){ return level === 'high' ? 'hoch' : level === 'medium' ? 'mittel' : level === 'low' ? 'niedrig' : 'keine'; }
   function intensityTitle(level){ return level === 'high' ? 'Hoch' : level === 'medium' ? 'Mittel' : level === 'low' ? 'Niedrig' : 'Ruhig'; }
@@ -223,6 +235,8 @@
     var peak = forecastPeak(selected);
     var quiet = quietestDay(selected);
     var selectedItem = todaySelected.item || dominantItem(today, selectedKeys) || {key:selectedKeys && selectedKeys[0], name:'Pollen', level:'none', value:0};
+    var topLoadItem = relevantLoadItems(today)[0] || activeItems(today)[0] || selectedItem;
+    var topLoadScore = Math.round(clampNum(topLoadItem && topLoadItem.value));
     var nextTrend = trendText(selected);
     var score = Math.round(todaySelected.score || 0);
     var intensity = intensityTitle(todaySelected.level);
@@ -233,11 +247,12 @@
           + '<div class="pollen-neo-label">Deine Pollen heute</div>'
           + '<div class="pollen-neo-hero-title">'+esc(intensity)+'</div>'
           + '<div class="pollen-neo-subline">'+overallSubline(today, selectedKeys)+'</div>'
+          + relevantLoadHtml(today)
           + '<div class="pollen-neo-cta">↗ '+esc(nextTrend)+'</div>'
         + '</div>'
         + heroArtSvg()
         + '<div class="pollen-neo-hero-stats">'
-          + '<div><span class="dot yellow"></span><strong>'+esc(selectedItem.name)+' stark</strong><em>'+esc(score)+' %</em></div>'
+          + '<div><span class="dot yellow"></span><strong>'+esc((topLoadItem && topLoadItem.name) || 'Pollen')+' '+esc(levelLabel(topLoadItem && topLoadItem.level))+'</strong><em>'+esc(topLoadScore)+' %</em></div>'
           + '<div><span class="mark peak"></span><strong>Peak</strong><em>'+esc(peak ? diffLabel(dayDiff(peak.date)) : '–')+'</em></div>'
           + '<div><span class="mark leaf"></span><strong>Ruhigster Tag</strong><em>'+esc(quiet ? fmtLongDay(quiet.date).split(',')[0] : '–')+'</em></div>'
         + '</div>'

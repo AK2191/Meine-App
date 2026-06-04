@@ -314,7 +314,6 @@ body.change-mobile .challenge-item > .btn:not(.btn-undo) {
     radial-gradient(circle at 98% 10%,rgba(118,22,34,.08),transparent 18%),
     linear-gradient(180deg,rgba(6,11,16,.18),rgba(4,9,14,0));
 }
-#challenges-view .list-header,
 #challenges-view .challenge-neo-header{
   position:relative!important;
   z-index:1!important;
@@ -593,7 +592,6 @@ body.change-mobile .challenge-item > .btn:not(.btn-undo) {
     overflow-x:hidden!important;
     box-sizing:border-box!important;
   }
-  #challenges-view .list-header,
   #challenges-view .challenge-neo-header{
     display:grid!important;
     grid-template-columns:minmax(0,1fr)!important;
@@ -693,7 +691,6 @@ body.change-mobile .challenge-item > .btn:not(.btn-undo) {
 }
 
 @media (max-width:390px){
-  #challenges-view .list-header,
   #challenges-view .challenge-neo-header{padding-left:14px!important;padding-right:14px!important}
   #challenges-view .challenge-layout{padding-left:14px!important;padding-right:14px!important}
   #challenges-view .challenge-card-head .btn{padding:0 8px!important}
