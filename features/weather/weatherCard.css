@@ -142,3 +142,20 @@
 .change-weather-panel .change-forecast-value{font-size:12px;font-weight:950;color:var(--t1);white-space:nowrap;flex:0 0 auto;text-align:right}
 .change-weather-panel .change-sun-row{margin-top:5px;font-size:11.5px;font-weight:700;color:var(--t3);min-width:0;overflow:hidden;flex-wrap:wrap}
 @media(max-width:420px){.change-weather-summary strong{font-size:22px}.change-weather-panel .change-forecast-date{width:62px;flex-basis:62px}.change-weather-panel .change-forecast-value{font-size:11.5px}.change-weather-now{gap:10px;padding:11px 12px}}
+
+
+/* Pollen Detailkarten – ruhiger Friseur-Stil */
+.change-pollen-ui-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;width:100%;max-width:100%}
+.change-pollen-ui-card{display:flex;align-items:flex-start;gap:11px;border:1px solid var(--b1);background:var(--s1);border-radius:18px;padding:13px 13px;min-width:0;box-shadow:0 1px 2px rgba(0,0,0,.035)}
+.change-pollen-ui-card.medium{border-color:rgba(245,158,11,.26);background:rgba(245,158,11,.055)}
+.change-pollen-ui-card.high{border-color:rgba(239,68,68,.28);background:rgba(239,68,68,.06)}
+.change-pollen-ui-icon{width:36px;height:36px;border-radius:13px;background:var(--acc-d);display:flex;align-items:center;justify-content:center;font-size:17px;flex:0 0 36px}
+.change-pollen-ui-card.medium .change-pollen-ui-icon{background:rgba(245,158,11,.14)}
+.change-pollen-ui-card.high .change-pollen-ui-icon{background:rgba(239,68,68,.13)}
+.change-pollen-ui-main{min-width:0;flex:1}
+.change-pollen-ui-main strong{display:block;font-size:12px;font-weight:950;color:var(--t1);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.change-pollen-ui-main span{display:block;margin-top:4px;font-size:15px;font-weight:950;color:var(--t1);letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.change-pollen-ui-main small{display:block;margin-top:3px;font-size:11px;font-weight:700;color:var(--t4);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.change-pollen-chip{appearance:none;border:0;font-family:var(--font);cursor:pointer}
+.change-pollen-chip:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+@media(max-width:520px){.change-pollen-ui-grid{grid-template-columns:1fr}.change-pollen-ui-card{padding:12px}}
