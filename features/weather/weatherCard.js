@@ -191,6 +191,25 @@
     var total = items.reduce(function(sum,p){ return sum + Math.min(100, Math.max(0, Number(p.value) || 0)); }, 0);
     return Math.round(Math.min(100, total / Math.max(1, items.length) * 1.6));
   }
+  function forecastPeak(forecast){
+    if(!forecast || !forecast.length) return null;
+    return forecast.slice().sort(function(a,b){ return pollenScore(b) - pollenScore(a); })[0] || null;
+  }
+  function quietestDay(forecast){
+    if(!forecast || !forecast.length) return null;
+    return forecast.slice().sort(function(a,b){ return pollenScore(a) - pollenScore(b); })[0] || null;
+  }
+  function tomorrowTrend(forecast){
+    if(!forecast || forecast.length < 2) return 'Kein Trend verfügbar.';
+    var today = pollenScore(forecast[0]);
+    var tomorrow = pollenScore(forecast[1]);
+    var diff = tomorrow - today;
+    if(diff >= 12) return 'Morgen steigt die Belastung deutlich.';
+    if(diff >= 4) return 'Morgen steigt die Belastung leicht.';
+    if(diff <= -12) return 'Morgen wird es deutlich ruhiger.';
+    if(diff <= -4) return 'Morgen wird es etwas ruhiger.';
+    return 'Morgen bleibt die Belastung ähnlich.';
+  }
   function pollenInsightText(day){
     var active = allActivePollen(day);
     if(!active.length) return 'Heute sind keine relevanten Pollenwerte sichtbar.';
@@ -200,10 +219,10 @@
   }
   function pollenSummaryPanelHtml(forecast){
     var today = forecast[0] || null;
-    var highCount = forecast.filter(function(day){ return day && day.strong && day.strong.length; }).length;
-    var mediumCount = forecast.filter(function(day){ return day && !(day.strong && day.strong.length) && day.elevated && day.elevated.length; }).length;
+    var peak = forecastPeak(forecast);
     var active = allActivePollen(today).length;
-    return '<div class="change-pollen-summary"><div><strong>'+esc(pollenScore(today))+'%</strong><span>Index</span></div><div><strong>'+esc(active)+'</strong><span>Arten</span></div><div><strong>'+esc(highCount+'/'+mediumCount)+'</strong><span>Stark/Mittel</span></div></div>';
+    var peakText = peak ? pollenDiffLabel(dayDiff(peak.date)) : '–';
+    return '<div class="change-pollen-summary"><div><strong>'+esc(pollenScore(today))+'%</strong><span>Index</span></div><div><strong>'+esc(active)+'</strong><span>Arten</span></div><div><strong>'+esc(peakText)+'</strong><span>Peak</span></div></div>';
   }
   function pollenChipsHtml(day){
     var items = day && day.items || [];
@@ -212,12 +231,20 @@
       return '<span class="change-pollen-chip '+esc(p.level || 'none')+'">'+esc(p.name)+' · '+esc(p.levelLabel || levelLabel(p.level))+' · '+esc(p.value)+'</span>';
     }).join('') + '</div>';
   }
+  function pollenAdviceHtml(forecast){
+    var peak = forecastPeak(forecast);
+    var quiet = quietestDay(forecast);
+    var trend = tomorrowTrend(forecast);
+    var peakText = peak ? fmtDay(peak.date) + ' · ' + pollenScore(peak) + '%' : 'nicht verfügbar';
+    var quietText = quiet ? fmtDay(quiet.date) + ' · ' + pollenScore(quiet) + '%' : 'nicht verfügbar';
+    return '<div class="change-pollen-next none"><div class="change-pollen-next-icon">🧭</div><div class="change-pollen-next-main"><strong>Ausblick & Empfehlung</strong><span>'+esc(trend)+' Peak: '+esc(peakText)+'. Ruhigster Tag: '+esc(quietText)+'.</span></div></div>';
+  }
   function pollenPanelRow(day){
     var status = pollenStatus(day);
     var diff = dayDiff(day.date);
     var top = allActivePollen(day).slice(0,4);
     var txt = top.length ? top.map(function(p){ return p.name+' '+(p.levelLabel || levelLabel(p.level)); }).join(', ') : 'keine Belastung';
-    return '<div class="change-pollen-row '+esc(status.key)+'"><div class="change-pollen-dot"></div><div class="change-pollen-main"><div class="change-pollen-title">'+esc(fmtDay(day.date))+' · '+esc(status.title)+'</div><div class="change-pollen-meta">'+esc(txt)+'</div></div><div class="change-pollen-state">'+esc(pollenDiffLabel(diff))+'</div></div>';
+    return '<div class="change-pollen-row '+esc(status.key)+'"><div class="change-pollen-dot"></div><div class="change-pollen-main"><div class="change-pollen-title">'+esc(fmtDay(day.date))+' · '+esc(status.title)+' · '+esc(pollenScore(day))+'%</div><div class="change-pollen-meta">'+esc(txt)+'</div></div><div class="change-pollen-state">'+esc(pollenDiffLabel(diff))+'</div></div>';
   }
   function pollenForecastHtml(data, view, loc){
     var forecast = data && data.pollen && data.pollen.forecast || [];
@@ -227,6 +254,7 @@
     return '<div class="change-pollen-panel">'
       + pollenSummaryPanelHtml(forecast)
       + '<div class="change-pollen-next '+esc(status.key)+'"><div class="change-pollen-next-icon">🌿</div><div class="change-pollen-next-main"><strong>'+esc(status.title)+' · '+esc(fmtDay(today.date))+'</strong><span>'+esc(pollenInsightText(today))+'</span></div></div>'
+      + pollenAdviceHtml(forecast)
       + '<div class="change-pollen-section-title">Heute nach Pollenart · '+esc(locationHint(loc))+'</div>'
       + pollenChipsHtml(today)
       + '<div class="change-pollen-section-title">7-Tage-Ausblick</div>'
