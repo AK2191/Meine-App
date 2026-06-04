@@ -1,17 +1,23 @@
-Change App · Pollen Premium Style · Version 0.1.0014
+Change App · Pollen Premium Style · Version 0.1.0013
 
-Enthaltene Dateien:
-features/pollen/pollenView.js
-features/pollen/pollenView.css
-README.txt
+Enthaltene Änderungen:
+- features/pollen/pollenView.js
+- features/pollen/pollenView.css
+- features/weather/pollenSymptoms.js
+- styles/app.css
+- features/settings/settingsPanel.js
+- CLAUDE.md
+- README.txt
 
 Anpassungen in diesem Update:
-- Stil deutlich näher an den gelieferten Screenshot angepasst
-- Hero-Karte optisch beruhigt und klarer aufgebaut
-- Profil-Karten Gräser/Birke/etc. sind jetzt statisch und öffnen kein Panel mehr
-- Emoji-/Fallback-Icons durch ruhigere Inline-SVG-Icons ersetzt
-- Das bisherige Gras-Symbol in der Hero-Karte durch eine sauberere Illustration ersetzt
+- Pollen-Seite optisch und strukturell deutlich näher an das Referenzbild gebracht
+- Desktop-Shell für den Pollen-Reiter auf linke Seitenleiste umgestellt
+- Rechts oben bleibt im Pollen-Reiter nur noch der kontextuelle Button "Pollen-Settings"
+- Allergieprofil-Karten filtern jetzt die Hauptkarte und den 7-Tage-Ausblick
+- Klick auf Pollenarten öffnet kein Panel mehr
+- Pollen-Icons und Symptom-Icons auf ruhigere Inline-SVGs umgestellt
+- Symptome-heute-Karte im ruhigeren Zwei-Spalten-Stil überarbeitet
+- Sichtbare App-Version auf 0.1.0013 erhöht und in CLAUDE.md dokumentiert
 
 Hinweis:
-Dies ist ein aktualisiertes ZIP-Paket für den Pollen-Bereich. GitHub konnte in diesem Durchlauf nicht direkt angepasst werden.
-Die Pollen-Ansicht selbst trägt intern Version 0.1.0014.
+Die globale App-Struktur wurde nur so weit angepasst, wie es für den referenznahen Pollen-Reiter notwendig war.

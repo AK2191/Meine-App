@@ -947,3 +947,30 @@ textarea.finput{resize:vertical;min-height:80px;line-height:1.5}
 .dash-card-body > .dash-section-divider + .dash-row{
   border-top:0!important;
 }
+
+/* ==== POLLEN DESKTOP SHELL ==== */
+@media(min-width:701px){
+  body.neo-pollen-shell #main-app,body.change-view-pollen #main-app{display:grid!important;grid-template-columns:118px minmax(0,1fr);grid-template-rows:1fr;height:100vh;overflow:hidden;background:#04090e}
+  body.neo-pollen-shell #header,body.change-view-pollen #header{height:100vh;padding:22px 0 18px;flex-direction:column;align-items:stretch;gap:22px;border-right:1px solid rgba(255,255,255,.06);border-bottom:0;background:linear-gradient(180deg,rgba(7,12,18,.98),rgba(4,9,14,.96));position:relative;z-index:2}
+  body.neo-pollen-shell .h-logo,body.change-view-pollen .h-logo{padding:0 18px 0 18px;justify-content:flex-start}
+  body.neo-pollen-shell .h-logo-icon,body.change-view-pollen .h-logo-icon{width:52px;height:52px;border-radius:14px;box-shadow:0 14px 36px rgba(74,222,128,.18)}
+  body.neo-pollen-shell .h-logo-icon svg,body.change-view-pollen .h-logo-icon svg{width:52px;height:52px}
+  body.neo-pollen-shell .h-logo-name,body.change-view-pollen .h-logo-name{display:none}
+  body.neo-pollen-shell .h-sep,body.neo-pollen-shell #cal-controls,body.change-view-pollen .h-sep,body.change-view-pollen #cal-controls{display:none!important}
+  body.neo-pollen-shell .h-tabs,body.change-view-pollen .h-tabs{flex:1;display:flex;flex-direction:column;gap:10px;padding:0 12px;align-items:stretch}
+  body.neo-pollen-shell .h-tab,body.change-view-pollen .h-tab{width:100%;padding:16px 10px;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:700;color:rgba(244,247,244,.78);background:transparent;text-align:center}
+  body.neo-pollen-shell .h-tab svg,body.change-view-pollen .h-tab svg{width:24px;height:24px;stroke-width:1.9}
+  body.neo-pollen-shell .h-tab:hover,body.change-view-pollen .h-tab:hover{background:rgba(255,255,255,.04);color:#fff}
+  body.neo-pollen-shell .h-tab.active,body.change-view-pollen .h-tab.active{background:linear-gradient(180deg,rgba(27,82,42,.68),rgba(15,42,23,.85));color:#4ade80;box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 14px 40px rgba(0,0,0,.24)}
+  body.neo-pollen-shell .h-right,body.change-view-pollen .h-right{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:14px;padding:0 12px 0}
+  body.neo-pollen-shell #dark-mode-btn,body.neo-pollen-shell #notif-bell-btn,body.change-view-pollen #dark-mode-btn,body.change-view-pollen #notif-bell-btn{display:none!important}
+  body.neo-pollen-shell .avatar,body.change-view-pollen .avatar{width:58px;height:58px;box-shadow:0 12px 30px rgba(0,0,0,.28);order:1}
+  body.neo-pollen-shell #settings-btn,body.change-view-pollen #settings-btn{display:flex!important;width:100%;height:auto;padding:14px 10px;border-radius:18px;flex-direction:column;gap:8px;background:transparent;color:rgba(244,247,244,.78);order:2}
+  body.neo-pollen-shell #settings-btn:hover,body.change-view-pollen #settings-btn:hover{background:rgba(255,255,255,.04);color:#fff}
+  body.neo-pollen-shell #settings-btn svg,body.change-view-pollen #settings-btn svg{width:24px;height:24px;stroke-width:1.9}
+  body.neo-pollen-shell #settings-btn::after,body.change-view-pollen #settings-btn::after{content:"Einstellungen";font-size:13px;font-weight:700;line-height:1.1}
+
+  body.neo-pollen-shell .avatar + *,body.change-view-pollen .avatar + *{display:none}
+  body.neo-pollen-shell #content,body.change-view-pollen #content{padding:24px 28px 28px;overflow:hidden;background:transparent}
+  body.neo-pollen-shell #dashboard-view,body.neo-pollen-shell #challenges-view,body.neo-pollen-shell #cal-body,body.neo-pollen-shell #pollen-view,body.change-view-pollen #dashboard-view,body.change-view-pollen #challenges-view,body.change-view-pollen #cal-body,body.change-view-pollen #pollen-view{border-radius:0;background:transparent}
+}

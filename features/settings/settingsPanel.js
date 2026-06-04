@@ -453,7 +453,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0012';
+  var APP_VERSION = '0.1.0013';
 
   function appPane(){
     var installed = installedLabel();

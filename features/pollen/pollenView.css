@@ -1,28 +1,30 @@
-/* Premium Pollen View · Stil angelehnt an Screenshot · v0.1.0014 */
-#pollen-view{position:relative;background:#04080d;color:#f4f7f4;overflow:hidden}
+/* Pollen View · Premium Redesign · v0.1.0013 */
+#pollen-view{position:relative;background:#04090e;color:#f4f7f4;overflow:hidden}
 #pollen-view::before{content:"";position:absolute;inset:0;background:
-  radial-gradient(circle at 22% 10%,rgba(18,111,53,.34),transparent 28%),
-  radial-gradient(circle at 74% 6%,rgba(252,211,77,.10),transparent 16%),
-  radial-gradient(circle at 96% 10%,rgba(127,29,29,.20),transparent 18%),
-  linear-gradient(180deg,rgba(6,12,17,.38),rgba(4,8,13,0));pointer-events:none}
-#pollen-view .list-header{position:relative;z-index:1;padding:4px 0 18px;border:0;background:transparent}
-#pollen-view .list-title{display:flex;align-items:center;gap:12px;font-size:24px;line-height:1;font-weight:900;letter-spacing:-.6px;color:#fff}
-#pollen-view .list-title::before{content:"";width:16px;height:16px;border-radius:99px;background:radial-gradient(circle at 35% 35%,#4ade80,#1d4f2a 72%);box-shadow:0 0 18px rgba(74,222,128,.45)}
-#pollen-view .pollen-view-sub{margin-top:8px;font-size:12px;font-weight:700;color:rgba(244,247,244,.60)}
-.pollen-view-body{position:relative;z-index:1;flex:1;min-height:0;overflow:auto;padding:0 2px 32px;scrollbar-color:rgba(148,163,184,.26) transparent}
+  radial-gradient(circle at 21% 10%,rgba(16,110,54,.35),transparent 28%),
+  radial-gradient(circle at 74% 7%,rgba(247,187,33,.10),transparent 16%),
+  radial-gradient(circle at 96% 10%,rgba(108,13,27,.18),transparent 18%),
+  linear-gradient(180deg,rgba(7,13,18,.34),rgba(4,9,14,0));pointer-events:none}
+#pollen-view .list-header{position:relative;z-index:1;padding:0 0 18px;border:0;background:transparent;display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+#pollen-view .list-title{display:flex;align-items:center;gap:12px;font-size:25px;line-height:1;font-weight:950;letter-spacing:-.7px;color:#fff}
+#pollen-view .list-title::before{content:"";width:18px;height:18px;border-radius:99px;background:radial-gradient(circle at 35% 35%,#4ade80,#1d4f2a 72%);box-shadow:0 0 18px rgba(74,222,128,.45)}
+#pollen-view .pollen-view-sub{margin-top:8px;font-size:12px;font-weight:750;color:rgba(244,247,244,.62)}
+#pollen-view .pollen-neo-header-settings{appearance:none;border:1px solid rgba(255,255,255,.10);background:rgba(7,12,18,.72);color:#f4f7f4;border-radius:14px;padding:14px 18px;display:inline-flex;align-items:center;gap:10px;font-family:var(--font);font-size:14px;font-weight:800;box-shadow:0 10px 30px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.03);cursor:pointer;white-space:nowrap}
+#pollen-view .pollen-neo-header-settings:hover{background:rgba(11,18,25,.88)}
+#pollen-view .pollen-neo-header-settings-icon{display:inline-flex;width:18px;height:18px;color:rgba(244,247,244,.92)}
+#pollen-view .pollen-neo-header-settings-icon svg{width:100%;height:100%}
+.pollen-view-body{position:relative;z-index:1;flex:1;min-height:0;overflow:auto;padding:0 2px 30px;scrollbar-color:rgba(148,163,184,.26) transparent}
 .pollen-view-body::-webkit-scrollbar{width:8px;height:8px}.pollen-view-body::-webkit-scrollbar-thumb{background:rgba(148,163,184,.22);border-radius:999px}
-#pollen-view .pollen-neo-shell{max-width:1360px;margin:0 auto;display:grid;gap:22px}
+#pollen-view .pollen-neo-shell{max-width:1320px;margin:0 auto;display:grid;gap:22px}
 #pollen-view .pollen-neo-card,
 #pollen-view .pollen-neo-forecast-list,
-#pollen-view .change-symptom-card{border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(14,21,27,.82),rgba(7,11,16,.96));border-radius:24px;box-shadow:0 18px 60px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.03)}
-#pollen-view .pollen-neo-top{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(430px,.98fr);gap:18px;position:relative}
-#pollen-view .pollen-neo-hero{position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) 210px 230px;gap:18px;align-items:center;min-height:268px;padding:26px 26px 24px;border-radius:26px;border:1px solid rgba(74,222,128,.18);background:
-  radial-gradient(circle at 16% 0%,rgba(74,222,128,.14),transparent 36%),
-  linear-gradient(90deg,rgba(20,45,28,.78),rgba(8,18,21,.95));box-shadow:0 22px 74px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.03)}
-#pollen-view .pollen-neo-hero.medium{background:radial-gradient(circle at 16% 0%,rgba(251,191,36,.12),transparent 36%),linear-gradient(90deg,rgba(42,43,20,.76),rgba(8,18,21,.95));border-color:rgba(251,191,36,.18)}
+#pollen-view .change-symptom-card{border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(14,21,27,.84),rgba(7,11,16,.96));border-radius:24px;box-shadow:0 18px 60px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.03)}
+#pollen-view .pollen-neo-top{display:grid;grid-template-columns:minmax(0,1.06fr) minmax(440px,.94fr);gap:18px;position:relative}
+#pollen-view .pollen-neo-hero{position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) 200px 232px;gap:16px;align-items:center;min-height:272px;padding:26px 28px 24px;border-radius:26px;border:1px solid rgba(74,222,128,.18);background:radial-gradient(circle at 16% 0%,rgba(74,222,128,.14),transparent 36%),linear-gradient(90deg,rgba(20,45,28,.80),rgba(8,18,21,.95));box-shadow:0 22px 74px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.03)}
+#pollen-view .pollen-neo-hero.medium{background:radial-gradient(circle at 16% 0%,rgba(251,191,36,.12),transparent 36%),linear-gradient(90deg,rgba(42,43,20,.78),rgba(8,18,21,.95));border-color:rgba(251,191,36,.18)}
 #pollen-view .pollen-neo-hero.high{background:radial-gradient(circle at 16% 0%,rgba(239,68,68,.14),transparent 36%),linear-gradient(90deg,rgba(46,24,19,.78),rgba(8,18,21,.95));border-color:rgba(239,68,68,.18)}
 #pollen-view .pollen-neo-label{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:rgba(244,247,244,.72)}
-#pollen-view .pollen-neo-hero-title{margin-top:16px;font-size:48px;font-weight:950;line-height:.95;letter-spacing:-1.8px;color:#4ade80;text-shadow:0 12px 28px rgba(74,222,128,.18)}
+#pollen-view .pollen-neo-hero-title{margin-top:16px;font-size:50px;font-weight:950;line-height:.95;letter-spacing:-1.8px;color:#4ade80;text-shadow:0 12px 28px rgba(74,222,128,.18)}
 #pollen-view .pollen-neo-hero.medium .pollen-neo-hero-title{color:#fbbf24;text-shadow:0 12px 28px rgba(251,191,36,.18)}
 #pollen-view .pollen-neo-hero.high .pollen-neo-hero-title{color:#ff574c;text-shadow:0 12px 28px rgba(239,68,68,.18)}
 #pollen-view .pollen-neo-subline{margin-top:18px;display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:17px;font-weight:900;color:#e7ece7}
@@ -30,48 +32,59 @@
 #pollen-view .pollen-neo-word.none,#pollen-view .pollen-neo-muted{color:rgba(244,247,244,.58)}
 #pollen-view .pollen-neo-word.low{color:#4ade80}#pollen-view .pollen-neo-word.medium{color:#fbbf24}#pollen-view .pollen-neo-word.high{color:#ff574c}
 #pollen-view .pollen-neo-cta{display:inline-flex;align-items:center;gap:8px;margin-top:28px;padding:13px 18px;border-radius:999px;background:rgba(255,194,14,.10);border:1px solid rgba(255,194,14,.10);font-size:14px;font-weight:900;color:#fbbf24;max-width:max-content}
-#pollen-view .pollen-neo-hero-illustration{width:100%;max-width:190px;height:auto;justify-self:center;align-self:end;opacity:.72;filter:drop-shadow(0 22px 26px rgba(0,0,0,.24))}
+#pollen-view .pollen-neo-hero-illustration{width:100%;max-width:190px;height:auto;justify-self:center;align-self:end;opacity:.75;filter:drop-shadow(0 22px 26px rgba(0,0,0,.24))}
 #pollen-view .pollen-neo-hero-stats{display:grid;align-self:stretch;padding-left:18px;border-left:1px solid rgba(255,255,255,.08)}
 #pollen-view .pollen-neo-hero-stats>div{display:grid;grid-template-columns:30px minmax(0,1fr);align-content:center;gap:0 12px;border-bottom:1px solid rgba(255,255,255,.08)}
 #pollen-view .pollen-neo-hero-stats>div:last-child{border-bottom:0}
-#pollen-view .pollen-neo-hero-stats span{grid-row:1/3;width:24px;height:24px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);color:#f4f7f4;font-size:10px;font-weight:900}
+#pollen-view .pollen-neo-hero-stats .dot,#pollen-view .pollen-neo-hero-stats .mark{grid-row:1/3;width:24px;height:24px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);position:relative}
+#pollen-view .pollen-neo-hero-stats .dot.yellow::after{content:"";width:10px;height:10px;border-radius:99px;background:#fbbf24}
+#pollen-view .pollen-neo-hero-stats .mark.peak::after{content:"";width:12px;height:12px;background:conic-gradient(from 180deg,#ff574c 0 80deg,transparent 0);border-radius:4px;transform:rotate(135deg)}
+#pollen-view .pollen-neo-hero-stats .mark.leaf::after{content:"";width:13px;height:18px;background:#72da5c;border-radius:90% 10% 90% 10%/90% 10% 90% 10%;transform:rotate(-25deg)}
 #pollen-view .pollen-neo-hero-stats strong{font-size:13px;font-weight:800;color:rgba(244,247,244,.72);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #pollen-view .pollen-neo-hero-stats em{font-style:normal;font-size:17px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #pollen-view .pollen-neo-sidecards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
 #pollen-view .pollen-neo-metric{min-height:212px;padding:22px;display:grid;align-content:space-between}
 #pollen-view .pollen-neo-ring{--p:0;width:142px;height:142px;border-radius:999px;display:grid;place-items:center;position:relative;margin:6px auto 0;background:conic-gradient(#fbbf24 calc(var(--p)*1%),rgba(255,255,255,.11) 0)}
+#pollen-view .pollen-neo-ring.low{background:conic-gradient(#4ade80 calc(var(--p)*1%),rgba(255,255,255,.11) 0)}
+#pollen-view .pollen-neo-ring.high{background:conic-gradient(#ff574c calc(var(--p)*1%),rgba(255,255,255,.11) 0)}
 #pollen-view .pollen-neo-ring::after{content:"";position:absolute;inset:12px;border-radius:999px;background:#131b20;box-shadow:inset 0 0 0 8px rgba(255,255,255,.03)}
 #pollen-view .pollen-neo-ring strong,#pollen-view .pollen-neo-ring span{position:relative;z-index:1;text-align:center}
 #pollen-view .pollen-neo-ring strong{font-size:28px;font-weight:950;color:#fff}
 #pollen-view .pollen-neo-ring span{display:block;margin-top:4px;font-size:13px;font-weight:900;color:#fbbf24}
+#pollen-view .pollen-neo-ring.low span{color:#4ade80}#pollen-view .pollen-neo-ring.high span{color:#ff574c}
+#pollen-view .pollen-neo-metric-foot{align-self:end;justify-self:center;font-size:13px;font-weight:800;color:rgba(244,247,244,.78)}
 #pollen-view .pollen-neo-chart{display:grid;align-content:end;gap:10px;min-height:150px;color:#ff574c}
 #pollen-view .pollen-neo-trend-svg{width:100%;height:82px;overflow:visible}.pollen-neo-trend-svg circle{fill:#ff574c;stroke:#fff;stroke-width:2}
 #pollen-view .pollen-neo-chart strong{font-size:28px;font-weight:950;letter-spacing:-.8px;color:#ff574c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #pollen-view .pollen-neo-chart span{font-size:13px;font-weight:750;color:rgba(244,247,244,.64);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #pollen-view .pollen-neo-quiet-card{display:grid;align-content:end;gap:10px;min-height:150px}
-#pollen-view .pollen-neo-quiet-card strong{font-size:25px;font-weight:950;color:#4ade80;letter-spacing:-.6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pollen-view .pollen-neo-quiet-card strong{font-size:25px;font-weight:950;color:#72da5c;letter-spacing:-.6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #pollen-view .pollen-neo-quiet-card span{font-size:13px;font-weight:750;color:rgba(244,247,244,.64);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#pollen-view .pollen-neo-quiet-card .pollen-neo-icon-svg{width:50px;height:50px;color:#9eea53}
-#pollen-view .pollen-neo-location{position:absolute;right:2px;bottom:-20px;font-size:10px;font-weight:800;color:rgba(244,247,244,.34)}
-#pollen-view .pollen-neo-main-grid{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(380px,.98fr);gap:18px;align-items:start}
+#pollen-view .pollen-neo-quiet-card .pollen-neo-icon-svg{width:52px;height:52px;color:#87db52}
+#pollen-view .pollen-neo-link{font-size:13px;font-weight:800;color:rgba(244,247,244,.82)}
+#pollen-view .pollen-neo-location{position:absolute;right:4px;bottom:-20px;font-size:10px;font-weight:800;color:rgba(244,247,244,.34)}
+#pollen-view .pollen-neo-main-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(390px,.98fr);gap:18px;align-items:start}
 #pollen-view .pollen-neo-left{display:grid;gap:18px}
 #pollen-view .pollen-neo-section{display:grid;gap:12px;min-width:0}
 #pollen-view .pollen-neo-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 2px;color:rgba(244,247,244,.72)}
 #pollen-view .pollen-neo-section-head span{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
-#pollen-view .pollen-neo-section-head button{appearance:none;border:0;background:transparent;color:#4ade80;padding:4px 0;font-size:12px;font-weight:900;font-family:var(--font);cursor:pointer}
+#pollen-view .pollen-neo-link-btn{appearance:none;border:0;background:transparent;color:#4ade80;padding:4px 0;font-size:12px;font-weight:900;font-family:var(--font);cursor:pointer}
 #pollen-view .pollen-neo-profile-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
-#pollen-view .pollen-neo-profile-card{min-height:148px;padding:16px 12px;display:grid;justify-items:center;align-content:start;gap:8px;border:1px solid rgba(255,255,255,.08);border-radius:18px;background:linear-gradient(180deg,rgba(16,23,29,.86),rgba(11,16,21,.95));box-shadow:0 12px 34px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.03);pointer-events:none;user-select:none}
-#pollen-view .pollen-neo-profile-card.low{border-color:rgba(74,222,128,.28);box-shadow:0 0 0 1px rgba(74,222,128,.14),0 12px 34px rgba(0,0,0,.18)}
+#pollen-view .pollen-neo-profile-card{min-height:148px;padding:16px 12px;display:grid;justify-items:center;align-content:start;gap:8px;border:1px solid rgba(255,255,255,.08);border-radius:18px;background:linear-gradient(180deg,rgba(16,23,29,.86),rgba(11,16,21,.95));box-shadow:0 12px 34px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.03);cursor:pointer;transition:border-color .18s ease,transform .18s ease,box-shadow .18s ease;font-family:var(--font)}
+#pollen-view .pollen-neo-profile-card:hover{transform:translateY(-1px)}
+#pollen-view .pollen-neo-profile-card.active{border-color:rgba(74,222,128,.65);box-shadow:0 0 0 1px rgba(74,222,128,.22),0 12px 34px rgba(0,0,0,.18)}
+#pollen-view .pollen-neo-profile-card.high.active{border-color:rgba(251,191,36,.65);box-shadow:0 0 0 1px rgba(251,191,36,.18),0 12px 34px rgba(0,0,0,.18)}
 #pollen-view .pollen-neo-profile-card.high span,#pollen-view .pollen-neo-profile-card.high em{color:#ff574c}
 #pollen-view .pollen-neo-profile-card.medium span,#pollen-view .pollen-neo-profile-card.medium em{color:#fbbf24}
 #pollen-view .pollen-neo-profile-card.low span,#pollen-view .pollen-neo-profile-card.low em{color:#4ade80}
+#pollen-view .pollen-neo-profile-card.none span,#pollen-view .pollen-neo-profile-card.none em{color:rgba(244,247,244,.72)}
 #pollen-view .pollen-neo-profile-card strong{font-size:14px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-#pollen-view .pollen-neo-profile-card span{font-size:12px;font-weight:800;color:rgba(244,247,244,.62)}
-#pollen-view .pollen-neo-profile-card em{font-style:normal;font-size:14px;font-weight:950;color:rgba(244,247,244,.72)}
+#pollen-view .pollen-neo-profile-card span{font-size:12px;font-weight:800}
+#pollen-view .pollen-neo-profile-card em{font-style:normal;font-size:14px;font-weight:950}
 #pollen-view .pollen-neo-icon-svg{width:34px;height:34px;color:#97d24e;display:inline-flex;align-items:center;justify-content:center}
-#pollen-view .pollen-neo-profile-card.high .pollen-neo-icon-svg{color:#f4b939}
-#pollen-view .pollen-neo-profile-card.medium .pollen-neo-icon-svg{color:#a5db5c}
-#pollen-view .pollen-neo-profile-card.none .pollen-neo-icon-svg{color:rgba(244,247,244,.58)}
+#pollen-view .pollen-neo-profile-card[data-pollen-select="grass_pollen"] .pollen-neo-icon-svg{color:#f6c23b}
+#pollen-view .pollen-neo-profile-card[data-pollen-select="birch_pollen"] .pollen-neo-icon-svg{color:#7edb5b}
+#pollen-view .pollen-neo-profile-card.none .pollen-neo-icon-svg{color:#9aa3ad}
 #pollen-view .pollen-neo-icon-svg svg{width:100%;height:100%}
 #pollen-view .pollen-neo-forecast-list{display:grid;overflow:hidden}
 #pollen-view .pollen-neo-forecast-row{display:grid;grid-template-columns:18px 132px minmax(0,1fr) 124px;align-items:center;gap:14px;min-height:80px;padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
@@ -92,36 +105,35 @@
 #pollen-view .pollen-neo-bars span.on.low,#pollen-view .pollen-neo-bars span.on.none{background:#4ade80}
 #pollen-view .pollen-neo-bars span.on.medium{background:#fbbf24}
 #pollen-view .pollen-neo-bars span.on.high{background:#ff574c}
-#pollen-view .pollen-neo-symptoms .change-symptom-card{padding:20px;color:#f4f7f4}
-#pollen-view .change-symptom-head strong,#pollen-view .change-symptom-label strong{color:#fff}
-#pollen-view .change-symptom-head span,#pollen-view .change-symptom-head small,#pollen-view .change-symptom-label+*,#pollen-view .change-symptom-note-label{color:rgba(244,247,244,.58)}
-#pollen-view .change-symptom-row{border-color:rgba(255,255,255,.08);background:rgba(255,255,255,.04);border-radius:15px}
-#pollen-view .change-symptom-level{border-color:rgba(255,255,255,.09);background:rgba(255,255,255,.06);color:rgba(244,247,244,.74)}
-#pollen-view .change-symptom-level.active{background:#2c6a4d;border-color:#4ade80;color:#fff}
-#pollen-view .change-symptom-note{border-color:rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:#fff}
+#pollen-view .change-symptom-card{padding:22px 20px 20px;color:#f4f7f4;background:linear-gradient(180deg,rgba(14,21,27,.84),rgba(7,11,16,.96));border-radius:24px}
+#pollen-view .change-symptom-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.08)}
+#pollen-view .change-symptom-head strong{font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#f4f7f4}
+#pollen-view .change-symptom-head button{appearance:none;border:0;background:transparent;color:#4ade80;font-size:12px;font-weight:900;font-family:var(--font);cursor:pointer}
+#pollen-view .change-symptom-body{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:18px;align-items:start;padding-top:14px}
+#pollen-view .change-symptom-list{display:grid;gap:12px}
+#pollen-view .change-symptom-row{display:grid;grid-template-columns:96px minmax(0,1fr);align-items:center;gap:12px;padding:10px 12px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);border-radius:15px}
+#pollen-view .change-symptom-label{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:900;color:#fff}
+#pollen-view .change-symptom-icon{width:22px;height:22px;display:inline-flex;color:#f2d094}
+#pollen-view .change-symptom-row[data-symptom-row="eyes"] .change-symptom-icon{color:#e0c58c}
+#pollen-view .change-symptom-row[data-symptom-row="nose"] .change-symptom-icon{color:#ef93a9}
+#pollen-view .change-symptom-row[data-symptom-row="breath"] .change-symptom-icon{color:#ef7f84}
+#pollen-view .change-symptom-icon svg{width:100%;height:100%}
+#pollen-view .change-symptom-levels{display:flex;gap:8px;flex-wrap:wrap}
+#pollen-view .change-symptom-level{min-width:70px;justify-content:center;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.05);color:rgba(244,247,244,.74);border-radius:999px;padding:10px 14px;font-weight:800;font-family:var(--font);cursor:pointer}
+#pollen-view .change-symptom-level.active{background:#2c6a4d;border-color:#4ade80;color:#fff;box-shadow:0 0 0 1px rgba(74,222,128,.16)}
+#pollen-view .change-symptom-level[data-level="1"].active{background:#806114;border-color:#fbbf24;box-shadow:0 0 0 1px rgba(251,191,36,.16)}
+#pollen-view .change-symptom-level[data-level="2"].active,
+#pollen-view .change-symptom-level[data-level="3"].active{background:#53483a;border-color:#d6b174}
+#pollen-view .change-symptom-note-wrap{display:grid;gap:10px}
+#pollen-view .change-symptom-note-label{font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:rgba(244,247,244,.72)}
+#pollen-view .change-symptom-note-frame{position:relative}
+#pollen-view .change-symptom-note{min-height:196px;width:100%;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#fff;border-radius:16px;padding:16px 16px 42px;resize:vertical;font:inherit;line-height:1.5}
+#pollen-view .change-symptom-note::placeholder{color:rgba(244,247,244,.26)}
+#pollen-view .change-symptom-note-action{position:absolute;right:14px;bottom:12px;width:18px;height:18px;color:rgba(244,247,244,.72);display:inline-flex}
+#pollen-view .change-symptom-note-action svg{width:100%;height:100%}
 #pollen-view .pollen-neo-empty{padding:26px;text-align:center;display:grid;gap:12px;color:rgba(244,247,244,.64)}
 #pollen-view .pollen-neo-empty strong{font-size:18px;color:#fff}
 #pollen-view .pollen-neo-empty .btn{justify-self:center}
-@media (max-width:1200px){
-  #pollen-view .pollen-neo-top,#pollen-view .pollen-neo-main-grid{grid-template-columns:1fr}
-  #pollen-view .pollen-neo-sidecards{grid-template-columns:repeat(3,minmax(0,1fr))}
-}
-@media (max-width:900px){
-  #pollen-view .pollen-neo-hero{grid-template-columns:1fr;min-height:0}
-  #pollen-view .pollen-neo-hero-illustration{max-width:150px}
-  #pollen-view .pollen-neo-hero-stats{padding-left:0;padding-top:10px;border-left:0;border-top:1px solid rgba(255,255,255,.08);grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-  #pollen-view .pollen-neo-hero-stats>div{border:0;background:rgba(255,255,255,.05);border-radius:16px;padding:12px;grid-template-columns:1fr}
-  #pollen-view .pollen-neo-hero-stats span{display:none}
-  #pollen-view .pollen-neo-profile-grid,#pollen-view .pollen-neo-sidecards{grid-template-columns:repeat(2,minmax(0,1fr))}
-  #pollen-view .pollen-neo-forecast-row{grid-template-columns:16px 110px minmax(0,1fr);gap:10px}
-  #pollen-view .pollen-neo-bars{grid-column:3;justify-content:flex-start}
-}
-@media (max-width:560px){
-  #pollen-view .list-title{font-size:22px}
-  #pollen-view .pollen-neo-hero-title{font-size:40px}
-  #pollen-view .pollen-neo-profile-grid,#pollen-view .pollen-neo-sidecards{grid-template-columns:1fr}
-  #pollen-view .pollen-neo-forecast-row{grid-template-columns:14px minmax(0,1fr)}
-  #pollen-view .pollen-neo-forecast-date{border-right:0;padding-right:0}
-  #pollen-view .pollen-neo-forecast-main,#pollen-view .pollen-neo-bars{grid-column:2}
-  #pollen-view .pollen-neo-hero-stats{grid-template-columns:1fr}
-}
+@media (max-width:1200px){#pollen-view .pollen-neo-top,#pollen-view .pollen-neo-main-grid{grid-template-columns:1fr}#pollen-view .pollen-neo-sidecards{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:900px){#pollen-view .list-header{flex-direction:column;align-items:stretch}#pollen-view .pollen-neo-header-settings{align-self:flex-start}#pollen-view .pollen-neo-hero{grid-template-columns:1fr;min-height:0}#pollen-view .pollen-neo-hero-illustration{max-width:150px}#pollen-view .pollen-neo-hero-stats{padding-left:0;padding-top:10px;border-left:0;border-top:1px solid rgba(255,255,255,.08);grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}#pollen-view .pollen-neo-hero-stats>div{border:0;background:rgba(255,255,255,.05);border-radius:16px;padding:12px;grid-template-columns:1fr}#pollen-view .pollen-neo-hero-stats .dot,#pollen-view .pollen-neo-hero-stats .mark{display:none}#pollen-view .pollen-neo-profile-grid,#pollen-view .pollen-neo-sidecards{grid-template-columns:repeat(2,minmax(0,1fr))}#pollen-view .pollen-neo-forecast-row{grid-template-columns:16px 110px minmax(0,1fr);gap:10px}#pollen-view .pollen-neo-bars{grid-column:3;justify-content:flex-start}#pollen-view .change-symptom-body{grid-template-columns:1fr}}
+@media (max-width:560px){#pollen-view .list-title{font-size:22px}#pollen-view .pollen-neo-hero-title{font-size:40px}#pollen-view .pollen-neo-profile-grid,#pollen-view .pollen-neo-sidecards{grid-template-columns:1fr}#pollen-view .pollen-neo-forecast-row{grid-template-columns:14px minmax(0,1fr)}#pollen-view .pollen-neo-forecast-date{border-right:0;padding-right:0}#pollen-view .pollen-neo-forecast-main,#pollen-view .pollen-neo-bars{grid-column:2}#pollen-view .pollen-neo-hero-stats{grid-template-columns:1fr}#pollen-view .change-symptom-row{grid-template-columns:1fr}#pollen-view .change-symptom-levels{justify-content:flex-start}}
