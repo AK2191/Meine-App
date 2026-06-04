@@ -1,0 +1,574 @@
+/* Change App · Unified App Shell · v0.1.0045
+   UI only: gemeinsame Desktop-Sidebar und mobile Bottom-Bar für alle Reiter. */
+
+@media (min-width:701px){
+  body.change-view-dashboard,
+  body.change-view-calendar,
+  body.change-view-challenges,
+  body.change-view-pollen{
+    background:#04090e!important;
+    overflow:hidden!important;
+  }
+
+  body.change-view-dashboard #main-app,
+  body.change-view-calendar #main-app,
+  body.change-view-challenges #main-app,
+  body.change-view-pollen #main-app{
+    display:grid!important;
+    grid-template-columns:108px minmax(0,1fr)!important;
+    grid-template-rows:1fr!important;
+    height:100vh!important;
+    overflow:hidden!important;
+    background:#04090e!important;
+  }
+
+  body.change-view-dashboard #header,
+  body.change-view-calendar #header,
+  body.change-view-challenges #header,
+  body.change-view-pollen #header{
+    height:100vh!important;
+    padding:17px 0!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:16px!important;
+    border-right:1px solid rgba(255,255,255,.04)!important;
+    border-bottom:0!important;
+    background:linear-gradient(180deg,rgba(7,12,18,.98),rgba(4,9,14,.98))!important;
+    box-shadow:none!important;
+    position:relative!important;
+    z-index:120!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-dashboard .h-logo,
+  body.change-view-calendar .h-logo,
+  body.change-view-challenges .h-logo,
+  body.change-view-pollen .h-logo{
+    min-height:56px!important;
+    padding:4px 17px 0!important;
+    justify-content:center!important;
+    align-items:center!important;
+  }
+
+  body.change-view-dashboard .h-logo-icon,
+  body.change-view-calendar .h-logo-icon,
+  body.change-view-challenges .h-logo-icon,
+  body.change-view-pollen .h-logo-icon{
+    width:46px!important;
+    height:46px!important;
+    border-radius:13px!important;
+    box-shadow:0 12px 28px rgba(74,222,128,.14)!important;
+  }
+
+  body.change-view-dashboard .h-logo-icon svg,
+  body.change-view-calendar .h-logo-icon svg,
+  body.change-view-challenges .h-logo-icon svg,
+  body.change-view-pollen .h-logo-icon svg{
+    width:46px!important;
+    height:46px!important;
+    display:block!important;
+  }
+
+  body.change-view-dashboard .h-logo-name,
+  body.change-view-calendar .h-logo-name,
+  body.change-view-challenges .h-logo-name,
+  body.change-view-pollen .h-logo-name,
+  body.change-view-dashboard .h-sep,
+  body.change-view-calendar .h-sep,
+  body.change-view-challenges .h-sep,
+  body.change-view-pollen .h-sep{
+    display:none!important;
+  }
+
+  body.change-view-dashboard .h-tabs,
+  body.change-view-calendar .h-tabs,
+  body.change-view-challenges .h-tabs,
+  body.change-view-pollen .h-tabs{
+    flex:1!important;
+    display:flex!important;
+    flex-direction:column!important;
+    gap:7px!important;
+    padding:0 10px!important;
+    align-items:stretch!important;
+  }
+
+  body.change-view-dashboard .h-tab,
+  body.change-view-calendar .h-tab,
+  body.change-view-challenges .h-tab,
+  body.change-view-pollen .h-tab{
+    width:100%!important;
+    min-height:66px!important;
+    padding:13px 8px!important;
+    border-radius:16px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:8px!important;
+    font-size:11.5px!important;
+    font-weight:690!important;
+    color:rgba(244,247,244,.78)!important;
+    background:transparent!important;
+    text-align:center!important;
+    line-height:1.1!important;
+  }
+
+  body.change-view-dashboard .h-tab svg,
+  body.change-view-calendar .h-tab svg,
+  body.change-view-challenges .h-tab svg,
+  body.change-view-pollen .h-tab svg{
+    width:22px!important;
+    height:22px!important;
+    stroke-width:1.9!important;
+  }
+
+  body.change-view-dashboard .h-tab:hover,
+  body.change-view-calendar .h-tab:hover,
+  body.change-view-challenges .h-tab:hover,
+  body.change-view-pollen .h-tab:hover{
+    background:rgba(255,255,255,.04)!important;
+    color:#fff!important;
+  }
+
+  body.change-view-dashboard .h-tab.active,
+  body.change-view-calendar .h-tab.active,
+  body.change-view-challenges .h-tab.active,
+  body.change-view-pollen .h-tab.active{
+    color:#4ade80!important;
+    background:linear-gradient(180deg,rgba(24,83,40,.68),rgba(13,45,24,.88))!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 12px 28px rgba(0,0,0,.20)!important;
+  }
+
+  body.change-view-dashboard .h-right,
+  body.change-view-calendar .h-right,
+  body.change-view-challenges .h-right,
+  body.change-view-pollen .h-right{
+    margin-top:auto!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    gap:14px!important;
+    padding:0 12px!important;
+  }
+
+  body.change-view-dashboard .avatar,
+  body.change-view-calendar .avatar,
+  body.change-view-challenges .avatar,
+  body.change-view-pollen .avatar{
+    width:58px!important;
+    height:58px!important;
+    order:1!important;
+    box-shadow:0 12px 30px rgba(0,0,0,.28)!important;
+  }
+
+  body.change-view-dashboard #settings-btn,
+  body.change-view-calendar #settings-btn,
+  body.change-view-challenges #settings-btn,
+  body.change-view-pollen #settings-btn{
+    display:flex!important;
+    width:100%!important;
+    height:auto!important;
+    min-height:66px!important;
+    padding:12px 8px!important;
+    border-radius:16px!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:8px!important;
+    background:transparent!important;
+    color:rgba(244,247,244,.78)!important;
+    order:2!important;
+  }
+
+  body.change-view-dashboard #settings-btn:hover,
+  body.change-view-calendar #settings-btn:hover,
+  body.change-view-challenges #settings-btn:hover,
+  body.change-view-pollen #settings-btn:hover{
+    background:rgba(255,255,255,.04)!important;
+    color:#fff!important;
+  }
+
+  body.change-view-dashboard #settings-btn svg,
+  body.change-view-calendar #settings-btn svg,
+  body.change-view-challenges #settings-btn svg,
+  body.change-view-pollen #settings-btn svg{
+    width:22px!important;
+    height:22px!important;
+    stroke-width:1.9!important;
+  }
+
+  body.change-view-dashboard #settings-btn::after,
+  body.change-view-calendar #settings-btn::after,
+  body.change-view-challenges #settings-btn::after,
+  body.change-view-pollen #settings-btn::after{
+    content:"Einstellungen";
+    font-size:11.5px;
+    font-weight:690;
+    line-height:1.1;
+  }
+
+  body.change-view-dashboard #notif-bell-btn,
+  body.change-view-calendar #notif-bell-btn,
+  body.change-view-challenges #notif-bell-btn,
+  body.change-view-pollen #notif-bell-btn{
+    display:flex!important;
+    position:fixed!important;
+    top:18px!important;
+    right:18px!important;
+    width:42px!important;
+    height:42px!important;
+    border-radius:16px!important;
+    border:1px solid rgba(255,255,255,.08)!important;
+    background:rgba(7,12,18,.72)!important;
+    backdrop-filter:blur(18px)!important;
+    color:rgba(244,247,244,.88)!important;
+    z-index:180!important;
+    order:0!important;
+    box-shadow:0 12px 30px rgba(0,0,0,.22)!important;
+  }
+
+  body.change-view-dashboard #notif-bell-btn:hover,
+  body.change-view-calendar #notif-bell-btn:hover,
+  body.change-view-challenges #notif-bell-btn:hover,
+  body.change-view-pollen #notif-bell-btn:hover{
+    background:rgba(11,18,25,.90)!important;
+    color:#fff!important;
+  }
+
+  /* Pollen hat einen eigenen Header-Notify-Button. Desktop nutzt jetzt den globalen Button, damit alle Reiter gleich sind. */
+  body.change-view-pollen #pollen-view .pollen-neo-header-notify{display:none!important;}
+
+  body.change-view-dashboard #content,
+  body.change-view-calendar #content,
+  body.change-view-challenges #content,
+  body.change-view-pollen #content{
+    padding:22px 26px 26px!important;
+    overflow:hidden!important;
+    background:radial-gradient(circle at 18% 8%,rgba(21,99,56,.08),transparent 28%),linear-gradient(180deg,#04090e,#04090e)!important;
+  }
+
+  body.change-view-dashboard #dashboard-view,
+  body.change-view-calendar #cal-body,
+  body.change-view-challenges #challenges-view,
+  body.change-view-pollen #pollen-view{
+    border-radius:0!important;
+    background:transparent!important;
+  }
+
+  /* Kalender-Kopfleiste bleibt funktionsfähig, obwohl die Navigation seitlich steht. */
+  body.change-view-calendar #cal-controls{
+    display:flex!important;
+    position:fixed!important;
+    top:18px!important;
+    left:134px!important;
+    right:76px!important;
+    min-height:42px!important;
+    padding:5px!important;
+    border:1px solid rgba(255,255,255,.08)!important;
+    border-radius:18px!important;
+    background:rgba(7,12,18,.72)!important;
+    backdrop-filter:blur(18px)!important;
+    z-index:170!important;
+    box-shadow:0 12px 30px rgba(0,0,0,.18)!important;
+  }
+  body.change-view-calendar #content{padding-top:78px!important;}
+  body.change-view-dashboard #cal-controls,
+  body.change-view-challenges #cal-controls,
+  body.change-view-pollen #cal-controls{display:none!important;}
+}
+
+@media (min-width:701px){
+  [data-theme="light"] body.change-view-dashboard,
+  [data-theme="light"] body.change-view-calendar,
+  [data-theme="light"] body.change-view-challenges,
+  [data-theme="light"] body.change-view-pollen,
+  body.theme-light.change-view-dashboard,
+  body.theme-light.change-view-calendar,
+  body.theme-light.change-view-challenges,
+  body.theme-light.change-view-pollen,
+  body.change-theme-light.change-view-dashboard,
+  body.change-theme-light.change-view-calendar,
+  body.change-theme-light.change-view-challenges,
+  body.change-theme-light.change-view-pollen{
+    background:#f4f7f0!important;
+    color:#142018!important;
+  }
+
+  [data-theme="light"] body.change-view-dashboard #main-app,
+  [data-theme="light"] body.change-view-calendar #main-app,
+  [data-theme="light"] body.change-view-challenges #main-app,
+  [data-theme="light"] body.change-view-pollen #main-app,
+  body.theme-light.change-view-dashboard #main-app,
+  body.theme-light.change-view-calendar #main-app,
+  body.theme-light.change-view-challenges #main-app,
+  body.theme-light.change-view-pollen #main-app,
+  body.change-theme-light.change-view-dashboard #main-app,
+  body.change-theme-light.change-view-calendar #main-app,
+  body.change-theme-light.change-view-challenges #main-app,
+  body.change-theme-light.change-view-pollen #main-app{
+    background:#f4f7f0!important;
+  }
+
+  [data-theme="light"] body.change-view-dashboard #header,
+  [data-theme="light"] body.change-view-calendar #header,
+  [data-theme="light"] body.change-view-challenges #header,
+  [data-theme="light"] body.change-view-pollen #header,
+  body.theme-light.change-view-dashboard #header,
+  body.theme-light.change-view-calendar #header,
+  body.theme-light.change-view-challenges #header,
+  body.theme-light.change-view-pollen #header,
+  body.change-theme-light.change-view-dashboard #header,
+  body.change-theme-light.change-view-calendar #header,
+  body.change-theme-light.change-view-challenges #header,
+  body.change-theme-light.change-view-pollen #header{
+    background:rgba(255,255,255,.92)!important;
+    border-right:1px solid rgba(20,35,24,.10)!important;
+    box-shadow:8px 0 28px rgba(31,53,38,.035)!important;
+  }
+
+  [data-theme="light"] body.change-view-dashboard #content,
+  [data-theme="light"] body.change-view-calendar #content,
+  [data-theme="light"] body.change-view-challenges #content,
+  [data-theme="light"] body.change-view-pollen #content,
+  body.theme-light.change-view-dashboard #content,
+  body.theme-light.change-view-calendar #content,
+  body.theme-light.change-view-challenges #content,
+  body.theme-light.change-view-pollen #content,
+  body.change-theme-light.change-view-dashboard #content,
+  body.change-theme-light.change-view-calendar #content,
+  body.change-theme-light.change-view-challenges #content,
+  body.change-theme-light.change-view-pollen #content{
+    background:radial-gradient(circle at 18% 8%,rgba(73,170,93,.10),transparent 28%),linear-gradient(180deg,#f4f7f0,#f4f7f0)!important;
+  }
+
+  [data-theme="light"] body.change-view-dashboard .h-tab,
+  [data-theme="light"] body.change-view-calendar .h-tab,
+  [data-theme="light"] body.change-view-challenges .h-tab,
+  [data-theme="light"] body.change-view-pollen .h-tab,
+  body.theme-light.change-view-dashboard .h-tab,
+  body.theme-light.change-view-calendar .h-tab,
+  body.theme-light.change-view-challenges .h-tab,
+  body.theme-light.change-view-pollen .h-tab,
+  body.change-theme-light.change-view-dashboard .h-tab,
+  body.change-theme-light.change-view-calendar .h-tab,
+  body.change-theme-light.change-view-challenges .h-tab,
+  body.change-theme-light.change-view-pollen .h-tab{
+    color:#5c6760!important;
+  }
+
+  [data-theme="light"] body.change-view-dashboard .h-tab:hover,
+  [data-theme="light"] body.change-view-calendar .h-tab:hover,
+  [data-theme="light"] body.change-view-challenges .h-tab:hover,
+  [data-theme="light"] body.change-view-pollen .h-tab:hover,
+  body.theme-light.change-view-dashboard .h-tab:hover,
+  body.theme-light.change-view-calendar .h-tab:hover,
+  body.theme-light.change-view-challenges .h-tab:hover,
+  body.theme-light.change-view-pollen .h-tab:hover,
+  body.change-theme-light.change-view-dashboard .h-tab:hover,
+  body.change-theme-light.change-view-calendar .h-tab:hover,
+  body.change-theme-light.change-view-challenges .h-tab:hover,
+  body.change-theme-light.change-view-pollen .h-tab:hover{
+    background:rgba(20,35,24,.045)!important;
+    color:#142018!important;
+  }
+
+  [data-theme="light"] body.change-view-dashboard .h-tab.active,
+  [data-theme="light"] body.change-view-calendar .h-tab.active,
+  [data-theme="light"] body.change-view-challenges .h-tab.active,
+  [data-theme="light"] body.change-view-pollen .h-tab.active,
+  body.theme-light.change-view-dashboard .h-tab.active,
+  body.theme-light.change-view-calendar .h-tab.active,
+  body.theme-light.change-view-challenges .h-tab.active,
+  body.theme-light.change-view-pollen .h-tab.active,
+  body.change-theme-light.change-view-dashboard .h-tab.active,
+  body.change-theme-light.change-view-calendar .h-tab.active,
+  body.change-theme-light.change-view-challenges .h-tab.active,
+  body.change-theme-light.change-view-pollen .h-tab.active{
+    color:#16a34a!important;
+    background:linear-gradient(180deg,rgba(36,190,91,.16),rgba(36,190,91,.06))!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 12px 28px rgba(31,53,38,.08)!important;
+  }
+
+  [data-theme="light"] body.change-view-dashboard #settings-btn,
+  [data-theme="light"] body.change-view-calendar #settings-btn,
+  [data-theme="light"] body.change-view-challenges #settings-btn,
+  [data-theme="light"] body.change-view-pollen #settings-btn,
+  body.theme-light.change-view-dashboard #settings-btn,
+  body.theme-light.change-view-calendar #settings-btn,
+  body.theme-light.change-view-challenges #settings-btn,
+  body.theme-light.change-view-pollen #settings-btn,
+  body.change-theme-light.change-view-dashboard #settings-btn,
+  body.change-theme-light.change-view-calendar #settings-btn,
+  body.change-theme-light.change-view-challenges #settings-btn,
+  body.change-theme-light.change-view-pollen #settings-btn{
+    color:#5c6760!important;
+  }
+
+  [data-theme="light"] body.change-view-dashboard #notif-bell-btn,
+  [data-theme="light"] body.change-view-calendar #notif-bell-btn,
+  [data-theme="light"] body.change-view-challenges #notif-bell-btn,
+  [data-theme="light"] body.change-view-pollen #notif-bell-btn,
+  body.theme-light.change-view-dashboard #notif-bell-btn,
+  body.theme-light.change-view-calendar #notif-bell-btn,
+  body.theme-light.change-view-challenges #notif-bell-btn,
+  body.theme-light.change-view-pollen #notif-bell-btn,
+  body.change-theme-light.change-view-dashboard #notif-bell-btn,
+  body.change-theme-light.change-view-calendar #notif-bell-btn,
+  body.change-theme-light.change-view-challenges #notif-bell-btn,
+  body.change-theme-light.change-view-pollen #notif-bell-btn,
+  [data-theme="light"] body.change-view-calendar #cal-controls,
+  body.theme-light.change-view-calendar #cal-controls,
+  body.change-theme-light.change-view-calendar #cal-controls{
+    background:rgba(255,255,255,.82)!important;
+    color:#142018!important;
+    border-color:rgba(20,35,24,.10)!important;
+    box-shadow:0 12px 28px rgba(31,53,38,.08)!important;
+  }
+}
+
+@media (max-width:700px){
+  body.change-view-dashboard #bottom-nav,
+  body.change-view-calendar #bottom-nav,
+  body.change-view-challenges #bottom-nav,
+  body.change-view-pollen #bottom-nav{
+    display:block!important;
+    background:rgba(13,17,18,.92)!important;
+    border-top:1px solid rgba(255,255,255,.08)!important;
+    backdrop-filter:blur(18px)!important;
+  }
+  body.change-view-dashboard .bnav-inner,
+  body.change-view-calendar .bnav-inner,
+  body.change-view-challenges .bnav-inner,
+  body.change-view-pollen .bnav-inner{height:64px!important;}
+  body.change-view-dashboard .bnav-item,
+  body.change-view-calendar .bnav-item,
+  body.change-view-challenges .bnav-item,
+  body.change-view-pollen .bnav-item{
+    font-size:10px!important;
+    gap:4px!important;
+  }
+  body.change-view-dashboard .bnav-item.active,
+  body.change-view-calendar .bnav-item.active,
+  body.change-view-challenges .bnav-item.active,
+  body.change-view-pollen .bnav-item.active{
+    color:#34e37b!important;
+    background:linear-gradient(180deg,rgba(52,227,123,.14),rgba(52,227,123,.02))!important;
+    border-radius:18px!important;
+    margin:6px 4px!important;
+  }
+
+  [data-theme="light"] body.change-view-dashboard #bottom-nav,
+  [data-theme="light"] body.change-view-calendar #bottom-nav,
+  [data-theme="light"] body.change-view-challenges #bottom-nav,
+  [data-theme="light"] body.change-view-pollen #bottom-nav,
+  body.theme-light.change-view-dashboard #bottom-nav,
+  body.theme-light.change-view-calendar #bottom-nav,
+  body.theme-light.change-view-challenges #bottom-nav,
+  body.theme-light.change-view-pollen #bottom-nav,
+  body.change-theme-light.change-view-dashboard #bottom-nav,
+  body.change-theme-light.change-view-calendar #bottom-nav,
+  body.change-theme-light.change-view-challenges #bottom-nav,
+  body.change-theme-light.change-view-pollen #bottom-nav{
+    background:rgba(255,255,255,.92)!important;
+    border-top:1px solid rgba(20,35,24,.10)!important;
+  }
+  [data-theme="light"] body.change-view-dashboard .bnav-item,
+  [data-theme="light"] body.change-view-calendar .bnav-item,
+  [data-theme="light"] body.change-view-challenges .bnav-item,
+  [data-theme="light"] body.change-view-pollen .bnav-item,
+  body.theme-light.change-view-dashboard .bnav-item,
+  body.theme-light.change-view-calendar .bnav-item,
+  body.theme-light.change-view-challenges .bnav-item,
+  body.theme-light.change-view-pollen .bnav-item,
+  body.change-theme-light.change-view-dashboard .bnav-item,
+  body.change-theme-light.change-view-calendar .bnav-item,
+  body.change-theme-light.change-view-challenges .bnav-item,
+  body.change-theme-light.change-view-pollen .bnav-item{color:#5c6760!important;}
+  [data-theme="light"] body.change-view-dashboard .bnav-item.active,
+  [data-theme="light"] body.change-view-calendar .bnav-item.active,
+  [data-theme="light"] body.change-view-challenges .bnav-item.active,
+  [data-theme="light"] body.change-view-pollen .bnav-item.active,
+  body.theme-light.change-view-dashboard .bnav-item.active,
+  body.theme-light.change-view-calendar .bnav-item.active,
+  body.theme-light.change-view-challenges .bnav-item.active,
+  body.theme-light.change-view-pollen .bnav-item.active,
+  body.change-theme-light.change-view-dashboard .bnav-item.active,
+  body.change-theme-light.change-view-calendar .bnav-item.active,
+  body.change-theme-light.change-view-challenges .bnav-item.active,
+  body.change-theme-light.change-view-pollen .bnav-item.active{
+    color:#16a34a!important;
+    background:linear-gradient(180deg,rgba(36,190,91,.16),rgba(36,190,91,.05))!important;
+  }
+}
+
+/* Challenges: Header und oberer Bereich an Pollen angleichen, ohne Logik anzufassen. */
+#challenges-view .list-header{
+  position:relative!important;
+  z-index:1!important;
+  width:100%!important;
+  max-width:1320px!important;
+  margin:0 auto!important;
+  padding:0 0 18px!important;
+  border:0!important;
+  background:transparent!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:18px!important;
+}
+#challenges-view .list-header .list-title{
+  font-size:25px!important;
+  line-height:1!important;
+  font-weight:950!important;
+  letter-spacing:-.7px!important;
+  color:#fff!important;
+}
+#challenges-view .list-header .btn{
+  width:auto!important;
+  min-width:0!important;
+  min-height:34px!important;
+  padding:0 14px!important;
+  border-radius:13px!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  background:rgba(255,255,255,.045)!important;
+  color:rgba(244,247,244,.84)!important;
+  box-shadow:none!important;
+}
+#challenges-view .list-header .btn:hover{background:rgba(255,255,255,.08)!important;color:#fff!important;}
+#challenges-view .challenge-layout{padding-top:0!important;}
+
+@media (min-width:701px){
+  body.change-view-challenges #challenges-view{
+    max-width:1320px!important;
+    width:100%!important;
+    margin:0 auto!important;
+  }
+  body.change-view-challenges #challenges-view::before{opacity:.82!important;}
+  body.change-view-challenges #group-goal-card{margin-top:0!important;}
+}
+
+@media (max-width:700px){
+  #challenges-view .list-header{
+    padding:18px 18px 10px!important;
+    flex-direction:row!important;
+    align-items:center!important;
+  }
+  #challenges-view .list-header .list-title{font-size:22px!important;}
+  #challenges-view .list-header .btn{
+    height:34px!important;
+    font-size:10px!important;
+    padding:0 10px!important;
+    white-space:nowrap!important;
+  }
+}
+
+[data-theme="light"] #challenges-view .list-header .list-title,
+body.theme-light #challenges-view .list-header .list-title,
+body.change-theme-light #challenges-view .list-header .list-title{color:#142018!important;}
+[data-theme="light"] #challenges-view .list-header .btn,
+body.theme-light #challenges-view .list-header .btn,
+body.change-theme-light #challenges-view .list-header .btn{
+  background:rgba(255,255,255,.72)!important;
+  border-color:rgba(20,35,24,.10)!important;
+  color:#4a574f!important;
+}

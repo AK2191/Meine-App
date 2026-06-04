@@ -3,7 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0043';
+  var APP_VERSION = '0.1.0045';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var SELECTED_KEY = 'change_v1_pollen_selected_keys';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
@@ -79,12 +79,12 @@
     return summaryForItems(items.slice(0, 3));
   }
   function relevantLoadItems(day){
-    return activeItems(day).filter(function(p){ return clampNum(p && p.value) >= 1; }).slice(0, 4);
+    return activeItems(day).filter(function(p){ return clampNum(p && p.value) > 1; }).slice(0, 4);
   }
   function relevantLoadHtml(day){
     var items = relevantLoadItems(day);
     if(!items.length){
-      return '<div class="pollen-neo-loadline empty"><span>Aktuell ab 1 %</span><strong>Keine relevanten Werte</strong></div>';
+      return '';
     }
     return '<div class="pollen-neo-loadline"><span>Aktuell ab 1 %</span><div>' + items.map(function(p){
       return '<strong class="'+esc(p.level || 'none')+'">'+esc(p.name)+' <em>'+esc(Math.round(clampNum(p.value)))+' %</em></strong>';

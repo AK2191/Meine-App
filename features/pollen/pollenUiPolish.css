@@ -207,3 +207,71 @@ body.change-theme-light #pollen-view .pollen-neo-profile-card,
     box-shadow:0 0 0 2px rgba(36,190,91,.18),0 12px 26px rgba(36,190,91,.12)!important;
   }
 }
+
+/* v0.1.0044 · Pollen Mobile Feinschliff: relevante Werte als Zeile, kein Label-Kasten, weniger untere Leerfläche */
+@media (max-width: 760px){
+  #pollen-view .pollen-neo-loadline{
+    display:flex!important;
+    align-items:center!important;
+    flex-wrap:wrap!important;
+    gap:6px!important;
+    max-width:100%!important;
+    margin-top:10px!important;
+    padding:0!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+  }
+  #pollen-view .pollen-neo-loadline>span{
+    display:none!important;
+  }
+  #pollen-view .pollen-neo-loadline>div{
+    display:flex!important;
+    align-items:center!important;
+    flex-wrap:wrap!important;
+    gap:6px!important;
+    min-width:0!important;
+  }
+  #pollen-view .pollen-neo-loadline strong{
+    min-height:0!important;
+    padding:4px 8px!important;
+    border-radius:999px!important;
+    border:1px solid rgba(255,255,255,.08)!important;
+    background:rgba(255,255,255,.055)!important;
+    box-shadow:none!important;
+    font-size:10.8px!important;
+    line-height:1!important;
+    font-weight:900!important;
+  }
+  #pollen-view .pollen-neo-loadline strong.high{color:#ff6555!important;background:rgba(255,101,85,.11)!important;border-color:rgba(255,101,85,.16)!important;}
+  #pollen-view .pollen-neo-loadline strong.medium{color:#f4b32f!important;background:rgba(244,179,47,.11)!important;border-color:rgba(244,179,47,.16)!important;}
+  #pollen-view .pollen-neo-loadline strong.low{color:#55d86b!important;background:rgba(85,216,107,.11)!important;border-color:rgba(85,216,107,.16)!important;}
+  #pollen-view .pollen-neo-loadline.empty{
+    display:none!important;
+  }
+  body.change-view-pollen #content,
+  body.neo-pollen-shell #content{
+    padding-bottom:0!important;
+  }
+  #pollen-view .pollen-view-body{
+    padding-bottom:calc(74px + env(safe-area-inset-bottom,0px))!important;
+  }
+  #pollen-view .pollen-neo-shell,
+  #pollen-view .pollen-neo-main-grid,
+  #pollen-view .pollen-neo-left,
+  #pollen-view .pollen-neo-symptoms{
+    gap:12px!important;
+    margin-bottom:0!important;
+    padding-bottom:0!important;
+  }
+  #pollen-view .change-symptom-card{
+    overflow:visible!important;
+  }
+  #pollen-view .change-symptom-note-wrap{
+    margin-top:8px!important;
+  }
+  #pollen-view .change-symptom-note{
+    min-height:64px!important;
+  }
+}
