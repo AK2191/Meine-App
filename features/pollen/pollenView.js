@@ -3,7 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0018';
+  var APP_VERSION = '0.1.0019';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
 
@@ -138,23 +138,46 @@
       + '</svg>';
   }
   function glyphSvg(kind){
+    var common = ' aria-hidden="true" viewBox="0 0 32 32"';
     var map = {
-      grass_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V9"/><path d="M12 14.2c-1.8-4.3-4-6.8-4-6.8"/><path d="M12 14.4c1.8-4.5 4-7 4-7"/><path d="M12 11.3c-1.2-2.2-2.7-3.6-2.7-3.6"/><path d="M12 11.4c1.2-2.3 2.8-3.8 2.8-3.8"/></g></svg></span>',
-      birch_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V8"/><path d="M12 12c-3.2 0-5.2-2.2-5.2-5.2 3.1 0 5.2 2.1 5.2 5.2Z" fill="currentColor" fill-opacity=".16"/><path d="M12 15.7c3.3 0 5.4-2.4 5.4-5.6-3.3 0-5.4 2.3-5.4 5.6Z" fill="currentColor" fill-opacity=".24"/></g></svg></span>',
-      ragweed_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V8"/><path d="M12 9.2c0-2.1 1.7-3.7 3.8-3.7-.4 2.3-1.8 3.7-3.8 3.7Z"/><path d="M12 12c-2.1 0-3.8-1.7-3.8-3.8 2.2.4 3.8 1.7 3.8 3.8Z"/><path d="M12 14.3c2.1 0 3.8 1.7 3.8 3.8-2.2-.4-3.8-1.7-3.8-3.8Z"/><path d="M12 16.4c-2.1 0-3.8 1.7-3.8 3.8 2.2-.4 3.8-1.7 3.8-3.8Z"/></g></svg></span>',
-      mugwort_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V8"/><path d="M12 10.8C9.9 7.7 7.5 7 7.5 7c.5 2.1 1.9 3.7 4.5 3.8"/><path d="M12 13.1c2.4-2.7 4.8-3.3 4.8-3.3-.4 2.1-1.9 3.5-4.8 3.6"/><path d="M12 15.4c-1.8-2.1-3.5-2.5-3.5-2.5.4 1.5 1.5 2.8 3.5 2.8"/><path d="M12 17.4c1.8-1.8 3.6-2.2 3.6-2.2-.4 1.5-1.5 2.6-3.6 2.6"/></g></svg></span>',
-      alder_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V8"/><path d="M9 9.7c0 2 1.3 3.5 3 3.5 0-2-1.3-3.5-3-3.5Z"/><path d="M15 11.2c0 2-1.3 3.5-3 3.5 0-2 1.3-3.5 3-3.5Z"/><path d="M9.8 15.1c0 1.4.9 2.5 2.2 2.5 0-1.4-.9-2.5-2.2-2.5Z"/><path d="M14.2 16c0 1.4-.9 2.5-2.2 2.5 0-1.4.9-2.5 2.2-2.5Z"/></g></svg></span>',
-      olive_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V8"/><path d="M12 11.2c-3 0-5.1-2.1-5.1-5.1 3 0 5.1 2.1 5.1 5.1Z"/><path d="M12 14.4c3 0 5.1-2.1 5.1-5.1-3 0-5.1 2.1-5.1 5.1Z"/><circle cx="16.2" cy="7.3" r="1.5" fill="currentColor" fill-opacity=".25" stroke="none"/></g></svg></span>',
-      leaf:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 4.8C11.8 5.2 6.7 10 6.7 16.1c0 1.9.5 3.1 1.5 3.8 1 .6 2.2.7 3.7.2 4.6-1.6 7.1-6.4 7.1-15 0-.2 0-.3-.1-.3Z" fill="currentColor"/><path d="M9.2 18.6c1.7-2.7 4-4.9 6.8-6.5" fill="none" stroke="#102313" stroke-width="1.3" stroke-linecap="round"/></svg></span>'
+      grass_pollen:'<span class="pollen-neo-icon-svg pollen-neo-botanical grass"><svg'+common+'><g fill="none" stroke="currentColor" stroke-width="2.05" stroke-linecap="round" stroke-linejoin="round"><path d="M16 27V9"/><path d="M16 20.2C12.8 14.9 9.7 11 9.7 11"/><path d="M16 19.6C19.4 13.7 22.5 9 22.5 9"/><path d="M16 16.2c-2.8-3.4-5.5-5-5.5-5"/><path d="M16 15.5c2.8-3.5 5.8-5.3 5.8-5.3"/><path d="M16 23.2c-1.5-3.2-3.7-5.6-3.7-5.6"/><path d="M16 23.4c1.7-3.4 4-5.9 4-5.9"/></g></svg></span>',
+      birch_pollen:'<span class="pollen-neo-icon-svg pollen-neo-botanical birch"><svg'+common+'><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 27V8.8"/><path d="M15.9 13.8C11.6 13.8 8.7 10.9 8.7 6.8c4.3 0 7.2 2.9 7.2 7Z" fill="currentColor" fill-opacity=".16"/><path d="M16.1 18.7c4.6 0 7.5-3.2 7.5-7.6-4.6 0-7.5 3.1-7.5 7.6Z" fill="currentColor" fill-opacity=".24"/><path d="M11.5 10.2c1.6.7 3 1.9 4.4 3.6"/><path d="M20.2 14.2c-1.5.9-2.8 2.4-4.1 4.5"/></g></svg></span>',
+      ragweed_pollen:'<span class="pollen-neo-icon-svg pollen-neo-botanical ragweed"><svg'+common+'><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 27V8"/><path d="M16 9.9c0-3.1 2.2-5.4 5.5-5.4-.6 3.5-2.6 5.4-5.5 5.4Z"/><path d="M16 13.5c-3.1 0-5.5-2.5-5.5-5.8 3.4.6 5.5 2.6 5.5 5.8Z"/><path d="M16 17.3c3.1 0 5.5 2.5 5.5 5.8-3.4-.6-5.5-2.6-5.5-5.8Z"/><path d="M16 20.6c-3 0-5.3 2.4-5.3 5.5 3.2-.5 5.3-2.4 5.3-5.5Z"/><circle cx="16" cy="15.6" r="1.7" fill="currentColor" fill-opacity=".22" stroke="none"/></g></svg></span>',
+      mugwort_pollen:'<span class="pollen-neo-icon-svg pollen-neo-botanical mugwort"><svg'+common+'><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 27V8"/><path d="M16 12C12.8 7.9 9 7.1 9 7.1c.7 3.1 2.8 5 7 5.1"/><path d="M16 15.6c3.8-3.8 7.4-4.6 7.4-4.6-.8 3.1-3.1 4.8-7.4 4.9"/><path d="M16 19.2c-2.9-3-5.5-3.7-5.5-3.7.7 2.3 2.5 3.8 5.5 4"/><path d="M16 22.2c3-2.7 5.7-3.4 5.7-3.4-.7 2.3-2.4 3.6-5.7 3.8"/></g></svg></span>',
+      alder_pollen:'<span class="pollen-neo-icon-svg pollen-neo-botanical alder"><svg'+common+'><g fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M16 27V8"/><path d="M11.2 10.2c0 3.1 2 5 4.8 5 0-3.1-2-5-4.8-5Z" fill="currentColor" fill-opacity=".10"/><path d="M20.8 12.5c0 3.1-2 5-4.8 5 0-3.1 2-5 4.8-5Z" fill="currentColor" fill-opacity=".16"/><path d="M12.2 18.3c0 2.2 1.5 3.8 3.8 3.8 0-2.2-1.5-3.8-3.8-3.8Z"/><path d="M19.8 19.6c0 2.2-1.5 3.8-3.8 3.8 0-2.2 1.5-3.8 3.8-3.8Z"/></g></svg></span>',
+      olive_pollen:'<span class="pollen-neo-icon-svg pollen-neo-botanical olive"><svg'+common+'><g fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M16 27V8"/><path d="M16 13.6c-4.5 0-7.4-3-7.4-7.4 4.5 0 7.4 3 7.4 7.4Z"/><path d="M16 18.5c4.5 0 7.4-3 7.4-7.4-4.5 0-7.4 3-7.4 7.4Z"/><ellipse cx="22.2" cy="9.2" rx="2.1" ry="2.8" fill="currentColor" fill-opacity=".24" stroke="none"/><ellipse cx="10.3" cy="15.7" rx="1.7" ry="2.3" fill="currentColor" fill-opacity=".16" stroke="none"/></g></svg></span>',
+      leaf:'<span class="pollen-neo-icon-svg pollen-neo-botanical leaf"><svg'+common+'><path d="M25.6 6.5C15.1 6.9 8.5 13.1 8.5 21c0 2.4.7 4 2 4.9 1.3.8 3 .9 4.9.2 6.6-2.2 10.3-8.3 10.3-19.2 0-.3 0-.4-.1-.4Z" fill="currentColor"/><path d="M11.8 24.4c2.5-4.1 5.8-7.3 10.2-9.7" fill="none" stroke="#102313" stroke-width="1.6" stroke-linecap="round"/></svg></span>'
+    };
+    return map[kind] || map.leaf;
+  }
+  function miniIconSvg(kind){
+    var map = {
+      pollen:'<span class="pollen-neo-mini-icon pollen"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5.2" fill="currentColor" fill-opacity=".95"/><circle cx="12" cy="12" r="8.3" fill="none" stroke="currentColor" stroke-opacity=".24" stroke-width="1.6"/></svg></span>',
+      peak:'<span class="pollen-neo-mini-icon peak"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5 20 19H4L12 4.5Z" fill="currentColor" fill-opacity=".92"/><path d="M12 8.8v5" stroke="#2c0d0d" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="16.8" r=".9" fill="#2c0d0d"/></svg></span>',
+      leaf:'<span class="pollen-neo-mini-icon leaf"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 4.8C11.8 5.2 6.7 10 6.7 16.1c0 1.9.5 3.1 1.5 3.8 1 .6 2.2.7 3.7.2 4.6-1.6 7.1-6.4 7.1-15 0-.2 0-.3-.1-.3Z" fill="currentColor"/><path d="M9.2 18.6c1.7-2.7 4-4.9 6.8-6.5" fill="none" stroke="#102313" stroke-width="1.3" stroke-linecap="round"/></svg></span>'
     };
     return map[kind] || map.leaf;
   }
   function heroArtSvg(){
     return '<svg class="pollen-neo-hero-illustration" viewBox="0 0 220 220" aria-hidden="true">'
-      + '<defs><linearGradient id="pollen-blade" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#29431d"></stop><stop offset="1" stop-color="#80b53b"></stop></linearGradient></defs>'
-      + '<g fill="none" stroke="url(#pollen-blade)" stroke-width="7" stroke-linecap="round">'
-      + '<path d="M110 188C98 134 70 86 70 86"></path><path d="M110 188C112 122 120 54 123 54"></path><path d="M110 188C126 140 162 96 162 96"></path><path d="M110 188C95 150 88 114 90 75"></path><path d="M110 188C140 154 151 124 154 85"></path><path d="M110 188C83 160 58 129 44 110"></path>'
-      + '</g></svg>';
+      + '<defs>'
+      + '<linearGradient id="pollen-hero-stem" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#29451d" stop-opacity=".05"></stop><stop offset=".6" stop-color="#83b73d" stop-opacity=".68"></stop><stop offset="1" stop-color="#b4e15f" stop-opacity=".92"></stop></linearGradient>'
+      + '<linearGradient id="pollen-hero-leaf" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#314f20" stop-opacity=".18"></stop><stop offset="1" stop-color="#a9db52" stop-opacity=".72"></stop></linearGradient>'
+      + '</defs>'
+      + '<g class="pollen-hero-plant" fill="none" stroke="url(#pollen-hero-stem)" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round">'
+      + '<path d="M109 188C97 135 74 92 69 76"></path>'
+      + '<path d="M110 188C112 129 116 80 123 48"></path>'
+      + '<path d="M110 188C128 141 151 107 166 82"></path>'
+      + '<path d="M110 188C92 156 67 126 44 102"></path>'
+      + '<path d="M110 188C139 158 154 130 157 92"></path>'
+      + '</g>'
+      + '<g fill="url(#pollen-hero-leaf)" opacity=".92">'
+      + '<path d="M71 76c18 7 30 20 36 39-19-4-32-17-36-39Z"></path>'
+      + '<path d="M123 48c15 14 19 30 12 49-14-13-18-30-12-49Z"></path>'
+      + '<path d="M166 82c-2 20-14 35-35 44 3-21 15-36 35-44Z"></path>'
+      + '</g>'
+      + '<ellipse cx="110" cy="190" rx="28" ry="10" fill="#0a1212" opacity=".34"></ellipse>'
+      + '</svg>';
   }
   function metricCardHtml(type, label, body, tone){
     return '<div class="pollen-neo-card pollen-neo-metric '+esc(tone || 'none')+'"><div class="pollen-neo-label">'+esc(label)+'</div>'+body+'</div>';
@@ -180,9 +203,9 @@
         + '</div>'
         + heroArtSvg()
         + '<div class="pollen-neo-hero-stats">'
-          + '<div><span class="dot yellow"></span><strong>'+esc(selectedItem.name)+' stark</strong><em>'+esc(score)+' %</em></div>'
-          + '<div><span class="mark peak"></span><strong>Peak</strong><em>'+esc(peak ? diffLabel(dayDiff(peak.date)) : '–')+'</em></div>'
-          + '<div><span class="mark leaf"></span><strong>Ruhigster Tag</strong><em>'+esc(quiet ? fmtLongDay(quiet.date).split(',')[0] : '–')+'</em></div>'
+          + '<div>'+miniIconSvg('pollen')+'<strong>'+esc(selectedItem.name)+' stark</strong><em>'+esc(score)+' %</em></div>'
+          + '<div>'+miniIconSvg('peak')+'<strong>Peak</strong><em>'+esc(peak ? diffLabel(dayDiff(peak.date)) : '–')+'</em></div>'
+          + '<div>'+miniIconSvg('leaf')+'<strong>Ruhigster Tag</strong><em>'+esc(quiet ? fmtLongDay(quiet.date).split(',')[0] : '–')+'</em></div>'
         + '</div>'
       + '</div>'
       + '<div class="pollen-neo-sidecards">'
