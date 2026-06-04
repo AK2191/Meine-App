@@ -3,7 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0030';
+  var APP_VERSION = '0.1.0031';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var SELECTED_KEY = 'change_v1_pollen_selected_keys';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
@@ -308,6 +308,42 @@
       + '</div>'
     + '</div>';
   }
+  function notificationCount(){
+    var total = 0;
+    try{
+      if(typeof window.getCalendarNotificationCount === 'function') total += Number(window.getCalendarNotificationCount() || 0);
+      else total += ((window.notifications || []).filter(function(n){ return n && (n.urgency === 'crit' || n.urgency === 'warn'); }).length || 0);
+    }catch(_){ }
+    try{
+      if(typeof window.getUnreadNudgeCount === 'function') total += Number(window.getUnreadNudgeCount() || 0);
+      else total += ((JSON.parse(sessionStorage.getItem('change_nudges_in') || '[]') || []).filter(function(n){ return n && n.localSeen !== true; }).length || 0);
+    }catch(_){ }
+    if(!total){
+      try{
+        var globalBadge = document.getElementById('notif-count-badge');
+        if(globalBadge && globalBadge.style.display !== 'none'){
+          var raw = (globalBadge.textContent || '').trim();
+          if(raw === '9+') total = 10;
+          else total = Number(raw || 0) || 0;
+        }
+      }catch(_){ }
+    }
+    return Math.max(0, total || 0);
+  }
+  function updateHeaderNotificationBadge(){
+    var view = document.getElementById('pollen-view');
+    if(!view) return;
+    var badge = view.querySelector('[data-pollen-notify-count]');
+    if(!badge) return;
+    var total = notificationCount();
+    if(total > 0){
+      badge.textContent = total > 9 ? '9+' : String(total);
+      badge.style.display = 'inline-flex';
+    }else{
+      badge.textContent = '';
+      badge.style.display = 'none';
+    }
+  }
   function ensureHeaderChrome(){
     var view = document.getElementById('pollen-view');
     if(!view) return;
@@ -327,7 +363,7 @@
       notify.setAttribute('data-pollen-notify','');
       notify.setAttribute('aria-label','Benachrichtigungen');
       notify.title = 'Benachrichtigungen';
-      notify.innerHTML = '<span class="pollen-neo-header-settings-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 9.7c0-3.3-2.1-5.7-5.1-6.2V2.8a.9.9 0 0 0-1.8 0v.7C8.1 4 6 6.4 6 9.7v3.5c0 1.4-.6 2.5-1.5 3.4a.9.9 0 0 0 .6 1.5h13.8a.9.9 0 0 0 .6-1.5c-.9-.9-1.5-2-1.5-3.4V9.7Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path><path d="M9.8 19.5a2.4 2.4 0 0 0 4.4 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path></svg></span>';
+      notify.innerHTML = '<span class="pollen-neo-header-settings-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 9.7c0-3.3-2.1-5.7-5.1-6.2V2.8a.9.9 0 0 0-1.8 0v.7C8.1 4 6 6.4 6 9.7v3.5c0 1.4-.6 2.5-1.5 3.4a.9.9 0 0 0 .6 1.5h13.8a.9.9 0 0 0 .6-1.5c-.9-.9-1.5-2-1.5-3.4V9.7Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path><path d="M9.8 19.5a2.4 2.4 0 0 0 4.4 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path></svg></span><span class="pollen-neo-notify-count" data-pollen-notify-count style="display:none"></span>';
       actions.appendChild(notify);
     }
     if(!actions.querySelector('.pollen-neo-header-settings')){
@@ -335,9 +371,10 @@
       action.type = 'button';
       action.className = 'pollen-neo-header-settings';
       action.setAttribute('data-pollen-settings','');
-      action.innerHTML = '<span class="pollen-neo-header-settings-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.33 1.82V22a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1.82-.33H2a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-.6 1.65 1.65 0 0 0 .33-1.82V2a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.12.69.31 1 .6.31.29.51.64.6 1H22a2 2 0 1 1 0 4h-.09c-.37.09-.72.29-1 .6-.29.31-.48.64-.51 1z"></path></svg></span><span>Pollen-Settings</span>';
+      action.innerHTML = '<span class="pollen-neo-header-settings-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.33 1.82V22a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1.82-.33H2a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-.6 1.65 1.65 0 0 0 .33-1.82V2a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.12.69.31 1 .6.31.29.51.64.6 1H22a2 2 0 1 1 0 4h-.09c-.37.09-.72.29-1 .6-.29.31-.48.64-.51 1z"></path></svg></span><span>Allergieprofil</span>';
       actions.appendChild(action);
     }
+    updateHeaderNotificationBadge();
   }
   function setShellMode(active){ return !!active; }
   function patchViewSwitcher(){ return; }
@@ -367,6 +404,7 @@
       loc = Store && Store.getLocation ? Store.getLocation() : loc;
       if(window.ChangeWeatherCard && typeof window.ChangeWeatherCard.update === 'function') window.ChangeWeatherCard.update();
       body.innerHTML = pageHtml(data, loc);
+      updateHeaderNotificationBadge();
       var mode = readEditMode();
       body.classList.toggle('pollen-edit-active', mode === 'profile' || mode === 'symptoms');
     }catch(e){

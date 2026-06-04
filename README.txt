@@ -1,16 +1,15 @@
-Change App · Pollen Premium Style · Version 0.1.0030
+Change App · Pollen Header Notification Polish · Version 0.1.0031
 
 Enthaltene Änderungen:
-- features/pollen/pollenView.css
 - features/pollen/pollenView.js
+- features/pollen/pollenView.css
 - features/settings/settingsPanel.js
 - CLAUDE.md
 - README.txt
 
 Anpassungen in diesem Update:
-- Mobile Pollen-Ansicht repariert
-- Header, Hero, Allergieprofil, Symptome und 7-Tage-Ausblick mobil kompakter gesetzt
-- Forecast-Texte werden mobil nicht mehr abgeschnitten
-- Symptom-Karte bleibt mobil lesbar
-- Zusätzlicher Abstand zur Bottom-Navigation ergänzt
-- Sichtbare App-Version auf 0.1.0030 erhöht und in CLAUDE.md dokumentiert
+- Pollen-Glocke zeigt jetzt die globale Benachrichtigungsanzahl
+- Glocke und Allergieprofil-Button sind optisch gleich hoch ausgerichtet
+- Wording von „Pollen-Settings“ auf „Allergieprofil“ geändert
+- Kein automatischer Push-Dialog und kein Firebase-Auto-Start
+- Sichtbare App-Version auf 0.1.0031 erhöht
