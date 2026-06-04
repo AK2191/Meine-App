@@ -1,4 +1,4 @@
-Change App · Pollen Premium Style · Version 0.1.0036
+Change App · Pollen Premium Style · Version 0.1.0037
 
 Enthaltene Änderungen:
 - features/pollen/pollenView.js
@@ -14,4 +14,4 @@ Anpassungen in diesem Update:
 - Allergieprofil mobil flacher und ruhiger
 - 7-Tage-Ausblick mobil bündiger als Feed
 - Hellmode für Pollen lesbarer gemacht
-- Sichtbare App-Version auf 0.1.0036 erhöht und in CLAUDE.md dokumentiert
+- Sichtbare App-Version auf 0.1.0037 erhöht und in CLAUDE.md dokumentiert
