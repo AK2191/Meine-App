@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0042 und Pollen UI Feinschliff
+> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0043 und Challenges UI Feinschliff
 
 ---
 
@@ -83,6 +83,7 @@ Jeder Kalendertag enthält:
 - **Mitspieler-Button** entfernt (war im `.leader-card-head`, Funktion `openParticipantPanel`)
 - Titel der rechten Karte: „Rangliste" (vorher „Kontest")
 - Ab Version `0.1.0041`: Challenge-Ansicht verwendet den ruhigen Pollen-Stil mit dunklem View-Hintergrund, radialen Akzenten, Premium-Karten, Gruppen-Ziel als Hero-Karte, Punkte-Kalender als volle Kartenzeile und mobilen Kartenabständen wie Pollen. Die Challenge-Logik, Auto-Challenges, Punkte, Sync, Rangliste, Anfeuern, Rückgängig und Heute-zurücksetzen bleiben unverändert.
+- Ab Version `0.1.0043`: Challenge-Ansicht nutzt auf Desktop die gleiche seitliche auswählbare Navigation wie Pollen und auf Mobil die gleiche aktive Bottom-Navigation. Hellmodus ist wieder unterstützt. Der grüne Hintergrundakzent wurde reduziert. Erledigen und Rückgängig zeigen keine Toast-/Banner-Meldung mehr; Anfeuern zeigt weiterhin Banner über die bestehende Anfeuern-Logik.
 
 
 ---
@@ -99,7 +100,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0042`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0043`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -271,6 +272,7 @@ firebase deploy --only hosting
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
 
+| 2026-06-04 | Version auf `0.1.0043` erhöht; Challenge-UI feinjustiert: Pollen-artige auswählbare Navigation auf Desktop und Mobil, Hellmodus wiederhergestellt, grüner Hintergrundakzent beruhigt, keine Banner mehr beim Erledigen/Rückgängig. Anfeuern-Banner bleibt erhalten. Keine Änderung an Challenge-Datenmodell, Auto-Challenges, Punkte-Logik, Firebase, Sync, Push, Login oder Kalenderlogik. | ChatGPT |
 | 2026-06-04 | Version auf `0.1.0041` erhöht; Challenge-Ansicht optisch an den Pollen-Stil angeglichen. Desktop und Mobile nutzen nun dunklen View-Hintergrund, ruhige Premium-Karten, Gruppen-Ziel als Hero-Karte, Pollen-artige Abstände und stabile mobile Reihenfolge. Funktionen und Challenge-Logik bleiben unverändert. | ChatGPT |
 | 2026-06-04 | Version auf `0.1.0042` erhöht; Pollen-UI feinjustiert: mobile Scrollbar ausgeblendet, Allergieprofil-Auswahl im Hellmodus klarer sichtbar, relevante Pollenwerte ab 1 % direkt in der großen Kachel sichtbar und der schwarze untere Hellmodus-Bereich entfernt. Pollen-Datenlogik, Wetter-API, Login, Sync, Firebase und Push bleiben unverändert. | ChatGPT |
 
@@ -803,3 +805,12 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Der Pollen-Hellmodus nutzt den unteren Bereich sauber weiter; der dunkle Balken unter dem Inhalt wird durch einen hellen App-Hintergrund und eine passende helle Bottom-Navigation ersetzt.
 - Keine Änderung an Pollen-Datenlogik, Wetter-API, Firebase-Autostart, Datenbank-Sync-Start, Push-Permission-Dialog, Kalenderlogik oder Login.
 
+## Version 0.1.0043
+- Die sichtbare App-Version wurde auf `0.1.0043` erhöht.
+- Challenge-Desktop nutzt nun die gleiche seitliche auswählbare Navigation wie Pollen.
+- Challenge-Mobile nutzt nun die gleiche aktive Bottom-Navigation wie Pollen.
+- Der Hellmodus für Challenges wurde wiederhergestellt.
+- Der grüne Challenge-Hintergrundakzent wurde reduziert, damit er näher am ruhigen Pollen-Stil bleibt.
+- Erledigen und Rückgängig zeigen keine Toast-/Banner-Meldung mehr.
+- Anfeuern bleibt unverändert und zeigt weiterhin Banner über die bestehende Anfeuern-Logik.
+- Keine Änderung an Challenge-Datenmodell, Auto-Challenge-Generierung, Punkte-Logik, Firebase-Autostart, Datenbank-Sync-Start, Push-Permission-Dialog, Kalenderlogik oder Login.

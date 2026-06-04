@@ -1,16 +1,21 @@
-Change App · Pollen UI Feinschliff · Version 0.1.0042
+Change App · Challenges UI Feinschliff · Version 0.1.0043
 
 Enthaltene Änderungen:
-- features/pollen/pollenView.css
-- features/pollen/pollenUiPolish.css
+- features/challenges/challenges-mobile.css
+- features/challenges/challenges.js
 - features/pollen/pollenView.js
 - features/settings/settingsPanel.js
 - CLAUDE.md
 - README.txt
 
-Anpassungen in diesem Update:
-- Mobile Pollen-Scrollbar rechts ausgeblendet
-- Ausgewähltes Allergieprofil im Hellmodus deutlicher sichtbar
-- Große Pollen-Kachel zeigt relevante Werte ab 1 % direkt an
-- Pollen-Hellmodus nutzt unten die Fläche sauber ohne schwarzen Balken
-- Sichtbare App-Version auf 0.1.0042 erhöht und in CLAUDE.md dokumentiert
+Umsetzung:
+- Challenges nutzt auf Desktop die gleiche seitliche auswählbare Navigation wie Pollen.
+- Challenges nutzt auf Mobil die gleiche aktive Bottom-Navigation wie Pollen.
+- Hellmodus für Challenges wieder hergestellt.
+- Grün-Akzent im Challenge-Hintergrund reduziert, näher am ruhigen Pollen-Stil.
+- Erledigen und Rückgängig zeigen keine Toast-/Banner-Meldung mehr.
+- Anfeuern bleibt unverändert und zeigt weiterhin Banner über die bestehende Anfeuern-Logik.
+
+Wichtig:
+- Keine Änderung an Challenge-Datenmodell, Auto-Challenge-Generierung, Punkte-Logik, Firebase, Datenbank-Sync, Push, Login oder Kalenderlogik.
+- Sichtbare App-Version auf 0.1.0043 erhöht und in CLAUDE.md dokumentiert.

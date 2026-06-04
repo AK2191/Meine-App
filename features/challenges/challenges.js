@@ -294,7 +294,7 @@
     var all=getDailyPool(todayStr()).concat(OPTIONAL);
     var ch=all.find(function(c){return c.id===id;});
     if(!ch){if(typeof toast==='function')toast('Challenge nicht gefunden','err');return;}
-    if(isDoneToday(id)){if(typeof toast==='function')toast('Bereits heute erledigt','');return;}
+    if(isDoneToday(id)){return;}
     var me=myId(), pts=parseInt(ch.points,10)||0;
     var rec={
       id:'cc_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,6),
@@ -317,7 +317,7 @@
         firebase.firestore().collection('change_completions').doc(rec.id).set(rec,{merge:true});
       }
     }catch(e){}
-    if(typeof toast==='function') toast('+'+pts+' Punkte ✓','ok');
+    // UI bleibt ruhig: Erledigen zeigt keinen Toast/Banner mehr.
     // Glocke nicht hochzählen: challenge-Notif als gelesen markieren
     try{
       var notifId='challenge:daily:'+todayStr();
@@ -350,7 +350,7 @@
       try{if(c.id&&typeof firebase!=='undefined'&&firebase.firestore)
         firebase.firestore().collection('change_completions').doc(String(c.id)).delete();}catch(e){}
     });
-    if(typeof toast==='function') toast(removed.length?'Zurückgesetzt':'Nichts zurückzusetzen','');
+    // UI bleibt ruhig: Rückgängig zeigt keinen Toast/Banner mehr.
     renderChallenges();
     try{if(typeof buildDashboard==='function')buildDashboard();}catch(e){}
     try{if(typeof window.renderCalendar==='function')window.renderCalendar();}catch(e){}
