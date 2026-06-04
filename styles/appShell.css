@@ -1,4 +1,4 @@
-/* Change App · Unified App Shell · v0.1.0045
+/* Change App · Unified App Shell · v0.1.0050
    UI only: gemeinsame Desktop-Sidebar und mobile Bottom-Bar für alle Reiter. */
 
 @media (min-width:701px){
@@ -663,4 +663,483 @@ body.change-theme-light.change-view-challenges #challenges-view .challenge-view-
   background:rgba(255,255,255,.82)!important;
   border-color:rgba(20,35,24,.10)!important;
   color:#4a574f!important;
+}
+
+/* v0.1.0047 · Mobile Bottom-Bar ohne sichtbare Abschlusskante */
+@media (max-width:700px){
+  body.change-view-dashboard #bottom-nav,
+  body.change-view-calendar #bottom-nav,
+  body.change-view-challenges #bottom-nav,
+  body.change-view-pollen #bottom-nav,
+  body.neo-pollen-shell #bottom-nav{
+    border:0!important;
+    border-top:0!important;
+    box-shadow:none!important;
+    outline:0!important;
+  }
+
+  body.change-view-dashboard #bottom-nav::before,
+  body.change-view-dashboard #bottom-nav::after,
+  body.change-view-calendar #bottom-nav::before,
+  body.change-view-calendar #bottom-nav::after,
+  body.change-view-challenges #bottom-nav::before,
+  body.change-view-challenges #bottom-nav::after,
+  body.change-view-pollen #bottom-nav::before,
+  body.change-view-pollen #bottom-nav::after,
+  body.neo-pollen-shell #bottom-nav::before,
+  body.neo-pollen-shell #bottom-nav::after{
+    display:none!important;
+    content:none!important;
+  }
+}
+
+
+/* v0.1.0049 · App-Shell Feinschliff: stabile Mobile-Bar, Avatar-Status, Challenge-Header */
+@media (max-width:700px){
+  body.change-view-dashboard #bottom-nav,
+  body.change-view-calendar #bottom-nav,
+  body.change-view-challenges #bottom-nav,
+  body.change-view-pollen #bottom-nav,
+  body.neo-pollen-shell #bottom-nav{
+    background:rgba(13,17,18,.92)!important;
+    border:0!important;
+    box-shadow:none!important;
+    outline:0!important;
+    backdrop-filter:blur(18px)!important;
+  }
+  body.change-view-dashboard .bnav-inner,
+  body.change-view-calendar .bnav-inner,
+  body.change-view-challenges .bnav-inner,
+  body.change-view-pollen .bnav-inner,
+  body.neo-pollen-shell .bnav-inner{
+    height:64px!important;
+    align-items:stretch!important;
+  }
+  body.change-view-dashboard .bnav-item,
+  body.change-view-calendar .bnav-item,
+  body.change-view-challenges .bnav-item,
+  body.change-view-pollen .bnav-item,
+  body.neo-pollen-shell .bnav-item{
+    position:relative!important;
+    isolation:isolate!important;
+    min-height:64px!important;
+    margin:0!important;
+    padding:6px 4px!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+    transform:none!important;
+    translate:none!important;
+    transition:color .15s ease!important;
+    will-change:auto!important;
+    line-height:1!important;
+  }
+  body.change-view-dashboard .bnav-item svg,
+  body.change-view-calendar .bnav-item svg,
+  body.change-view-challenges .bnav-item svg,
+  body.change-view-pollen .bnav-item svg,
+  body.neo-pollen-shell .bnav-item svg{
+    width:21px!important;
+    height:21px!important;
+    flex:0 0 21px!important;
+    transform:none!important;
+    translate:none!important;
+  }
+  body.change-view-dashboard .bnav-label,
+  body.change-view-calendar .bnav-label,
+  body.change-view-challenges .bnav-label,
+  body.change-view-pollen .bnav-label,
+  body.neo-pollen-shell .bnav-label{
+    min-height:12px!important;
+    line-height:12px!important;
+  }
+  body.change-view-dashboard .bnav-item.active,
+  body.change-view-calendar .bnav-item.active,
+  body.change-view-challenges .bnav-item.active,
+  body.change-view-pollen .bnav-item.active,
+  body.neo-pollen-shell .bnav-item.active{
+    color:#34e37b!important;
+    margin:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    transform:none!important;
+    translate:none!important;
+  }
+  body.change-view-dashboard .bnav-item.active::before,
+  body.change-view-calendar .bnav-item.active::before,
+  body.change-view-challenges .bnav-item.active::before,
+  body.change-view-pollen .bnav-item.active::before,
+  body.neo-pollen-shell .bnav-item.active::before{
+    content:""!important;
+    position:absolute!important;
+    inset:6px 4px!important;
+    border-radius:18px!important;
+    background:linear-gradient(180deg,rgba(52,227,123,.14),rgba(52,227,123,.02))!important;
+    z-index:-1!important;
+    pointer-events:none!important;
+  }
+  [data-theme="light"] body.change-view-dashboard #bottom-nav,
+  [data-theme="light"] body.change-view-calendar #bottom-nav,
+  [data-theme="light"] body.change-view-challenges #bottom-nav,
+  [data-theme="light"] body.change-view-pollen #bottom-nav,
+  body.theme-light.change-view-dashboard #bottom-nav,
+  body.theme-light.change-view-calendar #bottom-nav,
+  body.theme-light.change-view-challenges #bottom-nav,
+  body.theme-light.change-view-pollen #bottom-nav,
+  body.change-theme-light.change-view-dashboard #bottom-nav,
+  body.change-theme-light.change-view-calendar #bottom-nav,
+  body.change-theme-light.change-view-challenges #bottom-nav,
+  body.change-theme-light.change-view-pollen #bottom-nav{
+    background:rgba(255,255,255,.92)!important;
+    border:0!important;
+    box-shadow:none!important;
+  }
+  [data-theme="light"] body.change-view-dashboard .bnav-item.active::before,
+  [data-theme="light"] body.change-view-calendar .bnav-item.active::before,
+  [data-theme="light"] body.change-view-challenges .bnav-item.active::before,
+  [data-theme="light"] body.change-view-pollen .bnav-item.active::before,
+  body.theme-light.change-view-dashboard .bnav-item.active::before,
+  body.theme-light.change-view-calendar .bnav-item.active::before,
+  body.theme-light.change-view-challenges .bnav-item.active::before,
+  body.theme-light.change-view-pollen .bnav-item.active::before,
+  body.change-theme-light.change-view-dashboard .bnav-item.active::before,
+  body.change-theme-light.change-view-calendar .bnav-item.active::before,
+  body.change-theme-light.change-view-challenges .bnav-item.active::before,
+  body.change-theme-light.change-view-pollen .bnav-item.active::before{
+    background:linear-gradient(180deg,rgba(36,190,91,.16),rgba(36,190,91,.05))!important;
+  }
+}
+
+body.change-view-dashboard .avatar,
+body.change-view-calendar .avatar,
+body.change-view-challenges .avatar,
+body.change-view-pollen .avatar,
+body.neo-pollen-shell .avatar{
+  position:relative!important;
+  overflow:visible!important;
+}
+body.change-view-dashboard .avatar img,
+body.change-view-calendar .avatar img,
+body.change-view-challenges .avatar img,
+body.change-view-pollen .avatar img,
+body.neo-pollen-shell .avatar img{
+  border-radius:50%!important;
+}
+body.change-view-dashboard .avatar.google-on,
+body.change-view-calendar .avatar.google-on,
+body.change-view-challenges .avatar.google-on,
+body.change-view-pollen .avatar.google-on,
+body.neo-pollen-shell .avatar.google-on{
+  box-shadow:0 0 0 2.5px #22c55e,0 12px 30px rgba(0,0,0,.28)!important;
+}
+body.change-view-dashboard .avatar.google-off,
+body.change-view-calendar .avatar.google-off,
+body.change-view-challenges .avatar.google-off,
+body.change-view-pollen .avatar.google-off,
+body.neo-pollen-shell .avatar.google-off{
+  box-shadow:0 0 0 2.5px #ef4444,0 12px 30px rgba(0,0,0,.28)!important;
+}
+body.change-view-dashboard .avatar.google-on::after,
+body.change-view-calendar .avatar.google-on::after,
+body.change-view-challenges .avatar.google-on::after,
+body.change-view-pollen .avatar.google-on::after,
+body.neo-pollen-shell .avatar.google-on::after,
+body.change-view-dashboard .avatar.google-off::after,
+body.change-view-calendar .avatar.google-off::after,
+body.change-view-challenges .avatar.google-off::after,
+body.change-view-pollen .avatar.google-off::after,
+body.neo-pollen-shell .avatar.google-off::after{
+  content:""!important;
+  position:absolute!important;
+  right:1px!important;
+  bottom:1px!important;
+  width:12px!important;
+  height:12px!important;
+  border-radius:999px!important;
+  border:2px solid #04090e!important;
+  background:#ef4444!important;
+  z-index:3!important;
+  pointer-events:none!important;
+}
+body.change-view-dashboard .avatar.google-on::after,
+body.change-view-calendar .avatar.google-on::after,
+body.change-view-challenges .avatar.google-on::after,
+body.change-view-pollen .avatar.google-on::after,
+body.neo-pollen-shell .avatar.google-on::after{background:#22c55e!important;}
+[data-theme="light"] body.change-view-dashboard .avatar.google-on::after,
+[data-theme="light"] body.change-view-calendar .avatar.google-on::after,
+[data-theme="light"] body.change-view-challenges .avatar.google-on::after,
+[data-theme="light"] body.change-view-pollen .avatar.google-on::after,
+body.theme-light.change-view-dashboard .avatar.google-on::after,
+body.theme-light.change-view-calendar .avatar.google-on::after,
+body.theme-light.change-view-challenges .avatar.google-on::after,
+body.theme-light.change-view-pollen .avatar.google-on::after,
+body.change-theme-light.change-view-dashboard .avatar.google-on::after,
+body.change-theme-light.change-view-calendar .avatar.google-on::after,
+body.change-theme-light.change-view-challenges .avatar.google-on::after,
+body.change-theme-light.change-view-pollen .avatar.google-on::after,
+[data-theme="light"] body.change-view-dashboard .avatar.google-off::after,
+[data-theme="light"] body.change-view-calendar .avatar.google-off::after,
+[data-theme="light"] body.change-view-challenges .avatar.google-off::after,
+[data-theme="light"] body.change-view-pollen .avatar.google-off::after,
+body.theme-light.change-view-dashboard .avatar.google-off::after,
+body.theme-light.change-view-calendar .avatar.google-off::after,
+body.theme-light.change-view-challenges .avatar.google-off::after,
+body.theme-light.change-view-pollen .avatar.google-off::after,
+body.change-theme-light.change-view-dashboard .avatar.google-off::after,
+body.change-theme-light.change-view-calendar .avatar.google-off::after,
+body.change-theme-light.change-view-challenges .avatar.google-off::after,
+body.change-theme-light.change-view-pollen .avatar.google-off::after{border-color:#f4f7f0!important;}
+
+@media (min-width:701px){
+  body.change-view-challenges #content{
+    background:radial-gradient(circle at 4% 8%,rgba(21,99,56,.14),transparent 30%),radial-gradient(circle at 62% 6%,rgba(21,99,56,.055),transparent 24%),linear-gradient(180deg,#04090e,#04090e)!important;
+  }
+  body.change-view-challenges #challenges-view{
+    width:100%!important;
+    max-width:none!important;
+    min-height:100%!important;
+    margin:0!important;
+    display:flex!important;
+    flex-direction:column!important;
+    background:transparent!important;
+  }
+  body.change-view-challenges #challenges-view .list-header,
+  body.change-view-challenges #challenges-view .challenge-neo-header{
+    width:100%!important;
+    max-width:1320px!important;
+    margin:0 auto!important;
+    padding:0 0 18px!important;
+    background:transparent!important;
+    border:0!important;
+    box-shadow:none!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+  }
+  body.change-view-challenges #challenges-view .challenge-view-actions{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    gap:8px!important;
+  }
+  body.change-view-challenges #challenges-view .list-header > .btn,
+  body.change-view-challenges #challenges-view .challenge-view-actions .btn{
+    min-height:34px!important;
+    height:34px!important;
+    padding:0 14px!important;
+    border-radius:13px!important;
+    background:rgba(7,12,18,.62)!important;
+    border:1px solid rgba(255,255,255,.10)!important;
+    color:rgba(244,247,244,.84)!important;
+    backdrop-filter:blur(12px)!important;
+  }
+  body.change-view-challenges #challenges-view .challenge-layout{
+    max-width:1320px!important;
+    width:100%!important;
+    margin:0 auto!important;
+    padding-left:0!important;
+    padding-right:0!important;
+  }
+}
+@media (max-width:700px){
+  body.change-view-challenges #challenges-view .list-header,
+  body.change-view-challenges #challenges-view .challenge-neo-header{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    padding:18px 18px 10px!important;
+    gap:12px!important;
+    background:transparent!important;
+    border:0!important;
+    box-shadow:none!important;
+  }
+  body.change-view-challenges #challenges-view .challenge-view-actions{display:flex!important;}
+  body.change-view-challenges #challenges-view .list-header > .btn,
+  body.change-view-challenges #challenges-view .challenge-view-actions .btn{
+    width:auto!important;
+    min-width:0!important;
+    height:32px!important;
+    min-height:32px!important;
+    padding:0 10px!important;
+    border-radius:12px!important;
+    font-size:10px!important;
+    white-space:nowrap!important;
+    background:rgba(7,12,18,.62)!important;
+    border:1px solid rgba(255,255,255,.10)!important;
+    color:rgba(244,247,244,.84)!important;
+  }
+}
+[data-theme="light"] body.change-view-challenges #content,
+body.theme-light.change-view-challenges #content,
+body.change-theme-light.change-view-challenges #content{
+  background:radial-gradient(circle at 4% 8%,rgba(73,170,93,.12),transparent 30%),linear-gradient(180deg,#f4f7f0,#f4f7f0)!important;
+}
+[data-theme="light"] body.change-view-challenges #challenges-view .list-header > .btn,
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-view-actions .btn,
+body.theme-light.change-view-challenges #challenges-view .list-header > .btn,
+body.theme-light.change-view-challenges #challenges-view .challenge-view-actions .btn,
+body.change-theme-light.change-view-challenges #challenges-view .list-header > .btn,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-view-actions .btn{
+  background:rgba(255,255,255,.82)!important;
+  border-color:rgba(20,35,24,.10)!important;
+  color:#4a574f!important;
+}
+
+
+/* v0.1.0050 · Desktop App-Shell vollflächig: Hintergrund liegt auf der gesamten App, Sidebar ohne harte Border */
+@media (min-width:701px){
+  body.change-view-dashboard,
+  body.change-view-calendar,
+  body.change-view-challenges,
+  body.change-view-pollen{
+    margin:0!important;
+    background:#04090e!important;
+  }
+
+  body.change-view-dashboard #app,
+  body.change-view-calendar #app,
+  body.change-view-challenges #app,
+  body.change-view-pollen #app,
+  body.change-view-dashboard #main-app,
+  body.change-view-calendar #main-app,
+  body.change-view-challenges #main-app,
+  body.change-view-pollen #main-app{
+    min-height:100vh!important;
+    background:
+      radial-gradient(circle at 11% 7%,rgba(21,99,56,.11),transparent 30%),
+      radial-gradient(circle at 58% 4%,rgba(21,99,56,.045),transparent 26%),
+      linear-gradient(180deg,#04090e,#04090e)!important;
+  }
+
+  body.change-view-dashboard #content,
+  body.change-view-calendar #content,
+  body.change-view-challenges #content,
+  body.change-view-pollen #content{
+    background:transparent!important;
+    box-shadow:none!important;
+    border:0!important;
+  }
+
+  body.change-view-dashboard #header,
+  body.change-view-calendar #header,
+  body.change-view-challenges #header,
+  body.change-view-pollen #header{
+    background:linear-gradient(90deg,rgba(7,12,18,.64),rgba(7,12,18,.24) 58%,rgba(7,12,18,0))!important;
+    border-right:0!important;
+    box-shadow:none!important;
+    outline:0!important;
+  }
+
+  body.change-view-dashboard #header::before,
+  body.change-view-dashboard #header::after,
+  body.change-view-calendar #header::before,
+  body.change-view-calendar #header::after,
+  body.change-view-challenges #header::before,
+  body.change-view-challenges #header::after,
+  body.change-view-pollen #header::before,
+  body.change-view-pollen #header::after{
+    display:none!important;
+    content:none!important;
+  }
+
+  [data-theme="light"] body.change-view-dashboard,
+  [data-theme="light"] body.change-view-calendar,
+  [data-theme="light"] body.change-view-challenges,
+  [data-theme="light"] body.change-view-pollen,
+  body[data-theme="light"].change-view-dashboard,
+  body[data-theme="light"].change-view-calendar,
+  body[data-theme="light"].change-view-challenges,
+  body[data-theme="light"].change-view-pollen,
+  body.theme-light.change-view-dashboard,
+  body.theme-light.change-view-calendar,
+  body.theme-light.change-view-challenges,
+  body.theme-light.change-view-pollen,
+  body.change-theme-light.change-view-dashboard,
+  body.change-theme-light.change-view-calendar,
+  body.change-theme-light.change-view-challenges,
+  body.change-theme-light.change-view-pollen{
+    background:#f4f7f0!important;
+  }
+
+  [data-theme="light"] body.change-view-dashboard #app,
+  [data-theme="light"] body.change-view-calendar #app,
+  [data-theme="light"] body.change-view-challenges #app,
+  [data-theme="light"] body.change-view-pollen #app,
+  [data-theme="light"] body.change-view-dashboard #main-app,
+  [data-theme="light"] body.change-view-calendar #main-app,
+  [data-theme="light"] body.change-view-challenges #main-app,
+  [data-theme="light"] body.change-view-pollen #main-app,
+  body[data-theme="light"].change-view-dashboard #app,
+  body[data-theme="light"].change-view-calendar #app,
+  body[data-theme="light"].change-view-challenges #app,
+  body[data-theme="light"].change-view-pollen #app,
+  body[data-theme="light"].change-view-dashboard #main-app,
+  body[data-theme="light"].change-view-calendar #main-app,
+  body[data-theme="light"].change-view-challenges #main-app,
+  body[data-theme="light"].change-view-pollen #main-app,
+  body.theme-light.change-view-dashboard #app,
+  body.theme-light.change-view-calendar #app,
+  body.theme-light.change-view-challenges #app,
+  body.theme-light.change-view-pollen #app,
+  body.theme-light.change-view-dashboard #main-app,
+  body.theme-light.change-view-calendar #main-app,
+  body.theme-light.change-view-challenges #main-app,
+  body.theme-light.change-view-pollen #main-app,
+  body.change-theme-light.change-view-dashboard #app,
+  body.change-theme-light.change-view-calendar #app,
+  body.change-theme-light.change-view-challenges #app,
+  body.change-theme-light.change-view-pollen #app,
+  body.change-theme-light.change-view-dashboard #main-app,
+  body.change-theme-light.change-view-calendar #main-app,
+  body.change-theme-light.change-view-challenges #main-app,
+  body.change-theme-light.change-view-pollen #main-app{
+    background:
+      radial-gradient(circle at 10% 6%,rgba(67,164,92,.12),transparent 33%),
+      radial-gradient(circle at 56% 4%,rgba(67,164,92,.06),transparent 27%),
+      linear-gradient(180deg,#f4f7f0,#f4f7f0)!important;
+  }
+
+  [data-theme="light"] body.change-view-dashboard #content,
+  [data-theme="light"] body.change-view-calendar #content,
+  [data-theme="light"] body.change-view-challenges #content,
+  [data-theme="light"] body.change-view-pollen #content,
+  body[data-theme="light"].change-view-dashboard #content,
+  body[data-theme="light"].change-view-calendar #content,
+  body[data-theme="light"].change-view-challenges #content,
+  body[data-theme="light"].change-view-pollen #content,
+  body.theme-light.change-view-dashboard #content,
+  body.theme-light.change-view-calendar #content,
+  body.theme-light.change-view-challenges #content,
+  body.theme-light.change-view-pollen #content,
+  body.change-theme-light.change-view-dashboard #content,
+  body.change-theme-light.change-view-calendar #content,
+  body.change-theme-light.change-view-challenges #content,
+  body.change-theme-light.change-view-pollen #content{
+    background:transparent!important;
+    border:0!important;
+    box-shadow:none!important;
+  }
+
+  [data-theme="light"] body.change-view-dashboard #header,
+  [data-theme="light"] body.change-view-calendar #header,
+  [data-theme="light"] body.change-view-challenges #header,
+  [data-theme="light"] body.change-view-pollen #header,
+  body[data-theme="light"].change-view-dashboard #header,
+  body[data-theme="light"].change-view-calendar #header,
+  body[data-theme="light"].change-view-challenges #header,
+  body[data-theme="light"].change-view-pollen #header,
+  body.theme-light.change-view-dashboard #header,
+  body.theme-light.change-view-calendar #header,
+  body.theme-light.change-view-challenges #header,
+  body.theme-light.change-view-pollen #header,
+  body.change-theme-light.change-view-dashboard #header,
+  body.change-theme-light.change-view-calendar #header,
+  body.change-theme-light.change-view-challenges #header,
+  body.change-theme-light.change-view-pollen #header{
+    background:linear-gradient(90deg,rgba(255,255,255,.54),rgba(255,255,255,.22) 58%,rgba(255,255,255,0))!important;
+    border-right:0!important;
+    box-shadow:none!important;
+    outline:0!important;
+  }
 }

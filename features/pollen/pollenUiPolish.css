@@ -341,3 +341,128 @@ body.change-theme-light #pollen-view .pollen-neo-forecast-items span.low,
   #pollen-view .pollen-neo-forecast-items{gap:5px!important;}
   #pollen-view .pollen-neo-forecast-items span{font-size:10px!important;padding:4px 7px!important;min-height:22px!important;}
 }
+
+/* v0.1.0048 · Pollen 7-Tage-Ausblick: ruhige, einheitliche Übersicht */
+#pollen-view .pollen-neo-forecast .pollen-neo-section-head span{
+  text-transform:uppercase!important;
+}
+#pollen-view .pollen-neo-forecast-row{
+  grid-template-columns:14px 118px minmax(0,1fr) 104px!important;
+  gap:12px!important;
+  min-height:72px!important;
+}
+#pollen-view .pollen-neo-forecast-main{
+  min-width:0!important;
+}
+#pollen-view .pollen-neo-forecast-main > strong,
+#pollen-view .pollen-neo-forecast-main > span:not(.pollen-neo-forecast-empty){
+  display:none!important;
+}
+#pollen-view .pollen-neo-forecast-items{
+  display:flex!important;
+  align-items:center!important;
+  flex-wrap:wrap!important;
+  gap:7px!important;
+  min-width:0!important;
+}
+#pollen-view .pollen-neo-forecast-items span{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:5px!important;
+  min-height:24px!important;
+  max-width:100%!important;
+  padding:4px 8px!important;
+  border-radius:999px!important;
+  border:1px solid rgba(255,255,255,.075)!important;
+  background:rgba(255,255,255,.035)!important;
+  box-shadow:none!important;
+  color:rgba(244,247,244,.72)!important;
+  font-size:11px!important;
+  font-weight:800!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+#pollen-view .pollen-neo-forecast-items strong,
+#pollen-view .pollen-neo-forecast-items em{
+  display:inline!important;
+  font-style:normal!important;
+  color:inherit!important;
+  font-weight:850!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+}
+#pollen-view .pollen-neo-forecast-items span.high{color:#ff6555!important;background:rgba(255,101,85,.055)!important;border-color:rgba(255,101,85,.12)!important;}
+#pollen-view .pollen-neo-forecast-items span.medium{color:#f4b32f!important;background:rgba(244,179,47,.055)!important;border-color:rgba(244,179,47,.12)!important;}
+#pollen-view .pollen-neo-forecast-items span.low{color:#55d86b!important;background:rgba(85,216,107,.055)!important;border-color:rgba(85,216,107,.12)!important;}
+#pollen-view .pollen-neo-forecast-items span.none,
+#pollen-view .pollen-neo-forecast-items span.zero{
+  color:rgba(244,247,244,.46)!important;
+  background:rgba(255,255,255,.022)!important;
+  border-color:rgba(255,255,255,.055)!important;
+}
+#pollen-view .pollen-neo-forecast-items span.zero em{opacity:.78!important;}
+body.theme-light #pollen-view .pollen-neo-forecast-items span,
+body.change-theme-light #pollen-view .pollen-neo-forecast-items span,
+[data-theme="light"] #pollen-view .pollen-neo-forecast-items span{
+  background:rgba(255,255,255,.58)!important;
+  border-color:rgba(23,35,27,.10)!important;
+  color:#243126!important;
+}
+body.theme-light #pollen-view .pollen-neo-forecast-items span.high,
+body.change-theme-light #pollen-view .pollen-neo-forecast-items span.high,
+[data-theme="light"] #pollen-view .pollen-neo-forecast-items span.high{color:#e9473a!important;background:rgba(255,93,74,.075)!important;border-color:rgba(255,93,74,.15)!important;}
+body.theme-light #pollen-view .pollen-neo-forecast-items span.medium,
+body.change-theme-light #pollen-view .pollen-neo-forecast-items span.medium,
+[data-theme="light"] #pollen-view .pollen-neo-forecast-items span.medium{color:#bb7800!important;background:rgba(242,179,49,.09)!important;border-color:rgba(242,179,49,.16)!important;}
+body.theme-light #pollen-view .pollen-neo-forecast-items span.low,
+body.change-theme-light #pollen-view .pollen-neo-forecast-items span.low,
+[data-theme="light"] #pollen-view .pollen-neo-forecast-items span.low{color:#139e4c!important;background:rgba(39,202,102,.085)!important;border-color:rgba(39,202,102,.16)!important;}
+body.theme-light #pollen-view .pollen-neo-forecast-items span.none,
+body.change-theme-light #pollen-view .pollen-neo-forecast-items span.none,
+[data-theme="light"] #pollen-view .pollen-neo-forecast-items span.none,
+body.theme-light #pollen-view .pollen-neo-forecast-items span.zero,
+body.change-theme-light #pollen-view .pollen-neo-forecast-items span.zero,
+[data-theme="light"] #pollen-view .pollen-neo-forecast-items span.zero{
+  color:rgba(29,42,32,.52)!important;
+  background:rgba(29,42,32,.035)!important;
+  border-color:rgba(29,42,32,.08)!important;
+}
+@media (max-width:760px){
+  #pollen-view .pollen-neo-forecast-row,
+  #pollen-view .pollen-neo-forecast-row.multi,
+  #pollen-view .pollen-neo-forecast-row.single{
+    grid-template-columns:9px 58px minmax(0,1fr)!important;
+    gap:7px!important;
+    min-height:58px!important;
+    padding:9px 10px!important;
+    align-items:center!important;
+  }
+  #pollen-view .pollen-neo-forecast-date{border:0!important;padding:0!important;min-width:0!important;}
+  #pollen-view .pollen-neo-forecast-date strong{font-size:11.5px!important;line-height:1.05!important;}
+  #pollen-view .pollen-neo-forecast-date span{display:block!important;font-size:9px!important;line-height:1.05!important;margin-top:2px!important;}
+  #pollen-view .pollen-neo-forecast-main{grid-column:auto!important;min-width:0!important;}
+  #pollen-view .pollen-neo-forecast-items{
+    display:flex!important;
+    flex-wrap:wrap!important;
+    gap:4px!important;
+    overflow:visible!important;
+  }
+  #pollen-view .pollen-neo-forecast-items span{
+    display:inline-flex!important;
+    min-height:19px!important;
+    padding:3px 6px!important;
+    font-size:9.5px!important;
+    gap:4px!important;
+  }
+  #pollen-view .pollen-neo-forecast-items strong,
+  #pollen-view .pollen-neo-forecast-items em{
+    display:inline!important;
+    font-size:inherit!important;
+  }
+  #pollen-view .pollen-neo-bars{
+    display:none!important;
+  }
+}

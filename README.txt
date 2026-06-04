@@ -1,27 +1,18 @@
-Change App · Einheitliche Navigation · Version 0.1.0046
+Change App · App-Shell Full-Bleed · Version 0.1.0050
 
 Enthaltene Änderungen:
 - styles/appShell.css
-- features/pollen/pollenUiPolish.css
 - features/pollen/pollenView.js
 - features/settings/settingsPanel.js
 - CLAUDE.md
 - README.txt
 
 Umsetzung:
-- Dashboard, Kalender, Challenges und Pollen nutzen auf Desktop dieselbe seitliche App-Bar.
-- Mobil nutzen alle Reiter dieselbe Bottom-Bar mit einheitlicher aktiver Auswahl.
-- Challenges wurde im oberen Bereich an Pollen angepasst.
-- „Heute zurücksetzen“ sitzt bei Challenges wieder sauber als Header-Aktion.
-- Die Kalender-Steuerung bleibt trotz Desktop-Sidebar sichtbar und bedienbar.
-- Hellmodus und Dunkelmodus sind für die gemeinsame Navigation berücksichtigt.
+- Desktop-Hintergrund liegt jetzt vollflächig auf der gesamten App-Shell statt getrennt nur im Inhaltsbereich.
+- Die seitliche Navigation hat im Hellmodus keine harte rechte Border und keinen Schatten mehr.
+- Der Content-Bereich ist transparent, damit keine getrennten Hintergrundflächen oder sichtbaren Kanten entstehen.
+- Dashboard, Kalender, Challenges und Pollen nutzen dieselbe Shell-Regel.
 
 Wichtig:
-- Keine Änderung an Challenge-Datenmodell, Auto-Challenge-Generierung, Punkte-Logik, Firebase, Datenbank-Sync, Push, Login oder Kalenderdaten.
-- Sichtbare App-Version auf 0.1.0046 erhöht und in CLAUDE.md dokumentiert.
-
-
-v0.1.0046:
-- Pollen-Hero ohne doppelte Gräser-Kachel
-- 7-Tage-Ausblick mit klaren Chips bei Mehrfachauswahl
-- Challenge-Kopfzeile wie Pollen
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik.
+- Sichtbare App-Version auf 0.1.0050 erhöht und in CLAUDE.md dokumentiert.

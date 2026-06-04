@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0046 und Pollen-/Challenge-Header Feinschliff
+> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0050 und App-Shell Full-Bleed
 
 ---
 
@@ -86,6 +86,10 @@ Jeder Kalendertag enthält:
 - Ab Version `0.1.0043`: Challenge-Ansicht nutzt auf Desktop die gleiche seitliche auswählbare Navigation wie Pollen und auf Mobil die gleiche aktive Bottom-Navigation. Hellmodus ist wieder unterstützt. Der grüne Hintergrundakzent wurde reduziert. Erledigen und Rückgängig zeigen keine Toast-/Banner-Meldung mehr; Anfeuern zeigt weiterhin Banner über die bestehende Anfeuern-Logik.
 - Ab Version `0.1.0045`: Die Navigation wird zentral über `styles/appShell.css` vereinheitlicht. Dashboard, Kalender, Challenges und Pollen nutzen auf Desktop dieselbe seitliche App-Bar und mobil dieselbe Bottom-Bar. Die Kalender-Steuerung bleibt als eigene Kopfleiste sichtbar. Challenges nutzt den Pollen-artigen Header; „Heute zurücksetzen“ bleibt eine Header-Aktion.
 - Ab Version `0.1.0046`: Der Challenge-Kopf wird wie bei Pollen ohne breite Hintergrundleiste dargestellt. „Heute zurücksetzen“ bleibt rechts als kleine Aktion im Kopfbereich. Layout und Logik bleiben unverändert.
+- Ab Version `0.1.0047`: Die mobile Bottom-Bar zeigt in Dashboard, Kalender, Challenges und Pollen keine sichtbare Abschlusskante/Borders mehr und verhält sich optisch wie das Dashboard. Navigation, Routing und Reiterlogik bleiben unverändert.
+- Ab Version `0.1.0048`: Der Pollen-7-Tage-Ausblick zeigt im Titel nur noch „7-Tage-Ausblick“ ohne Profilzusatz. Einzel- und Mehrfachauswahl nutzen dieselbe ruhige Chip-Darstellung, damit Desktop nicht überladen wirkt und mobil alle ausgewählten Pollen sichtbar bleiben. Pollen-Datenlogik und API bleiben unverändert.
+- Ab Version `0.1.0049`: Die mobile Bottom-Bar wurde stabilisiert, damit aktive Icons beim Tippen nicht mehr optisch hüpfen. Der Avatar zeigt den Online-/Offline-Status wieder mit Ring und Statuspunkt. Challenges nutzt eine ruhigere Header-Aktion für „Heute zurücksetzen“ und der Hintergrund schließt sauberer an die gemeinsame App-Bar an. Keine Änderung an Navigation, Challenge-Logik, Pollen-Datenlogik, Firebase, Sync, Push, Kalenderlogik oder Login.
+- Ab Version `0.1.0050`: Desktop-App-Shell nutzt einen vollflächigen Hintergrund auf `#main-app` für Dashboard, Kalender, Challenges und Pollen. `#content` ist transparent, die seitliche Navigation hat keine harte rechte Border und keinen Schatten mehr, damit im Hellmodus keine getrennten Hintergrundflächen sichtbar sind. Keine Änderung an Navigation, Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik.
 
 
 ---
@@ -102,7 +106,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0046`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0050`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -274,6 +278,12 @@ firebase deploy --only hosting
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
 
+| 2026-06-04 | Version auf `0.1.0050` erhöht; Desktop-App-Shell für Dashboard, Kalender, Challenges und Pollen vollflächig gemacht. Der Hintergrund liegt auf der gesamten App statt getrennt im Content, die seitliche Navigation hat keine harte rechte Border und keinen Schatten mehr. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik. | ChatGPT |
+
+| 2026-06-04 | Version auf `0.1.0049` erhöht; mobile Bottom-Bar stabilisiert, damit aktive Reiter nicht mehr hüpfen. Avatar-Online-/Offline-Status wieder sichtbar. Challenge-Header und „Heute zurücksetzen“ ruhiger an den Pollen-Stil angepasst; Hintergrund schließt sauberer an die App-Bar an. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik. | ChatGPT |
+
+| 2026-06-04 | Version auf `0.1.0048` erhöht; Pollen-7-Tage-Ausblick vereinfacht: Titel ohne Profilzusatz, einheitliche ruhige Chip-Darstellung für Einzel- und Mehrfachauswahl und mobile Sichtbarkeit der ausgewählten Profile korrigiert. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik. | ChatGPT |
+| 2026-06-04 | Version auf `0.1.0047` erhöht; mobile Bottom-Bar für Dashboard, Kalender, Challenges und Pollen ohne sichtbare Abschlusskante/Borders vereinheitlicht. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API, Challenge-Logik oder Navigation. | ChatGPT |
 | 2026-06-04 | Version auf `0.1.0046` erhöht; Pollen-Hero zeigt keine doppelte Gräser-Kachel mehr. Der 7-Tage-Ausblick zeigt bei Mehrfachauswahl die ausgewählten Pollen als klare Chips pro Tag. Challenge-Kopf wurde an die Pollen-Kopfzeile angeglichen; „Heute zurücksetzen“ bleibt rechts als kleine Aktion. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik. | ChatGPT |
 
 | 2026-06-04 | Version auf `0.1.0045` erhöht; gemeinsame App-Navigation ergänzt. Dashboard, Kalender, Challenges und Pollen nutzen auf Desktop dieselbe seitliche App-Bar und mobil dieselbe Bottom-Bar. Challenge-Header und „Heute zurücksetzen“ wurden an Pollen angeglichen. Kalender-Steuerung bleibt sichtbar. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten oder Challenge-Logik. | ChatGPT |
@@ -845,3 +855,31 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Pollen: Der 7-Tage-Ausblick zeigt bei mehreren ausgewählten Allergieprofilen alle ausgewählten Pollen pro Tag als Chips mit Prozentwerten, damit nicht nur der höchste Wert sichtbar ist.
 - Challenges: Die Kopfzeile wurde an Pollen angeglichen; keine breite Hintergrundleiste mehr, „Heute zurücksetzen“ bleibt als kleine Aktion rechts.
 - Keine Änderung an Pollen-Datenlogik, Wetter-API, Challenge-Logik, Firebase, Sync, Push, Login oder Kalenderlogik.
+
+## Version 0.1.0047
+- Die sichtbare App-Version wurde auf `0.1.0047` erhöht.
+- Die mobile Bottom-Bar wurde für Dashboard, Kalender, Challenges und Pollen ohne sichtbare Abschlusskante/Borders vereinheitlicht.
+- Bestehende Navigation, Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API und Challenge-Logik bleiben unverändert.
+
+
+## Version 0.1.0048
+- Die sichtbare App-Version wurde auf `0.1.0048` erhöht.
+- Der Pollen-7-Tage-Ausblick zeigt im Abschnittstitel nur noch `7-Tage-Ausblick`, ohne `Gräser`, `3 Profile` oder andere Zusatztexte.
+- Einzel- und Mehrfachauswahl verwenden nun dieselbe ruhige Chip-Darstellung pro Tag. Dadurch wirkt Desktop weniger aufdringlich und auf Mobil bleiben die ausgewählten Pollenwerte sichtbar.
+- Bestehende Pollen-Datenlogik, Wetter-API, Login, Firebase, Sync, Push, Kalenderdaten und Challenge-Logik bleiben unverändert.
+
+## Version 0.1.0049
+- Die sichtbare App-Version wurde auf `0.1.0049` erhöht.
+- Die mobile Bottom-Bar nutzt einen stabilen aktiven Zustand ohne Margin-Wechsel, damit Icons und Labels beim Tippen nicht mehr hüpfen.
+- Der Profilavatar zeigt Online-/Offline-Status wieder sichtbar über Ring und kleinen Statuspunkt.
+- Der Challenge-Header wurde beruhigt; `Heute zurücksetzen` sitzt als kleine Header-Aktion innerhalb der Content-Breite.
+- Der Challenge-Hintergrund wurde so angepasst, dass er sauberer an die gemeinsame App-Bar anschließt.
+- Keine Änderung an Challenge-Datenmodell, Challenge-Logik, Pollen-Datenlogik, Firebase-Autostart, Sync-Start, Push-Permission-Dialog, Kalenderlogik oder Login.
+
+
+## Version 0.1.0050
+- Die sichtbare App-Version wurde auf `0.1.0050` erhöht.
+- Die Desktop-App-Shell nutzt für Dashboard, Kalender, Challenges und Pollen einen vollflächigen Hintergrund auf der gesamten App-Fläche.
+- `#content` ist transparent, damit keine getrennte Hintergrundfläche mit sichtbarer Kante entsteht.
+- Die seitliche Navigation hat im Hellmodus keine harte rechte Border und keinen Schatten mehr.
+- Keine Änderung an Login, Firebase-Autostart, Sync-Start, Push-Permission-Dialog, Kalenderdaten, Pollen-API oder Challenge-Logik.

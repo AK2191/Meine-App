@@ -3,7 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0046';
+  var APP_VERSION = '0.1.0050';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var SELECTED_KEY = 'change_v1_pollen_selected_keys';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
@@ -285,7 +285,9 @@
     if(!items.length && day && day.item) items = [day.item];
     if(!items.length) return '<span class="pollen-neo-forecast-empty">keine Belastung</span>';
     return '<div class="pollen-neo-forecast-items">' + items.map(function(p){
-      return '<span class="'+esc(p.level || 'none')+'"><strong>'+esc(p.name || 'Pollen')+'</strong><em>'+esc(Math.round(clampNum(p.value)))+' %</em></span>';
+      var value = Math.round(clampNum(p && p.value));
+      var level = p && p.level || 'none';
+      return '<span class="'+esc(level)+' '+(value <= 0 ? 'zero' : '')+'"><strong>'+esc(p && p.name || 'Pollen')+'</strong><em>'+esc(value)+' %</em></span>';
     }).join('') + '</div>';
   }
   function forecastRow(day){
@@ -294,17 +296,14 @@
     return '<div class="pollen-neo-forecast-row '+esc(day.level || 'none')+' '+(isMulti ? 'multi' : 'single')+'">'
       + '<div class="pollen-neo-forecast-dot"></div>'
       + '<div class="pollen-neo-forecast-date"><strong>'+esc(fmtDay(day.date))+'</strong><span>'+esc(diffLabel(dayDiff(day.date)))+'</span></div>'
-      + '<div class="pollen-neo-forecast-main"><strong>'+(isMulti ? 'Ausgewählte Pollen' : esc(day.title)+' · '+esc(day.score)+'%')+'</strong>'+(isMulti ? forecastItemChips(day) : '<span>'+esc(day.summary || (day.item ? day.item.name + ' ' + levelLabel(day.item.level) : 'keine Belastung'))+'</span>')+'</div>'
+      + '<div class="pollen-neo-forecast-main">'+forecastItemChips(day)+'</div>'
       + '<div class="pollen-neo-bars">'+miniBars(day.score, day.level)+'</div>'
     + '</div>';
   }
   function forecastHtml(forecast, selectedKeys){
-    var today = forecast[0] || {};
-    var selected = selectedItems(today, selectedKeys);
-    var title = selected.length === 1 ? selected[0].name : (selected.length ? selected.length + ' Profile' : 'Auswahl');
     var list = selectedForecast(forecast, selectedKeys);
     return '<section class="pollen-neo-section pollen-neo-forecast">'
-      + '<div class="pollen-neo-section-head"><div><span>7-Tage-Ausblick – '+esc(String((title || 'Pollen')).toUpperCase())+'</span></div></div>'
+      + '<div class="pollen-neo-section-head"><div><span>7-Tage-Ausblick</span></div></div>'
       + '<div class="pollen-neo-forecast-list">'+list.slice(0,7).map(forecastRow).join('')+'</div>'
     + '</section>';
   }
