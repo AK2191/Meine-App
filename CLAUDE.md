@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0029 und Pollen-Benachrichtigungen/Sync-Fix
+> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0030 und Pollen-Mobile-Reparatur
 
 ---
 
@@ -98,7 +98,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0029`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0030`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -751,8 +751,8 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Die Änderung betrifft nur die Anzeige im Pollen-Reiter; Pollenberechnung, Forecast, Login, Sync, Firebase und Push bleiben unverändert.
 
 
-## Version 0.1.0029
-- Die sichtbare App-Version wurde auf `0.1.0029` erhöht.
+## Version 0.1.0030
+- Die sichtbare App-Version wurde auf `0.1.0030` erhöht.
 - Der Fehler `readEditMode is not defined` im Pollen-Reiter wurde behoben.
 - Die Glocke oben rechts im Pollen-Reiter öffnet jetzt wieder die normale globale Benachrichtigungsübersicht statt Pollen-Settings.
 - Das Pollen-Settings-Icon nutzt dieselbe Gear-Formensprache wie die globale Einstellung unten links.
