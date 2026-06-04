@@ -231,6 +231,76 @@
   }
   function symptomIconSvg(key){
     var map = {
+      sneeze:'<span class="change-symptom-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 5.8c-1.8 0-3.2 1.5-3.2 3.2 0 1 .4 1.8 1 2.4-.9.4-1.6 1.3-1.6 2.4 0 1.5 1.2 2.7 2.7 2.7.3 0 .6 0 .9-.1-.2.4-.3.8-.3 1.2 0 1.5 1.2 2.7 2.7 2.7 1.4 0 2.5-1 2.7-2.3.5.3 1 .4 1.5.4 1.5 0 2.7-1.2 2.7-2.7 0-1-.6-1.9-1.5-2.4.6-.6 1-1.5 1-2.4 0-1.8-1.5-3.2-3.2-3.2"/><path d="M12.8 8.7v4.1"/></g></svg></span>',
+      eyes:'<span class="change-symptom-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12s3.4-4.8 9.5-4.8S21.5 12 21.5 12 18.1 16.8 12 16.8 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.4"/></g></svg></span>',
+      nose:'<span class="change-symptom-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4.7c-1.8 2.8-2.8 5.6-2.8 8.2 0 3.8 2.2 6.1 5.1 6.1 2.1 0 3.6-1.3 3.6-3.2 0-1.5-.9-2.6-2.4-3.2l-1.3-.5.2-1.1c.4-1.8.1-3.9-1-6.1-.2-.3-.9-.4-1.4-.2Z" fill="currentColor"/></svg></span>',
+      breath:'<span class="change-symptom-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.4 5.4c-2.2 0-4 1.8-4 4v5c0 2.6 1.8 4.7 4.1 4.7 1.6 0 2.8-.9 3.3-2.3.5 1.4 1.7 2.3 3.3 2.3 2.3 0 4.1-2.1 4.1-4.7v-5c0-2.2-1.8-4-4-4-1.8 0-3.3 1.2-3.8 2.9-.4-1.7-2-2.9-3.8-2.9Z"/></g></svg></span>'
+    };
+    return map[key] || map.sneeze;
+  }
+  function levelButtons(field, value, date){
+    return LEVELS.map(function(level){
+      var active = Number(value || 0) === level.key ? ' active' : '';
+      return '<button type="button" class="change-symptom-level'+active+'" data-symptom-field="'+esc(field)+'" data-symptom-value="'+level.key+'" data-symptom-date="'+esc(date)+'">'+esc(level.label)+'</button>';
+    }).join('');
+  }
+  function statusText(record){
+    var max = maxSymptom(record);
+    if(max >= 3) return 'Starke Symptome hinterlegt';
+    if(max === 2) return 'Mittlere Symptome hinterlegt';
+    if(max === 1) return 'Leichte Symptome hinterlegt';
+    return 'Keine Symptome hinterlegt';
+  }
+  function relevantRecords(){
+    return Object.values(all()).filter(function(rec){
+      return rec && rec.pollenSnapshot && Array.isArray(rec.pollenSnapshot.items) && maxSymptom(rec) >= 1;
+    }).sort(function(a,b){ return String(a.date || '').localeCompare(String(b.date || '')); });
+  }
+  function strongestCorrelation(){
+    var records = relevantRecords();
+    var stats = {};
+    records.forEach(function(rec){
+      var main = mainSymptom(rec);
+      var max = maxSymptom(rec);
+      (rec.pollenSnapshot.items || []).forEach(function(p){
+        var value = Number(p.value || 0);
+        var levelHit = p.level === 'medium' || p.level === 'high' || value >= 30;
+        if(!levelHit) return;
+        var key = p.key || p.name;
+        if(!stats[key]) stats[key] = {name:p.name || key, hits:0, strongHits:0, totalValue:0, symptomCounts:{}};
+        stats[key].hits += 1;
+        stats[key].totalValue += value;
+        if(max >= 3) stats[key].strongHits += 1;
+        stats[key].symptomCounts[main.key] = (stats[key].symptomCounts[main.key] || 0) + Math.max(1, main.value);
+      });
+    });
+    var best = Object.keys(stats).map(function(key){
+      var s = stats[key];
+      var symptomKey = Object.keys(s.symptomCounts).sort(function(a,b){ return s.symptomCounts[b] - s.symptomCounts[a]; })[0] || 'nose';
+      s.key = key;
+      s.avg = Math.round(s.totalValue / Math.max(1, s.hits));
+      s.symptomKey = symptomKey;
+      s.symptomLabel = FIELD_LABELS[symptomKey] || 'Symptome';
+      s.score = s.hits * 10 + s.strongHits * 7 + s.avg;
+      return s;
+    }).sort(function(a,b){ return b.score - a.score; })[0] || null;
+    return {records:records, best:best};
+  }
+  function insightHtml(){
+    var result = strongestCorrelation();
+    var count = result.records.length;
+    if(!count){
+      return '<div class="change-symptom-insight empty"><div class="change-symptom-insight-icon">📊</div><div><strong>Noch keine Auswertung</strong><span>Trage Symptome ein. Ab mehreren Tagen erkennt Change Muster zwischen Pollen und Beschwerden.</span></div></div>';
+    }
+    if(!result.best || count < 3){
+      return '<div class="change-symptom-insight"><div class="change-symptom-insight-icon">📊</div><div><strong>Auswertung startet</strong><span>'+count+' Symptomtag(e) gespeichert. Ab 3 Tagen werden belastbarere Muster sichtbar.</span></div></div>';
+    }
+    var b = result.best;
+    var strength = b.strongHits ? b.strongHits + 'x stark' : b.hits + 'x auffällig';
+    return '<div class="change-symptom-insight strong"><div class="change-symptom-insight-icon">🧠</div><div><strong>'+esc(b.name)+' auffällig</strong><span>Bei erhöhter Belastung hattest du '+esc(strength)+' vor allem '+esc(b.symptomLabel)+'. Durchschnittlicher Wert: '+esc(b.avg)+'%.</span></div></div>';
+  }
+  function symptomIconSvg(key){
+    var map = {
       sneeze:'<span class="change-symptom-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.8c-1.9 0-3.5 1.6-3.5 3.5 0 1 .4 1.9 1.1 2.5-.9.4-1.6 1.3-1.6 2.4 0 1.3 1 2.4 2.3 2.5-.5.5-.8 1.1-.8 1.9 0 1.5 1.2 2.7 2.7 2.7 1 0 1.9-.6 2.4-1.4.5.8 1.4 1.4 2.4 1.4 1.5 0 2.7-1.2 2.7-2.7 0-.7-.3-1.4-.8-1.9 1.3-.1 2.3-1.2 2.3-2.5 0-1.1-.7-2-1.6-2.4.7-.6 1.1-1.5 1.1-2.5 0-1.9-1.6-3.5-3.5-3.5"/><path d="M12 8.3v5.2"/></g></svg></span>',
       eyes:'<span class="change-symptom-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12s3.4-5 9.5-5 9.5 5 9.5 5-3.4 5-9.5 5-9.5-5-9.5-5Z"/><circle cx="12" cy="12" r="2.7"/></g></svg></span>',
       nose:'<span class="change-symptom-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M11.8 4.3c-2 3.2-3.1 6.2-3.1 9 0 4.1 2.6 6.4 5.6 6.4 2.2 0 3.9-1.4 3.9-3.4 0-1.6-1-2.8-2.7-3.5l-1.4-.6.3-1.3c.4-1.9.1-4.1-1.1-6.6-.2-.4-1-.5-1.5 0Z" fill="currentColor"/></svg></span>',
@@ -254,7 +324,7 @@
       return '<div class="change-symptom-row" data-symptom-row="'+esc(field.key)+'"><div class="change-symptom-label">'+symptomIconSvg(field.key)+'<strong>'+esc(field.label)+'</strong></div><div class="change-symptom-levels">'+levelButtons(field.key, value, key)+'</div></div>';
     }).join('');
     return '<div class="change-symptom-card" data-symptom-card="'+esc(key)+'">'
-      + '<div class="change-symptom-head"><strong>Symptome heute</strong><button type="button" data-pollen-edit="symptoms">Bearbeiten</button></div>'
+      + '<div class="change-symptom-head"><strong>Symptome heute</strong></div>'
       + '<div class="change-symptom-body">'
         + '<div class="change-symptom-list">'+rows+'</div>'
         + '<div class="change-symptom-note-wrap"><div class="change-symptom-note-label">Notiz</div><div class="change-symptom-note-frame"><textarea class="change-symptom-note" data-symptom-note="'+esc(key)+'" maxlength="500" placeholder="z. B. Fenster offen, draußen gewesen, Tablette genommen">'+esc(rec.note)+'</textarea><span class="change-symptom-note-action" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 4h6v6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path><path d="M10 14 20 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path><path d="M20 14v5a1 1 0 0 1-1 1h-14a1 1 0 0 1-1-1v-14a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></div></div>'

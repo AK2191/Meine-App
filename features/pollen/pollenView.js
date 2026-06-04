@@ -3,7 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0013';
+  var APP_VERSION = '0.1.0014';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
 
@@ -139,15 +139,15 @@
   }
   function glyphSvg(kind){
     var map = {
-      grass_pollen:'<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 19V8"/><path d="M12 14c-1.6-4.2-4-6.8-4-6.8"/><path d="M12 12.8c2.2-4.9 5-7.8 5-7.8"/><path d="M12 10.7c-3.1-2.7-5.8-4-5.8-4"/><path d="M12 9.6c2.8-2.2 5.6-3.4 5.6-3.4"/></g></svg>',
-      birch_pollen:'<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V7"/><path d="M12 10.8c-2.8 0-5-2.2-5-5 2.8 0 5 2.2 5 5Z" fill="currentColor" fill-opacity=".18"/><path d="M12 14c2.8 0 5-2.2 5-5-2.8 0-5 2.2-5 5Z" fill="currentColor" fill-opacity=".22"/><path d="M12 16.7c-3.2 0-5.5-2.2-5.5-5.2 3.2 0 5.5 2.2 5.5 5.2Z" fill="currentColor" fill-opacity=".14"/></g></svg>',
-      ragweed_pollen:'<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V7"/><path d="M12 8.4c0-2.1 1.6-3.8 3.8-3.8-.4 2.2-1.7 3.8-3.8 3.8Z"/><path d="M12 11c0-2.1-1.6-3.8-3.8-3.8.4 2.2 1.7 3.8 3.8 3.8Z"/><path d="M12 13.8c2.1 0 3.8 1.6 3.8 3.8-2.2-.4-3.8-1.7-3.8-3.8Z"/><path d="M12 16.2c-2.1 0-3.8 1.6-3.8 3.8 2.2-.4 3.8-1.7 3.8-3.8Z"/></g></svg>',
-      mugwort_pollen:'<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V7"/><path d="M12 10.4C9.8 7.3 7 6.8 7 6.8c.4 2.3 2 4 5 4"/><path d="M12 12.9c2.6-2.6 5-3.2 5-3.2-.4 2.2-2 3.7-5 3.7"/><path d="M12 15.4c-2-2.2-4-2.8-4-2.8.4 1.8 1.8 3.2 4 3.2"/><path d="M12 17.6c2.1-1.9 4-2.4 4-2.4-.4 1.8-1.7 2.9-4 2.9"/></g></svg>',
-      alder_pollen:'<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V7"/><path d="M8 9.3c0 2 1.8 3.6 4 3.6 0-2-1.8-3.6-4-3.6Z"/><path d="M16 10.7c0 2-1.8 3.6-4 3.6 0-2 1.8-3.6 4-3.6Z"/><path d="M9 15.2c0 1.4 1.2 2.6 3 2.6 0-1.4-1.2-2.6-3-2.6Z"/><path d="M15 16.2c0 1.4-1.2 2.6-3 2.6 0-1.4 1.2-2.6 3-2.6Z"/></g></svg>',
-      olive_pollen:'<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V7"/><path d="M12 10.7c-3 0-5.2-2.2-5.2-5.2 3 0 5.2 2.2 5.2 5.2Z"/><path d="M12 13.7c3 0 5.2-2.2 5.2-5.2-3 0-5.2 2.2-5.2 5.2Z"/><ellipse cx="15.8" cy="7.5" rx="2.2" ry="2.8" fill="currentColor" fill-opacity=".25"></ellipse></g></svg>',
-      leaf:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 4.5C12 4.8 6.5 9.8 6.5 16.4c0 2.1.6 3.4 1.6 4.1 1.1.7 2.5.8 4.1.2 4.9-1.7 7.5-6.7 7.5-16.2 0-.3-.1-.3-.2 0Z" fill="currentColor" fill-opacity=".95"></path><path d="M8.7 19.2c1.9-2.9 4.3-5.2 7.2-6.9" fill="none" stroke="#102313" stroke-width="1.35" stroke-linecap="round"></path></svg>'
+      grass_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V9"/><path d="M12 14.2c-1.8-4.3-4-6.8-4-6.8"/><path d="M12 14.4c1.8-4.5 4-7 4-7"/><path d="M12 11.3c-1.2-2.2-2.7-3.6-2.7-3.6"/><path d="M12 11.4c1.2-2.3 2.8-3.8 2.8-3.8"/></g></svg></span>',
+      birch_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V8"/><path d="M12 12c-3.2 0-5.2-2.2-5.2-5.2 3.1 0 5.2 2.1 5.2 5.2Z" fill="currentColor" fill-opacity=".16"/><path d="M12 15.7c3.3 0 5.4-2.4 5.4-5.6-3.3 0-5.4 2.3-5.4 5.6Z" fill="currentColor" fill-opacity=".24"/></g></svg></span>',
+      ragweed_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V8"/><path d="M12 9.2c0-2.1 1.7-3.7 3.8-3.7-.4 2.3-1.8 3.7-3.8 3.7Z"/><path d="M12 12c-2.1 0-3.8-1.7-3.8-3.8 2.2.4 3.8 1.7 3.8 3.8Z"/><path d="M12 14.3c2.1 0 3.8 1.7 3.8 3.8-2.2-.4-3.8-1.7-3.8-3.8Z"/><path d="M12 16.4c-2.1 0-3.8 1.7-3.8 3.8 2.2-.4 3.8-1.7 3.8-3.8Z"/></g></svg></span>',
+      mugwort_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V8"/><path d="M12 10.8C9.9 7.7 7.5 7 7.5 7c.5 2.1 1.9 3.7 4.5 3.8"/><path d="M12 13.1c2.4-2.7 4.8-3.3 4.8-3.3-.4 2.1-1.9 3.5-4.8 3.6"/><path d="M12 15.4c-1.8-2.1-3.5-2.5-3.5-2.5.4 1.5 1.5 2.8 3.5 2.8"/><path d="M12 17.4c1.8-1.8 3.6-2.2 3.6-2.2-.4 1.5-1.5 2.6-3.6 2.6"/></g></svg></span>',
+      alder_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V8"/><path d="M9 9.7c0 2 1.3 3.5 3 3.5 0-2-1.3-3.5-3-3.5Z"/><path d="M15 11.2c0 2-1.3 3.5-3 3.5 0-2 1.3-3.5 3-3.5Z"/><path d="M9.8 15.1c0 1.4.9 2.5 2.2 2.5 0-1.4-.9-2.5-2.2-2.5Z"/><path d="M14.2 16c0 1.4-.9 2.5-2.2 2.5 0-1.4.9-2.5 2.2-2.5Z"/></g></svg></span>',
+      olive_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V8"/><path d="M12 11.2c-3 0-5.1-2.1-5.1-5.1 3 0 5.1 2.1 5.1 5.1Z"/><path d="M12 14.4c3 0 5.1-2.1 5.1-5.1-3 0-5.1 2.1-5.1 5.1Z"/><circle cx="16.2" cy="7.3" r="1.5" fill="currentColor" fill-opacity=".25" stroke="none"/></g></svg></span>',
+      leaf:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 4.8C11.8 5.2 6.7 10 6.7 16.1c0 1.9.5 3.1 1.5 3.8 1 .6 2.2.7 3.7.2 4.6-1.6 7.1-6.4 7.1-15 0-.2 0-.3-.1-.3Z" fill="currentColor"/><path d="M9.2 18.6c1.7-2.7 4-4.9 6.8-6.5" fill="none" stroke="#102313" stroke-width="1.3" stroke-linecap="round"/></svg></span>'
     };
-    return '<span class="pollen-neo-icon-svg">'+(map[kind] || map.leaf)+'</span>';
+    return map[kind] || map.leaf;
   }
   function heroArtSvg(){
     return '<svg class="pollen-neo-hero-illustration" viewBox="0 0 220 220" aria-hidden="true">'
@@ -190,14 +190,13 @@
         + metricCardHtml('peak', 'Peak', '<div class="pollen-neo-chart '+esc(peakTone)+'">'+trendSvg(selected)+'<strong>'+esc(peak ? diffLabel(dayDiff(peak.date)) : '–')+'</strong><span>'+esc(peak ? fmtLongDay(peak.date) : 'Kein Peak erkannt')+'</span><div class="pollen-neo-link">Mehr dazu →</div></div>', peakTone)
         + metricCardHtml('quiet', 'Ruhigster Tag', '<div class="pollen-neo-quiet-card">'+glyphSvg('leaf')+'<strong>'+esc(quiet ? fmtLongDay(quiet.date).split(',')[0] : '–')+'</strong><span>'+esc(quiet ? fmtDay(quiet.date).replace('.', '') : '')+'</span><div class="pollen-neo-link">Mehr dazu →</div></div>', 'none')
       + '</div>'
-      + '<div class="pollen-neo-location">'+esc(loc && loc.savedAt ? 'Standort aktualisiert' : 'Standort offen')+' · v'+esc(APP_VERSION)+'</div>'
     + '</section>';
   }
   function profileHtml(today, selectedKey){
     var items = itemsOf(today);
     if(!items.length) return '<div class="pollen-neo-card pollen-neo-empty">Keine Einzelwerte geladen.</div>';
     return '<section class="pollen-neo-section">'
-      + '<div class="pollen-neo-section-head"><div><span>Allergieprofil</span></div><button type="button" class="pollen-neo-link-btn" data-pollen-edit="profile">Bearbeiten</button></div>'
+      + '<div class="pollen-neo-section-head"><div><span>Allergieprofil</span></div></div>'
       + '<div class="pollen-neo-profile-grid">'
       + items.map(function(p){
         return '<button type="button" class="pollen-neo-profile-card '+esc(p.level || 'none')+' '+(String(selectedKey)===String(p.key)?'active':'')+'" data-pollen-select="'+esc(p.key)+'">'
@@ -223,7 +222,7 @@
     var currentItem = itemByKey(today, selectedKey) || {name:'Pollen'};
     var list = selectedForecast(forecast, selectedKey);
     return '<section class="pollen-neo-section pollen-neo-forecast">'
-      + '<div class="pollen-neo-section-head"><div><span>7-Tage-Ausblick – '+esc(String((currentItem.name || 'Pollen')).toUpperCase())+'</span></div><button type="button" class="pollen-neo-link-btn" data-pollen-settings>Andere Art wählen ⌄</button></div>'
+      + '<div class="pollen-neo-section-head"><div><span>7-Tage-Ausblick – '+esc(String((currentItem.name || 'Pollen')).toUpperCase())+'</span></div></div>'
       + '<div class="pollen-neo-forecast-list">'+list.slice(0,7).map(forecastRow).join('')+'</div>'
     + '</section>';
   }
