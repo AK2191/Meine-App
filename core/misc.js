@@ -327,9 +327,9 @@ window.renderGroupGoal = function(){
           <span><b>Abzeichen</b><small>${badgeSub}</small></span>
           <strong>${badgeLabel}</strong>
         </button>
-        <div class="challenge-goal-side-link"><span class="challenge-goal-link-icon">📍</span><span><b>Heute</b><small>${myDoneCount ? myDoneCount+' erledigt' : 'noch nichts erledigt'}</small></span><strong>${myTodayPoints} P</strong></div>
-        <div class="challenge-goal-side-link"><span class="challenge-goal-link-icon">⚡</span><span><b>Team-Ziel</b><small>diese Woche</small></span><strong>${goal.target} P</strong></div>
-        <div class="challenge-goal-side-link"><span class="challenge-goal-link-icon">✓</span><span><b>Erreicht</b><small>${pct}% geschafft</small></span><strong>${points} P</strong></div>
+        <button type="button" class="challenge-goal-side-link" onclick="event.stopPropagation();document.querySelector('#challenges-view .challenge-card')?.scrollIntoView({block:'nearest',behavior:'smooth'});" title="Heutige Aufgaben anzeigen"><span class="challenge-goal-link-icon">📍</span><span><b>Heute</b><small>${myDoneCount ? myDoneCount+' erledigt' : 'noch nichts erledigt'}</small></span><strong>${myTodayPoints} P</strong></button>
+        <button type="button" class="challenge-goal-side-link" onclick="event.stopPropagation();document.getElementById('challenge-week-points-card')?.scrollIntoView({block:'nearest',behavior:'smooth'});" title="Punkte-Kalender anzeigen"><span class="challenge-goal-link-icon">⚡</span><span><b>Team-Ziel</b><small>diese Woche</small></span><strong>${goal.target} P</strong></button>
+        <button type="button" class="challenge-goal-side-link" onclick="event.stopPropagation();document.getElementById('challenge-week-points-card')?.scrollIntoView({block:'nearest',behavior:'smooth'});" title="Fortschritt anzeigen"><span class="challenge-goal-link-icon">✓</span><span><b>Erreicht</b><small>${pct}% geschafft</small></span><strong>${points} P</strong></button>
       </div>
     </div>
   `;

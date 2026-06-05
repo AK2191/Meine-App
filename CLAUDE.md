@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-05 · Version 0.1.0073 und Challenge-/Pollen-Feinschliff
+> Zuletzt aktualisiert: 2026-06-05 · Version 0.1.0074 und Challenge-Hero/Pollen-Scrollbar stabilisiert
 
 ---
 
@@ -114,6 +114,8 @@ Jeder Kalendertag enthält:
 - Ab Version `0.1.0059`: Der Pollen-7-Tage-Ausblick unterscheidet echte 0 %-Werte von fehlenden API-Daten. Tage oder einzelne Pollenwerte ohne geladene API-Werte werden nicht mehr als 0 % dargestellt, sondern als „Keine API-Daten“ markiert; zusätzlich wird angezeigt, wenn weniger als 7 Tage belastbar geladen wurden. Keine Änderung an Login, Firebase, Sync, Push oder Kalenderlogik.
 - Ab Version `0.1.0058`: Einstellungen nutzen nur noch den eigenständigen Workspace und werden beim Wechsel zu Dashboard, Kalender, Challenges oder Pollen hart ausgeblendet. Die Settings-Navigation enthält keine doppelten aktiven Kategorien mehr; der Detailbereich wird direkt über die linken Kategorie-Karten gesteuert. Allgemeine Side-Panels wurden optisch an den Settings-Kartenstil angepasst, ohne Einstellungen wieder als Overlay zu öffnen. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik.
 
+- Ab Version `0.1.0074`: Pollen blendet sichtbare Scrollbars im eigenen Workspace aus. Challenges wurden visuell an die Pollen-/Dashboard-Hero-Logik angeglichen: die Hero-Kachel zeigt rechts kompakte klickbare Statuspunkte, Aufgaben/Rangliste bleiben auf Desktop sichtbar, mobile Ansicht stapelt Hero, Punkte-Kalender, Aufgaben und Rangliste sauber. Interne Challenge-Punkte, Abzeichen, Sync, Login, Firebase und Kalenderdaten bleiben unverändert.
+
 ---
 
 ## ⚙️ Einstellungen
@@ -128,7 +130,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0073`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0074`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.

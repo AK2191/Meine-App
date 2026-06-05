@@ -3752,3 +3752,19 @@ body.change-theme-light #pollen-view .pollen-neo-forecast-items span.missing{
 /* v0.1.0073 · Pollen: 5-Tage-Ausblick statt API-Leerzeilen */
 #pollen-view .pollen-neo-section-head span{white-space:nowrap;}
 #pollen-view .pollen-neo-forecast-empty.missing{display:none!important;}
+
+/* v0.1.0074 · Pollen: sichtbare Scrollbar im Workspace ausblenden */
+#pollen-view,
+#pollen-view *{
+  scrollbar-width:none!important;
+  -ms-overflow-style:none!important;
+}
+#pollen-view::-webkit-scrollbar,
+#pollen-view *::-webkit-scrollbar{display:none!important;width:0!important;height:0!important;}
+body.change-view-pollen #content,
+body.change-view-pollen #pollen-view{
+  scrollbar-width:none!important;
+  -ms-overflow-style:none!important;
+}
+body.change-view-pollen #content::-webkit-scrollbar,
+body.change-view-pollen #pollen-view::-webkit-scrollbar{display:none!important;width:0!important;height:0!important;}
