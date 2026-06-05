@@ -363,6 +363,18 @@
     var board=document.getElementById('leaderboard-list');
     if(!list||!board) return;
 
+    try{
+      var chHead = document.querySelector('#challenges-view .challenge-card .challenge-card-head');
+      if(chHead && !chHead.querySelector('.challenge-reset-inline')){
+        var resetBtn = document.createElement('button');
+        resetBtn.type = 'button';
+        resetBtn.className = 'btn btn-ghost btn-sm challenge-reset-inline';
+        resetBtn.textContent = 'Heute zurücksetzen';
+        resetBtn.onclick = function(ev){ ev.stopPropagation(); if(typeof window.resetTodayChallenges === 'function') window.resetTodayChallenges(); };
+        chHead.appendChild(resetBtn);
+      }
+    }catch(e){}
+
     var dk=todayStr(), daily=getDailyPool(dk);
 
     function chItem(ch){

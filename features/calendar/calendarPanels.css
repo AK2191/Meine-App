@@ -92,3 +92,39 @@ body.change-view-calendar #calendar-premium-view .cal-premium-hero{min-height:17
   body.change-view-calendar #calendar-premium-view .cal-premium-side{display:none!important;}
   body.change-view-calendar #calendar-premium-view .cal-premium-agenda{min-height:220px!important;}
 }
+
+
+/* v0.1.0067 · Kalender Premium: Mini-Kalender + Termin erstellen stabilisieren
+   UI only: alter FAB bleibt aus, integrierter Termin-Button und rechte Monatskarte bleiben sichtbar. */
+body.change-view-calendar #fab{display:none!important;visibility:hidden!important;pointer-events:none!important;}
+body.change-view-calendar #calendar-premium-view .cal-premium-add{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  min-height:54px!important;
+  margin-top:14px!important;
+}
+@media(min-width:701px){
+  body.change-view-calendar #calendar-premium-view .cal-premium-main-grid{
+    display:grid!important;
+    grid-template-columns:minmax(0,1.55fr) minmax(320px,.75fr)!important;
+    gap:18px!important;
+    align-items:start!important;
+  }
+  body.change-view-calendar #calendar-premium-view aside,
+  body.change-view-calendar #calendar-premium-view .cal-premium-side,
+  body.change-view-calendar #calendar-premium-view .cal-premium-mini{
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:visible!important;
+  }
+}
+@media(max-width:700px){
+  body.change-view-calendar #calendar-premium-view .cal-premium-side{display:none!important;}
+  body.change-view-calendar #calendar-premium-view .cal-premium-add{min-height:50px!important;}
+}

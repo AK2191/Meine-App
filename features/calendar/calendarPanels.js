@@ -175,7 +175,7 @@
     var control = '<div class="cal-premium-top"><div class="cal-premium-title"><span>▣</span><h1>Kalender</h1></div></div>';
     existing.innerHTML = control + heroHtml() + weekHtml()
       + '<div class="cal-premium-main-grid">'
-      + '<section class="cal-premium-card cal-premium-agenda"><div class="cal-premium-section-head"><strong>Tagesagenda</strong></div><div>'+eventRows(selectedKey)+'</div></section>'
+      + '<section class="cal-premium-card cal-premium-agenda"><div class="cal-premium-section-head"><strong>Tagesagenda</strong></div><div>'+eventRows(selectedKey)+'</div><button class="cal-premium-add" type="button" data-cal-add="1">+ Termin hinzufügen</button></section>'
       + '<aside class="cal-premium-side">'+miniMonthHtml()+'</aside>'
       + '</div>';
     var mg=$('month-grid'), wday=$('wday-row'), ag=$('agenda-view');
@@ -187,6 +187,7 @@
     root.querySelectorAll('[data-cal-day]').forEach(function(btn){ btn.onclick=function(){ selectedKey=this.getAttribute('data-cal-day'); setCurrentDate(dateObj(selectedKey)); renderPremium(); }; });
     root.querySelectorAll('[data-cal-nav]').forEach(function(btn){ btn.onclick=function(){ var d=selectedDate(); d.setMonth(d.getMonth()+parseInt(this.getAttribute('data-cal-nav'),10)); selectedKey=keyOf(new Date(d.getFullYear(),d.getMonth(),1)); setCurrentDate(dateObj(selectedKey)); renderPremium(); }; });
     root.querySelectorAll('[data-cal-view]').forEach(function(btn){ btn.onclick=function(){ var v=this.getAttribute('data-cal-view'); if(v==='today'){ selectedKey=M.todayKey(); setCurrentDate(dateObj(selectedKey)); } setViewSafe('month'); renderPremium(); }; });
+    root.querySelectorAll('[data-cal-add]').forEach(function(btn){ btn.onclick=function(){ if(window.openEventPanel) window.openEventPanel(null, dateObj(selectedKey || M.todayKey())); }; });
   }
   function patchCalendar(){
     if(premiumBound) return;
