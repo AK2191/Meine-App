@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-05 · Version 0.1.0064 und Challenge-/Dashboard-Karten bereinigt
+> Zuletzt aktualisiert: 2026-06-05 · Version 0.1.0066 und mobile Scrollpositionen stabilisiert
 
 ---
 
@@ -100,6 +100,9 @@ Jeder Kalendertag enthält:
 - Ab Version `0.1.0061`: Einstellungen nutzen dieselbe Workspace-Metrik wie Pollen, Dashboard, Kalender und Challenges: identische Titelhöhe, linke/rechte Innenränder, maximale Inhaltsbreite und mobile Außenabstände. Die Einstellungen bleiben weiterhin ein eigenständiger Workspace; Schalter, Sync-Regeln, Login, Firebase, Push, Kalenderdaten und Challenge-Logik bleiben unverändert.
 - Ab Version `0.1.0063`: Die Kalenderansicht nutzt nur noch den Premium-Kalender-Workspace. Die alte obere Kalender-Steuerleiste, das native Monatsraster unterhalb der Premium-Karten, die Mini-Monatskarte und die Kategorien-&-Filter-Karte werden ausgeblendet. Tagesauswahl und Terminanzeige aktualisieren direkt innerhalb des Premium-Workspaces, ohne auf die alte Kalenderansicht umzuschalten. Kalenderdaten, Google-Termine, Öffnen, Speichern, Löschen und WhatsApp/ICS-Teilen bleiben unverändert.
 
+- Ab Version `0.1.0065`: Kalender zeigt wieder den kleinen Monatskalender rechts neben der Tagesagenda, entfernt aber weiterhin das alte native Monatsraster, Kategorien-&-Filter und Plus-/FAB-Buttons. Beim Öffnen startet der Premium-Kalender wieder auf dem echten heutigen Tag; Tagesklicks aktualisieren nur den Premium-Workspace. Challenges nutzen auf Desktop wieder die volle Pollen-Workspace-Breite mit Hero, Punkte-Kalender, Aufgaben und Rangliste. Dashboard entfernt den rechten Begrüßungstext, bündelt Wetter/Pollen/Urlaub/Friseur/Termine/Challenges in ruhige Schnellinfo-Karten und behält Kalender-, Friseur-, Wetter- und Pollen-Aktionen bei. Keine Änderung an Login, Firebase, Sync, Push, Datenmodell oder Kalenderdatenlogik.
+- Ab Version `0.1.0066`: Horizontale und vertikale Scrollpositionen bleiben bei mobilen Auswahlaktionen stabil. Pollen-Allergieprofile, Symptom-Auswahl und Settings-Kategorien erfassen vor dem Rendern ihre Scrollposition und stellen sie danach wieder her; automatische `scrollIntoView`-Sprünge in den Einstellungen wurden entfernt. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik.
+
 - Ab Version `0.1.0059`: Der Pollen-7-Tage-Ausblick unterscheidet echte 0 %-Werte von fehlenden API-Daten. Tage oder einzelne Pollenwerte ohne geladene API-Werte werden nicht mehr als 0 % dargestellt, sondern als „Keine API-Daten“ markiert; zusätzlich wird angezeigt, wenn weniger als 7 Tage belastbar geladen wurden. Keine Änderung an Login, Firebase, Sync, Push oder Kalenderlogik.
 - Ab Version `0.1.0058`: Einstellungen nutzen nur noch den eigenständigen Workspace und werden beim Wechsel zu Dashboard, Kalender, Challenges oder Pollen hart ausgeblendet. Die Settings-Navigation enthält keine doppelten aktiven Kategorien mehr; der Detailbereich wird direkt über die linken Kategorie-Karten gesteuert. Allgemeine Side-Panels wurden optisch an den Settings-Kartenstil angepasst, ohne Einstellungen wieder als Overlay zu öffnen. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik.
 
@@ -117,7 +120,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0064`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0066`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -289,6 +292,8 @@ firebase deploy --only hosting
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
 
+| 2026-06-05 | Version auf `0.1.0066` erhöht; mobile Scrollpositionen bei Pollen-Auswahl und Settings-Kategorien stabilisiert, automatische Auswahl-Sprünge entfernt. Keine Änderung an Login, Firebase, Sync, Push, Pollen-API oder Kalenderlogik. | ChatGPT |
+| 2026-06-05 | Version auf `0.1.0065` erhöht; Kalender-Mini rechts wieder eingeblendet, altes Monatsraster/Kategorien/Plus entfernt, Kalender startet auf heutigem Tag, Challenges-Breite und Dashboard-Schnellkarten inklusive Friseur bereinigt. Keine Änderung an Login, Firebase, Sync, Push oder Datenmodell. | ChatGPT |
 | 2026-06-05 | Version auf `0.1.0059` erhöht; Pollen-Ausblick zeigt fehlende API-Daten jetzt explizit statt falscher 0 %-Werte und markiert, wenn weniger als 7 Tage belastbar geladen wurden. Keine Änderung an Login, Firebase, Sync, Push oder Kalenderlogik. | ChatGPT |
 | 2026-06-05 | Version auf `0.1.0058` erhöht; Einstellungen bleiben beim View-Wechsel nicht mehr im unteren Bereich sichtbar, die Settings-Kategorien wurden entdoppelt und allgemeine Side-Panels an den Settings-Kartenstil angepasst. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik. | ChatGPT |
 | 2026-06-05 | Version auf `0.1.0057` erhöht; Einstellungen öffnen als eigenständiger Workspace im Hauptbereich statt als Side-Panel über dem Dashboard. Settings-Navigation, Detailbereich und mobile gestapelte Ansicht bleiben erhalten. Keine Änderung an Schaltern, Sync-Regeln, Push, Kalenderoptionen, Challengeoptionen, Login, Firebase oder Datenmodell. | ChatGPT |

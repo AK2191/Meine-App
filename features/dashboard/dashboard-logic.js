@@ -193,6 +193,21 @@
     }catch(e){}
     return {icon:'🌴', text:txt, meta:meta};
   }
+  function friseurSummary(){
+    var text = 'nicht geplant';
+    var meta = 'Friseur';
+    try{
+      if(typeof window.getFriseurRowHtml === 'function'){
+        var tmp = document.createElement('div');
+        tmp.innerHTML = window.getFriseurRowHtml() || '';
+        var title = tmp.querySelector('.dash-row-title');
+        var sub = tmp.querySelector('.dash-row-sub');
+        if(title && title.textContent.trim()) meta = title.textContent.trim();
+        if(sub && sub.textContent.trim()) text = sub.textContent.trim().replace(/\s+/g,' ');
+      }
+    }catch(e){}
+    return {icon:'✂️', text:text, meta:meta};
+  }
   function greeting(){
     var hr = new Date().getHours();
     var name = String((window.userInfo && window.userInfo.name) || '').split(' ')[0];
@@ -202,12 +217,15 @@
     var w = weatherSummary();
     var p = pollenSummary();
     var v = vacationSummary();
-    return ''+
+    var f = friseurSummary();
+    return '<div class="dashp-quick-grid">' +
       '<button class="dashp-mini-card" onclick="setMainView(\'calendar\')"><span class="dashp-mini-icon">📅</span><span><b>'+todayCount+'</b><small>Termine heute</small></span></button>'+
+      '<button class="dashp-mini-card" onclick="window.ChangeWeatherCard&&ChangeWeatherCard.openForecast&&ChangeWeatherCard.openForecast(\'weather\')"><span class="dashp-mini-icon">'+esc(w.icon)+'</span><span><b>'+esc(w.temp)+'</b><small>'+esc(w.text)+'</small></span></button>'+
       '<button class="dashp-mini-card" onclick="setMainView(\'pollen\')"><span class="dashp-mini-icon">'+esc(p.icon)+'</span><span><b>'+esc(p.level)+'</b><small>'+esc(p.text)+'</small></span></button>'+
+      '<button class="dashp-mini-card" onclick="window.openFriseurPanel&&window.openFriseurPanel()"><span class="dashp-mini-icon">'+esc(f.icon)+'</span><span><b>'+esc(f.meta)+'</b><small>'+esc(f.text)+'</small></span></button>'+
       '<button class="dashp-mini-card" onclick="setMainView(\'calendar\')"><span class="dashp-mini-icon">'+esc(v.icon)+'</span><span><b>'+esc(v.text)+'</b><small>'+esc(v.meta)+'</small></span></button>'+
       '<button class="dashp-mini-card" onclick="setMainView(\'challenges\')"><span class="dashp-mini-icon">💪</span><span><b>'+openChallenges+'</b><small>Challenges offen</small></span></button>'+
-      '<button class="dashp-mini-card dashp-weather-mini" onclick="window.ChangeWeatherCard&&ChangeWeatherCard.openForecast&&ChangeWeatherCard.openForecast(\'weather\')"><span class="dashp-mini-icon">'+esc(w.icon)+'</span><span><b>'+esc(w.temp)+'</b><small>'+esc(w.text)+'</small></span></button>';
+      '</div>';
   }
   function timelineHtml(events){
     if(!events.length) return '<div class="dashp-empty">Heute sind keine Termine geplant.</div>';
@@ -220,7 +238,7 @@
         + '<div class="dashp-event-main"><strong>'+esc(titleOf(event))+'</strong><span>'+esc(loc || (isGoogle ? 'Google Kalender' : 'Heute'))+'</span></div>'
         + (isGoogle ? '<span class="dashp-source-dot">G</span>' : '')
         + '</div>';
-    }).join('') + '<button class="dashp-link-btn" onclick="setMainView(\'calendar\')">Zum Kalender</button>';
+    }).join('');
   }
   function challengesHtml(list){
     if(!list.length) return '<div class="dashp-empty">Alle Aufgaben für heute erledigt.</div>';
@@ -325,6 +343,16 @@
       [data-theme="light"] .dashp-event-row,[data-theme="light"] .dashp-task-row,[data-theme="light"] .dashp-player-row,body.theme-light .dashp-event-row,body.theme-light .dashp-task-row,body.theme-light .dashp-player-row,body.change-theme-light .dashp-event-row,body.change-theme-light .dashp-task-row,body.change-theme-light .dashp-player-row{background:rgba(255,255,255,.68)!important;border-color:rgba(20,35,24,.08)!important;}
       [data-theme="light"] .dashp-event-main span,[data-theme="light"] .dashp-task-main span,[data-theme="light"] .dashp-player-main small,[data-theme="light"] .dashp-mini-card small,[data-theme="light"] .dashp-next,body.theme-light .dashp-event-main span,body.theme-light .dashp-task-main span,body.theme-light .dashp-player-main small,body.theme-light .dashp-mini-card small,body.theme-light .dashp-next,body.change-theme-light .dashp-event-main span,body.change-theme-light .dashp-task-main span,body.change-theme-light .dashp-player-main small,body.change-theme-light .dashp-mini-card small,body.change-theme-light .dashp-next{color:#5d6b61!important;}
       [data-theme="light"] .dashp-card-head,body.theme-light .dashp-card-head,body.change-theme-light .dashp-card-head,[data-theme="light"] .dashp-forecast-row,body.theme-light .dashp-forecast-row,body.change-theme-light .dashp-forecast-row{border-color:rgba(20,35,24,.08)!important;}
+
+      /* v0.1.0065 Dashboard Cleanup */
+      body.change-view-dashboard .dash-hello p{display:none!important;}
+      .dashp-hero{grid-template-columns:1fr!important;gap:14px!important;}
+      .dashp-main-hero{min-height:174px!important;}
+      .dashp-quick-grid{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:14px!important;}
+      .dashp-quick-grid .dashp-mini-card{min-height:132px!important;}
+      .dashp-mini-card small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+      @media(max-width:1180px){.dashp-quick-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;}}
+      @media(max-width:700px){.dashp-quick-grid{display:flex!important;overflow-x:auto!important;gap:8px!important;padding-bottom:6px!important;scrollbar-width:none!important}.dashp-quick-grid::-webkit-scrollbar{display:none!important}.dashp-quick-grid .dashp-mini-card{min-width:152px!important;display:inline-flex!important;}.dashp-hero{white-space:normal!important;overflow:visible!important;}.dashp-main-hero{margin-bottom:12px!important;}}
     `;
     document.head.appendChild(st);
   }
@@ -340,7 +368,7 @@
     var sub = $('dash-sub');
     var head = $('dash-greeting');
     if(head) head.textContent = 'Dashboard';
-    if(sub) sub.textContent = greeting()+' · '+fmtWeekdayDate(dateKey(new Date()));
+    if(sub) sub.textContent = '';
     var nextText = next ? '<span>Nächster Termin</span><strong>'+esc(timeLabel(next))+' · '+esc(titleOf(next))+'</strong>' : '<span>Heute</span><strong>kein nächster Termin</strong>';
     grid.innerHTML = ''+
       '<div class="dashp-hero">'

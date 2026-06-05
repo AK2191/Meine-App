@@ -506,7 +506,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0064';
+  var APP_VERSION = '0.1.0066';
 
   function appPane(){
     var installed = installedLabel();
@@ -544,6 +544,41 @@
 
   var currentSettingsTab = 'dashboard';
   var appHealthExpanded = false;
+  var settingsScrollState = null;
+  function settingsScrollSelectors(){
+    return ['.change-settings-premium', '.change-settings-nav-grid', '.change-settings-detail-card', '.change-settings-tabs'];
+  }
+  function captureSettingsScrollState(){
+    var state = {windowY:0, viewTop:0, containers:{}};
+    try{ state.windowY = window.scrollY || 0; }catch(e){}
+    try{
+      var view = document.getElementById('settings-view');
+      if(view) state.viewTop = view.scrollTop || 0;
+      settingsScrollSelectors().forEach(function(selector){
+        var el = document.querySelector('#settings-view ' + selector);
+        if(el) state.containers[selector] = {left:el.scrollLeft || 0, top:el.scrollTop || 0};
+      });
+    }catch(e){}
+    settingsScrollState = state;
+    return state;
+  }
+  function restoreSettingsScrollState(state){
+    state = state || settingsScrollState;
+    if(!state) return;
+    var apply = function(){
+      try{
+        var view = document.getElementById('settings-view');
+        if(view) view.scrollTop = state.viewTop || 0;
+        Object.keys(state.containers || {}).forEach(function(selector){
+          var el = document.querySelector('#settings-view ' + selector);
+          var value = state.containers[selector];
+          if(el && value){ el.scrollLeft = value.left || 0; el.scrollTop = value.top || 0; }
+        });
+      }catch(e){}
+      try{ if((window.scrollY || 0) !== (state.windowY || 0)) window.scrollTo(window.scrollX || 0, state.windowY || 0); }catch(e){}
+    };
+    requestAnimationFrame(function(){ apply(); requestAnimationFrame(apply); });
+  }
   function tabButton(id, label, active){ return '<button class="change-settings-tab '+(active===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'+label+'</button>'; }
   function settingsNavCard(id, icon, title, sub, active){
     return '<button class="change-settings-nav-card '+(active===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'
@@ -620,6 +655,7 @@
   function openSettingsPanel(startTab){
     startTab = ['dashboard','calendar','challenges','sync','app'].indexOf(startTab) >= 0 ? startTab : (currentSettingsTab || 'dashboard');
     currentSettingsTab = startTab;
+    var scrollBeforeRender = captureSettingsScrollState();
     ensurePremiumSettingsCloseBridge();
     installSettingsRouteGuard();
     try{ document.body && document.body.classList.add('change-settings-premium-open'); }catch(e){}
@@ -655,6 +691,7 @@
       + '<div class="change-settings-pane '+(startTab==='app'?'active':'')+'" data-pane="app">'+appPane()+'</div>'
       + '</div></div></div>';
     activateSettingsView(html);
+    restoreSettingsScrollState(scrollBeforeRender);
     setTimeout(bindSettings, 30);
   }
   function refreshSameTab(tab){
@@ -678,17 +715,13 @@
     var right = document.querySelector('[data-settings-tab-right]');
     if(left) left.addEventListener('click', function(){ scrollTabs(-1); });
     if(right) right.addEventListener('click', function(){ scrollTabs(1); });
-    var active = scroller.querySelector('.change-settings-tab.active');
-    if(active && active.scrollIntoView){
-      setTimeout(function(){
-        try{ active.scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'center'}); }catch(e){ active.scrollIntoView(false); }
-      }, 0);
-    }
+    /* Kein automatisches Zentrieren der aktiven Auswahl: Auf Mobil darf die horizontale
+       Scrollposition nach einem Klick nicht an den Anfang oder zur Mitte springen. */
   }
   function bindSettings(){
     bindSettingsTabScroller();
     document.querySelectorAll('[data-settings-tab]').forEach(function(btn){
-      btn.addEventListener('click', function(){ currentSettingsTab = btn.getAttribute('data-settings-tab') || currentSettingsTab; openSettingsPanel(currentSettingsTab); });
+      btn.addEventListener('click', function(ev){ if(ev) ev.preventDefault(); currentSettingsTab = btn.getAttribute('data-settings-tab') || currentSettingsTab; openSettingsPanel(currentSettingsTab); });
     });
     var saveCal = function(){
       var options = {

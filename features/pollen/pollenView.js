@@ -445,12 +445,37 @@
     if(Service && Service.getCached) return Service.getCached();
     return null;
   }
-  function restorePollenScroll(body, y){
-    if(!body || y == null) return;
-    requestAnimationFrame(function(){
-      try{ body.scrollTop = y; }catch(_e){}
-      try{ if(window.scrollY !== y) window.scrollTo(window.scrollX || 0, y); }catch(_e){}
-    });
+  function pollenScrollSelectors(){
+    return ['.pollen-neo-profile-grid', '.pollen-neo-symptoms', '.pollen-neo-forecast-card', '.pollen-neo-shell'];
+  }
+  function capturePollenScrollState(body){
+    var state = {bodyTop:0, windowY:0, containers:{}};
+    try{ state.bodyTop = body ? body.scrollTop : 0; }catch(_e){}
+    try{ state.windowY = window.scrollY || 0; }catch(_e){}
+    try{
+      pollenScrollSelectors().forEach(function(selector){
+        var el = document.querySelector('#pollen-view ' + selector);
+        if(el) state.containers[selector] = {left:el.scrollLeft || 0, top:el.scrollTop || 0};
+      });
+    }catch(_e){}
+    return state;
+  }
+  function restorePollenScroll(body, state){
+    if(!body || state == null) return;
+    var apply = function(){
+      if(typeof state === 'number') state = {bodyTop:state, windowY:state, containers:{}};
+      try{ body.scrollTop = state.bodyTop || 0; }catch(_e){}
+      try{ if((window.scrollY || 0) !== (state.windowY || 0)) window.scrollTo(window.scrollX || 0, state.windowY || 0); }catch(_e){}
+      try{
+        var containers = state.containers || {};
+        Object.keys(containers).forEach(function(selector){
+          var el = document.querySelector('#pollen-view ' + selector);
+          var val = containers[selector];
+          if(el && val){ el.scrollLeft = val.left || 0; el.scrollTop = val.top || 0; }
+        });
+      }catch(_e){}
+    };
+    requestAnimationFrame(function(){ apply(); requestAnimationFrame(apply); });
   }
   async function render(options){
     options = options || {};
@@ -459,7 +484,7 @@
     if(!body) return;
     var oldScroll = null;
     if(options.preserveScroll){
-      try{ oldScroll = body.scrollTop || window.scrollY || 0; }catch(_e){ oldScroll = null; }
+      try{ oldScroll = capturePollenScrollState(body); }catch(_e){ oldScroll = null; }
     }
     if(!options.preferCached){
       body.innerHTML = '<div class="pollen-neo-shell"><div class="pollen-neo-card pollen-neo-empty">Pollen werden geladen…</div></div>';

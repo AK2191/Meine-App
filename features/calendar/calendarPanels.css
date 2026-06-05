@@ -60,3 +60,35 @@ body.change-view-calendar #calendar-premium-view .cal-premium-agenda{
 @media(max-width:700px){
   body.change-view-calendar #calendar-premium-view .cal-premium-agenda{min-height:220px!important;}
 }
+
+
+/* v0.1.0065 · Kalender Premium-Aufraeumung
+   UI only: Mini-Kalender rechts wieder sichtbar, altes Monatsraster bleibt entfernt, Plus/FAB entfernt. */
+body.change-view-calendar #fab{display:none!important;visibility:hidden!important;pointer-events:none!important;}
+body.change-view-calendar #cal-body{display:block!important;overflow:auto!important;height:100%!important;}
+body.change-view-calendar #calendar-premium-view{max-width:1320px!important;width:100%!important;margin:0 auto!important;}
+body.change-view-calendar #calendar-premium-view .cal-premium-main-grid{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.55fr) minmax(320px,.75fr)!important;
+  gap:18px!important;
+  align-items:start!important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-main-grid.single{grid-template-columns:minmax(0,1.55fr) minmax(320px,.75fr)!important;}
+body.change-view-calendar #calendar-premium-view aside,
+body.change-view-calendar #calendar-premium-view .cal-premium-side,
+body.change-view-calendar #calendar-premium-view .cal-premium-mini{display:block!important;visibility:visible!important;height:auto!important;max-height:none!important;}
+body.change-view-calendar #calendar-premium-view .cal-premium-filter{display:none!important;}
+body.change-view-calendar #calendar-premium-view .cal-premium-add{display:none!important;}
+body.change-view-calendar #calendar-premium-view .cal-premium-agenda{min-height:300px!important;width:auto!important;}
+body.change-view-calendar #calendar-premium-view .cal-premium-hero-grid{grid-template-columns:minmax(0,1.55fr) minmax(320px,.75fr)!important;}
+body.change-view-calendar #calendar-premium-view .cal-premium-hero{min-height:176px!important;}
+@media(max-width:900px){
+  body.change-view-calendar #calendar-premium-view .cal-premium-main-grid,
+  body.change-view-calendar #calendar-premium-view .cal-premium-main-grid.single,
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-grid{grid-template-columns:1fr!important;}
+}
+@media(max-width:700px){
+  body.change-view-calendar #calendar-premium-view{padding-bottom:calc(96px + env(safe-area-inset-bottom))!important;}
+  body.change-view-calendar #calendar-premium-view .cal-premium-side{display:none!important;}
+  body.change-view-calendar #calendar-premium-view .cal-premium-agenda{min-height:220px!important;}
+}

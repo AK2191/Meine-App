@@ -1356,3 +1356,28 @@ body.theme-light #challenges-view .challenge-goal-stat{border-bottom-color:rgba(
   #challenges-view .challenge-goal-stat strong{font-size:15px}
   #challenges-view .challenge-goal-stat small{font-size:10px}
 }
+
+
+/* v0.1.0065 · Challenge-Laengen und Premium-Grid bereinigt */
+@media(min-width:701px){
+  body.change-view-challenges #content{padding:26px 34px 34px!important;overflow:auto!important;}
+  body.change-view-challenges #challenges-view{max-width:1320px!important;width:100%!important;margin:0 auto!important;height:auto!important;min-height:100%!important;}
+  body.change-view-challenges #challenges-view .challenge-neo-header,
+  body.change-view-challenges #challenges-view .list-header{max-width:1320px!important;width:100%!important;margin:0 auto!important;padding:0 0 22px!important;}
+  body.change-view-challenges #challenges-view .challenge-layout{
+    max-width:1320px!important;width:100%!important;margin:0 auto!important;padding:0!important;
+    display:grid!important;grid-template-columns:minmax(0,1.45fr) minmax(340px,.75fr)!important;
+    gap:18px!important;align-items:start!important;overflow:visible!important;
+  }
+  body.change-view-challenges #group-goal-card{grid-column:1/-1!important;grid-row:auto!important;min-height:190px!important;}
+  body.change-view-challenges #challenge-week-points-card{grid-column:1/-1!important;grid-row:auto!important;}
+  body.change-view-challenges .challenge-layout > .challenge-card{grid-column:1!important;grid-row:auto!important;min-width:0!important;}
+  body.change-view-challenges .challenge-layout > .leader-card{grid-column:2!important;grid-row:auto!important;min-width:0!important;}
+  body.change-view-challenges .challenge-card,
+  body.change-view-challenges .leader-card{width:100%!important;}
+  body.change-view-challenges #challenges-list,
+  body.change-view-challenges #leaderboard-list{padding:16px!important;}
+}
+@media(max-width:700px){
+  body.change-view-challenges #challenges-view .challenge-layout{padding-left:14px!important;padding-right:14px!important;}
+}

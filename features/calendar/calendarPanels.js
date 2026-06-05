@@ -160,10 +160,7 @@
   }
   function renderPremium(){
     var body = $('cal-body'); if(!body) return;
-    try{
-      var cd = currentDateSafe();
-      if(cd && !isNaN(cd)) selectedKey = keyOf(cd);
-    }catch(e){}
+    if(!selectedKey) selectedKey = M.todayKey();
     var view = viewSafe();
     if(view === 'year' || view === 'workweek'){
       if(originalRenderCalendar && originalRenderCalendar !== window.renderCalendar) originalRenderCalendar();
@@ -177,7 +174,10 @@
     }
     var control = '<div class="cal-premium-top"><div class="cal-premium-title"><span>▣</span><h1>Kalender</h1></div></div>';
     existing.innerHTML = control + heroHtml() + weekHtml()
-      + '<div class="cal-premium-main-grid single"><section class="cal-premium-card cal-premium-agenda"><div class="cal-premium-section-head"><strong>Tagesagenda</strong></div><div>'+eventRows(selectedKey)+'</div><button class="cal-premium-add" type="button" onclick="window.openEventPanel&&window.openEventPanel(null,new Date(\''+selectedKey+'T12:00:00\'))">＋ Termin hinzufügen</button></section></div>';
+      + '<div class="cal-premium-main-grid">'
+      + '<section class="cal-premium-card cal-premium-agenda"><div class="cal-premium-section-head"><strong>Tagesagenda</strong></div><div>'+eventRows(selectedKey)+'</div></section>'
+      + '<aside class="cal-premium-side">'+miniMonthHtml()+'</aside>'
+      + '</div>';
     var mg=$('month-grid'), wday=$('wday-row'), ag=$('agenda-view');
     if(mg) mg.style.display='none'; if(wday) wday.style.display='none'; if(ag) ag.style.display='none';
     bindPremium();
@@ -211,6 +211,8 @@
         window.setMainView = function(view){
           var result = oldSetMainView.apply(this, arguments);
           if(view === 'calendar'){
+            selectedKey = M.todayKey();
+            setCurrentDate(dateObj(selectedKey));
             setTimeout(renderPremium, 60);
             setTimeout(renderPremium, 350);
             setTimeout(renderPremium, 1000);
