@@ -506,7 +506,22 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0074';
+  var APP_VERSION = '0.1.0075';
+
+
+  function healthSummaryPill(){
+    try{
+      if(window.ChangeAppStatus && window.ChangeAppStatus.getHealthScore){
+        var score = window.ChangeAppStatus.getHealthScore();
+        var ok = parseInt(score.ok,10) || 0;
+        var total = parseInt(score.total,10) || 0;
+        var tone = score.tone === 'ok' ? 'ok' : (score.tone === 'error' ? 'error' : 'off');
+        var label = (tone === 'ok' ? 'Gesund' : 'Prüfen') + ' · ' + ok + '/' + total;
+        return '<div class="change-health-pill is-static '+tone+'"><span>♡</span><strong>'+esc(label)+'</strong></div>';
+      }
+    }catch(e){}
+    return '<div class="change-health-pill is-static off"><span>♡</span><strong>Status offen</strong></div>';
+  }
 
   function appPane(){
     var installed = installedLabel();
@@ -673,10 +688,10 @@
       + settingsNavCard('sync','↻','Daten & Sync','Manuell · keine Auto-Starts',startTab)
       + settingsNavCard('app','🛡','App & Sicherheit','Darstellung · Version '+APP_VERSION,startTab);
     var html = '<div class="change-settings-premium">'
-      + '<div class="change-settings-page-head"><div class="change-settings-page-title"><span>⚙︎</span><strong>Einstellungen</strong></div><div class="change-settings-save-pill">✓ Alles gespeichert</div></div>'
+      + '<div class="change-settings-page-head"><div class="change-settings-page-title"><span>⚙︎</span><strong>Einstellungen</strong></div></div>'
       + '<section class="change-settings-profile-card">'
       + '<div class="change-settings-profile-left"><div class="change-settings-profile-avatar">'+picture+'<i></i></div><div><div class="change-settings-profile-name">'+esc(name)+'</div><div class="change-settings-profile-sub"><span class="change-google-mark">G</span> '+(google.loggedIn?'Google angemeldet':'Google nicht angemeldet')+'</div></div></div>'
-      + '<div class="change-settings-profile-right"><button class="change-health-pill" type="button" data-settings-tab="app">♡ Gesundheitscheck</button><span>Version '+esc(APP_VERSION)+'</span></div>'
+      + '<div class="change-settings-profile-right">'+healthSummaryPill()+'<span>Version '+esc(APP_VERSION)+'</span></div>'
       + '</section>'
       + '<div class="change-settings-workspace">'
       + '<div class="change-settings-nav-grid">'

@@ -174,3 +174,8 @@ body.change-mobile .cfx-week-row{min-height:98px!important}
 body.change-mobile .year-grid-stacked{grid-template-columns:1fr!important}
 body.change-mobile #fab{display:none!important}
 body.change-mobile.change-view-calendar #fab{display:flex!important}
+
+
+/* v0.1.0075 dashboard disabled today row */
+.dashp-event-row.is-disabled{opacity:.58;filter:saturate(.72);cursor:default!important;background:rgba(255,255,255,.025)!important;border-style:dashed!important;}
+.dashp-event-row.is-disabled:hover{transform:none!important;border-color:var(--b1)!important;box-shadow:none!important;}

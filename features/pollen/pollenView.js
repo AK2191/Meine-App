@@ -3,7 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0074';
+  var APP_VERSION = '0.1.0075';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var SELECTED_KEY = 'change_v1_pollen_selected_keys';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
@@ -325,7 +325,7 @@
       list = selectedForecast(forecast, selectedKeys).slice(0,5).filter(function(day){ return day && !day.dataMissing; });
     }
     return '<section class="pollen-neo-section pollen-neo-forecast">'
-      + '<div class="pollen-neo-section-head"><div><span>5-Tage-Ausblick</span></div></div>'
+      + '<div class="pollen-neo-section-head"><div><span>5-Tages-Ausblick</span></div></div>'
       + '<div class="pollen-neo-forecast-list">'+list.map(forecastRow).join('')+'</div>'
     + '</section>';
   }

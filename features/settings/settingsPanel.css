@@ -983,3 +983,12 @@ body.change-theme-light:not(.change-view-settings) #panel-overlay{
     overflow:auto!important;
   }
 }
+
+
+/* v0.1.0075 · Settings header health summary, no saved pill */
+.change-settings-save-pill{display:none!important;}
+.change-health-pill.is-static{pointer-events:none;cursor:default;display:inline-flex;align-items:center;gap:8px;justify-content:center;min-width:132px;}
+.change-health-pill.is-static strong{font-size:12px;font-weight:900;line-height:1;}
+.change-health-pill.is-static.ok{background:rgba(34,197,94,.10);border-color:rgba(34,197,94,.28);color:var(--acc);}
+.change-health-pill.is-static.off{background:var(--s2);border-color:var(--b1);color:var(--t3);}
+.change-health-pill.is-static.error{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.28);color:#f87171;}

@@ -229,7 +229,7 @@
   }
 
   function overviewRows(todayCount, next, w, p, f, v){
-    var vacationClick = 'window.openUrlaubPanel?window.openUrlaubPanel():setMainView(\'calendar\')';
+    var vacationClick = 'window.openUrlaubPanel?window.openUrlaubPanel():(window.openUrlaubSettings?window.openUrlaubSettings():setMainView(\'calendar\'))';
     return '<div class="dashp-hero-insights" aria-label="Dashboard Schnellübersicht">'
       + '<button class="dashp-insight-row" onclick="window.ChangeWeatherCard&&ChangeWeatherCard.openForecast&&ChangeWeatherCard.openForecast(\'weather\')"><span class="dashp-insight-dot">'+esc(w.icon)+'</span><span><b>Wetter</b><small>'+esc(w.temp)+' · '+esc(w.text)+'</small></span></button>'
       + '<button class="dashp-insight-row" onclick="setMainView(\'pollen\')"><span class="dashp-insight-dot">🌿</span><span><b>Pollen</b><small>'+esc(p.level)+' · '+esc(p.meta || p.text)+'</small></span></button>'
@@ -256,7 +256,8 @@
         var ev = item.event;
         var label = ev ? (item.count > 1 ? item.count+' Termine heute' : 'Heute 1 Termin') : 'Heute keiner vorhanden';
         var sub = ev ? timeLabel(ev)+' · '+titleOf(ev) : 'Keine Termine für heute geplant.';
-        return '<div class="dashp-event-row tone-green" onclick="setMainView(\'calendar\')">'
+        var emptyToday = !ev;
+        return '<div class="dashp-event-row tone-green '+(emptyToday?'is-disabled':'')+'" '+(emptyToday?'aria-disabled="true"':'onclick="setMainView(\'calendar\')"')+'>'
           + '<div class="dashp-event-icon">📅</div>'
           + '<div class="dashp-event-time"><strong>Heute</strong><small>'+esc(fmtShort(item.key))+'</small></div>'
           + '<div class="dashp-event-main"><strong>'+esc(label)+'</strong><span>'+esc(sub)+'</span></div>'
@@ -274,7 +275,7 @@
           + (isGoogle ? '<span class="dashp-source-dot">G</span>' : '')
           + '</div>';
       }
-      var click = item.action === 'friseur' ? 'window.openFriseurPanel&&window.openFriseurPanel()' : (item.action === 'urlaub' ? 'window.openUrlaubPanel?window.openUrlaubPanel():setMainView(\'calendar\')' : 'setMainView(\'calendar\')');
+      var click = item.action === 'friseur' ? 'window.openFriseurPanel&&window.openFriseurPanel()' : (item.action === 'urlaub' ? 'window.openUrlaubPanel?window.openUrlaubPanel():(window.openUrlaubSettings?window.openUrlaubSettings():setMainView(\'calendar\'))' : 'setMainView(\'calendar\')');
       return '<div class="dashp-event-row tone-green" onclick="'+click+'">'
         + '<div class="dashp-event-icon">'+esc(item.icon || '📌')+'</div>'
         + '<div class="dashp-event-time"><strong>'+esc(dayLabel(item.key || dateKey(new Date())))+'</strong><small>'+esc(fmtShort(item.key || dateKey(new Date())))+'</small></div>'
