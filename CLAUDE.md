@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0059 und Pollen-Datenstatus
+> Zuletzt aktualisiert: 2026-06-05 · Version 0.1.0061 und Einstellungen auf Pollen-Workspace-Metrik
 
 ---
 
@@ -96,6 +96,8 @@ Jeder Kalendertag enthält:
 
 - Ab Version `0.1.0054`: Dashboard nutzt einen Premium-Tages-Hub im gleichen Stil wie Kalender/Challenges/Pollen. Desktop zeigt Hero-Karte, Schnellinfos, heutige Termine, Aufgaben, Mitspieler und 7-Tage-Ausblick. Mobil wird die Ansicht gestapelt und nutzt horizontale Schnellinfo-Karten. Bestehende Kalender-, Challenge-, Wetter-/Pollen-, Firebase-, Sync-, Push- und Login-Logik bleibt unverändert; es wird nur die Dashboard-Darstellung neu aufgebaut.
 - Ab Version `0.1.0055`: Einstellungen öffnen als Premium-Workspace im gleichen Kartenstil wie Dashboard, Kalender, Challenges und Pollen. Desktop zeigt Profil-/Statuskarte, Kategorie-Karten und rechts den Detailbereich. Mobil wird die Ansicht gestapelt, Kategorie-Karten werden horizontal scrollbar. Bestehende Schalter, Sync-Regeln, Push, Kalenderoptionen, Challengeoptionen und App-Gesundheitscheck bleiben funktional unverändert; es wird kein Auto-Start eingeführt.
+- Ab Version `0.1.0060`: Pollen-Allergieprofil-Auswahl nutzt die vorhandenen Cache-Daten und lädt beim reinen Profilwechsel nicht erneut die API. Die Scrollposition bleibt bei Profil- und Symptom-Auswahl erhalten, damit die mobile Ansicht nicht an den Anfang springt. Zusätzlich wurden Dashboard, Kalender, Challenges und Pollen an eine gemeinsame Workspace-Metrik angepasst: gleiche linke/rechte Innenränder, gleiche maximale Inhaltsbreite und einheitliche Titelhöhe nach Pollen-Vorbild. Keine Änderung an Login, Firebase, Datenbank-Sync, Push, Kalenderdaten oder Challenge-Logik.
+- Ab Version `0.1.0061`: Einstellungen nutzen dieselbe Workspace-Metrik wie Pollen, Dashboard, Kalender und Challenges: identische Titelhöhe, linke/rechte Innenränder, maximale Inhaltsbreite und mobile Außenabstände. Die Einstellungen bleiben weiterhin ein eigenständiger Workspace; Schalter, Sync-Regeln, Login, Firebase, Push, Kalenderdaten und Challenge-Logik bleiben unverändert.
 - Ab Version `0.1.0059`: Der Pollen-7-Tage-Ausblick unterscheidet echte 0 %-Werte von fehlenden API-Daten. Tage oder einzelne Pollenwerte ohne geladene API-Werte werden nicht mehr als 0 % dargestellt, sondern als „Keine API-Daten“ markiert; zusätzlich wird angezeigt, wenn weniger als 7 Tage belastbar geladen wurden. Keine Änderung an Login, Firebase, Sync, Push oder Kalenderlogik.
 - Ab Version `0.1.0058`: Einstellungen nutzen nur noch den eigenständigen Workspace und werden beim Wechsel zu Dashboard, Kalender, Challenges oder Pollen hart ausgeblendet. Die Settings-Navigation enthält keine doppelten aktiven Kategorien mehr; der Detailbereich wird direkt über die linken Kategorie-Karten gesteuert. Allgemeine Side-Panels wurden optisch an den Settings-Kartenstil angepasst, ohne Einstellungen wieder als Overlay zu öffnen. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik.
 
@@ -113,7 +115,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0059`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0061`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -946,3 +948,6 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Die sichtbare App-Version wurde auf `0.1.0058` erhöht.
 - Einstellungen werden beim Wechsel auf andere Reiter zuverlässig ausgeblendet.
 - Settings-Navigation und Side-Panels wurden optisch und strukturell bereinigt.
+
+| 2026-06-05 | Version auf `0.1.0060` erhöht; Pollen-Profilwechsel lädt nicht mehr neu und behält die Scrollposition. Dashboard, Kalender, Challenges und Pollen nutzen eine einheitliche Workspace-Metrik nach Pollen-Vorbild. | ChatGPT |
+| 2026-06-05 | Version auf `0.1.0061` erhöht; Einstellungen nutzen dieselbe Pollen-Workspace-Metrik für Titelhöhe, Ränder, Inhaltsbreite und mobile Abstände. | ChatGPT |

@@ -1241,3 +1241,310 @@ body.change-theme-light.change-view-challenges #challenges-view .challenge-view-
     padding-top:6px!important;
   }
 }
+
+
+/* v0.1.0060 · Einheitliche Workspace-Metrik + ruhige Pollen-Auswahl
+   UI only: Pollen ist das Referenzmaß für Titel, Seitenränder und Kartenbreiten. */
+@media (min-width:701px){
+  body.change-view-dashboard #content,
+  body.change-view-calendar #content,
+  body.change-view-challenges #content,
+  body.change-view-pollen #content{
+    padding:26px 34px 34px!important;
+    overflow:auto!important;
+  }
+
+  body.change-view-dashboard #dashboard-view,
+  body.change-view-calendar #calendar-premium-view,
+  body.change-view-challenges #challenges-view,
+  body.change-view-pollen #pollen-view{
+    width:min(100%,1320px)!important;
+    max-width:1320px!important;
+    margin:0 auto!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-dashboard .dash-hello,
+  body.change-view-calendar .cal-premium-top,
+  body.change-view-challenges #challenges-view .list-header,
+  body.change-view-pollen #pollen-view .list-header{
+    min-height:44px!important;
+    margin:0 0 24px!important;
+    padding:0!important;
+    display:flex!important;
+    align-items:center!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-dashboard .dash-hello h1,
+  body.change-view-calendar .cal-premium-title h1,
+  body.change-view-challenges #challenges-view .list-title,
+  body.change-view-pollen #pollen-view .list-title{
+    margin:0!important;
+    font-size:27px!important;
+    line-height:1!important;
+    font-weight:950!important;
+    letter-spacing:-.8px!important;
+  }
+
+  body.change-view-dashboard .dash-hello p{
+    margin:7px 0 0!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-layout,
+  body.change-view-pollen #pollen-view .pollen-neo-shell,
+  body.change-view-dashboard #dash-grid,
+  body.change-view-calendar #calendar-premium-view > *{
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-layout{
+    width:100%!important;
+    max-width:1320px!important;
+    margin:0 auto!important;
+  }
+}
+
+@media (max-width:700px){
+  body.change-view-dashboard #content,
+  body.change-view-calendar #content,
+  body.change-view-challenges #content,
+  body.change-view-pollen #content{
+    padding:18px 14px calc(86px + env(safe-area-inset-bottom))!important;
+    overflow:auto!important;
+  }
+
+  body.change-view-dashboard #dashboard-view,
+  body.change-view-calendar #cal-body,
+  body.change-view-challenges #challenges-view,
+  body.change-view-pollen #pollen-view{
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:0!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-dashboard .dash-hello,
+  body.change-view-calendar .cal-premium-top,
+  body.change-view-challenges #challenges-view .list-header,
+  body.change-view-pollen #pollen-view .list-header{
+    min-height:42px!important;
+    margin:0 0 14px!important;
+    padding:0!important;
+    display:flex!important;
+    align-items:center!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-dashboard .dash-hello h1,
+  body.change-view-calendar .cal-premium-title h1,
+  body.change-view-challenges #challenges-view .list-title,
+  body.change-view-pollen #pollen-view .list-title{
+    margin:0!important;
+    font-size:24px!important;
+    line-height:1!important;
+    font-weight:950!important;
+    letter-spacing:-.65px!important;
+  }
+
+  body.change-view-dashboard .dash-hello{padding:0!important;}
+  body.change-view-dashboard .dash-hello p{margin:6px 0 0!important;}
+
+  body.change-view-calendar #calendar-premium-view{
+    padding:0 0 calc(86px + env(safe-area-inset-bottom))!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-view-body,
+  body.change-view-pollen #pollen-view .pollen-neo-shell,
+  body.change-view-challenges #challenges-view .challenge-layout{
+    padding-left:0!important;
+    padding-right:0!important;
+    margin-left:0!important;
+    margin-right:0!important;
+    box-sizing:border-box!important;
+  }
+}
+
+/* v0.1.0061 · Einstellungen an Pollen-Workspace-Metrik angepasst
+   UI only: Settings nutzt dieselben Titelhöhen, Außenränder und Inhaltsbreiten wie Pollen. */
+@media (min-width:701px){
+  body.change-view-settings,
+  body.change-view-settings #app,
+  body.change-view-settings #main-app{
+    background:
+      radial-gradient(circle at 11% 7%,rgba(21,99,56,.11),transparent 30%),
+      radial-gradient(circle at 58% 4%,rgba(21,99,56,.045),transparent 26%),
+      linear-gradient(180deg,#04090e,#04090e)!important;
+  }
+
+  body.change-view-settings #main-app{
+    display:grid!important;
+    grid-template-columns:108px minmax(0,1fr)!important;
+    grid-template-rows:1fr!important;
+    height:100vh!important;
+    overflow:hidden!important;
+  }
+
+  body.change-view-settings #content{
+    padding:26px 34px 34px!important;
+    overflow:auto!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    border:0!important;
+  }
+
+  body.change-view-settings #settings-view{
+    width:100%!important;
+    max-width:none!important;
+    height:auto!important;
+    min-height:100%!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-settings #settings-view .change-settings-premium{
+    width:min(100%,1320px)!important;
+    max-width:1320px!important;
+    margin:0 auto!important;
+    padding:0!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-settings .change-settings-page-head{
+    min-height:44px!important;
+    margin:0 0 24px!important;
+    padding:0!important;
+    display:flex!important;
+    align-items:center!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-settings .change-settings-page-title{
+    margin:0!important;
+    font-size:27px!important;
+    line-height:1!important;
+    font-weight:950!important;
+    letter-spacing:-.8px!important;
+  }
+
+  body.change-view-settings .change-settings-profile-card,
+  body.change-view-settings .change-settings-workspace,
+  body.change-view-settings .change-settings-detail-card,
+  body.change-view-settings .change-settings-nav-grid{
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-settings .change-settings-profile-card{
+    margin-bottom:18px!important;
+  }
+
+  body.change-view-settings .change-settings-workspace{
+    width:100%!important;
+    max-width:1320px!important;
+    margin:0 auto!important;
+  }
+
+  [data-theme="light"] body.change-view-settings,
+  [data-theme="light"] body.change-view-settings #app,
+  [data-theme="light"] body.change-view-settings #main-app,
+  body[data-theme="light"].change-view-settings,
+  body[data-theme="light"].change-view-settings #app,
+  body[data-theme="light"].change-view-settings #main-app,
+  body.theme-light.change-view-settings,
+  body.theme-light.change-view-settings #app,
+  body.theme-light.change-view-settings #main-app,
+  body.change-theme-light.change-view-settings,
+  body.change-theme-light.change-view-settings #app,
+  body.change-theme-light.change-view-settings #main-app{
+    background:
+      radial-gradient(circle at 23% 18%,rgba(67,164,92,.075),transparent 34%),
+      linear-gradient(180deg,#f4f7f0,#f4f7f0)!important;
+  }
+}
+
+@media (max-width:700px){
+  body.change-view-settings #main-app{
+    display:flex!important;
+    height:100%!important;
+    background:#04090e!important;
+  }
+
+  body.change-view-settings #content{
+    flex:1!important;
+    height:auto!important;
+    min-height:0!important;
+    padding:18px 14px calc(86px + env(safe-area-inset-bottom))!important;
+    overflow:auto!important;
+    background:transparent!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-settings #settings-view{
+    width:100%!important;
+    max-width:none!important;
+    height:auto!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-settings #settings-view .change-settings-premium{
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:0!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-settings .change-settings-page-head{
+    min-height:42px!important;
+    margin:0 0 14px!important;
+    padding:0!important;
+    display:flex!important;
+    align-items:center!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-settings .change-settings-page-title{
+    margin:0!important;
+    font-size:24px!important;
+    line-height:1!important;
+    font-weight:950!important;
+    letter-spacing:-.65px!important;
+  }
+
+  body.change-view-settings .change-settings-profile-card,
+  body.change-view-settings .change-settings-workspace,
+  body.change-view-settings .change-settings-detail-card,
+  body.change-view-settings .change-settings-nav-grid{
+    width:100%!important;
+    max-width:none!important;
+    margin-left:0!important;
+    margin-right:0!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-settings .change-settings-profile-card{
+    margin-bottom:14px!important;
+  }
+
+  body.change-view-settings .change-settings-workspace{
+    gap:14px!important;
+  }
+
+  body.change-view-settings .change-settings-save-pill{
+    display:none!important;
+  }
+
+  [data-theme="light"] body.change-view-settings #main-app,
+  body[data-theme="light"].change-view-settings #main-app,
+  body.theme-light.change-view-settings #main-app,
+  body.change-theme-light.change-view-settings #main-app{
+    background:#f4f7f0!important;
+  }
+}

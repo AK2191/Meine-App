@@ -3,7 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0059';
+  var APP_VERSION = '0.1.0060';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var SELECTED_KEY = 'change_v1_pollen_selected_keys';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
@@ -435,16 +435,35 @@
   }
   function setShellMode(active){ return !!active; }
   function patchViewSwitcher(){ return; }
-  async function getData(){
+  async function getData(options){
+    options = options || {};
+    if(options.preferCached && Service && Service.getCached){
+      var cached = Service.getCached();
+      if(cached) return cached;
+    }
     if(Service && Service.ensureFresh) return Service.ensureFresh();
     if(Service && Service.getCached) return Service.getCached();
     return null;
   }
-  async function render(){
+  function restorePollenScroll(body, y){
+    if(!body || y == null) return;
+    requestAnimationFrame(function(){
+      try{ body.scrollTop = y; }catch(_e){}
+      try{ if(window.scrollY !== y) window.scrollTo(window.scrollX || 0, y); }catch(_e){}
+    });
+  }
+  async function render(options){
+    options = options || {};
     ensureHeaderChrome();
     var body = document.getElementById('pollen-view-body');
     if(!body) return;
-    body.innerHTML = '<div class="pollen-neo-shell"><div class="pollen-neo-card pollen-neo-empty">Pollen werden geladen…</div></div>';
+    var oldScroll = null;
+    if(options.preserveScroll){
+      try{ oldScroll = body.scrollTop || window.scrollY || 0; }catch(_e){ oldScroll = null; }
+    }
+    if(!options.preferCached){
+      body.innerHTML = '<div class="pollen-neo-shell"><div class="pollen-neo-card pollen-neo-empty">Pollen werden geladen…</div></div>';
+    }
     try{
       Store = window.ChangeWeatherStore;
       Service = window.ChangeWeatherService;
@@ -455,17 +474,20 @@
       var loc = Store && Store.getLocation ? Store.getLocation() : null;
       if(!loc){
         body.innerHTML = '<div class="pollen-neo-shell"><div class="pollen-neo-card pollen-neo-empty"><strong>Standort fehlt</strong><span>Für den Pollen-Ausblick braucht Change einmalig deinen Standort.</span><button class="btn btn-primary" type="button" onclick="ChangeWeatherCard&&ChangeWeatherCard.updateLocation&&ChangeWeatherCard.updateLocation()">Standort aktualisieren</button></div></div>';
+        restorePollenScroll(body, oldScroll);
         return;
       }
-      var data = await getData();
+      var data = await getData(options);
       loc = Store && Store.getLocation ? Store.getLocation() : loc;
-      if(window.ChangeWeatherCard && typeof window.ChangeWeatherCard.update === 'function') window.ChangeWeatherCard.update();
+      if(!options.preferCached && window.ChangeWeatherCard && typeof window.ChangeWeatherCard.update === 'function') window.ChangeWeatherCard.update();
       body.innerHTML = pageHtml(data, loc);
       updateHeaderNotificationBadge();
       var mode = readEditMode();
       body.classList.toggle('pollen-edit-active', mode === 'profile' || mode === 'symptoms');
+      restorePollenScroll(body, oldScroll);
     }catch(e){
       body.innerHTML = '<div class="pollen-neo-shell"><div class="pollen-neo-card pollen-neo-empty"><strong>Pollen konnten nicht geladen werden.</strong><span>'+esc(e.message || e || 'Bitte später erneut versuchen.')+'</span></div></div>';
+      restorePollenScroll(body, oldScroll);
     }
   }
   function bind(){
@@ -495,7 +517,7 @@
         var today = cached && cached.pollen && cached.pollen.forecast && cached.pollen.forecast[0] || null;
         if(today) toggleSelectedKey(today, pick.getAttribute('data-pollen-select') || '');
         else writeSelectedKeys([pick.getAttribute('data-pollen-select') || '']);
-        render();
+        render({preferCached:true, preserveScroll:true});
         return;
       }
       var edit = ev.target && ev.target.closest ? ev.target.closest('#pollen-view [data-pollen-edit]') : null;
@@ -504,7 +526,7 @@
         ev.stopPropagation();
         var mode = edit.getAttribute('data-pollen-edit') || '';
         writeEditMode(readEditMode() === mode ? '' : mode);
-        render();
+        render({preferCached:true, preserveScroll:true});
       }
     }, true);
   }
