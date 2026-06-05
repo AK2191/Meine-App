@@ -265,6 +265,28 @@
     }
     return fallback;
   }
+
+  function dashboardModuleCount(){
+    var modules = [
+      dashboardBool('getFriseurEnabled', 'change_v1_friseur_enabled', true),
+      dashboardBool('getBirthdaysEnabled', 'change_v1_birthdays_enabled', true),
+      dashboardBool('getUrlaubEnabled', 'urlaub_tracker_on', true)
+    ];
+    try{
+      var weather = weatherHealthStatus();
+      var ws = weather.settings || {};
+      modules.push(!!ws.weatherEnabled);
+      modules.push(!!ws.pollenEnabled);
+    }catch(e){
+      modules.push(false);
+      modules.push(false);
+    }
+    modules.push(true); // Termine
+    modules.push(true); // Aufgaben
+    modules.push(true); // Mitspieler
+    return modules.filter(Boolean).length;
+  }
+
   function halfDays(){
     try{ if(typeof window.getUrlaubHalfDays === 'function') return (window.getUrlaubHalfDays() || []).slice().sort(); }catch(e){}
     try{ return (JSON.parse(localStorage.getItem('urlaub_half_days') || '[]') || []).map(function(d){ return String(d).length === 10 ? String(d).slice(5) : String(d); }).sort(); }catch(e){ return []; }
@@ -484,7 +506,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0055';
+  var APP_VERSION = '0.1.0056';
 
   function appPane(){
     var installed = installedLabel();
