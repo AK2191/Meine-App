@@ -314,3 +314,445 @@
 @media(max-width:520px){
   .change-theme-options{grid-template-columns:1fr;}
 }
+
+/* v0.1.0055 · Premium Einstellungen als Workspace */
+body.change-settings-premium-open #panel-overlay{
+  display:none!important;
+  pointer-events:none!important;
+}
+body.change-settings-premium-open #side-panel{
+  left:108px!important;
+  right:0!important;
+  top:0!important;
+  bottom:0!important;
+  width:auto!important;
+  max-width:none!important;
+  height:100vh!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  transform:none!important;
+  padding:0!important;
+  z-index:150!important;
+}
+body.change-settings-premium-open #side-panel .panel-hd{
+  display:none!important;
+}
+body.change-settings-premium-open #side-panel .panel-body{
+  height:100%!important;
+  max-height:none!important;
+  overflow:auto!important;
+  padding:0!important;
+  background:transparent!important;
+}
+.change-settings-premium{
+  min-height:100%;
+  padding:24px 34px 34px;
+  box-sizing:border-box;
+  color:var(--t1);
+}
+.change-settings-page-head{
+  max-width:1460px;
+  margin:0 auto 22px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+.change-settings-page-title{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  font-size:28px;
+  font-weight:950;
+  letter-spacing:-.8px;
+}
+.change-settings-page-title span{
+  color:var(--acc);
+  font-size:22px;
+}
+.change-settings-save-pill,
+.change-health-pill{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:38px;
+  padding:0 18px;
+  border-radius:16px;
+  border:1px solid var(--b1);
+  background:rgba(255,255,255,.04);
+  color:var(--t2);
+  font-size:13px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.change-health-pill{
+  cursor:pointer;
+  font-family:var(--font);
+}
+.change-settings-profile-card,
+.change-settings-workspace{
+  max-width:1460px;
+  margin:0 auto;
+}
+.change-settings-profile-card{
+  min-height:132px;
+  margin-bottom:26px;
+  padding:24px 32px;
+  border-radius:28px;
+  border:1px solid var(--b1);
+  background:linear-gradient(135deg,rgba(255,255,255,.055),rgba(255,255,255,.025));
+  box-shadow:0 22px 58px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.05);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:28px;
+}
+.change-settings-profile-left{
+  display:flex;
+  align-items:center;
+  gap:24px;
+  min-width:0;
+}
+.change-settings-profile-avatar{
+  width:88px;
+  height:88px;
+  border-radius:50%;
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+  overflow:visible;
+  background:var(--acc);
+  color:white;
+  font-size:30px;
+  font-weight:950;
+  box-shadow:0 0 0 3px rgba(34,197,94,.9),0 16px 36px rgba(0,0,0,.22);
+}
+.change-settings-profile-avatar img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  border-radius:50%;
+}
+.change-settings-profile-avatar i{
+  position:absolute;
+  right:5px;
+  bottom:6px;
+  width:17px;
+  height:17px;
+  border-radius:999px;
+  background:#22c55e;
+  border:3px solid #071018;
+}
+.change-settings-profile-name{
+  font-size:25px;
+  font-weight:950;
+  letter-spacing:-.55px;
+  color:var(--t1);
+  line-height:1.1;
+}
+.change-settings-profile-sub{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:12px;
+  color:var(--t3);
+  font-size:14px;
+  font-weight:750;
+}
+.change-google-mark{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:22px;
+  height:22px;
+  border-radius:999px;
+  background:rgba(66,133,244,.10);
+  color:#4285f4;
+  font-weight:950;
+}
+.change-settings-profile-right{
+  min-width:260px;
+  border-left:1px solid var(--b1);
+  padding-left:34px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+  color:var(--t4);
+  font-size:13px;
+  font-weight:750;
+}
+.change-settings-workspace{
+  display:grid;
+  grid-template-columns:minmax(360px,.9fr) minmax(460px,1fr);
+  gap:26px;
+  align-items:start;
+}
+.change-settings-nav-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+.change-settings-nav-card{
+  min-height:118px;
+  border-radius:22px;
+  border:1px solid var(--b1);
+  background:linear-gradient(180deg,var(--s1),var(--s1));
+  box-shadow:0 10px 32px rgba(0,0,0,.07),inset 0 1px 0 rgba(255,255,255,.04);
+  padding:18px 20px;
+  display:grid;
+  grid-template-columns:52px minmax(0,1fr) auto;
+  align-items:center;
+  gap:16px;
+  text-align:left;
+  color:var(--t1);
+  cursor:pointer;
+  font-family:var(--font);
+  transition:border-color .15s ease, transform .15s ease, background .15s ease;
+}
+.change-settings-nav-card:hover{
+  transform:translateY(-1px);
+  border-color:rgba(34,197,94,.24);
+}
+.change-settings-nav-card.active{
+  border-color:rgba(34,197,94,.76);
+  background:linear-gradient(135deg,rgba(34,197,94,.10),rgba(34,197,94,.025));
+}
+.change-settings-nav-icon{
+  width:52px;
+  height:52px;
+  border-radius:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(34,197,94,.10);
+  color:var(--acc);
+  font-size:22px;
+  font-weight:950;
+}
+.change-settings-nav-copy strong{
+  display:block;
+  font-size:16px;
+  font-weight:950;
+  line-height:1.15;
+  color:var(--t1);
+}
+.change-settings-nav-copy small{
+  display:block;
+  margin-top:6px;
+  font-size:13px;
+  font-weight:700;
+  line-height:1.25;
+  color:var(--t4);
+}
+.change-settings-nav-arrow{
+  color:var(--t4);
+  font-size:26px;
+  line-height:1;
+}
+.change-settings-detail-card{
+  border-radius:26px;
+  border:1px solid var(--b1);
+  background:linear-gradient(180deg,var(--s1),var(--s1));
+  box-shadow:0 18px 52px rgba(0,0,0,.10),inset 0 1px 0 rgba(255,255,255,.04);
+  overflow:hidden;
+}
+.change-settings-detail-head{
+  padding:24px 26px 18px;
+  border-bottom:1px solid var(--b1);
+}
+.change-settings-detail-title{
+  font-size:22px;
+  font-weight:950;
+  letter-spacing:-.5px;
+  color:var(--t1);
+}
+.change-settings-detail-sub{
+  margin-top:8px;
+  font-size:13px;
+  font-weight:650;
+  line-height:1.4;
+  color:var(--t4);
+}
+.change-settings-detail-card .change-settings-tab-shell{
+  padding:14px 18px 0;
+}
+.change-settings-detail-card .change-settings-tabs{
+  border:0;
+  margin:0;
+  padding:0 0 14px;
+}
+.change-settings-detail-card .change-settings-pane{
+  padding:0 18px 18px;
+}
+.change-settings-detail-card .change-settings-stack{
+  gap:10px;
+}
+.change-settings-detail-card .change-settings-feature-card{
+  border-radius:18px;
+  box-shadow:none;
+}
+.change-settings-feature-card .change-status-pill{
+  margin-left:6px;
+}
+
+[data-theme="light"] .change-settings-premium,
+body.theme-light .change-settings-premium,
+body.change-theme-light .change-settings-premium{
+  color:#142018;
+}
+[data-theme="light"] body.change-settings-premium-open #side-panel,
+body.theme-light.change-settings-premium-open #side-panel,
+body.change-theme-light.change-settings-premium-open #side-panel{
+  background:transparent!important;
+}
+[data-theme="light"] .change-settings-profile-card,
+body.theme-light .change-settings-profile-card,
+body.change-theme-light .change-settings-profile-card,
+[data-theme="light"] .change-settings-nav-card,
+body.theme-light .change-settings-nav-card,
+body.change-theme-light .change-settings-nav-card,
+[data-theme="light"] .change-settings-detail-card,
+body.theme-light .change-settings-detail-card,
+body.change-theme-light .change-settings-detail-card{
+  background:rgba(255,255,255,.82);
+  box-shadow:0 18px 42px rgba(31,53,38,.08),inset 0 1px 0 rgba(255,255,255,.9);
+}
+[data-theme="light"] .change-settings-profile-avatar i,
+body.theme-light .change-settings-profile-avatar i,
+body.change-theme-light .change-settings-profile-avatar i{
+  border-color:#f4f7f0;
+}
+[data-theme="light"] .change-settings-save-pill,
+[data-theme="light"] .change-health-pill,
+body.theme-light .change-settings-save-pill,
+body.theme-light .change-health-pill,
+body.change-theme-light .change-settings-save-pill,
+body.change-theme-light .change-health-pill{
+  background:rgba(255,255,255,.82);
+  color:#334139;
+}
+
+@media(max-width:980px){
+  body.change-settings-premium-open #side-panel{
+    left:0!important;
+  }
+  .change-settings-premium{
+    padding:18px 18px 88px;
+  }
+  .change-settings-page-head{
+    margin-bottom:16px;
+  }
+  .change-settings-page-title{
+    font-size:24px;
+  }
+  .change-settings-save-pill{
+    display:none;
+  }
+  .change-settings-profile-card{
+    min-height:0;
+    padding:18px;
+    border-radius:24px;
+    align-items:flex-start;
+    flex-direction:column;
+    gap:18px;
+  }
+  .change-settings-profile-left{
+    gap:16px;
+  }
+  .change-settings-profile-avatar{
+    width:68px;
+    height:68px;
+  }
+  .change-settings-profile-name{
+    font-size:21px;
+  }
+  .change-settings-profile-right{
+    width:100%;
+    min-width:0;
+    border-left:0;
+    border-top:1px solid var(--b1);
+    padding:16px 0 0;
+    align-items:flex-start;
+  }
+  .change-settings-workspace{
+    grid-template-columns:1fr;
+    gap:16px;
+  }
+  .change-settings-nav-grid{
+    display:flex;
+    overflow-x:auto;
+    gap:10px;
+    padding:1px 0 8px;
+    scrollbar-width:none;
+  }
+  .change-settings-nav-grid::-webkit-scrollbar{
+    display:none;
+  }
+  .change-settings-nav-card{
+    min-width:210px;
+    min-height:94px;
+    grid-template-columns:42px minmax(0,1fr);
+    padding:14px;
+    border-radius:20px;
+  }
+  .change-settings-nav-icon{
+    width:42px;
+    height:42px;
+    border-radius:15px;
+    font-size:18px;
+  }
+  .change-settings-nav-arrow{
+    display:none;
+  }
+  .change-settings-detail-card{
+    border-radius:24px;
+  }
+  .change-settings-detail-head{
+    padding:18px 18px 12px;
+  }
+  .change-settings-detail-title{
+    font-size:20px;
+  }
+  .change-settings-detail-card .change-settings-tab-shell{
+    padding:12px 14px 0;
+  }
+  .change-settings-detail-card .change-settings-pane{
+    padding:0 14px 14px;
+  }
+}
+
+@media(max-width:700px){
+  body.change-settings-premium-open #side-panel{
+    top:0!important;
+    bottom:64px!important;
+    height:auto!important;
+  }
+  .change-settings-premium{
+    padding:16px 14px 24px;
+  }
+  .change-settings-page-title{
+    font-size:22px;
+  }
+  .change-settings-profile-card{
+    margin-bottom:18px;
+  }
+  .change-settings-profile-sub{
+    font-size:12px;
+  }
+  .change-settings-nav-card{
+    min-width:190px;
+  }
+  .change-settings-detail-card .change-feature-head{
+    align-items:flex-start;
+  }
+  .change-settings-detail-card .change-feature-control{
+    margin-left:auto;
+  }
+}

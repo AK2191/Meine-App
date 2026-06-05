@@ -274,11 +274,19 @@ function getGroupPoints(){
 window.renderGroupGoal = function(){
   const existing = document.getElementById('group-goal-card');
   if(existing) existing.remove();
+  document.querySelectorAll('.challenge-hero-metric-card').forEach(function(el){ el.remove(); });
 
   const goal = getGroupGoal();
   const points = getGroupPoints();
   const pct = Math.min(100, Math.round((points / goal.target) * 100));
   const done = points >= goal.target;
+  const today = (typeof window.todayKey === 'function') ? window.todayKey() : new Date().toISOString().slice(0,10);
+  const currentId = (typeof window.getCurrentPlayerId === 'function') ? window.getCurrentPlayerId() : '';
+  const myTodayPoints = (window.challengeCompletions||[])
+    .filter(function(c){ return String(c.date||'').slice(0,10) === today && (!currentId || c.playerId === currentId); })
+    .reduce(function(sum,c){ return sum + (parseInt(c.points,10)||0); }, 0);
+  const myDoneCount = (window.challengeCompletions||[])
+    .filter(function(c){ return String(c.date||'').slice(0,10) === today && (!currentId || c.playerId === currentId); }).length;
 
   // Ziel-Karte ins Dashboard einfügen
   const dashBoard = document.querySelector('.challenge-card-head')?.parentElement ||
@@ -317,6 +325,22 @@ window.renderGroupGoal = function(){
   const challengeLayout = document.querySelector('.challenge-layout');
   if(challengeLayout){
     challengeLayout.insertBefore(card, challengeLayout.firstChild);
+
+    const metricToday = document.createElement('div');
+    metricToday.className = 'challenge-hero-metric-card challenge-hero-metric-today';
+    metricToday.innerHTML = '<div class="challenge-hero-metric-icon">◎</div><div class="challenge-hero-metric-label">Heute</div><div class="challenge-hero-metric-value">'+myTodayPoints+' P</div><div class="challenge-hero-metric-sub">'+(myDoneCount ? myDoneCount+' erledigt' : 'noch nichts erledigt')+'</div>';
+
+    const metricTarget = document.createElement('div');
+    metricTarget.className = 'challenge-hero-metric-card challenge-hero-metric-target';
+    metricTarget.innerHTML = '<div class="challenge-hero-metric-icon">👥</div><div class="challenge-hero-metric-label">Team-Ziel</div><div class="challenge-hero-metric-value">'+goal.target+' P</div><div class="challenge-hero-metric-sub">diese Woche</div>';
+
+    const metricMood = document.createElement('div');
+    metricMood.className = 'challenge-hero-metric-card challenge-hero-metric-mood';
+    metricMood.innerHTML = '<div class="challenge-hero-metric-icon">⚡</div><div class="challenge-hero-metric-label">Motivation</div><div class="challenge-hero-metric-value">Anfeuern möglich</div><div class="challenge-hero-metric-sub">Team braucht Schub</div>';
+
+    challengeLayout.insertBefore(metricMood, card.nextSibling);
+    challengeLayout.insertBefore(metricTarget, card.nextSibling);
+    challengeLayout.insertBefore(metricToday, card.nextSibling);
   }
 };
 

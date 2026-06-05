@@ -1,309 +1,379 @@
-/* Change App · Dashboard · Events & Anzeige
- * Aus index.html extrahiert — Code unverändert
- * NICHT direkt bearbeiten — stattdessen in die passende core/ oder features/ Datei
+/* Change App · Dashboard · Premium Tages-Hub
+ * Version 0.1.0054
+ * UI-only: baut das Dashboard neu auf, ohne Kalender-, Challenge-, Sync- oder Firebase-Logik zu ändern.
  */
-
-/* ── change-dashboard-event-fix ── */
 (function(){
   'use strict';
-  const pad = n => String(n).padStart(2,'0');
-  const keyOf = d => { const x = d instanceof Date ? d : new Date(String(d)+'T12:00:00'); return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate()); };
-  const addDay = (k,n) => { const d = new Date(k+'T12:00:00'); d.setDate(d.getDate()+n); return keyOf(d); };
-  const todayKey = () => keyOf(new Date());
 
-  /* ==== Vollständige getAllEvents mit endDate, startDate, title ==== */
-  window.getAllEvents = function(){
-    const out = [], seen = new Set();
-    function maybeBirthday(ev){
-      try{
-        if(window.ChangeBirthdays && window.ChangeBirthdays.enabled && window.ChangeBirthdays.enabled() && window.ChangeBirthdayParser){
-          const parsed = window.ChangeBirthdayParser.parseEvent(ev);
-          if(parsed) return window.ChangeBirthdayParser.toCalendarEvent(parsed, parsed.date);
-        }
-      }catch(e){}
-      return ev;
-    }
-    function add(ev){
-      ev = maybeBirthday(ev);
-      if(!ev || !ev.date) return;
-      const k = ev.source === 'birthday' ? 'b:'+ev.id : (ev.googleEventId ? 'g:'+ev.googleEventId : 'l:'+ev.id);
-      if(seen.has(k)) return; seen.add(k);
-      out.push(ev);
-    }
-    // Lokale Termine
-    try{ const _localEvs=window.events||(typeof events!=='undefined'?events:[]); (Array.isArray(_localEvs)?_localEvs:[]).forEach(add); }catch(e){}
-    // Google-Termine mit vollständiger end-Date-Auflösung
-    try{
-      (Array.isArray(window.gEvents) ? window.gEvents : []).forEach(ge => {
-        if(!ge) return;
-        const title = ge.summary || ge.title || '(Kein Titel)';
-        let startDate = '', endDate = '', time = '', endTime = '', allDay = false;
-        if(ge.start && ge.start.date){
-          startDate = String(ge.start.date).slice(0,10);
-          allDay = true;
-        } else if(ge.start && ge.start.dateTime){
-          startDate = String(ge.start.dateTime).slice(0,10);
-          try{ time = new Date(ge.start.dateTime).toTimeString().slice(0,5); }catch(e){}
-        }
-        if(ge.end && ge.end.date){
-          // Google all-day end is exclusive → subtract 1 day
-          endDate = addDay(String(ge.end.date).slice(0,10), -1);
-          if(endDate < startDate) endDate = startDate;
-        } else if(ge.end && ge.end.dateTime){
-          endDate = String(ge.end.dateTime).slice(0,10);
-          try{ endTime = new Date(ge.end.dateTime).toTimeString().slice(0,5); }catch(e){}
-        } else {
-          endDate = startDate;
-        }
-        if(!startDate) return;
-        const id = String(ge.id||'');
-        add({
-          id: id.startsWith('g_') ? id : 'g_'+id,
-          googleEventId: id,
-          title, date: startDate, startDate, endDate,
-          time, endTime, allDay, color:'blue',
-          type:'meeting', desc: ge.description||'',
-          source:'google', notifDaysBefore: 1
-        });
-      });
-    }catch(e){}
-    return out;
-  };
+  var VERSION = '0.1.0054';
+  var DAY = 86400000;
+  var styleInstalled = false;
 
-  /* ==== Dashboard: Heute-Block berechnet korrekt aus startDate/endDate ==== */
-  function evStartK(e){ return String(e.startDate||e.date||'').slice(0,10); }
-  function evEndK(e)  { return String(e.endDate||e.date||evStartK(e)||'').slice(0,10); }
-  function evTitle(e) { return String(e.title||e.summary||e.name||'Termin').replace(/\bZeitraum\b\s*:?/gi,'').replace(/\s{2,}/g,' ').trim(); }
-  function evTime(e)  { if(e.allDay || (!e.time && !e.endTime)) return ''; return e.time ? (e.endTime && e.endTime!==e.time ? e.time+' – '+e.endTime+' Uhr' : e.time+' Uhr') : ''; }
-  window.evTime = evTime;
-  function fmtShort(k){ try{ const _s=new Date(k+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}); return _s.endsWith('.')?_s.slice(0,-1):_s; }catch(e){ return k; } }
-  function diffDays(k){ return Math.round((new Date(k+'T12:00:00') - new Date(todayKey()+'T12:00:00'))/86400000); }
-
-  /* Feiertage für nächste 90 Tage */
-  function upcomingHolidays(limitDays){
-    const out = [];
-    if(typeof window.getHolidaysForDate !== 'function') return out;
-    const td = todayKey();
-    for(let i=0; i<=limitDays; i++){
-      const k = addDay(td, i);
-      try{ (window.getHolidaysForDate(k)||[]).forEach(h => out.push({kind:'holiday',date:k,start:k,end:k,name:h.name||h.title||'Feiertag'})); }catch(e){}
-    }
-    return out;
-  }
-
-  function buildCalRows(){
-    const td = todayKey();
-    const limit = addDay(td, 90);
-
-    // Events die heute oder in Zukunft aktiv sind (end >= today, start <= limit)
-    const evs = window.getAllEvents()
-      .filter(e => evEndK(e) >= td && evStartK(e) <= limit)
-      .sort((a,b) => evStartK(a).localeCompare(evStartK(b)));
-
-    // Deduplizieren
-    const seen = new Set();
-    const uniqueEvs = evs.filter(e => {
-      const k = (e.googleEventId ? 'g:'+e.googleEventId : 'l:'+(e.id||'')) + '|' + evStartK(e) + '|' + evEndK(e);
-      if(seen.has(k)) return false; seen.add(k); return true;
+  function $(id){ return document.getElementById(id); }
+  function esc(value){
+    return String(value == null ? '' : value).replace(/[&<>"'`]/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c];
     });
-
-    // Feiertage
-    const holidays = upcomingHolidays(90);
-
-    // Alles zusammen sortieren
-    const combined = [];
-    uniqueEvs.forEach(e => combined.push({kind:'event', date: evStartK(e) < td ? td : evStartK(e), start: evStartK(e), end: evEndK(e), ev: e}));
-    holidays.forEach(h => combined.push(h));
-    combined.sort((a,b) => a.date.localeCompare(b.date) || (a.kind==='holiday' ? -1 : 1));
-
-    // Deduplizieren nach key
-    const rowSeen = new Set();
-    const rows = combined.filter(r => {
-      const k = r.kind+'|'+r.date+'|'+(r.name || evTitle(r.ev||{}));
-      if(rowSeen.has(k)) return false; rowSeen.add(k); return true;
-    }).slice(0, 12);
-
-    return {rows, td};
   }
-
-  function renderDashboard(){
-    const grid = document.getElementById('dash-grid');
-    if(!grid) return;
-
-    const {rows, td} = buildCalRows();
-    const todayRows = rows.filter(r => r.kind === 'event' ? (r.start <= td && r.end >= td) : r.date === td);
-    const upcomingRows = rows.filter(r => r.kind === 'event' ? r.start > td : r.date > td);
-
-    /* Heute-Block */
-    const todayDateFmt = new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
-    let todayHtml = '';
-    if(!todayRows.length){
-      todayHtml = `<div class="dash-today-free">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:15px;height:15px;stroke-width:2;opacity:.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        Heute keine Termine vorhanden
-      </div>`;
-    } else {
-      todayRows.forEach(r => {
-        if(r.kind === 'holiday'){
-          todayHtml += `<div class="dash-row dash-today-row" onclick="setMainView('calendar')">
-            <div class="dash-row-icon" style="background:var(--amb-d)">🎉</div>
-            <div class="dash-row-body"><div class="dash-row-title" style="font-weight:800;color:var(--acc)">${r.name}</div><div class="dash-row-sub">Feiertag</div></div>
-            <span class="dash-row-badge badge-green">Heute</span>
-          </div>`;
-        } else {
-          const ev = r.ev;
-          const isRange = r.start !== r.end;
-          const sub = isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : (ev.time ? (ev.time+(ev.endTime&&ev.endTime!==ev.time?' – '+ev.endTime:'')+' Uhr') : 'Ganztägig');
-          const colBg = ev.color==='red'?'var(--red-d)':ev.color==='green'?'var(--grn-d)':ev.color==='amber'?'var(--amb-d)':ev.color==='purple'?'var(--pur-d)':'var(--acc-d)';
-          const evIcon = ev.type === 'birthday' ? '🎂' : '📅';
-          todayHtml += `<div class="dash-row dash-today-row" onclick="setMainView('calendar')">
-            <div class="dash-row-icon" style="background:${colBg}">${evIcon}</div>
-            <div class="dash-row-body"><div class="dash-row-title" style="font-weight:800;color:var(--acc)">${evTitle(ev)}</div><div class="dash-row-sub">${sub}</div></div>
-            <span class="dash-row-badge badge-green">${isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : 'Heute'}</span>
-          </div>`;
-        }
-      });
-    }
-
-    /* Demnächst-Block */
-    let upcomingHtml = '';
-    if(upcomingRows.length){
-      upcomingHtml = `<div class="dash-section-divider">Demnächst</div>`;
-      upcomingRows.slice(0,6).forEach(r => {
-        if(r.kind === 'holiday'){
-          const d = diffDays(r.date);
-          upcomingHtml += `<div class="dash-row" onclick="setMainView('calendar')">
-            <div class="dash-row-icon" style="background:var(--amb-d)">🎉</div>
-            <div class="dash-row-body"><div class="dash-row-title">${r.name}</div><div class="dash-row-sub">Feiertag</div></div>
-            <span class="dash-row-badge badge-amber">${d===1?'Morgen':fmtShort(r.date)}</span>
-          </div>`;
-        } else {
-          const ev = r.ev;
-          const isRange = r.start !== r.end;
-          const badge = isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : (diffDays(r.start)===1 ? 'Morgen' : fmtShort(r.start));
-          const bClass = diffDays(r.start)<=1 ? 'badge-red' : diffDays(r.start)<=3 ? 'badge-amber' : 'badge-blue';
-          const sub = isRange ? fmtShort(r.start)+' – '+fmtShort(r.end) : (ev.time ? (ev.time+(ev.endTime&&ev.endTime!==ev.time?' – '+ev.endTime:'')+' Uhr') : 'Ganztägig');
-          const colBg = ev.color==='red'?'var(--red-d)':ev.color==='green'?'var(--grn-d)':ev.color==='amber'?'var(--amb-d)':ev.color==='purple'?'var(--pur-d)':'var(--acc-d)';
-          const evIcon = ev.type === 'birthday' ? '🎂' : '📅';
-          upcomingHtml += `<div class="dash-row" onclick="setMainView('calendar')">
-            <div class="dash-row-icon" style="background:${colBg}">${evIcon}</div>
-            <div class="dash-row-body"><div class="dash-row-title">${evTitle(ev)}</div><div class="dash-row-sub">${sub}</div></div>
-            <span class="dash-row-badge ${bClass}">${badge}</span>
-          </div>`;
-        }
-      });
-    }
-
-    /* Kalender-Karte zusammenbauen */
-    const friseurHtml = (typeof window.getFriseurRowHtml==='function') ? window.getFriseurRowHtml() : '';
-    const birthdayHtml = (typeof window.getBirthdayRowHtml==='function') ? window.getBirthdayRowHtml() : '';
-    const urlaubHtml  = (typeof window.getUrlaubRowHtml==='function')  ? window.getUrlaubRowHtml()  : '';
-    const calCardBody = `<div class="db-section">Heute &nbsp;·&nbsp; ${todayDateFmt}</div>${todayHtml}${upcomingHtml || (!todayRows.length ? '<div class="dash-empty">Keine Termine in den nächsten 90 Tagen</div>' : '')}${friseurHtml}${birthdayHtml}${urlaubHtml}`;
-
-    /* Challenges & Mitspieler */
-    let chHtml = '';
-    try{
-      const td2 = todayKey();
-      const me = String((window.userInfo||{}).email||'').toLowerCase();
-      const doneIds = new Set((window.challengeCompletions||[]).filter(c=>String(c.date||'').slice(0,10)===td2&&String(c.playerId||c.userEmail||c.email||'').toLowerCase()===me).map(c=>String(c.challengeId)));
-      const isOptionalChallenge = c => !!(c && (c.optional === true || c._optional === true || /^opt_/i.test(String(c.id||''))));
-      const isChallengeDueToday = c => {
-        if(!c || c.active === false || isOptionalChallenge(c)) return false;
-        const rec = String(c.recurrence || '').toLowerCase();
-        const dk = String(c.generatedFor || c.date || c.startDate || '').slice(0,10);
-        if(rec === 'daily') return !dk || dk <= td2;
-        return !dk || dk === td2;
-      };
-      const pending = (typeof window.getOpenChallengesForDashboard === 'function')
-        ? window.getOpenChallengesForDashboard()
-        : (window.challenges||[]).filter(c=>c&&isChallengeDueToday(c)&&!doneIds.has(String(c.id)));
-      chHtml = pending.map(c=>`<div class="dash-row" onclick="setMainView('challenges')">
-        <div class="dash-row-icon" style="background:var(--acc-d)">${c.icon||'🏆'}</div>
-        <div class="dash-row-body"><div class="dash-row-title">${c.title||c.name||'Challenge'}</div><div class="dash-row-sub">${parseInt(c.points,10)||0} Punkte</div></div>
-        <span class="dash-row-badge badge-amber">offen</span>
-      </div>`).join('') || '<div class="dash-empty">Alle Challenges heute erledigt ✓</div>';
-    }catch(e){ chHtml = '<div class="dash-empty">Keine Challenges</div>'; }
-
-    let plHtml = '';
-    try{
-      const players = (typeof window.getVisibleContestPlayers==='function' ? window.getVisibleContestPlayers() : (window.challengePlayers||[])).slice(0,4);
-      const me = String((window.userInfo||{}).email||'').toLowerCase();
-      plHtml = players.map((p,i) => {
-        const id = String(p.email||p.id||'').toLowerCase();
-        const st = typeof window.getPlayerPointSummary==='function' ? window.getPlayerPointSummary(id) : {todayPoints:0,totalPoints:0};
-        const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);
-        return `<div class="dash-row" onclick="setMainView('challenges')">
-          <div class="dash-row-icon" style="background:var(--amb-d)">${medal}</div>
-          <div class="dash-row-body"><div class="dash-row-title">${p.name||p.email||'Mitspieler'}${id===me?' · Du':''}</div><div class="dash-row-sub">Heute ${st.todayPoints||0} P · Gesamt ${st.totalPoints||0} P</div></div>
-          <span class="dash-row-badge badge-green">${st.totalPoints||0} P</span>
-        </div>`;
-      }).join('') || '<div class="dash-empty">Noch keine Mitspieler</div>';
-    }catch(e){ plHtml = '<div class="dash-empty">Noch keine Mitspieler</div>'; }
-
-    // Fill Kalender sub-label
-    const _todaySub=document.getElementById('dash-today-sub');
-    if(_todaySub) _todaySub.textContent=todayDateFmt;
-
-    grid.innerHTML = `
-      <div class="db-card">
-        <div class="db-head">
-          <div class="db-title">📅 Kalender</div>
-
-        </div>
-        <div class="db-body">${calCardBody}</div>
-      </div>
-      <div class="db-card">
-        <div class="db-head">
-          <div class="db-title">🏆 Challenges</div>
-        </div>
-        <div class="db-body">
-          <div class="db-section">Heute offen</div>${chHtml}
-          <div class="db-section" style="border-top:1px solid var(--b1)">Rangliste</div>${plHtml}
-        </div>
-      </div>`;
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function dateKey(value){
+    if(value instanceof Date) return value.getFullYear()+'-'+pad(value.getMonth()+1)+'-'+pad(value.getDate());
+    if(value) return String(value).slice(0,10);
+    return dateKey(new Date());
   }
-
-  /* Override buildDashboard mit eigenem Renderer */
-  const _buildDashboard = window.buildDashboard;
-  function myBuildDashboard(){
-    /* Greeting */
+  function parseDate(key){ return new Date(String(key || dateKey(new Date())).slice(0,10)+'T12:00:00'); }
+  function addDays(key, amount){ var d = parseDate(key); d.setDate(d.getDate() + amount); return dateKey(d); }
+  function diffDays(key){ return Math.round((parseDate(key).getTime() - parseDate(dateKey(new Date())).getTime()) / DAY); }
+  function fmtShort(key){
+    try{ return parseDate(key).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}).replace(/\.$/,''); }
+    catch(e){ return String(key || ''); }
+  }
+  function fmtWeekdayDate(key){
+    try{ return parseDate(key).toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'}); }
+    catch(e){ return String(key || ''); }
+  }
+  function dayLabel(key){
+    var d = diffDays(key);
+    if(d === 0) return 'Heute';
+    if(d === 1) return 'Morgen';
+    if(d === 2) return 'Übermorgen';
+    if(d > 0) return 'In '+d+' Tagen';
+    return 'Heute';
+  }
+  function titleOf(event){ return String((event && (event.title || event.summary || event.name)) || 'Termin').trim() || 'Termin'; }
+  function startOf(event){
+    if(!event) return '';
+    if(event.startDate || event.date || event.dateKey) return dateKey(event.startDate || event.date || event.dateKey);
+    if(event.start && (event.start.date || event.start.dateTime)) return dateKey(event.start.date || event.start.dateTime);
+    return '';
+  }
+  function endOf(event){
+    if(!event) return '';
+    var start = startOf(event);
+    var end = event.endDate || event.toDate || event.untilDate || event.dateEnd || event.date || event.startDate || '';
+    if(!end && event.end && event.end.date) end = addDays(dateKey(event.end.date), -1);
+    if(!end && event.end && event.end.dateTime) end = dateKey(event.end.dateTime);
+    end = dateKey(end || start);
+    if(!end || (start && end < start)) end = start;
+    return end;
+  }
+  function timeOf(event){
+    if(event && event.time) return String(event.time).slice(0,5);
+    if(event && event.start && event.start.dateTime){ try{ return new Date(event.start.dateTime).toTimeString().slice(0,5); }catch(e){} }
+    return '';
+  }
+  function endTimeOf(event){
+    if(event && event.endTime) return String(event.endTime).slice(0,5);
+    if(event && event.end && event.end.dateTime){ try{ return new Date(event.end.dateTime).toTimeString().slice(0,5); }catch(e){} }
+    return '';
+  }
+  function timeLabel(event){
+    var start = timeOf(event), end = endTimeOf(event);
+    if(start && end && start !== end) return start+' – '+end;
+    if(start) return start;
+    return 'Ganztägig';
+  }
+  function locationOf(event){ return String((event && (event.location || event.place || event.venue)) || '').trim(); }
+  function eventIcon(event){
+    var type = String((event && event.type) || '').toLowerCase();
+    if(type === 'birthday' || (event && event.source === 'birthday')) return '🎁';
+    if(type.indexOf('hair') >= 0 || /friseur/i.test(titleOf(event))) return '✂️';
+    if(event && (event.source === 'google' || String(event.id || '').indexOf('g_') === 0)) return 'G';
+    return '📅';
+  }
+  function eventTone(event){
+    var color = String((event && event.color) || 'green').toLowerCase();
+    if(['blue','amber','red','purple','green'].indexOf(color) >= 0) return color;
+    if(event && (event.source === 'google' || String(event.id || '').indexOf('g_') === 0)) return 'blue';
+    return 'green';
+  }
+  function allEvents(){
+    if(window.ChangeCalendarModel && window.ChangeCalendarModel.allEvents){
+      try{ return window.ChangeCalendarModel.allEvents() || []; }catch(e){}
+    }
+    if(typeof window.getAllEvents === 'function'){
+      try{ return window.getAllEvents() || []; }catch(e){}
+    }
+    var out = [];
+    try{ (Array.isArray(window.events) ? window.events : []).forEach(function(e){ out.push(e); }); }catch(e){}
     try{
-      const h = document.getElementById('dash-greeting'), s = document.getElementById('dash-sub');
-      if(h){ const hr=new Date().getHours(), name=((window.userInfo||{}).name||'').split(' ')[0]; h.textContent=(hr<12?'Guten Morgen':hr<17?'Guten Tag':'Guten Abend')+(name?', '+name:''); }
-      if(s) s.textContent = new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+      (Array.isArray(window.gEvents) ? window.gEvents : []).forEach(function(ge){
+        if(!ge) return;
+        var s = startOf(ge);
+        if(!s) return;
+        out.push(Object.assign({}, ge, {id:String(ge.id || '').indexOf('g_') === 0 ? ge.id : 'g_'+(ge.id || s+'_'+titleOf(ge)), title:titleOf(ge), date:s, startDate:s, endDate:endOf(ge), time:timeOf(ge), endTime:endTimeOf(ge), color:'blue', source:'google'}));
+      });
     }catch(e){}
-    renderDashboard();
+    return out;
   }
-  /* Sofort + nach Firebase-Load feuern — eliminiert die Race-Condition */
-  myBuildDashboard.__eventFix = true;
-  window.buildDashboard = myBuildDashboard;
-  window.buildDashCards = myBuildDashboard;
-
-  // Sofortiger erster Aufruf (überschreibt STEP7's sofortige Zuweisung)
-  if (document.readyState !== 'loading') {
-    myBuildDashboard();
-  } else {
-    document.addEventListener('DOMContentLoaded', myBuildDashboard, {once: true});
+  function dedupEvents(list){
+    var seen = new Set();
+    return (list || []).filter(function(event){
+      var s = startOf(event), e = endOf(event);
+      if(!s) return false;
+      var key = (event.googleEventId ? 'g:'+event.googleEventId : String(event.id || titleOf(event)))+'|'+s+'|'+e+'|'+timeOf(event);
+      if(seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   }
-
-  // Erneut nach Firebase / Google-Kalender-Load
-  [300, 1500, 4000, 6500].forEach(ms => setTimeout(() => {
-    window.buildDashboard = myBuildDashboard;
-    window.buildDashCards = myBuildDashboard;
-    if((window.currentMainView||'dashboard') === 'dashboard') myBuildDashboard();
-  }, ms));
-  // Also permanently wrap setMainView so dashboard always uses our version
-  (function(){
-    const _origSMV = window.setMainView;
-    if(typeof _origSMV === 'function' && !_origSMV.__dbPatched) {
-      window.setMainView = function(v, fr) {
-        window.buildDashboard = myBuildDashboard;
-        window.buildDashCards = myBuildDashboard;
-        return _origSMV.apply(this, arguments);
-      };
-      window.setMainView.__dbPatched = true;
+  function eventsForRange(from, to){
+    return dedupEvents(allEvents()).filter(function(event){
+      return startOf(event) <= to && endOf(event) >= from;
+    }).sort(function(a,b){
+      var ra = startOf(a), rb = startOf(b);
+      return ra.localeCompare(rb) || (timeOf(a) || '99:99').localeCompare(timeOf(b) || '99:99') || titleOf(a).localeCompare(titleOf(b));
+    });
+  }
+  function todayEvents(){ var td = dateKey(new Date()); return eventsForRange(td, td); }
+  function nextEvent(){
+    var td = dateKey(new Date());
+    return eventsForRange(td, addDays(td, 60)).filter(function(event){
+      return endOf(event) >= td;
+    })[0] || null;
+  }
+  function todayChallenges(){
+    try{
+      if(typeof window.getOpenChallengesForDashboard === 'function') return window.getOpenChallengesForDashboard() || [];
+    }catch(e){}
+    var td = dateKey(new Date());
+    var me = String((window.userInfo || {}).email || '').toLowerCase();
+    var done = new Set((window.challengeCompletions || []).filter(function(c){
+      return dateKey(c.date || c.completedDate || c.createdAt) === td && String(c.playerId || c.userEmail || c.email || '').toLowerCase() === me;
+    }).map(function(c){ return String(c.challengeId); }));
+    function optional(c){ return !!(c && (c.optional === true || c._optional === true || /^opt_/i.test(String(c.id || '')))); }
+    function due(c){
+      if(!c || c.active === false || optional(c)) return false;
+      var generated = String(c.generatedFor || c.date || c.startDate || '').slice(0,10);
+      var rec = String(c.recurrence || '').toLowerCase();
+      if(rec === 'daily') return !generated || generated <= td;
+      return !generated || generated === td;
     }
-  })();
-
+    return (window.challenges || []).filter(function(c){ return due(c) && !done.has(String(c.id)); });
+  }
+  function playerKey(player){ return String((player && (player.email || player.id || player.playerId)) || '').toLowerCase(); }
+  function playerStats(id){
+    try{ if(typeof window.getPlayerPointSummary === 'function') return window.getPlayerPointSummary(id) || {todayPoints:0,totalPoints:0,completedToday:0}; }catch(e){}
+    return {todayPoints:0,totalPoints:0,completedToday:0};
+  }
+  function players(){
+    try{ if(typeof window.getVisibleContestPlayers === 'function') return window.getVisibleContestPlayers() || []; }catch(e){}
+    return Array.isArray(window.challengePlayers) ? window.challengePlayers : [];
+  }
+  function weatherData(){
+    try{ return window.ChangeWeatherService && window.ChangeWeatherService.getCached ? window.ChangeWeatherService.getCached() : (window.ChangeWeatherStore && window.ChangeWeatherStore.readCache ? window.ChangeWeatherStore.readCache() : null); }catch(e){ return null; }
+  }
+  function weatherSummary(){
+    var data = weatherData();
+    var w = data && data.weather;
+    if(!w) return {icon:'☁️', temp:'--°', text:'Wetter offen', meta:'Standort prüfen'};
+    return {icon:w.icon || '🌦️', temp:(w.temperature != null ? Math.round(Number(w.temperature))+'°' : '--°'), text:w.summary || 'Wetter', meta:(w.forecast && w.forecast[0] ? '↑ '+Math.round(w.forecast[0].max)+'° · ↓ '+Math.round(w.forecast[0].min)+'°' : 'heute')};
+  }
+  function pollenSummary(){
+    var data = weatherData();
+    var p = data && data.pollen;
+    if(!p) return {icon:'🌿', level:'-', text:'Pollen offen', meta:'Profil prüfen', tone:'green'};
+    var items = (p.items || []).slice().sort(function(a,b){ return (b.rank - a.rank) || (b.value - a.value); });
+    var top = items[0];
+    var level = top && top.level === 'high' ? 'Hoch' : top && top.level === 'medium' ? 'Mittel' : top && top.level === 'low' ? 'Niedrig' : 'Ruhig';
+    return {icon:'🌿', level:level, text:top ? top.name+' '+(top.levelLabel || '').trim() : 'keine Belastung', meta:(items.filter(function(x){ return Number(x.value) > 0; }).slice(0,2).map(function(x){ return x.name; }).join(', ') || 'keine Werte'), tone:level === 'Hoch' ? 'red' : level === 'Mittel' ? 'amber' : 'green'};
+  }
+  function vacationSummary(){
+    var txt = 'nicht geplant';
+    var meta = 'Urlaub';
+    try{
+      var rows = [];
+      if(typeof window.getUrlaubRowHtml === 'function'){
+        var tmp = document.createElement('div');
+        tmp.innerHTML = window.getUrlaubRowHtml() || '';
+        rows = Array.prototype.slice.call(tmp.querySelectorAll('*')).map(function(n){ return n.textContent.trim(); }).filter(Boolean);
+        txt = rows.find(function(x){ return /\d+\s*Tage|in\s*\d+\s*Tagen|\d{2}\.\d{2}/i.test(x); }) || txt;
+        meta = rows.find(function(x){ return /Urlaub|Ferien|Reise/i.test(x); }) || meta;
+      }
+    }catch(e){}
+    return {icon:'🌴', text:txt, meta:meta};
+  }
+  function greeting(){
+    var hr = new Date().getHours();
+    var name = String((window.userInfo && window.userInfo.name) || '').split(' ')[0];
+    return (hr < 12 ? 'Guten Morgen' : hr < 17 ? 'Guten Tag' : 'Guten Abend') + (name ? ', '+name : '');
+  }
+  function statusCards(openChallenges, todayCount){
+    var w = weatherSummary();
+    var p = pollenSummary();
+    var v = vacationSummary();
+    return ''+
+      '<button class="dashp-mini-card" onclick="setMainView(\'calendar\')"><span class="dashp-mini-icon">📅</span><span><b>'+todayCount+'</b><small>Termine heute</small></span></button>'+
+      '<button class="dashp-mini-card" onclick="setMainView(\'pollen\')"><span class="dashp-mini-icon">'+esc(p.icon)+'</span><span><b>'+esc(p.level)+'</b><small>'+esc(p.text)+'</small></span></button>'+
+      '<button class="dashp-mini-card" onclick="setMainView(\'calendar\')"><span class="dashp-mini-icon">'+esc(v.icon)+'</span><span><b>'+esc(v.text)+'</b><small>'+esc(v.meta)+'</small></span></button>'+
+      '<button class="dashp-mini-card" onclick="setMainView(\'challenges\')"><span class="dashp-mini-icon">💪</span><span><b>'+openChallenges+'</b><small>Challenges offen</small></span></button>'+
+      '<button class="dashp-mini-card dashp-weather-mini" onclick="setMainView(\'pollen\')"><span class="dashp-mini-icon">'+esc(w.icon)+'</span><span><b>'+esc(w.temp)+'</b><small>'+esc(w.text)+'</small></span></button>';
+  }
+  function timelineHtml(events){
+    if(!events.length) return '<div class="dashp-empty">Heute sind keine Termine geplant.</div>';
+    return events.slice(0,5).map(function(event){
+      var loc = locationOf(event);
+      var isGoogle = event.source === 'google' || String(event.id || '').indexOf('g_') === 0;
+      return '<div class="dashp-event-row tone-'+eventTone(event)+'" onclick="setMainView(\'calendar\')">'
+        + '<div class="dashp-event-icon">'+esc(eventIcon(event))+'</div>'
+        + '<div class="dashp-event-time">'+esc(timeLabel(event))+'</div>'
+        + '<div class="dashp-event-main"><strong>'+esc(titleOf(event))+'</strong><span>'+esc(loc || (isGoogle ? 'Google Kalender' : 'Heute'))+'</span></div>'
+        + (isGoogle ? '<span class="dashp-source-dot">G</span>' : '')
+        + '</div>';
+    }).join('') + '<button class="dashp-link-btn" onclick="setMainView(\'calendar\')">Zum Kalender</button>';
+  }
+  function challengesHtml(list){
+    if(!list.length) return '<div class="dashp-empty">Alle Aufgaben für heute erledigt.</div>';
+    return list.slice(0,4).map(function(c){
+      var title = c.title || c.name || 'Challenge';
+      var points = parseInt(c.points,10) || 0;
+      var diff = c.difficultyLabel || c.difficulty || (points >= 30 ? 'Schwer' : '');
+      return '<div class="dashp-task-row" onclick="setMainView(\'challenges\')">'
+        + '<div class="dashp-task-icon">'+esc(c.icon || '💪')+'</div>'
+        + '<div class="dashp-task-main"><strong>'+esc(title)+'</strong><span>'+esc(diff || 'Heute')+'</span></div>'
+        + '<span class="dashp-points">+'+points+'</span>'
+        + '</div>';
+    }).join('') + '<button class="dashp-link-btn" onclick="setMainView(\'challenges\')">Zu den Challenges</button>';
+  }
+  function playersHtml(){
+    var list = players().slice().sort(function(a,b){ return (playerStats(playerKey(b)).totalPoints || 0) - (playerStats(playerKey(a)).totalPoints || 0); }).slice(0,4);
+    if(!list.length) return '<div class="dashp-empty">Noch keine Mitspieler sichtbar.</div>';
+    var me = String((window.userInfo || {}).email || '').toLowerCase();
+    return list.map(function(p, idx){
+      var id = playerKey(p);
+      var st = playerStats(id);
+      var initials = String(p.name || p.email || '?').trim().slice(0,1).toUpperCase();
+      return '<div class="dashp-player-row" onclick="setMainView(\'challenges\')">'
+        + '<span class="dashp-rank">'+(idx+1)+'</span>'
+        + '<span class="dashp-avatar-small">'+esc(initials)+'</span>'
+        + '<span class="dashp-player-main"><strong>'+esc(p.name || p.email || 'Mitspieler')+(id === me ? ' <em>DU</em>' : '')+'</strong><small>Heute '+(st.todayPoints || 0)+' P · Gesamt '+(st.totalPoints || 0)+' P</small></span>'
+        + '<b class="dashp-score">'+(st.totalPoints || 0)+'</b>'
+        + '</div>';
+    }).join('') + '<button class="dashp-link-btn dashp-cheer" onclick="setMainView(\'challenges\')">Anfeuern vorgeschlagen</button>';
+  }
+  function forecastHtml(){
+    var data = weatherData();
+    var weather = data && data.weather;
+    var days = weather && Array.isArray(weather.forecast) ? weather.forecast.slice(0,7) : [];
+    if(!days.length) return '<div class="dashp-empty">7-Tage-Ausblick noch nicht verfügbar.</div>';
+    var pollen = pollenSummary();
+    return days.map(function(day){
+      var date = day.date || day.day || '';
+      var label = date ? parseDate(date).toLocaleDateString('de-DE',{weekday:'short'}) : '';
+      var max = day.max != null ? Math.round(day.max)+'°' : '--°';
+      var min = day.min != null ? Math.round(day.min)+'°' : '--°';
+      return '<div class="dashp-forecast-row"><span>'+esc(label)+'</span><b>'+esc(fmtShort(date))+'</b><em>'+esc(day.icon || '☀️')+'</em><small>'+max+' / '+min+'</small><strong class="tone-'+esc(pollen.tone)+'">'+esc(pollen.level)+'</strong></div>';
+    }).join('');
+  }
+  function installStyle(){
+    if(styleInstalled || document.getElementById('dashboard-premium-style')) return;
+    styleInstalled = true;
+    var st = document.createElement('style');
+    st.id = 'dashboard-premium-style';
+    st.textContent = `
+      body.change-view-dashboard #content{overflow:auto!important;}
+      body.change-view-dashboard #dashboard-view{max-width:1480px!important;width:100%!important;margin:0 auto!important;padding:0!important;background:transparent!important;}
+      body.change-view-dashboard .dash-hello{display:flex!important;align-items:flex-start!important;justify-content:space-between!important;gap:18px!important;margin:0 0 22px!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;}
+      body.change-view-dashboard .dash-hello h1{margin:0!important;font-size:28px!important;font-weight:950!important;letter-spacing:-.7px!important;line-height:1.05!important;color:var(--t1,#f7fff9)!important;}
+      body.change-view-dashboard .dash-hello p{margin:6px 0 0!important;color:var(--t3,#9aa8a0)!important;font-size:13px!important;font-weight:700!important;}
+      body.change-view-dashboard #kpi-grid{display:none!important;}
+      body.change-view-dashboard #dash-grid{display:grid!important;grid-template-columns:minmax(0,1.15fr) minmax(360px,.85fr)!important;gap:16px!important;align-items:start!important;}
+      .dashp-hero{grid-column:1 / -1;display:grid;grid-template-columns:minmax(0,1.6fr) repeat(4,minmax(160px,.55fr));gap:14px;align-items:stretch;}
+      .dashp-card{border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(13,22,29,.74),rgba(8,15,21,.74));border-radius:22px;box-shadow:0 18px 44px rgba(0,0,0,.20);overflow:hidden;}
+      .dashp-main-hero{position:relative;min-height:178px;padding:28px 30px;background:radial-gradient(circle at 78% 45%,rgba(74,222,128,.18),transparent 28%),linear-gradient(135deg,rgba(19,71,43,.50),rgba(8,15,21,.78));display:flex;justify-content:space-between;gap:18px;}
+      .dashp-eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.12em;font-weight:950;color:#4ade80;margin-bottom:12px;}
+      .dashp-hero-title{font-size:31px;font-weight:950;letter-spacing:-.9px;line-height:1.05;color:#fff;margin-bottom:12px;}
+      .dashp-hero-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+      .dashp-pill{display:inline-flex;align-items:center;gap:7px;padding:8px 11px;border-radius:999px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08);font-size:12px;font-weight:850;color:rgba(244,247,244,.88);}
+      .dashp-next{margin-top:auto;display:flex;align-items:center;gap:10px;color:rgba(244,247,244,.78);font-weight:750;}
+      .dashp-next strong{color:#4ade80;font-weight:950;}
+      .dashp-hero-orb{width:116px;height:116px;border-radius:999px;border:4px solid rgba(74,222,128,.38);display:flex;align-items:center;justify-content:center;align-self:center;box-shadow:0 0 42px rgba(74,222,128,.18), inset 0 0 0 12px rgba(74,222,128,.05);font-size:40px;}
+      .dashp-mini-card{appearance:none;border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(13,22,29,.72),rgba(8,15,21,.74));border-radius:22px;padding:20px 18px;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:18px;color:inherit;min-height:178px;text-align:left;box-shadow:0 18px 44px rgba(0,0,0,.16);cursor:pointer;}
+      .dashp-mini-card:hover{transform:translateY(-1px);border-color:rgba(74,222,128,.22);}
+      .dashp-mini-icon{width:44px;height:44px;border-radius:17px;display:inline-flex;align-items:center;justify-content:center;background:rgba(74,222,128,.12);color:#4ade80;font-size:22px;font-weight:950;}
+      .dashp-mini-card b{display:block;font-size:25px;line-height:1;font-weight:950;color:#fff;margin-bottom:7px;}
+      .dashp-mini-card small{display:block;font-size:12px;font-weight:750;color:rgba(244,247,244,.62);line-height:1.35;}
+      .dashp-section-card{padding:0;}
+      .dashp-card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid rgba(255,255,255,.07);}
+      .dashp-card-title{font-size:17px;font-weight:950;letter-spacing:-.2px;color:#fff;display:flex;align-items:center;gap:9px;}
+      .dashp-card-body{padding:14px 16px 16px;}
+      .dashp-event-row,.dashp-task-row,.dashp-player-row{display:flex;align-items:center;gap:13px;min-height:58px;padding:11px 12px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.035);border-radius:17px;margin-bottom:9px;cursor:pointer;}
+      .dashp-event-row:hover,.dashp-task-row:hover,.dashp-player-row:hover{background:rgba(255,255,255,.055);border-color:rgba(74,222,128,.18);}
+      .dashp-event-icon,.dashp-task-icon{width:38px;height:38px;border-radius:15px;display:flex;align-items:center;justify-content:center;background:rgba(74,222,128,.12);font-size:17px;font-weight:950;flex:0 0 38px;}
+      .dashp-event-row.tone-blue .dashp-event-icon{background:rgba(59,130,246,.13);color:#60a5fa}.dashp-event-row.tone-amber .dashp-event-icon{background:rgba(245,158,11,.14);color:#fbbf24}.dashp-event-row.tone-red .dashp-event-icon{background:rgba(239,68,68,.14);color:#f87171}.dashp-event-row.tone-purple .dashp-event-icon{background:rgba(168,85,247,.14);color:#c084fc}
+      .dashp-event-time{min-width:72px;font-size:16px;font-weight:950;color:#fff;font-variant-numeric:tabular-nums;}
+      .dashp-event-main,.dashp-task-main,.dashp-player-main{min-width:0;flex:1;}
+      .dashp-event-main strong,.dashp-task-main strong,.dashp-player-main strong{display:block;color:#fff;font-size:14px;font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+      .dashp-event-main span,.dashp-task-main span,.dashp-player-main small{display:block;margin-top:3px;color:rgba(244,247,244,.58);font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+      .dashp-source-dot{width:26px;height:26px;border-radius:999px;background:rgba(59,130,246,.13);color:#60a5fa;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:950;}
+      .dashp-points,.dashp-score{display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:28px;border-radius:999px;background:rgba(74,222,128,.13);color:#4ade80;font-size:12px;font-weight:950;}
+      .dashp-rank{width:27px;height:27px;border-radius:10px;background:rgba(245,158,11,.16);color:#fbbf24;display:flex;align-items:center;justify-content:center;font-weight:950;}
+      .dashp-avatar-small{width:34px;height:34px;border-radius:999px;background:rgba(74,222,128,.13);color:#4ade80;display:flex;align-items:center;justify-content:center;font-weight:950;}
+      .dashp-player-main em{display:inline-flex;margin-left:5px;padding:2px 6px;border-radius:999px;background:rgba(74,222,128,.14);color:#4ade80;font-style:normal;font-size:10px;}
+      .dashp-link-btn{width:100%;height:40px;border:0;background:transparent;color:#4ade80;font-weight:900;cursor:pointer;border-radius:14px;margin-top:2px;}
+      .dashp-link-btn:hover{background:rgba(74,222,128,.08);}
+      .dashp-empty{padding:18px 14px;border:1px dashed rgba(255,255,255,.09);border-radius:16px;color:rgba(244,247,244,.58);font-size:13px;font-weight:750;text-align:center;}
+      .dashp-side-stack{display:grid;gap:16px;}
+      .dashp-forecast-row{display:grid;grid-template-columns:34px 60px 34px 1fr auto;gap:10px;align-items:center;padding:9px 2px;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px;}
+      .dashp-forecast-row:last-child{border-bottom:0;}.dashp-forecast-row span{color:rgba(244,247,244,.65);font-weight:850}.dashp-forecast-row b{color:#fff}.dashp-forecast-row small{color:rgba(244,247,244,.66);font-weight:800}.dashp-forecast-row strong{font-weight:950}.tone-red{color:#ff675d!important}.tone-amber{color:#fbbf24!important}.tone-green{color:#4ade80!important}
+      @media(max-width:1180px){.dashp-hero{grid-template-columns:minmax(0,1fr) repeat(2,minmax(160px,.5fr));}.dashp-weather-mini{display:none!important;}body.change-view-dashboard #dash-grid{grid-template-columns:1fr!important;}}
+      @media(max-width:700px){body.change-view-dashboard #content{padding:14px 10px 78px!important;}body.change-view-dashboard #dashboard-view{padding:0!important;}body.change-view-dashboard .dash-hello{display:block!important;margin:0 0 12px!important;padding:0 4px!important;}body.change-view-dashboard .dash-hello h1{font-size:24px!important;}body.change-view-dashboard #dash-grid{display:block!important;}.dashp-hero{display:block;margin-bottom:12px;}.dashp-main-hero{min-height:0;padding:20px;border-radius:22px;margin-bottom:12px;}.dashp-hero-orb{display:none}.dashp-hero-title{font-size:25px}.dashp-hero-meta{gap:7px}.dashp-pill{font-size:11px;padding:7px 9px}.dashp-mini-card{display:inline-flex;width:154px;min-height:118px;margin-right:8px;padding:14px;border-radius:18px;vertical-align:top}.dashp-hero .dashp-mini-card{display:inline-flex}.dashp-hero{white-space:nowrap;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}.dashp-hero::-webkit-scrollbar{display:none}.dashp-mini-card span{white-space:normal}.dashp-mini-icon{width:34px;height:34px;border-radius:13px;font-size:18px}.dashp-mini-card b{font-size:20px}.dashp-mini-card small{font-size:11px}.dashp-card{border-radius:20px;margin-bottom:12px}.dashp-card-head{padding:15px 16px}.dashp-card-title{font-size:16px}.dashp-card-body{padding:12px}.dashp-event-row,.dashp-task-row,.dashp-player-row{min-height:56px;padding:10px;margin-bottom:8px}.dashp-event-time{min-width:58px;font-size:14px}.dashp-event-icon,.dashp-task-icon{width:34px;height:34px;flex-basis:34px}.dashp-forecast-row{grid-template-columns:30px 52px 26px 1fr auto;font-size:12px;gap:7px}.dashp-side-stack{display:block;}}
+      [data-theme="light"] body.change-view-dashboard .dash-hello h1,body.theme-light.change-view-dashboard .dash-hello h1,body.change-theme-light.change-view-dashboard .dash-hello h1{color:#142018!important;}
+      [data-theme="light"] .dashp-card,body.theme-light .dashp-card,body.change-theme-light .dashp-card,[data-theme="light"] .dashp-mini-card,body.theme-light .dashp-mini-card,body.change-theme-light .dashp-mini-card{background:rgba(255,255,255,.78)!important;border-color:rgba(20,35,24,.10)!important;box-shadow:0 18px 38px rgba(31,53,38,.08)!important;}
+      [data-theme="light"] .dashp-main-hero,body.theme-light .dashp-main-hero,body.change-theme-light .dashp-main-hero{background:radial-gradient(circle at 78% 45%,rgba(36,190,91,.16),transparent 32%),linear-gradient(135deg,rgba(235,250,240,.92),rgba(255,255,255,.78))!important;}
+      [data-theme="light"] .dashp-hero-title,[data-theme="light"] .dashp-mini-card b,[data-theme="light"] .dashp-card-title,[data-theme="light"] .dashp-event-main strong,[data-theme="light"] .dashp-task-main strong,[data-theme="light"] .dashp-player-main strong,[data-theme="light"] .dashp-event-time,[data-theme="light"] .dashp-forecast-row b,body.theme-light .dashp-hero-title,body.theme-light .dashp-mini-card b,body.theme-light .dashp-card-title,body.theme-light .dashp-event-main strong,body.theme-light .dashp-task-main strong,body.theme-light .dashp-player-main strong,body.theme-light .dashp-event-time,body.theme-light .dashp-forecast-row b,body.change-theme-light .dashp-hero-title,body.change-theme-light .dashp-mini-card b,body.change-theme-light .dashp-card-title,body.change-theme-light .dashp-event-main strong,body.change-theme-light .dashp-task-main strong,body.change-theme-light .dashp-player-main strong,body.change-theme-light .dashp-event-time,body.change-theme-light .dashp-forecast-row b{color:#142018!important;}
+      [data-theme="light"] .dashp-event-row,[data-theme="light"] .dashp-task-row,[data-theme="light"] .dashp-player-row,body.theme-light .dashp-event-row,body.theme-light .dashp-task-row,body.theme-light .dashp-player-row,body.change-theme-light .dashp-event-row,body.change-theme-light .dashp-task-row,body.change-theme-light .dashp-player-row{background:rgba(255,255,255,.68)!important;border-color:rgba(20,35,24,.08)!important;}
+      [data-theme="light"] .dashp-event-main span,[data-theme="light"] .dashp-task-main span,[data-theme="light"] .dashp-player-main small,[data-theme="light"] .dashp-mini-card small,[data-theme="light"] .dashp-next,body.theme-light .dashp-event-main span,body.theme-light .dashp-task-main span,body.theme-light .dashp-player-main small,body.theme-light .dashp-mini-card small,body.theme-light .dashp-next,body.change-theme-light .dashp-event-main span,body.change-theme-light .dashp-task-main span,body.change-theme-light .dashp-player-main small,body.change-theme-light .dashp-mini-card small,body.change-theme-light .dashp-next{color:#5d6b61!important;}
+      [data-theme="light"] .dashp-card-head,body.theme-light .dashp-card-head,body.change-theme-light .dashp-card-head,[data-theme="light"] .dashp-forecast-row,body.theme-light .dashp-forecast-row,body.change-theme-light .dashp-forecast-row{border-color:rgba(20,35,24,.08)!important;}
+    `;
+    document.head.appendChild(st);
+  }
+  function renderDashboard(){
+    installStyle();
+    var grid = $('dash-grid');
+    if(!grid) return;
+    var today = todayEvents();
+    var next = nextEvent();
+    var open = todayChallenges();
+    var w = weatherSummary();
+    var p = pollenSummary();
+    var sub = $('dash-sub');
+    var head = $('dash-greeting');
+    if(head) head.textContent = 'Dashboard';
+    if(sub) sub.textContent = greeting()+' · '+fmtWeekdayDate(dateKey(new Date()));
+    var nextText = next ? '<span>Nächster Termin</span><strong>'+esc(timeLabel(next))+' · '+esc(titleOf(next))+'</strong>' : '<span>Heute</span><strong>kein nächster Termin</strong>';
+    grid.innerHTML = ''+
+      '<div class="dashp-hero">'
+        + '<section class="dashp-card dashp-main-hero">'
+          + '<div><div class="dashp-eyebrow">Heute auf einen Blick</div><div class="dashp-hero-title">'+esc(greeting())+'</div>'
+          + '<div class="dashp-hero-meta"><span class="dashp-pill">📅 '+today.length+' Termine</span><span class="dashp-pill">'+esc(w.icon)+' '+esc(w.temp)+' '+esc(w.text)+'</span><span class="dashp-pill">🌿 Pollen '+esc(p.level)+'</span><span class="dashp-pill">💪 '+open.length+' offen</span></div>'
+          + '<div class="dashp-next">'+nextText+'</div></div><div class="dashp-hero-orb">📅</div>'
+        + '</section>'
+        + statusCards(open.length, today.length)
+      + '</div>'
+      + '<section class="dashp-card dashp-section-card"><div class="dashp-card-head"><div class="dashp-card-title">📍 Heutige Termine</div></div><div class="dashp-card-body">'+timelineHtml(today)+'</div></section>'
+      + '<section class="dashp-card dashp-section-card"><div class="dashp-card-head"><div class="dashp-card-title">💪 Aufgaben</div></div><div class="dashp-card-body">'+challengesHtml(open)+'</div></section>'
+      + '<div class="dashp-side-stack">'
+        + '<section class="dashp-card dashp-section-card"><div class="dashp-card-head"><div class="dashp-card-title">👥 Mitspieler</div></div><div class="dashp-card-body">'+playersHtml()+'</div></section>'
+        + '<section class="dashp-card dashp-section-card"><div class="dashp-card-head"><div class="dashp-card-title">7-Tage-Ausblick</div></div><div class="dashp-card-body">'+forecastHtml()+'</div></section>'
+      + '</div>';
+  }
+  function buildDashboard(){ renderDashboard(); }
+  buildDashboard.__premiumDashboard = true;
+  window.buildDashboard = buildDashboard;
+  window.buildDashCards = buildDashboard;
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildDashboard, {once:true});
+  else buildDashboard();
+  [250, 900, 1800, 4200, 7000].forEach(function(ms){ setTimeout(function(){ if((window.currentMainView || 'dashboard') === 'dashboard') buildDashboard(); }, ms); });
+  try{
+    var oldSetMainView = window.setMainView;
+    if(typeof oldSetMainView === 'function' && !oldSetMainView.__premiumDashboardWrapped){
+      window.setMainView = function(view){
+        var result = oldSetMainView.apply(this, arguments);
+        if(view === 'dashboard') setTimeout(buildDashboard, 40);
+        return result;
+      };
+      window.setMainView.__premiumDashboardWrapped = true;
+    }
+  }catch(e){}
 })();
-

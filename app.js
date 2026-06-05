@@ -1627,7 +1627,7 @@ document.addEventListener('touchend',e=>{
     const content=document.getElementById('content');
     const div=document.createElement('div');
     div.id='challenges-view';
-    div.innerHTML='<div class="list-header challenge-neo-header"><div><div class="list-title">Challenges</div></div><div class="challenge-view-actions"><button class="btn btn-ghost btn-sm" onclick="resetTodayChallenges()">Heute zurücksetzen</button></div></div><div class="challenge-layout"><div class="challenge-card"><div class="challenge-card-head"><div><div class="challenge-title">Heutige Aufgaben</div><div class="challenge-sub">Ein Klick erledigt eine Challenge und vergibt Punkte</div></div></div><div id="challenges-list"></div></div><div class="leader-card"><div class="leader-card-head"><div><div class="challenge-title">Rangliste</div></div></div><div id="leaderboard-list"></div></div></div>';
+    div.innerHTML='<div class="list-header challenge-neo-header"><div><div class="list-title">Challenges</div></div><div class="challenge-view-actions"><button class="btn btn-ghost btn-sm" onclick="resetTodayChallenges()">Heute zurücksetzen</button></div></div><div class="challenge-layout"><div class="challenge-card"><div class="challenge-card-head"><div><div class="challenge-title">Heutige Aufgaben</div><div class="challenge-sub">Ein Klick erledigt eine Challenge und vergibt Punkte</div></div></div><div id="challenges-list"></div></div><div class="leader-card"><div class="leader-card-head"><div><div class="challenge-title">Team</div></div></div><div id="leaderboard-list"></div></div></div>';
     content.appendChild(div);
   }
   function installChallengeNav(){

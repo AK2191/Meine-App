@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0050 und App-Shell Full-Bleed
+> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0055 und Premium-Einstellungen
 
 ---
 
@@ -90,7 +90,12 @@ Jeder Kalendertag enthält:
 - Ab Version `0.1.0048`: Der Pollen-7-Tage-Ausblick zeigt im Titel nur noch „7-Tage-Ausblick“ ohne Profilzusatz. Einzel- und Mehrfachauswahl nutzen dieselbe ruhige Chip-Darstellung, damit Desktop nicht überladen wirkt und mobil alle ausgewählten Pollen sichtbar bleiben. Pollen-Datenlogik und API bleiben unverändert.
 - Ab Version `0.1.0049`: Die mobile Bottom-Bar wurde stabilisiert, damit aktive Icons beim Tippen nicht mehr optisch hüpfen. Der Avatar zeigt den Online-/Offline-Status wieder mit Ring und Statuspunkt. Challenges nutzt eine ruhigere Header-Aktion für „Heute zurücksetzen“ und der Hintergrund schließt sauberer an die gemeinsame App-Bar an. Keine Änderung an Navigation, Challenge-Logik, Pollen-Datenlogik, Firebase, Sync, Push, Kalenderlogik oder Login.
 - Ab Version `0.1.0050`: Desktop-App-Shell nutzt einen vollflächigen Hintergrund auf `#main-app` für Dashboard, Kalender, Challenges und Pollen. `#content` ist transparent, die seitliche Navigation hat keine harte rechte Border und keinen Schatten mehr, damit im Hellmodus keine getrennten Hintergrundflächen sichtbar sind. Keine Änderung an Navigation, Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik.
+- Ab Version `0.1.0051`: Der mobile Pollen-7-Tage-Ausblick zeigt Datum, Werte-Chips und Mini-Balken wieder gemeinsam mit klareren Zeilentrennern. Die mobile Bottom-Bar hat keine sichtbare Abschlusskante mehr; Pollen-Content schließt ohne Karten-Bottom-Border an. Im Hellmodus wurde der obere App-Hintergrund beruhigt und die Desktop-Seitenleiste erhält eine subtile Trennlinie, damit die Auswahlbar erkennbar bleibt. Keine Änderung an Navigation, Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik.
+- Ab Version `0.1.0052`: Die Desktop-Challenge-Ansicht orientiert sich am neuen Premium-Zielbild: Hero-Karte für Gruppen-Ziel, drei ruhige Statuskarten, Punkte-Kalender darunter und zwei große Spalten für Heutige Aufgaben und Team. Mobil bleibt die Ansicht gestapelt und übersichtlich. Keine Änderung an Challenge-Logik, Auto-Challenges, Sync, Firebase, Login oder Kalenderdaten.
 
+
+- Ab Version `0.1.0054`: Dashboard nutzt einen Premium-Tages-Hub im gleichen Stil wie Kalender/Challenges/Pollen. Desktop zeigt Hero-Karte, Schnellinfos, heutige Termine, Aufgaben, Mitspieler und 7-Tage-Ausblick. Mobil wird die Ansicht gestapelt und nutzt horizontale Schnellinfo-Karten. Bestehende Kalender-, Challenge-, Wetter-/Pollen-, Firebase-, Sync-, Push- und Login-Logik bleibt unverändert; es wird nur die Dashboard-Darstellung neu aufgebaut.
+- Ab Version `0.1.0055`: Einstellungen öffnen als Premium-Workspace im gleichen Kartenstil wie Dashboard, Kalender, Challenges und Pollen. Desktop zeigt Profil-/Statuskarte, Kategorie-Karten und rechts den Detailbereich. Mobil wird die Ansicht gestapelt, Kategorie-Karten werden horizontal scrollbar. Bestehende Schalter, Sync-Regeln, Push, Kalenderoptionen, Challengeoptionen und App-Gesundheitscheck bleiben funktional unverändert; es wird kein Auto-Start eingeführt.
 
 ---
 
@@ -106,7 +111,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0050`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0055`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -277,6 +282,9 @@ firebase deploy --only hosting
 
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
+
+| 2026-06-04 | Version auf `0.1.0052` erhöht; Challenge-Desktop-Ansicht im Premium-Stil aufgebaut: Gruppen-Ziel als Hero, drei Statuskarten, Punkte-Kalender darunter und Aufgaben/Team als zwei große Spalten. Mobile Ansicht bleibt gestapelt und übersichtlich. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik. | ChatGPT |
+| 2026-06-04 | Version auf `0.1.0051` erhöht; mobilen Pollen-7-Tage-Ausblick verdichtet und lesbarer gemacht, Mini-Balken mobil wieder sichtbar, Zeilentrenner klarer. Mobile Bottom-Bar ohne untere Kartenkante, Hellmodus-Hintergrund beruhigt und Desktop-Seitenleiste mit subtiler Trennlinie versehen. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik. | ChatGPT |
 
 | 2026-06-04 | Version auf `0.1.0050` erhöht; Desktop-App-Shell für Dashboard, Kalender, Challenges und Pollen vollflächig gemacht. Der Hintergrund liegt auf der gesamten App statt getrennt im Content, die seitliche Navigation hat keine harte rechte Border und keinen Schatten mehr. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik. | ChatGPT |
 
@@ -883,3 +891,37 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - `#content` ist transparent, damit keine getrennte Hintergrundfläche mit sichtbarer Kante entsteht.
 - Die seitliche Navigation hat im Hellmodus keine harte rechte Border und keinen Schatten mehr.
 - Keine Änderung an Login, Firebase-Autostart, Sync-Start, Push-Permission-Dialog, Kalenderdaten, Pollen-API oder Challenge-Logik.
+
+## Version 0.1.0051
+- Die sichtbare App-Version wurde auf `0.1.0051` erhöht.
+- Der mobile Pollen-7-Tage-Ausblick zeigt Datum, Werte-Chips und Mini-Balken wieder gemeinsam und nutzt klarere Zeilentrenner.
+- Die mobile Ansicht endet ohne sichtbare untere Karten-Border an der gemeinsamen Auswahlleiste.
+- Der Hellmodus-Hintergrund im Desktop wurde ruhiger gesetzt; die seitliche Auswahlbar hat wieder eine subtile Erkennungslinie.
+- Keine Änderung an Navigation, Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik.
+
+
+
+## Version 0.1.0052
+- Die sichtbare App-Version wurde auf `0.1.0052` erhöht.
+- Die Challenge-Desktop-Ansicht wurde in Richtung Premium-Zielbild angepasst: Hero-Karte für das Gruppen-Ziel, drei Statuskarten, Punkte-Kalender darunter und zwei klare Spalten für Heutige Aufgaben und Team.
+- Die mobile Challenge-Ansicht bleibt gestapelt und übersichtlich.
+- Keine Änderung an Challenge-Logik, Auto-Challenges, Sync, Firebase, Login, Push, Kalenderdaten oder Pollen-API.
+
+## Version 0.1.0053
+- Die sichtbare App-Version wurde auf `0.1.0053` erhöht.
+- Kalender wurde im Premium-Stil vorbereitet: Hero/Termin-Übersicht, ruhige Kartenflächen und mobile Stapelung.
+- Öffnen, Erstellen, Speichern, Löschen, Google-Termine und Teilen bleiben funktional unverändert.
+- Keine Änderung an Login, Firebase-Autostart, Sync-Start, Push-Permission-Dialog oder Challenge-Logik.
+
+## Version 0.1.0054
+- Die sichtbare App-Version wurde auf `0.1.0054` erhöht.
+- Dashboard nutzt einen Premium-Tages-Hub im gleichen Stil wie Kalender, Challenges und Pollen.
+- Desktop zeigt Hero-Karte, Schnellinfos, heutige Termine, Aufgaben, Mitspieler und 7-Tage-Ausblick; mobil wird die Ansicht gestapelt und nutzt horizontale Schnellinfo-Karten.
+- Keine Änderung an Kalender-, Challenge-, Wetter-/Pollen-, Firebase-, Sync-, Push- oder Login-Logik.
+
+## Version 0.1.0055
+- Die sichtbare App-Version wurde auf `0.1.0055` erhöht.
+- Einstellungen wurden als Premium-Workspace im gleichen Kartenstil aufgebaut.
+- Desktop zeigt Profil-/Statuskarte, Kategorie-Karten und rechts den Detailbereich; mobil wird die Ansicht gestapelt und die Kategorien bleiben horizontal bedienbar.
+- Bestehende Schalter, Sync-Regeln, Push, Kalenderoptionen, Challengeoptionen und App-Gesundheitscheck bleiben funktional unverändert; es wird kein Auto-Start eingeführt.
+

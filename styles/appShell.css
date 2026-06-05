@@ -1,4 +1,4 @@
-/* Change App · Unified App Shell · v0.1.0050
+/* Change App · Unified App Shell · v0.1.0052
    UI only: gemeinsame Desktop-Sidebar und mobile Bottom-Bar für alle Reiter. */
 
 @media (min-width:701px){
@@ -1141,5 +1141,103 @@ body.change-theme-light.change-view-challenges #challenges-view .challenge-view-
     border-right:0!important;
     box-shadow:none!important;
     outline:0!important;
+  }
+}
+
+
+/* v0.1.0051 · App-Shell Feinschliff: Mobile Abschlusskante, ruhiger Hellmodus, erkennbare Sidebar */
+@media (max-width:700px){
+  body.change-view-dashboard #content,
+  body.change-view-calendar #content,
+  body.change-view-challenges #content,
+  body.change-view-pollen #content{
+    padding-bottom:0!important;
+  }
+  body.change-view-pollen #pollen-view,
+  body.change-view-challenges #challenges-view,
+  body.change-view-dashboard #dashboard-view,
+  body.change-view-calendar #cal-body{
+    padding-bottom:0!important;
+  }
+  body.change-view-pollen #pollen-view .pollen-view-body,
+  body.change-view-pollen #pollen-view .pollen-neo-shell{
+    padding-bottom:0!important;
+    margin-bottom:0!important;
+  }
+  body.change-view-pollen #pollen-view .pollen-neo-forecast-list,
+  body.change-view-challenges .challenge-card,
+  body.change-view-challenges .leader-card,
+  body.change-view-challenges .challenge-week-card{
+    border-bottom:0!important;
+  }
+  body.change-view-dashboard #bottom-nav,
+  body.change-view-calendar #bottom-nav,
+  body.change-view-challenges #bottom-nav,
+  body.change-view-pollen #bottom-nav,
+  body.neo-pollen-shell #bottom-nav{
+    border:0!important;
+    outline:0!important;
+    box-shadow:none!important;
+  }
+}
+@media (min-width:701px){
+  [data-theme="light"] body.change-view-dashboard #app,
+  [data-theme="light"] body.change-view-calendar #app,
+  [data-theme="light"] body.change-view-challenges #app,
+  [data-theme="light"] body.change-view-pollen #app,
+  [data-theme="light"] body.change-view-dashboard #main-app,
+  [data-theme="light"] body.change-view-calendar #main-app,
+  [data-theme="light"] body.change-view-challenges #main-app,
+  [data-theme="light"] body.change-view-pollen #main-app,
+  body[data-theme="light"].change-view-dashboard #app,
+  body[data-theme="light"].change-view-calendar #app,
+  body[data-theme="light"].change-view-challenges #app,
+  body[data-theme="light"].change-view-pollen #app,
+  body[data-theme="light"].change-view-dashboard #main-app,
+  body[data-theme="light"].change-view-calendar #main-app,
+  body[data-theme="light"].change-view-challenges #main-app,
+  body[data-theme="light"].change-view-pollen #main-app,
+  body.theme-light.change-view-dashboard #app,
+  body.theme-light.change-view-calendar #app,
+  body.theme-light.change-view-challenges #app,
+  body.theme-light.change-view-pollen #app,
+  body.theme-light.change-view-dashboard #main-app,
+  body.theme-light.change-view-calendar #main-app,
+  body.theme-light.change-view-challenges #main-app,
+  body.theme-light.change-view-pollen #main-app,
+  body.change-theme-light.change-view-dashboard #app,
+  body.change-theme-light.change-view-calendar #app,
+  body.change-theme-light.change-view-challenges #app,
+  body.change-theme-light.change-view-pollen #app,
+  body.change-theme-light.change-view-dashboard #main-app,
+  body.change-theme-light.change-view-calendar #main-app,
+  body.change-theme-light.change-view-challenges #main-app,
+  body.change-theme-light.change-view-pollen #main-app{
+    background:
+      radial-gradient(circle at 23% 18%,rgba(67,164,92,.075),transparent 34%),
+      linear-gradient(180deg,#f4f7f0,#f4f7f0)!important;
+  }
+  [data-theme="light"] body.change-view-dashboard #header,
+  [data-theme="light"] body.change-view-calendar #header,
+  [data-theme="light"] body.change-view-challenges #header,
+  [data-theme="light"] body.change-view-pollen #header,
+  body[data-theme="light"].change-view-dashboard #header,
+  body[data-theme="light"].change-view-calendar #header,
+  body[data-theme="light"].change-view-challenges #header,
+  body[data-theme="light"].change-view-pollen #header,
+  body.theme-light.change-view-dashboard #header,
+  body.theme-light.change-view-calendar #header,
+  body.theme-light.change-view-challenges #header,
+  body.theme-light.change-view-pollen #header,
+  body.change-theme-light.change-view-dashboard #header,
+  body.change-theme-light.change-view-calendar #header,
+  body.change-theme-light.change-view-challenges #header,
+  body.change-theme-light.change-view-pollen #header{
+    background:linear-gradient(90deg,rgba(255,255,255,.58),rgba(255,255,255,.20) 66%,rgba(255,255,255,0))!important;
+    box-shadow:inset -1px 0 0 rgba(22,38,28,.12)!important;
+  }
+  body.change-view-pollen #pollen-view .list-header,
+  body.change-view-challenges #challenges-view .list-header{
+    padding-top:6px!important;
   }
 }

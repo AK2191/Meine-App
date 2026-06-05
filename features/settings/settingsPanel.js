@@ -484,7 +484,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0050';
+  var APP_VERSION = '0.1.0055';
 
   function appPane(){
     var installed = installedLabel();
@@ -523,10 +523,58 @@
   var currentSettingsTab = 'dashboard';
   var appHealthExpanded = false;
   function tabButton(id, label, active){ return '<button class="change-settings-tab '+(active===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'+label+'</button>'; }
+  function settingsNavCard(id, icon, title, sub, active){
+    return '<button class="change-settings-nav-card '+(active===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'
+      + '<span class="change-settings-nav-icon">'+esc(icon)+'</span>'
+      + '<span class="change-settings-nav-copy"><strong>'+esc(title)+'</strong><small>'+esc(sub)+'</small></span>'
+      + '<span class="change-settings-nav-arrow">›</span>'
+      + '</button>';
+  }
+  function ensurePremiumSettingsCloseBridge(){
+    if(window.__changeSettingsCloseBridge) return;
+    var original = window.closePanel;
+    if(typeof original === 'function'){
+      window.closePanel = function(){
+        try{ document.body && document.body.classList.remove('change-settings-premium-open'); }catch(e){}
+        return original.apply(this, arguments);
+      };
+      window.__changeSettingsCloseBridge = true;
+    }
+  }
   function openSettingsPanel(startTab){
     startTab = ['dashboard','calendar','challenges','sync','app'].indexOf(startTab) >= 0 ? startTab : (currentSettingsTab || 'dashboard');
     currentSettingsTab = startTab;
-    var html = '<div class="change-settings-tab-shell">'
+    ensurePremiumSettingsCloseBridge();
+    try{ document.body && document.body.classList.add('change-settings-premium-open'); }catch(e){}
+    var profile = window.userInfo || {};
+    var name = profile.name || profile.email || 'Change';
+    var first = String(name || 'Change').split(' ')[0] || 'Change';
+    var picture = profile.picture ? '<img src="'+esc(profile.picture)+'" alt="">' : '<span>'+esc(String(first).slice(0,1).toUpperCase())+'</span>';
+    var google = googleStatus();
+    var weather = weatherHealthStatus();
+    var calendarSummary = calendarOptions().showHolidays ? 'Woche · Feiertage an' : 'Woche · Feiertage aus';
+    var dashboardModules = dashboardModuleCount();
+    var nav = settingsNavCard('dashboard','▦','Dashboard',dashboardModules+' Module aktiv',startTab)
+      + settingsNavCard('calendar','□','Kalender',calendarSummary,startTab)
+      + settingsNavCard('challenges','🏆','Challenges',String(getAutoChallengeCount())+' Tagesaufgaben',startTab)
+      + settingsNavCard('sync','↻','Daten & Sync','Manuell · keine Auto-Starts',startTab)
+      + settingsNavCard('app','◐','Darstellung','System · Grün',startTab);
+    var html = '<div class="change-settings-premium">'
+      + '<div class="change-settings-page-head"><div class="change-settings-page-title"><span>⚙︎</span><strong>Einstellungen</strong></div><div class="change-settings-save-pill">✓ Alles gespeichert</div></div>'
+      + '<section class="change-settings-profile-card">'
+      + '<div class="change-settings-profile-left"><div class="change-settings-profile-avatar">'+picture+'<i></i></div><div><div class="change-settings-profile-name">'+esc(name)+'</div><div class="change-settings-profile-sub"><span class="change-google-mark">G</span> '+(google.loggedIn?'Google angemeldet':'Google nicht angemeldet')+'</div></div></div>'
+      + '<div class="change-settings-profile-right"><button class="change-health-pill" type="button" data-settings-tab="app">♡ Gesundheitscheck</button><span>Version '+esc(APP_VERSION)+'</span></div>'
+      + '</section>'
+      + '<div class="change-settings-workspace">'
+      + '<div class="change-settings-nav-grid">'
+      + settingsNavCard('app','👤','Profil & Konto',google.loggedIn?'Google angemeldet':'Nicht angemeldet',startTab)
+      + nav
+      + settingsNavCard('sync','☁','Benachrichtigungen',weather.active?'Aktiv':'Nicht eingerichtet',startTab)
+      + settingsNavCard('app','🛡','App & Sicherheit','System ok · Version '+APP_VERSION,startTab)
+      + '</div>'
+      + '<div class="change-settings-detail-card">'
+      + '<div class="change-settings-detail-head"><div><div class="change-settings-detail-title">'+(startTab==='dashboard'?'Dashboard':startTab==='calendar'?'Kalender':startTab==='challenges'?'Challenges':startTab==='sync'?'Daten & Sync':'App & Sicherheit')+'</div><div class="change-settings-detail-sub">Änderungen werden sofort übernommen und automatisch gespeichert.</div></div></div>'
+      + '<div class="change-settings-tab-shell">'
       + '<button class="change-settings-tab-scroll" type="button" aria-label="Tabs nach links scrollen" data-settings-tab-left>‹</button>'
       + '<div class="change-settings-tabs" data-settings-tabs-scroll>'
       + tabButton('dashboard','▦ Dashboard', startTab)
@@ -541,7 +589,8 @@
       + '<div class="change-settings-pane '+(startTab==='calendar'?'active':'')+'" data-pane="calendar">'+calendarPane()+'</div>'
       + '<div class="change-settings-pane '+(startTab==='challenges'?'active':'')+'" data-pane="challenges">'+challengesPane()+'</div>'
       + '<div class="change-settings-pane '+(startTab==='sync'?'active':'')+'" data-pane="sync">'+syncPane()+'</div>'
-      + '<div class="change-settings-pane '+(startTab==='app'?'active':'')+'" data-pane="app">'+appPane()+'</div>';
+      + '<div class="change-settings-pane '+(startTab==='app'?'active':'')+'" data-pane="app">'+appPane()+'</div>'
+      + '</div></div></div>';
     if(typeof window.openPanel === 'function') window.openPanel('Einstellungen', html);
     setTimeout(bindSettings, 30);
   }
