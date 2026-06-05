@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-05 · Version 0.1.0071 und Kalender/Dashboard nachgezogen
+> Zuletzt aktualisiert: 2026-06-05 · Version 0.1.0073 und Challenge-/Pollen-Feinschliff
 
 ---
 
@@ -104,6 +104,8 @@ Jeder Kalendertag enthält:
 - Ab Version `0.1.0067`: Kalender-Premium zeigt den integrierten „Termin hinzufügen“-Button wieder direkt in der Tagesagenda, ohne den alten Floating-Plusbutton zu reaktivieren. Die rechte Mini-Monatskarte wird auf Desktop stabil eingeblendet; mobil bleibt sie bewusst ausgeblendet. Kalender startet weiterhin auf dem echten heutigen Tag und Tagesklicks ändern nur den Premium-Workspace. Keine Änderung an Login, Firebase, Sync, Push oder Kalenderdatenlogik.
 
 - Ab Version `0.1.0068`: Die Challenge-Hero-Kachel ist nach Pollen-Vorbild bereinigt: Gruppen-Ziel und Fortschrittsbalken stehen links, die bisherigen Ziel-/Heute-Chips wurden entfernt, Abzeichen werden rechts in der Hero-Kachel klickbar angezeigt und nicht mehr als eigene Zeile in „Heutige Aufgaben“ eingeblendet. „Heute zurücksetzen“ sitzt jetzt in der Karte „Heutige Aufgaben“. Die separaten Hero-Metrik-/Motivationskarten bleiben entfernt. Challenge-Logik, Punkte, Auto-Challenges, Sync, Firebase, Login und Kalenderdaten bleiben unverändert.
+- Ab Version `0.1.0072`: Kalender-Premium zeigt die Monatsübersicht mit Monats- und Jahresauswahl. Die Monatskarte bleibt auf Desktop rechts neben der Tagesagenda und ist mobil ebenfalls sichtbar. Die Tagesagenda lädt beim Öffnen stabil nach, Terminzeilen öffnen weiterhin per Klick auf die Zeile, zeigen aber keine separaten „Öffnen“- oder „WhatsApp teilen“-Buttons mehr. „Termin hinzufügen“ sitzt fest im Footer der Tagesagenda-Karte. Keine Änderung an Login, Firebase, Sync, Push oder Kalenderdatenlogik.
+- Ab Version `0.1.0073`: Challenge-Hero bleibt nach Pollen/Dashboard-Logik aufgebaut: Gruppen-Ziel und Fortschritt links, kompakte klickbare Abzeichen-/Statuspunkte rechts. Die globale Kopf-Aktion „Heute zurücksetzen“ ist entfernt; Zurücksetzen bleibt nur in „Heutige Aufgaben“. Rangliste blendet „Anfeuern vorgeschlagen“ aus, individuelle Anfeuern-Buttons bleiben erhalten, Aufgaben/Rangliste bleiben scrollbar und höhengleich. Pollen zeigt statt 7-Tage-Ausblick nur noch einen 5-Tage-Ausblick und lässt fehlende API-Leerzeilen weg. Keine Änderung an Challenge-Punkten, Abzeichen-Logik, Firebase, Sync, Login oder Kalenderdaten.
 - Ab Version `0.1.0071`: Kalender-Hero bleibt unabhängig von der ausgewählten Woche immer auf dem echten heutigen Tag. Die Wochen-/Monatsauswahl aktualisiert nur Tagesagenda und Mini-Monatskalender; der Mini-Monatskalender bleibt auf Desktop rechts sichtbar. Dashboard benennt „Termine & Tracker“ in „Termine“ um, entfernt die Termine-Zeile aus der Hero-Übersicht, zeigt eine feste Heute-Zeile („Heute keiner vorhanden“ oder heutiger Termin) plus nächste relevante Einträge und öffnet Urlaub wieder über die Urlaubsübersicht. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten oder Challenge-Logik.
 - Ab Version `0.1.0070`: Challenge-Hero zeigt Abzeichen kompakt nur noch als „aktiv / gesamt“ ohne große Icon-Zeile. „Anfeuern vorgeschlagen“ wurde aus der Rangliste entfernt; individuelle Anfeuern-Buttons bleiben erhalten. Heutige Aufgaben und Rangliste werden auf Desktop in der gleichen Grid-Zeilenhöhe gestreckt. Keine Änderung an Challenge-Punkten, Abzeichen-Logik, Sync, Login, Firebase oder Kalenderdaten.
 - Ab Version `0.1.0069`: Dashboard-Hero wurde nach Pollen-Vorbild bereinigt: die kleinen Status-Pills sitzen nicht mehr unter der Begrüßung, sondern als klickbare Übersicht rechts in der großen Hero-Kachel. Die separate Challenges-Schnellkarte wurde entfernt; offene Challenges werden in der Aufgabenkarte angezeigt. Der Wetter-7-Tage-Ausblick im Dashboard wurde entfernt. Die Termine-&-Tracker-Karte zeigt mindestens die nächsten relevanten Einträge inklusive Kalender, Friseur und Urlaub. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik.
@@ -126,7 +128,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0071`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0073`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -298,6 +300,7 @@ firebase deploy --only hosting
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
 
+| 2026-06-05 | Version auf `0.1.0072` erhöht; Kalender-Monatsübersicht erhält Monats-/Jahresauswahl, bleibt Desktop rechts und mobil sichtbar. Tagesagenda lädt stabil, Terminzeilen sind weiterhin klickbar, separate Öffnen-/WhatsApp-Buttons wurden entfernt und „Termin hinzufügen“ ist fest im Tagesagenda-Footer. Keine Änderung an Login, Firebase, Sync, Push oder Kalenderdatenlogik. | ChatGPT |
 | 2026-06-05 | Version auf `0.1.0071` erhöht; Kalender-Hero auf echten heutigen Tag fixiert, Mini-Monatskalender rechts wieder sichtbar gehalten, Dashboard-Termine bereinigt und Urlaub-Klick wieder auf Urlaubsübersicht geführt. | ChatGPT |
 | 2026-06-05 | Version auf `0.1.0070` erhöht; Challenge-Abzeichen im Hero kompakter als aktiv/gesamt dargestellt, „Anfeuern vorgeschlagen“ entfernt und Aufgaben/Rangliste-Höhe auf Desktop angeglichen. | ChatGPT |
 | 2026-06-05 | Version auf `0.1.0069` erhöht; Dashboard-Hero nach Pollen-Vorbild bereinigt, klickbare Übersichtspunkte rechts in der Hero-Kachel, Challenges-Schnellkarte und Wetter-7-Tage-Ausblick entfernt, Aufgabenkarte zeigt offene Challenges und Termine-&-Tracker zeigt nächste relevante Einträge. | ChatGPT |

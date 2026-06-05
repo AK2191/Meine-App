@@ -1698,3 +1698,15 @@ body.change-view-challenges .leader-row{
 }
 body.change-view-dashboard .dashp-section-card .dashp-card-title{white-space:nowrap;}
 body.change-view-dashboard .dashp-hero-insights .dashp-insight-row:first-child{margin-top:0;}
+
+/* v0.1.0072 · Kalender-Monatskarte bleibt Desktop rechts und mobil sichtbar */
+body.change-view-calendar #calendar-premium-view .cal-premium-agenda-actions,
+body.change-view-calendar #calendar-premium-view .cal-premium-open,
+body.change-view-calendar #calendar-premium-view .cal-premium-share{display:none!important;}
+body.change-view-calendar #calendar-premium-view .cal-premium-agenda-footer{margin-top:14px;padding-top:14px;border-top:1px dashed rgba(255,255,255,.10);}
+body.change-view-calendar #calendar-premium-view .cal-premium-add{display:flex!important;margin:0!important;}
+@media(max-width:700px){
+  body.change-view-calendar #calendar-premium-view .cal-premium-side,
+  body.change-view-calendar #calendar-premium-view aside.cal-premium-side,
+  body.change-view-calendar #calendar-premium-view .cal-premium-mini{display:block!important;visibility:visible!important;height:auto!important;max-height:none!important;}
+}

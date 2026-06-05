@@ -305,7 +305,7 @@ window.renderGroupGoal = function(){
   try{ earnedBadges = (typeof window.getEarnedBadges === 'function' ? window.getEarnedBadges() : []) || []; }catch(e){ earnedBadges = []; }
   try{ totalBadgeCount = Array.isArray(BADGES) ? BADGES.length : Math.max(earnedBadges.length, 0); }catch(e){ totalBadgeCount = Math.max(earnedBadges.length, 0); }
   var badgeLabel = earnedBadges.length + (totalBadgeCount ? ' / ' + totalBadgeCount : '');
-  var badgeSub = earnedBadges.length === 1 ? '1 aktiv' : earnedBadges.length + ' aktiv';
+  var badgeSub = earnedBadges.length + ' aktiv von ' + (totalBadgeCount || earnedBadges.length || 0) + ' gesamt';
 
   card.innerHTML = `
     <div class="challenge-goal-hero-inner challenge-goal-hero-clean">
@@ -321,14 +321,15 @@ window.renderGroupGoal = function(){
         </div>
         ${done ? '<div class="challenge-goal-done">🎉 Ziel erreicht! Ihr seid großartig!</div>' : ''}
       </div>
-      <button type="button" class="challenge-goal-badges challenge-goal-badges-compact" onclick="event.stopPropagation();window.openBadgePanel&&window.openBadgePanel()" title="Abzeichen öffnen">
-        <div class="challenge-goal-badges-head"><span>Abzeichen</span><strong>${badgeLabel}</strong></div>
-        <div class="challenge-goal-badges-sub">${badgeSub} · gesamt</div>
-      </button>
-      <div class="challenge-goal-side">
-        <div class="challenge-goal-stat"><span>Heute</span><strong>${myTodayPoints} P</strong><small>${myDoneCount ? myDoneCount+' erledigt' : 'noch nichts erledigt'}</small></div>
-        <div class="challenge-goal-stat"><span>Team-Ziel</span><strong>${goal.target} P</strong><small>diese Woche</small></div>
-        <div class="challenge-goal-stat"><span>Erreicht</span><strong>${points} P</strong><small>${pct}% geschafft</small></div>
+      <div class="challenge-goal-side challenge-goal-action-list">
+        <button type="button" class="challenge-goal-side-link challenge-goal-badges-compact" onclick="event.stopPropagation();window.openBadgePanel&&window.openBadgePanel()" title="Abzeichen öffnen">
+          <span class="challenge-goal-link-icon">🎯</span>
+          <span><b>Abzeichen</b><small>${badgeSub}</small></span>
+          <strong>${badgeLabel}</strong>
+        </button>
+        <div class="challenge-goal-side-link"><span class="challenge-goal-link-icon">📍</span><span><b>Heute</b><small>${myDoneCount ? myDoneCount+' erledigt' : 'noch nichts erledigt'}</small></span><strong>${myTodayPoints} P</strong></div>
+        <div class="challenge-goal-side-link"><span class="challenge-goal-link-icon">⚡</span><span><b>Team-Ziel</b><small>diese Woche</small></span><strong>${goal.target} P</strong></div>
+        <div class="challenge-goal-side-link"><span class="challenge-goal-link-icon">✓</span><span><b>Erreicht</b><small>${pct}% geschafft</small></span><strong>${points} P</strong></div>
       </div>
     </div>
   `;

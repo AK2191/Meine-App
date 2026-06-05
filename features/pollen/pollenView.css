@@ -3748,3 +3748,7 @@ body.change-theme-light #pollen-view .pollen-neo-forecast-items span.missing{
   border-color:rgba(148,163,184,.28)!important;
   background:rgba(148,163,184,.10)!important;
 }
+
+/* v0.1.0073 · Pollen: 5-Tage-Ausblick statt API-Leerzeilen */
+#pollen-view .pollen-neo-section-head span{white-space:nowrap;}
+#pollen-view .pollen-neo-forecast-empty.missing{display:none!important;}

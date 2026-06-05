@@ -102,6 +102,18 @@
     for(var d=1; d<=dim; d++) days.push(keyOf(new Date(y,m,d)));
     return days;
   }
+  function yearOptions(year){
+    var out = '';
+    for(var y=year-3; y<=year+3; y++){
+      out += '<option value="'+y+'" '+(y===year?'selected':'')+'>'+y+'</option>';
+    }
+    return out;
+  }
+  function monthOptions(month){
+    return MONTHS.map(function(name,index){
+      return '<option value="'+index+'" '+(index===month?'selected':'')+'>'+esc(name)+'</option>';
+    }).join('');
+  }
   function eventRows(key){
     var list = eventsFor(key);
     if(!list.length) return '<div class="cal-premium-empty">Keine Termine für diesen Tag</div>';
@@ -111,7 +123,6 @@
       return '<button class="cal-premium-agenda-row '+eventTone(event)+'" type="button" onclick="window.openEventPanel&&window.openEventPanel(\''+esc(event.id||'')+'\')">'
         + '<div class="cal-premium-agenda-time">'+esc(timeOf(event) || 'Ganztägig')+'</div>'
         + '<div class="cal-premium-agenda-main">'+eventIcon(event)+'<div><strong>'+esc(titleOf(event))+'</strong><div>'+loc+important+'</div></div></div>'
-        + '<div class="cal-premium-agenda-actions">'+sourceBadge(event)+shareButton(event)+'<span class="cal-premium-open">Öffnen</span></div>'
         + '</button>';
     }).join('');
   }
@@ -147,7 +158,11 @@
   function miniMonthHtml(){
     var base = selectedDate();
     var days = monthDays(selectedKey);
-    return '<section class="cal-premium-side-card cal-premium-mini"><div class="cal-premium-side-head"><strong>'+MONTHS[base.getMonth()]+' '+base.getFullYear()+'</strong><div><button data-cal-nav="-1">‹</button><button data-cal-nav="1">›</button></div></div><div class="cal-premium-mini-grid">'
+    var month = base.getMonth();
+    var year = base.getFullYear();
+    return '<section class="cal-premium-side-card cal-premium-mini"><div class="cal-premium-side-head cal-premium-month-head"><strong>Monatsübersicht</strong><div><button data-cal-nav="-1">‹</button><button data-cal-nav="1">›</button></div></div>'
+      + '<div class="cal-premium-month-picker"><select data-cal-month>'+monthOptions(month)+'</select><select data-cal-year>'+yearOptions(year)+'</select></div>'
+      + '<div class="cal-premium-mini-grid">'
       + ['Mo','Di','Mi','Do','Fr','Sa','So'].map(function(x){return '<span class="head">'+x+'</span>';}).join('')
       + days.map(function(key){
           if(!key) return '<span></span>';
@@ -177,7 +192,7 @@
     var control = '<div class="cal-premium-top"><div class="cal-premium-title"><span>▣</span><h1>Kalender</h1></div></div>';
     existing.innerHTML = control + heroHtml() + weekHtml()
       + '<div class="cal-premium-main-grid">'
-      + '<section class="cal-premium-card cal-premium-agenda"><div class="cal-premium-section-head"><strong>Tagesagenda</strong></div><div>'+eventRows(selectedKey)+'</div><button class="cal-premium-add" type="button" data-cal-add="1">+ Termin hinzufügen</button></section>'
+      + '<section class="cal-premium-card cal-premium-agenda"><div class="cal-premium-section-head"><strong>Tagesagenda</strong></div><div class="cal-premium-agenda-list">'+eventRows(selectedKey)+'</div><div class="cal-premium-agenda-footer"><button class="cal-premium-add" type="button" data-cal-add="1">+ Termin hinzufügen</button></div></section>'
       + '<aside class="cal-premium-side">'+miniMonthHtml()+'</aside>'
       + '</div>';
     var mg=$('month-grid'), wday=$('wday-row'), ag=$('agenda-view');
@@ -188,6 +203,20 @@
     var root = $('calendar-premium-view'); if(!root) return;
     root.querySelectorAll('[data-cal-day]').forEach(function(btn){ btn.onclick=function(){ selectedKey=this.getAttribute('data-cal-day'); setCurrentDate(dateObj(selectedKey)); renderPremium(); }; });
     root.querySelectorAll('[data-cal-nav]').forEach(function(btn){ btn.onclick=function(){ var d=selectedDate(); d.setMonth(d.getMonth()+parseInt(this.getAttribute('data-cal-nav'),10)); selectedKey=keyOf(new Date(d.getFullYear(),d.getMonth(),1)); setCurrentDate(dateObj(selectedKey)); renderPremium(); }; });
+    var monthSelect = root.querySelector('[data-cal-month]');
+    var yearSelect = root.querySelector('[data-cal-year]');
+    function changeMonthYear(){
+      var d = selectedDate();
+      var m = monthSelect ? parseInt(monthSelect.value,10) : d.getMonth();
+      var y = yearSelect ? parseInt(yearSelect.value,10) : d.getFullYear();
+      if(isNaN(m)) m = d.getMonth();
+      if(isNaN(y)) y = d.getFullYear();
+      selectedKey = keyOf(new Date(y,m,1));
+      setCurrentDate(dateObj(selectedKey));
+      renderPremium();
+    }
+    if(monthSelect) monthSelect.onchange = changeMonthYear;
+    if(yearSelect) yearSelect.onchange = changeMonthYear;
     root.querySelectorAll('[data-cal-view]').forEach(function(btn){ btn.onclick=function(){ var v=this.getAttribute('data-cal-view'); if(v==='today'){ selectedKey=M.todayKey(); setCurrentDate(dateObj(selectedKey)); } setViewSafe('month'); renderPremium(); }; });
     root.querySelectorAll('[data-cal-add]').forEach(function(btn){ btn.onclick=function(){ if(window.openEventPanel) window.openEventPanel(null, dateObj(selectedKey || M.todayKey())); }; });
   }
@@ -208,6 +237,9 @@
       d.setMonth(d.getMonth()+dir); selectedKey=keyOf(new Date(d.getFullYear(), d.getMonth(), Math.min(d.getDate(),28))); setCurrentDate(dateObj(selectedKey)); renderPremium();
     };
     renderPremium();
+    [150, 700, 1600].forEach(function(ms){ setTimeout(function(){
+      try{ if((window.currentMainView || '') === 'calendar' || document.body.classList.contains('change-view-calendar')) renderPremium(); }catch(e){}
+    }, ms); });
     try{
       if(typeof window.setMainView === 'function' && !window.setMainView._calendarPremiumRefreshPatch){
         var oldSetMainView = window.setMainView;
@@ -219,6 +251,7 @@
             setTimeout(renderPremium, 60);
             setTimeout(renderPremium, 350);
             setTimeout(renderPremium, 1000);
+            setTimeout(renderPremium, 1800);
           }
           return result;
         };
