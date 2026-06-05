@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-05 · Version 0.1.0068 und Challenge-Hero/Abzeichenstruktur bereinigt
+> Zuletzt aktualisiert: 2026-06-05 · Version 0.1.0069 und Dashboard-Hero/Termine bereinigt
 
 ---
 
@@ -104,6 +104,7 @@ Jeder Kalendertag enthält:
 - Ab Version `0.1.0067`: Kalender-Premium zeigt den integrierten „Termin hinzufügen“-Button wieder direkt in der Tagesagenda, ohne den alten Floating-Plusbutton zu reaktivieren. Die rechte Mini-Monatskarte wird auf Desktop stabil eingeblendet; mobil bleibt sie bewusst ausgeblendet. Kalender startet weiterhin auf dem echten heutigen Tag und Tagesklicks ändern nur den Premium-Workspace. Keine Änderung an Login, Firebase, Sync, Push oder Kalenderdatenlogik.
 
 - Ab Version `0.1.0068`: Die Challenge-Hero-Kachel ist nach Pollen-Vorbild bereinigt: Gruppen-Ziel und Fortschrittsbalken stehen links, die bisherigen Ziel-/Heute-Chips wurden entfernt, Abzeichen werden rechts in der Hero-Kachel klickbar angezeigt und nicht mehr als eigene Zeile in „Heutige Aufgaben“ eingeblendet. „Heute zurücksetzen“ sitzt jetzt in der Karte „Heutige Aufgaben“. Die separaten Hero-Metrik-/Motivationskarten bleiben entfernt. Challenge-Logik, Punkte, Auto-Challenges, Sync, Firebase, Login und Kalenderdaten bleiben unverändert.
+- Ab Version `0.1.0069`: Dashboard-Hero wurde nach Pollen-Vorbild bereinigt: die kleinen Status-Pills sitzen nicht mehr unter der Begrüßung, sondern als klickbare Übersicht rechts in der großen Hero-Kachel. Die separate Challenges-Schnellkarte wurde entfernt; offene Challenges werden in der Aufgabenkarte angezeigt. Der Wetter-7-Tage-Ausblick im Dashboard wurde entfernt. Die Termine-&-Tracker-Karte zeigt mindestens die nächsten relevanten Einträge inklusive Kalender, Friseur und Urlaub. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik.
 - Ab Version `0.1.0066`: Horizontale und vertikale Scrollpositionen bleiben bei mobilen Auswahlaktionen stabil. Pollen-Allergieprofile, Symptom-Auswahl und Settings-Kategorien erfassen vor dem Rendern ihre Scrollposition und stellen sie danach wieder her; automatische `scrollIntoView`-Sprünge in den Einstellungen wurden entfernt. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik.
 
 - Ab Version `0.1.0059`: Der Pollen-7-Tage-Ausblick unterscheidet echte 0 %-Werte von fehlenden API-Daten. Tage oder einzelne Pollenwerte ohne geladene API-Werte werden nicht mehr als 0 % dargestellt, sondern als „Keine API-Daten“ markiert; zusätzlich wird angezeigt, wenn weniger als 7 Tage belastbar geladen wurden. Keine Änderung an Login, Firebase, Sync, Push oder Kalenderlogik.
@@ -123,7 +124,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0068`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0069`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -295,6 +296,7 @@ firebase deploy --only hosting
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
 
+| 2026-06-05 | Version auf `0.1.0069` erhöht; Dashboard-Hero nach Pollen-Vorbild bereinigt, klickbare Übersichtspunkte rechts in der Hero-Kachel, Challenges-Schnellkarte und Wetter-7-Tage-Ausblick entfernt, Aufgabenkarte zeigt offene Challenges und Termine-&-Tracker zeigt nächste relevante Einträge. | ChatGPT |
 | 2026-06-05 | Version auf `0.1.0067` erhöht; Kalender-Premium-Bedienbarkeit korrigiert: integrierter Termin-hinzufügen-Button wieder sichtbar, rechter Mini-Monatskalender auf Desktop stabil eingeblendet, alter Floating-Plusbutton bleibt entfernt. Keine Änderung an Login, Firebase, Sync, Push oder Kalenderdatenlogik. | ChatGPT |
 | 2026-06-05 | Version auf `0.1.0066` erhöht; mobile Scrollpositionen bei Pollen-Auswahl und Settings-Kategorien stabilisiert, automatische Auswahl-Sprünge entfernt. Keine Änderung an Login, Firebase, Sync, Push, Pollen-API oder Kalenderlogik. | ChatGPT |
 | 2026-06-05 | Version auf `0.1.0065` erhöht; Kalender-Mini rechts wieder eingeblendet, altes Monatsraster/Kategorien/Plus entfernt, Kalender startet auf heutigem Tag, Challenges-Breite und Dashboard-Schnellkarten inklusive Friseur bereinigt. Keine Änderung an Login, Firebase, Sync, Push oder Datenmodell. | ChatGPT |

@@ -1,5 +1,5 @@
 /* Change App · Dashboard · Premium Tages-Hub
- * Version 0.1.0054
+ * Version 0.1.0069
  * UI-only: baut das Dashboard neu auf, ohne Kalender-, Challenge-, Sync- oder Firebase-Logik zu ändern.
  */
 (function(){
@@ -227,6 +227,51 @@
       '<button class="dashp-mini-card" onclick="setMainView(\'challenges\')"><span class="dashp-mini-icon">💪</span><span><b>'+openChallenges+'</b><small>Challenges offen</small></span></button>'+
       '</div>';
   }
+
+  function overviewRows(todayCount, next, w, p, f, v){
+    var nextSub = next ? timeLabel(next)+' · '+titleOf(next) : 'Heute kein Termin';
+    return '<div class="dashp-hero-insights" aria-label="Dashboard Schnellübersicht">'
+      + '<button class="dashp-insight-row" onclick="setMainView(\'calendar\')"><span class="dashp-insight-dot">📅</span><span><b>Termine</b><small>'+todayCount+' heute · '+esc(nextSub)+'</small></span></button>'
+      + '<button class="dashp-insight-row" onclick="window.ChangeWeatherCard&&ChangeWeatherCard.openForecast&&ChangeWeatherCard.openForecast(\'weather\')"><span class="dashp-insight-dot">'+esc(w.icon)+'</span><span><b>Wetter</b><small>'+esc(w.temp)+' · '+esc(w.text)+'</small></span></button>'
+      + '<button class="dashp-insight-row" onclick="setMainView(\'pollen\')"><span class="dashp-insight-dot">🌿</span><span><b>Pollen</b><small>'+esc(p.level)+' · '+esc(p.meta || p.text)+'</small></span></button>'
+      + '<button class="dashp-insight-row" onclick="window.openFriseurPanel&&window.openFriseurPanel()"><span class="dashp-insight-dot">✂️</span><span><b>Friseur</b><small>'+esc(f.text || f.meta)+'</small></span></button>'
+      + '<button class="dashp-insight-row" onclick="setMainView(\'calendar\')"><span class="dashp-insight-dot">🌴</span><span><b>Urlaub</b><small>'+esc(v.text)+' · '+esc(v.meta)+'</small></span></button>'
+      + '</div>';
+  }
+  function upcomingItems(){
+    var td = dateKey(new Date());
+    var items = eventsForRange(td, addDays(td,90)).slice(0,3).map(function(event){ return {kind:'event', event:event, key:startOf(event)}; });
+    var f = friseurSummary();
+    if(items.length < 3 && f.text && !/nicht geplant/i.test(f.text)){ items.push({kind:'friseur', key:td, title:f.meta || 'Friseur', sub:f.text, icon:'✂️', action:'friseur'}); }
+    var v = vacationSummary();
+    if(items.length < 3 && v.text && !/nicht geplant/i.test(v.text)){ items.push({kind:'urlaub', key:td, title:'Urlaub', sub:v.text+' · '+v.meta, icon:'🌴', action:'calendar'}); }
+    return items.slice(0,3);
+  }
+  function timelineUpcomingHtml(items){
+    items = items || [];
+    if(!items.length) return '<div class="dashp-empty">Keine Termine oder Tracker in den nächsten Tagen.</div>';
+    return items.map(function(item){
+      if(item.kind === 'event'){
+        var event = item.event;
+        var loc = locationOf(event);
+        var isGoogle = event.source === 'google' || String(event.id || '').indexOf('g_') === 0;
+        var k = startOf(event);
+        return '<div class="dashp-event-row tone-'+eventTone(event)+'" onclick="setMainView(\'calendar\')">'
+          + '<div class="dashp-event-icon">'+esc(eventIcon(event))+'</div>'
+          + '<div class="dashp-event-time"><strong>'+esc(timeLabel(event))+'</strong><small>'+esc(dayLabel(k))+'</small></div>'
+          + '<div class="dashp-event-main"><strong>'+esc(titleOf(event))+'</strong><span>'+esc(loc || (isGoogle ? 'Google Kalender' : fmtShort(k)))+'</span></div>'
+          + (isGoogle ? '<span class="dashp-source-dot">G</span>' : '')
+          + '</div>';
+      }
+      var click = item.action === 'friseur' ? 'window.openFriseurPanel&&window.openFriseurPanel()' : 'setMainView(\'calendar\')';
+      return '<div class="dashp-event-row tone-green" onclick="'+click+'">'
+        + '<div class="dashp-event-icon">'+esc(item.icon || '📌')+'</div>'
+        + '<div class="dashp-event-time"><strong>Tracker</strong><small>'+esc(dayLabel(item.key || dateKey(new Date())))+'</small></div>'
+        + '<div class="dashp-event-main"><strong>'+esc(item.title || 'Eintrag')+'</strong><span>'+esc(item.sub || '')+'</span></div>'
+        + '</div>';
+    }).join('');
+  }
+
   function timelineHtml(events){
     if(!events.length) return '<div class="dashp-empty">Heute sind keine Termine geplant.</div>';
     return events.slice(0,5).map(function(event){
@@ -336,12 +381,28 @@
       .dashp-forecast-row:last-child{border-bottom:0;}.dashp-forecast-row span{color:rgba(244,247,244,.65);font-weight:850}.dashp-forecast-row b{color:#fff}.dashp-forecast-row small{color:rgba(244,247,244,.66);font-weight:800}.dashp-forecast-row strong{font-weight:950}.tone-red{color:#ff675d!important}.tone-amber{color:#fbbf24!important}.tone-green{color:#4ade80!important}
       @media(max-width:1180px){.dashp-hero{grid-template-columns:minmax(0,1fr) repeat(2,minmax(160px,.5fr));}.dashp-weather-mini{display:none!important;}body.change-view-dashboard #dash-grid{grid-template-columns:1fr!important;}}
       @media(max-width:700px){body.change-view-dashboard #content{padding:14px 10px 78px!important;}body.change-view-dashboard #dashboard-view{padding:0!important;}body.change-view-dashboard .dash-hello{display:block!important;margin:0 0 12px!important;padding:0 4px!important;}body.change-view-dashboard .dash-hello h1{font-size:24px!important;}body.change-view-dashboard #dash-grid{display:block!important;}.dashp-hero{display:block;margin-bottom:12px;}.dashp-main-hero{min-height:0;padding:20px;border-radius:22px;margin-bottom:12px;}.dashp-hero-orb{display:none}.dashp-hero-title{font-size:25px}.dashp-hero-meta{gap:7px}.dashp-pill{font-size:11px;padding:7px 9px}.dashp-mini-card{display:inline-flex;width:154px;min-height:118px;margin-right:8px;padding:14px;border-radius:18px;vertical-align:top}.dashp-hero .dashp-mini-card{display:inline-flex}.dashp-hero{white-space:nowrap;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}.dashp-hero::-webkit-scrollbar{display:none}.dashp-mini-card span{white-space:normal}.dashp-mini-icon{width:34px;height:34px;border-radius:13px;font-size:18px}.dashp-mini-card b{font-size:20px}.dashp-mini-card small{font-size:11px}.dashp-card{border-radius:20px;margin-bottom:12px}.dashp-card-head{padding:15px 16px}.dashp-card-title{font-size:16px}.dashp-card-body{padding:12px}.dashp-event-row,.dashp-task-row,.dashp-player-row{min-height:56px;padding:10px;margin-bottom:8px}.dashp-event-time{min-width:58px;font-size:14px}.dashp-event-icon,.dashp-task-icon{width:34px;height:34px;flex-basis:34px}.dashp-forecast-row{grid-template-columns:30px 52px 26px 1fr auto;font-size:12px;gap:7px}.dashp-side-stack{display:block;}}
+
+      /* v0.1.0069 Dashboard Hero nach Pollen-Vorbild */
+      .dashp-main-hero-pollen{display:grid!important;grid-template-columns:minmax(0,1.05fr) minmax(320px,.95fr)!important;align-items:stretch!important;gap:24px!important;min-height:178px!important;padding:28px 30px!important;}
+      .dashp-main-hero-pollen .dashp-hero-copy{display:flex!important;flex-direction:column!important;min-width:0!important;}
+      .dashp-main-hero-pollen .dashp-next{margin-top:auto!important;}
+      .dashp-hero-insights{border-left:1px solid rgba(255,255,255,.10);padding-left:22px;display:grid;gap:0;align-content:center;}
+      .dashp-insight-row{appearance:none;border:0;border-bottom:1px solid rgba(255,255,255,.08);background:transparent;color:inherit;padding:11px 0;display:flex;align-items:center;gap:12px;text-align:left;cursor:pointer;}
+      .dashp-insight-row:last-child{border-bottom:0}.dashp-insight-row:hover b{color:#4ade80}.dashp-insight-dot{width:28px;height:28px;border-radius:999px;background:rgba(74,222,128,.10);display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;font-size:15px}.dashp-insight-row b{display:block;font-size:13px;font-weight:950;color:#fff;line-height:1.15}.dashp-insight-row small{display:block;margin-top:3px;font-size:11px;font-weight:750;color:rgba(244,247,244,.62);line-height:1.25}.dashp-header-pill{display:inline-flex;align-items:center;border-radius:999px;padding:6px 10px;background:rgba(74,222,128,.10);border:1px solid rgba(74,222,128,.18);color:#4ade80;font-size:12px;font-weight:950}.dashp-players-card{grid-column:1 / 2}.dashp-event-time{display:grid;gap:2px;min-width:86px}.dashp-event-time strong{font-size:17px;line-height:1;color:#fff}.dashp-event-time small{font-size:11px;color:rgba(244,247,244,.55);font-weight:850}
+      @media(max-width:700px){.dashp-main-hero-pollen{display:block!important;padding:20px!important}.dashp-hero-insights{border-left:0!important;border-top:1px solid rgba(255,255,255,.10)!important;padding-left:0!important;margin-top:16px!important;padding-top:8px!important}.dashp-insight-row{padding:10px 0!important}.dashp-event-time{min-width:72px!important}}
+
       [data-theme="light"] body.change-view-dashboard .dash-hello h1,body.theme-light.change-view-dashboard .dash-hello h1,body.change-theme-light.change-view-dashboard .dash-hello h1{color:#142018!important;}
       [data-theme="light"] .dashp-card,body.theme-light .dashp-card,body.change-theme-light .dashp-card,[data-theme="light"] .dashp-mini-card,body.theme-light .dashp-mini-card,body.change-theme-light .dashp-mini-card{background:rgba(255,255,255,.78)!important;border-color:rgba(20,35,24,.10)!important;box-shadow:0 18px 38px rgba(31,53,38,.08)!important;}
       [data-theme="light"] .dashp-main-hero,body.theme-light .dashp-main-hero,body.change-theme-light .dashp-main-hero{background:radial-gradient(circle at 78% 45%,rgba(36,190,91,.16),transparent 32%),linear-gradient(135deg,rgba(235,250,240,.92),rgba(255,255,255,.78))!important;}
       [data-theme="light"] .dashp-hero-title,[data-theme="light"] .dashp-mini-card b,[data-theme="light"] .dashp-card-title,[data-theme="light"] .dashp-event-main strong,[data-theme="light"] .dashp-task-main strong,[data-theme="light"] .dashp-player-main strong,[data-theme="light"] .dashp-event-time,[data-theme="light"] .dashp-forecast-row b,body.theme-light .dashp-hero-title,body.theme-light .dashp-mini-card b,body.theme-light .dashp-card-title,body.theme-light .dashp-event-main strong,body.theme-light .dashp-task-main strong,body.theme-light .dashp-player-main strong,body.theme-light .dashp-event-time,body.theme-light .dashp-forecast-row b,body.change-theme-light .dashp-hero-title,body.change-theme-light .dashp-mini-card b,body.change-theme-light .dashp-card-title,body.change-theme-light .dashp-event-main strong,body.change-theme-light .dashp-task-main strong,body.change-theme-light .dashp-player-main strong,body.change-theme-light .dashp-event-time,body.change-theme-light .dashp-forecast-row b{color:#142018!important;}
       [data-theme="light"] .dashp-event-row,[data-theme="light"] .dashp-task-row,[data-theme="light"] .dashp-player-row,body.theme-light .dashp-event-row,body.theme-light .dashp-task-row,body.theme-light .dashp-player-row,body.change-theme-light .dashp-event-row,body.change-theme-light .dashp-task-row,body.change-theme-light .dashp-player-row{background:rgba(255,255,255,.68)!important;border-color:rgba(20,35,24,.08)!important;}
       [data-theme="light"] .dashp-event-main span,[data-theme="light"] .dashp-task-main span,[data-theme="light"] .dashp-player-main small,[data-theme="light"] .dashp-mini-card small,[data-theme="light"] .dashp-next,body.theme-light .dashp-event-main span,body.theme-light .dashp-task-main span,body.theme-light .dashp-player-main small,body.theme-light .dashp-mini-card small,body.theme-light .dashp-next,body.change-theme-light .dashp-event-main span,body.change-theme-light .dashp-task-main span,body.change-theme-light .dashp-player-main small,body.change-theme-light .dashp-mini-card small,body.change-theme-light .dashp-next{color:#5d6b61!important;}
+
+      [data-theme="light"] .dashp-hero-insights,body.theme-light .dashp-hero-insights,body.change-theme-light .dashp-hero-insights{border-color:rgba(20,35,24,.10)!important}
+      [data-theme="light"] .dashp-insight-row,body.theme-light .dashp-insight-row,body.change-theme-light .dashp-insight-row{border-color:rgba(20,35,24,.08)!important}
+      [data-theme="light"] .dashp-insight-row b,[data-theme="light"] .dashp-event-time strong,body.theme-light .dashp-insight-row b,body.theme-light .dashp-event-time strong,body.change-theme-light .dashp-insight-row b,body.change-theme-light .dashp-event-time strong{color:#142018!important}
+      [data-theme="light"] .dashp-insight-row small,[data-theme="light"] .dashp-event-time small,body.theme-light .dashp-insight-row small,body.theme-light .dashp-event-time small,body.change-theme-light .dashp-insight-row small,body.change-theme-light .dashp-event-time small{color:#5d6b61!important}
+
       [data-theme="light"] .dashp-card-head,body.theme-light .dashp-card-head,body.change-theme-light .dashp-card-head,[data-theme="light"] .dashp-forecast-row,body.theme-light .dashp-forecast-row,body.change-theme-light .dashp-forecast-row{border-color:rgba(20,35,24,.08)!important;}
 
       /* v0.1.0065 Dashboard Cleanup */
@@ -370,21 +431,19 @@
     if(head) head.textContent = 'Dashboard';
     if(sub) sub.textContent = '';
     var nextText = next ? '<span>Nächster Termin</span><strong>'+esc(timeLabel(next))+' · '+esc(titleOf(next))+'</strong>' : '<span>Heute</span><strong>kein nächster Termin</strong>';
+    var v = vacationSummary();
+    var f = friseurSummary();
     grid.innerHTML = ''+
       '<div class="dashp-hero">'
-        + '<section class="dashp-card dashp-main-hero">'
-          + '<div><div class="dashp-eyebrow">Heute auf einen Blick</div><div class="dashp-hero-title">'+esc(greeting())+'</div>'
-          + '<div class="dashp-hero-meta"><span class="dashp-pill">📅 '+today.length+' Termine</span><span class="dashp-pill">'+esc(w.icon)+' '+esc(w.temp)+' '+esc(w.text)+'</span><span class="dashp-pill">🌿 Pollen '+esc(p.level)+'</span><span class="dashp-pill">💪 '+open.length+' offen</span></div>'
-          + '<div class="dashp-next">'+nextText+'</div></div><div class="dashp-hero-orb">📅</div>'
+        + '<section class="dashp-card dashp-main-hero dashp-main-hero-pollen">'
+          + '<div class="dashp-hero-copy"><div class="dashp-eyebrow">Heute auf einen Blick</div><div class="dashp-hero-title">'+esc(greeting())+'</div>'
+          + '<div class="dashp-next">'+nextText+'</div></div>'
+          + overviewRows(today.length, next, w, p, f, v)
         + '</section>'
-        + statusCards(open.length, today.length)
       + '</div>'
-      + '<section class="dashp-card dashp-section-card"><div class="dashp-card-head"><div class="dashp-card-title">📍 Heutige Termine</div></div><div class="dashp-card-body">'+timelineHtml(today)+'</div></section>'
-      + '<section class="dashp-card dashp-section-card"><div class="dashp-card-head"><div class="dashp-card-title">💪 Aufgaben</div></div><div class="dashp-card-body">'+challengesHtml(open)+'</div></section>'
-      + '<div class="dashp-side-stack">'
-        + '<section class="dashp-card dashp-section-card"><div class="dashp-card-head"><div class="dashp-card-title">👥 Mitspieler</div></div><div class="dashp-card-body">'+playersHtml()+'</div></section>'
-        + '<section class="dashp-card dashp-section-card"><div class="dashp-card-head"><div class="dashp-card-title">7-Tage-Ausblick</div></div><div class="dashp-card-body">'+forecastHtml()+'</div></section>'
-      + '</div>';
+      + '<section class="dashp-card dashp-section-card"><div class="dashp-card-head"><div class="dashp-card-title">📍 Termine & Tracker</div></div><div class="dashp-card-body">'+timelineUpcomingHtml(upcomingItems())+'</div></section>'
+      + '<section class="dashp-card dashp-section-card"><div class="dashp-card-head"><div class="dashp-card-title">💪 Aufgaben</div><span class="dashp-header-pill">'+open.length+' offen</span></div><div class="dashp-card-body">'+challengesHtml(open)+'</div></section>'
+      + '<section class="dashp-card dashp-section-card dashp-players-card"><div class="dashp-card-head"><div class="dashp-card-title">👥 Mitspieler</div></div><div class="dashp-card-body">'+playersHtml()+'</div></section>';
   }
   function buildDashboard(){ renderDashboard(); }
   buildDashboard.__premiumDashboard = true;
