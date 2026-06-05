@@ -3,7 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0052';
+  var APP_VERSION = '0.1.0059';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var SELECTED_KEY = 'change_v1_pollen_selected_keys';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
@@ -45,8 +45,9 @@
   function itemByKey(day, key){
     return itemsOf(day).find(function(p){ return String(p && p.key) === String(key || ''); }) || null;
   }
+  function itemHasData(item){ return !item || item.dataAvailable !== false; }
   function activeItems(day){
-    return itemsOf(day).filter(function(p){ return clampNum(p && p.value) > 0; }).sort(function(a,b){
+    return itemsOf(day).filter(function(p){ return itemHasData(p) && clampNum(p && p.value) > 0; }).sort(function(a,b){
       return ((b.rank || 0) - (a.rank || 0)) || (clampNum(b.value) - clampNum(a.value));
     });
   }
@@ -92,7 +93,10 @@
   }
   function levelLabel(level){ return level === 'high' ? 'hoch' : level === 'medium' ? 'mittel' : level === 'low' ? 'niedrig' : 'keine'; }
   function intensityTitle(level){ return level === 'high' ? 'Hoch' : level === 'medium' ? 'Mittel' : level === 'low' ? 'Niedrig' : 'Ruhig'; }
-  function selectedStatus(item){
+  function selectedStatus(item, missing){
+    if(missing || (item && item.dataAvailable === false)){
+      return {key:'missing', title:'Keine API-Daten', score:null};
+    }
     var level = item && item.level || 'none';
     return {
       key: level,
@@ -146,15 +150,17 @@
     return next;
   }
   function selectedDaySummary(day, keys){
+    var missing = !!(day && day.dataMissing);
     var items = selectedItems(day, keys);
     if(!items.length){
       var fallback = activeItems(day)[0] || itemsOf(day)[0] || null;
       if(fallback) items = [fallback];
     }
+    if(missing) items = items.map(function(p){ return Object.assign({}, p || {}, {dataAvailable:false}); });
     var main = (items || []).slice().sort(function(a,b){
       return clampNum(b.value) - clampNum(a.value) || ((b.rank || 0) - (a.rank || 0));
     })[0] || null;
-    var state = selectedStatus(main);
+    var state = selectedStatus(main, missing);
     return {
       date: day && day.date,
       items: items,
@@ -164,22 +170,26 @@
       level: state.key,
       title: state.title,
       score: state.score,
-      summary: summaryTextForItems(items)
+      dataMissing: missing,
+      summary: missing ? 'keine API-Daten' : summaryTextForItems(items)
     };
   }
   function selectedForecast(forecast, keys){
     return (forecast || []).map(function(day){ return selectedDaySummary(day, keys); });
   }
   function forecastPeak(days){
-    if(!days || !days.length) return null;
+    days = (days || []).filter(function(day){ return !day.dataMissing && day.score !== null && day.score !== undefined; });
+    if(!days.length) return null;
     return days.slice().sort(function(a,b){ return (b.score || 0) - (a.score || 0); })[0] || null;
   }
   function quietestDay(days){
-    if(!days || !days.length) return null;
+    days = (days || []).filter(function(day){ return !day.dataMissing && day.score !== null && day.score !== undefined; });
+    if(!days.length) return null;
     return days.slice().sort(function(a,b){ return (a.score || 0) - (b.score || 0); })[0] || null;
   }
   function trendText(days){
-    if(!days || days.length < 2) return 'Morgen ähnlich';
+    days = (days || []).filter(function(day){ return !day.dataMissing && day.score !== null && day.score !== undefined; });
+    if(days.length < 2) return 'Morgen ähnlich';
     var diff = Number(days[1].score || 0) - Number(days[0].score || 0);
     if(diff >= 12) return 'Morgen deutlich stärker';
     if(diff >= 4) return 'Morgen etwas stärker';
@@ -188,6 +198,7 @@
     return 'Morgen ähnlich';
   }
   function miniBars(score, tone){
+    if(score === null || score === undefined) return '<span></span><span></span><span></span><span></span><span></span><span></span>';
     var active = Math.max(0, Math.min(6, Math.ceil((Number(score) || 0) / 17)));
     var html = '';
     for(var i=0;i<6;i++) html += '<span class="'+(i < active ? 'on '+esc(tone || 'none') : '')+'"></span>';
@@ -281,10 +292,16 @@
     + '</section>';
   }
   function forecastItemChips(day){
+    if(day && day.dataMissing){
+      return '<span class="pollen-neo-forecast-empty missing">Keine API-Daten</span>';
+    }
     var items = (day && Array.isArray(day.items) ? day.items.slice() : []).filter(Boolean);
     if(!items.length && day && day.item) items = [day.item];
     if(!items.length) return '<span class="pollen-neo-forecast-empty">keine Belastung</span>';
     return '<div class="pollen-neo-forecast-items">' + items.map(function(p){
+      if(p && p.dataAvailable === false){
+        return '<span class="missing"><strong>'+esc(p.name || 'Pollen')+'</strong><em>keine Daten</em></span>';
+      }
       var value = Math.round(clampNum(p && p.value));
       var level = p && p.level || 'none';
       return '<span class="'+esc(level)+' '+(value <= 0 ? 'zero' : '')+'"><strong>'+esc(p && p.name || 'Pollen')+'</strong><em>'+esc(value)+' %</em></span>';
@@ -301,10 +318,12 @@
     + '</div>';
   }
   function forecastHtml(forecast, selectedKeys){
-    var list = selectedForecast(forecast, selectedKeys);
+    var list = selectedForecast(forecast, selectedKeys).slice(0,7);
+    var loaded = list.filter(function(day){ return !day.dataMissing; }).length;
+    var suffix = loaded && loaded < 7 ? '<small>'+loaded+' Tage geladen</small>' : '';
     return '<section class="pollen-neo-section pollen-neo-forecast">'
-      + '<div class="pollen-neo-section-head"><div><span>7-Tage-Ausblick</span></div></div>'
-      + '<div class="pollen-neo-forecast-list">'+list.slice(0,7).map(forecastRow).join('')+'</div>'
+      + '<div class="pollen-neo-section-head"><div><span>7-Tage-Ausblick</span>'+suffix+'</div></div>'
+      + '<div class="pollen-neo-forecast-list">'+list.map(forecastRow).join('')+'</div>'
     + '</section>';
   }
   function pageHtml(data, loc){

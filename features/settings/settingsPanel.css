@@ -867,3 +867,119 @@ body.change-theme-light.change-view-settings #notif-bell-btn{
   body.change-view-settings .change-settings-page-head{margin-bottom:14px!important;}
   body.change-view-settings .change-settings-profile-card{margin-bottom:14px!important;}
 }
+
+/* v0.1.0058 · Panels und Settings-Workspace bereinigt */
+body:not(.change-view-settings) #settings-view{
+  display:none!important;
+  pointer-events:none!important;
+}
+body.change-view-settings #dashboard-view,
+body.change-view-settings #cal-body,
+body.change-view-settings #challenges-view,
+body.change-view-settings #pollen-view{
+  display:none!important;
+}
+body.change-view-settings .change-settings-tab-shell{
+  display:none!important;
+}
+body.change-view-settings .change-settings-detail-card .change-settings-pane{
+  padding:18px!important;
+}
+body.change-view-settings .change-settings-nav-grid .change-settings-nav-card.active ~ .change-settings-nav-card.active{
+  border-color:var(--b1)!important;
+  background:linear-gradient(180deg,var(--s1),var(--s1))!important;
+}
+
+/* Side-Panels: einheitlich ruhiger Settings-Stil, aber nie für den Settings-Workspace selbst */
+body:not(.change-view-settings) #panel-overlay{
+  background:rgba(0,0,0,.42)!important;
+  backdrop-filter:blur(10px)!important;
+}
+body:not(.change-view-settings) #side-panel{
+  border-radius:28px 0 0 28px!important;
+  border-left:1px solid var(--b1)!important;
+  background:linear-gradient(180deg,var(--s1),var(--s1))!important;
+  box-shadow:-24px 0 70px rgba(0,0,0,.24)!important;
+  overflow:hidden!important;
+}
+body:not(.change-view-settings) #side-panel .panel-hd{
+  min-height:76px!important;
+  padding:22px 24px 18px!important;
+  border-bottom:1px solid var(--b1)!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,0))!important;
+}
+body:not(.change-view-settings) #side-panel .panel-title{
+  font-size:21px!important;
+  font-weight:950!important;
+  letter-spacing:-.45px!important;
+  color:var(--t1)!important;
+}
+body:not(.change-view-settings) #side-panel .panel-close-btn{
+  width:38px!important;
+  height:38px!important;
+  border-radius:14px!important;
+  border:1px solid var(--b1)!important;
+  background:var(--s2)!important;
+  color:var(--t2)!important;
+}
+body:not(.change-view-settings) #side-panel .panel-body{
+  padding:18px!important;
+  background:transparent!important;
+}
+body:not(.change-view-settings) #side-panel .change-settings-feature-card,
+body:not(.change-view-settings) #side-panel .change-share-card,
+body:not(.change-view-settings) #side-panel .change-event-detail-card,
+body:not(.change-view-settings) #side-panel .change-day-event,
+body:not(.change-view-settings) #side-panel .toggle-row,
+body:not(.change-view-settings) #side-panel .fg,
+body:not(.change-view-settings) #side-panel .fr{
+  max-width:100%;
+}
+body:not(.change-view-settings) #side-panel .change-day-event,
+body:not(.change-view-settings) #side-panel .change-share-card,
+body:not(.change-view-settings) #side-panel .change-share-detail,
+body:not(.change-view-settings) #side-panel .change-conflict-note,
+body:not(.change-view-settings) #side-panel .toggle-row{
+  border-radius:18px!important;
+  border-color:var(--b1)!important;
+  background:var(--s2)!important;
+}
+
+[data-theme="light"] body:not(.change-view-settings) #side-panel,
+body.theme-light:not(.change-view-settings) #side-panel,
+body.change-theme-light:not(.change-view-settings) #side-panel{
+  background:rgba(255,255,255,.92)!important;
+  box-shadow:-24px 0 64px rgba(31,53,38,.14)!important;
+}
+[data-theme="light"] body:not(.change-view-settings) #panel-overlay,
+body.theme-light:not(.change-view-settings) #panel-overlay,
+body.change-theme-light:not(.change-view-settings) #panel-overlay{
+  background:rgba(31,53,38,.18)!important;
+}
+
+@media(max-width:700px){
+  body:not(.change-view-settings) #side-panel{
+    left:10px!important;
+    right:10px!important;
+    bottom:78px!important;
+    top:auto!important;
+    width:auto!important;
+    max-width:none!important;
+    max-height:76vh!important;
+    border-radius:26px!important;
+    border:1px solid var(--b1)!important;
+    box-shadow:0 -18px 54px rgba(0,0,0,.30)!important;
+  }
+  body:not(.change-view-settings) #side-panel .panel-hd{
+    min-height:64px!important;
+    padding:17px 18px 14px!important;
+  }
+  body:not(.change-view-settings) #side-panel .panel-title{
+    font-size:18px!important;
+  }
+  body:not(.change-view-settings) #side-panel .panel-body{
+    padding:14px!important;
+    max-height:calc(76vh - 64px)!important;
+    overflow:auto!important;
+  }
+}

@@ -238,10 +238,14 @@
     if(value < 50) return {key:'medium', label:'mittel', rank:2};
     return {key:'high', label:'hoch', rank:3};
   }
-  function itemForPollen(p, value){
-    value = round(value || 0, 1) || 0;
-    var level = pollenLevel(value);
-    return {key:p.key, name:p.name, value:value, level:level.key, levelLabel:level.label, rank:level.rank};
+  function hasNumericValue(value){
+    return value !== null && value !== undefined && value !== '' && isFinite(Number(value));
+  }
+  function itemForPollen(p, value, hasData){
+    var available = hasData !== false && hasNumericValue(value);
+    value = available ? (round(value, 1) || 0) : 0;
+    var level = available ? pollenLevel(value) : {key:'none', label:'keine', rank:0};
+    return {key:p.key, name:p.name, value:value, level:level.key, levelLabel:level.label, rank:level.rank, dataAvailable:available};
   }
   function sortPollenItems(items){
     return items.sort(function(a,b){ return (b.rank - a.rank) || (b.value - a.value) || a.name.localeCompare(b.name); });
@@ -253,22 +257,27 @@
     times.forEach(function(t, idx){
       var date = dateKeyFromTime(t);
       if(!date) return;
-      if(!grouped[date]) grouped[date] = {};
+      if(!grouped[date]) grouped[date] = {values:{}, available:{}, hasData:false};
       POLLEN.forEach(function(p){
-        var val = Number(hourly[p.key] && hourly[p.key][idx]);
-        if(!isFinite(val)) val = 0;
-        grouped[date][p.key] = Math.max(grouped[date][p.key] || 0, val);
+        var raw = hourly[p.key] && hourly[p.key][idx];
+        if(!hasNumericValue(raw)) return;
+        var val = Number(raw);
+        grouped[date].hasData = true;
+        grouped[date].available[p.key] = true;
+        grouped[date].values[p.key] = Math.max(grouped[date].values[p.key] || 0, val);
       });
     });
     return Object.keys(grouped).sort().slice(0,7).map(function(date){
-      var vals = grouped[date] || {};
-      var items = sortPollenItems(POLLEN.map(function(p){ return itemForPollen(p, vals[p.key]); }));
+      var day = grouped[date] || {values:{}, available:{}, hasData:false};
+      var items = sortPollenItems(POLLEN.map(function(p){ return itemForPollen(p, day.values[p.key], !!day.available[p.key]); }));
       return {
         date: date,
         items: items,
-        strong: items.filter(function(p){ return p.level === 'high'; }),
-        elevated: items.filter(function(p){ return p.level === 'medium'; }),
-        top: items.filter(function(p){ return p.rank >= 2; }).slice(0,3)
+        dataMissing: !day.hasData,
+        loaded: !!day.hasData,
+        strong: items.filter(function(p){ return p.dataAvailable && p.level === 'high'; }),
+        elevated: items.filter(function(p){ return p.dataAvailable && p.level === 'medium'; }),
+        top: items.filter(function(p){ return p.dataAvailable && p.rank >= 2; }).slice(0,3)
       };
     });
   }
@@ -278,8 +287,12 @@
     var idx = closestIndex(hourly.time || [], Date.now());
     var items = sortPollenItems(POLLEN.map(function(p){
       var value = current[p.key];
-      if(value == null && idx >= 0 && hourly[p.key]) value = hourly[p.key][idx];
-      return itemForPollen(p, value);
+      var available = hasNumericValue(value);
+      if(!available && idx >= 0 && hourly[p.key]){
+        value = hourly[p.key][idx];
+        available = hasNumericValue(value);
+      }
+      return itemForPollen(p, value, available);
     }));
     return {
       items: items,

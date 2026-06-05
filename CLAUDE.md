@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0057 und eigenständige Einstellungen
+> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0059 und Pollen-Datenstatus
 
 ---
 
@@ -96,6 +96,8 @@ Jeder Kalendertag enthält:
 
 - Ab Version `0.1.0054`: Dashboard nutzt einen Premium-Tages-Hub im gleichen Stil wie Kalender/Challenges/Pollen. Desktop zeigt Hero-Karte, Schnellinfos, heutige Termine, Aufgaben, Mitspieler und 7-Tage-Ausblick. Mobil wird die Ansicht gestapelt und nutzt horizontale Schnellinfo-Karten. Bestehende Kalender-, Challenge-, Wetter-/Pollen-, Firebase-, Sync-, Push- und Login-Logik bleibt unverändert; es wird nur die Dashboard-Darstellung neu aufgebaut.
 - Ab Version `0.1.0055`: Einstellungen öffnen als Premium-Workspace im gleichen Kartenstil wie Dashboard, Kalender, Challenges und Pollen. Desktop zeigt Profil-/Statuskarte, Kategorie-Karten und rechts den Detailbereich. Mobil wird die Ansicht gestapelt, Kategorie-Karten werden horizontal scrollbar. Bestehende Schalter, Sync-Regeln, Push, Kalenderoptionen, Challengeoptionen und App-Gesundheitscheck bleiben funktional unverändert; es wird kein Auto-Start eingeführt.
+- Ab Version `0.1.0059`: Der Pollen-7-Tage-Ausblick unterscheidet echte 0 %-Werte von fehlenden API-Daten. Tage oder einzelne Pollenwerte ohne geladene API-Werte werden nicht mehr als 0 % dargestellt, sondern als „Keine API-Daten“ markiert; zusätzlich wird angezeigt, wenn weniger als 7 Tage belastbar geladen wurden. Keine Änderung an Login, Firebase, Sync, Push oder Kalenderlogik.
+- Ab Version `0.1.0058`: Einstellungen nutzen nur noch den eigenständigen Workspace und werden beim Wechsel zu Dashboard, Kalender, Challenges oder Pollen hart ausgeblendet. Die Settings-Navigation enthält keine doppelten aktiven Kategorien mehr; der Detailbereich wird direkt über die linken Kategorie-Karten gesteuert. Allgemeine Side-Panels wurden optisch an den Settings-Kartenstil angepasst, ohne Einstellungen wieder als Overlay zu öffnen. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik.
 
 ---
 
@@ -111,7 +113,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0057`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0059`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -283,6 +285,8 @@ firebase deploy --only hosting
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
 
+| 2026-06-05 | Version auf `0.1.0059` erhöht; Pollen-Ausblick zeigt fehlende API-Daten jetzt explizit statt falscher 0 %-Werte und markiert, wenn weniger als 7 Tage belastbar geladen wurden. Keine Änderung an Login, Firebase, Sync, Push oder Kalenderlogik. | ChatGPT |
+| 2026-06-05 | Version auf `0.1.0058` erhöht; Einstellungen bleiben beim View-Wechsel nicht mehr im unteren Bereich sichtbar, die Settings-Kategorien wurden entdoppelt und allgemeine Side-Panels an den Settings-Kartenstil angepasst. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik. | ChatGPT |
 | 2026-06-05 | Version auf `0.1.0057` erhöht; Einstellungen öffnen als eigenständiger Workspace im Hauptbereich statt als Side-Panel über dem Dashboard. Settings-Navigation, Detailbereich und mobile gestapelte Ansicht bleiben erhalten. Keine Änderung an Schaltern, Sync-Regeln, Push, Kalenderoptionen, Challengeoptionen, Login, Firebase oder Datenmodell. | ChatGPT |
 | 2026-06-04 | Version auf `0.1.0052` erhöht; Challenge-Desktop-Ansicht im Premium-Stil aufgebaut: Gruppen-Ziel als Hero, drei Statuskarten, Punkte-Kalender darunter und Aufgaben/Team als zwei große Spalten. Mobile Ansicht bleibt gestapelt und übersichtlich. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik. | ChatGPT |
 | 2026-06-04 | Version auf `0.1.0051` erhöht; mobilen Pollen-7-Tage-Ausblick verdichtet und lesbarer gemacht, Mini-Balken mobil wieder sichtbar, Zeilentrenner klarer. Mobile Bottom-Bar ohne untere Kartenkante, Hellmodus-Hintergrund beruhigt und Desktop-Seitenleiste mit subtiler Trennlinie versehen. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik. | ChatGPT |
@@ -937,3 +941,8 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Einstellungen öffnen nicht mehr als Side-Panel über dem Dashboard, sondern als eigenständiger Workspace im Hauptbereich.
 - Settings-Navigation, Tabs und Detailbereich bleiben erhalten; Mobile bleibt gestapelt und scrollfähig.
 - Keine Änderung an Login, Firebase, Sync, Push oder Kalenderlogik.
+
+## Version 0.1.0058
+- Die sichtbare App-Version wurde auf `0.1.0058` erhöht.
+- Einstellungen werden beim Wechsel auf andere Reiter zuverlässig ausgeblendet.
+- Settings-Navigation und Side-Panels wurden optisch und strukturell bereinigt.

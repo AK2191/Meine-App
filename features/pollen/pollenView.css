@@ -3706,3 +3706,45 @@ body.change-theme-light #pollen-view .pollen-neo-forecast-row.none .pollen-neo-b
     grid-template-columns:1fr!important;
   }
 }
+
+/* v0.1.0059 · Pollen API-Datenstatus: keine falschen 0%-Tage mehr */
+#pollen-view .pollen-neo-section-head small{
+  margin-left:10px;
+  font-size:11px;
+  font-weight:850;
+  letter-spacing:0;
+  text-transform:none;
+  color:rgba(244,247,244,.46);
+}
+#pollen-view .pollen-neo-forecast-row.missing .pollen-neo-forecast-dot{
+  background:rgba(148,163,184,.42)!important;
+  box-shadow:none!important;
+}
+#pollen-view .pollen-neo-forecast-empty.missing,
+#pollen-view .pollen-neo-forecast-items span.missing{
+  color:rgba(244,247,244,.58)!important;
+  border-color:rgba(148,163,184,.18)!important;
+  background:rgba(148,163,184,.08)!important;
+}
+#pollen-view .pollen-neo-forecast-items span.missing strong,
+#pollen-view .pollen-neo-forecast-items span.missing em{
+  color:rgba(244,247,244,.58)!important;
+}
+#pollen-view .pollen-neo-forecast-row.missing .pollen-neo-bars span{
+  background:rgba(148,163,184,.10)!important;
+}
+[data-theme="light"] #pollen-view .pollen-neo-section-head small,
+body.theme-light #pollen-view .pollen-neo-section-head small,
+body.change-theme-light #pollen-view .pollen-neo-section-head small{
+  color:rgba(15,23,42,.48)!important;
+}
+[data-theme="light"] #pollen-view .pollen-neo-forecast-empty.missing,
+[data-theme="light"] #pollen-view .pollen-neo-forecast-items span.missing,
+body.theme-light #pollen-view .pollen-neo-forecast-empty.missing,
+body.theme-light #pollen-view .pollen-neo-forecast-items span.missing,
+body.change-theme-light #pollen-view .pollen-neo-forecast-empty.missing,
+body.change-theme-light #pollen-view .pollen-neo-forecast-items span.missing{
+  color:rgba(15,23,42,.54)!important;
+  border-color:rgba(148,163,184,.28)!important;
+  background:rgba(148,163,184,.10)!important;
+}

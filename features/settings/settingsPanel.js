@@ -506,7 +506,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0057';
+  var APP_VERSION = '0.1.0059';
 
   function appPane(){
     var installed = installedLabel();
@@ -599,10 +599,29 @@
     try{ document.querySelectorAll('.h-tab,.bnav-item').forEach(function(item){ item.classList.remove('active'); }); }catch(e){}
     return true;
   }
+  function hideSettingsWorkspace(){
+    try{
+      var view = document.getElementById('settings-view');
+      if(view){ view.style.display = 'none'; view.innerHTML = ''; }
+      if(document.body){ document.body.classList.remove('change-view-settings','change-settings-premium-open'); }
+    }catch(e){}
+  }
+  function installSettingsRouteGuard(){
+    if(window.__changeSettingsWorkspaceRouteGuard) return;
+    var original = window.setMainView;
+    if(typeof original === 'function'){
+      window.setMainView = function(view){
+        if(view !== 'settings') hideSettingsWorkspace();
+        return original.apply(this, arguments);
+      };
+      window.__changeSettingsWorkspaceRouteGuard = true;
+    }
+  }
   function openSettingsPanel(startTab){
     startTab = ['dashboard','calendar','challenges','sync','app'].indexOf(startTab) >= 0 ? startTab : (currentSettingsTab || 'dashboard');
     currentSettingsTab = startTab;
     ensurePremiumSettingsCloseBridge();
+    installSettingsRouteGuard();
     try{ document.body && document.body.classList.add('change-settings-premium-open'); }catch(e){}
     var profile = window.userInfo || {};
     var name = profile.name || profile.email || 'Change';
@@ -616,7 +635,7 @@
       + settingsNavCard('calendar','□','Kalender',calendarSummary,startTab)
       + settingsNavCard('challenges','🏆','Challenges',String(getAutoChallengeCount())+' Tagesaufgaben',startTab)
       + settingsNavCard('sync','↻','Daten & Sync','Manuell · keine Auto-Starts',startTab)
-      + settingsNavCard('app','◐','Darstellung','System · Grün',startTab);
+      + settingsNavCard('app','🛡','App & Sicherheit','Darstellung · Version '+APP_VERSION,startTab);
     var html = '<div class="change-settings-premium">'
       + '<div class="change-settings-page-head"><div class="change-settings-page-title"><span>⚙︎</span><strong>Einstellungen</strong></div><div class="change-settings-save-pill">✓ Alles gespeichert</div></div>'
       + '<section class="change-settings-profile-card">'
@@ -625,24 +644,10 @@
       + '</section>'
       + '<div class="change-settings-workspace">'
       + '<div class="change-settings-nav-grid">'
-      + settingsNavCard('app','👤','Profil & Konto',google.loggedIn?'Google angemeldet':'Nicht angemeldet',startTab)
       + nav
-      + settingsNavCard('sync','☁','Benachrichtigungen',weather.active?'Aktiv':'Nicht eingerichtet',startTab)
-      + settingsNavCard('app','🛡','App & Sicherheit','System ok · Version '+APP_VERSION,startTab)
       + '</div>'
       + '<div class="change-settings-detail-card">'
       + '<div class="change-settings-detail-head"><div><div class="change-settings-detail-title">'+(startTab==='dashboard'?'Dashboard':startTab==='calendar'?'Kalender':startTab==='challenges'?'Challenges':startTab==='sync'?'Daten & Sync':'App & Sicherheit')+'</div><div class="change-settings-detail-sub">Änderungen werden sofort übernommen und automatisch gespeichert.</div></div></div>'
-      + '<div class="change-settings-tab-shell">'
-      + '<button class="change-settings-tab-scroll" type="button" aria-label="Tabs nach links scrollen" data-settings-tab-left>‹</button>'
-      + '<div class="change-settings-tabs" data-settings-tabs-scroll>'
-      + tabButton('dashboard','▦ Dashboard', startTab)
-      + tabButton('calendar','📅 Kalender', startTab)
-      + tabButton('challenges','🏆 Challenges', startTab)
-      + tabButton('sync','↻ Sync', startTab)
-      + tabButton('app','⚙︎ App', startTab)
-      + '</div>'
-      + '<button class="change-settings-tab-scroll" type="button" aria-label="Tabs nach rechts scrollen" data-settings-tab-right>›</button>'
-      + '</div>'
       + '<div class="change-settings-pane '+(startTab==='dashboard'?'active':'')+'" data-pane="dashboard">'+dashboardPane()+'</div>'
       + '<div class="change-settings-pane '+(startTab==='calendar'?'active':'')+'" data-pane="calendar">'+calendarPane()+'</div>'
       + '<div class="change-settings-pane '+(startTab==='challenges'?'active':'')+'" data-pane="challenges">'+challengesPane()+'</div>'
