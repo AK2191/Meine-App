@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0056 und Settings-Fix
+> Zuletzt aktualisiert: 2026-06-04 · Version 0.1.0057 und eigenständige Einstellungen
 
 ---
 
@@ -111,7 +111,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0056`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0057`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -283,7 +283,7 @@ firebase deploy --only hosting
 | Datum      | Was                                                                | Von    |
 |------------|--------------------------------------------------------------------|--------|
 
-| 2026-06-05 | Version auf `0.1.0056` erhöht; Einstellungen-Fix für Premium-Workspace: fehlende Hilfsfunktion `dashboardModuleCount()` ergänzt, damit die Einstellungen wieder öffnen. Keine Änderung an Schaltern, Sync-Regeln, Push, Kalenderoptionen, Challengeoptionen, Login, Firebase oder Datenmodell. | ChatGPT |
+| 2026-06-05 | Version auf `0.1.0057` erhöht; Einstellungen öffnen als eigenständiger Workspace im Hauptbereich statt als Side-Panel über dem Dashboard. Settings-Navigation, Detailbereich und mobile gestapelte Ansicht bleiben erhalten. Keine Änderung an Schaltern, Sync-Regeln, Push, Kalenderoptionen, Challengeoptionen, Login, Firebase oder Datenmodell. | ChatGPT |
 | 2026-06-04 | Version auf `0.1.0052` erhöht; Challenge-Desktop-Ansicht im Premium-Stil aufgebaut: Gruppen-Ziel als Hero, drei Statuskarten, Punkte-Kalender darunter und Aufgaben/Team als zwei große Spalten. Mobile Ansicht bleibt gestapelt und übersichtlich. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik. | ChatGPT |
 | 2026-06-04 | Version auf `0.1.0051` erhöht; mobilen Pollen-7-Tage-Ausblick verdichtet und lesbarer gemacht, Mini-Balken mobil wieder sichtbar, Zeilentrenner klarer. Mobile Bottom-Bar ohne untere Kartenkante, Hellmodus-Hintergrund beruhigt und Desktop-Seitenleiste mit subtiler Trennlinie versehen. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik. | ChatGPT |
 
@@ -927,7 +927,13 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Bestehende Schalter, Sync-Regeln, Push, Kalenderoptionen, Challengeoptionen und App-Gesundheitscheck bleiben funktional unverändert; es wird kein Auto-Start eingeführt.
 
 
-## Version 0.1.0056
-- Die sichtbare App-Version wurde auf `0.1.0056` erhöht.
+## Version 0.1.0057
+- Die sichtbare App-Version wurde auf `0.1.0057` erhöht.
 - Fix: `dashboardModuleCount()` wurde in `features/settings/settingsPanel.js` ergänzt, damit die Premium-Einstellungen ohne ReferenceError öffnen.
 - Keine Änderung an Login, Firebase, Sync, Push, Kalenderoptionen, Challengeoptionen oder Datenmodell.
+
+
+## Änderung 0.1.0057
+- Einstellungen öffnen nicht mehr als Side-Panel über dem Dashboard, sondern als eigenständiger Workspace im Hauptbereich.
+- Settings-Navigation, Tabs und Detailbereich bleiben erhalten; Mobile bleibt gestapelt und scrollfähig.
+- Keine Änderung an Login, Firebase, Sync, Push oder Kalenderlogik.

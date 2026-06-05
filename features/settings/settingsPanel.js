@@ -506,7 +506,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0056';
+  var APP_VERSION = '0.1.0057';
 
   function appPane(){
     var installed = installedLabel();
@@ -563,6 +563,42 @@
       window.__changeSettingsCloseBridge = true;
     }
   }
+  function ensureSettingsView(){
+    var view = document.getElementById('settings-view');
+    if(view) return view;
+    var content = document.getElementById('content');
+    if(!content) return null;
+    view = document.createElement('div');
+    view.id = 'settings-view';
+    view.style.display = 'none';
+    view.style.flex = '1';
+    view.style.minHeight = '0';
+    view.style.overflow = 'hidden';
+    view.style.flexDirection = 'column';
+    content.appendChild(view);
+    return view;
+  }
+  function activateSettingsView(html){
+    var view = ensureSettingsView();
+    if(!view) return false;
+    try{ if(typeof window.closePanel === 'function') window.closePanel(); }catch(e){}
+    ['dashboard-view','cal-body','challenges-view','pollen-view'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) el.style.display = 'none';
+    });
+    var cal = document.getElementById('cal-controls'); if(cal) cal.style.display = 'none';
+    var fab = document.getElementById('fab'); if(fab) fab.style.display = 'none';
+    view.innerHTML = html;
+    view.style.display = 'flex';
+    try{
+      if(document.body){
+        document.body.classList.remove('change-view-dashboard','change-view-calendar','change-view-challenges','change-view-pollen');
+        document.body.classList.add('change-view-settings','change-settings-premium-open');
+      }
+    }catch(e){}
+    try{ document.querySelectorAll('.h-tab,.bnav-item').forEach(function(item){ item.classList.remove('active'); }); }catch(e){}
+    return true;
+  }
   function openSettingsPanel(startTab){
     startTab = ['dashboard','calendar','challenges','sync','app'].indexOf(startTab) >= 0 ? startTab : (currentSettingsTab || 'dashboard');
     currentSettingsTab = startTab;
@@ -613,7 +649,7 @@
       + '<div class="change-settings-pane '+(startTab==='sync'?'active':'')+'" data-pane="sync">'+syncPane()+'</div>'
       + '<div class="change-settings-pane '+(startTab==='app'?'active':'')+'" data-pane="app">'+appPane()+'</div>'
       + '</div></div></div>';
-    if(typeof window.openPanel === 'function') window.openPanel('Einstellungen', html);
+    activateSettingsView(html);
     setTimeout(bindSettings, 30);
   }
   function refreshSameTab(tab){

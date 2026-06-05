@@ -677,7 +677,8 @@ function bootMainApp(){
 /* MAIN VIEW CONTROLLER */
 function setMainView(v){
   currentMainView=v;
-  const views=['dashboard','calendar','challenges','pollen'];
+  try{ if(document.body){ document.body.classList.remove('change-view-settings','change-settings-premium-open'); } }catch(e){}
+  const views=['dashboard','calendar','challenges','pollen','settings'];
   views.forEach(vv=>{
     const el=document.getElementById(vv==='calendar'?'cal-body':vv+'-view');
     if(el) el.style.display='none';

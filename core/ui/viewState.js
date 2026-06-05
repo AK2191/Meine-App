@@ -3,7 +3,7 @@
 
   var current = '';
   function normalize(view){
-    return ['dashboard','calendar','challenges','pollen'].indexOf(view) >= 0 ? view : 'dashboard';
+    return ['dashboard','calendar','challenges','pollen','settings'].indexOf(view) >= 0 ? view : 'dashboard';
   }
   function apply(view){
     current = normalize(view || current || (location.hash || '').replace('#/','').replace('#','') || 'dashboard');
@@ -12,6 +12,7 @@
       document.body.classList.toggle('change-view-calendar', current === 'calendar');
       document.body.classList.toggle('change-view-challenges', current === 'challenges');
       document.body.classList.toggle('change-view-pollen', current === 'pollen');
+      document.body.classList.toggle('change-view-settings', current === 'settings');
     }
     var fab = document.getElementById('fab');
     if(fab) fab.style.display = current === 'calendar' ? 'flex' : 'none';
