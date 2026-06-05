@@ -322,14 +322,14 @@ window.renderGroupGoal = function(){
         ${done ? '<div class="challenge-goal-done">🎉 Ziel erreicht! Ihr seid großartig!</div>' : ''}
       </div>
       <div class="challenge-goal-side challenge-goal-action-list">
-        <button type="button" class="challenge-goal-side-link challenge-goal-badges-compact" onclick="event.stopPropagation();window.openBadgePanel&&window.openBadgePanel()" title="Abzeichen öffnen">
+        <button type="button" class="challenge-goal-side-link challenge-goal-side-link-clickable challenge-goal-badges-compact" onclick="event.stopPropagation();window.openBadgePanel&&window.openBadgePanel()" title="Abzeichen öffnen">
           <span class="challenge-goal-link-icon">🎯</span>
           <span><b>Abzeichen</b><small>${badgeSub}</small></span>
           <strong>${badgeLabel}</strong>
         </button>
-        <button type="button" class="challenge-goal-side-link" onclick="event.stopPropagation();document.querySelector('#challenges-view .challenge-card')?.scrollIntoView({block:'nearest',behavior:'smooth'});" title="Heutige Aufgaben anzeigen"><span class="challenge-goal-link-icon">📍</span><span><b>Heute</b><small>${myDoneCount ? myDoneCount+' erledigt' : 'noch nichts erledigt'}</small></span><strong>${myTodayPoints} P</strong></button>
-        <button type="button" class="challenge-goal-side-link" onclick="event.stopPropagation();document.getElementById('challenge-week-points-card')?.scrollIntoView({block:'nearest',behavior:'smooth'});" title="Punkte-Kalender anzeigen"><span class="challenge-goal-link-icon">⚡</span><span><b>Team-Ziel</b><small>diese Woche</small></span><strong>${goal.target} P</strong></button>
-        <button type="button" class="challenge-goal-side-link" onclick="event.stopPropagation();document.getElementById('challenge-week-points-card')?.scrollIntoView({block:'nearest',behavior:'smooth'});" title="Fortschritt anzeigen"><span class="challenge-goal-link-icon">✓</span><span><b>Erreicht</b><small>${pct}% geschafft</small></span><strong>${points} P</strong></button>
+        <div class="challenge-goal-side-link challenge-goal-side-static"><span class="challenge-goal-link-icon">📍</span><span><b>Heute</b><small>${myDoneCount ? myDoneCount+' erledigt' : 'noch nichts erledigt'}</small></span><strong>${myTodayPoints} P</strong></div>
+        <div class="challenge-goal-side-link challenge-goal-side-static"><span class="challenge-goal-link-icon">⚡</span><span><b>Team-Ziel</b><small>diese Woche</small></span><strong>${goal.target} P</strong></div>
+        <div class="challenge-goal-side-link challenge-goal-side-static"><span class="challenge-goal-link-icon">✓</span><span><b>Erreicht</b><small>${pct}% geschafft</small></span><strong>${points} P</strong></div>
       </div>
     </div>
   `;

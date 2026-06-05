@@ -1,4 +1,4 @@
-Change App · Premium UI Cleanup · Version 0.1.0075
+Change App · Premium UI Cleanup · Version 0.1.0076
 
 Change App · Challenges Premium Desktop Style · Version 0.1.0052
 

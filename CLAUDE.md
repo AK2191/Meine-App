@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-05 · Version 0.1.0075 und Settings/Challenges/Dashboard/Pollen Feinschliff
+> Zuletzt aktualisiert: 2026-06-05 · Version 0.1.0076 und Challenge-Hero final bereinigt
 
 ---
 
@@ -118,6 +118,8 @@ Jeder Kalendertag enthält:
 
 - Ab Version `0.1.0075`: Einstellungen zeigen im Kopf keinen „Alles gespeichert“-Status mehr; der Gesundheitsstatus ist nicht klickbar und zeigt direkt wie viele App-Prüfungen korrekt laufen. Challenges entfernen die globale Kopf-Aktion „Heute zurücksetzen“ und den „Heute aktiv“-Badge, stabilisieren die Hero-Kachel gegen Überlagerungen und lassen Reset nur in „Heutige Aufgaben“. Pollen benennt den Bereich zu „5-Tages-Ausblick“ um. Dashboard-Termine sind bei „Heute keiner vorhanden“ optisch deaktiviert und nicht klickbar. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik.
 
+- Ab Version `0.1.0076`: Challenge-Hero final nach Pollen-Struktur stabilisiert. Die rechte Hero-Spalte nutzt kompakte Statuszeilen; nur „Abzeichen“ ist klickbar und öffnet das Abzeichen-Panel, die übrigen Statuspunkte sind reine Anzeigen. Desktop-Überlagerungen zwischen Hero und Punkte-Kalender wurden durch klare Grid-Spalten und Layering entfernt; Rangliste bleibt sichtbar. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten oder Challenge-Logik.
+
 ---
 
 ## ⚙️ Einstellungen
@@ -132,7 +134,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0075`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0076`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -982,3 +984,5 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 | 2026-06-05 | Version auf `0.1.0068` erhöht; Challenge-Hero nach Pollen-Struktur bereinigt: Fortschrittsbalken links, Abzeichen klickbar rechts, Chips entfernt, „Heute zurücksetzen“ in die Aufgabenkarte verschoben. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten oder Challenge-Logik. | ChatGPT |
 
 | 2026-06-05 | Version auf `0.1.0075` erhöht; Settings-Kopf bereinigt, Gesundheitsstatus als reine Statusanzeige, Challenge-Hero ohne Überlagerung und ohne globale Reset-Aktion, Pollen-Titel zu 5-Tages-Ausblick, Dashboard-Termine ohne Heute-Termin deaktiviert. | ChatGPT |
+
+| 2026-06-05 | Version auf `0.1.0076` erhöht; Challenge-Hero nach Pollen-Struktur final stabilisiert, rechte Statuspunkte bereinigt und nur Abzeichen klickbar gemacht. | ChatGPT |
