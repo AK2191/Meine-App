@@ -116,7 +116,9 @@
     }).join('');
   }
   function heroHtml(){
-    var key = selectedKey || M.todayKey();
+    // Der Hero bleibt bewusst immer auf dem echten heutigen Tag.
+    // Auswahl in Woche/Mini-Monat steuert nur Tagesagenda und Monatskarte.
+    var key = M.todayKey();
     var d = dateObj(key);
     var list = eventsFor(key);
     var next = nextEvent();

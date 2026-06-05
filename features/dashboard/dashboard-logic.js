@@ -1,11 +1,11 @@
 /* Change App · Dashboard · Premium Tages-Hub
- * Version 0.1.0069
+ * Version 0.1.0071
  * UI-only: baut das Dashboard neu auf, ohne Kalender-, Challenge-, Sync- oder Firebase-Logik zu ändern.
  */
 (function(){
   'use strict';
 
-  var VERSION = '0.1.0054';
+  var VERSION = '0.1.0071';
   var DAY = 86400000;
   var styleInstalled = false;
 
@@ -229,28 +229,39 @@
   }
 
   function overviewRows(todayCount, next, w, p, f, v){
-    var nextSub = next ? timeLabel(next)+' · '+titleOf(next) : 'Heute kein Termin';
+    var vacationClick = 'window.openUrlaubPanel?window.openUrlaubPanel():setMainView(\'calendar\')';
     return '<div class="dashp-hero-insights" aria-label="Dashboard Schnellübersicht">'
-      + '<button class="dashp-insight-row" onclick="setMainView(\'calendar\')"><span class="dashp-insight-dot">📅</span><span><b>Termine</b><small>'+todayCount+' heute · '+esc(nextSub)+'</small></span></button>'
       + '<button class="dashp-insight-row" onclick="window.ChangeWeatherCard&&ChangeWeatherCard.openForecast&&ChangeWeatherCard.openForecast(\'weather\')"><span class="dashp-insight-dot">'+esc(w.icon)+'</span><span><b>Wetter</b><small>'+esc(w.temp)+' · '+esc(w.text)+'</small></span></button>'
       + '<button class="dashp-insight-row" onclick="setMainView(\'pollen\')"><span class="dashp-insight-dot">🌿</span><span><b>Pollen</b><small>'+esc(p.level)+' · '+esc(p.meta || p.text)+'</small></span></button>'
       + '<button class="dashp-insight-row" onclick="window.openFriseurPanel&&window.openFriseurPanel()"><span class="dashp-insight-dot">✂️</span><span><b>Friseur</b><small>'+esc(f.text || f.meta)+'</small></span></button>'
-      + '<button class="dashp-insight-row" onclick="setMainView(\'calendar\')"><span class="dashp-insight-dot">🌴</span><span><b>Urlaub</b><small>'+esc(v.text)+' · '+esc(v.meta)+'</small></span></button>'
+      + '<button class="dashp-insight-row" onclick="'+vacationClick+'"><span class="dashp-insight-dot">🌴</span><span><b>Urlaub</b><small>'+esc(v.text)+' · '+esc(v.meta)+'</small></span></button>'
       + '</div>';
   }
-  function upcomingItems(){
+  function dashboardTermItems(){
     var td = dateKey(new Date());
-    var items = eventsForRange(td, addDays(td,90)).slice(0,3).map(function(event){ return {kind:'event', event:event, key:startOf(event)}; });
+    var today = todayEvents();
+    var items = [{kind:'todayStatus', event:today[0] || null, count:today.length, key:td}];
+    eventsForRange(addDays(td,1), addDays(td,90)).slice(0,3).forEach(function(event){ items.push({kind:'event', event:event, key:startOf(event)}); });
     var f = friseurSummary();
-    if(items.length < 3 && f.text && !/nicht geplant/i.test(f.text)){ items.push({kind:'friseur', key:td, title:f.meta || 'Friseur', sub:f.text, icon:'✂️', action:'friseur'}); }
+    if(items.length < 4 && f.text && !/nicht geplant/i.test(f.text)){ items.push({kind:'friseur', key:td, title:f.meta || 'Friseur', sub:f.text, icon:'✂️', action:'friseur'}); }
     var v = vacationSummary();
-    if(items.length < 3 && v.text && !/nicht geplant/i.test(v.text)){ items.push({kind:'urlaub', key:td, title:'Urlaub', sub:v.text+' · '+v.meta, icon:'🌴', action:'calendar'}); }
-    return items.slice(0,3);
+    if(items.length < 4 && v.text && !/nicht geplant/i.test(v.text)){ items.push({kind:'urlaub', key:td, title:'Urlaub', sub:v.text+' · '+v.meta, icon:'🌴', action:'urlaub'}); }
+    return items.slice(0,4);
   }
   function timelineUpcomingHtml(items){
     items = items || [];
-    if(!items.length) return '<div class="dashp-empty">Keine Termine oder Tracker in den nächsten Tagen.</div>';
+    if(!items.length) return '<div class="dashp-empty">Heute keiner vorhanden.</div>';
     return items.map(function(item){
+      if(item.kind === 'todayStatus'){
+        var ev = item.event;
+        var label = ev ? (item.count > 1 ? item.count+' Termine heute' : 'Heute 1 Termin') : 'Heute keiner vorhanden';
+        var sub = ev ? timeLabel(ev)+' · '+titleOf(ev) : 'Keine Termine für heute geplant.';
+        return '<div class="dashp-event-row tone-green" onclick="setMainView(\'calendar\')">'
+          + '<div class="dashp-event-icon">📅</div>'
+          + '<div class="dashp-event-time"><strong>Heute</strong><small>'+esc(fmtShort(item.key))+'</small></div>'
+          + '<div class="dashp-event-main"><strong>'+esc(label)+'</strong><span>'+esc(sub)+'</span></div>'
+          + '</div>';
+      }
       if(item.kind === 'event'){
         var event = item.event;
         var loc = locationOf(event);
@@ -263,10 +274,10 @@
           + (isGoogle ? '<span class="dashp-source-dot">G</span>' : '')
           + '</div>';
       }
-      var click = item.action === 'friseur' ? 'window.openFriseurPanel&&window.openFriseurPanel()' : 'setMainView(\'calendar\')';
+      var click = item.action === 'friseur' ? 'window.openFriseurPanel&&window.openFriseurPanel()' : (item.action === 'urlaub' ? 'window.openUrlaubPanel?window.openUrlaubPanel():setMainView(\'calendar\')' : 'setMainView(\'calendar\')');
       return '<div class="dashp-event-row tone-green" onclick="'+click+'">'
         + '<div class="dashp-event-icon">'+esc(item.icon || '📌')+'</div>'
-        + '<div class="dashp-event-time"><strong>Tracker</strong><small>'+esc(dayLabel(item.key || dateKey(new Date())))+'</small></div>'
+        + '<div class="dashp-event-time"><strong>'+esc(dayLabel(item.key || dateKey(new Date())))+'</strong><small>'+esc(fmtShort(item.key || dateKey(new Date())))+'</small></div>'
         + '<div class="dashp-event-main"><strong>'+esc(item.title || 'Eintrag')+'</strong><span>'+esc(item.sub || '')+'</span></div>'
         + '</div>';
     }).join('');
@@ -441,7 +452,7 @@
           + overviewRows(today.length, next, w, p, f, v)
         + '</section>'
       + '</div>'
-      + '<section class="dashp-card dashp-section-card"><div class="dashp-card-head"><div class="dashp-card-title">📍 Termine & Tracker</div></div><div class="dashp-card-body">'+timelineUpcomingHtml(upcomingItems())+'</div></section>'
+      + '<section class="dashp-card dashp-section-card"><div class="dashp-card-head"><div class="dashp-card-title">📍 Termine</div></div><div class="dashp-card-body">'+timelineUpcomingHtml(dashboardTermItems())+'</div></section>'
       + '<section class="dashp-card dashp-section-card"><div class="dashp-card-head"><div class="dashp-card-title">💪 Aufgaben</div><span class="dashp-header-pill">'+open.length+' offen</span></div><div class="dashp-card-body">'+challengesHtml(open)+'</div></section>'
       + '<section class="dashp-card dashp-section-card dashp-players-card"><div class="dashp-card-head"><div class="dashp-card-title">👥 Mitspieler</div></div><div class="dashp-card-body">'+playersHtml()+'</div></section>';
   }

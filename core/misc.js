@@ -304,10 +304,8 @@ window.renderGroupGoal = function(){
   var totalBadgeCount = 0;
   try{ earnedBadges = (typeof window.getEarnedBadges === 'function' ? window.getEarnedBadges() : []) || []; }catch(e){ earnedBadges = []; }
   try{ totalBadgeCount = Array.isArray(BADGES) ? BADGES.length : Math.max(earnedBadges.length, 0); }catch(e){ totalBadgeCount = Math.max(earnedBadges.length, 0); }
-  var badgeHtml = earnedBadges.length
-    ? earnedBadges.slice(-6).map(function(b){ return '<span class="challenge-goal-badge-icon" title="'+String(b.name||'Abzeichen').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];})+'">'+(b.icon||'🏅')+'</span>'; }).join('')
-    : '<span class="challenge-goal-badge-empty">Noch keine Abzeichen</span>';
-  if(earnedBadges.length > 6) badgeHtml += '<span class="challenge-goal-badge-more">+'+(earnedBadges.length-6)+'</span>';
+  var badgeLabel = earnedBadges.length + (totalBadgeCount ? ' / ' + totalBadgeCount : '');
+  var badgeSub = earnedBadges.length === 1 ? '1 aktiv' : earnedBadges.length + ' aktiv';
 
   card.innerHTML = `
     <div class="challenge-goal-hero-inner challenge-goal-hero-clean">
@@ -323,9 +321,9 @@ window.renderGroupGoal = function(){
         </div>
         ${done ? '<div class="challenge-goal-done">🎉 Ziel erreicht! Ihr seid großartig!</div>' : ''}
       </div>
-      <button type="button" class="challenge-goal-badges" onclick="event.stopPropagation();window.openBadgePanel&&window.openBadgePanel()" title="Abzeichen öffnen">
-        <div class="challenge-goal-badges-head"><span>Abzeichen</span><strong>${earnedBadges.length}${totalBadgeCount ? ' / '+totalBadgeCount : ''}</strong></div>
-        <div class="challenge-goal-badges-row">${badgeHtml}</div>
+      <button type="button" class="challenge-goal-badges challenge-goal-badges-compact" onclick="event.stopPropagation();window.openBadgePanel&&window.openBadgePanel()" title="Abzeichen öffnen">
+        <div class="challenge-goal-badges-head"><span>Abzeichen</span><strong>${badgeLabel}</strong></div>
+        <div class="challenge-goal-badges-sub">${badgeSub} · gesamt</div>
       </button>
       <div class="challenge-goal-side">
         <div class="challenge-goal-stat"><span>Heute</span><strong>${myTodayPoints} P</strong><small>${myDoneCount ? myDoneCount+' erledigt' : 'noch nichts erledigt'}</small></div>

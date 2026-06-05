@@ -1672,3 +1672,29 @@ body.change-view-challenges .leader-row{
     min-height:110px!important;
   }
 }
+
+/* v0.1.0071 · Kalender/Dashboard Feinschliff
+   UI only: Kalender-Hero bleibt auf Heute, Mini-Monat rechts sichtbar; Dashboard-Termine bereinigt. */
+@media(min-width:701px){
+  body.change-view-calendar #calendar-premium-view .cal-premium-main-grid,
+  body.change-view-calendar #calendar-premium-view .cal-premium-main-grid.single{
+    display:grid!important;
+    grid-template-columns:minmax(0,1.55fr) minmax(320px,.75fr)!important;
+    gap:18px!important;
+    align-items:start!important;
+  }
+  body.change-view-calendar #calendar-premium-view aside.cal-premium-side,
+  body.change-view-calendar #calendar-premium-view .cal-premium-side,
+  body.change-view-calendar #calendar-premium-view .cal-premium-mini{
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:visible!important;
+  }
+  body.change-view-calendar #calendar-premium-view .cal-premium-filter{display:none!important;}
+}
+body.change-view-dashboard .dashp-section-card .dashp-card-title{white-space:nowrap;}
+body.change-view-dashboard .dashp-hero-insights .dashp-insight-row:first-child{margin-top:0;}

@@ -424,10 +424,7 @@
               -pointsForDate(dk,String(a.email||a.id).toLowerCase());
       });
       var medals=['🥇','🥈','🥉'];
-      var suggestions=[];
-      try{ if(window.ChangePlayerActivity && window.ChangePlayerActivity.smartNudgeSuggestions) suggestions=window.ChangePlayerActivity.smartNudgeSuggestions(2)||[]; }catch(e){}
-      var suggestionHtml = suggestions.length ? '<div class="smart-nudge-card"><div><div class="smart-nudge-title">Anfeuern vorgeschlagen</div><div class="smart-nudge-sub">'+esc(suggestions[0].playerName)+' · '+esc(suggestions[0].reason)+'</div></div><button class="nudge-btn" onclick="event.stopPropagation();window.sendNudge&&window.sendNudge(\''+esc(suggestions[0].playerId)+'\',\''+esc(suggestions[0].playerName)+'\')"><span class="nudge-btn-icon">💪</span><span class="nudge-btn-label">Anfeuern</span></button></div>' : '';
-      board.innerHTML=players.length?suggestionHtml+players.map(function(p,i){
+      board.innerHTML=players.length?players.map(function(p,i){
         var id=String(p.email||p.id||'').toLowerCase(), me=id===myId();
         var pts=pointsForDate(dk,id);
         var tot=(window.challengeCompletions||[]).reduce(function(s,c){
