@@ -1307,3 +1307,52 @@ body.change-mobile .challenge-item > .btn:not(.btn-undo) {
   body.theme-light.change-view-challenges .challenge-hero-metric-sub,
   body.change-theme-light.change-view-challenges .challenge-hero-metric-sub{color:#6f7b72!important;}
 }
+
+
+/* v0.1.0064 · Gruppen-Ziel als Pollen-artige Hero-Karte ohne separate Anfeuern-Kachel */
+#challenges-view #group-goal-card{
+  display:block!important;
+  padding:22px 24px!important;
+  overflow:hidden!important;
+}
+#challenges-view .challenge-goal-hero-inner{
+  display:grid;
+  grid-template-columns:minmax(0,1.2fr) minmax(220px,.8fr);
+  gap:22px;
+  align-items:stretch;
+}
+#challenges-view .challenge-goal-side{
+  display:grid;
+  gap:0;
+  border-left:1px solid rgba(255,255,255,.10);
+  padding-left:22px;
+}
+#challenges-view .challenge-goal-stat{
+  display:grid;
+  gap:3px;
+  padding:0 0 12px;
+  margin:0 0 12px;
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+#challenges-view .challenge-goal-stat:last-child{border-bottom:0;margin-bottom:0;padding-bottom:0}
+#challenges-view .challenge-goal-stat span{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--t4)}
+#challenges-view .challenge-goal-stat strong{font-size:18px;font-weight:950;color:var(--t1);line-height:1.05}
+#challenges-view .challenge-goal-stat small{font-size:11px;font-weight:700;color:var(--t4)}
+#challenges-view .challenge-goal-pill{
+  display:inline-flex;align-items:center;border-radius:999px;padding:6px 10px;
+  background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.18);
+  color:var(--acc);font-size:11px;font-weight:900;line-height:1;
+}
+#challenges-view .challenge-hero-metric-card{display:none!important}
+[data-theme="light"] #challenges-view .challenge-goal-side,
+body.theme-light #challenges-view .challenge-goal-side{border-left-color:rgba(27,42,33,.10)}
+[data-theme="light"] #challenges-view .challenge-goal-stat,
+body.theme-light #challenges-view .challenge-goal-stat{border-bottom-color:rgba(27,42,33,.10)}
+@media(max-width:720px){
+  #challenges-view #group-goal-card{padding:20px!important}
+  #challenges-view .challenge-goal-hero-inner{grid-template-columns:1fr;gap:16px}
+  #challenges-view .challenge-goal-side{border-left:0;border-top:1px solid rgba(255,255,255,.10);padding-left:0;padding-top:14px;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  #challenges-view .challenge-goal-stat{border-bottom:0;margin:0;padding:0}
+  #challenges-view .challenge-goal-stat strong{font-size:15px}
+  #challenges-view .challenge-goal-stat small{font-size:10px}
+}

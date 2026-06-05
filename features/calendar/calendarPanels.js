@@ -160,6 +160,10 @@
   }
   function renderPremium(){
     var body = $('cal-body'); if(!body) return;
+    try{
+      var cd = currentDateSafe();
+      if(cd && !isNaN(cd)) selectedKey = keyOf(cd);
+    }catch(e){}
     var view = viewSafe();
     if(view === 'year' || view === 'workweek'){
       if(originalRenderCalendar && originalRenderCalendar !== window.renderCalendar) originalRenderCalendar();
@@ -171,9 +175,9 @@
       existing.id = 'calendar-premium-view';
       body.insertBefore(existing, body.firstChild);
     }
-    var control = '<div class="cal-premium-top"><div class="cal-premium-title"><span>▣</span><h1>Kalender</h1></div><div class="cal-premium-switch"><button data-cal-view="today">Heute</button><button data-cal-view="week">Woche</button><button data-cal-view="month" class="active">Monat</button></div></div>';
+    var control = '<div class="cal-premium-top"><div class="cal-premium-title"><span>▣</span><h1>Kalender</h1></div></div>';
     existing.innerHTML = control + heroHtml() + weekHtml()
-      + '<div class="cal-premium-main-grid"><section class="cal-premium-card cal-premium-agenda"><div class="cal-premium-section-head"><strong>Tagesagenda</strong></div><div>'+eventRows(selectedKey)+'</div><button class="cal-premium-add" type="button" onclick="window.openEventPanel&&window.openEventPanel(null,new Date(\''+selectedKey+'T12:00:00\'))">＋ Termin hinzufügen</button></section><aside>'+miniMonthHtml()+filtersHtml()+'</aside></div>';
+      + '<div class="cal-premium-main-grid single"><section class="cal-premium-card cal-premium-agenda"><div class="cal-premium-section-head"><strong>Tagesagenda</strong></div><div>'+eventRows(selectedKey)+'</div><button class="cal-premium-add" type="button" onclick="window.openEventPanel&&window.openEventPanel(null,new Date(\''+selectedKey+'T12:00:00\'))">＋ Termin hinzufügen</button></section></div>';
     var mg=$('month-grid'), wday=$('wday-row'), ag=$('agenda-view');
     if(mg) mg.style.display='none'; if(wday) wday.style.display='none'; if(ag) ag.style.display='none';
     bindPremium();
@@ -201,6 +205,21 @@
       d.setMonth(d.getMonth()+dir); selectedKey=keyOf(new Date(d.getFullYear(), d.getMonth(), Math.min(d.getDate(),28))); setCurrentDate(dateObj(selectedKey)); renderPremium();
     };
     renderPremium();
+    try{
+      if(typeof window.setMainView === 'function' && !window.setMainView._calendarPremiumRefreshPatch){
+        var oldSetMainView = window.setMainView;
+        window.setMainView = function(view){
+          var result = oldSetMainView.apply(this, arguments);
+          if(view === 'calendar'){
+            setTimeout(renderPremium, 60);
+            setTimeout(renderPremium, 350);
+            setTimeout(renderPremium, 1000);
+          }
+          return result;
+        };
+        window.setMainView._calendarPremiumRefreshPatch = true;
+      }
+    }catch(e){}
   }
 
   /* Panel-Funktionen bleiben erhalten, aber ruhiger aufgebaut */
@@ -271,7 +290,7 @@
 
 (function(){
   'use strict';
-  var VERSION = '0.1.0053';
+  var VERSION = '0.1.0064';
   function replaceVersionText(root){
     try{
       var walker = document.createTreeWalker(root || document.body, NodeFilter.SHOW_TEXT);

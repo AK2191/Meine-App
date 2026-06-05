@@ -301,24 +301,31 @@ window.renderGroupGoal = function(){
   var modeLabel = goal.dynamic ? 'Dynamisch' : 'Fix';
   var planLabel = goal.label ? ' · ' + goal.label : '';
   card.innerHTML = `
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:12px">
-      <div style="display:flex;align-items:flex-start;gap:9px;min-width:0">
-        <span style="font-size:18px;line-height:1.1">🎯</span>
-        <div style="min-width:0">
-          <div style="font-size:13px;font-weight:800;color:var(--t1)">Gruppen-Ziel · KW ${getWeekNumber()}</div>
-          <div style="font-size:10.5px;font-weight:650;color:var(--t4);margin-top:2px">${modeLabel}${planLabel} · ${subtitle}</div>
+    <div class="challenge-goal-hero-inner">
+      <div class="challenge-goal-main">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px">
+          <span style="font-size:18px;line-height:1.1">🎯</span>
+          <span style="font-size:10.5px;font-weight:900;color:var(--acc);letter-spacing:.08em;text-transform:uppercase">Diese Woche</span>
+        </div>
+        <div style="font-size:24px;font-weight:950;color:var(--t1);letter-spacing:-.04em;line-height:1.05">Gruppen-Ziel · KW ${getWeekNumber()}</div>
+        <div style="font-size:12px;font-weight:750;color:var(--t4);margin-top:7px;line-height:1.35">${modeLabel}${planLabel} · ${subtitle}</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px">
+          <span class="challenge-goal-pill">${pct}% erreicht</span>
+          <span class="challenge-goal-pill">${points} von ${goal.target} P</span>
+          <span class="challenge-goal-pill">Heute ${myTodayPoints} P</span>
         </div>
       </div>
-      <div style="text-align:right;flex:0 0 auto">
-        <div style="font-size:18px;font-weight:900;color:${done?'var(--grn)':'var(--acc)'}">${points}</div>
-        <div style="font-size:10px;color:var(--t4);font-weight:700">von ${goal.target} P</div>
+      <div class="challenge-goal-side">
+        <div class="challenge-goal-stat"><span>Heute</span><strong>${myTodayPoints} P</strong><small>${myDoneCount ? myDoneCount+' erledigt' : 'noch nichts erledigt'}</small></div>
+        <div class="challenge-goal-stat"><span>Team-Ziel</span><strong>${goal.target} P</strong><small>diese Woche</small></div>
+        <div class="challenge-goal-stat"><span>Erreicht</span><strong>${points} P</strong><small>${pct}% geschafft</small></div>
       </div>
     </div>
-    <div style="position:relative;background:var(--s3);border-radius:999px;height:20px;overflow:hidden">
+    <div style="position:relative;background:var(--s3);border-radius:999px;height:20px;overflow:hidden;margin-top:16px">
       <div style="height:20px;border-radius:999px;background:${done?'var(--grn)':'var(--acc)'};width:${pct}%;transition:width .4s ease"></div>
       <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:${pct>18?'#fff':'var(--t2)'};">${pct}% erreicht</span>
     </div>
-    ${done ? '<div style="font-size:12px;font-weight:700;color:var(--grn);margin-top:8px;text-align:center">🎉 Ziel erreicht! Ihr seid großartig!</div>' : ''}
+    ${done ? '<div style="font-size:12px;font-weight:800;color:var(--grn);margin-top:9px;text-align:center">🎉 Ziel erreicht! Ihr seid großartig!</div>' : ''}
   `;
 
   // Innerhalb des Challenge-Layouts als erstes Element einfügen (grid-column: 1/-1 per CSS)

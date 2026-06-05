@@ -170,11 +170,12 @@
     return html;
   }
   function updateHero(){
-    document.querySelectorAll('#change-health-card,.change-health-card').forEach(function(el){ el.remove(); });
-    var node = ensureHeader();
-    if(!node) return;
-    node.innerHTML = heroHtml();
-    node.style.display = node.innerHTML.trim() ? '' : 'none';
+    // v0.1.0063: Dashboard nutzt eigene Wetter-/Pollen-Karten.
+    // Keine zusätzlichen Header-Pills mehr, damit rechts oben keine Doppel-Kacheln erscheinen.
+    document.querySelectorAll('#change-health-card,.change-health-card,#change-health-summary').forEach(function(el){
+      if(el.id === 'change-health-summary'){ el.innerHTML = ''; el.style.display = 'none'; }
+      else el.remove();
+    });
   }
   function weatherSummaryPanelHtml(data){
     var w = data && data.weather;

@@ -207,7 +207,7 @@
       '<button class="dashp-mini-card" onclick="setMainView(\'pollen\')"><span class="dashp-mini-icon">'+esc(p.icon)+'</span><span><b>'+esc(p.level)+'</b><small>'+esc(p.text)+'</small></span></button>'+
       '<button class="dashp-mini-card" onclick="setMainView(\'calendar\')"><span class="dashp-mini-icon">'+esc(v.icon)+'</span><span><b>'+esc(v.text)+'</b><small>'+esc(v.meta)+'</small></span></button>'+
       '<button class="dashp-mini-card" onclick="setMainView(\'challenges\')"><span class="dashp-mini-icon">💪</span><span><b>'+openChallenges+'</b><small>Challenges offen</small></span></button>'+
-      '<button class="dashp-mini-card dashp-weather-mini" onclick="setMainView(\'pollen\')"><span class="dashp-mini-icon">'+esc(w.icon)+'</span><span><b>'+esc(w.temp)+'</b><small>'+esc(w.text)+'</small></span></button>';
+      '<button class="dashp-mini-card dashp-weather-mini" onclick="window.ChangeWeatherCard&&ChangeWeatherCard.openForecast&&ChangeWeatherCard.openForecast(\'weather\')"><span class="dashp-mini-icon">'+esc(w.icon)+'</span><span><b>'+esc(w.temp)+'</b><small>'+esc(w.text)+'</small></span></button>';
   }
   function timelineHtml(events){
     if(!events.length) return '<div class="dashp-empty">Heute sind keine Termine geplant.</div>';
@@ -233,7 +233,7 @@
         + '<div class="dashp-task-main"><strong>'+esc(title)+'</strong><span>'+esc(diff || 'Heute')+'</span></div>'
         + '<span class="dashp-points">+'+points+'</span>'
         + '</div>';
-    }).join('') + '<button class="dashp-link-btn" onclick="setMainView(\'challenges\')">Zu den Challenges</button>';
+    }).join('');
   }
   function playersHtml(){
     var list = players().slice().sort(function(a,b){ return (playerStats(playerKey(b)).totalPoints || 0) - (playerStats(playerKey(a)).totalPoints || 0); }).slice(0,4);
@@ -249,7 +249,7 @@
         + '<span class="dashp-player-main"><strong>'+esc(p.name || p.email || 'Mitspieler')+(id === me ? ' <em>DU</em>' : '')+'</strong><small>Heute '+(st.todayPoints || 0)+' P · Gesamt '+(st.totalPoints || 0)+' P</small></span>'
         + '<b class="dashp-score">'+(st.totalPoints || 0)+'</b>'
         + '</div>';
-    }).join('') + '<button class="dashp-link-btn dashp-cheer" onclick="setMainView(\'challenges\')">Anfeuern vorgeschlagen</button>';
+    }).join('');
   }
   function forecastHtml(){
     var data = weatherData();

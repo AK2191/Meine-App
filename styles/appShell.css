@@ -1548,3 +1548,127 @@ body.change-theme-light.change-view-challenges #challenges-view .challenge-view-
     background:#f4f7f0!important;
   }
 }
+
+/* v0.1.0062 · Kalender-Premium als einzige Kalenderansicht */
+body.change-view-calendar #cal-controls,
+body.change-view-calendar #wday-row,
+body.change-view-calendar #month-grid,
+body.change-view-calendar #agenda-view{
+  display:none!important;
+  visibility:hidden!important;
+  height:0!important;
+  min-height:0!important;
+  max-height:0!important;
+  overflow:hidden!important;
+  pointer-events:none!important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-main-grid.single{grid-template-columns:1fr!important;}
+body.change-view-calendar #calendar-premium-view aside,
+body.change-view-calendar #calendar-premium-view .cal-premium-mini,
+body.change-view-calendar #calendar-premium-view .cal-premium-filter,
+body.change-view-calendar #calendar-premium-view .cal-premium-switch{display:none!important;}
+
+
+/* v0.1.0063 · Finales Layout-Cleanup: Dashboard Health-Pills entfernen, Challenges ruhig öffnen */
+body.change-view-dashboard #change-health-summary,
+body.change-view-dashboard .change-health-summary,
+body.change-view-dashboard #change-health-card,
+body.change-view-dashboard .change-health-card{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+
+body.change-view-challenges #content{
+  align-items:center!important;
+}
+body.change-view-challenges #challenges-view{
+  position:relative!important;
+  z-index:1!important;
+  width:min(100%,1320px)!important;
+  max-width:1320px!important;
+  margin:0 auto!important;
+  padding:0!important;
+  overflow:visible!important;
+  background:transparent!important;
+}
+body.change-view-challenges #challenges-view .challenge-layout{
+  width:100%!important;
+  max-width:1320px!important;
+  margin:0 auto!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1.18fr) minmax(360px,.82fr)!important;
+  gap:16px!important;
+  align-items:start!important;
+  overflow:visible!important;
+  min-height:0!important;
+}
+body.change-view-challenges #group-goal-card,
+body.change-view-challenges .challenge-hero-metric-card,
+body.change-view-challenges #challenge-week-points-card{
+  position:relative!important;
+  z-index:2!important;
+}
+body.change-view-challenges #group-goal-card{
+  grid-column:1 / span 1!important;
+  min-height:150px!important;
+  margin:0!important;
+  border-radius:24px!important;
+  background:radial-gradient(circle at 85% 40%,rgba(74,222,128,.12),transparent 36%),linear-gradient(135deg,rgba(9,54,33,.62),rgba(7,13,18,.92))!important;
+}
+body.change-view-challenges .challenge-hero-metric-card{
+  min-height:150px!important;
+  border-radius:24px!important;
+  margin:0!important;
+}
+body.change-view-challenges #challenge-week-points-card{
+  grid-column:1 / -1!important;
+  order:20!important;
+  margin:0!important;
+}
+body.change-view-challenges .leader-card{
+  grid-column:2!important;
+  order:30!important;
+}
+body.change-view-challenges .challenge-card{
+  grid-column:1!important;
+  order:30!important;
+}
+body.change-view-challenges #challenges-list,
+body.change-view-challenges #leaderboard-list{
+  max-height:none!important;
+  overflow:visible!important;
+}
+body.change-view-challenges .challenge-item,
+body.change-view-challenges .leader-row{
+  position:relative!important;
+  z-index:3!important;
+}
+
+@media(max-width:900px){
+  body.change-view-challenges #content{align-items:stretch!important;}
+  body.change-view-challenges #challenges-view{
+    width:100%!important;
+    max-width:none!important;
+    padding:0!important;
+    overflow:visible!important;
+  }
+  body.change-view-challenges #challenges-view .challenge-layout{
+    display:flex!important;
+    flex-direction:column!important;
+    gap:12px!important;
+    width:100%!important;
+    max-width:none!important;
+  }
+  body.change-view-challenges #group-goal-card,
+  body.change-view-challenges .challenge-hero-metric-card,
+  body.change-view-challenges #challenge-week-points-card,
+  body.change-view-challenges .challenge-card,
+  body.change-view-challenges .leader-card{
+    width:100%!important;
+    grid-column:auto!important;
+  }
+  body.change-view-challenges .challenge-hero-metric-card{
+    min-height:110px!important;
+  }
+}
