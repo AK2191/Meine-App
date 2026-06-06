@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-06 · Version 0.1.0084 und Pollen-24h-Inline-Karte
+> Zuletzt aktualisiert: 2026-06-06 · Version 0.1.0086 und Pollen-Hellmodus/5-Tages-Ausblick-Fix
 
 ---
 
@@ -996,3 +996,11 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 | 2026-06-05 | Version auf `0.1.0078` erhöht; Challenge-Hero nach Pollen-Struktur final stabilisiert, rechte Statuspunkte bereinigt und nur Abzeichen klickbar gemacht. | ChatGPT |
 
 | 2026-06-05 | Version auf `0.1.0079` erhöht; Pollen-24-Stunden-Ausblick an das ausgewählte Allergieprofil gekoppelt und eigene Pollen-Auswahl entfernt. | ChatGPT |
+
+
+## Version 0.1.0086
+
+- Pollen: 24-Stunden-Ausblick im Hellmodus kontrastreicher und ruhiger gestaltet.
+- Pollen: 5-Tages-Ausblick nutzt geladene Tage stabil, ohne technische API-Platzhalter anzuzeigen.
+- Pollen mobil: Forecast-Karte behält abgerundete Ecken und saubere Abstände zur Bottom-Navigation.
+- Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten oder Pollen-API.

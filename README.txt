@@ -1,3 +1,7 @@
+Change App · Pollen Hellmode und 5-Tages-Ausblick Fix · Version 0.1.0086
+
+Change App · Pollen 24h Lesbarkeit und mobiler Hintergrund · Version 0.1.0085
+
 Change App · Pollen 24h kompakt · Version 0.1.0084
 
 Change App · Pollen 24h Profile Sync · Version 0.1.0084
