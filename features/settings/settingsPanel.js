@@ -506,7 +506,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0091';
+  var APP_VERSION = '0.1.0092';
 
 
   function healthSummaryPill(){

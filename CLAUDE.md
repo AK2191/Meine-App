@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-06 · Version 0.1.0091 und Mobile-Shell-Fix
+> Zuletzt aktualisiert: 2026-06-06 · Version 0.1.0092 und Pollen-Typografie-Fix
 
 ---
 
@@ -75,6 +75,7 @@ Jeder Kalendertag enthält:
 - Spieler speichern für das Gruppenziel in `change_players`: `challengeDifficulty`, `autoChallengeCount`, `weeklyTargetContribution`, `weeklyPointPotential`.
 - Ab Version `0.1.0090`: `features/challenges/challengesLayoutFix.css` wird nach `styles/appShell.css` geladen und setzt für Challenges final Grid-Flächen, Reihenfolge, Overflow und Z-Index. Dadurch kann die Gruppen-Ziel-Hero-Karte lokal nicht mehr über Punkte-Kalender, Aufgaben oder Rangliste liegen. Keine Änderung an Challenge-Logik, Firebase, Sync, Login, Push oder Kalenderdaten.
 - Ab Version `0.1.0091`: `styles/mobileShellFix.css` wird nach den App-Shell- und Challenge-Fix-Regeln geladen und stabilisiert mobil Dashboard, Kalender, Challenges und Pollen. Die Bottom-Bar ist fest unten, doppelte Unterabstände werden entfernt, mobile Scrollindikatoren werden ausgeblendet und geschlossene Side-Panels verschwinden vollständig aus dem sichtbaren Bereich. Keine Änderung an Logik, Firebase, Sync, Login, Push, Kalenderdaten, Pollen-API oder Challenge-Punkten.
+- Ab Version `0.1.0092`: `styles/pollenTypographyFix.css` wird nach `styles/mobileShellFix.css` geladen und beruhigt die Typografie im Pollenbereich. Der 24-Stunden-Ausblick nutzt kompaktere Kennzahlen ohne Ellipsen/harte Prozentumbrüche, die Trendtexte wurden gekürzt und die Abschnittsüberschriften von Allergieprofil, Symptome heute und Ausblick sind einheitlich. Keine Änderung an Firebase, Sync, Login, Pollenberechnung oder gespeicherten Symptomen.
 
 
 ### Layout (Desktop)
@@ -142,7 +143,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0091`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0092`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -1002,6 +1003,17 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 | 2026-06-06 | Version auf `0.1.0090` erhöht; Challenge-Layout-Fix als letzte CSS-Ebene ergänzt, damit Gruppen-Ziel, Punkte-Kalender, Aufgaben und Rangliste lokal nicht mehr überlappen. | ChatGPT |
 
 | 2026-06-06 | Version auf `0.1.0091` erhöht; Mobile-Shell-Fix ergänzt, damit Bottom-Bar, Unterabstand und geschlossene Panels mobil sauber abschließen. | ChatGPT |
+| 2026-06-06 | Version auf `0.1.0092` erhöht; Pollen-Typografie-Fix ergänzt, damit 24-Stunden-Ausblick und Abschnittsüberschriften ruhiger und einheitlicher wirken. | ChatGPT |
+
+## Version 0.1.0092
+
+- Die sichtbare App-Version wurde auf `0.1.0092` erhöht.
+- Neue Datei `styles/pollenTypographyFix.css` ergänzt und in `index.html` nach `styles/mobileShellFix.css` eingebunden.
+- Pollen-24-Stunden-Ausblick typografisch beruhigt: kompaktere Kennzahlen, kleinere Untertexte und keine Ellipsen bei Trend/Prozentwerten.
+- Trendtexte wurden gekürzt: `Stabil`, `Steigend`, `Ruhiger`.
+- Prozentwerte im 24-Stunden-Ausblick werden kompakter ohne Leerzeichen vor dem Prozentzeichen ausgegeben.
+- Abschnittsüberschriften im Pollenbereich wurden vereinheitlicht: Allergieprofil, Symptome heute, 24-Stunden-Ausblick und 5-Tages-Ausblick nutzen dieselbe Schriftfamilie, Größe, Laufweite und Zeilenhöhe.
+- Keine Änderung an Login, Firebase, Sync, Push, Pollenberechnung oder gespeicherten Symptomen.
 
 ## Version 0.1.0091
 

@@ -3,7 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0091';
+  var APP_VERSION = '0.1.0092';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var SELECTED_KEY = 'change_v1_pollen_selected_keys';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
@@ -368,11 +368,11 @@
     var peak = points.slice().sort(function(a,b){ return b.value - a.value; })[0] || {hour:0,value:0};
     var best = points.slice().sort(function(a,b){ return a.value - b.value; })[0] || {hour:0,value:0};
     var trend = points.length > 2 ? (points[points.length-1].value - points[0].value) : 0;
-    var trendText = trend > 12 ? 'später steigend' : trend < -12 ? 'später ruhiger' : 'relativ stabil';
-    var trendSub = trend > 12 ? 'Anstieg am Tagesende' : trend < -12 ? 'Entlastung später möglich' : 'kaum Veränderung erwartet';
+    var trendText = trend > 12 ? 'Steigend' : trend < -12 ? 'Ruhiger' : 'Stabil';
+    var trendSub = trend > 12 ? 'abends höher' : trend < -12 ? 'später ruhiger' : 'kaum Änderung';
     return '<div class="pollen-hourly-insights">'
-      + '<div class="pollen-hourly-insight '+esc(hourlyTone(peak.value))+'"><span class="pollen-hourly-insight-icon">↗</span><small>Peak</small><strong>'+esc(pad2(peak.hour))+':00</strong><em>'+esc(peak.value)+' %</em></div>'
-      + '<div class="pollen-hourly-insight '+esc(hourlyTone(best.value))+'"><span class="pollen-hourly-insight-icon">◷</span><small>Beste Zeit</small><strong>'+esc(pad2(best.hour))+':00</strong><em>'+esc(best.value)+' %</em></div>'
+      + '<div class="pollen-hourly-insight '+esc(hourlyTone(peak.value))+'"><span class="pollen-hourly-insight-icon">↗</span><small>Peak</small><strong>'+esc(pad2(peak.hour))+':00</strong><em>'+esc(peak.value)+'%</em></div>'
+      + '<div class="pollen-hourly-insight '+esc(hourlyTone(best.value))+'"><span class="pollen-hourly-insight-icon">◷</span><small>Beste Zeit</small><strong>'+esc(pad2(best.hour))+':00</strong><em>'+esc(best.value)+'%</em></div>'
       + '<div class="pollen-hourly-insight trend"><span class="pollen-hourly-insight-icon">↗</span><small>Trend</small><strong>'+esc(trendText)+'</strong><em>'+esc(trendSub)+'</em></div>'
     + '</div>';
   }
@@ -407,7 +407,7 @@
     ];
     return '<div class="pollen-hourly-parts">' + parts.map(function(part){
       var tone = hourlyTone(part.range.max);
-      var value = part.range.min === part.range.max ? String(part.range.max)+' %' : String(part.range.min)+'–'+String(part.range.max)+' %';
+      var value = part.range.min === part.range.max ? String(part.range.max)+'%' : String(part.range.min)+'–'+String(part.range.max)+'%' ;
       return '<div class="pollen-hourly-part '+esc(tone)+'">'
         + '<span>'+esc(part.icon)+'</span><strong>'+esc(part.title)+'</strong><em>'+esc(value)+'</em><small>'+esc(hourlyToneLabel(part.range.max))+'</small>'
       + '</div>'; 
