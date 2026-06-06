@@ -287,6 +287,12 @@ window.renderGroupGoal = function(){
     .reduce(function(sum,c){ return sum + (parseInt(c.points,10)||0); }, 0);
   const myDoneCount = (window.challengeCompletions||[])
     .filter(function(c){ return String(c.date||'').slice(0,10) === today && (!currentId || c.playerId === currentId); }).length;
+  var openTodayCount = 0;
+  try{
+    openTodayCount = typeof window.getOpenChallengesForDashboard === 'function'
+      ? ((window.getOpenChallengesForDashboard() || []).length)
+      : 0;
+  }catch(e){ openTodayCount = 0; }
 
   // Ziel-Karte ins Dashboard einfügen
   const dashBoard = document.querySelector('.challenge-card-head')?.parentElement ||
@@ -328,8 +334,7 @@ window.renderGroupGoal = function(){
           <strong>${badgeLabel}</strong>
         </button>
         <div class="challenge-goal-side-link challenge-goal-side-static"><span class="challenge-goal-link-icon">📍</span><span><b>Heute</b><small>${myDoneCount ? myDoneCount+' erledigt' : 'noch nichts erledigt'}</small></span><strong>${myTodayPoints} P</strong></div>
-        <div class="challenge-goal-side-link challenge-goal-side-static"><span class="challenge-goal-link-icon">⚡</span><span><b>Team-Ziel</b><small>diese Woche</small></span><strong>${goal.target} P</strong></div>
-        <div class="challenge-goal-side-link challenge-goal-side-static"><span class="challenge-goal-link-icon">✓</span><span><b>Erreicht</b><small>${pct}% geschafft</small></span><strong>${points} P</strong></div>
+        <div class="challenge-goal-side-link challenge-goal-side-static"><span class="challenge-goal-link-icon">🗂</span><span><b>Offen</b><small>${openTodayCount===0 ? 'heute alles erledigt' : 'heute noch offen'}</small></span><strong>${openTodayCount}</strong></div>
       </div>
     </div>
   `;

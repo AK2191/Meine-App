@@ -78,3 +78,7 @@
 ## 0.1.0105
 - Sichtbare Scrollbalken in Dashboard, Kalender und Challenges entfernt.
 - Scroll-Funktion bleibt erhalten.
+
+
+## 0.1.0106
+- Challenges-Hero rechts reduziert: Team-Ziel und Erreicht entfernt, Offene Aufgaben heute ergänzt.
