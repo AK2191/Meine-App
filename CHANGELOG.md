@@ -136,3 +136,12 @@
 ## 0.1.0116
 - Pollen-Mobilabstand zwischen Titel und Hauptkachel reduziert.
 - Dashboard-Titelhöhe und Workspace-Breite an die anderen Hauptansichten angeglichen.
+
+
+## 0.1.0117
+- Pollen mobil vertikal an Challenges angeglichen.
+- Abstand zwischen Pollen-Überschrift und Hauptkachel reduziert.
+
+
+## 0.1.0118
+- Fehlenden mobilen Zwischenstrich in der Challenges-Hauptkachel zwischen Heute und Offen ergänzt.

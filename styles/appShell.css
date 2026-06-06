@@ -4400,3 +4400,100 @@ body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
     display:none!important;
   }
 }
+
+
+/* v0.1.0117 · Pollen mobile hero vertical alignment
+   Pollen-Hauptkachel mobil auf dieselbe Höhe wie Challenges ziehen. */
+@media (max-width:700px){
+  body.change-view-pollen #content,
+  body.neo-pollen-shell #content{
+    padding-top:18px!important;
+  }
+
+  body.change-view-pollen #pollen-view,
+  body.neo-pollen-shell #pollen-view{
+    display:flex!important;
+    flex-direction:column!important;
+    min-height:0!important;
+  }
+
+  body.change-view-pollen #pollen-view .list-header,
+  body.neo-pollen-shell #pollen-view .list-header{
+    min-height:42px!important;
+    height:42px!important;
+    margin:0 0 14px!important;
+    padding:0!important;
+    display:flex!important;
+    align-items:center!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-view-sub,
+  body.neo-pollen-shell #pollen-view .pollen-view-sub{
+    display:none!important;
+    height:0!important;
+    margin:0!important;
+    padding:0!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-view-body,
+  body.neo-pollen-shell #pollen-view .pollen-view-body{
+    flex:0 0 auto!important;
+    padding-top:0!important;
+    margin-top:0!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-shell,
+  body.neo-pollen-shell #pollen-view .pollen-neo-shell{
+    margin-top:-82px!important;
+    padding-top:0!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-top,
+  body.neo-pollen-shell #pollen-view .pollen-neo-top{
+    margin-top:0!important;
+    padding-top:0!important;
+  }
+}
+
+@media (max-width:380px){
+  body.change-view-pollen #pollen-view .pollen-neo-shell,
+  body.neo-pollen-shell #pollen-view .pollen-neo-shell{
+    margin-top:-74px!important;
+  }
+}
+
+
+/* v0.1.0118 · Challenges mobile missing divider fix
+   Ergänzt mobil den fehlenden Zwischenstrich zwischen Heute und Offen. */
+@media (max-width:700px){
+  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
+    column-gap:0!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-side-link{
+    position:relative!important;
+    border-right:0!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-side-link::after{
+    content:""!important;
+    position:absolute!important;
+    top:8px!important;
+    right:0!important;
+    bottom:8px!important;
+    width:1px!important;
+    background:rgba(244,247,244,.14)!important;
+    pointer-events:none!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-side-link:last-child::after{
+    content:none!important;
+    display:none!important;
+  }
+}
+
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side-link::after,
+body.theme-light.change-view-challenges #challenges-view .challenge-goal-side-link::after,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side-link::after{
+  background:rgba(15,32,23,.12)!important;
+}
