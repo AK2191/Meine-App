@@ -500,3 +500,185 @@ body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium
     font-size:12px!important;
   }
 }
+
+
+/* v0.1.0112 · Calendar hero full width and pollen-style mobile insights */
+@media(min-width:701px){
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-grid,
+  #calendar-premium-view .cal-premium-hero-grid{
+    display:block!important;
+    width:100%!important;
+    max-width:none!important;
+    margin-bottom:18px!important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide,
+  #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide{
+    width:100%!important;
+    max-width:none!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1.12fr) minmax(380px,.88fr)!important;
+    gap:30px!important;
+    align-items:center!important;
+    min-height:184px!important;
+    padding:28px 30px 24px 28px!important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-side,
+  #calendar-premium-view .cal-premium-hero-side{
+    border-left:1px solid rgba(255,255,255,.08)!important;
+    border-top:0!important;
+    padding-left:24px!important;
+    padding-top:0!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:center!important;
+    gap:0!important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-row,
+  #calendar-premium-view .cal-premium-hero-row{
+    display:grid!important;
+    grid-template-columns:34px minmax(0,1fr)!important;
+    align-items:center!important;
+    gap:12px!important;
+    min-height:58px!important;
+    padding:10px 0!important;
+    border:0!important;
+    border-bottom:1px solid rgba(255,255,255,.08)!important;
+    border-radius:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-row:last-child,
+  #calendar-premium-view .cal-premium-hero-row:last-child{
+    border-bottom:0!important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body strong,
+  #calendar-premium-view .cal-premium-hero-row-body strong{
+    font-size:15px!important;
+    line-height:1.15!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body em,
+  #calendar-premium-view .cal-premium-hero-row-body em{
+    margin-top:4px!important;
+    font-size:13px!important;
+    line-height:1.25!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+}
+
+@media(max-width:700px){
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-side,
+  #calendar-premium-view .cal-premium-hero-side{
+    border-left:0!important;
+    border-top:1px solid rgba(255,255,255,.10)!important;
+    padding-left:0!important;
+    padding-top:12px!important;
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:0!important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-row,
+  #calendar-premium-view .cal-premium-hero-row{
+    display:grid!important;
+    grid-template-columns:18px minmax(0,1fr)!important;
+    grid-template-rows:auto auto!important;
+    align-content:center!important;
+    gap:0 7px!important;
+    min-height:58px!important;
+    padding:0 8px!important;
+    border:0!important;
+    border-right:1px solid rgba(255,255,255,.10)!important;
+    border-radius:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    text-align:left!important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-row:last-child,
+  #calendar-premium-view .cal-premium-hero-row:last-child{
+    border-right:0!important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-icon,
+  #calendar-premium-view .cal-premium-hero-row-icon{
+    grid-column:1!important;
+    grid-row:1 / 3!important;
+    width:18px!important;
+    height:18px!important;
+    min-width:18px!important;
+    font-size:9px!important;
+    align-self:center!important;
+    justify-self:center!important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body,
+  #calendar-premium-view .cal-premium-hero-row-body{
+    grid-column:2!important;
+    grid-row:1 / 3!important;
+    min-width:0!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:center!important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body strong,
+  #calendar-premium-view .cal-premium-hero-row-body strong{
+    font-size:10px!important;
+    line-height:1.1!important;
+    font-weight:900!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body em,
+  #calendar-premium-view .cal-premium-hero-row-body em{
+    margin-top:3px!important;
+    font-size:10px!important;
+    line-height:1.14!important;
+    font-weight:850!important;
+    white-space:normal!important;
+    overflow:hidden!important;
+    display:-webkit-box!important;
+    -webkit-line-clamp:2!important;
+    -webkit-box-orient:vertical!important;
+  }
+}
+
+@media(max-width:380px){
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-row,
+  #calendar-premium-view .cal-premium-hero-row{
+    grid-template-columns:16px minmax(0,1fr)!important;
+    gap:0 5px!important;
+    padding:0 6px!important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-icon,
+  #calendar-premium-view .cal-premium-hero-row-icon{
+    width:16px!important;
+    height:16px!important;
+    min-width:16px!important;
+    font-size:8px!important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body strong,
+  #calendar-premium-view .cal-premium-hero-row-body strong{
+    font-size:9px!important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body em,
+  #calendar-premium-view .cal-premium-hero-row-body em{
+    font-size:8.8px!important;
+  }
+}

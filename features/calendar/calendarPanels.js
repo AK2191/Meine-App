@@ -119,35 +119,46 @@
     try{
       var wrap = document.createElement('div');
       wrap.innerHTML = html || '';
-      var title = wrap.querySelector('.dash-row-title');
-      var sub = wrap.querySelector('.dash-row-sub');
-      var badge = wrap.querySelector('.dash-row-badge');
-      var icon = wrap.querySelector('.dash-row-icon');
-      return {
-        title: title ? title.textContent.trim() : (fallbackTitle || ''),
-        sub: sub ? sub.textContent.replace(/\s+/g,' ').trim() : '',
-        badge: badge ? badge.textContent.replace(/\s+/g,' ').trim() : '',
-        icon: icon ? icon.textContent.trim() : (fallbackIcon || '•')
-      };
+      var titleEl = wrap.querySelector('.dash-row-title');
+      var subEl   = wrap.querySelector('.dash-row-sub');
+      var badgeEl = wrap.querySelector('.dash-row-badge');
+      var iconEl  = wrap.querySelector('.dash-row-icon');
+
+      var title = titleEl && titleEl.textContent ? titleEl.textContent.replace(/\s+/g,' ').trim() : (fallbackTitle || '');
+      var sub   = subEl && subEl.textContent ? subEl.textContent.replace(/\s+/g,' ').trim() : '';
+      var badge = badgeEl && badgeEl.textContent ? badgeEl.textContent.replace(/\s+/g,' ').trim() : '';
+      var icon  = iconEl && iconEl.textContent ? iconEl.textContent.replace(/\s+/g,' ').trim() : (fallbackIcon || '•');
+
+      return { title:title, sub:sub, badge:badge, icon:icon };
     }catch(e){
       return { title: fallbackTitle || '', sub: '', badge: '', icon: fallbackIcon || '•' };
     }
   }
-  function calendarHeroRow(icon, title, sub, badge, onclick){
+  function calendarHeroRow(icon, title, value, onclick){
     return '<button type="button" class="cal-premium-hero-row"'+(onclick ? ' onclick="'+onclick+'"' : '')+'>'
       + '<span class="cal-premium-hero-row-icon">'+esc(icon || '•')+'</span>'
-      + '<span class="cal-premium-hero-row-body"><strong>'+esc(title || '')+'</strong><em>'+esc(sub || '—')+'</em></span>'
-      + '<span class="cal-premium-hero-row-badge">'+esc(badge || '')+'</span>'
+      + '<span class="cal-premium-hero-row-body"><strong>'+esc(title || '')+'</strong><em>'+esc(value || '—')+'</em></span>'
       + '</button>';
   }
   function heroSideHtml(next, nextTime, nextTitle){
     var nextSub = next ? ((nextTime || 'Ganztägig') + ' · ' + (nextTitle || 'Termin')) : 'Kein Termin geplant';
-    var friseur = extractDashRowParts(typeof window.getFriseurRowHtml === 'function' ? window.getFriseurRowHtml() : '', '✂', 'Friseur');
-    var urlaub = extractDashRowParts(typeof window.getUrlaubRowHtml === 'function' ? window.getUrlaubRowHtml() : '', '🏖', 'Urlaub');
+
+    var friseurHtml = '';
+    var urlaubHtml = '';
+    try{ if(typeof window.getFriseurRowHtml === 'function') friseurHtml = window.getFriseurRowHtml() || ''; }catch(e){}
+    try{ if(typeof window.getUrlaubRowHtml === 'function') urlaubHtml = window.getUrlaubRowHtml() || ''; }catch(e){}
+
+    var friseur = extractDashRowParts(friseurHtml, '✂', 'Friseur');
+    var urlaub = extractDashRowParts(urlaubHtml, '🏖', 'Urlaub');
+
+    var friseurValue = friseur.sub || friseur.badge || 'nicht geplant';
+    var urlaubValue = urlaub.badge || urlaub.sub || 'nicht geplant';
+
+    var vacationClick = "window.openUrlaubPanel?window.openUrlaubPanel():(window.openUrlaubSettings?window.openUrlaubSettings():setMainView(\'calendar\'))";
     var rows = '';
-    rows += calendarHeroRow('⌚', 'Nächster Termin', nextSub, next ? 'Aktiv' : '', next ? "window.openEventPanel&&window.openEventPanel('"+esc(next.id||'')+"')" : '');
-    rows += calendarHeroRow(friseur.icon || '✂', friseur.title || 'Friseur', friseur.sub || 'Noch keine Friseur-Info', friseur.badge || '', 'window.openFriseurPanel&&window.openFriseurPanel()');
-    rows += calendarHeroRow(urlaub.icon || '🏖', urlaub.title || 'Urlaub', urlaub.sub || 'Noch keine Urlaubs-Info', urlaub.badge || '', 'window.openUrlaubPanel&&window.openUrlaubPanel()');
+    rows += calendarHeroRow('⌚', 'Nächster Termin', nextSub, next ? "window.openEventPanel&&window.openEventPanel('"+esc(next.id||'')+"')" : '');
+    rows += calendarHeroRow(friseur.icon || '✂', friseur.title || 'Friseur', friseurValue, 'window.openFriseurPanel&&window.openFriseurPanel()');
+    rows += calendarHeroRow(urlaub.icon || '🏖', urlaub.title || 'Urlaub', urlaubValue, vacationClick);
     return '<div class="cal-premium-hero-side">'+rows+'</div>';
   }
 

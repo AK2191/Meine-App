@@ -310,15 +310,15 @@ window.renderGroupGoal = function(){
   var totalBadgeCount = 0;
   try{ earnedBadges = (typeof window.getEarnedBadges === 'function' ? window.getEarnedBadges() : []) || []; }catch(e){ earnedBadges = []; }
   try{ totalBadgeCount = Array.isArray(BADGES) ? BADGES.length : Math.max(earnedBadges.length, 0); }catch(e){ totalBadgeCount = Math.max(earnedBadges.length, 0); }
-  var badgeLabel = earnedBadges.length + (totalBadgeCount ? ' / ' + totalBadgeCount : '');
+  var badgeLabel = earnedBadges.length + ' von ' + (totalBadgeCount || earnedBadges.length || 0);
   var badgeSub = earnedBadges.length + ' aktiv von ' + (totalBadgeCount || earnedBadges.length || 0) + ' gesamt';
 
   card.innerHTML = `
     <div class="challenge-goal-hero-inner challenge-goal-hero-clean">
       <div class="challenge-goal-main">
-        <div class="challenge-goal-kicker"><span>🎯</span><span>Diese Woche</span></div>
-        <div class="challenge-goal-title">Gruppen-Ziel · KW ${getWeekNumber()}</div>
-        <div class="challenge-goal-sub">${modeLabel}${planLabel} · ${subtitle}</div>
+        <div class="challenge-goal-kicker"><span>🎯</span><span>Gesamtüberblick</span></div>
+        <div class="challenge-goal-title">Gruppenziel</div>
+        <div class="challenge-goal-sub">Kalenderwoche ${getWeekNumber()}</div>
         <div class="challenge-goal-progress-wrap">
           <div class="challenge-goal-progress-meta"><span>${pct}% erreicht</span><span>${points} von ${goal.target} P</span></div>
           <div class="challenge-goal-progress">

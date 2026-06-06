@@ -99,3 +99,15 @@
 ## 0.1.0110
 - Challenges-Hero visuell an Pollen angeglichen: keine inneren Kacheln mehr, Statuspunkte nebeneinander mit Überschrift und aktueller Anzeige.
 - Desktop und Mobil bereinigt.
+
+
+## 0.1.0111
+- Challenges-Hauptkachel textlich bereinigt und Layout korrigiert.
+- Desktop: rechte Statuspunkte untereinander. Mobil: nebeneinander ohne Überlappung.
+- Punkte-Kalender bleibt auf Desktop vollbreit unter der Hauptkachel.
+
+
+## 0.1.0112
+- Kalender-Hero auf Desktop vollbreit gesetzt.
+- Mobile Kalender-Hero im Pollen-Stil ohne innere Kacheln gestaltet.
+- Kalender-Hero übernimmt Friseur- und Urlaubswerte sauberer aus den bestehenden Dashboard-Zeilen.
