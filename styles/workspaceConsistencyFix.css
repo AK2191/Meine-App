@@ -1,0 +1,222 @@
+/* Change App · v0.1.0093
+   Workspace Consistency Fix
+   Ziel: Dashboard, Kalender, Challenges und Pollen nutzen dieselbe Arbeitsfläche,
+   dieselbe Titelzeile und denselben linken Startpunkt wie Pollen. */
+
+:root{
+  --change-workspace-max: 1320px;
+  --change-page-title-size-desktop: 27px;
+  --change-page-title-size-mobile: 24px;
+  --change-page-title-gap: 14px;
+  --change-page-icon-size-desktop: 20px;
+  --change-page-icon-size-mobile: 18px;
+  --change-page-head-height-desktop: 46px;
+  --change-page-head-height-mobile: 42px;
+}
+
+@media (min-width:701px){
+  body.change-view-dashboard #content,
+  body.change-view-calendar #content,
+  body.change-view-challenges #content,
+  body.change-view-pollen #content{
+    padding:26px 34px 34px !important;
+    overflow:auto !important;
+  }
+
+  body.change-view-dashboard #dashboard-view,
+  body.change-view-calendar #cal-body,
+  body.change-view-challenges #challenges-view,
+  body.change-view-pollen #pollen-view{
+    width:100% !important;
+    max-width:none !important;
+    min-height:100% !important;
+    margin:0 !important;
+    padding:0 !important;
+    box-sizing:border-box !important;
+  }
+
+  body.change-view-dashboard #dashboard-view,
+  body.change-view-calendar #calendar-premium-view,
+  body.change-view-challenges #challenges-view,
+  body.change-view-pollen #pollen-view{
+    width:min(100%, var(--change-workspace-max)) !important;
+    max-width:var(--change-workspace-max) !important;
+    margin:0 auto !important;
+    box-sizing:border-box !important;
+  }
+
+  body.change-view-dashboard .dash-hello,
+  body.change-view-calendar .cal-premium-top,
+  body.change-view-challenges #challenges-view .list-header,
+  body.change-view-pollen #pollen-view .list-header{
+    min-height:var(--change-page-head-height-desktop) !important;
+    margin:0 0 24px !important;
+    padding:0 !important;
+    display:flex !important;
+    align-items:center !important;
+    box-sizing:border-box !important;
+  }
+
+  body.change-view-dashboard .dash-hello,
+  body.change-view-calendar .cal-premium-top{
+    justify-content:flex-start !important;
+  }
+
+  body.change-view-dashboard .dash-hello h1,
+  body.change-view-calendar .cal-premium-title h1,
+  body.change-view-challenges #challenges-view .list-title,
+  body.change-view-pollen #pollen-view .list-title{
+    margin:0 !important;
+    font-size:var(--change-page-title-size-desktop) !important;
+    line-height:1 !important;
+    font-weight:950 !important;
+    letter-spacing:-.8px !important;
+  }
+
+  body.change-view-dashboard .dash-hello h1{
+    display:flex !important;
+    align-items:center !important;
+    gap:var(--change-page-title-gap) !important;
+  }
+
+  body.change-view-dashboard .dash-hello h1::before{
+    content:"";
+    width:var(--change-page-icon-size-desktop);
+    height:var(--change-page-icon-size-desktop);
+    flex:0 0 var(--change-page-icon-size-desktop);
+    background:no-repeat center/contain url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='3.5' y='3.5' width='6' height='6' rx='1.1' fill='none' stroke='%234ade80' stroke-width='1.7'/><rect x='14.5' y='3.5' width='6' height='6' rx='1.1' fill='none' stroke='%2398f2b5' stroke-width='1.7'/><rect x='3.5' y='14.5' width='6' height='6' rx='1.1' fill='none' stroke='%2398f2b5' stroke-width='1.7'/><rect x='14.5' y='14.5' width='6' height='6' rx='1.1' fill='none' stroke='%234ade80' stroke-width='1.7'/></svg>");
+    filter:drop-shadow(0 0 14px rgba(74,222,128,.24));
+  }
+
+  body.change-view-dashboard .dash-hello p{
+    display:none !important;
+  }
+
+  body.change-view-calendar .cal-premium-title,
+  body.change-view-pollen #pollen-view .list-title,
+  body.change-view-challenges #challenges-view .list-title{
+    display:flex !important;
+    align-items:center !important;
+    gap:var(--change-page-title-gap) !important;
+  }
+
+  body.change-view-calendar .cal-premium-title span{
+    width:var(--change-page-icon-size-desktop) !important;
+    min-width:var(--change-page-icon-size-desktop) !important;
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    font-size:20px !important;
+    line-height:1 !important;
+  }
+
+  body.change-view-pollen #pollen-view .list-title::before,
+  body.change-view-challenges #challenges-view .list-title::before{
+    width:var(--change-page-icon-size-desktop) !important;
+    height:var(--change-page-icon-size-desktop) !important;
+    flex:0 0 var(--change-page-icon-size-desktop) !important;
+  }
+
+  body.change-view-dashboard #dash-grid,
+  body.change-view-calendar #calendar-premium-view,
+  body.change-view-challenges #challenges-view .challenge-layout,
+  body.change-view-pollen #pollen-view .pollen-neo-shell{
+    width:100% !important;
+    max-width:100% !important;
+    box-sizing:border-box !important;
+  }
+}
+
+@media (max-width:700px){
+  body.change-view-dashboard #content,
+  body.change-view-calendar #content,
+  body.change-view-challenges #content,
+  body.change-view-pollen #content{
+    padding:18px 14px calc(86px + env(safe-area-inset-bottom)) !important;
+    overflow:auto !important;
+  }
+
+  body.change-view-dashboard #dashboard-view,
+  body.change-view-calendar #cal-body,
+  body.change-view-challenges #challenges-view,
+  body.change-view-pollen #pollen-view{
+    width:100% !important;
+    max-width:none !important;
+    min-height:100% !important;
+    margin:0 !important;
+    padding:0 !important;
+    box-sizing:border-box !important;
+  }
+
+  body.change-view-dashboard .dash-hello,
+  body.change-view-calendar .cal-premium-top,
+  body.change-view-challenges #challenges-view .list-header,
+  body.change-view-pollen #pollen-view .list-header{
+    min-height:var(--change-page-head-height-mobile) !important;
+    margin:0 0 14px !important;
+    padding:0 !important;
+    display:flex !important;
+    align-items:center !important;
+    box-sizing:border-box !important;
+  }
+
+  body.change-view-dashboard .dash-hello,
+  body.change-view-calendar .cal-premium-top{
+    justify-content:flex-start !important;
+  }
+
+  body.change-view-dashboard .dash-hello h1,
+  body.change-view-calendar .cal-premium-title h1,
+  body.change-view-challenges #challenges-view .list-title,
+  body.change-view-pollen #pollen-view .list-title{
+    margin:0 !important;
+    font-size:var(--change-page-title-size-mobile) !important;
+    line-height:1 !important;
+    font-weight:950 !important;
+    letter-spacing:-.65px !important;
+  }
+
+  body.change-view-dashboard .dash-hello h1{
+    display:flex !important;
+    align-items:center !important;
+    gap:12px !important;
+  }
+
+  body.change-view-dashboard .dash-hello h1::before{
+    content:"";
+    width:var(--change-page-icon-size-mobile);
+    height:var(--change-page-icon-size-mobile);
+    flex:0 0 var(--change-page-icon-size-mobile);
+    background:no-repeat center/contain url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='3.5' y='3.5' width='6' height='6' rx='1.1' fill='none' stroke='%234ade80' stroke-width='1.7'/><rect x='14.5' y='3.5' width='6' height='6' rx='1.1' fill='none' stroke='%2398f2b5' stroke-width='1.7'/><rect x='3.5' y='14.5' width='6' height='6' rx='1.1' fill='none' stroke='%2398f2b5' stroke-width='1.7'/><rect x='14.5' y='14.5' width='6' height='6' rx='1.1' fill='none' stroke='%234ade80' stroke-width='1.7'/></svg>");
+    filter:drop-shadow(0 0 12px rgba(74,222,128,.22));
+  }
+
+  body.change-view-dashboard .dash-hello p{
+    display:none !important;
+  }
+
+  body.change-view-calendar .cal-premium-title,
+  body.change-view-pollen #pollen-view .list-title,
+  body.change-view-challenges #challenges-view .list-title{
+    display:flex !important;
+    align-items:center !important;
+    gap:12px !important;
+  }
+
+  body.change-view-calendar .cal-premium-title span{
+    width:var(--change-page-icon-size-mobile) !important;
+    min-width:var(--change-page-icon-size-mobile) !important;
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    font-size:18px !important;
+    line-height:1 !important;
+  }
+
+  body.change-view-pollen #pollen-view .list-title::before,
+  body.change-view-challenges #challenges-view .list-title::before{
+    width:var(--change-page-icon-size-mobile) !important;
+    height:var(--change-page-icon-size-mobile) !important;
+    flex:0 0 var(--change-page-icon-size-mobile) !important;
+  }
+}

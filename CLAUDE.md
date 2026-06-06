@@ -1,8 +1,14 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-06 · Version 0.1.0092 und Pollen-Typografie-Fix
+> Zuletzt aktualisiert: 2026-06-06 · Version 0.1.0093 und Workspace-Consistency-Fix
 
 ---
+
+## Version 0.1.0093
+- Die sichtbare App-Version wurde auf `0.1.0093` erhöht.
+- Neue Datei `styles/workspaceConsistencyFix.css` ergänzt und nach `styles/pollenTypographyFix.css` geladen.
+- Dashboard, Kalender, Challenges und Pollen nutzen jetzt dieselbe Workspace-Breite, dieselbe Titelhöhe und denselben linken Startpunkt wie Pollen.
+- Dashboard erhielt zusätzlich einen Titel-Icon-Start, damit die Überschrift links oben nicht mehr springt.
 
 ## 🎯 Ziel der App
 Eine saubere, erweiterbare Web-App namens **Change** mit:
@@ -143,7 +149,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0092`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0093`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -1043,3 +1049,6 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Pollen: 5-Tages-Ausblick nutzt geladene Tage stabil, ohne technische API-Platzhalter anzuzeigen.
 - Pollen mobil: Forecast-Karte behält abgerundete Ecken und saubere Abstände zur Bottom-Navigation.
 - Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten oder Pollen-API.
+
+
+| 2026-06-06 | Version auf `0.1.0093` erhöht; Workspace-Konsistenz-Fix ergänzt, damit alle vier Hauptansichten dieselbe Arbeitsfläche und Titelposition wie Pollen nutzen. | ChatGPT |
