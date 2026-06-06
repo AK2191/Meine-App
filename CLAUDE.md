@@ -1,11 +1,11 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-06 · Version 0.1.0106 und Pollen-Maincard-Fix
+> Zuletzt aktualisiert: 2026-06-06 · Version 0.1.0108 und Pollen-Maincard-Fix
 
 ---
 
 
-## Version 0.1.0106
+## Version 0.1.0108
 - Die sichtbare App-Version wurde auf `0.1.0098` erhöht.
 - Die Pollen-Maincard wurde oben überarbeitet.
 - "Belastung heute" wurde aus dem rechten Bereich entfernt.
@@ -176,7 +176,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0106`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0108`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -1103,3 +1103,7 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 | 2026-06-06 | Version auf `0.1.0105` erhöht; sichtbare Scrollbalken in Dashboard, Kalender und Challenges entfernt. | ChatGPT |
 
 | 2026-06-06 | Version auf `0.1.0106` erhöht; Challenges-Hero rechts bereinigt, Team-Ziel und Erreicht entfernt und Offene Aufgaben heute ergänzt. | ChatGPT |
+
+| 2026-06-06 | Version auf `0.1.0107` erhöht; mobile Pollen-Hauptkachel angepasst, damit Gräser hoch, Peak und Ruhigster Tag wieder horizontal nebeneinander stehen. | ChatGPT |
+
+| 2026-06-06 | Version auf `0.1.0108` erhöht; Kalender mobil angepasst mit kompaktem Hero-Infobereich und vollständiger Wochenanzeige. | ChatGPT |

@@ -82,3 +82,11 @@
 
 ## 0.1.0106
 - Challenges-Hero rechts reduziert: Team-Ziel und Erreicht entfernt, Offene Aufgaben heute ergänzt.
+
+
+## 0.1.0107
+- Pollen-Hauptkachel auf Mobil angepasst: Gräser hoch, Peak und Ruhigster Tag wieder horizontal nebeneinander.
+
+
+## 0.1.0108
+- Kalender mobil überarbeitet: kompakter Hero-Infobereich und vollständige Wochenanzeige ohne abgeschnittene Tage.
