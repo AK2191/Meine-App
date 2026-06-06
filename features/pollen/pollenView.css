@@ -4145,3 +4145,145 @@ body.light #pollen-view .pollen-hourly-part{
   #pollen-view .pollen-hourly-chart svg{height:116px!important;}
   #pollen-view .pollen-hourly-parts{grid-template-columns:1fr 1fr!important;}
 }
+
+
+/* v0.1.0084 · Pollen 24h Inline-Struktur: kompakte Vollbreiten-Karte, obere/untere Werte nebeneinander */
+#pollen-view .pollen-hourly-section{
+  width:100%!important;
+  min-width:0!important;
+}
+#pollen-view .pollen-hourly-card{
+  width:100%!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+  padding:14px!important;
+  display:grid!important;
+  gap:10px!important;
+}
+#pollen-view .pollen-hourly-insights{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:0!important;
+  margin:0!important;
+  border:1px solid rgba(255,255,255,.075)!important;
+  border-radius:16px!important;
+  overflow:hidden!important;
+  background:rgba(255,255,255,.028)!important;
+}
+#pollen-view .pollen-hourly-insight{
+  min-height:54px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  padding:10px 12px!important;
+  grid-template-columns:24px minmax(0,1fr)!important;
+  gap:1px 9px!important;
+}
+#pollen-view .pollen-hourly-insight + .pollen-hourly-insight{
+  border-left:1px solid rgba(255,255,255,.075)!important;
+}
+#pollen-view .pollen-hourly-insight-icon{
+  width:22px!important;
+  height:22px!important;
+  font-size:12px!important;
+  border-width:1px!important;
+}
+#pollen-view .pollen-hourly-insight small{font-size:9.5px!important;line-height:1.05!important;}
+#pollen-view .pollen-hourly-insight strong{font-size:13px!important;line-height:1.08!important;}
+#pollen-view .pollen-hourly-insight em{font-size:10.5px!important;line-height:1.08!important;}
+#pollen-view .pollen-hourly-chart{
+  width:100%!important;
+  box-sizing:border-box!important;
+  padding:8px 10px 4px!important;
+  border-radius:16px!important;
+  background:rgba(7,12,16,.34)!important;
+  border:1px solid rgba(255,255,255,.06)!important;
+}
+#pollen-view .pollen-hourly-chart svg{height:132px!important;width:100%!important;}
+#pollen-view .pollen-hourly-parts{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:0!important;
+  margin-top:0!important;
+  border:1px solid rgba(255,255,255,.075)!important;
+  border-radius:16px!important;
+  overflow:hidden!important;
+  background:rgba(255,255,255,.025)!important;
+}
+#pollen-view .pollen-hourly-part{
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  padding:10px 12px!important;
+  min-height:58px!important;
+  display:grid!important;
+  grid-template-columns:auto minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:2px 8px!important;
+}
+#pollen-view .pollen-hourly-part + .pollen-hourly-part{
+  border-left:1px solid rgba(255,255,255,.075)!important;
+}
+#pollen-view .pollen-hourly-part span{grid-row:1/4!important;font-size:18px!important;line-height:1!important;}
+#pollen-view .pollen-hourly-part strong{font-size:10.5px!important;line-height:1.05!important;}
+#pollen-view .pollen-hourly-part em{font-size:14px!important;line-height:1.08!important;}
+#pollen-view .pollen-hourly-part small{font-size:9.5px!important;line-height:1.05!important;}
+body.light #pollen-view .pollen-hourly-insights,
+body.light #pollen-view .pollen-hourly-parts{
+  background:rgba(255,255,255,.58)!important;
+  border-color:rgba(20,35,24,.09)!important;
+}
+body.light #pollen-view .pollen-hourly-insight + .pollen-hourly-insight,
+body.light #pollen-view .pollen-hourly-part + .pollen-hourly-part{
+  border-left-color:rgba(20,35,24,.09)!important;
+}
+@media(max-width:760px){
+  #pollen-view .pollen-hourly-section{
+    width:100%!important;
+    max-width:none!important;
+    align-self:stretch!important;
+  }
+  #pollen-view .pollen-hourly-card{
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:12px!important;
+    border-radius:20px!important;
+  }
+  #pollen-view .pollen-hourly-insights{
+    grid-template-columns:repeat(3,minmax(92px,1fr))!important;
+  }
+  #pollen-view .pollen-hourly-insight{
+    min-height:52px!important;
+    padding:9px 8px!important;
+    grid-template-columns:20px minmax(0,1fr)!important;
+    gap:1px 6px!important;
+  }
+  #pollen-view .pollen-hourly-insight-icon{width:19px!important;height:19px!important;font-size:10px!important;}
+  #pollen-view .pollen-hourly-insight small{font-size:8.8px!important;}
+  #pollen-view .pollen-hourly-insight strong{font-size:11px!important;}
+  #pollen-view .pollen-hourly-insight em{font-size:9.5px!important;}
+  #pollen-view .pollen-hourly-chart{padding:7px 6px 2px!important;}
+  #pollen-view .pollen-hourly-chart svg{height:108px!important;}
+  #pollen-view .pollen-hourly-parts{
+    grid-template-columns:repeat(4,minmax(74px,1fr))!important;
+  }
+  #pollen-view .pollen-hourly-part{
+    padding:9px 7px!important;
+    min-height:58px!important;
+    grid-template-columns:1fr!important;
+    gap:2px!important;
+    text-align:center!important;
+    justify-items:center!important;
+  }
+  #pollen-view .pollen-hourly-part span{grid-row:auto!important;font-size:17px!important;}
+  #pollen-view .pollen-hourly-part strong{font-size:9.5px!important;}
+  #pollen-view .pollen-hourly-part em{font-size:12px!important;}
+  #pollen-view .pollen-hourly-part small{font-size:8.8px!important;}
+}
+@media(max-width:420px){
+  #pollen-view .pollen-hourly-insights{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+  #pollen-view .pollen-hourly-parts{grid-template-columns:repeat(4,minmax(0,1fr))!important;}
+}
