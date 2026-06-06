@@ -4641,3 +4641,103 @@ body.change-view-pollen #pollen-view .pollen-hourly-x text{
     height:168px!important;
   }
 }
+
+/* v0.1.0089 · Pollen mobile bottom cleanup: kein zweiter Scrollindikator, kein leerer Sockel */
+body.change-view-pollen,
+body.neo-pollen-shell{
+  overflow:hidden!important;
+  background:#03090c!important;
+}
+body.change-view-pollen #content,
+body.neo-pollen-shell #content{
+  overflow:hidden!important;
+  background:#03090c!important;
+  padding-bottom:0!important;
+}
+body.change-view-pollen #pollen-view,
+body.neo-pollen-shell #pollen-view{
+  background:#03090c!important;
+  background-image:none!important;
+  border:0!important;
+  box-shadow:none!important;
+  scrollbar-width:none!important;
+  -ms-overflow-style:none!important;
+}
+body.change-view-pollen #pollen-view::before,
+body.neo-pollen-shell #pollen-view::before{
+  position:fixed!important;
+  inset:0!important;
+  pointer-events:none!important;
+  background:
+    radial-gradient(circle at 12% 0%,rgba(19,104,60,.13),transparent 30%),
+    linear-gradient(180deg,#03090c,#03090c)!important;
+}
+body.change-view-pollen #pollen-view::-webkit-scrollbar,
+body.neo-pollen-shell #pollen-view::-webkit-scrollbar,
+body.change-view-pollen #pollen-view *::-webkit-scrollbar,
+body.neo-pollen-shell #pollen-view *::-webkit-scrollbar{
+  width:0!important;
+  height:0!important;
+  display:none!important;
+  background:transparent!important;
+}
+body.change-view-pollen #pollen-view,
+body.change-view-pollen #pollen-view *,
+body.neo-pollen-shell #pollen-view,
+body.neo-pollen-shell #pollen-view *{
+  scrollbar-color:transparent transparent!important;
+}
+body.change-view-pollen #pollen-view .pollen-view-body,
+body.neo-pollen-shell #pollen-view .pollen-view-body{
+  overflow:visible!important;
+  padding-bottom:0!important;
+  background:transparent!important;
+  border:0!important;
+}
+body.change-view-pollen #pollen-view .pollen-neo-shell,
+body.neo-pollen-shell #pollen-view .pollen-neo-shell{
+  padding-bottom:0!important;
+  margin-bottom:0!important;
+  background:transparent!important;
+  border:0!important;
+}
+body.change-view-pollen #pollen-view .pollen-neo-forecast-list,
+body.neo-pollen-shell #pollen-view .pollen-neo-forecast-list{
+  margin-bottom:0!important;
+}
+@media(max-width:760px){
+  body.change-view-pollen #pollen-view,
+  body.neo-pollen-shell #pollen-view{
+    height:100dvh!important;
+    max-height:100dvh!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    padding-bottom:0!important;
+    overscroll-behavior:contain!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+  body.change-view-pollen #pollen-view .pollen-neo-shell,
+  body.neo-pollen-shell #pollen-view .pollen-neo-shell{
+    min-height:auto!important;
+    padding-bottom:0!important;
+    margin-bottom:0!important;
+  }
+  body.change-view-pollen #pollen-view .pollen-neo-forecast-list,
+  body.neo-pollen-shell #pollen-view .pollen-neo-forecast-list{
+    border-bottom-left-radius:0!important;
+    border-bottom-right-radius:0!important;
+    border-bottom:0!important;
+    box-shadow:none!important;
+  }
+  body.change-view-pollen #pollen-view .pollen-neo-forecast-row:last-child,
+  body.neo-pollen-shell #pollen-view .pollen-neo-forecast-row:last-child{
+    border-bottom:0!important;
+  }
+  body.change-view-pollen .bottom-nav,
+  body.change-view-pollen .bnav,
+  body.neo-pollen-shell .bottom-nav,
+  body.neo-pollen-shell .bnav{
+    border-top:0!important;
+    box-shadow:none!important;
+  }
+}
