@@ -111,3 +111,9 @@
 - Kalender-Hero auf Desktop vollbreit gesetzt.
 - Mobile Kalender-Hero im Pollen-Stil ohne innere Kacheln gestaltet.
 - Kalender-Hero übernimmt Friseur- und Urlaubswerte sauberer aus den bestehenden Dashboard-Zeilen.
+
+
+## 0.1.0113
+- Challenges-Statuspunkte in der Hauptkachel an den Pollen-Stil angeglichen.
+- Desktop vertikal, Mobil horizontal; Aufbau mit Icon links, Überschrift und Anzeige darunter.
+- Abzeichen-Fortschritt auf „0 von 37“ korrigiert.
