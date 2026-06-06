@@ -1,11 +1,11 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-06 · Version 0.1.0113 und Pollen-Maincard-Fix
+> Zuletzt aktualisiert: 2026-06-06 · Version 0.1.0114 und Pollen-Maincard-Fix
 
 ---
 
 
-## Version 0.1.0113
+## Version 0.1.0114
 - Die sichtbare App-Version wurde auf `0.1.0098` erhöht.
 - Die Pollen-Maincard wurde oben überarbeitet.
 - "Belastung heute" wurde aus dem rechten Bereich entfernt.
@@ -176,7 +176,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0113`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0114`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -1117,3 +1117,5 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 | 2026-06-06 | Version auf `0.1.0112` erhöht; Kalender-Hero auf Desktop vollbreit gesetzt und mobile Infoanzeigen im Pollen-Stil ohne innere Kacheln gestaltet. | ChatGPT |
 
 | 2026-06-06 | Version auf `0.1.0113` erhöht; Challenges-Statuspunkte an den Pollen-Stil angeglichen und Abzeichen-Fortschritt auf `0 von 37` korrigiert. | ChatGPT |
+
+| 2026-06-06 | Version auf `0.1.0114` erhöht; Kalender-Hero-Daten und mobile Darstellung korrigiert sowie Challenges-Statuspunkte mobil gegen Überlappung abgesichert. | ChatGPT |

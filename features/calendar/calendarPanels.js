@@ -134,6 +134,51 @@
       return { title: fallbackTitle || '', sub: '', badge: '', icon: fallbackIcon || '•' };
     }
   }
+  function cleanHeroText(value){
+    return String(value == null ? '' : value).replace(/\s+/g,' ').replace(/·\s*$/,'').trim();
+  }
+  function relativeDateLabel(key){
+    var today = M.todayKey();
+    var diff = Math.round((dateObj(key).getTime() - dateObj(today).getTime()) / 86400000);
+    if(diff === 0) return 'Heute';
+    if(diff === 1) return 'Morgen';
+    if(diff === 2) return 'Übermorgen';
+    if(diff > 2) return 'in ' + diff + ' Tagen';
+    if(diff === -1) return 'Gestern';
+    return 'vor ' + Math.abs(diff) + ' Tagen';
+  }
+  function compactNextValue(next, nextTime, nextTitle){
+    if(!next) return 'Kein Termin geplant';
+    var r = rangeOf(next);
+    var rel = r && r.start ? relativeDateLabel(r.start) : '';
+    var title = cleanHeroText(nextTitle || 'Termin');
+    var time = cleanHeroText(nextTime || 'Ganztägig');
+    return title + (time ? ' · ' + time : '') + (rel ? ' · ' + rel : '');
+  }
+  function compactFriseurValue(row){
+    var text = cleanHeroText((row && (row.sub || row.badge)) || '');
+    if(!text) return 'Noch keine Friseur-Info';
+    if(/Läuft gerade/i.test(text)) return 'Läuft gerade';
+    if(/Heute geplant/i.test(text)) return 'Heute geplant';
+    if(/Morgen geplant/i.test(text)) return 'Morgen geplant';
+    if(/in\s+\d+\s+Tagen/i.test(text)){
+      var m = text.match(/in\s+\d+\s+Tagen/i);
+      return m ? m[0] : text;
+    }
+    if(/Friseurtermin überfällig/i.test(text)) return 'Überfällig';
+    if(/Heute erledigt/i.test(text)) return 'Heute erledigt';
+    if(/Neuer Termin offen/i.test(text)) return 'Neuer Termin offen';
+    return text;
+  }
+  function compactUrlaubValue(row){
+    var text = cleanHeroText((row && (row.badge || row.sub)) || '');
+    if(!text) return 'Noch keine Urlaubs-Info';
+    if(/vollständig verplant/i.test(text)) return 'vollständig verplant';
+    if(/überzogen/i.test(text)) return text.replace(/^⚠\s*/,'');
+    var m = text.match(/([0-9]+(?:[,.][0-9]+)?)\s*Urlaubstage?\s+übrig/i);
+    if(m) return m[1].replace('.', ',') + ' Urlaubstage übrig';
+    return text;
+  }
   function calendarHeroRow(icon, title, value, onclick){
     return '<button type="button" class="cal-premium-hero-row"'+(onclick ? ' onclick="'+onclick+'"' : '')+'>'
       + '<span class="cal-premium-hero-row-icon">'+esc(icon || '•')+'</span>'
@@ -141,8 +186,6 @@
       + '</button>';
   }
   function heroSideHtml(next, nextTime, nextTitle){
-    var nextSub = next ? ((nextTime || 'Ganztägig') + ' · ' + (nextTitle || 'Termin')) : 'Kein Termin geplant';
-
     var friseurHtml = '';
     var urlaubHtml = '';
     try{ if(typeof window.getFriseurRowHtml === 'function') friseurHtml = window.getFriseurRowHtml() || ''; }catch(e){}
@@ -151,14 +194,15 @@
     var friseur = extractDashRowParts(friseurHtml, '✂', 'Friseur');
     var urlaub = extractDashRowParts(urlaubHtml, '🏖', 'Urlaub');
 
-    var friseurValue = friseur.sub || friseur.badge || 'nicht geplant';
-    var urlaubValue = urlaub.badge || urlaub.sub || 'nicht geplant';
+    var friseurValue = compactFriseurValue(friseur);
+    var urlaubValue = compactUrlaubValue(urlaub);
+    var nextValue = compactNextValue(next, nextTime, nextTitle);
 
     var vacationClick = "window.openUrlaubPanel?window.openUrlaubPanel():(window.openUrlaubSettings?window.openUrlaubSettings():setMainView(\'calendar\'))";
     var rows = '';
-    rows += calendarHeroRow('⌚', 'Nächster Termin', nextSub, next ? "window.openEventPanel&&window.openEventPanel('"+esc(next.id||'')+"')" : '');
-    rows += calendarHeroRow(friseur.icon || '✂', friseur.title || 'Friseur', friseurValue, 'window.openFriseurPanel&&window.openFriseurPanel()');
-    rows += calendarHeroRow(urlaub.icon || '🏖', urlaub.title || 'Urlaub', urlaubValue, vacationClick);
+    rows += calendarHeroRow('⌚', 'Nächster Termin', nextValue, next ? "window.openEventPanel&&window.openEventPanel('"+esc(next.id||'')+"')" : '');
+    rows += calendarHeroRow(friseur.icon || '✂', 'Friseur', friseurValue, 'window.openFriseurPanel&&window.openFriseurPanel()');
+    rows += calendarHeroRow(urlaub.icon || '🏖', 'Urlaub', urlaubValue, vacationClick);
     return '<div class="cal-premium-hero-side">'+rows+'</div>';
   }
 
@@ -284,7 +328,7 @@
       d.setMonth(d.getMonth()+dir); selectedKey=keyOf(new Date(d.getFullYear(), d.getMonth(), Math.min(d.getDate(),28))); setCurrentDate(dateObj(selectedKey)); renderPremium();
     };
     renderPremium();
-    [150, 700, 1600].forEach(function(ms){ setTimeout(function(){
+    [150, 700, 1600, 3200, 6200].forEach(function(ms){ setTimeout(function(){
       try{ if((window.currentMainView || '') === 'calendar' || document.body.classList.contains('change-view-calendar')) renderPremium(); }catch(e){}
     }, ms); });
     try{
@@ -371,6 +415,13 @@
   setTimeout(patchCalendar, 0);
   setTimeout(patchCalendar, 120);
   setTimeout(function(){ if(document.body && document.body.classList.contains('change-view-calendar')) renderPremium(); }, 400);
+  window.addEventListener('load', function(){
+    [250, 1200, 3000, 6000].forEach(function(ms){
+      setTimeout(function(){
+        try{ if(document.body && document.body.classList.contains('change-view-calendar')) renderPremium(); }catch(e){}
+      }, ms);
+    });
+  });
 })();
 
 (function(){

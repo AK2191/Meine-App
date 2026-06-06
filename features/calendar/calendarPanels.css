@@ -682,3 +682,145 @@ body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium
     font-size:8.8px!important;
   }
 }
+
+/* v0.1.0114 · Calendar hero data/readability fix */
+@media(min-width:701px){
+  body.change-view-calendar #calendar-premium-view,
+  #calendar-premium-view{
+    width:100%!important;
+    max-width:none!important;
+  }
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-grid,
+  #calendar-premium-view .cal-premium-hero-grid{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    width:100%!important;
+    max-width:none!important;
+  }
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide,
+  #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide{
+    width:100%!important;
+    max-width:none!important;
+    grid-template-columns:minmax(0,1fr) minmax(440px,520px)!important;
+  }
+}
+
+/* Mobile: no inner cards, same quiet inline style as Pollen hero */
+@media(max-width:700px){
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide,
+  #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide{
+    grid-template-columns:1fr!important;
+    gap:14px!important;
+    padding:20px 18px 16px!important;
+    min-height:0!important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-side,
+  #calendar-premium-view .cal-premium-hero-side{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:0!important;
+    border-left:0!important;
+    border-top:1px solid rgba(255,255,255,.10)!important;
+    padding:12px 0 0!important;
+    margin-top:4px!important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-row,
+  #calendar-premium-view .cal-premium-hero-row{
+    display:grid!important;
+    grid-template-columns:18px minmax(0,1fr)!important;
+    grid-template-rows:auto auto!important;
+    gap:0 8px!important;
+    align-content:center!important;
+    min-height:58px!important;
+    padding:0 8px!important;
+    border:0!important;
+    border-right:1px solid rgba(255,255,255,.10)!important;
+    border-radius:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    text-align:left!important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-row:last-child,
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-row:nth-child(3),
+  #calendar-premium-view .cal-premium-hero-row:last-child,
+  #calendar-premium-view .cal-premium-hero-row:nth-child(3){
+    border-right:0!important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-icon,
+  #calendar-premium-view .cal-premium-hero-row-icon{
+    grid-column:1!important;
+    grid-row:1 / 3!important;
+    width:18px!important;
+    height:18px!important;
+    min-width:18px!important;
+    border-radius:999px!important;
+    align-self:center!important;
+    justify-self:center!important;
+    font-size:9px!important;
+    background:rgba(255,255,255,.06)!important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body,
+  #calendar-premium-view .cal-premium-hero-row-body{
+    grid-column:2!important;
+    grid-row:1 / 3!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:center!important;
+    min-width:0!important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body strong,
+  #calendar-premium-view .cal-premium-hero-row-body strong{
+    display:block!important;
+    font-size:10px!important;
+    line-height:1.05!important;
+    font-weight:900!important;
+    color:#fff!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body em,
+  #calendar-premium-view .cal-premium-hero-row-body em{
+    display:block!important;
+    margin-top:3px!important;
+    font-size:10px!important;
+    line-height:1.08!important;
+    font-weight:850!important;
+    color:#fff!important;
+    white-space:normal!important;
+    overflow:hidden!important;
+    text-overflow:clip!important;
+    max-height:2.2em!important;
+  }
+}
+
+@media(max-width:390px){
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-row,
+  #calendar-premium-view .cal-premium-hero-row{
+    grid-template-columns:16px minmax(0,1fr)!important;
+    gap:0 5px!important;
+    padding:0 5px!important;
+  }
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-icon,
+  #calendar-premium-view .cal-premium-hero-row-icon{
+    width:16px!important;
+    height:16px!important;
+    min-width:16px!important;
+    font-size:8px!important;
+  }
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body strong,
+  #calendar-premium-view .cal-premium-hero-row-body strong{
+    font-size:9px!important;
+  }
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body em,
+  #calendar-premium-view .cal-premium-hero-row-body em{
+    font-size:9px!important;
+  }
+}

@@ -117,3 +117,11 @@
 - Challenges-Statuspunkte in der Hauptkachel an den Pollen-Stil angeglichen.
 - Desktop vertikal, Mobil horizontal; Aufbau mit Icon links, Überschrift und Anzeige darunter.
 - Abzeichen-Fortschritt auf „0 von 37“ korrigiert.
+
+
+## 0.1.0114
+- Kalender-Hero auf Desktop/lokal auf volle Breite gesetzt.
+- Kalender-Hero-Daten für Nächster Termin, Friseur und Urlaub kompakter und zuverlässiger übernommen.
+- Mobile Kalender-Hero im Pollen-Stil ohne innere Kacheln bereinigt.
+- Delayed Refresh ergänzt, damit Kalender-Anzeigen nach App-Start automatisch aktuell werden.
+- Challenges mobile Statuspunkte gegen Überlappung abgesichert.
