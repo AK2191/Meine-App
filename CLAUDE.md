@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-06 · Version 0.1.0082 und Pollen-24h-Ausblick kompakt über dem 5-Tages-Ausblick
+> Zuletzt aktualisiert: 2026-06-06 · Version 0.1.0083 und Pollen-/Challenge-Layout Rescue
 
 ---
 
@@ -122,6 +122,8 @@ Jeder Kalendertag enthält:
 - Ab Version `0.1.0081`: Challenge-Hero erhielt einen CSS-Hard-Reset, weil ältere Challenge-Layout-Regeln bei Browser-Zoom/Desktop-Skalierung weiter griffen. Die Hero-Kachel nutzt nun fest die Pollen-Struktur: links Gruppenziel und Fortschritt, rechts rahmenlose Statuszeilen; Punkte-Kalender, Aufgaben und Rangliste werden explizit als eigene Grid-/Flex-Blöcke darunter gesetzt, ohne Überlagerung. Keine Änderung an Challenge-Punkten, Sync, Firebase, Login oder Kalenderdaten.
 - Ab Version `0.1.0078`: Challenge-Hero final nach Pollen-Struktur stabilisiert. Die rechte Hero-Spalte nutzt kompakte Statuszeilen; nur „Abzeichen“ ist klickbar und öffnet das Abzeichen-Panel, die übrigen Statuspunkte sind reine Anzeigen. Desktop-Überlagerungen zwischen Hero und Punkte-Kalender wurden durch klare Grid-Spalten und Layering entfernt; Rangliste bleibt sichtbar. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten oder Challenge-Logik.
 
+- Ab Version `0.1.0083`: Pollen-Profilkarten wurden strukturell repariert (korrekt geschlossene Buttons) und Layout-Rettungsregeln setzen Allergieprofil, Symptome, 24h-Ausblick und 5-Tages-Ausblick wieder in stabile Karten. Challenges erhalten einen finalen Layout-Rescue für Desktop-Skalierung: Hero, Punkte-Kalender, Aufgaben und Rangliste liegen nicht mehr übereinander. Keine Änderung an Pollen-API, Challenge-Punkten, Sync, Firebase, Login oder Kalenderdaten.
+
 ---
 
 ## ⚙️ Einstellungen
@@ -136,7 +138,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0082`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0083`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -309,7 +311,7 @@ firebase deploy --only hosting
 |------------|--------------------------------------------------------------------|--------|
 
 | 2026-06-06 | Version auf `0.1.0081` erhöht; Pollen-Symptomkarte an Allergieprofil/5-Tages-Ausblick angeglichen und Überschrift außerhalb der Karte platziert. Keine Änderung an Pollen-API, Symptom-Speicherung, Sync, Login, Firebase oder Kalenderlogik. | ChatGPT |
-| 2026-06-06 | Version auf `0.1.0082` erhöht; Pollen-24h-Ausblick kompakt über dem 5-Tages-Ausblick platziert, Überschrift außerhalb, Erklärtexte und Hover-/Klickdetails entfernt. Keine Änderung an Pollen-API, Symptom-Speicherung, Sync, Login, Firebase oder Kalenderlogik. | ChatGPT |
+| 2026-06-06 | Version auf `0.1.0083` erhöht; Pollen-24h-Ausblick kompakt über dem 5-Tages-Ausblick platziert, Überschrift außerhalb, Erklärtexte und Hover-/Klickdetails entfernt. Keine Änderung an Pollen-API, Symptom-Speicherung, Sync, Login, Firebase oder Kalenderlogik. | ChatGPT |
 | 2026-06-05 | Version auf `0.1.0072` erhöht; Kalender-Monatsübersicht erhält Monats-/Jahresauswahl, bleibt Desktop rechts und mobil sichtbar. Tagesagenda lädt stabil, Terminzeilen sind weiterhin klickbar, separate Öffnen-/WhatsApp-Buttons wurden entfernt und „Termin hinzufügen“ ist fest im Tagesagenda-Footer. Keine Änderung an Login, Firebase, Sync, Push oder Kalenderdatenlogik. | ChatGPT |
 | 2026-06-05 | Version auf `0.1.0071` erhöht; Kalender-Hero auf echten heutigen Tag fixiert, Mini-Monatskalender rechts wieder sichtbar gehalten, Dashboard-Termine bereinigt und Urlaub-Klick wieder auf Urlaubsübersicht geführt. | ChatGPT |
 | 2026-06-05 | Version auf `0.1.0070` erhöht; Challenge-Abzeichen im Hero kompakter als aktiv/gesamt dargestellt, „Anfeuern vorgeschlagen“ entfernt und Aufgaben/Rangliste-Höhe auf Desktop angeglichen. | ChatGPT |
