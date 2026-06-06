@@ -3119,3 +3119,217 @@ body.change-theme-light.change-view-pollen #pollen-view .pollen-neo-hero-stats-e
 
 
 /* v0.1.0097 · END CONSOLIDATED FINAL OVERRIDES */
+
+/* v0.1.0098 · Pollen Maincard rechter Bereich wie Dashboard
+   UI only: Entfernt "Belastung heute" aus der oberen Pollen-Maincard und stellt den rechten Bereich als ruhige vertikale Insight-Liste dar. */
+@media (min-width:701px){
+  body.change-view-pollen #pollen-view .pollen-neo-hero-wide,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-wide{
+    grid-template-columns:minmax(0,1fr) 190px minmax(340px,520px)!important;
+    gap:26px!important;
+    min-height:238px!important;
+    padding:28px 30px!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-hero-insights,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-insights{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    align-content:center!important;
+    align-self:stretch!important;
+    gap:0!important;
+    padding-left:26px!important;
+    border-left:1px solid rgba(255,255,255,.10)!important;
+    border-top:0!important;
+    min-width:0!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-hero-insights > div,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-insights > div{
+    display:grid!important;
+    grid-template-columns:38px minmax(0,1fr)!important;
+    grid-template-rows:auto auto!important;
+    align-content:center!important;
+    column-gap:12px!important;
+    min-height:58px!important;
+    padding:12px 0!important;
+    border-right:0!important;
+    border-bottom:1px solid rgba(255,255,255,.09)!important;
+    background:transparent!important;
+    border-radius:0!important;
+    min-width:0!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-hero-insights > div:last-child,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-insights > div:last-child{
+    border-bottom:0!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-hero-insights .dot,
+  body.change-view-pollen #pollen-view .pollen-neo-hero-insights .mark,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-insights .dot,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-insights .mark{
+    grid-column:1!important;
+    grid-row:1 / 3!important;
+    align-self:center!important;
+    justify-self:center!important;
+    width:26px!important;
+    height:26px!important;
+    border-radius:999px!important;
+    display:flex!important;
+    background:rgba(74,222,128,.10)!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-hero-insights strong,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-insights strong{
+    grid-column:2!important;
+    grid-row:1!important;
+    color:#fff!important;
+    font-size:15px!important;
+    line-height:1.15!important;
+    font-weight:900!important;
+    white-space:normal!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-hero-insights em,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-insights em{
+    grid-column:2!important;
+    grid-row:2!important;
+    margin-top:2px!important;
+    color:rgba(244,247,244,.70)!important;
+    font-size:13px!important;
+    line-height:1.15!important;
+    font-weight:800!important;
+    white-space:normal!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-hero-insights .dot.yellow::after,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-insights .dot.yellow::after{
+    width:10px!important;
+    height:10px!important;
+  }
+}
+
+@media (max-width:900px){
+  body.change-view-pollen #pollen-view .pollen-neo-hero-wide,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-wide{
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:14px!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-hero-insights,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-insights{
+    grid-template-columns:1fr!important;
+    gap:0!important;
+    padding-left:0!important;
+    padding-top:12px!important;
+    border-left:0!important;
+    border-top:1px solid rgba(255,255,255,.09)!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-hero-insights > div,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-insights > div{
+    grid-template-columns:34px minmax(0,1fr)!important;
+    min-height:52px!important;
+    padding:10px 0!important;
+    border-bottom:1px solid rgba(255,255,255,.08)!important;
+    background:transparent!important;
+    border-radius:0!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-hero-insights .dot,
+  body.change-view-pollen #pollen-view .pollen-neo-hero-insights .mark,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-insights .dot,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-insights .mark{
+    display:flex!important;
+    width:24px!important;
+    height:24px!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-hero-insights strong,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-insights strong{
+    font-size:14px!important;
+    white-space:normal!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-hero-insights em,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-insights em{
+    font-size:12px!important;
+    white-space:normal!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+  }
+}
+
+[data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-hero-insights,
+body.theme-light.change-view-pollen #pollen-view .pollen-neo-hero-insights,
+body.change-theme-light.change-view-pollen #pollen-view .pollen-neo-hero-insights{
+  border-color:rgba(23,41,30,.12)!important;
+}
+[data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-hero-insights > div,
+body.theme-light.change-view-pollen #pollen-view .pollen-neo-hero-insights > div,
+body.change-theme-light.change-view-pollen #pollen-view .pollen-neo-hero-insights > div{
+  border-color:rgba(23,41,30,.10)!important;
+}
+[data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-hero-insights strong,
+body.theme-light.change-view-pollen #pollen-view .pollen-neo-hero-insights strong,
+body.change-theme-light.change-view-pollen #pollen-view .pollen-neo-hero-insights strong{
+  color:#142018!important;
+}
+[data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-hero-insights em,
+body.theme-light.change-view-pollen #pollen-view .pollen-neo-hero-insights em,
+body.change-theme-light.change-view-pollen #pollen-view .pollen-neo-hero-insights em{
+  color:#5c6760!important;
+}
+
+
+
+/* v0.1.0100 · Mobile bottom reach fix
+   Sorgt dafür, dass in allen vier Hauptansichten auf Mobil wirklich bis unter die letzte Karte gescrollt werden kann. */
+@media (max-width:700px){
+  :root{
+    --change-mobile-bottom-reach:calc(112px + env(safe-area-inset-bottom,0px));
+  }
+
+  body.change-view-dashboard #content,
+  body.change-view-calendar #content,
+  body.change-view-challenges #content,
+  body.change-view-pollen #content,
+  body.neo-pollen-shell #content{
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    -webkit-overflow-scrolling:touch!important;
+    scroll-padding-bottom:var(--change-mobile-bottom-reach)!important;
+    padding-bottom:var(--change-mobile-bottom-reach)!important;
+  }
+
+  body.change-view-dashboard #dashboard-view,
+  body.change-view-calendar #cal-body,
+  body.change-view-calendar #calendar-premium-view,
+  body.change-view-challenges #challenges-view,
+  body.change-view-pollen #pollen-view,
+  body.neo-pollen-shell #pollen-view,
+  body.change-view-pollen #pollen-view .pollen-view-body,
+  body.neo-pollen-shell #pollen-view .pollen-view-body{
+    min-height:auto!important;
+  }
+
+  body.change-view-dashboard #dashboard-view::after,
+  body.change-view-calendar #calendar-premium-view::after,
+  body.change-view-challenges #challenges-view::after,
+  body.change-view-pollen #pollen-view .pollen-view-body::after,
+  body.neo-pollen-shell #pollen-view .pollen-view-body::after{
+    content:"";
+    display:block!important;
+    width:100%!important;
+    height:var(--change-mobile-bottom-reach)!important;
+    flex:0 0 auto!important;
+    pointer-events:none!important;
+  }
+}

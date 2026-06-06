@@ -1,5 +1,12 @@
 # CHANGELOG – Change App
 
+## Version 0.1.0098
+- Pollen-Maincard oben überarbeitet.
+- "Belastung heute" aus dem rechten Hero-Bereich entfernt.
+- Rechter Hero-Bereich als vertikale Dashboard-ähnliche Insight-Liste umgesetzt.
+- Keine Änderung an Pollenberechnung oder gespeicherten Symptomen.
+
+
 ## 0.1.0097 – Cleanup Build
 - CSS-Fixdateien konsolidiert, ohne die Funktionslogik zu ändern.
 - `features/pollen/pollenUiPolish.css` wurde in `features/pollen/pollenView.css` integriert.
@@ -39,3 +46,13 @@
 ## 0.1.0090 – Challenge Layout
 - Challenge-Überlagerungen korrigiert.
 - Hero, Punkte-Kalender, Aufgaben und Rangliste sauber sortiert.
+
+
+## 0.1.0099
+- Challenges Desktop neu gestapelt: Rangliste vor Punkte-Kalender in der rechten Spalte.
+- Maincard bleibt oben vollbreit.
+
+
+## 0.1.0100
+- Mobile Bottom-Reach für Dashboard, Kalender, Challenges und Pollen repariert.
+- Letzte Karten sind nun vollständig oberhalb der Bottom-Bar erreichbar.

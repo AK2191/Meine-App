@@ -1,8 +1,15 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-06 · Version 0.1.0097 und Cleanup Build
+> Zuletzt aktualisiert: 2026-06-06 · Version 0.1.0100 und Pollen-Maincard-Fix
 
 ---
+
+
+## Version 0.1.0100
+- Die sichtbare App-Version wurde auf `0.1.0098` erhöht.
+- Die Pollen-Maincard wurde oben überarbeitet.
+- "Belastung heute" wurde aus dem rechten Bereich entfernt.
+- Der rechte Bereich wird nun als vertikale Dashboard-ähnliche Insight-Liste angezeigt.
 
 ## Version 0.1.0097
 - Die sichtbare App-Version wurde auf `0.1.0097` erhöht.
@@ -169,7 +176,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0097`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0100`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -1079,4 +1086,8 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 
 | 2026-06-06 | Version auf `0.1.0096` erhöht; Mobile-Scroll-End-Fix ergänzt, damit untere Karten oberhalb der Bottom-Bar vollständig sichtbar bleiben. | ChatGPT |
 
-| 2026-06-06 | Version auf `0.1.0097` erhöht; CSS-Fixdateien konsolidiert, alte Einzel-Doku entfernt und `CHANGELOG.md` ergänzt. | ChatGPT |
+| 2026-06-06 | Version auf `0.1.0098` erhöht; CSS-Fixdateien konsolidiert, alte Einzel-Doku entfernt und `CHANGELOG.md` ergänzt. | ChatGPT |
+
+| 2026-06-06 | Version auf `0.1.0099` erhöht; Challenges-Desktop-Layout angepasst mit Rangliste vor Punkte-Kalender. | ChatGPT |
+
+| 2026-06-06 | Version auf `0.1.0100` erhöht; mobiler Bottom-Reach-Fix für alle vier Hauptansichten ergänzt. | ChatGPT |

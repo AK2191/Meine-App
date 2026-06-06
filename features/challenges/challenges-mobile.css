@@ -2480,3 +2480,66 @@ body.change-theme-light.change-view-challenges #challenges-view .challenge-week-
   background:linear-gradient(180deg,rgba(232,250,239,.96),rgba(255,255,255,.88))!important;
   box-shadow:0 10px 24px rgba(34,197,94,.12)!important;
 }
+
+
+/* v0.1.0099 · Challenge Desktop card order polish
+   Hero bleibt oben als Maincard, rechte Spalte nutzt Rangliste zuerst und Punkte-Kalender darunter. */
+@media (min-width:981px){
+  body.change-view-challenges #challenges-view .challenge-layout{
+    grid-template-columns:minmax(0,1fr) minmax(360px,.62fr)!important;
+    grid-template-areas:
+      "hero hero"
+      "tasks leaders"
+      "tasks week"!important;
+    align-items:start!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-layout > #group-goal-card{
+    grid-area:hero!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-layout > .challenge-card{
+    grid-area:tasks!important;
+    order:2!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-layout > .leader-card{
+    grid-area:leaders!important;
+    order:3!important;
+    min-height:0!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-layout > #challenge-week-points-card{
+    grid-area:week!important;
+    grid-column:auto!important;
+    order:4!important;
+    align-self:start!important;
+    min-height:0!important;
+  }
+
+  body.change-view-challenges #challenges-view .leader-card,
+  body.change-view-challenges #challenges-view #challenge-week-points-card{
+    width:100%!important;
+    max-width:none!important;
+  }
+
+  body.change-view-challenges #challenges-view .leader-card{
+    min-height:0!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
+    gap:2px!important;
+    padding-left:32px!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-side-link{
+    min-height:54px!important;
+    padding:10px 0!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-link-icon{
+    width:20px!important;
+    height:20px!important;
+    font-size:12px!important;
+  }
+}

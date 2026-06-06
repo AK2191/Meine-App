@@ -3,7 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0097';
+  var APP_VERSION = '0.1.0100';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var SELECTED_KEY = 'change_v1_pollen_selected_keys';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
@@ -261,11 +261,10 @@
           + '<div class="pollen-neo-cta">↗ '+esc(nextTrend)+'</div>'
         + '</div>'
         + heroArtSvg()
-        + '<div class="pollen-neo-hero-stats pollen-neo-hero-stats-extended">'
-          + '<div><span class="dot yellow"></span><strong>'+esc((topLoadItem && topLoadItem.name) || 'Pollen')+' '+esc(levelLabel(topLoadItem && topLoadItem.level))+'</strong><em>'+esc(topLoadScore)+' %</em></div>'
-          + '<div><span class="mark ring"></span><strong>Belastung heute</strong><em>'+esc(score)+' %</em></div>'
-          + '<div><span class="mark peak"></span><strong>Peak</strong><em>'+esc(peak ? diffLabel(dayDiff(peak.date)) : '–')+'</em></div>'
-          + '<div><span class="mark leaf"></span><strong>Ruhigster Tag</strong><em>'+esc(quiet ? fmtLongDay(quiet.date).split(',')[0] : '–')+'</em></div>'
+        + '<div class="pollen-neo-hero-stats pollen-neo-hero-stats-extended pollen-neo-hero-insights">'
+          + '<div class="pollen-hero-insight"><span class="dot yellow"></span><strong>'+esc((topLoadItem && topLoadItem.name) || 'Pollen')+' '+esc(levelLabel(topLoadItem && topLoadItem.level))+'</strong><em>'+esc(topLoadScore)+' %</em></div>'
+          + '<div class="pollen-hero-insight"><span class="mark peak"></span><strong>Peak</strong><em>'+esc(peak ? diffLabel(dayDiff(peak.date)) : '–')+'</em></div>'
+          + '<div class="pollen-hero-insight"><span class="mark leaf"></span><strong>Ruhigster Tag</strong><em>'+esc(quiet ? fmtLongDay(quiet.date).split(',')[0] : '–')+'</em></div>'
         + '</div>'
       + '</div>'
     + '</section>';
