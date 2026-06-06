@@ -69,3 +69,12 @@
 
 ## 0.1.0103
 - Challenges auf Desktop neu angeordnet: Maincard oben vollbreit, Punkte-Kalender darunter ebenfalls vollbreit.
+
+
+## 0.1.0104
+- Kalender-Hero bereinigt: Datums-Kreis entfernt und rechter Infobereich deutlich lesbarer gemacht.
+
+
+## 0.1.0105
+- Sichtbare Scrollbalken in Dashboard, Kalender und Challenges entfernt.
+- Scroll-Funktion bleibt erhalten.

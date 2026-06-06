@@ -3333,3 +3333,57 @@ body.change-theme-light.change-view-pollen #pollen-view .pollen-neo-hero-insight
     pointer-events:none!important;
   }
 }
+
+
+/* v0.1.0105 · Dashboard/Kalender/Challenges scrollbar cleanup
+   Scroll-Funktion bleibt erhalten, sichtbare Scrollbalken werden ausgeblendet. */
+body.change-view-dashboard,
+body.change-view-calendar,
+body.change-view-challenges,
+body.change-view-dashboard *,
+body.change-view-calendar *,
+body.change-view-challenges *{
+  scrollbar-width:none!important;
+  -ms-overflow-style:none!important;
+}
+
+body.change-view-dashboard::-webkit-scrollbar,
+body.change-view-calendar::-webkit-scrollbar,
+body.change-view-challenges::-webkit-scrollbar,
+body.change-view-dashboard *::-webkit-scrollbar,
+body.change-view-calendar *::-webkit-scrollbar,
+body.change-view-challenges *::-webkit-scrollbar{
+  width:0!important;
+  height:0!important;
+  display:none!important;
+  background:transparent!important;
+}
+
+body.change-view-dashboard #content,
+body.change-view-calendar #content,
+body.change-view-challenges #content,
+body.change-view-dashboard #dashboard-view,
+body.change-view-calendar #cal-body,
+body.change-view-calendar #calendar-premium-view,
+body.change-view-challenges #challenges-view,
+body.change-view-challenges #challenges-view .challenge-layout,
+body.change-view-challenges #challenges-view #challenges-list,
+body.change-view-challenges #challenges-view #leaderboard-list{
+  scrollbar-width:none!important;
+  -ms-overflow-style:none!important;
+}
+
+body.change-view-dashboard #content::-webkit-scrollbar,
+body.change-view-calendar #content::-webkit-scrollbar,
+body.change-view-challenges #content::-webkit-scrollbar,
+body.change-view-dashboard #dashboard-view::-webkit-scrollbar,
+body.change-view-calendar #cal-body::-webkit-scrollbar,
+body.change-view-calendar #calendar-premium-view::-webkit-scrollbar,
+body.change-view-challenges #challenges-view::-webkit-scrollbar,
+body.change-view-challenges #challenges-view .challenge-layout::-webkit-scrollbar,
+body.change-view-challenges #challenges-view #challenges-list::-webkit-scrollbar,
+body.change-view-challenges #challenges-view #leaderboard-list::-webkit-scrollbar{
+  width:0!important;
+  height:0!important;
+  display:none!important;
+}

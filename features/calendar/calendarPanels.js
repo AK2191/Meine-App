@@ -167,12 +167,10 @@
     // Der Hero bleibt bewusst immer auf dem echten heutigen Tag.
     // Auswahl in Woche/Mini-Monat steuert nur Tagesagenda und Monatskarte.
     var key = M.todayKey();
-    var d = dateObj(key);
     var list = eventsFor(key);
     var next = nextEvent();
     var nextTime = next ? (timeOf(next) || 'Ganztägig') : '—';
     var nextTitle = next ? titleOf(next) : 'Kein Termin';
-    var progress = Math.max(8, Math.min(100, (d.getDate() / new Date(d.getFullYear(), d.getMonth()+1, 0).getDate()) * 100));
     return '<div class="cal-premium-hero-grid">'
       + '<section class="cal-premium-hero cal-premium-hero-wide">'
       + '<div class="cal-premium-hero-main">'
@@ -181,7 +179,6 @@
       + '<div class="cal-premium-hero-line"><span class="cal-premium-dot"></span><strong>'+list.length+'</strong> '+(list.length===1?'Termin':'Termine')+'</div>'
       + '<div class="cal-premium-hero-line muted">Nächster Termin: <strong>'+esc(nextTime)+'</strong>'+(next ? ' · '+esc(nextTitle) : '')+'</div>'
       + '</div>'
-      + '<div class="cal-premium-date-ring" style="--p:'+progress+'"><span>'+String(d.getDate()).padStart(2,'0')+'</span><small>'+MONTHS[d.getMonth()].slice(0,3).toUpperCase()+'</small></div>'
       + heroSideHtml(next, nextTime, nextTitle)
       + '</section>'
       + '</div>';
