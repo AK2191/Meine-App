@@ -3768,3 +3768,93 @@ body.change-view-pollen #pollen-view{
 }
 body.change-view-pollen #content::-webkit-scrollbar,
 body.change-view-pollen #pollen-view::-webkit-scrollbar{display:none!important;width:0!important;height:0!important;}
+
+/* v0.1.0079 · Pollen 24-Stunden-Ausblick nutzt Allergieprofil statt eigener Auswahl */
+#pollen-view .pollen-hourly-section{margin:18px 0 20px;}
+#pollen-view .pollen-hourly-card{
+  padding:28px;
+  border-radius:28px;
+  background:linear-gradient(180deg,rgba(16,24,30,.92),rgba(7,12,16,.98));
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:0 24px 80px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.04);
+}
+#pollen-view .pollen-hourly-head{display:grid;grid-template-columns:64px minmax(0,1fr) minmax(260px,auto);gap:18px;align-items:center;margin-bottom:22px;}
+#pollen-view .pollen-hourly-icon{width:58px;height:58px;border-radius:18px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);display:grid;place-items:center;color:#54e384;}
+#pollen-view .pollen-hourly-head h2{margin:0;font-size:28px;line-height:1.05;font-weight:950;letter-spacing:-.04em;color:#f7faf8;text-transform:uppercase;}
+#pollen-view .pollen-hourly-head p{margin:7px 0 0;color:rgba(244,247,244,.64);font-weight:760;font-size:15px;}
+#pollen-view .pollen-hourly-profile{display:grid;gap:7px;justify-self:end;min-width:0;max-width:430px;}
+#pollen-view .pollen-hourly-profile-label{font-size:10.5px;font-weight:950;text-transform:uppercase;letter-spacing:.09em;color:rgba(244,247,244,.50);}
+#pollen-view .pollen-hourly-profile-chips{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap;}
+#pollen-view .pollen-hourly-profile-chip{display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:6px 9px;border-radius:999px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);font-size:12px;font-weight:900;color:rgba(244,247,244,.72);}
+#pollen-view .pollen-hourly-profile-chip.primary{background:rgba(74,222,128,.10);border-color:rgba(74,222,128,.20);color:#f4f7f4;}
+#pollen-view .pollen-hourly-profile-chip .pollen-neo-icon-svg{width:15px;height:15px;color:#58df82;}
+#pollen-view .pollen-hourly-profile-chip em{font-style:normal;color:#facc15;}
+#pollen-view .pollen-hourly-profile-chip.high em{color:#fb923c;}#pollen-view .pollen-hourly-profile-chip.very-high em{color:#ff6252;}#pollen-view .pollen-hourly-profile-chip.low em{color:#4ade80;}
+#pollen-view .pollen-hourly-insights{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:20px;}
+#pollen-view .pollen-hourly-insight{display:grid;grid-template-columns:54px 1fr;gap:8px 14px;align-items:center;min-height:108px;padding:18px;border-radius:20px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025));border:1px solid rgba(255,255,255,.09);}
+#pollen-view .pollen-hourly-insight-icon{grid-row:1/4;width:46px;height:46px;border-radius:999px;display:grid;place-items:center;border:2px solid rgba(255,255,255,.12);font-size:20px;color:#4ade80;background:rgba(74,222,128,.08);}
+#pollen-view .pollen-hourly-insight small{font-size:13px;font-weight:800;color:rgba(244,247,244,.62);}
+#pollen-view .pollen-hourly-insight strong{font-size:23px;line-height:1.08;font-weight:950;color:#f4f7f4;letter-spacing:-.03em;}
+#pollen-view .pollen-hourly-insight em{font-style:normal;font-size:15px;font-weight:900;color:#facc15;}
+#pollen-view .pollen-hourly-insight.high .pollen-hourly-insight-icon{color:#fb923c;border-color:rgba(251,146,60,.55);background:rgba(251,146,60,.08);}
+#pollen-view .pollen-hourly-insight.very-high .pollen-hourly-insight-icon{color:#ff6252;border-color:rgba(255,98,82,.64);background:rgba(255,98,82,.08);}
+#pollen-view .pollen-hourly-insight.very-high em{color:#ff6252;}
+#pollen-view .pollen-hourly-chart{position:relative;border-radius:22px;padding:20px 22px 16px;background:linear-gradient(180deg,rgba(13,22,28,.90),rgba(6,11,16,.96));border:1px solid rgba(255,255,255,.08);overflow:hidden;}
+#pollen-view .pollen-hourly-chart-title{position:absolute;left:22px;top:18px;font-size:14px;font-weight:850;color:rgba(244,247,244,.72);z-index:2;}
+#pollen-view .pollen-hourly-chart svg{display:block;width:100%;height:300px;margin-top:6px;overflow:visible;}
+#pollen-view .pollen-hourly-grid line{stroke:rgba(255,255,255,.10);stroke-dasharray:6 8;}
+#pollen-view .pollen-hourly-area{fill:url(#pollen-hourly-fill);}
+#pollen-view .pollen-hourly-line{fill:none;stroke:url(#pollen-hourly-line);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 10px 20px rgba(251,146,60,.20));}
+#pollen-view .pollen-hourly-point{fill:#facc15;stroke:rgba(7,12,16,.95);stroke-width:3;outline:none;cursor:pointer;transition:transform .16s ease;}
+#pollen-view .pollen-hourly-point:hover,#pollen-view .pollen-hourly-point:focus{transform:scale(1.4);}
+#pollen-view .pollen-hourly-point.low{fill:#4ade80;}#pollen-view .pollen-hourly-point.moderate{fill:#facc15;}#pollen-view .pollen-hourly-point.high{fill:#fb923c;}#pollen-view .pollen-hourly-point.very-high{fill:#ff6252;}
+#pollen-view .pollen-hourly-peak{fill:rgba(7,12,16,.95);stroke:#f4f7f4;stroke-width:4;}
+#pollen-view .pollen-hourly-x text{font-size:13px;font-weight:800;fill:rgba(244,247,244,.56);}
+#pollen-view .pollen-hourly-legend{display:flex;justify-content:center;gap:30px;align-items:center;padding:12px 0 0;border-top:1px solid rgba(255,255,255,.08);font-size:13px;font-weight:800;color:rgba(244,247,244,.62);}
+#pollen-view .pollen-hourly-legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:99px;margin-right:8px;vertical-align:-1px;background:#4ade80;}
+#pollen-view .pollen-hourly-legend .moderate::before{background:#facc15;}#pollen-view .pollen-hourly-legend .high::before{background:#fb923c;}#pollen-view .pollen-hourly-legend .very-high::before{background:#ff6252;}
+#pollen-view .pollen-hourly-parts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:18px;}
+#pollen-view .pollen-hourly-part{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:6px 14px;text-align:left;padding:18px 20px;border-radius:18px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);font-family:var(--font);color:#f4f7f4;cursor:pointer;}
+#pollen-view .pollen-hourly-part span{grid-row:1/4;font-size:31px;line-height:1;color:#facc15;}
+#pollen-view .pollen-hourly-part strong{font-size:15px;font-weight:850;color:rgba(244,247,244,.68);}
+#pollen-view .pollen-hourly-part em{font-style:normal;font-size:24px;font-weight:950;letter-spacing:-.03em;}
+#pollen-view .pollen-hourly-part small{font-size:13px;font-weight:900;color:#facc15;}
+#pollen-view .pollen-hourly-part.high{border-color:rgba(251,146,60,.24);}#pollen-view .pollen-hourly-part.high span,#pollen-view .pollen-hourly-part.high small{color:#fb923c;}
+#pollen-view .pollen-hourly-part.very-high{border-color:rgba(255,98,82,.26);}#pollen-view .pollen-hourly-part.very-high span,#pollen-view .pollen-hourly-part.very-high small{color:#ff6252;}
+#pollen-view .pollen-hourly-part.low span,#pollen-view .pollen-hourly-part.low small{color:#4ade80;}
+#pollen-view .pollen-hourly-foot{display:flex;justify-content:space-between;gap:14px;margin-top:16px;padding:11px 14px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);font-size:12.5px;font-weight:740;color:rgba(244,247,244,.54);}
+@media(max-width:900px){
+  #pollen-view .pollen-hourly-card{padding:18px;border-radius:24px;}
+  #pollen-view .pollen-hourly-head{grid-template-columns:44px minmax(0,1fr);gap:12px;margin-bottom:16px;}
+  #pollen-view .pollen-hourly-icon{width:42px;height:42px;border-radius:14px;}
+  #pollen-view .pollen-hourly-head h2{font-size:22px;}
+  #pollen-view .pollen-hourly-head p{font-size:13px;}
+  #pollen-view .pollen-hourly-profile{grid-column:1/-1;justify-self:stretch;max-width:none;}
+  #pollen-view .pollen-hourly-profile-chips{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none;-ms-overflow-style:none;}
+  #pollen-view .pollen-hourly-profile-chips::-webkit-scrollbar{display:none;}
+  #pollen-view .pollen-hourly-profile-chip{flex:0 0 auto;padding:6px 8px;font-size:11.5px;}
+  #pollen-view .pollen-hourly-insights{grid-template-columns:1fr;gap:10px;}
+  #pollen-view .pollen-hourly-insight{grid-template-columns:42px 1fr;min-height:78px;padding:13px;border-radius:17px;}
+  #pollen-view .pollen-hourly-insight-icon{width:36px;height:36px;font-size:16px;}
+  #pollen-view .pollen-hourly-insight strong{font-size:19px;}
+  #pollen-view .pollen-hourly-chart{padding:16px 12px 12px;border-radius:19px;}
+  #pollen-view .pollen-hourly-chart-title{position:static;margin:0 0 4px;font-size:12px;}
+  #pollen-view .pollen-hourly-chart svg{height:220px;}
+  #pollen-view .pollen-hourly-legend{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;justify-content:start;font-size:11.5px;}
+  #pollen-view .pollen-hourly-parts{grid-template-columns:1fr 1fr;gap:10px;}
+  #pollen-view .pollen-hourly-part{padding:13px;border-radius:16px;grid-template-columns:1fr;gap:5px;}
+  #pollen-view .pollen-hourly-part span{grid-row:auto;font-size:24px;}
+  #pollen-view .pollen-hourly-part em{font-size:20px;}
+  #pollen-view .pollen-hourly-foot{display:grid;font-size:11.5px;}
+}
+@media(max-width:520px){
+  #pollen-view .pollen-hourly-section{margin:14px 0 16px;}
+  #pollen-view .pollen-hourly-card{margin-inline:0;}
+  #pollen-view .pollen-hourly-parts{grid-template-columns:1fr;}
+}
+body.light #pollen-view .pollen-hourly-card{background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(246,249,244,.96));border-color:rgba(20,35,24,.10);box-shadow:0 16px 44px rgba(31,53,38,.10);}
+body.light #pollen-view .pollen-hourly-head h2,body.light #pollen-view .pollen-hourly-insight strong,body.light #pollen-view .pollen-hourly-part{color:#11231a;}
+body.light #pollen-view .pollen-hourly-head p,body.light #pollen-view .pollen-hourly-insight small,body.light #pollen-view .pollen-hourly-chart-title,body.light #pollen-view .pollen-hourly-x text{color:rgba(17,35,26,.56);fill:rgba(17,35,26,.56);}
+body.light #pollen-view .pollen-hourly-profile-chip,body.light #pollen-view .pollen-hourly-insight,body.light #pollen-view .pollen-hourly-chart,body.light #pollen-view .pollen-hourly-part,body.light #pollen-view .pollen-hourly-foot{background:rgba(255,255,255,.70);border-color:rgba(20,35,24,.09);}
+body.light #pollen-view .pollen-hourly-profile-label{color:rgba(17,35,26,.46);}
+body.light #pollen-view .pollen-hourly-grid line{stroke:rgba(17,35,26,.10);}
