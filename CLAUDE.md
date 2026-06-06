@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-06 · Version 0.1.0089 und Pollen-Mobile-Bottom-Cleanup
+> Zuletzt aktualisiert: 2026-06-06 · Version 0.1.0090 und Challenge-Layout-Fix
 
 ---
 
@@ -73,6 +73,7 @@ Jeder Kalendertag enthält:
 - Abzeichen sind langfristige Meilensteine für Streaks, Punkte, erledigte Challenges, schwere/Hardcore-Aufgaben, Auto-Challenges und Gruppenziel. Keine feste Grenze bei 10 Badges.
 - Das Gruppen-Ziel ist dynamisch: Es wird aus Mitspieler-Anzahl, jeweiligem Schwierigkeitsgrad und Tagesumfang berechnet. Kein festes 350-Punkte-Ziel mehr.
 - Spieler speichern für das Gruppenziel in `change_players`: `challengeDifficulty`, `autoChallengeCount`, `weeklyTargetContribution`, `weeklyPointPotential`.
+- Ab Version `0.1.0090`: `features/challenges/challengesLayoutFix.css` wird nach `styles/appShell.css` geladen und setzt für Challenges final Grid-Flächen, Reihenfolge, Overflow und Z-Index. Dadurch kann die Gruppen-Ziel-Hero-Karte lokal nicht mehr über Punkte-Kalender, Aufgaben oder Rangliste liegen. Keine Änderung an Challenge-Logik, Firebase, Sync, Login, Push oder Kalenderdaten.
 
 
 ### Layout (Desktop)
@@ -140,7 +141,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0089`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0090`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -997,7 +998,14 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 
 | 2026-06-05 | Version auf `0.1.0079` erhöht; Pollen-24-Stunden-Ausblick an das ausgewählte Allergieprofil gekoppelt und eigene Pollen-Auswahl entfernt. | ChatGPT |
 
+| 2026-06-06 | Version auf `0.1.0090` erhöht; Challenge-Layout-Fix als letzte CSS-Ebene ergänzt, damit Gruppen-Ziel, Punkte-Kalender, Aufgaben und Rangliste lokal nicht mehr überlappen. | ChatGPT |
 
+## Version 0.1.0090
+
+- Die sichtbare App-Version wurde auf `0.1.0090` erhöht.
+- Neue Datei `features/challenges/challengesLayoutFix.css` ergänzt und in `index.html` nach `styles/appShell.css` eingebunden.
+- Challenge-Layout stabilisiert: Gruppen-Ziel, Punkte-Kalender, Heutige Aufgaben und Rangliste haben nun feste Grid-/Flex-Reihenfolge ohne Überlagerung.
+- Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik.
 
 ## Version 0.1.0087
 
