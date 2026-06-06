@@ -94,3 +94,8 @@
 
 ## 0.1.0109
 - Challenges-Hauptkachel mobil bereinigt: Abzeichen, Heute und Offen stehen nebeneinander ohne innere Kacheln.
+
+
+## 0.1.0110
+- Challenges-Hero visuell an Pollen angeglichen: keine inneren Kacheln mehr, Statuspunkte nebeneinander mit Überschrift und aktueller Anzeige.
+- Desktop und Mobil bereinigt.
