@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-05 · Version 0.1.0079 und Pollen-24-Stunden-Ausblick an Allergieprofil gekoppelt
+> Zuletzt aktualisiert: 2026-06-05 · Version 0.1.0080 und Challenge-Hero per CSS-Hard-Reset stabilisiert
 
 ---
 
@@ -118,6 +118,8 @@ Jeder Kalendertag enthält:
 
 - Ab Version `0.1.0075`: Einstellungen zeigen im Kopf keinen „Alles gespeichert“-Status mehr; der Gesundheitsstatus ist nicht klickbar und zeigt direkt wie viele App-Prüfungen korrekt laufen. Challenges entfernen die globale Kopf-Aktion „Heute zurücksetzen“ und den „Heute aktiv“-Badge, stabilisieren die Hero-Kachel gegen Überlagerungen und lassen Reset nur in „Heutige Aufgaben“. Pollen benennt den Bereich zu „5-Tages-Ausblick“ um. Dashboard-Termine sind bei „Heute keiner vorhanden“ optisch deaktiviert und nicht klickbar. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik.
 
+
+- Ab Version `0.1.0080`: Challenge-Hero erhielt einen CSS-Hard-Reset, weil ältere Challenge-Layout-Regeln bei Browser-Zoom/Desktop-Skalierung weiter griffen. Die Hero-Kachel nutzt nun fest die Pollen-Struktur: links Gruppenziel und Fortschritt, rechts rahmenlose Statuszeilen; Punkte-Kalender, Aufgaben und Rangliste werden explizit als eigene Grid-/Flex-Blöcke darunter gesetzt, ohne Überlagerung. Keine Änderung an Challenge-Punkten, Sync, Firebase, Login oder Kalenderdaten.
 - Ab Version `0.1.0078`: Challenge-Hero final nach Pollen-Struktur stabilisiert. Die rechte Hero-Spalte nutzt kompakte Statuszeilen; nur „Abzeichen“ ist klickbar und öffnet das Abzeichen-Panel, die übrigen Statuspunkte sind reine Anzeigen. Desktop-Überlagerungen zwischen Hero und Punkte-Kalender wurden durch klare Grid-Spalten und Layering entfernt; Rangliste bleibt sichtbar. Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten oder Challenge-Logik.
 
 ---
@@ -134,7 +136,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0079`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0080`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
