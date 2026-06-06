@@ -90,3 +90,7 @@
 
 ## 0.1.0108
 - Kalender mobil überarbeitet: kompakter Hero-Infobereich und vollständige Wochenanzeige ohne abgeschnittene Tage.
+
+
+## 0.1.0109
+- Challenges-Hauptkachel mobil bereinigt: Abzeichen, Heute und Offen stehen nebeneinander ohne innere Kacheln.
