@@ -1837,3 +1837,1285 @@ body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-
   body.change-view-challenges #challenges-view .challenge-layout>.challenge-card{order:2!important;}
   body.change-view-challenges #challenges-view .challenge-layout>.leader-card{order:3!important;}
 }
+
+
+/* =========================================================
+   v0.1.0097 · BEGIN CONSOLIDATED FINAL OVERRIDES
+   Diese Blöcke waren vorher einzelne, spät geladene Fix-Dateien.
+   Sie wurden in der exakt gleichen Reihenfolge hierhin verschoben,
+   damit die bestehende Kaskade und damit das sichtbare Verhalten erhalten bleibt.
+   ========================================================= */
+
+
+/* ---------- CONSOLIDATED FROM: features/challenges/challengesLayoutFix.css ---------- */
+
+/* Change App · v0.1.0094
+   Challenge Layout Fix
+   Zweck: finaler, nach appShell.css geladener Layout-Stabilisator.
+   Hintergrund: appShell.css enthält ältere Challenge-Overrides, die lokal den Hero über
+   Punkte-Kalender, Aufgaben und Rangliste legen konnten. Diese Datei gewinnt bewusst
+   als letzte CSS-Ebene und setzt Reihenfolge, Grid-Flächen, Overflow und Z-Index sauber zurück.
+*/
+
+/* Gemeinsame Grundregel: Challenge-Elemente dürfen keine fremden Ebenen überdecken. */
+body.change-view-challenges #challenges-view,
+body.change-view-challenges #challenges-view .challenge-layout,
+body.change-view-challenges #challenges-view .challenge-layout > #group-goal-card,
+body.change-view-challenges #challenges-view .challenge-layout > #challenge-week-points-card,
+body.change-view-challenges #challenges-view .challenge-layout > .challenge-card,
+body.change-view-challenges #challenges-view .challenge-layout > .leader-card{
+  box-sizing:border-box!important;
+  transform:none!important;
+}
+
+body.change-view-challenges #challenges-view .challenge-layout > #group-goal-card,
+body.change-view-challenges #challenges-view .challenge-layout > #challenge-week-points-card,
+body.change-view-challenges #challenges-view .challenge-layout > .challenge-card,
+body.change-view-challenges #challenges-view .challenge-layout > .leader-card{
+  position:relative!important;
+  inset:auto!important;
+  margin:0!important;
+  width:100%!important;
+  max-width:none!important;
+}
+
+body.change-view-challenges #challenges-view .challenge-layout > #group-goal-card::after{
+  pointer-events:none!important;
+}
+
+/* Desktop und Tablet: explizite Grid-Flächen verhindern Überlagerung durch alte order/grid-row-Regeln. */
+@media (min-width:701px){
+  body.change-view-challenges #content{
+    align-items:stretch!important;
+    overflow:auto!important;
+    padding:26px 34px 34px!important;
+  }
+
+  body.change-view-challenges #challenges-view{
+    display:flex!important;
+    flex-direction:column!important;
+    flex:0 0 auto!important;
+    width:min(100%,1320px)!important;
+    max-width:1320px!important;
+    min-height:100%!important;
+    height:auto!important;
+    margin:0 auto!important;
+    padding:0!important;
+    overflow:visible!important;
+    background:transparent!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-neo-header,
+  body.change-view-challenges #challenges-view .list-header{
+    flex:0 0 auto!important;
+    width:100%!important;
+    max-width:1320px!important;
+    min-height:44px!important;
+    margin:0 0 24px!important;
+    padding:0!important;
+    border:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-layout{
+    flex:0 0 auto!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1.25fr) minmax(340px,.75fr)!important;
+    grid-template-areas:
+      "hero hero"
+      "tasks week"
+      "tasks leaders"!important;
+    grid-auto-rows:auto!important;
+    align-items:start!important;
+    gap:18px!important;
+    width:100%!important;
+    max-width:1320px!important;
+    min-width:0!important;
+    min-height:0!important;
+    height:auto!important;
+    margin:0 auto!important;
+    padding:0!important;
+    overflow:visible!important;
+    background:transparent!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-layout > #group-goal-card{
+    grid-area:hero!important;
+    grid-column:auto!important;
+    grid-row:auto!important;
+    order:0!important;
+    z-index:1!important;
+    min-height:0!important;
+    height:auto!important;
+    overflow:hidden!important;
+    display:block!important;
+    padding:26px 30px!important;
+    border-radius:28px!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-hero-inner.challenge-goal-hero-clean{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(300px,390px)!important;
+    gap:30px!important;
+    align-items:center!important;
+    width:100%!important;
+    min-height:0!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-main{
+    min-width:0!important;
+    min-height:0!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
+    max-width:390px!important;
+    justify-self:stretch!important;
+    align-self:center!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-layout > #challenge-week-points-card{
+    grid-area:week!important;
+    grid-column:auto!important;
+    grid-row:auto!important;
+    order:1!important;
+    z-index:1!important;
+    min-height:0!important;
+    height:auto!important;
+    align-self:start!important;
+    overflow:hidden!important;
+    clear:none!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-layout > .challenge-card{
+    grid-area:tasks!important;
+    grid-column:auto!important;
+    grid-row:auto!important;
+    order:2!important;
+    z-index:1!important;
+    min-width:0!important;
+    min-height:0!important;
+    height:auto!important;
+    align-self:stretch!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-layout > .leader-card{
+    grid-area:leaders!important;
+    grid-column:auto!important;
+    grid-row:auto!important;
+    order:3!important;
+    z-index:1!important;
+    min-width:0!important;
+    min-height:0!important;
+    height:auto!important;
+    align-self:stretch!important;
+    display:flex!important;
+    flex-direction:column!important;
+    visibility:visible!important;
+    opacity:1!important;
+  }
+
+  body.change-view-challenges #challenges-view #challenges-list,
+  body.change-view-challenges #challenges-view #leaderboard-list{
+    overflow:visible!important;
+    max-height:none!important;
+    height:auto!important;
+  }
+}
+
+/* Kompakter Desktop: alles untereinander, aber in sauberer Reihenfolge. */
+@media (min-width:701px) and (max-width:980px){
+  body.change-view-challenges #challenges-view .challenge-layout{
+    display:flex!important;
+    flex-direction:column!important;
+    gap:14px!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-layout > #group-goal-card{order:0!important;}
+  body.change-view-challenges #challenges-view .challenge-layout > #challenge-week-points-card{order:1!important;}
+  body.change-view-challenges #challenges-view .challenge-layout > .challenge-card{order:2!important;}
+  body.change-view-challenges #challenges-view .challenge-layout > .leader-card{order:3!important;}
+
+  body.change-view-challenges #challenges-view .challenge-goal-hero-inner.challenge-goal-hero-clean{
+    grid-template-columns:1fr!important;
+    gap:14px!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
+    max-width:none!important;
+    border-left:0!important;
+    border-top:1px solid rgba(244,247,244,.12)!important;
+    padding:12px 0 0!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:8px!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-side-link{
+    border:1px solid rgba(244,247,244,.08)!important;
+    border-radius:15px!important;
+    padding:10px!important;
+    background:rgba(255,255,255,.03)!important;
+  }
+}
+
+/* Mobile: eigener Scroll im Content, keine gestapelten Overlays, keine überbreiten Karten. */
+@media (max-width:700px){
+  body.change-view-challenges,
+  body.change-view-challenges #main-app{
+    overflow:hidden!important;
+  }
+
+  body.change-view-challenges #content{
+    align-items:stretch!important;
+    overflow:auto!important;
+    padding:18px 14px calc(96px + env(safe-area-inset-bottom))!important;
+  }
+
+  body.change-view-challenges #challenges-view{
+    display:flex!important;
+    flex-direction:column!important;
+    width:100%!important;
+    max-width:none!important;
+    min-height:100%!important;
+    height:auto!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    background:transparent!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-neo-header,
+  body.change-view-challenges #challenges-view .list-header{
+    flex:0 0 auto!important;
+    margin:0 0 12px!important;
+    padding:0!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-layout{
+    flex:0 0 auto!important;
+    display:flex!important;
+    flex-direction:column!important;
+    gap:12px!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    height:auto!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-layout > #group-goal-card{
+    order:0!important;
+    z-index:1!important;
+    min-height:0!important;
+    height:auto!important;
+    padding:18px!important;
+    border-radius:24px!important;
+    overflow:hidden!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-hero-inner.challenge-goal-hero-clean{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:14px!important;
+    min-height:0!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-title{
+    font-size:24px!important;
+    line-height:1.05!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
+    max-width:none!important;
+    border-left:0!important;
+    border-top:1px solid rgba(244,247,244,.12)!important;
+    padding:12px 0 0!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:8px!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-side-link{
+    border:1px solid rgba(244,247,244,.08)!important;
+    border-radius:15px!important;
+    padding:10px!important;
+    background:rgba(255,255,255,.03)!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-layout > #challenge-week-points-card{
+    order:1!important;
+    z-index:1!important;
+    min-height:0!important;
+    height:auto!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-layout > .challenge-card{
+    order:2!important;
+    z-index:1!important;
+    min-height:0!important;
+    height:auto!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-layout > .leader-card{
+    order:3!important;
+    z-index:1!important;
+    min-height:0!important;
+    height:auto!important;
+    display:flex!important;
+    flex-direction:column!important;
+  }
+
+  body.change-view-challenges #challenges-view #challenges-list,
+  body.change-view-challenges #challenges-view #leaderboard-list{
+    overflow:visible!important;
+    max-height:none!important;
+    height:auto!important;
+  }
+}
+
+/* Hellmodus-Korrektur für die neue letzte Ebene. */
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list,
+body.theme-light.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
+  border-color:rgba(15,32,23,.12)!important;
+}
+
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side-link,
+body.theme-light.change-view-challenges #challenges-view .challenge-goal-side-link,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side-link{
+  background:rgba(255,255,255,.68)!important;
+  border-color:rgba(31,53,38,.10)!important;
+}
+
+
+
+/* ---------- CONSOLIDATED FROM: styles/mobileShellFix.css ---------- */
+
+/* Change App · v0.1.0091
+   Mobile Shell Fix: einheitliche feste Bottom-Bar, kein doppelter Unterabstand,
+   keine sichtbaren Scroll-/Panel-Reste am rechten unteren Rand. UI only. */
+
+@media (max-width:700px){
+  :root{
+    --change-mobile-nav-h:64px;
+    --change-mobile-bottom-space:76px;
+  }
+
+  body.change-view-dashboard,
+  body.change-view-calendar,
+  body.change-view-challenges,
+  body.change-view-pollen{
+    width:100vw!important;
+    max-width:100vw!important;
+    min-height:100dvh!important;
+    height:100dvh!important;
+    margin:0!important;
+    overflow:hidden!important;
+    background:#04090e!important;
+    overscroll-behavior:none!important;
+  }
+
+  body.change-view-dashboard #app,
+  body.change-view-calendar #app,
+  body.change-view-challenges #app,
+  body.change-view-pollen #app,
+  body.change-view-dashboard #main-app,
+  body.change-view-calendar #main-app,
+  body.change-view-challenges #main-app,
+  body.change-view-pollen #main-app{
+    width:100vw!important;
+    max-width:100vw!important;
+    min-height:100dvh!important;
+    height:100dvh!important;
+    overflow:hidden!important;
+    background:#04090e!important;
+  }
+
+  body.change-view-dashboard #main-app,
+  body.change-view-calendar #main-app,
+  body.change-view-challenges #main-app,
+  body.change-view-pollen #main-app{
+    display:flex!important;
+    flex-direction:column!important;
+    position:relative!important;
+  }
+
+  body.change-view-dashboard #bottom-nav,
+  body.change-view-calendar #bottom-nav,
+  body.change-view-challenges #bottom-nav,
+  body.change-view-pollen #bottom-nav,
+  body.neo-pollen-shell #bottom-nav{
+    position:fixed!important;
+    left:0!important;
+    right:0!important;
+    bottom:0!important;
+    z-index:9999!important;
+    display:block!important;
+    height:calc(var(--change-mobile-nav-h) + env(safe-area-inset-bottom,0px))!important;
+    min-height:calc(var(--change-mobile-nav-h) + env(safe-area-inset-bottom,0px))!important;
+    margin:0!important;
+    padding:0 0 env(safe-area-inset-bottom,0px)!important;
+    border:0!important;
+    border-radius:0!important;
+    outline:0!important;
+    background:rgba(9,14,16,.96)!important;
+    box-shadow:0 -18px 38px rgba(0,0,0,.20)!important;
+    backdrop-filter:blur(18px)!important;
+    -webkit-backdrop-filter:blur(18px)!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-dashboard #bottom-nav::before,
+  body.change-view-dashboard #bottom-nav::after,
+  body.change-view-calendar #bottom-nav::before,
+  body.change-view-calendar #bottom-nav::after,
+  body.change-view-challenges #bottom-nav::before,
+  body.change-view-challenges #bottom-nav::after,
+  body.change-view-pollen #bottom-nav::before,
+  body.change-view-pollen #bottom-nav::after,
+  body.neo-pollen-shell #bottom-nav::before,
+  body.neo-pollen-shell #bottom-nav::after{
+    display:none!important;
+    content:none!important;
+  }
+
+  body.change-view-dashboard .bnav-inner,
+  body.change-view-calendar .bnav-inner,
+  body.change-view-challenges .bnav-inner,
+  body.change-view-pollen .bnav-inner,
+  body.neo-pollen-shell .bnav-inner{
+    height:var(--change-mobile-nav-h)!important;
+    min-height:var(--change-mobile-nav-h)!important;
+    max-height:var(--change-mobile-nav-h)!important;
+    padding:0 8px!important;
+    align-items:stretch!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-dashboard #content,
+  body.change-view-calendar #content,
+  body.change-view-challenges #content,
+  body.change-view-pollen #content{
+    flex:1 1 auto!important;
+    width:100%!important;
+    max-width:100vw!important;
+    min-width:0!important;
+    min-height:0!important;
+    height:100dvh!important;
+    max-height:100dvh!important;
+    margin:0!important;
+    padding:18px 10px calc(var(--change-mobile-bottom-space) + env(safe-area-inset-bottom,0px))!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    -webkit-overflow-scrolling:touch!important;
+    overscroll-behavior:contain!important;
+    background:#04090e!important;
+    box-sizing:border-box!important;
+    scrollbar-width:none!important;
+    -ms-overflow-style:none!important;
+  }
+
+  body.change-view-dashboard #content::-webkit-scrollbar,
+  body.change-view-calendar #content::-webkit-scrollbar,
+  body.change-view-challenges #content::-webkit-scrollbar,
+  body.change-view-pollen #content::-webkit-scrollbar{
+    display:none!important;
+    width:0!important;
+    height:0!important;
+    background:transparent!important;
+  }
+
+  body.change-view-dashboard #dashboard-view,
+  body.change-view-calendar #cal-body,
+  body.change-view-calendar #calendar-premium-view,
+  body.change-view-challenges #challenges-view,
+  body.change-view-pollen #pollen-view,
+  body.change-view-pollen #pollen-view-body,
+  body.change-view-pollen #pollen-view .pollen-view-body,
+  body.change-view-pollen #pollen-view .pollen-neo-shell{
+    width:100%!important;
+    max-width:100%!important;
+    min-height:0!important;
+    height:auto!important;
+    max-height:none!important;
+    margin-bottom:0!important;
+    padding-bottom:0!important;
+    overflow:visible!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-pollen #pollen-view{
+    display:block!important;
+    flex:none!important;
+  }
+
+  body.change-view-pollen #pollen-view-body,
+  body.change-view-pollen #pollen-view .pollen-view-body{
+    display:block!important;
+    flex:none!important;
+    scrollbar-width:none!important;
+    -ms-overflow-style:none!important;
+  }
+
+  body.change-view-calendar #cal-body{
+    display:block!important;
+    padding:0!important;
+  }
+
+  body.change-view-calendar #calendar-premium-view{
+    padding:0!important;
+  }
+
+  body.change-view-dashboard #dash-grid,
+  body.change-view-calendar #calendar-premium-view,
+  body.change-view-challenges #challenges-view .challenge-layout,
+  body.change-view-pollen #pollen-view .pollen-neo-shell{
+    margin-bottom:0!important;
+    padding-bottom:0!important;
+  }
+
+  body.change-view-dashboard *,
+  body.change-view-calendar *,
+  body.change-view-challenges *,
+  body.change-view-pollen *{
+    scrollbar-width:none!important;
+    -ms-overflow-style:none!important;
+  }
+
+  body.change-view-dashboard *::-webkit-scrollbar,
+  body.change-view-calendar *::-webkit-scrollbar,
+  body.change-view-challenges *::-webkit-scrollbar,
+  body.change-view-pollen *::-webkit-scrollbar{
+    display:none!important;
+    width:0!important;
+    height:0!important;
+    background:transparent!important;
+  }
+
+  /* Geschlossene mobile Panels durften rechts als graue Rundung sichtbar bleiben. */
+  body.change-view-dashboard #side-panel:not(.open),
+  body.change-view-calendar #side-panel:not(.open),
+  body.change-view-challenges #side-panel:not(.open),
+  body.change-view-pollen #side-panel:not(.open){
+    transform:translateX(calc(100% + 48px))!important;
+    opacity:0!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+  }
+
+  body.change-view-dashboard #side-panel.open,
+  body.change-view-calendar #side-panel.open,
+  body.change-view-challenges #side-panel.open,
+  body.change-view-pollen #side-panel.open{
+    transform:translateX(0)!important;
+    opacity:1!important;
+    visibility:visible!important;
+  }
+
+  body.change-view-dashboard #panel-overlay:not(.show),
+  body.change-view-calendar #panel-overlay:not(.show),
+  body.change-view-challenges #panel-overlay:not(.show),
+  body.change-view-pollen #panel-overlay:not(.show){
+    opacity:0!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+  }
+}
+
+
+
+/* ---------- CONSOLIDATED FROM: styles/pollenTypographyFix.css ---------- */
+
+/* Change App · v0.1.0092
+   Pollen typography cleanup
+   - Ruhigere 24-Stunden-Kennzahlen ohne Ellipsen und harte Umbrüche
+   - Einheitliche Abschnittsüberschriften für Allergieprofil, Symptome und Ausblicke
+   - Keine Änderung an Pollenberechnung, Sync, Firebase oder gespeicherten Symptomen
+*/
+
+body.change-view-pollen #pollen-view,
+body.neo-pollen-shell #pollen-view{
+  font-family:var(--font,"Plus Jakarta Sans",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif)!important;
+}
+
+body.change-view-pollen #pollen-view .pollen-neo-section-head,
+body.neo-pollen-shell #pollen-view .pollen-neo-section-head,
+body.change-view-pollen #pollen-view .pollen-neo-symptoms .pollen-neo-section-head,
+body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .pollen-neo-section-head{
+  margin:0 0 8px!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  min-height:0!important;
+}
+
+body.change-view-pollen #pollen-view .pollen-neo-section-head span,
+body.neo-pollen-shell #pollen-view .pollen-neo-section-head span,
+body.change-view-pollen #pollen-view .pollen-hourly-title span,
+body.neo-pollen-shell #pollen-view .pollen-hourly-title span,
+body.change-view-pollen #pollen-view .pollen-neo-symptoms-title span,
+body.neo-pollen-shell #pollen-view .pollen-neo-symptoms-title span{
+  display:block!important;
+  font-family:var(--font,"Plus Jakarta Sans",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif)!important;
+  font-size:11px!important;
+  line-height:1.05!important;
+  font-weight:950!important;
+  letter-spacing:.095em!important;
+  text-transform:uppercase!important;
+  color:rgba(244,247,244,.72)!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+
+body.change-view-pollen #pollen-view .pollen-hourly-section,
+body.neo-pollen-shell #pollen-view .pollen-hourly-section{
+  margin-top:8px!important;
+}
+
+body.change-view-pollen #pollen-view .pollen-hourly-card,
+body.neo-pollen-shell #pollen-view .pollen-hourly-card{
+  gap:9px!important;
+  padding:12px!important;
+}
+
+body.change-view-pollen #pollen-view .pollen-hourly-insights,
+body.neo-pollen-shell #pollen-view .pollen-hourly-insights{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:0!important;
+  margin:0!important;
+}
+
+body.change-view-pollen #pollen-view .pollen-hourly-insight,
+body.neo-pollen-shell #pollen-view .pollen-hourly-insight{
+  min-width:0!important;
+  min-height:50px!important;
+  padding:9px 10px!important;
+  grid-template-columns:21px minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:1px 7px!important;
+}
+
+body.change-view-pollen #pollen-view .pollen-hourly-insight-icon,
+body.neo-pollen-shell #pollen-view .pollen-hourly-insight-icon{
+  width:19px!important;
+  height:19px!important;
+  font-size:10px!important;
+  border-width:1px!important;
+}
+
+body.change-view-pollen #pollen-view .pollen-hourly-insight small,
+body.neo-pollen-shell #pollen-view .pollen-hourly-insight small{
+  font-family:var(--font,"Plus Jakarta Sans",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif)!important;
+  font-size:9.25px!important;
+  line-height:1!important;
+  font-weight:900!important;
+  letter-spacing:.01em!important;
+  color:rgba(244,247,244,.62)!important;
+  white-space:nowrap!important;
+}
+
+body.change-view-pollen #pollen-view .pollen-hourly-insight strong,
+body.neo-pollen-shell #pollen-view .pollen-hourly-insight strong{
+  display:block!important;
+  min-width:0!important;
+  max-width:100%!important;
+  font-family:var(--font,"Plus Jakarta Sans",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif)!important;
+  font-size:clamp(14px,1.45vw,17px)!important;
+  line-height:1.02!important;
+  font-weight:950!important;
+  letter-spacing:-.035em!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+
+body.change-view-pollen #pollen-view .pollen-hourly-insight em,
+body.neo-pollen-shell #pollen-view .pollen-hourly-insight em{
+  display:block!important;
+  min-width:0!important;
+  max-width:100%!important;
+  font-family:var(--font,"Plus Jakarta Sans",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif)!important;
+  font-size:10.25px!important;
+  line-height:1.05!important;
+  font-weight:950!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+
+body.change-view-pollen #pollen-view .pollen-hourly-chart svg,
+body.neo-pollen-shell #pollen-view .pollen-hourly-chart svg{
+  height:clamp(118px,13vw,150px)!important;
+}
+
+body.change-view-pollen #pollen-view .pollen-hourly-parts,
+body.neo-pollen-shell #pollen-view .pollen-hourly-parts{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:0!important;
+  margin-top:0!important;
+}
+
+body.change-view-pollen #pollen-view .pollen-hourly-part,
+body.neo-pollen-shell #pollen-view .pollen-hourly-part{
+  min-width:0!important;
+  min-height:54px!important;
+  padding:9px 10px!important;
+  grid-template-columns:20px minmax(0,1fr)!important;
+  gap:1px 7px!important;
+  align-items:center!important;
+}
+
+body.change-view-pollen #pollen-view .pollen-hourly-part span,
+body.neo-pollen-shell #pollen-view .pollen-hourly-part span{
+  grid-row:1 / 4!important;
+  font-size:17px!important;
+  line-height:1!important;
+}
+
+body.change-view-pollen #pollen-view .pollen-hourly-part strong,
+body.neo-pollen-shell #pollen-view .pollen-hourly-part strong{
+  font-family:var(--font,"Plus Jakarta Sans",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif)!important;
+  font-size:10px!important;
+  line-height:1.05!important;
+  font-weight:900!important;
+  white-space:nowrap!important;
+}
+
+body.change-view-pollen #pollen-view .pollen-hourly-part em,
+body.neo-pollen-shell #pollen-view .pollen-hourly-part em{
+  font-family:var(--font,"Plus Jakarta Sans",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif)!important;
+  font-size:clamp(13px,1.25vw,16px)!important;
+  line-height:1.02!important;
+  font-weight:950!important;
+  letter-spacing:-.04em!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+
+body.change-view-pollen #pollen-view .pollen-hourly-part small,
+body.neo-pollen-shell #pollen-view .pollen-hourly-part small{
+  font-family:var(--font,"Plus Jakarta Sans",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif)!important;
+  font-size:9.5px!important;
+  line-height:1.05!important;
+  font-weight:950!important;
+  white-space:nowrap!important;
+}
+
+body.change-view-pollen #pollen-view .change-symptom-label strong,
+body.neo-pollen-shell #pollen-view .change-symptom-label strong,
+body.change-view-pollen #pollen-view .change-symptom-level,
+body.neo-pollen-shell #pollen-view .change-symptom-level,
+body.change-view-pollen #pollen-view .change-symptom-insight strong,
+body.neo-pollen-shell #pollen-view .change-symptom-insight strong,
+body.change-view-pollen #pollen-view .change-symptom-insight span,
+body.neo-pollen-shell #pollen-view .change-symptom-insight span{
+  font-family:var(--font,"Plus Jakarta Sans",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif)!important;
+}
+
+@media(max-width:700px){
+  body.change-view-pollen #pollen-view .pollen-hourly-card,
+  body.neo-pollen-shell #pollen-view .pollen-hourly-card{
+    padding:10px!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-hourly-insight,
+  body.neo-pollen-shell #pollen-view .pollen-hourly-insight{
+    min-height:46px!important;
+    padding:8px 6px!important;
+    grid-template-columns:18px minmax(0,1fr)!important;
+    gap:1px 5px!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-hourly-insight-icon,
+  body.neo-pollen-shell #pollen-view .pollen-hourly-insight-icon{
+    width:17px!important;
+    height:17px!important;
+    font-size:9px!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-hourly-insight small,
+  body.neo-pollen-shell #pollen-view .pollen-hourly-insight small{
+    font-size:8.5px!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-hourly-insight strong,
+  body.neo-pollen-shell #pollen-view .pollen-hourly-insight strong{
+    font-size:12px!important;
+    letter-spacing:-.03em!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-hourly-insight em,
+  body.neo-pollen-shell #pollen-view .pollen-hourly-insight em{
+    font-size:8.8px!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-hourly-part,
+  body.neo-pollen-shell #pollen-view .pollen-hourly-part{
+    min-height:50px!important;
+    padding:8px 6px!important;
+    grid-template-columns:18px minmax(0,1fr)!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-hourly-part span,
+  body.neo-pollen-shell #pollen-view .pollen-hourly-part span{
+    font-size:15px!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-hourly-part strong,
+  body.neo-pollen-shell #pollen-view .pollen-hourly-part strong{
+    font-size:8.8px!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-hourly-part em,
+  body.neo-pollen-shell #pollen-view .pollen-hourly-part em{
+    font-size:12px!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-hourly-part small,
+  body.neo-pollen-shell #pollen-view .pollen-hourly-part small{
+    font-size:8.5px!important;
+  }
+}
+
+[data-theme="light"] #pollen-view .pollen-neo-section-head span,
+body.theme-light #pollen-view .pollen-neo-section-head span,
+body.change-theme-light #pollen-view .pollen-neo-section-head span{
+  color:rgba(31,53,38,.70)!important;
+}
+
+
+
+/* ---------- CONSOLIDATED FROM: styles/workspaceConsistencyFix.css ---------- */
+
+/* Change App · v0.1.0093
+   Workspace Consistency Fix
+   Ziel: Dashboard, Kalender, Challenges und Pollen nutzen dieselbe Arbeitsfläche,
+   dieselbe Titelzeile und denselben linken Startpunkt wie Pollen. */
+
+:root{
+  --change-workspace-max: 1320px;
+  --change-page-title-size-desktop: 27px;
+  --change-page-title-size-mobile: 24px;
+  --change-page-title-gap: 14px;
+  --change-page-icon-size-desktop: 20px;
+  --change-page-icon-size-mobile: 18px;
+  --change-page-head-height-desktop: 46px;
+  --change-page-head-height-mobile: 42px;
+}
+
+@media (min-width:701px){
+  body.change-view-dashboard #content,
+  body.change-view-calendar #content,
+  body.change-view-challenges #content,
+  body.change-view-pollen #content{
+    padding:26px 34px 34px !important;
+    overflow:auto !important;
+  }
+
+  body.change-view-dashboard #dashboard-view,
+  body.change-view-calendar #cal-body,
+  body.change-view-challenges #challenges-view,
+  body.change-view-pollen #pollen-view{
+    width:100% !important;
+    max-width:none !important;
+    min-height:100% !important;
+    margin:0 !important;
+    padding:0 !important;
+    box-sizing:border-box !important;
+  }
+
+  body.change-view-dashboard #dashboard-view,
+  body.change-view-calendar #calendar-premium-view,
+  body.change-view-challenges #challenges-view,
+  body.change-view-pollen #pollen-view{
+    width:min(100%, var(--change-workspace-max)) !important;
+    max-width:var(--change-workspace-max) !important;
+    margin:0 auto !important;
+    box-sizing:border-box !important;
+  }
+
+  body.change-view-dashboard .dash-hello,
+  body.change-view-calendar .cal-premium-top,
+  body.change-view-challenges #challenges-view .list-header,
+  body.change-view-pollen #pollen-view .list-header{
+    min-height:var(--change-page-head-height-desktop) !important;
+    margin:0 0 24px !important;
+    padding:0 !important;
+    display:flex !important;
+    align-items:center !important;
+    box-sizing:border-box !important;
+  }
+
+  body.change-view-dashboard .dash-hello,
+  body.change-view-calendar .cal-premium-top{
+    justify-content:flex-start !important;
+  }
+
+  body.change-view-dashboard .dash-hello h1,
+  body.change-view-calendar .cal-premium-title h1,
+  body.change-view-challenges #challenges-view .list-title,
+  body.change-view-pollen #pollen-view .list-title{
+    margin:0 !important;
+    font-size:var(--change-page-title-size-desktop) !important;
+    line-height:1 !important;
+    font-weight:950 !important;
+    letter-spacing:-.8px !important;
+  }
+
+  body.change-view-dashboard .dash-hello h1{
+    display:flex !important;
+    align-items:center !important;
+    gap:var(--change-page-title-gap) !important;
+  }
+
+  body.change-view-dashboard .dash-hello h1::before{
+    content:"";
+    width:var(--change-page-icon-size-desktop);
+    height:var(--change-page-icon-size-desktop);
+    flex:0 0 var(--change-page-icon-size-desktop);
+    background:no-repeat center/contain url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='3.5' y='3.5' width='6' height='6' rx='1.1' fill='none' stroke='%234ade80' stroke-width='1.7'/><rect x='14.5' y='3.5' width='6' height='6' rx='1.1' fill='none' stroke='%2398f2b5' stroke-width='1.7'/><rect x='3.5' y='14.5' width='6' height='6' rx='1.1' fill='none' stroke='%2398f2b5' stroke-width='1.7'/><rect x='14.5' y='14.5' width='6' height='6' rx='1.1' fill='none' stroke='%234ade80' stroke-width='1.7'/></svg>");
+    filter:drop-shadow(0 0 14px rgba(74,222,128,.24));
+  }
+
+  body.change-view-dashboard .dash-hello p{
+    display:none !important;
+  }
+
+  body.change-view-calendar .cal-premium-title,
+  body.change-view-pollen #pollen-view .list-title,
+  body.change-view-challenges #challenges-view .list-title{
+    display:flex !important;
+    align-items:center !important;
+    gap:var(--change-page-title-gap) !important;
+  }
+
+  body.change-view-calendar .cal-premium-title span{
+    width:var(--change-page-icon-size-desktop) !important;
+    min-width:var(--change-page-icon-size-desktop) !important;
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    font-size:20px !important;
+    line-height:1 !important;
+  }
+
+  body.change-view-pollen #pollen-view .list-title::before,
+  body.change-view-challenges #challenges-view .list-title::before{
+    width:var(--change-page-icon-size-desktop) !important;
+    height:var(--change-page-icon-size-desktop) !important;
+    flex:0 0 var(--change-page-icon-size-desktop) !important;
+  }
+
+  body.change-view-dashboard #dash-grid,
+  body.change-view-calendar #calendar-premium-view,
+  body.change-view-challenges #challenges-view .challenge-layout,
+  body.change-view-pollen #pollen-view .pollen-neo-shell{
+    width:100% !important;
+    max-width:100% !important;
+    box-sizing:border-box !important;
+  }
+}
+
+@media (max-width:700px){
+  body.change-view-dashboard #content,
+  body.change-view-calendar #content,
+  body.change-view-challenges #content,
+  body.change-view-pollen #content{
+    padding:18px 14px calc(86px + env(safe-area-inset-bottom)) !important;
+    overflow:auto !important;
+  }
+
+  body.change-view-dashboard #dashboard-view,
+  body.change-view-calendar #cal-body,
+  body.change-view-challenges #challenges-view,
+  body.change-view-pollen #pollen-view{
+    width:100% !important;
+    max-width:none !important;
+    min-height:100% !important;
+    margin:0 !important;
+    padding:0 !important;
+    box-sizing:border-box !important;
+  }
+
+  body.change-view-dashboard .dash-hello,
+  body.change-view-calendar .cal-premium-top,
+  body.change-view-challenges #challenges-view .list-header,
+  body.change-view-pollen #pollen-view .list-header{
+    min-height:var(--change-page-head-height-mobile) !important;
+    margin:0 0 14px !important;
+    padding:0 !important;
+    display:flex !important;
+    align-items:center !important;
+    box-sizing:border-box !important;
+  }
+
+  body.change-view-dashboard .dash-hello,
+  body.change-view-calendar .cal-premium-top{
+    justify-content:flex-start !important;
+  }
+
+  body.change-view-dashboard .dash-hello h1,
+  body.change-view-calendar .cal-premium-title h1,
+  body.change-view-challenges #challenges-view .list-title,
+  body.change-view-pollen #pollen-view .list-title{
+    margin:0 !important;
+    font-size:var(--change-page-title-size-mobile) !important;
+    line-height:1 !important;
+    font-weight:950 !important;
+    letter-spacing:-.65px !important;
+  }
+
+  body.change-view-dashboard .dash-hello h1{
+    display:flex !important;
+    align-items:center !important;
+    gap:12px !important;
+  }
+
+  body.change-view-dashboard .dash-hello h1::before{
+    content:"";
+    width:var(--change-page-icon-size-mobile);
+    height:var(--change-page-icon-size-mobile);
+    flex:0 0 var(--change-page-icon-size-mobile);
+    background:no-repeat center/contain url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='3.5' y='3.5' width='6' height='6' rx='1.1' fill='none' stroke='%234ade80' stroke-width='1.7'/><rect x='14.5' y='3.5' width='6' height='6' rx='1.1' fill='none' stroke='%2398f2b5' stroke-width='1.7'/><rect x='3.5' y='14.5' width='6' height='6' rx='1.1' fill='none' stroke='%2398f2b5' stroke-width='1.7'/><rect x='14.5' y='14.5' width='6' height='6' rx='1.1' fill='none' stroke='%234ade80' stroke-width='1.7'/></svg>");
+    filter:drop-shadow(0 0 12px rgba(74,222,128,.22));
+  }
+
+  body.change-view-dashboard .dash-hello p{
+    display:none !important;
+  }
+
+  body.change-view-calendar .cal-premium-title,
+  body.change-view-pollen #pollen-view .list-title,
+  body.change-view-challenges #challenges-view .list-title{
+    display:flex !important;
+    align-items:center !important;
+    gap:12px !important;
+  }
+
+  body.change-view-calendar .cal-premium-title span{
+    width:var(--change-page-icon-size-mobile) !important;
+    min-width:var(--change-page-icon-size-mobile) !important;
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    font-size:18px !important;
+    line-height:1 !important;
+  }
+
+  body.change-view-pollen #pollen-view .list-title::before,
+  body.change-view-challenges #challenges-view .list-title::before{
+    width:var(--change-page-icon-size-mobile) !important;
+    height:var(--change-page-icon-size-mobile) !important;
+    flex:0 0 var(--change-page-icon-size-mobile) !important;
+  }
+}
+
+
+
+/* ---------- CONSOLIDATED FROM: styles/pollenHeroConsolidationFix.css ---------- */
+
+/* Change App · v0.1.0095
+   Pollen Main Hero Consolidation Fix
+   Entfernt die drei lokalen Sidecards und integriert deren Kerninfos in die Maincard. */
+
+@media (min-width:701px){
+  body.change-view-pollen #pollen-view .pollen-neo-top,
+  body.neo-pollen-shell #pollen-view .pollen-neo-top,
+  body.change-view-pollen #pollen-view .pollen-neo-top-mainonly{
+    display:block !important;
+    grid-template-columns:1fr !important;
+    gap:0 !important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-hero-wide,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-wide{
+    width:100% !important;
+    max-width:none !important;
+    grid-template-columns:minmax(0,1fr) 170px minmax(360px, 420px) !important;
+    min-height:238px !important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats-extended{
+    display:grid !important;
+    grid-template-columns:repeat(4, minmax(0,1fr)) !important;
+    gap:0 !important;
+    align-self:stretch !important;
+    padding-left:18px !important;
+    border-left:1px solid rgba(255,255,255,.08) !important;
+    border-top:0 !important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended > div,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats-extended > div{
+    display:grid !important;
+    grid-template-columns:28px minmax(0,1fr) !important;
+    grid-template-rows:auto auto !important;
+    align-content:center !important;
+    gap:0 10px !important;
+    padding:0 14px !important;
+    border-bottom:0 !important;
+    border-right:1px solid rgba(255,255,255,.08) !important;
+    min-width:0 !important;
+  }
+  body.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended > div:last-child,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats-extended > div:last-child{
+    border-right:0 !important;
+    padding-right:0 !important;
+  }
+  body.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended > div:first-child,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats-extended > div:first-child{
+    padding-left:0 !important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-sidecards,
+  body.neo-pollen-shell #pollen-view .pollen-neo-sidecards{
+    display:none !important;
+  }
+}
+
+@media (max-width:900px){
+  body.change-view-pollen #pollen-view .pollen-neo-sidecards,
+  body.neo-pollen-shell #pollen-view .pollen-neo-sidecards{
+    display:none !important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-top,
+  body.neo-pollen-shell #pollen-view .pollen-neo-top{
+    grid-template-columns:1fr !important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats-extended{
+    grid-template-columns:repeat(2, minmax(0,1fr)) !important;
+    gap:8px !important;
+    padding-left:0 !important;
+    padding-top:10px !important;
+    border-left:0 !important;
+    border-top:1px solid rgba(255,255,255,.08) !important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended > div,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats-extended > div{
+    border-right:0 !important;
+    background:rgba(255,255,255,.05) !important;
+    border-radius:16px !important;
+    padding:12px !important;
+    grid-template-columns:24px minmax(0,1fr) !important;
+  }
+}
+
+@media (max-width:560px){
+  body.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats-extended{
+    grid-template-columns:1fr !important;
+  }
+}
+
+body.change-view-pollen #pollen-view .pollen-neo-hero-stats .mark.ring,
+body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats .mark.ring{
+  position:relative;
+}
+body.change-view-pollen #pollen-view .pollen-neo-hero-stats .mark.ring::before,
+body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats .mark.ring::before{
+  content:"";
+  position:absolute;
+  inset:5px;
+  border-radius:50%;
+  border:2px solid #ff6a55;
+}
+body.change-view-pollen #pollen-view .pollen-neo-hero-stats .mark.ring::after,
+body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats .mark.ring::after{
+  content:"";
+  position:absolute;
+  inset:9px;
+  border-radius:50%;
+  background:#ff6a55;
+}
+
+[data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended,
+body.theme-light.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended,
+body.change-theme-light.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended{
+  border-color:rgba(23,41,30,.12) !important;
+}
+[data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended > div,
+body.theme-light.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended > div,
+body.change-theme-light.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended > div{
+  border-color:rgba(23,41,30,.12) !important;
+}
+
+
+
+/* ---------- CONSOLIDATED FROM: styles/mobileScrollEndFix.css ---------- */
+
+/* Change App · v0.1.0096
+   Mobile Scroll End Fix
+   Fixiert den unteren Scroll-Endbereich für Pollen, Dashboard, Kalender und Challenges,
+   damit die letzte Karte nicht unter der festen Bottom-Bar abgeschnitten wird. */
+
+@media (max-width:700px){
+  :root{
+    --change-mobile-nav-h:64px;
+    --change-mobile-scroll-end-space:calc(118px + env(safe-area-inset-bottom,0px));
+  }
+
+  body.change-view-dashboard #content,
+  body.change-view-calendar #content,
+  body.change-view-challenges #content,
+  body.change-view-pollen #content{
+    height:100dvh!important;
+    max-height:100dvh!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    padding-bottom:var(--change-mobile-scroll-end-space)!important;
+    scroll-padding-bottom:var(--change-mobile-scroll-end-space)!important;
+    -webkit-overflow-scrolling:touch!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-dashboard #dashboard-view,
+  body.change-view-calendar #cal-body,
+  body.change-view-calendar #calendar-premium-view,
+  body.change-view-challenges #challenges-view,
+  body.change-view-challenges #challenges-view .challenge-layout,
+  body.change-view-pollen #pollen-view,
+  body.change-view-pollen #pollen-view-body,
+  body.change-view-pollen #pollen-view .pollen-view-body,
+  body.change-view-pollen #pollen-view .pollen-neo-shell{
+    height:auto!important;
+    max-height:none!important;
+    min-height:0!important;
+    overflow:visible!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-dashboard #dashboard-view::after,
+  body.change-view-calendar #calendar-premium-view::after,
+  body.change-view-challenges #challenges-view .challenge-layout::after,
+  body.change-view-pollen #pollen-view .pollen-neo-shell::after{
+    content:""!important;
+    display:block!important;
+    width:100%!important;
+    height:calc(42px + env(safe-area-inset-bottom,0px))!important;
+    min-height:calc(42px + env(safe-area-inset-bottom,0px))!important;
+    flex:0 0 calc(42px + env(safe-area-inset-bottom,0px))!important;
+    pointer-events:none!important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-forecast-list,
+  body.change-view-pollen #pollen-view .pollen-neo-card,
+  body.change-view-dashboard .dashp-card,
+  body.change-view-calendar .cal-premium-card,
+  body.change-view-calendar .cal-premium-side-card,
+  body.change-view-challenges .challenge-card,
+  body.change-view-challenges .leader-card{
+    transform:translateZ(0);
+  }
+}
+
+
+
+/* v0.1.0097 · END CONSOLIDATED FINAL OVERRIDES */

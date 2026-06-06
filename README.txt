@@ -1,12 +1,24 @@
-Change App · Mobile Shell Fix · Version 0.1.0091
+Change App · Cleanup Build · Version 0.1.0097
 
-Version 0.1.0091:
-- Mobile Bottom-Bar für Dashboard, Kalender, Challenges und Pollen als feste Leiste stabilisiert.
-- Doppelten unteren Abstand entfernt, der durch View-Padding plus Bottom-Bar entstanden ist.
-- Mobile Scrollindikatoren ausgeblendet, damit rechts unten kein grauer Scrollbalken sichtbar bleibt.
-- Geschlossene mobile Side-Panels werden vollständig außerhalb des Bildschirms versteckt, damit rechts kein grauer Panel-Rand stehen bleibt.
-- Keine Änderung an Firebase, Login, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik.
+Version 0.1.0097:
+- CSS-Fixdateien wurden konsolidiert, damit die App-Struktur wieder kleiner und übersichtlicher wird.
+- Pollen-Polish wurde in features/pollen/pollenView.css integriert.
+- Finale Layout- und Mobile-Fixes wurden in styles/appShell.css integriert.
+- Alte Einzel-README-Dateien wurden entfernt und in CHANGELOG.md zusammengeführt.
+- index.html lädt dadurch deutlich weniger CSS-Dateien.
+- Keine Änderung an Firebase, Login, Sync, Kalenderdaten, Challenges, Dashboard-Logik oder Pollenberechnung.
 
-Vorherige Version 0.1.0090:
-- Challenge-Ansicht stabilisiert: Hero, Punkte-Kalender, Aufgaben und Rangliste haben eine feste Reihenfolge.
-- Finale Challenge-CSS-Datei wird nach appShell.css geladen, damit lokale alte Overrides nicht mehr gewinnen.
+Technisch entfernt wurden:
+- features/pollen/pollenUiPolish.css
+- features/challenges/challengesLayoutFix.css
+- styles/mobileShellFix.css
+- styles/pollenTypographyFix.css
+- styles/workspaceConsistencyFix.css
+- styles/pollenHeroConsolidationFix.css
+- styles/mobileScrollEndFix.css
+- README_*.txt Einzeldateien
+
+Behalten:
+- README.txt
+- CLAUDE.md
+- CHANGELOG.md
