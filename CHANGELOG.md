@@ -125,3 +125,14 @@
 - Mobile Kalender-Hero im Pollen-Stil ohne innere Kacheln bereinigt.
 - Delayed Refresh ergänzt, damit Kalender-Anzeigen nach App-Start automatisch aktuell werden.
 - Challenges mobile Statuspunkte gegen Überlappung abgesichert.
+
+
+## 0.1.0115
+- Kalender: Nächster Termin zeigt nur noch relative Angabe wie „in 3 Tagen“.
+- Kalender/Challenges: Statusfarben an Pollen angepasst.
+- Challenges: Abzeichen-Zähler auf stabil „x von 37“ korrigiert.
+
+
+## 0.1.0116
+- Pollen-Mobilabstand zwischen Titel und Hauptkachel reduziert.
+- Dashboard-Titelhöhe und Workspace-Breite an die anderen Hauptansichten angeglichen.

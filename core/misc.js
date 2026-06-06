@@ -310,7 +310,7 @@ window.renderGroupGoal = function(){
   var totalBadgeCount = 0;
   try{ earnedBadges = (typeof window.getEarnedBadges === 'function' ? window.getEarnedBadges() : []) || []; }catch(e){ earnedBadges = []; }
   try{ totalBadgeCount = Array.isArray(BADGES) ? BADGES.length : Math.max(earnedBadges.length, 0); }catch(e){ totalBadgeCount = Math.max(earnedBadges.length, 0); }
-  if(!totalBadgeCount || totalBadgeCount < earnedBadges.length) totalBadgeCount = Math.max(37, earnedBadges.length);
+  totalBadgeCount = Math.max(37, totalBadgeCount || 0, earnedBadges.length || 0);
   var badgeLabel = earnedBadges.length + ' von ' + totalBadgeCount;
   var badgeSub = earnedBadges.length + ' aktiv von ' + totalBadgeCount + ' gesamt';
 

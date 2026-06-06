@@ -151,9 +151,7 @@
     if(!next) return 'Kein Termin geplant';
     var r = rangeOf(next);
     var rel = r && r.start ? relativeDateLabel(r.start) : '';
-    var title = cleanHeroText(nextTitle || 'Termin');
-    var time = cleanHeroText(nextTime || 'Ganztägig');
-    return title + (time ? ' · ' + time : '') + (rel ? ' · ' + rel : '');
+    return rel || 'Heute';
   }
   function compactFriseurValue(row){
     var text = cleanHeroText((row && (row.sub || row.badge)) || '');
@@ -232,7 +230,7 @@
       + '<div class="cal-premium-eyebrow">Heute</div>'
       + '<h2>'+esc(weekdayName(key))+', '+compactDate(key)+'</h2>'
       + '<div class="cal-premium-hero-line"><span class="cal-premium-dot"></span><strong>'+list.length+'</strong> '+(list.length===1?'Termin':'Termine')+'</div>'
-      + '<div class="cal-premium-hero-line muted">Nächster Termin: <strong>'+esc(nextTime)+'</strong>'+(next ? ' · '+esc(nextTitle) : '')+'</div>'
+      + '<div class="cal-premium-hero-line muted">Nächster Termin: <strong>'+esc(compactNextValue(next, nextTime, nextTitle))+'</strong></div>'
       + '</div>'
       + heroSideHtml(next, nextTime, nextTitle)
       + '</section>'
