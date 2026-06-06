@@ -2419,3 +2419,64 @@ body.change-view-challenges #challenges-view #leaderboard-list,
   body.change-view-challenges #challenges-view .challenge-goal-title,
   #challenges-view .challenge-goal-title{font-size:24px!important;}
 }
+
+/* v0.1.0087 · Hellmode Fix: Challenge-Punktekalender */
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-week-card,
+body.theme-light.change-view-challenges #challenges-view .challenge-week-card,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-week-card{
+  background:rgba(255,255,255,.92)!important;
+  border-color:rgba(20,35,24,.14)!important;
+  box-shadow:0 20px 48px rgba(31,53,38,.10)!important;
+}
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-week-head,
+body.theme-light.change-view-challenges #challenges-view .challenge-week-head,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-week-head{
+  border-color:rgba(20,35,24,.12)!important;
+  background:rgba(255,255,255,.38)!important;
+}
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-week-title,
+body.theme-light.change-view-challenges #challenges-view .challenge-week-title,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-week-title{
+  color:#111d16!important;
+}
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-week-actions .btn,
+body.theme-light.change-view-challenges #challenges-view .challenge-week-actions .btn,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-week-actions .btn{
+  background:rgba(255,255,255,.92)!important;
+  border-color:rgba(20,35,24,.16)!important;
+  color:#24332a!important;
+}
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-week-day,
+body.theme-light.change-view-challenges #challenges-view .challenge-week-day,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-week-day{
+  background:rgba(255,255,255,.88)!important;
+  border-color:rgba(20,35,24,.14)!important;
+}
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-week-day-name,
+body.theme-light.change-view-challenges #challenges-view .challenge-week-day-name,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-week-day-name{
+  color:#6f7b74!important;
+  opacity:1!important;
+}
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-week-day-date,
+body.theme-light.change-view-challenges #challenges-view .challenge-week-day-date,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-week-day-date{
+  color:#111d16!important;
+}
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-week-day-points,
+body.theme-light.change-view-challenges #challenges-view .challenge-week-day-points,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-week-day-points{
+  color:#16a34a!important;
+}
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-week-day.empty .challenge-week-day-points,
+body.theme-light.change-view-challenges #challenges-view .challenge-week-day.empty .challenge-week-day-points,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-week-day.empty .challenge-week-day-points{
+  color:#9aa39d!important;
+}
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-week-day.is-today,
+body.theme-light.change-view-challenges #challenges-view .challenge-week-day.is-today,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-week-day.is-today{
+  border-color:rgba(34,197,94,.58)!important;
+  background:linear-gradient(180deg,rgba(232,250,239,.96),rgba(255,255,255,.88))!important;
+  box-shadow:0 10px 24px rgba(34,197,94,.12)!important;
+}

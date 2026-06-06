@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-06 · Version 0.1.0086 und Pollen-Hellmodus/5-Tages-Ausblick-Fix
+> Zuletzt aktualisiert: 2026-06-06 · Version 0.1.0088 und Pollen-Mobile-Scroll/24h-Lesbarkeit
 
 ---
 
@@ -140,7 +140,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0084`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0088`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -997,6 +997,13 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 
 | 2026-06-05 | Version auf `0.1.0079` erhöht; Pollen-24-Stunden-Ausblick an das ausgewählte Allergieprofil gekoppelt und eigene Pollen-Auswahl entfernt. | ChatGPT |
 
+
+
+## Version 0.1.0087
+
+- Hellmodus für Kalender-Monatsübersicht, Kalender-Wochenleiste und Challenge-Punktekalender korrigiert.
+- Texte, Tageszahlen, Auswahlzustände, Punkte und Steuerbuttons sind im Hellmodus wieder klar lesbar.
+- Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten, Pollen-API oder Challenge-Logik.
 
 ## Version 0.1.0086
 

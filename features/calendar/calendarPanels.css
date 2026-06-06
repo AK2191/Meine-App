@@ -180,3 +180,104 @@ body.change-theme-light .cal-premium-month-picker select{background:rgba(255,255
   .cal-premium-month-picker{grid-template-columns:minmax(0,1fr) 84px;}
   .cal-premium-mini-grid{gap:7px!important;}
 }
+
+/* v0.1.0087 · Hellmode Fix: Kalender Monatsübersicht und Wochenleiste */
+[data-theme="light"] body.change-view-calendar #calendar-premium-view,
+body.theme-light.change-view-calendar #calendar-premium-view,
+body.change-theme-light.change-view-calendar #calendar-premium-view{
+  color:#122018!important;
+}
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-week,
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-side-card,
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-mini,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-week,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-side-card,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-mini,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-week,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-side-card,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-mini{
+  background:rgba(255,255,255,.92)!important;
+  border-color:rgba(20,35,24,.14)!important;
+  box-shadow:0 20px 48px rgba(31,53,38,.10)!important;
+}
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-section-head strong,
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-side-head strong,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-section-head strong,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-side-head strong,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-section-head strong,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-side-head strong{
+  color:#122018!important;
+}
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-week-day,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day{
+  background:rgba(255,255,255,.86)!important;
+  border-color:rgba(20,35,24,.14)!important;
+  color:#25342b!important;
+}
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-week-day span,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day span,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day span{
+  color:#7a867f!important;
+  opacity:1!important;
+}
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-week-day strong,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day strong,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day strong{
+  color:#101b15!important;
+}
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-week-day i,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day i,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day i{
+  background:#2fcf72!important;
+  opacity:1!important;
+}
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-week-day i.empty,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day i.empty,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day i.empty{
+  background:#d4dad6!important;
+  opacity:1!important;
+}
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-mini-grid,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-mini-grid,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-mini-grid{
+  color:#101b15!important;
+}
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-mini-grid span,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-mini-grid span,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-mini-grid span{
+  color:#101b15!important;
+  opacity:1!important;
+}
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-mini-grid .muted,
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-mini-grid .empty,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-mini-grid .muted,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-mini-grid .empty,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-mini-grid .muted,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-mini-grid .empty{
+  color:#b6c0ba!important;
+  opacity:.75!important;
+}
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-mini-day,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-mini-day,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-mini-day{
+  color:#111d16!important;
+  opacity:1!important;
+}
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-mini-day.is-selected,
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-mini-day.selected,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-mini-day.is-selected,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-mini-day.selected,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-mini-day.is-selected,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-mini-day.selected{
+  color:#fff!important;
+  background:#43d675!important;
+  box-shadow:0 10px 24px rgba(34,197,94,.24)!important;
+}
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-month-picker select,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-month-picker select,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-month-picker select{
+  background:#fff!important;
+  color:#111d16!important;
+  border-color:rgba(20,35,24,.18)!important;
+}
