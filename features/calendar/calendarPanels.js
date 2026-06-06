@@ -114,6 +114,43 @@
       return '<option value="'+index+'" '+(index===month?'selected':'')+'>'+esc(name)+'</option>';
     }).join('');
   }
+
+  function extractDashRowParts(html, fallbackIcon, fallbackTitle){
+    try{
+      var wrap = document.createElement('div');
+      wrap.innerHTML = html || '';
+      var title = wrap.querySelector('.dash-row-title');
+      var sub = wrap.querySelector('.dash-row-sub');
+      var badge = wrap.querySelector('.dash-row-badge');
+      var icon = wrap.querySelector('.dash-row-icon');
+      return {
+        title: title ? title.textContent.trim() : (fallbackTitle || ''),
+        sub: sub ? sub.textContent.replace(/\s+/g,' ').trim() : '',
+        badge: badge ? badge.textContent.replace(/\s+/g,' ').trim() : '',
+        icon: icon ? icon.textContent.trim() : (fallbackIcon || '•')
+      };
+    }catch(e){
+      return { title: fallbackTitle || '', sub: '', badge: '', icon: fallbackIcon || '•' };
+    }
+  }
+  function calendarHeroRow(icon, title, sub, badge, onclick){
+    return '<button type="button" class="cal-premium-hero-row"'+(onclick ? ' onclick="'+onclick+'"' : '')+'>'
+      + '<span class="cal-premium-hero-row-icon">'+esc(icon || '•')+'</span>'
+      + '<span class="cal-premium-hero-row-body"><strong>'+esc(title || '')+'</strong><em>'+esc(sub || '—')+'</em></span>'
+      + '<span class="cal-premium-hero-row-badge">'+esc(badge || '')+'</span>'
+      + '</button>';
+  }
+  function heroSideHtml(next, nextTime, nextTitle){
+    var nextSub = next ? ((nextTime || 'Ganztägig') + ' · ' + (nextTitle || 'Termin')) : 'Kein Termin geplant';
+    var friseur = extractDashRowParts(typeof window.getFriseurRowHtml === 'function' ? window.getFriseurRowHtml() : '', '✂', 'Friseur');
+    var urlaub = extractDashRowParts(typeof window.getUrlaubRowHtml === 'function' ? window.getUrlaubRowHtml() : '', '🏖', 'Urlaub');
+    var rows = '';
+    rows += calendarHeroRow('⌚', 'Nächster Termin', nextSub, next ? 'Aktiv' : '', next ? "window.openEventPanel&&window.openEventPanel('"+esc(next.id||'')+"')" : '');
+    rows += calendarHeroRow(friseur.icon || '✂', friseur.title || 'Friseur', friseur.sub || 'Noch keine Friseur-Info', friseur.badge || '', 'window.openFriseurPanel&&window.openFriseurPanel()');
+    rows += calendarHeroRow(urlaub.icon || '🏖', urlaub.title || 'Urlaub', urlaub.sub || 'Noch keine Urlaubs-Info', urlaub.badge || '', 'window.openUrlaubPanel&&window.openUrlaubPanel()');
+    return '<div class="cal-premium-hero-side">'+rows+'</div>';
+  }
+
   function eventRows(key){
     var list = eventsFor(key);
     if(!list.length) return '<div class="cal-premium-empty">Keine Termine für diesen Tag</div>';
@@ -137,14 +174,16 @@
     var nextTitle = next ? titleOf(next) : 'Kein Termin';
     var progress = Math.max(8, Math.min(100, (d.getDate() / new Date(d.getFullYear(), d.getMonth()+1, 0).getDate()) * 100));
     return '<div class="cal-premium-hero-grid">'
-      + '<section class="cal-premium-hero">'
+      + '<section class="cal-premium-hero cal-premium-hero-wide">'
+      + '<div class="cal-premium-hero-main">'
       + '<div class="cal-premium-eyebrow">Heute</div>'
       + '<h2>'+esc(weekdayName(key))+', '+compactDate(key)+'</h2>'
       + '<div class="cal-premium-hero-line"><span class="cal-premium-dot"></span><strong>'+list.length+'</strong> '+(list.length===1?'Termin':'Termine')+'</div>'
       + '<div class="cal-premium-hero-line muted">Nächster Termin: <strong>'+esc(nextTime)+'</strong>'+(next ? ' · '+esc(nextTitle) : '')+'</div>'
+      + '</div>'
       + '<div class="cal-premium-date-ring" style="--p:'+progress+'"><span>'+String(d.getDate()).padStart(2,'0')+'</span><small>'+MONTHS[d.getMonth()].slice(0,3).toUpperCase()+'</small></div>'
+      + heroSideHtml(next, nextTime, nextTitle)
       + '</section>'
-      + '<section class="cal-premium-next"><div><div class="cal-premium-eyebrow">Nächster Termin</div><strong>'+esc(nextTime)+'</strong><span>'+esc(nextTitle)+'</span></div><div class="cal-premium-next-icon">⌚</div></section>'
       + '</div>';
   }
   function weekHtml(){

@@ -56,3 +56,16 @@
 ## 0.1.0100
 - Mobile Bottom-Reach für Dashboard, Kalender, Challenges und Pollen repariert.
 - Letzte Karten sind nun vollständig oberhalb der Bottom-Bar erreichbar.
+
+
+## 0.1.0101
+- Kalender-Hero überarbeitet: separate Nächster-Termin-Kachel entfernt.
+- Rechts in der Hero-Kachel stehen nun Nächster Termin, Friseur und Urlaub.
+
+
+## 0.1.0102
+- Mobile Abrundung am Ende des Pollen-5-Tages-Ausblicks wiederhergestellt.
+
+
+## 0.1.0103
+- Challenges auf Desktop neu angeordnet: Maincard oben vollbreit, Punkte-Kalender darunter ebenfalls vollbreit.

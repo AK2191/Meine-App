@@ -2543,3 +2543,54 @@ body.change-theme-light.change-view-challenges #challenges-view .challenge-week-
     font-size:12px!important;
   }
 }
+
+
+/* v0.1.0103 · Challenge desktop full-width hero and week card
+   Auf Desktop spannt die Maincard oben über die volle Breite und der Punkte-Kalender direkt darunter ebenfalls. */
+@media (min-width:981px){
+  body.change-view-challenges #challenges-view .challenge-layout,
+  #challenges-view .challenge-layout{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    grid-template-areas:
+      "hero hero"
+      "week week"
+      "tasks leaders"!important;
+    align-items:start!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-layout > #group-goal-card,
+  #challenges-view .challenge-layout > #group-goal-card{
+    grid-area:hero!important;
+    grid-column:1 / -1!important;
+    order:0!important;
+    width:100%!important;
+    max-width:none!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-layout > #challenge-week-points-card,
+  #challenges-view .challenge-layout > #challenge-week-points-card{
+    grid-area:week!important;
+    grid-column:1 / -1!important;
+    order:1!important;
+    width:100%!important;
+    max-width:none!important;
+    align-self:start!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-layout > .challenge-card,
+  #challenges-view .challenge-layout > .challenge-card{
+    grid-area:tasks!important;
+    grid-column:1!important;
+    order:2!important;
+    min-width:0!important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-layout > .leader-card,
+  #challenges-view .challenge-layout > .leader-card{
+    grid-area:leaders!important;
+    grid-column:2!important;
+    order:3!important;
+    min-width:0!important;
+    min-height:0!important;
+  }
+}

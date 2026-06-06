@@ -5342,3 +5342,15 @@ body.change-theme-light #pollen-view .pollen-neo-forecast-list,
 
 
 /* v0.1.0097 · END CONSOLIDATED: features/pollen/pollenUiPolish.css */
+
+
+/* v0.1.0102 · Pollen mobile rounded ending
+   Stellt auf Mobil die abgerundeten unteren Ecken des 5-Tages-Ausblicks wieder her. */
+@media(max-width:760px){
+  body.change-view-pollen #pollen-view .pollen-neo-forecast-list,
+  body.neo-pollen-shell #pollen-view .pollen-neo-forecast-list{
+    border-bottom-left-radius:18px!important;
+    border-bottom-right-radius:18px!important;
+    overflow:hidden!important;
+  }
+}
