@@ -3,7 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0093';
+  var APP_VERSION = '0.1.0096';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var SELECTED_KEY = 'change_v1_pollen_selected_keys';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
@@ -252,8 +252,8 @@
     var score = Math.round(todaySelected.score || 0);
     var intensity = intensityTitle(todaySelected.level);
     var peakTone = peak ? peak.level : 'none';
-    return '<section class="pollen-neo-top">'
-      + '<div class="pollen-neo-hero '+esc(todaySelected.level)+'">'
+    return '<section class="pollen-neo-top pollen-neo-top-mainonly">'
+      + '<div class="pollen-neo-hero pollen-neo-hero-wide '+esc(todaySelected.level)+'">'
         + '<div class="pollen-neo-hero-main">'
           + '<div class="pollen-neo-label">Deine Pollen heute</div>'
           + '<div class="pollen-neo-hero-title">'+esc(intensity)+'</div>'
@@ -261,16 +261,12 @@
           + '<div class="pollen-neo-cta">↗ '+esc(nextTrend)+'</div>'
         + '</div>'
         + heroArtSvg()
-        + '<div class="pollen-neo-hero-stats">'
+        + '<div class="pollen-neo-hero-stats pollen-neo-hero-stats-extended">'
           + '<div><span class="dot yellow"></span><strong>'+esc((topLoadItem && topLoadItem.name) || 'Pollen')+' '+esc(levelLabel(topLoadItem && topLoadItem.level))+'</strong><em>'+esc(topLoadScore)+' %</em></div>'
+          + '<div><span class="mark ring"></span><strong>Belastung heute</strong><em>'+esc(score)+' %</em></div>'
           + '<div><span class="mark peak"></span><strong>Peak</strong><em>'+esc(peak ? diffLabel(dayDiff(peak.date)) : '–')+'</em></div>'
           + '<div><span class="mark leaf"></span><strong>Ruhigster Tag</strong><em>'+esc(quiet ? fmtLongDay(quiet.date).split(',')[0] : '–')+'</em></div>'
         + '</div>'
-      + '</div>'
-      + '<div class="pollen-neo-sidecards">'
-        + metricCardHtml('ring', 'Belastung heute', '<div class="pollen-neo-ring '+esc(todaySelected.level)+'" style="--p:'+score+'"><div class="pollen-neo-ring-center"><strong>'+esc(score)+' %</strong><span>'+esc(intensity)+'</span></div></div>', todaySelected.level)
-        + metricCardHtml('peak', 'Peak', '<div class="pollen-neo-chart '+esc(peakTone)+'">'+trendSvg(selected)+'<strong>'+esc(peak ? diffLabel(dayDiff(peak.date)) : '–')+'</strong><span>'+esc(peak ? fmtLongDay(peak.date) : 'Kein Peak erkannt')+'</span></div>', peakTone)
-        + metricCardHtml('quiet', 'Ruhigster Tag', '<div class="pollen-neo-quiet-card">'+glyphSvg('leaf')+'<strong>'+esc(quiet ? fmtLongDay(quiet.date).split(',')[0] : '–')+'</strong><span>'+esc(quiet ? fmtDay(quiet.date).replace('.', '') : '')+'</span></div>', 'none')
       + '</div>'
     + '</section>';
   }

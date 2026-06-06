@@ -1,4 +1,4 @@
-/* Change App · v0.1.0090
+/* Change App · v0.1.0094
    Challenge Layout Fix
    Zweck: finaler, nach appShell.css geladener Layout-Stabilisator.
    Hintergrund: appShell.css enthält ältere Challenge-Overrides, die lokal den Hero über
@@ -73,7 +73,7 @@ body.change-view-challenges #challenges-view .challenge-layout > #group-goal-car
     grid-template-columns:minmax(0,1.25fr) minmax(340px,.75fr)!important;
     grid-template-areas:
       "hero hero"
-      "week week"
+      "tasks week"
       "tasks leaders"!important;
     grid-auto-rows:auto!important;
     align-items:start!important;
@@ -131,6 +131,7 @@ body.change-view-challenges #challenges-view .challenge-layout > #group-goal-car
     z-index:1!important;
     min-height:0!important;
     height:auto!important;
+    align-self:start!important;
     overflow:hidden!important;
     clear:none!important;
   }
