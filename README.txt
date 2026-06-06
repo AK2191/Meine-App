@@ -1,4 +1,6 @@
-Change App · Pollen 24h Profile Sync · Version 0.1.0079
+Change App · Pollen 24h kompakt · Version 0.1.0082
+
+Change App · Pollen 24h Profile Sync · Version 0.1.0082
 
 Change App · Challenges Premium Desktop Style · Version 0.1.0052
 

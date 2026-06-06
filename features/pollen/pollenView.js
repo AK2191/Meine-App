@@ -3,7 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0079';
+  var APP_VERSION = '0.1.0082';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var SELECTED_KEY = 'change_v1_pollen_selected_keys';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
@@ -286,7 +286,7 @@
           + '<strong>'+esc(p.name)+'</strong>'
           + '<span>'+esc(levelLabel(p.level))+'</span>'
           + '<em>'+esc(Math.round(clampNum(p.value)))+'</em>'
-        + '</button>';
+        + '</div>'; 
       }).join('')
       + '</div>'
     + '</section>';
@@ -377,7 +377,7 @@
     + '</div>';
   }
   function hourlyChartHtml(points, name){
-    var w = 720, h = 250, padL = 42, padR = 28, padT = 18, padB = 36;
+    var w = 720, h = 210, padL = 36, padR = 24, padT = 16, padB = 30;
     var usableW = w - padL - padR;
     var usableH = h - padT - padB;
     var xy = points.map(function(p, i){
@@ -387,17 +387,15 @@
     var area = xy.length ? ('M '+xy[0].x+' '+(h-padB)+' L '+xy.map(function(p){ return Math.round(p.x)+' '+Math.round(p.y); }).join(' L ')+' L '+xy[xy.length-1].x+' '+(h-padB)+' Z') : '';
     var peak = xy.slice().sort(function(a,b){ return b.p.value - a.p.value; })[0];
     return '<div class="pollen-hourly-chart" aria-label="24-Stunden-Belastungskurve">'
-      + '<div class="pollen-hourly-chart-title">Pollenbelastung ('+esc(name || 'Pollen')+')</div>'
-      + '<svg viewBox="0 0 '+w+' '+h+'" role="img">'
-        + '<defs><linearGradient id="pollen-hourly-line" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f7d54a"/><stop offset=".58" stop-color="#fb923c"/><stop offset="1" stop-color="#ff6252"/></linearGradient><linearGradient id="pollen-hourly-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(251,146,60,.26)"/><stop offset="1" stop-color="rgba(251,146,60,0)"/></linearGradient></defs>'
+      + '<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Pollenbelastung über 24 Stunden">'
+        + '<defs><linearGradient id="pollen-hourly-line" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f7d54a"/><stop offset=".58" stop-color="#fb923c"/><stop offset="1" stop-color="#ff6252"/></linearGradient><linearGradient id="pollen-hourly-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(251,146,60,.18)"/><stop offset="1" stop-color="rgba(251,146,60,0)"/></linearGradient></defs>'
         + '<g class="pollen-hourly-grid"><line x1="'+padL+'" y1="'+(padT+usableH*.25)+'" x2="'+(w-padR)+'" y2="'+(padT+usableH*.25)+'"/><line x1="'+padL+'" y1="'+(padT+usableH*.5)+'" x2="'+(w-padR)+'" y2="'+(padT+usableH*.5)+'"/><line x1="'+padL+'" y1="'+(padT+usableH*.75)+'" x2="'+(w-padR)+'" y2="'+(padT+usableH*.75)+'"/></g>'
         + '<path class="pollen-hourly-area" d="'+esc(area)+'"></path>'
         + '<polyline class="pollen-hourly-line" points="'+esc(line)+'"></polyline>'
-        + xy.map(function(pt){ return '<circle class="pollen-hourly-point '+esc(pt.p.tone)+'" tabindex="0" cx="'+Math.round(pt.x)+'" cy="'+Math.round(pt.y)+'" r="5"><title>'+esc(pad2(pt.p.hour)+':00 · '+(name || 'Pollen')+' · '+hourlyToneLabel(pt.p.value)+' · '+pt.p.value+' %')+'</title></circle>'; }).join('')
-        + (peak ? '<circle class="pollen-hourly-peak" cx="'+Math.round(peak.x)+'" cy="'+Math.round(peak.y)+'" r="8"><title>Peak '+esc(pad2(peak.p.hour))+':00 · '+esc(peak.p.value)+' %</title></circle>' : '')
-        + '<g class="pollen-hourly-x">'+xy.map(function(pt, i){ return '<text x="'+Math.round(pt.x)+'" y="'+(h-10)+'" text-anchor="middle">'+esc(i === 0 ? 'Jetzt' : pad2(pt.p.hour))+'</text>'; }).join('')+'</g>'
+        + xy.map(function(pt){ return '<circle class="pollen-hourly-point '+esc(pt.p.tone)+'" cx="'+Math.round(pt.x)+'" cy="'+Math.round(pt.y)+'" r="4"></circle>'; }).join('')
+        + (peak ? '<circle class="pollen-hourly-peak" cx="'+Math.round(peak.x)+'" cy="'+Math.round(peak.y)+'" r="6"></circle>' : '')
+        + '<g class="pollen-hourly-x">'+xy.map(function(pt, i){ return '<text x="'+Math.round(pt.x)+'" y="'+(h-8)+'" text-anchor="middle">'+esc(i === 0 ? 'Jetzt' : pad2(pt.p.hour))+'</text>'; }).join('')+'</g>'
       + '</svg>'
-      + '<div class="pollen-hourly-legend"><span class="low">niedrig 0–25 %</span><span class="moderate">moderat 25–50 %</span><span class="high">hoch 50–75 %</span><span class="very-high">sehr hoch 75–100 %</span></div>'
     + '</div>';
   }
   function hourlyDayPartsHtml(points){
@@ -410,9 +408,9 @@
     return '<div class="pollen-hourly-parts">' + parts.map(function(part){
       var tone = hourlyTone(part.range.max);
       var value = part.range.min === part.range.max ? String(part.range.max)+' %' : String(part.range.min)+'–'+String(part.range.max)+' %';
-      return '<button type="button" class="pollen-hourly-part '+esc(tone)+'" title="'+esc(part.title+': '+hourlyToneLabel(part.range.max)+' · '+value)+'">'
+      return '<div class="pollen-hourly-part '+esc(tone)+'">'
         + '<span>'+esc(part.icon)+'</span><strong>'+esc(part.title)+'</strong><em>'+esc(value)+'</em><small>'+esc(hourlyToneLabel(part.range.max))+'</small>'
-      + '</button>';
+      + '</div>'; 
     }).join('') + '</div>';
   }
   function hourlyProfileSummaryHtml(todaySelected, selectedKeys){
@@ -439,12 +437,11 @@
     var name = selectedItem && selectedItem.name || 'Pollen';
     var points = hourlyCurve(todaySelected, selectedItem);
     return '<section class="pollen-neo-section pollen-hourly-section">'
+      + '<div class="pollen-neo-section-head pollen-hourly-title"><div><span>24-Stunden-Ausblick</span></div></div>'
       + '<div class="pollen-hourly-card pollen-neo-card">'
-        + '<div class="pollen-hourly-head"><div class="pollen-hourly-icon">'+glyphSvg(selectedItem && selectedItem.key || 'leaf')+'</div><div><h2>24-Stunden-Ausblick</h2><p>'+esc(name)+' · aus deinem Allergieprofil</p></div>'+hourlyProfileSummaryHtml(todaySelected, selectedKeys)+'</div>'
         + hourlyInsightHtml(points)
         + hourlyChartHtml(points, name)
         + hourlyDayPartsHtml(points)
-        + '<div class="pollen-hourly-foot"><span>ⓘ Die Kurve nutzt automatisch dein ausgewähltes Allergieprofil.</span><span>Details per Hover oder Tipp auf Kurvenpunkte.</span></div>'
       + '</div>'
       + '</section>';
   }
@@ -463,13 +460,15 @@
     }) : forecast;
     return '<div class="pollen-neo-shell">'
       + topHtml(forecast, selectedKeys, loc)
-      + hourlyHtml(forecast, selectedKeys)
       + '<div class="pollen-neo-main-grid">'
         + '<div class="pollen-neo-left">'
           + profileHtml(today, selectedKeys)
-          + (window.ChangePollenSymptoms && window.ChangePollenSymptoms.panelHtml ? '<section class="pollen-neo-section pollen-neo-symptoms">'+window.ChangePollenSymptoms.panelHtml(todayKey(), symptomForecast)+'</section>' : '')
+          + (window.ChangePollenSymptoms && window.ChangePollenSymptoms.panelHtml ? '<section class="pollen-neo-section pollen-neo-symptoms"><div class="pollen-neo-section-head pollen-neo-symptoms-title"><div><span>Symptome heute</span></div></div>'+window.ChangePollenSymptoms.panelHtml(todayKey(), symptomForecast)+'</section>' : '')
         + '</div>'
-        + forecastHtml(forecast, selectedKeys)
+        + '<div class="pollen-neo-right">'
+          + hourlyHtml(forecast, selectedKeys)
+          + forecastHtml(forecast, selectedKeys)
+        + '</div>'
       + '</div>'
     + '</div>';
   }

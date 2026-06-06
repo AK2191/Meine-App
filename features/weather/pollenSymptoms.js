@@ -254,7 +254,6 @@
       return '<div class="change-symptom-row" data-symptom-row="'+esc(field.key)+'"><div class="change-symptom-label">'+symptomIconSvg(field.key)+'<strong>'+esc(field.label)+'</strong></div><div class="change-symptom-levels">'+levelButtons(field.key, value, key)+'</div></div>';
     }).join('');
     return '<div class="change-symptom-card" data-symptom-card="'+esc(key)+'">'
-      + '<div class="change-symptom-head"><strong>Symptome heute</strong></div>'
       + insightHtml()
       + '<div class="change-symptom-body">'
         + '<div class="change-symptom-list">'+rows+'</div>'
