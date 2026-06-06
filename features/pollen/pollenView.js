@@ -3,7 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0078';
+  var APP_VERSION = '0.1.0077';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var SELECTED_KEY = 'change_v1_pollen_selected_keys';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
@@ -197,102 +197,6 @@
     if(diff <= -4) return 'Morgen etwas ruhiger';
     return 'Morgen ähnlich';
   }
-  function hourNumber(time){
-    try{ return new Date(time).getHours(); }catch(e){ return Number(String(time || '').slice(11,13)) || 0; }
-  }
-  function clockLabel(time){
-    try{ return new Date(time).toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}); }catch(e){ return String(time || '').slice(11,16); }
-  }
-  function dayPhase(time){
-    var h = hourNumber(time);
-    if(h < 6) return 'Nacht';
-    if(h < 12) return 'Morgen';
-    if(h < 18) return 'Mittag';
-    return 'Abend';
-  }
-  function selectedHourlySummary(hour, keys){
-    hour = hour || {};
-    var missing = !!hour.dataMissing;
-    var items = selectedItems(hour, keys);
-    if(!items.length){
-      var fallback = activeItems(hour)[0] || itemsOf(hour)[0] || null;
-      if(fallback) items = [fallback];
-    }
-    if(missing) items = items.map(function(p){ return Object.assign({}, p || {}, {dataAvailable:false}); });
-    var main = (items || []).slice().sort(function(a,b){
-      return clampNum(b.value) - clampNum(a.value) || ((b.rank || 0) - (a.rank || 0));
-    })[0] || null;
-    var state = selectedStatus(main, missing || !main || main.dataAvailable === false);
-    return {
-      time: hour.time,
-      label: hour.label || clockLabel(hour.time),
-      clock: clockLabel(hour.time),
-      dayLabel: hour.dayLabel || '',
-      phase: dayPhase(hour.time),
-      items: items,
-      item: main,
-      name: main && main.name || 'Pollen',
-      level: state.key,
-      score: state.score,
-      dataMissing: missing || !main || main.dataAvailable === false
-    };
-  }
-  function selectedHourlyForecast(hours, keys){
-    return (hours || []).map(function(hour){ return selectedHourlySummary(hour, keys); });
-  }
-  function hourlyPeakWindow(hours){
-    var valid = (hours || []).filter(function(hour){ return hour && !hour.dataMissing && hour.score !== null && hour.score !== undefined; });
-    if(!valid.length) return null;
-    var peak = valid.slice().sort(function(a,b){ return (b.score || 0) - (a.score || 0); })[0];
-    var peakIndex = (hours || []).indexOf(peak);
-    var threshold = Math.max(10, Math.min(Number(peak.score || 0), Math.max(50, Number(peak.score || 0) - 12)));
-    var start = peakIndex;
-    var end = peakIndex;
-    while(start > 0 && hours[start - 1] && !hours[start - 1].dataMissing && Number(hours[start - 1].score || 0) >= threshold) start--;
-    while(end < hours.length - 1 && hours[end + 1] && !hours[end + 1].dataMissing && Number(hours[end + 1].score || 0) >= threshold) end++;
-    return {peak: peak, start: start, end: end, label: clockLabel(hours[start].time) + '–' + clockLabel(hours[end].time), phase: peak.phase};
-  }
-  function hourlyQuietHour(hours){
-    var valid = (hours || []).filter(function(hour){ return hour && !hour.dataMissing && hour.score !== null && hour.score !== undefined; });
-    if(!valid.length) return null;
-    return valid.slice().sort(function(a,b){ return (a.score || 0) - (b.score || 0); })[0] || null;
-  }
-  function hourlyHourHtml(hour, peakWindow){
-    var score = hour && hour.score !== null && hour.score !== undefined ? Math.round(clampNum(hour.score)) : 0;
-    var level = hour && !hour.dataMissing ? (hour.level || 'none') : 'missing';
-    var h = hourNumber(hour && hour.time);
-    var isNight = h < 6;
-    var isPeak = !!(peakWindow && hour === peakWindow.peak);
-    var name = hour && hour.item && hour.item.dataAvailable !== false ? hour.name : 'keine Daten';
-    return '<div class="pollen-neo-24h-hour '+esc(level)+' '+(isNight ? 'night' : '')+' '+(isPeak ? 'peak' : '')+'" style="--p:'+score+'">'
-      + '<div class="pollen-neo-24h-time"><strong>'+esc(hour && hour.label || '–')+'</strong><span>'+esc(hour && hour.phase || '')+'</span></div>'
-      + '<div class="pollen-neo-24h-meter"><span></span></div>'
-      + '<div class="pollen-neo-24h-score">'+(hour && hour.dataMissing ? '–' : esc(score)+' %')+'</div>'
-      + '<em>'+esc(name)+'</em>'
-    + '</div>';
-  }
-  function hourlyOutlookHtml(pollen, selectedKeys){
-    var hours = selectedHourlyForecast(pollen && pollen.hourly || [], selectedKeys).slice(0,24);
-    if(!hours.length){
-      return '<section class="pollen-neo-section pollen-neo-24h"><div class="pollen-neo-section-head"><div><span>24-Stunden-Ausblick</span></div></div><div class="pollen-neo-24h-empty pollen-neo-card"><strong>Noch keine Stundenwerte geladen.</strong><span>Aktualisiere den Standort, um stündliche Pollenwerte zu sehen.</span></div></section>';
-    }
-    var peakWindow = hourlyPeakWindow(hours);
-    var quiet = hourlyQuietHour(hours);
-    var peak = peakWindow && peakWindow.peak;
-    var peakText = peak ? (peak.name + ' ' + Math.round(clampNum(peak.score)) + ' %') : 'Keine Daten';
-    var quietText = quiet ? (quiet.name + ' ' + Math.round(clampNum(quiet.score)) + ' %') : 'Keine Daten';
-    return '<section class="pollen-neo-section pollen-neo-24h">'
-      + '<div class="pollen-neo-section-head"><div><span>24-Stunden-Ausblick</span></div><small>nach Uhrzeit</small></div>'
-      + '<div class="pollen-neo-24h-card">'
-        + '<div class="pollen-neo-24h-summary">'
-          + '<div><span>Schlimmste Phase</span><strong>'+esc(peakWindow ? peakWindow.label : '–')+'</strong><em>'+esc(peakText)+'</em></div>'
-          + '<div><span>Ruhigste Stunde</span><strong>'+esc(quiet ? quiet.clock : '–')+'</strong><em>'+esc(quietText)+'</em></div>'
-          + '<div><span>Nacht im Blick</span><strong>'+esc(peak && peak.phase === 'Nacht' ? 'Auffällig' : 'Mitlaufend')+'</strong><em>00:00–06:00 Uhr</em></div>'
-        + '</div>'
-        + '<div class="pollen-neo-24h-strip">'+hours.map(function(hour){ return hourlyHourHtml(hour, peakWindow); }).join('')+'</div>'
-      + '</div>'
-    + '</section>';
-  }
   function miniBars(score, tone){
     if(score === null || score === undefined) return '<span></span><span></span><span></span><span></span><span></span><span></span>';
     var active = Math.max(0, Math.min(6, Math.ceil((Number(score) || 0) / 17)));
@@ -440,7 +344,6 @@
     }) : forecast;
     return '<div class="pollen-neo-shell">'
       + topHtml(forecast, selectedKeys, loc)
-      + hourlyOutlookHtml(data && data.pollen, selectedKeys)
       + '<div class="pollen-neo-main-grid">'
         + '<div class="pollen-neo-left">'
           + profileHtml(today, selectedKeys)

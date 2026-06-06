@@ -281,39 +281,6 @@
       };
     });
   }
-  function parsePollenHourly(data, limit){
-    var hourly = data && data.hourly ? data.hourly : {};
-    var times = hourly.time || [];
-    if(!times.length) return [];
-    var now = Date.now();
-    var start = 0;
-    for(var i=0;i<times.length;i++){
-      var ts = Date.parse(times[i]);
-      if(isFinite(ts) && ts >= now - 60 * 60 * 1000){ start = i; break; }
-    }
-    return times.slice(start, start + (limit || 24)).map(function(time, offset){
-      var idx = start + offset;
-      var items = sortPollenItems(POLLEN.map(function(p){
-        var raw = hourly[p.key] && hourly[p.key][idx];
-        return itemForPollen(p, raw, hasNumericValue(raw));
-      }));
-      var availableItems = items.filter(function(p){ return p && p.dataAvailable; });
-      var top = availableItems[0] || items[0] || null;
-      var score = top && top.dataAvailable ? Math.round(Math.max(0, Number(top.value) || 0)) : null;
-      return {
-        time: time,
-        dayKey: dateKeyFromTime(time),
-        dayLabel: dayLabelForTime(time),
-        label: timeLabelForTime(time, offset === 0),
-        items: items,
-        item: top,
-        score: score,
-        level: top && top.dataAvailable ? (top.level || 'none') : 'missing',
-        dataMissing: !availableItems.length,
-        loaded: !!availableItems.length
-      };
-    });
-  }
   function parsePollen(data){
     var current = data && data.current ? data.current : {};
     var hourly = data && data.hourly ? data.hourly : {};
@@ -333,7 +300,6 @@
       elevated: items.filter(function(p){ return p.level === 'medium'; }),
       available: items.some(function(p){ return p.value > 0; }),
       forecast: parsePollenForecast(data),
-      hourly: parsePollenHourly(data, 24),
       updatedAt: new Date().toISOString()
     };
   }
