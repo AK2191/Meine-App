@@ -1,3 +1,14 @@
+## 0.1.0145 - Pollen 24h Skala feinjustiert
+- Sichtbare App-Version auf 0.1.0145 erhöht.
+- Prozentwerte der linken Skala im Pollen-24-Stunden-Ausblick weiter nach links gesetzt.
+- Keine Änderung an Pollenberechnung, Tagesbereichen, Login, Firebase, Sync, Push oder Kalenderdaten.
+
+## 0.1.0144 - Einheitlicher HeroCard-Abstand
+- Sichtbare App-Version auf 0.1.0144 erhöht.
+- Mobiler Titelblock für Dashboard, Kalender, Challenges und Pollen vereinheitlicht.
+- Pollen-Sonderabstände final neutralisiert, damit die HeroCard auf gleicher Höhe wie die anderen Hauptansichten startet.
+- Keine Änderung an Login, Firebase, Sync, Push, Kalenderdaten oder Feature-Logik.
+
 # CHANGELOG – Change App
 
 ## 0.1.0143 - Pollen 24h Prozentskala

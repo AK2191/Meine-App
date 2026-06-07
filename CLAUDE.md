@@ -1,10 +1,21 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-07 · Version 0.1.0143 und Pollen-24h-Prozentskala
+> Zuletzt aktualisiert: 2026-06-07 · Version 0.1.0145 und Pollen-24h-Prozentskala feinjustiert
 
 ---
 
 
+## Version 0.1.0145
+- Die sichtbare App-Version wurde auf `0.1.0145` erhöht.
+- Im Pollen-24-Stunden-Ausblick wurden die Prozentwerte der linken Diagramm-Skala weiter nach links gesetzt.
+- Die Kurve, Uhrzeiten, Pollenberechnung und Tagesbereiche bleiben unverändert.
+- Umsetzung in `features/pollen/pollenView.js`, `features/pollen/pollenView.css` und Versionsanzeige; keine Änderung an Firebase, Sync, Login, Push oder Kalenderdaten.
+
+## Version 0.1.0144
+- Die sichtbare App-Version wurde auf `0.1.0144` erhöht.
+- Dashboard, Kalender, Challenges und Pollen nutzen mobil denselben Titelblock: 42px Mindesthöhe und 14px Abstand zur HeroCard.
+- Alte Pollen-Sonderabstände werden final neutralisiert, damit die Pollen-HeroCard auf gleicher Höhe wie Kalender und Challenges sitzt.
+- Umsetzung in `styles/appShell.css` und Versionsanzeige; keine Änderung an Dashboard-, Kalender-, Challenge- oder Pollenlogik, Firebase, Sync, Login, Push oder Kalenderdaten.
 
 ## Version 0.1.0143
 - Die sichtbare App-Version wurde auf `0.1.0143` erhöht.
@@ -202,7 +213,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0143`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0145`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -1198,5 +1209,7 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 
 | 2026-06-07 | Version auf `0.1.0140` erhöht; alte mobile Pollen-Override-Regel in `appShell.css` neutralisiert, die die HeroCard zu weit nach oben gezogen hatte. | ChatGPT |
 | 2026-06-07 | Version auf `0.1.0142` erhöht; mobiler Pollen-HeroCard-Abstand an Kalender/Challenges angepasst. | ChatGPT |
+| 2026-06-07 | Version auf `0.1.0145` erhöht; Prozentwerte im Pollen-24-Stunden-Diagramm weiter nach links gesetzt. | ChatGPT |
+| 2026-06-07 | Version auf `0.1.0144` erhöht; mobiler Titelabstand zu HeroCards für Dashboard, Kalender, Challenges und Pollen vereinheitlicht. | ChatGPT |
 | 2026-06-07 | Version auf `0.1.0143` erhöht; Prozent-Skala links im 24-Stunden-Pollen-Diagramm ergänzt. | ChatGPT |
 | 2026-06-07 | Version auf `0.1.0141` erhöht; Dashboard-, Kalender- und Challenge-HeroCards an den Pollen-HeroCard-Stil angeglichen und große Hero-Emoji-Icons durch ruhige Statusmarker ersetzt. | ChatGPT |

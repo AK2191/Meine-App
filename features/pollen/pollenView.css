@@ -5665,3 +5665,9 @@ body.change-theme-light #pollen-view .pollen-hourly-y text{
     font-weight:950!important;
   }
 }
+
+
+/* v0.1.0145 · Pollen 24h: Prozent-Skala weiter nach links gesetzt */
+#pollen-view .pollen-hourly-y text{
+  letter-spacing:-.035em!important;
+}

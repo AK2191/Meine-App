@@ -4959,3 +4959,51 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
     margin-top:0 !important;
   }
 }
+
+/* v0.1.0144 · Einheitlicher mobiler Abstand Titel zu HeroCard
+   Dashboard, Kalender, Challenges und Pollen nutzen denselben mobilen Titelblock.
+   UI-only: keine Änderung an Logik, Sync, Firebase, Push oder Kalenderdaten. */
+@media (max-width:700px){
+  body.change-view-dashboard #dashboard-view .dash-hello,
+  body.change-view-calendar #calendar-premium-view .cal-premium-top,
+  body.change-view-challenges #challenges-view > .list-header,
+  body.change-view-pollen #pollen-view > .list-header,
+  body.change-view-pollen #pollen-view > .list-header.pollen-neo-headerbar,
+  body.neo-pollen-shell #pollen-view > .list-header,
+  body.neo-pollen-shell #pollen-view > .list-header.pollen-neo-headerbar{
+    min-height:42px !important;
+    height:auto !important;
+    margin:0 0 14px !important;
+    padding:0 !important;
+    display:flex !important;
+    align-items:center !important;
+    box-sizing:border-box !important;
+    background:transparent !important;
+    border:0 !important;
+    box-shadow:none !important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-grid,
+  body.change-view-challenges #challenges-view .challenge-layout,
+  body.change-view-dashboard #dashboard-view #dash-grid,
+  body.change-view-dashboard #dashboard-view .dashp-hero{
+    margin-top:0 !important;
+    padding-top:0 !important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-view-body,
+  body.change-view-pollen #pollen-view .pollen-neo-shell,
+  body.change-view-pollen #pollen-view .pollen-neo-top,
+  body.change-view-pollen #pollen-view .pollen-neo-main-grid,
+  body.change-view-pollen #pollen-view .pollen-neo-left,
+  body.change-view-pollen #pollen-view .pollen-neo-hero,
+  body.neo-pollen-shell #pollen-view .pollen-view-body,
+  body.neo-pollen-shell #pollen-view .pollen-neo-shell,
+  body.neo-pollen-shell #pollen-view .pollen-neo-top,
+  body.neo-pollen-shell #pollen-view .pollen-neo-main-grid,
+  body.neo-pollen-shell #pollen-view .pollen-neo-left,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero{
+    margin-top:0 !important;
+    padding-top:0 !important;
+  }
+}
