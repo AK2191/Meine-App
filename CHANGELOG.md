@@ -200,3 +200,7 @@
 
 ## 0.1.0131
 - Challenges mobil: Trennstriche der Hero-Statuspunkte an Pollen angeglichen und überlappende Kurzlinien entfernt.
+
+
+## 0.1.0132
+- Challenges mobil: Überlappung der Status-Texte in der HeroCard behoben.
