@@ -4819,3 +4819,64 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
     font-size:10px !important;
   }
 }
+
+
+/* v0.1.0134 · Challenges mobile Abzeichen spacing fix */
+@media (max-width:700px){
+  body.change-view-challenges #challenges-view .challenge-goal-side-link:first-child{
+    padding-left:14px !important;
+    padding-right:8px !important;
+    grid-template-columns:20px minmax(0,1fr) !important;
+    gap:0 7px !important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-side-link:first-child .challenge-goal-link-icon{
+    justify-self:start !important;
+    margin-left:0 !important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-side-link:first-child b,
+  body.change-view-challenges #challenges-view .challenge-goal-side-link:first-child strong{
+    padding-left:0 !important;
+    margin-left:0 !important;
+  }
+}
+
+@media (max-width:380px){
+  body.change-view-challenges #challenges-view .challenge-goal-side-link:first-child{
+    padding-left:10px !important;
+    padding-right:5px !important;
+    grid-template-columns:18px minmax(0,1fr) !important;
+    gap:0 5px !important;
+  }
+}
+
+
+/* v0.1.0136 · Unified mobile HeroCard height except Dashboard
+   Vorlage: Pollen-HeroCard. Dashboard bleibt bewusst unverändert. */
+@media (max-width:700px){
+  :root{
+    --change-mobile-hero-min-height:254px;
+  }
+
+  body.change-view-challenges #challenges-view #group-goal-card,
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero{
+    min-height:var(--change-mobile-hero-min-height) !important;
+    box-sizing:border-box !important;
+  }
+
+  body.change-view-challenges #challenges-view #group-goal-card{
+    display:block !important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-hero-inner.challenge-goal-hero-clean{
+    min-height:calc(var(--change-mobile-hero-min-height) - 36px) !important;
+    display:grid !important;
+    grid-template-rows:auto 1fr auto !important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero{
+    display:grid !important;
+    align-content:stretch !important;
+  }
+}

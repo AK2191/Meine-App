@@ -843,3 +843,50 @@ body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium
   text-decoration:none !important;
   background-image:none !important;
 }
+
+
+/* v0.1.0133 · Calendar mobile hero Urlaub bottom line removal */
+@media (max-width:700px){
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-side .cal-premium-hero-row:last-child,
+  #calendar-premium-view .cal-premium-hero-side .cal-premium-hero-row:last-child{
+    border-bottom:0 !important;
+    box-shadow:none !important;
+    outline:0 !important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-side .cal-premium-hero-row:last-child::after,
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-side .cal-premium-hero-row:last-child::before,
+  #calendar-premium-view .cal-premium-hero-side .cal-premium-hero-row:last-child::after,
+  #calendar-premium-view .cal-premium-hero-side .cal-premium-hero-row:last-child::before{
+    content:none !important;
+    display:none !important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-side .cal-premium-hero-row:last-child .cal-premium-hero-row-body,
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-side .cal-premium-hero-row:last-child .cal-premium-hero-row-body strong,
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-side .cal-premium-hero-row:last-child .cal-premium-hero-row-body em,
+  #calendar-premium-view .cal-premium-hero-side .cal-premium-hero-row:last-child .cal-premium-hero-row-body,
+  #calendar-premium-view .cal-premium-hero-side .cal-premium-hero-row:last-child .cal-premium-hero-row-body strong,
+  #calendar-premium-view .cal-premium-hero-side .cal-premium-hero-row:last-child .cal-premium-hero-row-body em{
+    border-bottom:0 !important;
+    box-shadow:none !important;
+    outline:0 !important;
+    text-decoration:none !important;
+    background-image:none !important;
+  }
+}
+
+
+/* v0.1.0136 · Calendar mobile HeroCard height follows Pollen */
+@media (max-width:700px){
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide,
+  #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide{
+    min-height:254px !important;
+    box-sizing:border-box !important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero-side,
+  #calendar-premium-view .cal-premium-hero-side{
+    align-self:end !important;
+  }
+}

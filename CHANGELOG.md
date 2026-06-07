@@ -204,3 +204,19 @@
 
 ## 0.1.0132
 - Challenges mobil: Überlappung der Status-Texte in der HeroCard behoben.
+
+
+## 0.1.0133
+- Kalender mobil: unnötige untere Linie beim Urlaub-Eintrag in der HeroCard entfernt, linker Trennstrich bleibt erhalten.
+
+
+## 0.1.0134
+- Challenges mobil: Abstand beim Hero-Statuspunkt Abzeichen korrigiert.
+
+
+## 0.1.0135
+- Pollen mobil: HeroCard etwas nach unten gesetzt und Abstand zur Überschrift an Challenges angeglichen.
+
+
+## 0.1.0136
+- Mobile HeroCards von Pollen, Challenges und Kalender auf gleiche Höhe gebracht. Dashboard bleibt unverändert.
