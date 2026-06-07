@@ -890,3 +890,16 @@ body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium
     align-self:end !important;
   }
 }
+
+
+/* v0.1.0138 · Calendar uses exact shared mobile HeroCard size */
+@media (max-width:700px){
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide,
+  #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide{
+    height:var(--change-mobile-feature-hero-height,274px) !important;
+    min-height:var(--change-mobile-feature-hero-height,274px) !important;
+    max-height:var(--change-mobile-feature-hero-height,274px) !important;
+    box-sizing:border-box !important;
+    overflow:hidden !important;
+  }
+}

@@ -5558,3 +5558,16 @@ body.change-theme-light #pollen-view .pollen-neo-forecast-list,
     margin-top:0 !important;
   }
 }
+
+
+/* v0.1.0138 · Pollen uses exact shared mobile HeroCard size */
+@media (max-width:700px){
+  body.change-view-pollen #pollen-view .pollen-neo-hero,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero{
+    height:var(--change-mobile-feature-hero-height,274px) !important;
+    min-height:var(--change-mobile-feature-hero-height,274px) !important;
+    max-height:var(--change-mobile-feature-hero-height,274px) !important;
+    box-sizing:border-box !important;
+    overflow:hidden !important;
+  }
+}

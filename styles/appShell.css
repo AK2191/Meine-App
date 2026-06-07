@@ -4880,3 +4880,32 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
     align-content:stretch !important;
   }
 }
+
+
+/* v0.1.0138 · One shared mobile HeroCard size
+   Zentrale Vorlage für neue Funktionen:
+   Alle mobilen HeroCards außer Dashboard nutzen exakt dieselbe äußere Höhe. */
+@media (max-width:700px){
+  :root{
+    --change-mobile-feature-hero-height:274px;
+  }
+
+  body.change-view-challenges #challenges-view #group-goal-card,
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero{
+    height:var(--change-mobile-feature-hero-height) !important;
+    min-height:var(--change-mobile-feature-hero-height) !important;
+    max-height:var(--change-mobile-feature-hero-height) !important;
+    box-sizing:border-box !important;
+    overflow:hidden !important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-hero-inner.challenge-goal-hero-clean{
+    height:100% !important;
+    min-height:0 !important;
+    box-sizing:border-box !important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-hero{
+    align-content:stretch !important;
+  }
+}
