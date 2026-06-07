@@ -5611,3 +5611,36 @@ body.change-theme-light #pollen-view .pollen-neo-forecast-list,
     box-sizing:border-box !important;
   }
 }
+
+/* v0.1.0142 · Pollen mobile HeroCard closer to title
+   Reverts the too-low mobile hero offset from older hard alignment overrides. */
+@media (max-width:700px){
+  body.change-view-pollen #pollen-view .pollen-neo-shell,
+  body.neo-pollen-shell #pollen-view .pollen-neo-shell{
+    gap:0 !important;
+  }
+
+  body.change-view-pollen #pollen-view .list-header,
+  body.change-view-pollen #pollen-view .list-header.pollen-neo-headerbar,
+  body.neo-pollen-shell #pollen-view .list-header,
+  body.neo-pollen-shell #pollen-view .list-header.pollen-neo-headerbar{
+    min-height:44px !important;
+    padding:0 0 8px !important;
+    margin:0 !important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-top,
+  body.neo-pollen-shell #pollen-view .pollen-neo-top,
+  body.change-view-pollen #pollen-view .pollen-neo-main-grid,
+  body.neo-pollen-shell #pollen-view .pollen-neo-main-grid,
+  body.change-view-pollen #pollen-view .pollen-neo-left,
+  body.neo-pollen-shell #pollen-view .pollen-neo-left{
+    margin-top:0 !important;
+    padding-top:0 !important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-hero,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero{
+    margin-top:12px !important;
+  }
+}

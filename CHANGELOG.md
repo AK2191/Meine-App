@@ -1,5 +1,10 @@
 # CHANGELOG – Change App
 
+## 0.1.0142 - Pollen Mobile HeroCard Abstand
+- Sichtbare App-Version auf 0.1.0142 erhöht.
+- Mobile Pollen-HeroCard näher unter die Pollen-Überschrift gesetzt.
+- Keine Änderung an Logik, Firebase, Sync, Login, Push oder Kalenderdaten.
+
 ## Version 0.1.0098
 - Pollen-Maincard oben überarbeitet.
 - "Belastung heute" aus dem rechten Hero-Bereich entfernt.

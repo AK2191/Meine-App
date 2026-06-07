@@ -4911,9 +4911,8 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
 }
 
 
-/* v0.1.0140 · Pollen mobile HeroCard fixed from appShell override
-   Ursache war eine alte appShell-Regel mit margin-top:-82px auf .pollen-neo-shell.
-   Diese Regel liegt nach pollenView.css und hat alle Pollen-Abstandsfixes wieder überschrieben. */
+/* v0.1.0142 · Pollen mobile HeroCard Abstand
+   Die Pollen-HeroCard sitzt mobil direkt unter der Überschrift wie Kalender und Challenges. */
 @media (max-width:700px){
   body.change-view-pollen #pollen-view .pollen-neo-shell,
   body.neo-pollen-shell #pollen-view .pollen-neo-shell{
@@ -4927,8 +4926,8 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
   body.neo-pollen-shell #pollen-view .list-header,
   body.neo-pollen-shell #pollen-view .list-header.pollen-neo-headerbar{
     height:auto !important;
-    min-height:48px !important;
-    margin:0 0 26px 0 !important;
+    min-height:42px !important;
+    margin:0 0 12px 0 !important;
     padding:0 !important;
   }
 
