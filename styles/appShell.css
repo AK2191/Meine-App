@@ -5455,3 +5455,38 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
     padding-top:0 !important;
   }
 }
+
+
+/* v0.1.0148 · Pollen mobile HeroCard Innenabstand nach Challenge-Vorbild
+   UI-only: Kartenposition bleibt unverändert, nur der durch v0.1.0147 entfernte Innenabstand wird sauber zurückgesetzt. */
+@media (max-width:700px){
+  body.change-view-pollen #pollen-view .pollen-neo-hero,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero{
+    padding:var(--change-mobile-hero-padding,18px) !important;
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) 94px !important;
+    grid-template-rows:minmax(0,1fr) auto !important;
+    grid-template-areas:"main art" "stats stats" !important;
+    gap:12px 10px !important;
+    align-items:stretch !important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-hero-main,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-main{
+    grid-area:main !important;
+    align-self:start !important;
+    padding-top:0 !important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-hero-illustration,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-illustration{
+    grid-area:art !important;
+    align-self:center !important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-hero-stats,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats{
+    grid-area:stats !important;
+    align-self:end !important;
+  }
+}

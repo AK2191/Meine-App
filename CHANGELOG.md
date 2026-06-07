@@ -1,3 +1,9 @@
+## 0.1.0148 - Pollen-HeroCard Innenabstand mobil korrigiert
+- Sichtbare App-Version auf 0.1.0148 erhöht.
+- Pollen-HeroCard behält mobil die korrigierte Position unter der Überschrift.
+- Der innere Abstand der Pollen-HeroCard wurde nach Challenge-Vorbild wiederhergestellt, damit Label, Hauptwert und Kennzahlen nicht zu weit oben kleben.
+- Keine Änderung an Pollenberechnung, Kalenderlogik, Challenge-Logik, Login, Firebase, Sync oder Push.
+
 ## 0.1.0147 - Pollen-HeroCard mobil angeglichen
 - Sichtbare App-Version auf 0.1.0147 erhöht.
 - Verbliebenen mobilen Pollen-Sonderversatz zwischen Überschrift und HeroCard entfernt.
