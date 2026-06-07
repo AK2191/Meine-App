@@ -4909,3 +4909,54 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
     align-content:stretch !important;
   }
 }
+
+
+/* v0.1.0140 · Pollen mobile HeroCard fixed from appShell override
+   Ursache war eine alte appShell-Regel mit margin-top:-82px auf .pollen-neo-shell.
+   Diese Regel liegt nach pollenView.css und hat alle Pollen-Abstandsfixes wieder überschrieben. */
+@media (max-width:700px){
+  body.change-view-pollen #pollen-view .pollen-neo-shell,
+  body.neo-pollen-shell #pollen-view .pollen-neo-shell{
+    margin-top:0 !important;
+    padding-top:0 !important;
+    gap:0 !important;
+  }
+
+  body.change-view-pollen #pollen-view .list-header,
+  body.change-view-pollen #pollen-view .list-header.pollen-neo-headerbar,
+  body.neo-pollen-shell #pollen-view .list-header,
+  body.neo-pollen-shell #pollen-view .list-header.pollen-neo-headerbar{
+    height:auto !important;
+    min-height:48px !important;
+    margin:0 0 26px 0 !important;
+    padding:0 !important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-view-body,
+  body.neo-pollen-shell #pollen-view .pollen-view-body{
+    padding-top:0 !important;
+    margin-top:0 !important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-top,
+  body.neo-pollen-shell #pollen-view .pollen-neo-top,
+  body.change-view-pollen #pollen-view .pollen-neo-main-grid,
+  body.neo-pollen-shell #pollen-view .pollen-neo-main-grid,
+  body.change-view-pollen #pollen-view .pollen-neo-left,
+  body.neo-pollen-shell #pollen-view .pollen-neo-left{
+    margin-top:0 !important;
+    padding-top:0 !important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-hero,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero{
+    margin-top:0 !important;
+  }
+}
+
+@media (max-width:380px){
+  body.change-view-pollen #pollen-view .pollen-neo-shell,
+  body.neo-pollen-shell #pollen-view .pollen-neo-shell{
+    margin-top:0 !important;
+  }
+}

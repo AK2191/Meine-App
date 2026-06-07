@@ -233,3 +233,7 @@
 
 ## 0.1.0139
 - Pollen mobil: HeroCard mit finaler Override-Regel nach unten gesetzt, damit der Abstand zur Überschrift wie bei Challenges wirkt.
+
+
+## 0.1.0140
+- Pollen mobil: alte `appShell.css`-Regel `margin-top:-82px` für `.pollen-neo-shell` neutralisiert, damit die HeroCard nicht mehr zu weit oben sitzt.
