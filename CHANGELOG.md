@@ -187,3 +187,8 @@
 ## 0.1.0128
 - Kritischer Hotfix: Kalender-Syntaxfehler in `features/calendar/calendarPanels.js` behoben.
 - Challenges-Hero-Failsafe ergänzt, damit die Hauptkachel bei fehlendem Render automatisch nachgeladen wird.
+
+
+## 0.1.0129
+- Challenges-HeroCard wiederhergestellt: `renderGroupGoal()` bricht nicht mehr wegen fehlender `.challenge-card-head` ab.
+- Zusätzlichen Hard-Render-Hook für View-Wechsel ergänzt.

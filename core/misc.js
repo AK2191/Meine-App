@@ -294,10 +294,12 @@ window.renderGroupGoal = function(){
       : 0;
   }catch(e){ openTodayCount = 0; }
 
-  // Ziel-Karte ins Dashboard einfügen
-  const dashBoard = document.querySelector('.challenge-card-head')?.parentElement ||
-                    document.querySelector('.dash-card-body');
-  if(!dashBoard) return;
+  // Ziel-Karte in Challenges einfügen.
+  // Wichtig: Seit v0.1.0121 liegen die Abschnittsüberschriften außerhalb der Kacheln.
+  // Deshalb existiert .challenge-card-head nicht mehr zuverlässig.
+  const challengeLayoutTarget = document.querySelector('#challenges-view .challenge-layout') ||
+                                document.querySelector('.challenge-layout');
+  if(!challengeLayoutTarget) return;
 
   const card = document.createElement('div');
   card.id = 'group-goal-card';
@@ -341,11 +343,7 @@ window.renderGroupGoal = function(){
   `;
 
   // Innerhalb des Challenge-Layouts als erstes Element einfügen (grid-column: 1/-1 per CSS)
-  const challengeLayout = document.querySelector('.challenge-layout');
-  if(challengeLayout){
-    challengeLayout.insertBefore(card, challengeLayout.firstChild);
-
-  }
+  challengeLayoutTarget.insertBefore(card, challengeLayoutTarget.firstChild);
 };
 
 // openGoalSettings entfernt — Ziel ist fest bei 350

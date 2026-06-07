@@ -462,3 +462,25 @@
     if(tries > 20) clearInterval(timer);
   }, 500);
 })();
+
+
+/* v0.1.0129 · Challenges hero hard render hook */
+(function(){
+  function renderHeroSoon(){
+    setTimeout(function(){ try{ window.renderGroupGoal && window.renderGroupGoal(); }catch(e){ console.warn('Challenge hero hard hook:', e); } }, 50);
+    setTimeout(function(){ try{ window.renderGroupGoal && window.renderGroupGoal(); }catch(e){ } }, 250);
+  }
+  document.addEventListener('click', function(ev){
+    var el = ev.target && ev.target.closest ? ev.target.closest('[data-view="challenges"], [onclick*="challenges"], .bnav-item, .h-tab') : null;
+    if(el) renderHeroSoon();
+  }, true);
+  document.addEventListener('visibilitychange', function(){
+    if(!document.hidden) renderHeroSoon();
+  });
+  setInterval(function(){
+    var view = document.getElementById('challenges-view');
+    if(view && view.style.display !== 'none' && !document.getElementById('group-goal-card')){
+      renderHeroSoon();
+    }
+  }, 1500);
+})();
