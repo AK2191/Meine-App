@@ -5459,3 +5459,46 @@ body.change-theme-light #pollen-view .pollen-neo-forecast-list,
     color:rgba(17,35,26,.68) !important;
   }
 }
+
+
+/* v0.1.0130 · Pollen mobile title-to-hero spacing equal to Challenges */
+@media (max-width:700px){
+  body.change-view-pollen #pollen-view .pollen-view-body,
+  body.neo-pollen-shell #pollen-view .pollen-view-body{
+    padding-top:12px !important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-shell,
+  body.neo-pollen-shell #pollen-view .pollen-neo-shell{
+    display:flex !important;
+    flex-direction:column !important;
+    gap:16px !important;
+  }
+
+  body.change-view-pollen #pollen-view .list-header,
+  body.change-view-pollen #pollen-view .list-header.pollen-neo-headerbar,
+  body.neo-pollen-shell #pollen-view .list-header,
+  body.neo-pollen-shell #pollen-view .list-header.pollen-neo-headerbar{
+    padding:0 0 12px !important;
+    margin:0 !important;
+    min-height:42px !important;
+    display:flex !important;
+    align-items:center !important;
+  }
+
+  body.change-view-pollen #pollen-view .list-title,
+  body.neo-pollen-shell #pollen-view .list-title{
+    margin:0 !important;
+    line-height:1.08 !important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-top,
+  body.neo-pollen-shell #pollen-view .pollen-neo-top{
+    margin-top:0 !important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-hero,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero{
+    margin-top:0 !important;
+  }
+}

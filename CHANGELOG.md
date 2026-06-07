@@ -192,3 +192,7 @@
 ## 0.1.0129
 - Challenges-HeroCard wiederhergestellt: `renderGroupGoal()` bricht nicht mehr wegen fehlender `.challenge-card-head` ab.
 - Zusätzlichen Hard-Render-Hook für View-Wechsel ergänzt.
+
+
+## 0.1.0130
+- Pollen mobil: Abstand zwischen Seitenüberschrift und HeroCard final an Challenges angeglichen.
