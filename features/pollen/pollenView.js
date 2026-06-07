@@ -3,7 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0142';
+  var APP_VERSION = '0.1.0143';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var SELECTED_KEY = 'change_v1_pollen_selected_keys';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
@@ -372,11 +372,13 @@
     + '</div>';
   }
   function hourlyChartHtml(points, name){
-    var w = 720, h = 210, padL = 36, padR = 24, padT = 16, padB = 30;
+    var w = 720, h = 210, padL = 54, padR = 24, padT = 16, padB = 30;
     var usableW = w - padL - padR;
     var usableH = h - padT - padB;
+    var yTicks = [100, 75, 50, 25];
+    var yForValue = function(value){ return padT + usableH - (usableH * clampNum(value) / 100); };
     var xy = points.map(function(p, i){
-      return {x:padL + (usableW * i / Math.max(1, points.length - 1)), y:padT + usableH - (usableH * clampNum(p.value) / 100), p:p};
+      return {x:padL + (usableW * i / Math.max(1, points.length - 1)), y:yForValue(p.value), p:p};
     });
     var line = xy.map(function(p){ return Math.round(p.x)+','+Math.round(p.y); }).join(' ');
     var area = xy.length ? ('M '+xy[0].x+' '+(h-padB)+' L '+xy.map(function(p){ return Math.round(p.x)+' '+Math.round(p.y); }).join(' L ')+' L '+xy[xy.length-1].x+' '+(h-padB)+' Z') : '';
@@ -385,6 +387,7 @@
       + '<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Pollenbelastung über 24 Stunden">'
         + '<defs><linearGradient id="pollen-hourly-line" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f7d54a"/><stop offset=".58" stop-color="#fb923c"/><stop offset="1" stop-color="#ff6252"/></linearGradient><linearGradient id="pollen-hourly-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(251,146,60,.18)"/><stop offset="1" stop-color="rgba(251,146,60,0)"/></linearGradient></defs>'
         + '<g class="pollen-hourly-grid"><line x1="'+padL+'" y1="'+(padT+usableH*.25)+'" x2="'+(w-padR)+'" y2="'+(padT+usableH*.25)+'"/><line x1="'+padL+'" y1="'+(padT+usableH*.5)+'" x2="'+(w-padR)+'" y2="'+(padT+usableH*.5)+'"/><line x1="'+padL+'" y1="'+(padT+usableH*.75)+'" x2="'+(w-padR)+'" y2="'+(padT+usableH*.75)+'"/></g>'
+        + '<g class="pollen-hourly-y">'+yTicks.map(function(value){ return '<text x="'+(padL-10)+'" y="'+Math.round(yForValue(value)+4)+'" text-anchor="end">'+value+'%</text>'; }).join('')+'</g>'
         + '<path class="pollen-hourly-area" d="'+esc(area)+'"></path>'
         + '<polyline class="pollen-hourly-line" points="'+esc(line)+'"></polyline>'
         + xy.map(function(pt){ return '<circle class="pollen-hourly-point '+esc(pt.p.tone)+'" cx="'+Math.round(pt.x)+'" cy="'+Math.round(pt.y)+'" r="4"></circle>'; }).join('')

@@ -1,5 +1,10 @@
 # CHANGELOG – Change App
 
+## 0.1.0143 - Pollen 24h Prozentskala
+- Sichtbare App-Version auf 0.1.0143 erhöht.
+- Im 24-Stunden-Ausblick wird links im Diagramm nun eine Prozent-Skala angezeigt.
+- Keine Änderung an Pollenberechnung, Firebase, Sync, Login, Push oder Kalenderdaten.
+
 ## 0.1.0142 - Pollen Mobile HeroCard Abstand
 - Sichtbare App-Version auf 0.1.0142 erhöht.
 - Mobile Pollen-HeroCard näher unter die Pollen-Überschrift gesetzt.
