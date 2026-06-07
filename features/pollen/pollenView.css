@@ -5571,3 +5571,43 @@ body.change-theme-light #pollen-view .pollen-neo-forecast-list,
     overflow:hidden !important;
   }
 }
+
+
+/* v0.1.0139 · Pollen mobile HeroCard hard vertical alignment
+   Pollen bekommt mobil denselben klaren Abstand unter der Überschrift wie Challenges.
+   Wichtig: bewusst sehr spät und spezifisch, damit ältere Pollen-Overrides nicht wieder greifen. */
+@media (max-width:700px){
+  body.change-view-pollen #pollen-view .pollen-neo-shell,
+  body.neo-pollen-shell #pollen-view .pollen-neo-shell{
+    gap:0 !important;
+  }
+
+  body.change-view-pollen #pollen-view .list-header,
+  body.change-view-pollen #pollen-view .list-header.pollen-neo-headerbar,
+  body.neo-pollen-shell #pollen-view .list-header,
+  body.neo-pollen-shell #pollen-view .list-header.pollen-neo-headerbar{
+    height:auto !important;
+    min-height:52px !important;
+    padding:0 0 0 !important;
+    margin:0 !important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-top,
+  body.neo-pollen-shell #pollen-view .pollen-neo-top,
+  body.change-view-pollen #pollen-view .pollen-neo-main-grid,
+  body.neo-pollen-shell #pollen-view .pollen-neo-main-grid,
+  body.change-view-pollen #pollen-view .pollen-neo-left,
+  body.neo-pollen-shell #pollen-view .pollen-neo-left{
+    margin-top:0 !important;
+    padding-top:0 !important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-hero,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero{
+    margin-top:28px !important;
+    height:var(--change-mobile-feature-hero-height,274px) !important;
+    min-height:var(--change-mobile-feature-hero-height,274px) !important;
+    max-height:var(--change-mobile-feature-hero-height,274px) !important;
+    box-sizing:border-box !important;
+  }
+}

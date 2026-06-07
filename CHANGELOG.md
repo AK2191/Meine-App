@@ -229,3 +229,7 @@
 ## 0.1.0138
 - Mobile HeroCards von Pollen, Challenges und Kalender auf exakt dieselbe äußere Höhe gesetzt.
 - Gemeinsame CSS-Variable `--change-mobile-feature-hero-height` als kopierbare Vorlage eingeführt.
+
+
+## 0.1.0139
+- Pollen mobil: HeroCard mit finaler Override-Regel nach unten gesetzt, damit der Abstand zur Überschrift wie bei Challenges wirkt.
