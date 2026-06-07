@@ -4589,3 +4589,60 @@ body.change-theme-light.change-view-dashboard #dashboard-view .dashboard-section
 body.change-theme-light.change-view-dashboard #dashboard-view .dash-section-label{
   color:rgba(20,32,24,.58)!important;
 }
+
+
+/* v0.1.0121 · Section headings outside cards for Challenges and Calendar */
+.change-section-block{min-width:0;}
+.change-outside-section-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px 0;}
+.change-outside-section-title{font-size:12px;line-height:1.2;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:rgba(244,247,244,.72);}
+[data-theme="light"] .change-outside-section-title,
+body.theme-light .change-outside-section-title,
+body.change-theme-light .change-outside-section-title{color:rgba(20,32,24,.58);}
+
+body.change-view-challenges #challenges-view .leader-card,
+body.change-view-challenges #challenges-view .challenge-card,
+body.change-view-challenges #challenges-view .challenge-week-card{padding-top:0!important;}
+body.change-view-challenges #challenges-view .leader-card-head,
+body.change-view-challenges #challenges-view .challenge-card-head,
+body.change-view-challenges #challenges-view .challenge-week-head{display:none!important;}
+body.change-view-challenges #challenges-view .challenge-week-actions-head{display:flex;justify-content:flex-end;margin-bottom:14px;}
+body.change-view-challenges #challenges-view .challenge-layout > .challenge-week-block{grid-area:week;grid-column:1 / -1;width:100%;max-width:none;order:1;}
+body.change-view-challenges #challenges-view .challenge-layout > .challenge-tasks-block{grid-area:tasks;grid-column:1;order:2;}
+body.change-view-challenges #challenges-view .challenge-layout > .challenge-leader-block{grid-area:leaders;grid-column:2;order:3;}
+body.change-view-challenges #challenges-view .challenge-tasks-head-row .btn{margin-left:auto;}
+
+body.change-view-calendar #calendar-premium-view .cal-premium-section-head,
+body.change-view-calendar #calendar-premium-view .cal-premium-side-head strong{display:none!important;}
+body.change-view-calendar #calendar-premium-view .cal-premium-week,
+body.change-view-calendar #calendar-premium-view .cal-premium-card,
+body.change-view-calendar #calendar-premium-view .cal-premium-side-card{padding-top:18px!important;}
+body.change-view-calendar #calendar-premium-view .cal-premium-side-head{margin-bottom:12px!important;justify-content:flex-end!important;}
+body.change-view-calendar #calendar-premium-view .cal-premium-month-head{display:flex!important;}
+body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:flex;align-items:center;}
+
+@media (max-width:700px){
+  .change-outside-section-row{margin-bottom:8px;}
+  body.change-view-challenges #challenges-view .challenge-layout > .challenge-week-block,
+  body.change-view-challenges #challenges-view .challenge-layout > .challenge-tasks-block,
+  body.change-view-challenges #challenges-view .challenge-layout > .challenge-leader-block{grid-column:1 / -1!important;width:100%!important;}
+  body.change-view-challenges #challenges-view .challenge-tasks-head-row{gap:8px;}
+  body.change-view-challenges #challenges-view .challenge-tasks-head-row .btn{min-height:38px!important;padding:0 12px!important;font-size:12px!important;}
+}
+
+
+/* v0.1.0122 · Calendar desktop width alignment */
+@media (min-width:701px){
+  body.change-view-calendar #cal-body{
+    width:min(100%, var(--change-workspace-max)) !important;
+    max-width:var(--change-workspace-max) !important;
+    margin:0 auto !important;
+    padding:0 !important;
+    box-sizing:border-box !important;
+  }
+  body.change-view-calendar #calendar-premium-view{
+    width:100% !important;
+    max-width:100% !important;
+    margin:0 !important;
+    box-sizing:border-box !important;
+  }
+}

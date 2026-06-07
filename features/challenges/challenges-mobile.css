@@ -2594,3 +2594,98 @@ body.change-theme-light.change-view-challenges #challenges-view .challenge-week-
     min-height:0!important;
   }
 }
+
+
+/* v0.1.0124 · Challenges mobile hero stats aligned to Pollen */
+@media (max-width:700px){
+  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list,
+  #challenges-view .challenge-goal-side.challenge-goal-action-list{
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    column-gap:0 !important;
+    row-gap:0 !important;
+    align-items:stretch !important;
+    border-left:0 !important;
+    border-top:1px solid rgba(244,247,244,.10) !important;
+    padding:14px 0 0 !important;
+    margin-top:8px !important;
+    background:transparent !important;
+    box-shadow:none !important;
+  }
+  body.change-view-challenges #challenges-view .challenge-goal-side-link,
+  #challenges-view .challenge-goal-side-link{
+    min-width:0 !important;
+    min-height:64px !important;
+    display:grid !important;
+    grid-template-columns:28px minmax(0,1fr) !important;
+    align-items:center !important;
+    align-content:center !important;
+    justify-content:stretch !important;
+    gap:10px !important;
+    padding:0 12px !important;
+    margin:0 !important;
+    border:0 !important;
+    border-right:1px solid rgba(244,247,244,.10) !important;
+    border-bottom:0 !important;
+    border-radius:0 !important;
+    background:transparent !important;
+    box-shadow:none !important;
+    overflow:hidden !important;
+  }
+  body.change-view-challenges #challenges-view .challenge-goal-side-link:last-child,
+  #challenges-view .challenge-goal-side-link:last-child{
+    border-right:0 !important;
+  }
+  body.change-view-challenges #challenges-view .challenge-goal-side-link .challenge-goal-link-icon,
+  #challenges-view .challenge-goal-side-link .challenge-goal-link-icon{
+    width:24px !important;
+    height:24px !important;
+    min-width:24px !important;
+    min-height:24px !important;
+    border-radius:999px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    font-size:13px !important;
+    line-height:1 !important;
+    margin:0 !important;
+  }
+  body.change-view-challenges #challenges-view .challenge-goal-side-link > span:not(.challenge-goal-link-icon),
+  #challenges-view .challenge-goal-side-link > span:not(.challenge-goal-link-icon){
+    min-width:0 !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:flex-start !important;
+    justify-content:center !important;
+    gap:2px !important;
+    overflow:hidden !important;
+  }
+  body.change-view-challenges #challenges-view .challenge-goal-side-link b,
+  #challenges-view .challenge-goal-side-link b{
+    display:block !important;
+    margin:0 !important;
+    font-size:11.5px !important;
+    line-height:1.15 !important;
+    font-weight:850 !important;
+    color:rgba(244,247,244,.72) !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+  body.change-view-challenges #challenges-view .challenge-goal-side-link small,
+  #challenges-view .challenge-goal-side-link small{
+    display:none !important;
+  }
+  body.change-view-challenges #challenges-view .challenge-goal-side-link strong,
+  #challenges-view .challenge-goal-side-link strong{
+    display:block !important;
+    margin:0 !important;
+    font-size:15px !important;
+    line-height:1.12 !important;
+    font-weight:950 !important;
+    color:#ffffff !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+}

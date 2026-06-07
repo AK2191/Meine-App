@@ -165,27 +165,29 @@
     const view = document.getElementById('challenges-view'); if(!view) return;
     const layout = view.querySelector('.challenge-layout'); if(!layout) return;
     // Alle alten/duplizierten Balken entfernen
-    ['challenge-week-bar-clean','challenge-week-bar'].forEach(id => {
+    ['challenge-week-block','challenge-week-bar-clean','challenge-week-bar'].forEach(id => {
       const el = document.getElementById(id); if(el) el.remove();
     });
     view.querySelectorAll('.challenge-mini-card, #challenge-mini-calendar').forEach(el => {
       if(!el.closest('#challenge-week-points-card')) el.remove();
     });
     if(document.getElementById('challenge-week-points-card')) return;
-    const bar = document.createElement('div');
-    bar.id = 'challenge-week-points-card';
-    bar.className = 'challenge-week-card';
-    bar.innerHTML =
-      '<div class="challenge-week-head"><div>'+
-        '<div class="challenge-week-title">Punkte-Kalender</div>'+
-        ''+
-      '</div><div class="challenge-week-actions">'+
-        '<button class="btn btn-ghost btn-sm" id="cwp-prev">← Letzte Woche</button>'+
-        '<button class="btn btn-secondary btn-sm" id="cwp-today">Heute</button>'+
-        '<button class="btn btn-ghost btn-sm" id="cwp-next">Nächste Woche →</button>'+
-      '</div></div>'+
-      '<div id="challenge-week-points-grid" class="challenge-week-grid"></div>';
-    layout.insertBefore(bar, layout.firstChild);
+    const block = document.createElement('div');
+    block.id = 'challenge-week-block';
+    block.className = 'change-section-block challenge-week-block';
+    block.innerHTML =
+      '<div class="change-outside-section-row">'+
+        '<div class="change-outside-section-title challenge-week-title">PUNKTE-KALENDER</div>'+
+      '</div>'+
+      '<div id="challenge-week-points-card" class="challenge-week-card">'+
+        '<div class="challenge-week-actions-head"><div class="challenge-week-actions">'+
+          '<button class="btn btn-ghost btn-sm" id="cwp-prev">← Letzte Woche</button>'+
+          '<button class="btn btn-secondary btn-sm" id="cwp-today">Heute</button>'+
+          '<button class="btn btn-ghost btn-sm" id="cwp-next">Nächste Woche →</button>'+
+        '</div></div>'+
+        '<div id="challenge-week-points-grid" class="challenge-week-grid"></div>'+
+      '</div>';
+    layout.insertBefore(block, layout.firstChild);
     document.getElementById('cwp-prev').onclick  = () => { weekOffset = Math.max(-4, weekOffset-1); renderWeekBar(); };
     document.getElementById('cwp-today').onclick = () => { weekOffset = 0; renderWeekBar(); };
     document.getElementById('cwp-next').onclick  = () => { weekOffset = Math.min(4, weekOffset+1); renderWeekBar(); };
@@ -196,9 +198,9 @@
     const grid = document.getElementById('challenge-week-points-grid'); if(!grid) return;
     const days = Array.from({length:7}, (_,i) => addDays(weekStart(addDays(new Date(), weekOffset*7)), i));
     const today = dk(), weekday = ['Mo','Di','Mi','Do','Fr','Sa','So'];
-    const title = document.querySelector('#challenge-week-points-card .challenge-week-title');
+    const title = document.querySelector('#challenge-week-block .challenge-week-title');
     const sub   = document.querySelector('#challenge-week-points-card .challenge-week-sub');
-    if(title) title.textContent = 'Punkte-Kalender · ' + monthLabel(days);
+    if(title) title.textContent = ('PUNKTE-KALENDER · ' + monthLabel(days)).toUpperCase();
     if(sub)   sub.textContent   = '';
     grid.innerHTML = days.map((d,i) => {
       const k   = d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());

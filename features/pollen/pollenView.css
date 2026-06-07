@@ -5354,3 +5354,108 @@ body.change-theme-light #pollen-view .pollen-neo-forecast-list,
     overflow:hidden!important;
   }
 }
+
+
+/* v0.1.0125 · Pollen mobile hero spacing aligned to other views */
+@media (max-width:700px){
+  body.change-view-pollen #pollen-view .pollen-view-body,
+  body.neo-pollen-shell #pollen-view .pollen-view-body{
+    padding-top:8px !important;
+  }
+  body.change-view-pollen #pollen-view .pollen-neo-shell,
+  body.neo-pollen-shell #pollen-view .pollen-neo-shell{
+    gap:10px !important;
+  }
+  body.change-view-pollen #pollen-view .list-header,
+  body.change-view-pollen #pollen-view .list-header.pollen-neo-headerbar,
+  body.neo-pollen-shell #pollen-view .list-header,
+  body.neo-pollen-shell #pollen-view .list-header.pollen-neo-headerbar{
+    padding:0 0 4px !important;
+    margin:0 !important;
+    min-height:0 !important;
+    align-items:center !important;
+  }
+  body.change-view-pollen #pollen-view .pollen-neo-top,
+  body.change-view-pollen #pollen-view .pollen-neo-main-grid,
+  body.change-view-pollen #pollen-view .pollen-neo-left,
+  body.neo-pollen-shell #pollen-view .pollen-neo-top,
+  body.neo-pollen-shell #pollen-view .pollen-neo-main-grid,
+  body.neo-pollen-shell #pollen-view .pollen-neo-left{
+    gap:10px !important;
+  }
+  body.change-view-pollen #pollen-view .pollen-neo-hero,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero{
+    margin-top:0 !important;
+  }
+}
+
+
+/* v0.1.0126 · Pollen mobile 24h footer left-aligned + chart labels larger */
+@media (max-width:700px){
+  body.change-view-pollen #pollen-view .pollen-hourly-parts,
+  body.neo-pollen-shell #pollen-view .pollen-hourly-parts{
+    grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  }
+  body.change-view-pollen #pollen-view .pollen-hourly-part,
+  body.neo-pollen-shell #pollen-view .pollen-hourly-part{
+    grid-template-columns:auto minmax(0,1fr) !important;
+    align-items:center !important;
+    justify-items:stretch !important;
+    text-align:left !important;
+    gap:2px 8px !important;
+    padding:12px 8px !important;
+  }
+  body.change-view-pollen #pollen-view .pollen-hourly-part span,
+  body.neo-pollen-shell #pollen-view .pollen-hourly-part span{
+    grid-row:1 / 4 !important;
+    font-size:20px !important;
+    align-self:center !important;
+    justify-self:start !important;
+  }
+  body.change-view-pollen #pollen-view .pollen-hourly-part strong,
+  body.neo-pollen-shell #pollen-view .pollen-hourly-part strong{
+    font-size:11px !important;
+    line-height:1.05 !important;
+    text-align:left !important;
+  }
+  body.change-view-pollen #pollen-view .pollen-hourly-part em,
+  body.neo-pollen-shell #pollen-view .pollen-hourly-part em{
+    font-size:18px !important;
+    line-height:1.02 !important;
+    text-align:left !important;
+  }
+  body.change-view-pollen #pollen-view .pollen-hourly-part small,
+  body.neo-pollen-shell #pollen-view .pollen-hourly-part small{
+    font-size:11px !important;
+    line-height:1.05 !important;
+    text-align:left !important;
+  }
+  body.change-view-pollen #pollen-view .pollen-hourly-x text,
+  body.neo-pollen-shell #pollen-view .pollen-hourly-x text{
+    font-size:12.5px !important;
+    font-weight:900 !important;
+  }
+}
+
+
+/* v0.1.0127 · Pollen desktop hero stat colors inverted */
+@media (min-width:701px){
+  body.change-view-pollen #pollen-view .pollen-neo-hero-stats strong,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats strong{
+    color:#ffffff !important;
+  }
+  body.change-view-pollen #pollen-view .pollen-neo-hero-stats em,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats em{
+    color:rgba(244,247,244,.72) !important;
+  }
+  body.light.change-view-pollen #pollen-view .pollen-neo-hero-stats strong,
+  body.light.neo-pollen-shell #pollen-view .pollen-neo-hero-stats strong,
+  [data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-hero-stats strong{
+    color:#11231a !important;
+  }
+  body.light.change-view-pollen #pollen-view .pollen-neo-hero-stats em,
+  body.light.neo-pollen-shell #pollen-view .pollen-neo-hero-stats em,
+  [data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-hero-stats em{
+    color:rgba(17,35,26,.68) !important;
+  }
+}

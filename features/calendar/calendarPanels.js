@@ -238,7 +238,7 @@
   }
   function weekHtml(){
     var days = selectedWeek();
-    return '<section class="cal-premium-week"><div class="cal-premium-section-head"><strong>Woche · '+esc(monthLabel(selectedDate()))+'</strong></div><div class="cal-premium-week-row">'
+    return '<div class="change-section-block cal-week-block"><div class="change-outside-section-row"><div class="change-outside-section-title">'+esc(('Woche · ' + monthLabel(selectedDate())).toUpperCase())+'</div></div><section class="cal-premium-week"><div class="cal-premium-week-row'>'
       + days.map(function(key){
           var d=dateObj(key); var count=eventsFor(key).length;
           return '<button type="button" class="cal-premium-week-day '+(key===selectedKey?'selected ':'')+(isToday(key)?'today ':'')+'" data-cal-day="'+key+'"><span>'+WEEK_SHORT[d.getDay()]+'</span><strong>'+compactDate(key)+'</strong><i '+(count?'':'class="empty"')+'></i></button>';
@@ -249,7 +249,7 @@
     var days = monthDays(selectedKey);
     var month = base.getMonth();
     var year = base.getFullYear();
-    return '<section class="cal-premium-side-card cal-premium-mini"><div class="cal-premium-side-head cal-premium-month-head"><strong>Monatsübersicht</strong><div><button data-cal-nav="-1">‹</button><button data-cal-nav="1">›</button></div></div>'
+    return '<div class="change-section-block cal-month-block"><div class="change-outside-section-row"><div class="change-outside-section-title">MONATSÜBERSICHT</div></div><section class="cal-premium-side-card cal-premium-mini"><div class="cal-premium-side-head cal-premium-month-head"><div class="cal-premium-month-nav"><button data-cal-nav="-1">‹</button><button data-cal-nav="1">›</button></div></div>'
       + '<div class="cal-premium-month-picker"><select data-cal-month>'+monthOptions(month)+'</select><select data-cal-year>'+yearOptions(year)+'</select></div>'
       + '<div class="cal-premium-mini-grid">'
       + ['Mo','Di','Mi','Do','Fr','Sa','So'].map(function(x){return '<span class="head">'+x+'</span>';}).join('')
@@ -257,7 +257,7 @@
           if(!key) return '<span></span>';
           var d=dateObj(key); var has=eventsFor(key).length; var cls=(key===selectedKey?'selected ':'')+(isToday(key)?'today ':'')+(has?'has ':'');
           return '<button type="button" class="'+cls+'" data-cal-day="'+key+'">'+d.getDate()+(has?'<i></i>':'')+'</button>';
-        }).join('') + '</div></section>';
+        }).join('') + '</div></section></div>';
   }
   function filtersHtml(){
     return '<section class="cal-premium-side-card cal-premium-filter"><strong>Kategorien & Filter</strong>'

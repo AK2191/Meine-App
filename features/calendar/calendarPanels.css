@@ -824,3 +824,22 @@ body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium
     font-size:9px!important;
   }
 }
+
+
+/* v0.1.0123 · Calendar hero last row cleanup */
+.cal-premium-hero-side .cal-premium-hero-row:last-child,
+.cal-premium-hero-side .cal-premium-hero-row:last-child:hover,
+.cal-premium-hero-side .cal-premium-hero-row:last-child:focus,
+.cal-premium-hero-side .cal-premium-hero-row:last-child:focus-visible{
+  border-bottom:0 !important;
+  box-shadow:none !important;
+  outline:0 !important;
+}
+.cal-premium-hero-side .cal-premium-hero-row:last-child .cal-premium-hero-row-body,
+.cal-premium-hero-side .cal-premium-hero-row:last-child .cal-premium-hero-row-body strong,
+.cal-premium-hero-side .cal-premium-hero-row:last-child .cal-premium-hero-row-body em{
+  border:0 !important;
+  box-shadow:none !important;
+  text-decoration:none !important;
+  background-image:none !important;
+}

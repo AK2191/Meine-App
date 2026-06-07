@@ -153,3 +153,32 @@
 
 ## 0.1.0120
 - Dashboard-Abschnittsüberschriften an den Pollen-Stil angepasst.
+
+
+## 0.1.0121
+- Abschnittsüberschriften in Challenges und Kalender außerhalb der Kacheln platziert.
+
+
+## 0.1.0122
+- Kalender im lokalen Desktop auf dieselbe Arbeitsbreite wie die anderen Hauptbereiche begrenzt.
+
+
+## 0.1.0123
+- Kalender-Hauptkachel: störende Linie unter dem Urlaub-Eintrag in der rechten Hero-Spalte entfernt.
+
+
+## 0.1.0124
+- Challenges mobil: Statuspunkte in der Hero-Kachel an den Pollen-Stil angepasst, größer gemacht und doppelte/überlappende Linien entfernt.
+
+
+## 0.1.0125
+- Pollen mobil: Abstand zwischen Titel und Hero-Kachel reduziert und vertikale Leerfläche im oberen Bereich an die anderen Ansichten angeglichen.
+
+
+## 0.1.0126
+- Pollen mobil: untere 24-Stunden-Ausblick-Segmente linksbündig ausgerichtet.
+- Pollen mobil: Achsenbeschriftungen im Diagramm vergrößert.
+
+
+## 0.1.0127
+- Pollen lokal: Farben der drei Hero-Statusblöcke in der Desktop-Ansicht umgekehrt.

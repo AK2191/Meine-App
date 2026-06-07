@@ -234,22 +234,22 @@
         <!-- Wochenbar: wird von ensureWeekBar hier eingefügt -->
         <!-- Layout -->
         <div class="challenge-layout" style="flex:1;min-height:0;overflow-y:auto">
-          <div class="leader-card" style="order:1">
-            <div class="leader-card-head">
-              <div>
-                <div class="challenge-title">Rangliste</div>
-                <div class="challenge-sub"></div>
-              </div>
+          <div class="change-section-block challenge-leader-block" style="order:1">
+            <div class="change-outside-section-row">
+              <div class="change-outside-section-title">RANGLISTE</div>
             </div>
-            <div id="leaderboard-list"></div>
+            <div class="leader-card">
+              <div id="leaderboard-list"></div>
+            </div>
           </div>
-          <div class="challenge-card" style="order:2">
-            <div class="challenge-card-head">
-              <div>
-                <div class="challenge-title">Heutige Aufgaben</div>
-              </div>
+          <div class="change-section-block challenge-tasks-block" style="order:2">
+            <div class="change-outside-section-row challenge-tasks-head-row">
+              <div class="change-outside-section-title">HEUTIGE AUFGABEN</div>
+              <button class="btn btn-ghost btn-sm" onclick="window.resetTodayChallenges&&window.resetTodayChallenges()">Heute zurücksetzen</button>
             </div>
-            <div id="challenges-list"></div>
+            <div class="challenge-card">
+              <div id="challenges-list"></div>
+            </div>
           </div>
         </div>
       </div>
