@@ -1,3 +1,9 @@
+## 0.1.0146 - Mobile HeroCards vereinheitlicht
+- Sichtbare App-Version auf 0.1.0146 erhöht.
+- Mobile HeroCards von Dashboard, Kalender, Challenges und Pollen auf gemeinsame Höhe, Innenabstand, Radius, Typografie und linksbündige Leserichtung normalisiert.
+- Kalender-HeroCard mobil linksbündig ausgerichtet.
+- Keine Änderung an Dashboard-, Kalender-, Challenge- oder Pollenlogik, Login, Firebase, Sync, Push oder Kalenderdaten.
+
 ## 0.1.0145 - Pollen 24h Skala feinjustiert
 - Sichtbare App-Version auf 0.1.0145 erhöht.
 - Prozentwerte der linken Skala im Pollen-24-Stunden-Ausblick weiter nach links gesetzt.
