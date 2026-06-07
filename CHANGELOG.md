@@ -145,3 +145,11 @@
 
 ## 0.1.0118
 - Fehlenden mobilen Zwischenstrich in der Challenges-Hauptkachel zwischen Heute und Offen ergänzt.
+
+
+## 0.1.0119
+- Überschriften in Challenges und Kalender an den Pollen-Stil angepasst.
+
+
+## 0.1.0120
+- Dashboard-Abschnittsüberschriften an den Pollen-Stil angepasst.

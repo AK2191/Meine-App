@@ -4497,3 +4497,95 @@ body.theme-light.change-view-challenges #challenges-view .challenge-goal-side-li
 body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side-link::after{
   background:rgba(15,32,23,.12)!important;
 }
+
+
+/* v0.1.0119 · Pollen-style section headings for Challenges and Calendar */
+body.change-view-challenges #challenges-view .challenge-title,
+body.change-view-challenges #challenges-view .challenge-week-title,
+body.change-view-challenges #challenge-week-points-card .challenge-week-title,
+body.change-view-challenges #challenges-view .leader-card-head .challenge-title,
+body.change-view-challenges #challenges-view .challenge-card-head .challenge-title{
+  font-size:12px!important;
+  line-height:1.2!important;
+  font-weight:900!important;
+  text-transform:uppercase!important;
+  letter-spacing:.08em!important;
+  color:rgba(244,247,244,.72)!important;
+}
+body.change-view-challenges #challenges-view .challenge-card-head,
+body.change-view-challenges #challenges-view .leader-card-head,
+body.change-view-challenges #challenge-week-points-card .challenge-week-head,
+body.change-view-challenges #challenges-view .challenge-week-head{
+  align-items:center!important;
+}
+body.change-view-challenges #challenges-view .challenge-sub,
+body.change-view-challenges #challenges-view .challenge-week-sub{
+  display:none!important;
+}
+
+body.change-view-calendar #calendar-premium-view .cal-premium-section-head strong,
+body.change-view-calendar #calendar-premium-view .cal-premium-side-head strong,
+body.change-view-calendar #calendar-premium-view .cal-premium-month-head strong,
+body.change-view-calendar #calendar-premium-view .cal-premium-agenda .cal-premium-section-head strong,
+body.change-view-calendar #calendar-premium-view .cal-premium-week .cal-premium-section-head strong{
+  font-size:12px!important;
+  line-height:1.2!important;
+  font-weight:900!important;
+  text-transform:uppercase!important;
+  letter-spacing:.08em!important;
+  color:rgba(244,247,244,.72)!important;
+}
+
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-title,
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-week-title,
+body.theme-light.change-view-challenges #challenges-view .challenge-title,
+body.theme-light.change-view-challenges #challenges-view .challenge-week-title,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-title,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-week-title,
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-section-head strong,
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-side-head strong,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-section-head strong,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-side-head strong,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-section-head strong,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-side-head strong{
+  color:rgba(20,32,24,.58)!important;
+}
+
+
+/* v0.1.0120 · Dashboard section headings in pollen style
+   Gleiche Abschnittsüberschrift wie Pollen/Challenges/Kalender. */
+body.change-view-dashboard #dashboard-view .dash-card-title,
+body.change-view-dashboard #dashboard-view .dashboard-section-head,
+body.change-view-dashboard #dashboard-view .dashboard-section-head span,
+body.change-view-dashboard #dashboard-view .dash-section-label,
+body.change-view-dashboard #dashboard-view .dash-card-head .dash-card-title{
+  font-size:12px!important;
+  line-height:1.2!important;
+  font-weight:900!important;
+  text-transform:uppercase!important;
+  letter-spacing:.08em!important;
+  color:rgba(244,247,244,.72)!important;
+}
+
+body.change-view-dashboard #dashboard-view .dash-card-head{
+  align-items:center!important;
+}
+
+body.change-view-dashboard #dashboard-view .dash-card-sub{
+  display:none!important;
+}
+
+[data-theme="light"] body.change-view-dashboard #dashboard-view .dash-card-title,
+[data-theme="light"] body.change-view-dashboard #dashboard-view .dashboard-section-head,
+[data-theme="light"] body.change-view-dashboard #dashboard-view .dashboard-section-head span,
+[data-theme="light"] body.change-view-dashboard #dashboard-view .dash-section-label,
+body.theme-light.change-view-dashboard #dashboard-view .dash-card-title,
+body.theme-light.change-view-dashboard #dashboard-view .dashboard-section-head,
+body.theme-light.change-view-dashboard #dashboard-view .dashboard-section-head span,
+body.theme-light.change-view-dashboard #dashboard-view .dash-section-label,
+body.change-theme-light.change-view-dashboard #dashboard-view .dash-card-title,
+body.change-theme-light.change-view-dashboard #dashboard-view .dashboard-section-head,
+body.change-theme-light.change-view-dashboard #dashboard-view .dashboard-section-head span,
+body.change-theme-light.change-view-dashboard #dashboard-view .dash-section-label{
+  color:rgba(20,32,24,.58)!important;
+}
