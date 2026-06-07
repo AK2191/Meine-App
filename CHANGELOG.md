@@ -196,3 +196,7 @@
 
 ## 0.1.0130
 - Pollen mobil: Abstand zwischen Seitenüberschrift und HeroCard final an Challenges angeglichen.
+
+
+## 0.1.0131
+- Challenges mobil: Trennstriche der Hero-Statuspunkte an Pollen angeglichen und überlappende Kurzlinien entfernt.
