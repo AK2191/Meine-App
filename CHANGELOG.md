@@ -1,3 +1,8 @@
+## 0.1.0147 - Pollen-HeroCard mobil angeglichen
+- Sichtbare App-Version auf 0.1.0147 erhöht.
+- Verbliebenen mobilen Pollen-Sonderversatz zwischen Überschrift und HeroCard entfernt.
+- Keine Änderung an Pollenberechnung, Kalender, Challenges, Dashboard-Logik, Firebase, Sync, Login oder Push.
+
 ## 0.1.0146 - Mobile HeroCards vereinheitlicht
 - Sichtbare App-Version auf 0.1.0146 erhöht.
 - Mobile HeroCards von Dashboard, Kalender, Challenges und Pollen auf gemeinsame Höhe, Innenabstand, Radius, Typografie und linksbündige Leserichtung normalisiert.

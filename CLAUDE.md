@@ -1,9 +1,14 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-07 · Version 0.1.0146 und mobile HeroCards vereinheitlicht
+> Zuletzt aktualisiert: 2026-06-07 · Version 0.1.0147 und Pollen-HeroCard mobil angeglichen
 
 ---
 
+
+## Version 0.1.0147
+- Die sichtbare App-Version wurde auf `0.1.0147` erhöht.
+- Der verbliebene mobile Pollen-Sonderversatz zwischen Überschrift und HeroCard wurde entfernt, damit die Pollen-HeroCard optisch auf derselben Höhe wie Kalender und Challenges startet.
+- Umsetzung in `styles/appShell.css` und Versionsanzeige; keine Änderung an Pollenberechnung, Dashboard-, Kalender-, Challenge-Logik, Firebase, Sync, Login, Push oder Kalenderdaten.
 
 ## Version 0.1.0146
 - Die sichtbare App-Version wurde auf `0.1.0146` erhöht.
@@ -219,7 +224,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0146`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0147`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -1216,6 +1221,7 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 | 2026-06-07 | Version auf `0.1.0140` erhöht; alte mobile Pollen-Override-Regel in `appShell.css` neutralisiert, die die HeroCard zu weit nach oben gezogen hatte. | ChatGPT |
 | 2026-06-07 | Version auf `0.1.0142` erhöht; mobiler Pollen-HeroCard-Abstand an Kalender/Challenges angepasst. | ChatGPT |
 | 2026-06-07 | Version auf `0.1.0146` erhöht; mobile HeroCards von Dashboard, Kalender, Challenges und Pollen vereinheitlicht. | ChatGPT |
+| 2026-06-07 | Version auf `0.1.0147` erhöht; Pollen-HeroCard mobil auf dieselbe sichtbare Höhe wie Kalender und Challenges gezogen. | ChatGPT |
 | 2026-06-07 | Version auf `0.1.0145` erhöht; Prozentwerte im Pollen-24-Stunden-Diagramm weiter nach links gesetzt. | ChatGPT |
 | 2026-06-07 | Version auf `0.1.0144` erhöht; mobiler Titelabstand zu HeroCards für Dashboard, Kalender, Challenges und Pollen vereinheitlicht. | ChatGPT |
 | 2026-06-07 | Version auf `0.1.0143` erhöht; Prozent-Skala links im 24-Stunden-Pollen-Diagramm ergänzt. | ChatGPT |
