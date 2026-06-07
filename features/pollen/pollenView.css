@@ -5535,3 +5535,26 @@ body.change-theme-light #pollen-view .pollen-neo-forecast-list,
     box-sizing:border-box !important;
   }
 }
+
+
+/* v0.1.0137 · Pollen mobile hero vertical position aligned to Challenges */
+@media (max-width:700px){
+  body.change-view-pollen #pollen-view .list-header,
+  body.change-view-pollen #pollen-view .list-header.pollen-neo-headerbar,
+  body.neo-pollen-shell #pollen-view .list-header,
+  body.neo-pollen-shell #pollen-view .list-header.pollen-neo-headerbar{
+    padding:0 0 20px !important;
+    margin:0 !important;
+    min-height:48px !important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-top,
+  body.neo-pollen-shell #pollen-view .pollen-neo-top{
+    margin-top:14px !important;
+  }
+
+  body.change-view-pollen #pollen-view .pollen-neo-hero,
+  body.neo-pollen-shell #pollen-view .pollen-neo-hero{
+    margin-top:0 !important;
+  }
+}

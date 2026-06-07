@@ -220,3 +220,7 @@
 
 ## 0.1.0136
 - Mobile HeroCards von Pollen, Challenges und Kalender auf gleiche Höhe gebracht. Dashboard bleibt unverändert.
+
+
+## 0.1.0137
+- Pollen mobil: HeroCard weiter nach unten gesetzt, damit der Abstand zur Überschrift wie bei Challenges wirkt.
