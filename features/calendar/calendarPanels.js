@@ -238,11 +238,11 @@
   }
   function weekHtml(){
     var days = selectedWeek();
-    return '<div class="change-section-block cal-week-block"><div class="change-outside-section-row"><div class="change-outside-section-title">'+esc(('Woche · ' + monthLabel(selectedDate())).toUpperCase())+'</div></div><section class="cal-premium-week"><div class="cal-premium-week-row'>'
+    return '<div class="change-section-block cal-week-block"><div class="change-outside-section-row"><div class="change-outside-section-title">'+esc(('Woche · ' + monthLabel(selectedDate())).toUpperCase())+'</div></div><section class="cal-premium-week"><div class="cal-premium-week-row">'
       + days.map(function(key){
           var d=dateObj(key); var count=eventsFor(key).length;
           return '<button type="button" class="cal-premium-week-day '+(key===selectedKey?'selected ':'')+(isToday(key)?'today ':'')+'" data-cal-day="'+key+'"><span>'+WEEK_SHORT[d.getDay()]+'</span><strong>'+compactDate(key)+'</strong><i '+(count?'':'class="empty"')+'></i></button>';
-        }).join('') + '</div></section>';
+        }).join('') + '</div></section></div>';
   }
   function miniMonthHtml(){
     var base = selectedDate();
@@ -281,7 +281,7 @@
     var control = '<div class="cal-premium-top"><div class="cal-premium-title"><span>▣</span><h1>Kalender</h1></div></div>';
     existing.innerHTML = control + heroHtml() + weekHtml()
       + '<div class="cal-premium-main-grid">'
-      + '<section class="cal-premium-card cal-premium-agenda"><div class="cal-premium-section-head"><strong>Tagesagenda</strong></div><div class="cal-premium-agenda-list">'+eventRows(selectedKey)+'</div><div class="cal-premium-agenda-footer"><button class="cal-premium-add" type="button" data-cal-add="1">+ Termin hinzufügen</button></div></section>'
+      + '<div class="change-section-block cal-agenda-block"><div class="change-outside-section-row"><div class="change-outside-section-title">TAGESAGENDA</div></div><section class="cal-premium-card cal-premium-agenda"><div class="cal-premium-agenda-list">'+eventRows(selectedKey)+'</div><div class="cal-premium-agenda-footer"><button class="cal-premium-add" type="button" data-cal-add="1">+ Termin hinzufügen</button></div></section></div>'
       + '<aside class="cal-premium-side">'+miniMonthHtml()+'</aside>'
       + '</div>';
     var mg=$('month-grid'), wday=$('wday-row'), ag=$('agenda-view');

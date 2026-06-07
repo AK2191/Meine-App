@@ -1,11 +1,11 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-06 · Version 0.1.0127 und Pollen-Mobile-Spacing-Dashboard-Alignment-Fixnd Pollen-Maincard-Fix
+> Zuletzt aktualisiert: 2026-06-06 · Version 0.1.0128 und Pollen-Mobile-Spacing-Dashboard-Alignment-Fixnd Pollen-Maincard-Fix
 
 ---
 
 
-## Version 0.1.0127
+## Version 0.1.0128
 - Die sichtbare App-Version wurde auf `0.1.0098` erhöht.
 - Die Pollen-Maincard wurde oben überarbeitet.
 - "Belastung heute" wurde aus dem rechten Bereich entfernt.
@@ -37,7 +37,7 @@
 - Die sichtbare App-Version wurde auf `0.1.0093` erhöht.
 - Dashboard, Kalender, Challenges und Pollen nutzen dieselbe Workspace-Breite, dieselbe Titelhöhe und denselben linken Startpunkt wie Pollen.
 
-## Version 0.1.0127
+## Version 0.1.0128
 - Die sichtbare App-Version wurde auf `0.1.0116` erhöht.
 - Der mobile Abstand zwischen Pollen-Überschrift und Pollen-Hauptkachel wurde reduziert.
 - Dashboard wurde bei Titelhöhe, Seitenabständen und Workspace-Breite an die anderen Hauptansichten angeglichen.
@@ -182,7 +182,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0127`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0128`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -1151,3 +1151,5 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 | 2026-06-07 | Version auf `0.1.0126` erhöht; mobiler Pollen-24-Stunden-Ausblick linksbündig ausgerichtet und Diagramm-Beschriftungen vergrößert. | ChatGPT |
 
 | 2026-06-07 | Version auf `0.1.0127` erhöht; Farben der drei Hero-Statusblöcke in der lokalen Desktop-Ansicht von Pollen umgekehrt. | ChatGPT |
+
+| 2026-06-07 | Version auf `0.1.0128` erhöht; Kalender-Syntaxfehler behoben und Challenges-Hero-Failsafe ergänzt. | ChatGPT |

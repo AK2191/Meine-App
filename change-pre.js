@@ -430,3 +430,35 @@
     }, 800);
   });
 })();
+
+
+/* v0.1.0128 · Challenge hero render failsafe */
+(function(){
+  var tries = 0;
+  function isChallengesVisible(){
+    var view = document.getElementById('challenges-view');
+    if(!view) return false;
+    return view.style.display !== 'none' || document.body.classList.contains('change-view-challenges');
+  }
+  function ensureChallengeHero(){
+    try{
+      var layout = document.querySelector('#challenges-view .challenge-layout');
+      if(!layout) return;
+      if(!document.getElementById('group-goal-card') && typeof window.renderGroupGoal === 'function'){
+        window.renderGroupGoal();
+      }
+    }catch(e){ console.warn('Challenge hero failsafe:', e); }
+  }
+  function schedule(){
+    setTimeout(ensureChallengeHero, 80);
+    setTimeout(ensureChallengeHero, 350);
+    setTimeout(ensureChallengeHero, 900);
+  }
+  document.addEventListener('DOMContentLoaded', schedule);
+  window.addEventListener('load', schedule);
+  var timer = setInterval(function(){
+    tries++;
+    if(isChallengesVisible()) ensureChallengeHero();
+    if(tries > 20) clearInterval(timer);
+  }, 500);
+})();

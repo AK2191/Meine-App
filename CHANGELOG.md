@@ -182,3 +182,8 @@
 
 ## 0.1.0127
 - Pollen lokal: Farben der drei Hero-Statusblöcke in der Desktop-Ansicht umgekehrt.
+
+
+## 0.1.0128
+- Kritischer Hotfix: Kalender-Syntaxfehler in `features/calendar/calendarPanels.js` behoben.
+- Challenges-Hero-Failsafe ergänzt, damit die Hauptkachel bei fehlendem Render automatisch nachgeladen wird.
