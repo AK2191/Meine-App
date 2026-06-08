@@ -28,6 +28,12 @@
   function weekdayName(key){ return M.weekday ? M.weekday(key) : ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'][dateObj(key).getDay()]; }
   function compactDate(key){ var d=dateObj(key); return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'; }
   function monthLabel(date){ return MONTHS[date.getMonth()]+' '+date.getFullYear(); }
+  function weekRangeLabel(keys){
+    var first = dateObj(keys[0]), last = dateObj(keys[keys.length-1]);
+    if(first.getFullYear() !== last.getFullYear()) return MONTHS[first.getMonth()]+' '+first.getFullYear()+' / '+MONTHS[last.getMonth()]+' '+last.getFullYear();
+    if(first.getMonth() !== last.getMonth()) return MONTHS[first.getMonth()]+' / '+MONTHS[last.getMonth()]+' '+first.getFullYear();
+    return MONTHS[first.getMonth()]+' '+first.getFullYear();
+  }
   function rangeOf(event){ return M.rangeOf(event); }
   function timeOf(event){ return M.timeOf(event); }
   function titleOf(event){ return M.titleOf(event); }
@@ -250,7 +256,14 @@
   }
   function weekHtml(){
     var days = selectedWeek();
-    return '<div class="change-section-block cal-week-block"><div class="change-outside-section-row"><div class="change-outside-section-title">'+esc(('Woche · ' + monthLabel(selectedDate())).toUpperCase())+'</div></div><section class="cal-premium-week"><div class="cal-premium-week-row">'
+    return '<div class="change-section-block cal-week-block">'
+      + '<div class="change-outside-section-row change-week-nav-row">'
+      + '<div class="change-outside-section-title change-week-nav-title">'+esc(('WOCHE · ' + weekRangeLabel(days)).toUpperCase())+'</div>'
+      + '<div class="change-week-nav-controls">'
+      + '<button type="button" class="change-week-nav-btn" data-cal-week-nav="-1" aria-label="Vorherige Woche">‹</button>'
+      + '<button type="button" class="change-week-nav-btn" data-cal-week-nav="1" aria-label="Nächste Woche">›</button>'
+      + '</div></div>'
+      + '<section class="cal-premium-week"><div class="cal-premium-week-row">'
       + days.map(function(key){
           var d=dateObj(key); var count=eventsFor(key).length;
           return '<button type="button" class="cal-premium-week-day '+(key===selectedKey?'selected ':'')+(isToday(key)?'today ':'')+'" data-cal-day="'+key+'"><span>'+WEEK_SHORT[d.getDay()]+'</span><strong>'+compactDate(key)+'</strong><i '+(count?'':'class="empty"')+'></i></button>';
@@ -304,6 +317,7 @@
     var root = $('calendar-premium-view'); if(!root) return;
     root.querySelectorAll('[data-cal-day]').forEach(function(btn){ btn.onclick=function(){ selectedKey=this.getAttribute('data-cal-day'); setCurrentDate(dateObj(selectedKey)); renderPremium(); }; });
     root.querySelectorAll('[data-cal-nav]').forEach(function(btn){ btn.onclick=function(){ var d=selectedDate(); d.setMonth(d.getMonth()+parseInt(this.getAttribute('data-cal-nav'),10)); selectedKey=keyOf(new Date(d.getFullYear(),d.getMonth(),1)); setCurrentDate(dateObj(selectedKey)); renderPremium(); }; });
+    root.querySelectorAll('[data-cal-week-nav]').forEach(function(btn){ btn.onclick=function(){ selectedKey = addDays(selectedKey || M.todayKey(), parseInt(this.getAttribute('data-cal-week-nav'),10) * 7); setCurrentDate(dateObj(selectedKey)); renderPremium(); }; });
     var monthSelect = root.querySelector('[data-cal-month]');
     var yearSelect = root.querySelector('[data-cal-year]');
     function changeMonthYear(){

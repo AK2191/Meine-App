@@ -1,3 +1,16 @@
+## 0.1.0159 - Pollen-Innenkacheln farblich an Kalender angeglichen
+- Sichtbare App-Version auf 0.1.0159 erhöht.
+- Die Innenkacheln im Pollen-Allergieprofil nutzen nun dieselbe Kartenfarbwelt wie die Kalender-Kacheln.
+- Gilt lokal/desktop und mobil.
+- Keine Änderung an Logik, Pollenwerten, Daten, Sync, Login oder Push.
+
+## 0.1.0157 - Wochenkalender von Kalender und Challenges vereinheitlicht
+- Sichtbare App-Version auf 0.1.0157 erhöht.
+- Wochenkalender von Kalender und Challenges optisch und typografisch vereinheitlicht.
+- Kalender-Wochenansicht um Vorherige-/Nächste-Woche-Navigation erweitert.
+- Challenges-Wochenansicht auf dieselbe Pfeilnavigation reduziert und an den Kalender angepasst.
+- Keine Änderung an Logik, Daten, Sync, Login oder Push.
+
 ## 0.1.0156 - Kalender-HeroCard-Farbwelt für Pollen und Challenges übernommen
 - Sichtbare App-Version auf 0.1.0156 erhöht.
 - Hintergrundfarbwelt der Kalender-HeroCard auf Pollen und Challenges übertragen.

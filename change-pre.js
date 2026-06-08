@@ -154,7 +154,7 @@
   }
 
   function monthLabel(days){
-    const names = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+    const names = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
     const f=days[0], l=days[6];
     if(f.getFullYear()!==l.getFullYear()) return names[f.getMonth()]+' '+f.getFullYear()+' / '+names[l.getMonth()]+' '+l.getFullYear();
     if(f.getMonth()!==l.getMonth()) return names[f.getMonth()]+' / '+names[l.getMonth()]+' '+f.getFullYear();
@@ -176,21 +176,19 @@
     block.id = 'challenge-week-block';
     block.className = 'change-section-block challenge-week-block';
     block.innerHTML =
-      '<div class="change-outside-section-row">'+
-        '<div class="change-outside-section-title challenge-week-title">PUNKTE-KALENDER</div>'+
+      '<div class="change-outside-section-row change-week-nav-row">'+
+        '<div class="change-outside-section-title challenge-week-title change-week-nav-title">WOCHE</div>'+
+        '<div class="change-week-nav-controls">'+
+          '<button class="change-week-nav-btn" id="cwp-prev" aria-label="Vorherige Woche">‹</button>'+
+          '<button class="change-week-nav-btn" id="cwp-next" aria-label="Nächste Woche">›</button>'+
+        '</div>'+
       '</div>'+
       '<div id="challenge-week-points-card" class="challenge-week-card">'+
-        '<div class="challenge-week-actions-head"><div class="challenge-week-actions">'+
-          '<button class="btn btn-ghost btn-sm" id="cwp-prev">← Letzte Woche</button>'+
-          '<button class="btn btn-secondary btn-sm" id="cwp-today">Heute</button>'+
-          '<button class="btn btn-ghost btn-sm" id="cwp-next">Nächste Woche →</button>'+
-        '</div></div>'+
         '<div id="challenge-week-points-grid" class="challenge-week-grid"></div>'+
       '</div>';
     layout.insertBefore(block, layout.firstChild);
-    document.getElementById('cwp-prev').onclick  = () => { weekOffset = Math.max(-4, weekOffset-1); renderWeekBar(); };
-    document.getElementById('cwp-today').onclick = () => { weekOffset = 0; renderWeekBar(); };
-    document.getElementById('cwp-next').onclick  = () => { weekOffset = Math.min(4, weekOffset+1); renderWeekBar(); };
+    document.getElementById('cwp-prev').onclick  = () => { weekOffset = weekOffset-1; renderWeekBar(); };
+    document.getElementById('cwp-next').onclick  = () => { weekOffset = weekOffset+1; renderWeekBar(); };
   }
 
   function renderWeekBar(){
@@ -200,7 +198,7 @@
     const today = dk(), weekday = ['Mo','Di','Mi','Do','Fr','Sa','So'];
     const title = document.querySelector('#challenge-week-block .challenge-week-title');
     const sub   = document.querySelector('#challenge-week-points-card .challenge-week-sub');
-    if(title) title.textContent = ('PUNKTE-KALENDER · ' + monthLabel(days)).toUpperCase();
+    if(title) title.textContent = ('WOCHE · ' + monthLabel(days)).toUpperCase();
     if(sub)   sub.textContent   = '';
     grid.innerHTML = days.map((d,i) => {
       const k   = d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());

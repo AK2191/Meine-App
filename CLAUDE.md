@@ -1,9 +1,16 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-08 · Version 0.1.0156 mit Kalender-HeroCard-Farbwelt für Pollen und Challenges lokal und mobil
+> Zuletzt aktualisiert: 2026-06-08 · Version 0.1.0157 mit vereinheitlichtem Wochenkalender für Kalender und Challenges
 
 ---
 
+
+## Version 0.1.0157
+- Die sichtbare App-Version wurde auf `0.1.0157` erhöht.
+- Die Wochenkalender von Kalender und Challenges wurden optisch und typografisch vereinheitlicht.
+- Der Kalender erhielt eine Vorherige-/Nächste-Woche-Navigation.
+- Die Challenges-Wochenansicht nutzt nun dieselbe reduzierte Pfeilnavigation wie der Kalender.
+- Keine Änderung an Logik, Punkten, Kalenderdaten, Firebase, Sync, Login oder Push.
 
 ## Version 0.1.0156
 - Die sichtbare App-Version wurde auf `0.1.0156` erhöht.
@@ -282,7 +289,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0156`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0157`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -1274,6 +1281,7 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 
 | 2026-06-07 | Version auf `0.1.0138` erhöht; mobile HeroCards außer Dashboard auf exakt dieselbe äußere Höhe gesetzt und zentrale HeroCard-Höhenvariable eingeführt. | ChatGPT |
 
+| 2026-06-08 | Version auf `0.1.0157` erhöht; Wochenkalender von Kalender und Challenges optisch und typografisch vereinheitlicht sowie Kalender mit Vorherige-/Nächste-Woche-Navigation ausgestattet. Keine Änderung an Logik, Daten, Firebase, Sync, Login oder Push. | ChatGPT |
 | 2026-06-08 | Version auf `0.1.0156` erhöht; Hintergrundfarbwelt der Kalender-HeroCard auf Pollen und Challenges übertragen, lokal/desktop und mobil. Keine Änderung an Logik, Daten, Firebase, Sync, Login oder Push. | ChatGPT |
 | 2026-06-08 | Version auf `0.1.0155` erhöht; mobile HeroCards farblich an die Kalender-HeroCard angeglichen und mobile Challenges-HeroCard mit sauberen Trennern, Icon-Positionen und nicht überlappenden Texten repariert. Keine Änderung an Logik, Daten, Firebase, Sync, Login oder Push. | ChatGPT |
 | 2026-06-08 | Version auf `0.1.0154` erhöht; Dashboard-Hero ohne „Nächster Termin“-Zeile, Kalender-Hero mit Terminanzahl dieser Woche und Tagesagenda-Abstand für Google-G/Icon korrigiert. Keine Änderung an Kalenderdaten, Firebase, Sync, Login oder Push. | ChatGPT |
@@ -1293,4 +1301,10 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 | 2026-06-07 | Version auf `0.1.0145` erhöht; Prozentwerte im Pollen-24-Stunden-Diagramm weiter nach links gesetzt. | ChatGPT |
 | 2026-06-07 | Version auf `0.1.0144` erhöht; mobiler Titelabstand zu HeroCards für Dashboard, Kalender, Challenges und Pollen vereinheitlicht. | ChatGPT |
 | 2026-06-07 | Version auf `0.1.0143` erhöht; Prozent-Skala links im 24-Stunden-Pollen-Diagramm ergänzt. | ChatGPT |
-| 2026-06-07 | Version auf `0.1.0141` erhöht; Dashboard-, Kalender- und Challenge-HeroCards an den Pollen-HeroCard-Stil angeglichen und große Hero-Emoji-Icons durch ruhige Statusmarker ersetzt. | ChatGPT |
+| 2026-06-07 | Version auf `0.1.0141` erhöht; Dashboard-, Kalender- und Challenge-HeroCards an den Pollen-HeroCard-Stil angeglichen und große Hero-Emoji-Icons durch ruhige Statusmarker ersetzt. | ChatGPT |## Version 0.1.0159
+- Die sichtbare App-Version wurde auf `0.1.0159` erhöht.
+- Die Innenkacheln im Pollen-Allergieprofil wurden farblich an die Kalender-Kacheln angeglichen.
+- Dies gilt lokal/desktop und mobil.
+- Keine Änderung an Logik, Pollenwerten, Kalenderdaten, Firebase, Sync, Login oder Push.
+
+

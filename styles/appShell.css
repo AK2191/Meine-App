@@ -6706,3 +6706,385 @@ body.change-theme-light.neo-pollen-shell #pollen-view .pollen-neo-hero{
   border-color:var(--change-shared-calendar-hero-border-light) !important;
   box-shadow:var(--change-shared-calendar-hero-shadow-light) !important;
 }
+
+
+/* v0.1.0157 · Wochenkalender von Kalender und Challenges vereinheitlicht
+   UI-only: Kalender- und Challenges-Wochenkalender teilen sich jetzt dieselbe Kopfzeile,
+   dieselben Navigationspfeile und denselben Kartenstil. Zusätzlich hat der Kalender nun
+   eine Vor/Zurück-Navigation für ganze Wochen wie gewünscht. Keine Änderung an Logik,
+   Daten, Sync, Login oder Push. */
+body.change-view-calendar #calendar-premium-view .change-week-nav-row,
+body.change-view-challenges #challenges-view .change-week-nav-row{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:12px !important;
+  margin-bottom:8px !important;
+}
+body.change-view-calendar #calendar-premium-view .change-week-nav-title,
+body.change-view-challenges #challenges-view .change-week-nav-title{
+  color:rgba(244,247,244,.68) !important;
+  font-size:13px !important;
+  font-weight:950 !important;
+  text-transform:uppercase !important;
+  letter-spacing:.08em !important;
+}
+body.change-view-calendar #calendar-premium-view .change-week-nav-controls,
+body.change-view-challenges #challenges-view .change-week-nav-controls{
+  display:flex !important;
+  align-items:center !important;
+  gap:10px !important;
+  flex:0 0 auto !important;
+}
+body.change-view-calendar #calendar-premium-view .change-week-nav-btn,
+body.change-view-challenges #challenges-view .change-week-nav-btn{
+  width:34px !important;
+  height:34px !important;
+  min-width:34px !important;
+  border:1px solid rgba(255,255,255,.08) !important;
+  border-radius:12px !important;
+  background:rgba(255,255,255,.04) !important;
+  color:rgba(244,247,244,.76) !important;
+  font-size:21px !important;
+  line-height:1 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  box-shadow:none !important;
+  cursor:pointer !important;
+}
+body.change-view-calendar #calendar-premium-view .change-week-nav-btn:hover,
+body.change-view-challenges #challenges-view .change-week-nav-btn:hover{
+  background:rgba(255,255,255,.08) !important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-week,
+body.change-view-challenges #challenges-view #challenge-week-points-card{
+  padding:18px 18px 20px !important;
+  border-radius:22px !important;
+  border:1px solid rgba(255,255,255,.085) !important;
+  background:linear-gradient(180deg,rgba(12,19,24,.82),rgba(7,12,18,.94)) !important;
+  box-shadow:0 22px 60px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.03) !important;
+  overflow:hidden !important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-week-row,
+body.change-view-challenges #challenges-view .challenge-week-grid{
+  display:grid !important;
+  grid-template-columns:repeat(7,minmax(0,1fr)) !important;
+  gap:12px !important;
+  padding:0 !important;
+  overflow:visible !important;
+  border-top:0 !important;
+}
+body.change-view-challenges #challenges-view .challenge-week-day,
+body.change-view-calendar #calendar-premium-view .cal-premium-week-day{
+  min-height:84px !important;
+  text-align:left !important;
+  border:1px solid rgba(255,255,255,.09) !important;
+  border-radius:17px !important;
+  background:rgba(255,255,255,.035) !important;
+  padding:16px !important;
+  color:rgba(244,247,244,.72) !important;
+  box-shadow:none !important;
+  transform:none !important;
+}
+body.change-view-challenges #challenges-view .challenge-week-day{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-start !important;
+  justify-content:flex-start !important;
+}
+body.change-view-challenges #challenges-view .challenge-week-day.is-today,
+body.change-view-calendar #calendar-premium-view .cal-premium-week-day.selected{
+  border-color:rgba(74,222,128,.72) !important;
+  background:linear-gradient(180deg,rgba(74,222,128,.13),rgba(74,222,128,.035)) !important;
+  box-shadow:0 12px 30px rgba(34,197,94,.08) !important;
+}
+body.change-view-challenges #challenges-view .challenge-week-day-name,
+body.change-view-calendar #calendar-premium-view .cal-premium-week-day span{
+  display:block !important;
+  text-transform:uppercase !important;
+  font-size:12px !important;
+  font-weight:900 !important;
+  color:rgba(244,247,244,.50) !important;
+}
+body.change-view-challenges #challenges-view .challenge-week-day-date,
+body.change-view-calendar #calendar-premium-view .cal-premium-week-day strong{
+  display:block !important;
+  margin-top:7px !important;
+  font-size:18px !important;
+  font-weight:950 !important;
+  color:#fff !important;
+  line-height:1.15 !important;
+}
+body.change-view-challenges #challenges-view .challenge-week-day-points{
+  display:block !important;
+  margin-top:8px !important;
+  font-size:12px !important;
+  font-weight:900 !important;
+  color:#4ade80 !important;
+}
+body.change-view-challenges #challenges-view .challenge-week-day.empty .challenge-week-day-points{
+  color:rgba(244,247,244,.30) !important;
+}
+body.change-view-challenges #challenges-view .challenge-week-actions-head,
+body.change-view-challenges #challenges-view .challenge-week-head{
+  display:none !important;
+}
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .change-week-nav-title,
+body.theme-light.change-view-calendar #calendar-premium-view .change-week-nav-title,
+body.change-theme-light.change-view-calendar #calendar-premium-view .change-week-nav-title,
+[data-theme="light"] body.change-view-challenges #challenges-view .change-week-nav-title,
+body.theme-light.change-view-challenges #challenges-view .change-week-nav-title,
+body.change-theme-light.change-view-challenges #challenges-view .change-week-nav-title{
+  color:rgba(20,32,24,.58) !important;
+}
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .change-week-nav-btn,
+body.theme-light.change-view-calendar #calendar-premium-view .change-week-nav-btn,
+body.change-theme-light.change-view-calendar #calendar-premium-view .change-week-nav-btn,
+[data-theme="light"] body.change-view-challenges #challenges-view .change-week-nav-btn,
+body.theme-light.change-view-challenges #challenges-view .change-week-nav-btn,
+body.change-theme-light.change-view-challenges #challenges-view .change-week-nav-btn{
+  border-color:rgba(20,35,24,.10) !important;
+  background:rgba(255,255,255,.76) !important;
+  color:#56635a !important;
+}
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-week,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-week,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-week,
+[data-theme="light"] body.change-view-challenges #challenges-view #challenge-week-points-card,
+body.theme-light.change-view-challenges #challenges-view #challenge-week-points-card,
+body.change-theme-light.change-view-challenges #challenges-view #challenge-week-points-card{
+  background:rgba(255,255,255,.78) !important;
+  border-color:rgba(20,35,24,.10) !important;
+  box-shadow:0 18px 46px rgba(31,53,38,.09) !important;
+}
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-week-day,
+body.theme-light.change-view-challenges #challenges-view .challenge-week-day,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-week-day,
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-week-day,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day{
+  background:rgba(255,255,255,.72) !important;
+  border-color:rgba(20,35,24,.10) !important;
+}
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-week-day-date,
+body.theme-light.change-view-challenges #challenges-view .challenge-week-day-date,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-week-day-date,
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-week-day strong,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day strong,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day strong{
+  color:#142018 !important;
+}
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-week-day-name,
+body.theme-light.change-view-challenges #challenges-view .challenge-week-day-name,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-week-day-name,
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-week-day span,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day span,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day span{
+  color:#6b756e !important;
+}
+@media (max-width:700px){
+  body.change-view-calendar #calendar-premium-view .change-week-nav-row,
+  body.change-view-challenges #challenges-view .change-week-nav-row{
+    margin-bottom:10px !important;
+  }
+  body.change-view-calendar #calendar-premium-view .change-week-nav-title,
+  body.change-view-challenges #challenges-view .change-week-nav-title{
+    font-size:11px !important;
+    letter-spacing:.09em !important;
+  }
+  body.change-view-calendar #calendar-premium-view .change-week-nav-btn,
+  body.change-view-challenges #challenges-view .change-week-nav-btn{
+    width:32px !important;
+    height:32px !important;
+    min-width:32px !important;
+    border-radius:11px !important;
+    font-size:20px !important;
+  }
+  body.change-view-calendar #calendar-premium-view .cal-premium-week,
+  body.change-view-challenges #challenges-view #challenge-week-points-card{
+    padding:14px !important;
+    border-radius:22px !important;
+  }
+  body.change-view-calendar #calendar-premium-view .cal-premium-week-row,
+  body.change-view-challenges #challenges-view .challenge-week-grid{
+    gap:10px !important;
+  }
+  body.change-view-calendar #calendar-premium-view .cal-premium-week-day,
+  body.change-view-challenges #challenges-view .challenge-week-day{
+    min-width:0 !important;
+    min-height:74px !important;
+    padding:13px 10px !important;
+    border-radius:16px !important;
+  }
+  body.change-view-calendar #calendar-premium-view .cal-premium-week-day span,
+  body.change-view-challenges #challenges-view .challenge-week-day-name{
+    font-size:11px !important;
+  }
+  body.change-view-calendar #calendar-premium-view .cal-premium-week-day strong,
+  body.change-view-challenges #challenges-view .challenge-week-day-date{
+    margin-top:6px !important;
+    font-size:16px !important;
+  }
+  body.change-view-challenges #challenges-view .challenge-week-day-points{
+    margin-top:7px !important;
+    font-size:11px !important;
+  }
+}
+
+
+/* v0.1.0158 · Innenkacheln der Wochenkalender farblich exakt synchronisiert
+   UI-only: Kalender- und Challenges-Wochenkacheln nutzen jetzt dieselben CSS-Variablen für
+   Hintergrund, Rahmen, aktive Kachel und Schriftfarben. Damit sind die Innenkacheln optisch
+   identisch, lokal/desktop und mobil. Keine Änderung an Logik, Daten, Sync, Login oder Push. */
+:root{
+  --change-week-tile-bg-dark:rgba(255,255,255,.035);
+  --change-week-tile-border-dark:rgba(255,255,255,.09);
+  --change-week-tile-text-dark:rgba(244,247,244,.72);
+  --change-week-tile-label-dark:rgba(244,247,244,.50);
+  --change-week-tile-value-dark:#ffffff;
+  --change-week-tile-active-border-dark:rgba(74,222,128,.72);
+  --change-week-tile-active-bg-dark:linear-gradient(180deg,rgba(74,222,128,.13),rgba(74,222,128,.035));
+  --change-week-tile-active-shadow-dark:0 12px 30px rgba(34,197,94,.08);
+
+  --change-week-tile-bg-light:rgba(255,255,255,.72);
+  --change-week-tile-border-light:rgba(20,35,24,.10);
+  --change-week-tile-text-light:#5c6760;
+  --change-week-tile-label-light:#6b756e;
+  --change-week-tile-value-light:#142018;
+  --change-week-tile-active-border-light:rgba(34,197,94,.72);
+  --change-week-tile-active-bg-light:linear-gradient(180deg,rgba(34,197,94,.16),rgba(34,197,94,.05));
+  --change-week-tile-active-shadow-light:0 12px 28px rgba(34,197,94,.10);
+}
+
+body.change-view-calendar #calendar-premium-view .cal-premium-week-day,
+body.change-view-challenges #challenges-view .challenge-week-day{
+  background:var(--change-week-tile-bg-dark) !important;
+  border-color:var(--change-week-tile-border-dark) !important;
+  color:var(--change-week-tile-text-dark) !important;
+  box-shadow:none !important;
+}
+
+body.change-view-calendar #calendar-premium-view .cal-premium-week-day.selected,
+body.change-view-calendar #calendar-premium-view .cal-premium-week-day.today.selected,
+body.change-view-challenges #challenges-view .challenge-week-day.is-today{
+  background:var(--change-week-tile-active-bg-dark) !important;
+  border-color:var(--change-week-tile-active-border-dark) !important;
+  box-shadow:var(--change-week-tile-active-shadow-dark) !important;
+}
+
+body.change-view-calendar #calendar-premium-view .cal-premium-week-day span,
+body.change-view-challenges #challenges-view .challenge-week-day-name{
+  color:var(--change-week-tile-label-dark) !important;
+}
+
+body.change-view-calendar #calendar-premium-view .cal-premium-week-day strong,
+body.change-view-challenges #challenges-view .challenge-week-day-date{
+  color:var(--change-week-tile-value-dark) !important;
+}
+
+body.change-view-calendar #calendar-premium-view .cal-premium-week-day i,
+body.change-view-challenges #challenges-view .challenge-week-day-points{
+  color:#4ade80 !important;
+}
+
+body.change-view-calendar #calendar-premium-view .cal-premium-week-day i.empty,
+body.change-view-challenges #challenges-view .challenge-week-day.empty .challenge-week-day-points{
+  color:rgba(244,247,244,.30) !important;
+  background:rgba(255,255,255,.16) !important;
+}
+
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-week-day,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day,
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-week-day,
+body.theme-light.change-view-challenges #challenges-view .challenge-week-day,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-week-day{
+  background:var(--change-week-tile-bg-light) !important;
+  border-color:var(--change-week-tile-border-light) !important;
+  color:var(--change-week-tile-text-light) !important;
+}
+
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-week-day.selected,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day.selected,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day.selected,
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-week-day.today.selected,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day.today.selected,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day.today.selected,
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-week-day.is-today,
+body.theme-light.change-view-challenges #challenges-view .challenge-week-day.is-today,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-week-day.is-today{
+  background:var(--change-week-tile-active-bg-light) !important;
+  border-color:var(--change-week-tile-active-border-light) !important;
+  box-shadow:var(--change-week-tile-active-shadow-light) !important;
+}
+
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-week-day span,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day span,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day span,
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-week-day-name,
+body.theme-light.change-view-challenges #challenges-view .challenge-week-day-name,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-week-day-name{
+  color:var(--change-week-tile-label-light) !important;
+}
+
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-week-day strong,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day strong,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-week-day strong,
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-week-day-date,
+body.theme-light.change-view-challenges #challenges-view .challenge-week-day-date,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-week-day-date{
+  color:var(--change-week-tile-value-light) !important;
+}
+
+
+/* v0.1.0159 · Pollen-Innenkacheln farblich an Kalender-Kacheln angeglichen
+   UI-only: Die Kacheln im Pollen-Allergieprofil nutzen nun dieselbe Kartenfarbwelt wie die
+   Innenkacheln aus dem Kalender-Wochenbereich. Gilt lokal/desktop und mobil. Keine Änderung
+   an Logik, Pollenwerten, Daten, Sync, Login oder Push. */
+body.change-view-pollen #pollen-view .pollen-neo-profile-card,
+body.neo-pollen-shell #pollen-view .pollen-neo-profile-card{
+  border:1px solid rgba(255,255,255,.09) !important;
+  border-radius:17px !important;
+  background:rgba(255,255,255,.035) !important;
+  box-shadow:none !important;
+}
+body.change-view-pollen #pollen-view .pollen-neo-profile-card:hover,
+body.neo-pollen-shell #pollen-view .pollen-neo-profile-card:hover{
+  background:rgba(255,255,255,.055) !important;
+  transform:none !important;
+}
+body.change-view-pollen #pollen-view .pollen-neo-profile-card.active,
+body.neo-pollen-shell #pollen-view .pollen-neo-profile-card.active,
+body.change-view-pollen #pollen-view .pollen-neo-profile-card.high.active,
+body.neo-pollen-shell #pollen-view .pollen-neo-profile-card.high.active{
+  border-color:rgba(74,222,128,.72) !important;
+  background:linear-gradient(180deg,rgba(74,222,128,.13),rgba(74,222,128,.035)) !important;
+  box-shadow:0 12px 30px rgba(34,197,94,.08) !important;
+}
+[data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-profile-card,
+body.theme-light.change-view-pollen #pollen-view .pollen-neo-profile-card,
+body.change-theme-light.change-view-pollen #pollen-view .pollen-neo-profile-card,
+[data-theme="light"] body.neo-pollen-shell #pollen-view .pollen-neo-profile-card,
+body.theme-light.neo-pollen-shell #pollen-view .pollen-neo-profile-card,
+body.change-theme-light.neo-pollen-shell #pollen-view .pollen-neo-profile-card{
+  background:rgba(255,255,255,.72) !important;
+  border-color:rgba(20,35,24,.10) !important;
+  box-shadow:none !important;
+}
+[data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-profile-card.active,
+body.theme-light.change-view-pollen #pollen-view .pollen-neo-profile-card.active,
+body.change-theme-light.change-view-pollen #pollen-view .pollen-neo-profile-card.active,
+[data-theme="light"] body.neo-pollen-shell #pollen-view .pollen-neo-profile-card.active,
+body.theme-light.neo-pollen-shell #pollen-view .pollen-neo-profile-card.active,
+body.change-theme-light.neo-pollen-shell #pollen-view .pollen-neo-profile-card.active,
+[data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-profile-card.high.active,
+body.theme-light.change-view-pollen #pollen-view .pollen-neo-profile-card.high.active,
+body.change-theme-light.change-view-pollen #pollen-view .pollen-neo-profile-card.high.active,
+[data-theme="light"] body.neo-pollen-shell #pollen-view .pollen-neo-profile-card.high.active,
+body.theme-light.neo-pollen-shell #pollen-view .pollen-neo-profile-card.high.active,
+body.change-theme-light.neo-pollen-shell #pollen-view .pollen-neo-profile-card.high.active{
+  border-color:rgba(74,222,128,.72) !important;
+  background:linear-gradient(180deg,rgba(74,222,128,.16),rgba(74,222,128,.05)) !important;
+  box-shadow:0 12px 24px rgba(34,197,94,.10) !important;
+}
