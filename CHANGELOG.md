@@ -1,3 +1,9 @@
+## 0.1.0149 - Challenge-Hero-Metriken mobil stabilisiert
+- Sichtbare App-Version auf 0.1.0149 erhöht.
+- Untere Kennzahlen der mobilen Gruppenziel-HeroCard überlappen nicht mehr.
+- Icon, Label und Wert sind nun in festen Spalten und Zeilen getrennt.
+- Keine Änderung an Challenge-Logik, Punkten, Kalender, Firebase, Sync, Login oder Push.
+
 ## 0.1.0148 - Pollen-HeroCard Innenabstand mobil korrigiert
 - Sichtbare App-Version auf 0.1.0148 erhöht.
 - Pollen-HeroCard behält mobil die korrigierte Position unter der Überschrift.
