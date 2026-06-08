@@ -1,3 +1,9 @@
+## 0.1.0152 - Challenges Hero mobil am Pollen-Raster nachgeschärft
+- Sichtbare App-Version auf 0.1.0152 erhöht.
+- Mobile Challenges-HeroCard bei den drei Kennzahlen exakt an Pollen angepasst.
+- Vertikale Trenner, Höhe der Kennzahlenzeile, Text- und Icon-Ausrichtung vereinheitlicht.
+- Keine Änderung an Challenge-Logik, Punkten, Kalenderdaten, Firebase, Sync, Login oder Push.
+
 ## 0.1.0151 - Lokale HeroCards im Pollen-Raster vereinheitlicht
 - Sichtbare App-Version auf 0.1.0151 erhöht.
 - Desktop/lokale HeroCards von Dashboard, Kalender und Challenges rechts auf dieselbe untereinander gesetzte Kennzahlen-Spalte wie Pollen ausgerichtet.
