@@ -1,3 +1,10 @@
+## 0.1.0155 - Mobile HeroCards farblich vereinheitlicht und Challenges repariert
+- Sichtbare App-Version auf 0.1.0155 erhöht.
+- Mobile HeroCards von Dashboard, Kalender, Challenges und Pollen auf die smoothere Kalender-Farbwelt vereinheitlicht.
+- Mobile Challenges-HeroCard unten erneut am Kalender/Pollen-Raster ausgerichtet.
+- Trenner, Icon-Positionen und Textblöcke in Challenges so korrigiert, dass nichts mehr überlappt.
+- Keine Änderung an Logik, Daten, Sync, Login oder Push.
+
 ## 0.1.0154 - Dashboard-Nächsttermin entfernt und Kalenderanzeige geschärft
 - Sichtbare App-Version auf 0.1.0154 erhöht.
 - Dashboard-Hero zeigt die Zeile „Nächster Termin …“ nicht mehr an, lokal und mobil.
