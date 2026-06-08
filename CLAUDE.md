@@ -1,9 +1,22 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-08 · Version 0.1.0157 mit vereinheitlichtem Wochenkalender für Kalender und Challenges
+> Zuletzt aktualisiert: 2026-06-08 · Version 0.1.0161 mit fixierter Kalender-Hero-Wochenanzahl und entferntem Punkt
 
 ---
 
+
+## Version 0.1.0161
+- Die sichtbare App-Version wurde auf `0.1.0161` erhöht.
+- Die Terminanzahl im Kalender-Hero bleibt nun immer auf der echten aktuellen Woche.
+- Die Wochen-Navigation unten verändert diese Hero-Anzeige nicht mehr.
+- Der grüne Punkt links neben der Wochenanzahl wurde entfernt.
+- Keine Änderung an Kalenderdaten, Firebase, Sync, Login oder Push.
+
+## Version 0.1.0160
+- Die sichtbare App-Version wurde auf `0.1.0160` erhöht.
+- Die mobilen Wochenkacheln in Kalender und Challenges wurden kleiner und ruhiger gesetzt.
+- Die Ziffern-/Schriftlogik wurde an Pollen angeglichen, damit die 0 nicht mehr mit Punkt/Slashed-Zero erscheint.
+- Keine Änderung an Logik, Daten, Firebase, Sync, Login oder Push.
 
 ## Version 0.1.0157
 - Die sichtbare App-Version wurde auf `0.1.0157` erhöht.
@@ -1301,7 +1314,7 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 | 2026-06-07 | Version auf `0.1.0145` erhöht; Prozentwerte im Pollen-24-Stunden-Diagramm weiter nach links gesetzt. | ChatGPT |
 | 2026-06-07 | Version auf `0.1.0144` erhöht; mobiler Titelabstand zu HeroCards für Dashboard, Kalender, Challenges und Pollen vereinheitlicht. | ChatGPT |
 | 2026-06-07 | Version auf `0.1.0143` erhöht; Prozent-Skala links im 24-Stunden-Pollen-Diagramm ergänzt. | ChatGPT |
-| 2026-06-07 | Version auf `0.1.0141` erhöht; Dashboard-, Kalender- und Challenge-HeroCards an den Pollen-HeroCard-Stil angeglichen und große Hero-Emoji-Icons durch ruhige Statusmarker ersetzt. | ChatGPT |## Version 0.1.0159
+| 2026-06-07 | Version auf `0.1.0141` erhöht; Dashboard-, Kalender- und Challenge-HeroCards an den Pollen-HeroCard-Stil angeglichen und große Hero-Emoji-Icons durch ruhige Statusmarker ersetzt. | ChatGPT |## Version 0.1.0160
 - Die sichtbare App-Version wurde auf `0.1.0159` erhöht.
 - Die Innenkacheln im Pollen-Allergieprofil wurden farblich an die Kalender-Kacheln angeglichen.
 - Dies gilt lokal/desktop und mobil.

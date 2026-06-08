@@ -1,3 +1,17 @@
+## 0.1.0161 - Kalender-Hero-Wochenanzahl fixiert und Punkt entfernt
+- Sichtbare App-Version auf 0.1.0161 erhöht.
+- Die Terminanzahl im Kalender-Hero zählt immer die echte aktuelle Woche.
+- Beim Wechsel auf vorherige oder nächste Woche bleibt diese Hero-Anzeige unverändert.
+- Der grüne Punkt links neben der Wochenanzahl wurde entfernt.
+- Keine Änderung an Kalenderdaten, Sync, Firebase, Login oder Push.
+
+## 0.1.0160 - Mobile Wochenkalender-Schriftgrößen korrigiert
+- Sichtbare App-Version auf 0.1.0160 erhöht.
+- Mobile Schriftgrößen der Wochenkacheln in Kalender und Challenges reduziert.
+- Kalender- und Challenges-Wochenkalender nutzen nun dieselbe Schriftlogik wie Pollen.
+- Zifferndarstellung vereinheitlicht, damit die 0 nicht mehr mit Punkt/Slashed-Zero erscheint.
+- Keine Änderung an Logik, Daten, Sync, Login oder Push.
+
 ## 0.1.0159 - Pollen-Innenkacheln farblich an Kalender angeglichen
 - Sichtbare App-Version auf 0.1.0159 erhöht.
 - Die Innenkacheln im Pollen-Allergieprofil nutzen nun dieselbe Kartenfarbwelt wie die Kalender-Kacheln.

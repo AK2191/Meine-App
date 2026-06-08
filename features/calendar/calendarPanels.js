@@ -70,14 +70,18 @@
   function openById(id){ if(window.openEventPanel) window.openEventPanel(id); }
   function eventsFor(key){ return M.eventsForDate(key) || []; }
   function weekEventCount(){
+    // Der Hero bleibt immer auf der echten aktuellen Woche. Die Wochen-Navigation unten
+    // darf diese Zahl nicht verändern.
     var seen = {};
-    selectedWeek().forEach(function(key){
+    var start = weekStart(M.todayKey());
+    for(var i=0;i<7;i++){
+      var key = addDays(start, i);
       eventsFor(key).forEach(function(event){
         var r = rangeOf(event) || {};
         var id = String((event && (event.id || event.googleEventId || event.uid)) || (titleOf(event)+'|'+(r.start||key)+'|'+(r.end||key)+'|'+(timeOf(event)||'')));
         seen[id] = true;
       });
-    });
+    }
     return Object.keys(seen).length;
   }
   function allEvents(){ return M.allEvents ? M.allEvents() : []; }
@@ -247,7 +251,7 @@
       + '<div class="cal-premium-hero-main">'
       + '<div class="cal-premium-eyebrow">Heute</div>'
       + '<h2>'+esc(weekdayName(key))+', '+compactDate(key)+'</h2>'
-      + '<div class="cal-premium-hero-line"><span class="cal-premium-dot"></span><strong>'+weekCount+'</strong> '+(weekCount===1?'Termin':'Termine')+' diese Woche</div>'
+      + '<div class="cal-premium-hero-line cal-premium-week-count"><strong>'+weekCount+'</strong> '+(weekCount===1?'Termin':'Termine')+' diese Woche</div>'
       + '<div class="cal-premium-hero-line muted">Nächster Termin: <strong>'+esc(compactNextValue(next, nextTime, nextTitle))+'</strong></div>'
       + '</div>'
       + heroSideHtml(next, nextTime, nextTitle)

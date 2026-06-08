@@ -7088,3 +7088,89 @@ body.change-theme-light.neo-pollen-shell #pollen-view .pollen-neo-profile-card.h
   background:linear-gradient(180deg,rgba(74,222,128,.16),rgba(74,222,128,.05)) !important;
   box-shadow:0 12px 24px rgba(34,197,94,.10) !important;
 }
+
+
+/* v0.1.0160 · Mobile Wochenkalender-Schriftgrößen und Ziffern vereinheitlicht
+   UI-only: Kalender- und Challenges-Wochenkacheln nutzen mobil dieselbe ruhige Schriftlogik
+   wie Pollen. Die Datumszahlen wurden kleiner gesetzt und Ziffern ohne Punkt/Slashed-Zero
+   erzwungen. Keine Änderung an Logik, Daten, Sync, Login oder Push. */
+body.change-view-calendar #calendar-premium-view .cal-premium-week-day,
+body.change-view-calendar #calendar-premium-view .cal-premium-week-day span,
+body.change-view-calendar #calendar-premium-view .cal-premium-week-day strong,
+body.change-view-calendar #calendar-premium-view .cal-premium-week-day i,
+body.change-view-challenges #challenges-view .challenge-week-day,
+body.change-view-challenges #challenges-view .challenge-week-day-name,
+body.change-view-challenges #challenges-view .challenge-week-day-date,
+body.change-view-challenges #challenges-view .challenge-week-day-points{
+  font-family:var(--font, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
+  font-variant-numeric:proportional-nums !important;
+  font-feature-settings:"zero" 0, "tnum" 0 !important;
+}
+@media (max-width:700px){
+  body.change-view-calendar #calendar-premium-view .cal-premium-week,
+  body.change-view-challenges #challenges-view #challenge-week-points-card{
+    padding:12px !important;
+  }
+  body.change-view-calendar #calendar-premium-view .cal-premium-week-row,
+  body.change-view-challenges #challenges-view .challenge-week-grid{
+    grid-template-columns:repeat(7,minmax(0,1fr)) !important;
+    gap:7px !important;
+  }
+  body.change-view-calendar #calendar-premium-view .cal-premium-week-day,
+  body.change-view-challenges #challenges-view .challenge-week-day{
+    min-height:68px !important;
+    padding:10px 7px !important;
+    border-radius:15px !important;
+  }
+  body.change-view-calendar #calendar-premium-view .cal-premium-week-day span,
+  body.change-view-challenges #challenges-view .challenge-week-day-name{
+    font-size:9.5px !important;
+    line-height:1.05 !important;
+    font-weight:900 !important;
+    letter-spacing:.02em !important;
+  }
+  body.change-view-calendar #calendar-premium-view .cal-premium-week-day strong,
+  body.change-view-challenges #challenges-view .challenge-week-day-date{
+    margin-top:6px !important;
+    font-size:13.5px !important;
+    line-height:1.08 !important;
+    font-weight:900 !important;
+    letter-spacing:0 !important;
+  }
+  body.change-view-calendar #calendar-premium-view .cal-premium-week-day i{
+    width:7px !important;
+    height:7px !important;
+    margin-top:7px !important;
+  }
+  body.change-view-challenges #challenges-view .challenge-week-day-points{
+    margin-top:7px !important;
+    font-size:10.5px !important;
+    line-height:1.05 !important;
+    font-weight:900 !important;
+    letter-spacing:0 !important;
+  }
+}
+@media (max-width:390px){
+  body.change-view-calendar #calendar-premium-view .cal-premium-week-row,
+  body.change-view-challenges #challenges-view .challenge-week-grid{gap:5px !important;}
+  body.change-view-calendar #calendar-premium-view .cal-premium-week-day,
+  body.change-view-challenges #challenges-view .challenge-week-day{padding:9px 5px !important;min-height:64px !important;}
+  body.change-view-calendar #calendar-premium-view .cal-premium-week-day strong,
+  body.change-view-challenges #challenges-view .challenge-week-day-date{font-size:12.5px !important;}
+  body.change-view-calendar #calendar-premium-view .cal-premium-week-day span,
+  body.change-view-challenges #challenges-view .challenge-week-day-name{font-size:9px !important;}
+}
+
+
+/* v0.1.0161 · Kalender-Hero-Wochenzahl fixiert und grünen Punkt entfernt
+   UI-only: Die Terminanzahl im Kalender-Hero zählt immer die echte aktuelle Woche und
+   bleibt unverändert, wenn unten zur vorherigen/nächsten Woche navigiert wird. Der grüne
+   Punkt links neben der Wochenanzahl wurde entfernt. Keine Änderung an Kalenderdaten,
+   Sync, Firebase, Login oder Push. */
+body.change-view-calendar #calendar-premium-view .cal-premium-hero-line .cal-premium-dot,
+body.change-view-calendar #calendar-premium-view .cal-premium-week-count .cal-premium-dot{
+  display:none !important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-week-count{
+  gap:5px !important;
+}
