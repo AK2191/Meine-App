@@ -1,3 +1,9 @@
+## 0.1.0151 - Lokale HeroCards im Pollen-Raster vereinheitlicht
+- Sichtbare App-Version auf 0.1.0151 erhöht.
+- Desktop/lokale HeroCards von Dashboard, Kalender und Challenges rechts auf dieselbe untereinander gesetzte Kennzahlen-Spalte wie Pollen ausgerichtet.
+- Dashboard-HeroCard kompakter gesetzt, damit die vier Anzeigen ruhig untereinander stehen.
+- Keine Änderung an Dashboard-, Kalender-, Challenge- oder Pollenlogik, Firebase, Sync, Login oder Push.
+
 ## 0.1.0150 - Challenge-Hero-Trennlinien mobil ausgerichtet
 - Sichtbare App-Version auf 0.1.0150 erhöht.
 - Untere Kennzahlen der mobilen Challenge-Gruppenziel-HeroCard wieder exakt am Pollen-Raster ausgerichtet.
