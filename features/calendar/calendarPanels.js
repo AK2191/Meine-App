@@ -63,6 +63,17 @@
   }
   function openById(id){ if(window.openEventPanel) window.openEventPanel(id); }
   function eventsFor(key){ return M.eventsForDate(key) || []; }
+  function weekEventCount(){
+    var seen = {};
+    selectedWeek().forEach(function(key){
+      eventsFor(key).forEach(function(event){
+        var r = rangeOf(event) || {};
+        var id = String((event && (event.id || event.googleEventId || event.uid)) || (titleOf(event)+'|'+(r.start||key)+'|'+(r.end||key)+'|'+(timeOf(event)||'')));
+        seen[id] = true;
+      });
+    });
+    return Object.keys(seen).length;
+  }
   function allEvents(){ return M.allEvents ? M.allEvents() : []; }
   function nextEvent(){
     var now = new Date();
@@ -221,6 +232,7 @@
     // Auswahl in Woche/Mini-Monat steuert nur Tagesagenda und Monatskarte.
     var key = M.todayKey();
     var list = eventsFor(key);
+    var weekCount = weekEventCount();
     var next = nextEvent();
     var nextTime = next ? (timeOf(next) || 'Ganztägig') : '—';
     var nextTitle = next ? titleOf(next) : 'Kein Termin';
@@ -229,7 +241,7 @@
       + '<div class="cal-premium-hero-main">'
       + '<div class="cal-premium-eyebrow">Heute</div>'
       + '<h2>'+esc(weekdayName(key))+', '+compactDate(key)+'</h2>'
-      + '<div class="cal-premium-hero-line"><span class="cal-premium-dot"></span><strong>'+list.length+'</strong> '+(list.length===1?'Termin':'Termine')+'</div>'
+      + '<div class="cal-premium-hero-line"><span class="cal-premium-dot"></span><strong>'+weekCount+'</strong> '+(weekCount===1?'Termin':'Termine')+' diese Woche</div>'
       + '<div class="cal-premium-hero-line muted">Nächster Termin: <strong>'+esc(compactNextValue(next, nextTime, nextTitle))+'</strong></div>'
       + '</div>'
       + heroSideHtml(next, nextTime, nextTitle)

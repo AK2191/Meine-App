@@ -6428,3 +6428,37 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
     border-color:var(--change-local-hero-divider) !important;
   }
 }
+
+
+/* v0.1.0154 · Dashboard-Nächsttermin entfernt, Kalender-Wochenanzahl und Agenda-G-Abstand
+   UI-only: Dashboard-Hero zeigt keine Zeile „Nächster Termin …“ mehr. Kalender-Hero zählt Termine
+   dieser Woche statt nur heute. In der Tagesagenda bekommt die Zeitspalte mehr Platz, damit das Google-G
+   nicht mehr mit „Ganztägig“ überlappt. Keine Änderung an Kalenderdaten, Sync, Firebase, Login oder Push. */
+body.change-view-dashboard #dashboard-view .dashp-next{
+  display:none !important;
+}
+
+body.change-view-calendar #calendar-premium-view .cal-premium-agenda-row{
+  grid-template-columns:118px minmax(0,1fr) !important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-agenda-time{
+  min-width:0 !important;
+  white-space:nowrap !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-agenda-main{
+  min-width:0 !important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-event-icon.google{
+  margin-left:2px !important;
+}
+@media (max-width:700px){
+  body.change-view-calendar #calendar-premium-view .cal-premium-agenda-row{
+    grid-template-columns:88px minmax(0,1fr) !important;
+  }
+  body.change-view-calendar #calendar-premium-view .cal-premium-agenda-time{
+    font-size:15px !important;
+    padding-right:12px !important;
+  }
+}

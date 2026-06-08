@@ -1,9 +1,16 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-08 · Version 0.1.0153 und lokale HeroCards strikt am Pollen-Layout ausgerichtet
+> Zuletzt aktualisiert: 2026-06-08 · Version 0.1.0154 mit Dashboard-Nächsttermin entfernt und Kalenderanzeige geschärft
 
 ---
 
+
+## Version 0.1.0154
+- Die sichtbare App-Version wurde auf `0.1.0154` erhöht.
+- Im Dashboard-Hero wurde die Zeile „Nächster Termin …“ für lokale und mobile Ansicht entfernt.
+- Im Kalender-Hero wird nun die Anzahl der Termine dieser Woche angezeigt statt der reinen heutigen Anzahl.
+- In der Tagesagenda wurde der Abstand der Zeitspalte angepasst, damit das Google-G/Icon nicht mehr mit „Ganztägig“ überlappt.
+- Keine Änderung an Kalenderdaten, Sync, Firebase, Login oder Push.
 
 ## Version 0.1.0153
 - Die sichtbare App-Version wurde auf `0.1.0153` erhöht.
@@ -262,7 +269,7 @@ Tab-Reihenfolge im Settings-Panel:
 Regeln:
 - Keine Nummern in den Tab-Labels; Icons bleiben Teil des Labels.
 - Die Tab-Leiste ist horizontal scrollbar und hat links/rechts kleine Scroll-Buttons, damit schmale Ansichten ruhig bleiben.
-- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0153`.
+- Die sichtbare App-Version wird bei jeder Code-Anpassung erhöht und diese Änderung wird hier dokumentiert. Aktuelle Version: `0.1.0154`.
 - Challenge-spezifische Optionen gehören ausschließlich in den Tab `Challenges`.
 - `Challenges` enthält Auto-Challenges, Tagesumfang und Schwierigkeit.
 - `Sync` enthält nur Datenbank-Sync und Google Kalender; Push bleibt ausschließlich über die Glocke steuerbar.
@@ -1254,6 +1261,7 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 
 | 2026-06-07 | Version auf `0.1.0138` erhöht; mobile HeroCards außer Dashboard auf exakt dieselbe äußere Höhe gesetzt und zentrale HeroCard-Höhenvariable eingeführt. | ChatGPT |
 
+| 2026-06-08 | Version auf `0.1.0154` erhöht; Dashboard-Hero ohne „Nächster Termin“-Zeile, Kalender-Hero mit Terminanzahl dieser Woche und Tagesagenda-Abstand für Google-G/Icon korrigiert. Keine Änderung an Kalenderdaten, Firebase, Sync, Login oder Push. | ChatGPT |
 | 2026-06-08 | Version auf `0.1.0153` erhöht; lokale HeroCards von Dashboard, Kalender und Challenges strikt am Pollen-Layout ausgerichtet, inklusive Trennlinien, Kennzahlenraster und korrekter Textreihenfolge in Challenges. Keine Änderung an Logik, Daten, Firebase, Sync, Login oder Push. | ChatGPT |
 | 2026-06-08 | Version auf `0.1.0152` erhöht; mobile Challenges-HeroCard anhand der Screenshots exakt an das Pollen-Raster angeglichen, insbesondere Kennzahlenhöhe, Trenner, Icon- und Textausrichtung. Keine Änderung an Challenge-Logik, Punkten, Kalender, Firebase, Sync, Login oder Push. | ChatGPT |
 | 2026-06-08 | Version auf `0.1.0151` erhöht; lokale HeroCards von Dashboard, Kalender und Challenges rechts am Pollen-Raster ausgerichtet, Dashboard mit vier untereinander stehenden Anzeigen kompakter gesetzt. Keine Änderung an Logik, Firebase, Sync, Login oder Push. | ChatGPT |

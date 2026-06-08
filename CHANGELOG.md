@@ -1,3 +1,10 @@
+## 0.1.0154 - Dashboard-Nächsttermin entfernt und Kalenderanzeige geschärft
+- Sichtbare App-Version auf 0.1.0154 erhöht.
+- Dashboard-Hero zeigt die Zeile „Nächster Termin …“ nicht mehr an, lokal und mobil.
+- Kalender-Hero zeigt statt der heutigen Terminanzahl nun die Terminanzahl dieser Woche.
+- Tagesagenda korrigiert: Google-G/Icon rückt nach rechts, damit es nicht mehr mit „Ganztägig“ überlappt.
+- Keine Änderung an Kalenderdaten, Sync, Firebase, Login oder Push.
+
 ## 0.1.0153 - Lokale HeroCards streng am Pollen-Layout ausgerichtet
 - Sichtbare App-Version auf 0.1.0153 erhöht.
 - Lokale HeroCards von Dashboard, Kalender und Challenges am Pollen-Layout vereinheitlicht.

@@ -442,14 +442,12 @@
     var head = $('dash-greeting');
     if(head) head.textContent = 'Dashboard';
     if(sub) sub.textContent = '';
-    var nextText = next ? '<span>Nächster Termin</span><strong>'+esc(timeLabel(next))+' · '+esc(titleOf(next))+'</strong>' : '<span>Heute</span><strong>kein nächster Termin</strong>';
     var v = vacationSummary();
     var f = friseurSummary();
     grid.innerHTML = ''+
       '<div class="dashp-hero">'
         + '<section class="dashp-card dashp-main-hero dashp-main-hero-pollen">'
-          + '<div class="dashp-hero-copy"><div class="dashp-eyebrow">Heute auf einen Blick</div><div class="dashp-hero-title">'+esc(greeting())+'</div>'
-          + '<div class="dashp-next">'+nextText+'</div></div>'
+          + '<div class="dashp-hero-copy"><div class="dashp-eyebrow">Heute auf einen Blick</div><div class="dashp-hero-title">'+esc(greeting())+'</div></div>'
           + overviewRows(today.length, next, w, p, f, v)
         + '</section>'
       + '</div>'
