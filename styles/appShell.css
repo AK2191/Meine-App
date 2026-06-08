@@ -6671,3 +6671,38 @@ body.change-view-calendar #calendar-premium-view .cal-premium-event-icon.google{
     color:#5d6b61 !important;
   }
 }
+
+
+/* v0.1.0156 · Kalender-HeroCard-Farbwelt für Pollen und Challenges auch lokal + mobil vereinheitlicht
+   UI-only: Pollen- und Challenges-HeroCards nutzen nun exakt dieselbe Hintergrundfarbwelt wie Kalender,
+   sowohl lokal/desktop als auch mobil. Keine Änderung an Logik, Daten, Sync, Login oder Push. */
+:root{
+  --change-shared-calendar-hero-bg-dark:radial-gradient(circle at 16% 8%,rgba(86,232,142,.18),transparent 42%),linear-gradient(115deg,rgba(26,72,48,.94),rgba(8,24,24,.98) 68%,rgba(4,12,14,.99));
+  --change-shared-calendar-hero-border-dark:rgba(74,222,128,.18);
+  --change-shared-calendar-hero-shadow-dark:0 18px 46px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.03);
+  --change-shared-calendar-hero-bg-light:radial-gradient(circle at 14% 0%,rgba(36,190,91,.13),transparent 35%),linear-gradient(115deg,rgba(237,250,242,.97),rgba(255,255,252,.99) 58%,rgba(246,251,247,.99));
+  --change-shared-calendar-hero-border-light:rgba(32,160,91,.18);
+  --change-shared-calendar-hero-shadow-light:0 18px 42px rgba(20,45,30,.08), inset 0 1px 0 rgba(255,255,255,.62);
+}
+
+body.change-view-challenges #challenges-view .challenge-layout > #group-goal-card,
+body.change-view-pollen #pollen-view .pollen-neo-hero,
+body.neo-pollen-shell #pollen-view .pollen-neo-hero{
+  background:var(--change-shared-calendar-hero-bg-dark) !important;
+  border-color:var(--change-shared-calendar-hero-border-dark) !important;
+  box-shadow:var(--change-shared-calendar-hero-shadow-dark) !important;
+}
+
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-layout > #group-goal-card,
+body.theme-light.change-view-challenges #challenges-view .challenge-layout > #group-goal-card,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-layout > #group-goal-card,
+[data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-hero,
+body.theme-light.change-view-pollen #pollen-view .pollen-neo-hero,
+body.change-theme-light.change-view-pollen #pollen-view .pollen-neo-hero,
+[data-theme="light"] body.neo-pollen-shell #pollen-view .pollen-neo-hero,
+body.theme-light.neo-pollen-shell #pollen-view .pollen-neo-hero,
+body.change-theme-light.neo-pollen-shell #pollen-view .pollen-neo-hero{
+  background:var(--change-shared-calendar-hero-bg-light) !important;
+  border-color:var(--change-shared-calendar-hero-border-light) !important;
+  box-shadow:var(--change-shared-calendar-hero-shadow-light) !important;
+}

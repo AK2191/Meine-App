@@ -1,3 +1,9 @@
+## 0.1.0156 - Kalender-HeroCard-Farbwelt für Pollen und Challenges übernommen
+- Sichtbare App-Version auf 0.1.0156 erhöht.
+- Hintergrundfarbwelt der Kalender-HeroCard auf Pollen und Challenges übertragen.
+- Gilt lokal/desktop und mobil.
+- Keine Änderung an Logik, Daten, Sync, Login oder Push.
+
 ## 0.1.0155 - Mobile HeroCards farblich vereinheitlicht und Challenges repariert
 - Sichtbare App-Version auf 0.1.0155 erhöht.
 - Mobile HeroCards von Dashboard, Kalender, Challenges und Pollen auf die smoothere Kalender-Farbwelt vereinheitlicht.
