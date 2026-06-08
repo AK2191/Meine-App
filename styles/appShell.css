@@ -5639,3 +5639,183 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
   }
 }
 
+
+/* v0.1.0150 · Challenges mobile HeroCard-Trennlinien exakt nach Pollen-Raster
+   UI-only: Die untere Kennzahlenzeile der Gruppenziel-HeroCard nutzt wieder dieselbe
+   3-Spalten-Geometrie wie Pollen, damit die vertikalen Striche optisch nicht versetzt wirken. */
+@media (max-width:700px){
+  body.change-view-challenges #challenges-view .challenge-goal-hero-inner.challenge-goal-hero-clean{
+    height:100% !important;
+    min-height:0 !important;
+    display:grid !important;
+    grid-template-columns:1fr !important;
+    grid-template-rows:minmax(0,1fr) auto !important;
+    gap:12px !important;
+    align-items:stretch !important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
+    width:100% !important;
+    max-width:100% !important;
+    margin:0 !important;
+    padding:12px 0 0 !important;
+    border-left:0 !important;
+    border-top:1px solid var(--change-mobile-hero-line,rgba(244,247,244,.10)) !important;
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:0 !important;
+    align-self:end !important;
+    align-items:stretch !important;
+    align-content:end !important;
+    overflow:hidden !important;
+    box-sizing:border-box !important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-side-link,
+  body.change-view-challenges #challenges-view button.challenge-goal-side-link{
+    position:relative !important;
+    min-width:0 !important;
+    max-width:100% !important;
+    min-height:58px !important;
+    height:58px !important;
+    margin:0 !important;
+    padding:0 8px !important;
+    border:0 !important;
+    border-right:1px solid var(--change-mobile-hero-line,rgba(244,247,244,.10)) !important;
+    border-radius:0 !important;
+    background:transparent !important;
+    box-shadow:none !important;
+    display:grid !important;
+    grid-template-columns:18px minmax(0,1fr) !important;
+    grid-template-rows:auto auto !important;
+    column-gap:7px !important;
+    row-gap:1px !important;
+    align-content:center !important;
+    align-items:center !important;
+    justify-items:start !important;
+    text-align:left !important;
+    overflow:hidden !important;
+    box-sizing:border-box !important;
+    transform:none !important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-side-link:last-child,
+  body.change-view-challenges #challenges-view button.challenge-goal-side-link:last-child{
+    border-right:0 !important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-link-icon{
+    grid-column:1 !important;
+    grid-row:1 / 3 !important;
+    width:18px !important;
+    height:18px !important;
+    min-width:18px !important;
+    min-height:18px !important;
+    margin:0 !important;
+    border-radius:999px !important;
+    align-self:center !important;
+    justify-self:center !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    font-size:9px !important;
+    line-height:1 !important;
+    transform:none !important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-side-link > span:not(.challenge-goal-link-icon){
+    grid-column:2 !important;
+    grid-row:1 !important;
+    display:block !important;
+    min-width:0 !important;
+    max-width:100% !important;
+    width:100% !important;
+    height:auto !important;
+    margin:0 !important;
+    padding:0 !important;
+    overflow:hidden !important;
+    align-self:end !important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-side-link b,
+  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
+    display:block !important;
+    width:100% !important;
+    min-width:0 !important;
+    max-width:100% !important;
+    margin:0 !important;
+    padding:0 !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    text-align:left !important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-side-link b{
+    font-size:10px !important;
+    line-height:1.05 !important;
+    font-weight:900 !important;
+    color:var(--change-mobile-hero-muted,rgba(244,247,244,.68)) !important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-side-link small{
+    display:none !important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
+    grid-column:2 !important;
+    grid-row:2 !important;
+    align-self:start !important;
+    justify-self:start !important;
+    font-size:11px !important;
+    line-height:1.08 !important;
+    font-weight:950 !important;
+    color:var(--change-mobile-hero-text,#fff) !important;
+  }
+}
+
+@media (max-width:380px){
+  body.change-view-challenges #challenges-view .challenge-goal-side-link,
+  body.change-view-challenges #challenges-view button.challenge-goal-side-link{
+    grid-template-columns:18px minmax(0,1fr) !important;
+    column-gap:6px !important;
+    padding:0 6px !important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-side-link b{
+    font-size:9.5px !important;
+  }
+
+  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
+    font-size:10.5px !important;
+  }
+}
+
+@media (max-width:700px){
+  [data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list,
+  body.theme-light.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list,
+  body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
+    border-top-color:rgba(15,32,23,.12) !important;
+  }
+
+  [data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side-link,
+  [data-theme="light"] body.change-view-challenges #challenges-view button.challenge-goal-side-link,
+  body.theme-light.change-view-challenges #challenges-view .challenge-goal-side-link,
+  body.theme-light.change-view-challenges #challenges-view button.challenge-goal-side-link,
+  body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side-link,
+  body.change-theme-light.change-view-challenges #challenges-view button.challenge-goal-side-link{
+    border-right-color:rgba(15,32,23,.12) !important;
+  }
+
+  [data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side-link b,
+  body.theme-light.change-view-challenges #challenges-view .challenge-goal-side-link b,
+  body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side-link b{
+    color:#5d6b61 !important;
+  }
+
+  [data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side-link strong,
+  body.theme-light.change-view-challenges #challenges-view .challenge-goal-side-link strong,
+  body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side-link strong{
+    color:#142018 !important;
+  }
+}

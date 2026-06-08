@@ -1,3 +1,9 @@
+## 0.1.0150 - Challenge-Hero-Trennlinien mobil ausgerichtet
+- Sichtbare App-Version auf 0.1.0150 erhöht.
+- Untere Kennzahlen der mobilen Challenge-Gruppenziel-HeroCard wieder exakt am Pollen-Raster ausgerichtet.
+- Vertikale Trennlinien, Icongröße und Zeilenhöhe vereinheitlicht, damit die Herocard nicht mehr leicht versetzt wirkt.
+- Keine Änderung an Challenge-Logik, Punkten, Kalender, Firebase, Sync, Login oder Push.
+
 ## 0.1.0149 - Challenge-Hero-Metriken mobil stabilisiert
 - Sichtbare App-Version auf 0.1.0149 erhöht.
 - Untere Kennzahlen der mobilen Gruppenziel-HeroCard überlappen nicht mehr.
