@@ -1,1 +1,49 @@
+name: Change ZIP Update anwenden
 
+on:
+  workflow_dispatch:
+    inputs:
+      zip_path:
+        description: "Pfad zur ZIP im Repository, leer = neueste ZIP in updates/"
+        required: false
+        default: ""
+  push:
+    paths:
+      - "updates/*.zip"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: change-zip-update
+  cancel-in-progress: false
+
+jobs:
+  apply_zip_update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository laden
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Node vorbereiten
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: ZIP prüfen und anwenden
+        run: node scripts/applyZipUpdate.mjs "${{ github.event.inputs.zip_path }}"
+
+      - name: Änderungen committen
+        run: |
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "Keine Änderungen zum Committen."
+            exit 0
+          fi
+          git config user.name "change-zip-update-bot"
+          git config user.email "actions@github.com"
+          VERSION=$(node -e "const fs=require('fs'); const m=fs.readFileSync('features/pollen/pollenView.js','utf8').match(/APP_VERSION\s*=\s*['"]([^'"]+)/); console.log(m?m[1]:'unknown')")
+          git add -A
+          git commit -m "Update Change App auf v${VERSION} [skip ci]"
+          git push
