@@ -506,7 +506,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0164';
+  var APP_VERSION = '0.1.0167';
 
 
 
@@ -516,7 +516,7 @@
     message: 'Noch keine ZIP ausgewählt.',
     files: [],
     checks: [],
-    fromVersion: '0.1.0163',
+    fromVersion: '0.1.0167',
     toVersion: '',
     rootFiles: []
   };
@@ -638,8 +638,8 @@
       + '<div class="change-github-status '+esc(state.status || 'empty')+'">'+esc(state.message || '')+'</div>'
       + '<div class="change-github-checks">'+checks+'</div>'
       + (filePreview ? '<div class="change-github-files"><strong>Dateivorschau</strong><ul>'+filePreview+'</ul></div>' : '')
-      + '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" disabled>Auf GitHub übernehmen</button>'
-      + '<div class="change-feature-note">Der echte Commit bleibt gesperrt, bis ein geschütztes Backend oder eine GitHub Action verbunden ist. Kein GitHub-Token wird im Browser gespeichert.</div>'
+      + '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' ? '' : 'disabled')+'>GitHub Action öffnen</button>'
+      + '<div class="change-feature-note">Der echte Commit läuft über GitHub Actions. Lade die geprüfte ZIP in GitHub unter <strong>updates/</strong> hoch. Kein GitHub-Token wird im Browser gespeichert.</div>'
       + '</div>';
   }
   function githubUpdateCard(){
@@ -647,6 +647,21 @@
     var tone = githubUpdateState.status === 'ok' ? 'ok' : (githubUpdateState.status === 'error' ? 'error' : 'off');
     return settingsFeatureCard('⌁', 'GitHub Update', status, tone, 'ZIP prüfen, Version vergleichen und Commit-Freigabe vorbereiten.', '', githubUpdateBody());
   }
+
+  function commitGithubZip(){
+    var state = githubUpdateState;
+    if(!state.file || state.status !== 'ok'){
+      if(typeof window.toast === 'function') window.toast('Bitte ZIP zuerst erfolgreich prüfen', 'err');
+      return;
+    }
+    state.message = 'GitHub Action vorbereitet: ZIP in den Repository-Ordner updates/ hochladen. Der Workflow startet danach automatisch.';
+    try{
+      window.open('https://github.com/AK2191/Meine-App/upload/main/updates', '_blank', 'noopener');
+    }catch(e){}
+    if(typeof window.toast === 'function') window.toast('GitHub Upload geöffnet', 'ok');
+    refreshSameTab('app');
+  }
+
   async function analyzeGithubZip(){
     var state = githubUpdateState;
     if(!state.file){ state.message = 'Bitte zuerst eine ZIP auswählen.'; state.status = 'error'; refreshSameTab('app'); return; }
@@ -664,7 +679,7 @@
       var seen = {};
       paths.forEach(function(path){ if(seen[path]) duplicates.push(path); seen[path] = true; });
       var allowedRootFiles = {'CHANGELOG.md':1,'CLAUDE.md':1,'app.js':1,'change-pre.js':1,'change-post.js':1,'change.css':1,'firebase-messaging-sw.js':1,'firebase.json':1,'index.html':1,'manifest.json':1};
-      var allowedRootDirs = {'core':1,'features':1,'firebase':1,'icons':1,'styles':1,'functions':1,'public':1,'components':1};
+      var allowedRootDirs = {'core':1,'features':1,'firebase':1,'icons':1,'styles':1,'public':1,'components':1,'.github':1,'scripts':1,'updates':1};
       var badRoot = paths.filter(function(path){
         var first = path.split('/')[0];
         if(path.indexOf('/') < 0) return !allowedRootFiles[first];
@@ -1005,7 +1020,7 @@
     var runHealth = $('run-app-health'); if(runHealth) runHealth.addEventListener('click', function(){ appHealthExpanded = true; refreshSameTab('app'); });
     var githubZipInput = $('github-zip-input'); if(githubZipInput) githubZipInput.addEventListener('change', function(){ githubUpdateState.file = githubZipInput.files && githubZipInput.files[0] ? githubZipInput.files[0] : null; githubUpdateState.status = githubUpdateState.file ? 'selected' : 'empty'; githubUpdateState.message = githubUpdateState.file ? 'ZIP ausgewählt. Prüfung kann gestartet werden.' : 'Noch keine ZIP ausgewählt.'; githubUpdateState.files = []; githubUpdateState.checks = []; githubUpdateState.toVersion = ''; refreshSameTab('app'); });
     var githubZipCheck = $('github-zip-check'); if(githubZipCheck) githubZipCheck.addEventListener('click', function(){ analyzeGithubZip(); });
-    var githubZipCommit = $('github-zip-commit'); if(githubZipCommit) githubZipCommit.addEventListener('click', function(){ if(typeof window.toast === 'function') window.toast('Backend-Freigabe ist noch nicht verbunden', 'err'); });
+    var githubZipCommit = $('github-zip-commit'); if(githubZipCommit) githubZipCommit.addEventListener('click', function(){ commitGithubZip(); });
     var btnGoogleConnect = $('btn-google-connect'); if(btnGoogleConnect) btnGoogleConnect.addEventListener('click', function(){ if(typeof connectToGoogle==='function') connectToGoogle(); });
 
   }
