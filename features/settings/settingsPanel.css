@@ -994,7 +994,7 @@ body.change-theme-light:not(.change-view-settings) #panel-overlay{
 .change-health-pill.is-static.error{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.28);color:#f87171;}
 
 
-/* v0.1.0162 · GitHub Update Kachel in App & Sicherheit */
+/* v0.1.0163 · GitHub Update Kachel in App & Sicherheit */
 .change-github-update{display:grid;gap:12px}
 .change-github-version-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .change-github-version-grid>div{border:1px solid var(--b1);background:var(--s2);border-radius:16px;padding:12px;min-width:0}

@@ -506,7 +506,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0162';
+  var APP_VERSION = '0.1.0164';
 
 
 
@@ -516,7 +516,7 @@
     message: 'Noch keine ZIP ausgewählt.',
     files: [],
     checks: [],
-    fromVersion: '0.1.0162',
+    fromVersion: '0.1.0163',
     toVersion: '',
     rootFiles: []
   };
@@ -535,15 +535,21 @@
   }
   function maxVersion(values){
     var best = '';
+    var currentPrefix = versionParts(APP_VERSION).slice(0, 2).join('.') + '.';
     (values || []).forEach(function(value){
       value = String(value || '').trim();
-      if(/^\d+\.\d+\.\d+$/.test(value) && (!best || compareVersions(value, best) > 0)) best = value;
+      if(!/^\d+\.\d+\.\d+$/.test(value)) return;
+      if(value.indexOf(currentPrefix) !== 0) return;
+      if(!best || compareVersions(value, best) > 0) best = value;
     });
     return best;
   }
   function collectVersions(text){
     var found = [];
-    String(text || '').replace(/\b\d+\.\d+\.\d+\b/g, function(match){ found.push(match); return match; });
+    text = String(text || '');
+    text.replace(/##\s+Version\s+(\d+\.\d+\.\d+)/g, function(_, version){ found.push(version); return _; });
+    text.replace(/APP_VERSION\s*=\s*['"](\d+\.\d+\.\d+)['"]/g, function(_, version){ found.push(version); return _; });
+    text.replace(/sichtbare App-Version wurde auf [`'"]?(\d+\.\d+\.\d+)[`'"]?/g, function(_, version){ found.push(version); return _; });
     return found;
   }
   function decodeUtf8(bytes){
@@ -658,7 +664,7 @@
       var seen = {};
       paths.forEach(function(path){ if(seen[path]) duplicates.push(path); seen[path] = true; });
       var allowedRootFiles = {'CHANGELOG.md':1,'CLAUDE.md':1,'app.js':1,'change-pre.js':1,'change-post.js':1,'change.css':1,'firebase-messaging-sw.js':1,'firebase.json':1,'index.html':1,'manifest.json':1};
-      var allowedRootDirs = {'core':1,'features':1,'firebase':1,'icons':1,'styles':1};
+      var allowedRootDirs = {'core':1,'features':1,'firebase':1,'icons':1,'styles':1,'functions':1,'public':1,'components':1};
       var badRoot = paths.filter(function(path){
         var first = path.split('/')[0];
         if(path.indexOf('/') < 0) return !allowedRootFiles[first];
