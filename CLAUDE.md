@@ -1,8 +1,45 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-12 · Version 0.1.0162 mit GitHub-Update-Kachel
+> Zuletzt aktualisiert: 2026-06-12 · Version 0.1.0167 mit GitHub-Action-Backend für ZIP Updates
 
 ---
+
+## Version 0.1.0167
+- Die sichtbare App-Version wurde auf `0.1.0167` erhöht.
+- Das zuvor geplante Firebase-Functions-Backend für GitHub Updates wurde entfernt.
+- ZIP Updates laufen nun über eine GitHub Action als geschütztes Backend: ZIP in `updates/` hochladen, Workflow prüft serverseitig Version und `CLAUDE.md`, entpackt und committet auf `main`.
+- Ergänzt wurden `.github/workflows/apply-zip-update.yml`, `scripts/applyZipUpdate.mjs` und `updates/README.md`.
+- Im Browser wird kein GitHub-Token gespeichert.
+- Keine Änderung an Login, Kalenderdaten, Datenbank-Sync, Firebase-Sync oder Push.
+
+## Version 0.1.0166
+- Die sichtbare App-Version wurde auf `0.1.0166` erhöht.
+- Die GitHub-Update-Kachel kann nach erfolgreicher ZIP-Prüfung den Commit über eine geschützte Firebase Cloud Function anstoßen.
+- Der GitHub-Token wird ausschließlich als Firebase Secret `CHANGE_GITHUB_TOKEN` im Backend verwendet und nicht im Browser gespeichert.
+- Das Backend prüft ZIP, Zielversion, CLAUDE.md, Root-Struktur und Dateiliste serverseitig erneut, bevor nach `AK2191/Meine-App` auf `main` geschrieben wird.
+- Zusätzlich wurde `functions/package.json` um `jszip` erweitert.
+- Keine Änderung an Kalenderdaten, Datenbank-Sync, Google-Kalender, Push, Login oder Challenge-Punkten.
+
+## Version 0.1.0165
+- Die sichtbare App-Version wurde auf `0.1.0165` erhöht.
+- Dashboard-, Kalender-, Challenges- und Pollen-HeroCards nutzen nun dieselbe Kalender-Hintergrundfarbwelt.
+- Die Vereinheitlichung gilt für Desktop und Mobile sowie Hell- und Dunkelmodus.
+- Umsetzung zentral in `styles/appShell.css`, damit keine doppelten Komponenten oder Zusatzdateien entstehen.
+- Keine Änderung an Kalenderdaten, Firebase, Datenbank-Sync, Google-Kalender, Push, Login oder Challenge-Punkten.
+
+## Version 0.1.0164
+- Die sichtbare App-Version wurde auf `0.1.0164` erhöht.
+- Die GitHub-Update-ZIP-Prüfung erkennt Zielversionen nur noch aus Change-App-Versionseinträgen und nicht mehr aus beliebigen technischen Versionsnummern.
+- Bestehende Projektordner wie `functions/`, `public/` und `components/` werden in der Root-Prüfung korrekt als erlaubte Struktur behandelt.
+- Die CLAUDE.md-Prüfung bleibt bestehen und erwartet weiterhin einen passenden Eintrag zur Zielversion.
+- Keine Änderung an Kalenderdaten, Firebase, Datenbank-Sync, Google-Kalender, Push oder Login.
+
+## Version 0.1.0163
+- Die sichtbare App-Version wurde auf `0.1.0163` erhöht.
+- Die Login-Maske ist wieder als eigenständige, vollflächige Ansicht umgesetzt.
+- Während die Login-Maske sichtbar ist, wird die Haupt-App ausgeblendet und nicht klickbar gehalten.
+- Nach erfolgreichem Login wird die Sperre vollständig entfernt, damit keine Overlays oder Pointer-Blocker bleiben.
+- Keine Änderung an Kalenderdaten, Firebase, Datenbank-Sync, Google-Kalender oder Push.
 
 ## Version 0.1.0162
 - Die sichtbare App-Version wurde auf `0.1.0162` erhöht.

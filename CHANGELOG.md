@@ -1,3 +1,34 @@
+## 0.1.0167 - GitHub Action Backend statt Firebase Functions
+- Sichtbare App-Version auf 0.1.0167 erhöht.
+- Firebase-Functions-Backend für GitHub Update entfernt.
+- GitHub Update verweist nun auf den Upload nach updates/ und die GitHub Action übernimmt die serverseitige Prüfung und den Commit.
+- Workflow .github/workflows/apply-zip-update.yml und Script scripts/applyZipUpdate.mjs ergänzt.
+- Kein GitHub-Token im Browser, keine Änderung an Login, Sync, Kalenderdaten oder Push.
+
+## 0.1.0166 - GitHub Update Backend verbunden
+- Sichtbare App-Version auf 0.1.0166 erhöht.
+- GitHub-Update-Kachel kann den Commit über eine geschützte Firebase Cloud Function starten.
+- Backend prüft ZIP und Version serverseitig erneut.
+- GitHub-Token bleibt als Firebase Secret im Backend.
+
+## 0.1.0165 - HeroCard-Hintergründe an Kalender angeglichen
+- Sichtbare App-Version auf 0.1.0165 erhöht.
+- Dashboard-, Kalender-, Challenges- und Pollen-HeroCards nutzen dieselbe Kalender-Farbwelt.
+- Gilt für Desktop und Mobile sowie Hell- und Dunkelmodus.
+- Keine Änderung an Logik, Daten, Sync, Login oder Push.
+
+## 0.1.0164 - GitHub-Update-Prüfung korrigiert
+- Sichtbare App-Version auf 0.1.0164 erhöht.
+- Zielversionen werden nur noch aus Change-App-Versionseinträgen erkannt.
+- Bestehende Projektordner wie functions, public und components werden als erlaubte Struktur behandelt.
+- Keine Änderung an Kalenderdaten, Sync, Firebase, Login oder Push.
+
+## 0.1.0163 - Eigenständige Login-Maske
+- Sichtbare App-Version auf 0.1.0163 erhöht.
+- Login wieder als vollflächige, eigenständige Maske gesetzt.
+- Haupt-App bleibt während Login ausgeblendet und nicht klickbar.
+- Keine Änderung an Sync, Firebase, Kalenderdaten oder Push.
+
 ## 0.1.0162 - GitHub-Update-Kachel
 - Sichtbare App-Version auf 0.1.0162 erhöht.
 - Einstellungen → App & Sicherheit enthält nun eine GitHub-Update-Kachel für ZIP-Prüfung.
