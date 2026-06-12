@@ -506,8 +506,200 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0161';
+  var APP_VERSION = '0.1.0162';
 
+
+
+  var githubUpdateState = {
+    file: null,
+    status: 'empty',
+    message: 'Noch keine ZIP ausgewählt.',
+    files: [],
+    checks: [],
+    fromVersion: '0.1.0162',
+    toVersion: '',
+    rootFiles: []
+  };
+
+  function versionParts(value){
+    return String(value || '').split('.').map(function(part){ return parseInt(part, 10) || 0; });
+  }
+  function compareVersions(a, b){
+    var av = versionParts(a), bv = versionParts(b);
+    for(var i=0;i<Math.max(av.length, bv.length);i++){
+      var left = av[i] || 0, right = bv[i] || 0;
+      if(left > right) return 1;
+      if(left < right) return -1;
+    }
+    return 0;
+  }
+  function maxVersion(values){
+    var best = '';
+    (values || []).forEach(function(value){
+      value = String(value || '').trim();
+      if(/^\d+\.\d+\.\d+$/.test(value) && (!best || compareVersions(value, best) > 0)) best = value;
+    });
+    return best;
+  }
+  function collectVersions(text){
+    var found = [];
+    String(text || '').replace(/\b\d+\.\d+\.\d+\b/g, function(match){ found.push(match); return match; });
+    return found;
+  }
+  function decodeUtf8(bytes){
+    return new TextDecoder('utf-8').decode(bytes);
+  }
+  function readUInt16(view, offset){ return view.getUint16(offset, true); }
+  function readUInt32(view, offset){ return view.getUint32(offset, true); }
+  function normalizeZipPath(path){
+    path = String(path || '').replace(/\\/g, '/').replace(/^\/+/, '');
+    var parts = path.split('/').filter(Boolean);
+    if(parts.length > 1 && /^meine-app/i.test(parts[0])) parts.shift();
+    return parts.join('/');
+  }
+  async function inflateZipData(bytes){
+    if(typeof DecompressionStream !== 'function') throw new Error('ZIP-Entpackung wird von diesem Browser nicht unterstützt.');
+    var stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+    var buffer = await new Response(stream).arrayBuffer();
+    return new Uint8Array(buffer);
+  }
+  function parseZipDirectory(buffer){
+    var view = new DataView(buffer);
+    var bytes = new Uint8Array(buffer);
+    var eocd = -1;
+    for(var i=bytes.length - 22;i>=0 && i>bytes.length - 66000;i--){
+      if(readUInt32(view, i) === 0x06054b50){ eocd = i; break; }
+    }
+    if(eocd < 0) throw new Error('ZIP-Struktur konnte nicht gelesen werden.');
+    var total = readUInt16(view, eocd + 10);
+    var offset = readUInt32(view, eocd + 16);
+    var entries = [];
+    for(var entryIndex=0; entryIndex<total && offset < bytes.length; entryIndex++){
+      if(readUInt32(view, offset) !== 0x02014b50) break;
+      var method = readUInt16(view, offset + 10);
+      var compressedSize = readUInt32(view, offset + 20);
+      var uncompressedSize = readUInt32(view, offset + 24);
+      var nameLen = readUInt16(view, offset + 28);
+      var extraLen = readUInt16(view, offset + 30);
+      var commentLen = readUInt16(view, offset + 32);
+      var localOffset = readUInt32(view, offset + 42);
+      var rawName = bytes.slice(offset + 46, offset + 46 + nameLen);
+      var originalPath = decodeUtf8(rawName);
+      var path = normalizeZipPath(originalPath);
+      if(path){
+        entries.push({
+          originalPath: originalPath,
+          path: path,
+          method: method,
+          compressedSize: compressedSize,
+          uncompressedSize: uncompressedSize,
+          localOffset: localOffset,
+          isDirectory: /\/$/.test(originalPath) || /\/$/.test(path)
+        });
+      }
+      offset += 46 + nameLen + extraLen + commentLen;
+    }
+    return {view:view, bytes:bytes, entries:entries};
+  }
+  async function readZipText(zip, entry){
+    if(!entry || entry.isDirectory) return '';
+    var view = zip.view, bytes = zip.bytes, offset = entry.localOffset;
+    if(readUInt32(view, offset) !== 0x04034b50) throw new Error('ZIP-Datei ist beschädigt: '+entry.path);
+    var nameLen = readUInt16(view, offset + 26);
+    var extraLen = readUInt16(view, offset + 28);
+    var dataStart = offset + 30 + nameLen + extraLen;
+    var compressed = bytes.slice(dataStart, dataStart + entry.compressedSize);
+    var data;
+    if(entry.method === 0) data = compressed;
+    else if(entry.method === 8) data = await inflateZipData(compressed);
+    else throw new Error('ZIP-Kompression wird nicht unterstützt: '+entry.path);
+    return decodeUtf8(data);
+  }
+  function githubCheckLine(ok, label, detail){
+    return '<div class="change-github-check '+(ok?'ok':'warn')+'"><span>'+(ok?'✓':'!')+'</span><div><strong>'+esc(label)+'</strong>'+(detail?'<small>'+esc(detail)+'</small>':'')+'</div></div>';
+  }
+  function githubUpdateBody(){
+    var state = githubUpdateState;
+    var fileLine = state.file ? esc(state.file.name)+' · '+Math.round((state.file.size || 0) / 1024)+' KB' : 'Keine Datei gewählt';
+    var to = state.toVersion || 'Noch nicht erkannt';
+    var checks = (state.checks || []).length ? state.checks.map(function(check){ return githubCheckLine(check.ok, check.label, check.detail); }).join('') : '<div class="change-feature-note">ZIP auswählen und Prüfung starten. Es wird noch nichts auf GitHub geschrieben.</div>';
+    var filePreview = (state.files || []).slice(0, 8).map(function(path){ return '<li>'+esc(path)+'</li>'; }).join('');
+    if((state.files || []).length > 8) filePreview += '<li>+'+((state.files || []).length - 8)+' weitere Dateien</li>';
+    return '<div class="change-github-update">'
+      + '<div class="change-github-version-grid"><div><span>Von Version</span><strong>'+esc(state.fromVersion || APP_VERSION)+'</strong></div><div><span>Auf Version</span><strong>'+esc(to)+'</strong></div></div>'
+      + '<label class="change-github-file"><input type="file" id="github-zip-input" accept=".zip,application/zip,application/x-zip-compressed"><span>ZIP auswählen</span><small>'+fileLine+'</small></label>'
+      + '<button class="btn btn-secondary btn-full" id="github-zip-check" type="button" '+(!state.file?'disabled':'')+'>Änderungen prüfen</button>'
+      + '<div class="change-github-status '+esc(state.status || 'empty')+'">'+esc(state.message || '')+'</div>'
+      + '<div class="change-github-checks">'+checks+'</div>'
+      + (filePreview ? '<div class="change-github-files"><strong>Dateivorschau</strong><ul>'+filePreview+'</ul></div>' : '')
+      + '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" disabled>Auf GitHub übernehmen</button>'
+      + '<div class="change-feature-note">Der echte Commit bleibt gesperrt, bis ein geschütztes Backend oder eine GitHub Action verbunden ist. Kein GitHub-Token wird im Browser gespeichert.</div>'
+      + '</div>';
+  }
+  function githubUpdateCard(){
+    var status = githubUpdateState.status === 'ok' ? 'BEREIT' : (githubUpdateState.status === 'error' ? 'FEHLER' : 'LOKAL');
+    var tone = githubUpdateState.status === 'ok' ? 'ok' : (githubUpdateState.status === 'error' ? 'error' : 'off');
+    return settingsFeatureCard('⌁', 'GitHub Update', status, tone, 'ZIP prüfen, Version vergleichen und Commit-Freigabe vorbereiten.', '', githubUpdateBody());
+  }
+  async function analyzeGithubZip(){
+    var state = githubUpdateState;
+    if(!state.file){ state.message = 'Bitte zuerst eine ZIP auswählen.'; state.status = 'error'; refreshSameTab('app'); return; }
+    state.status = 'checking';
+    state.message = 'ZIP wird geprüft…';
+    refreshSameTab('app');
+    try{
+      var buffer = await state.file.arrayBuffer();
+      var zip = parseZipDirectory(buffer);
+      var entries = zip.entries.filter(function(entry){ return !entry.isDirectory; });
+      var paths = entries.map(function(entry){ return entry.path; }).filter(Boolean).sort();
+      var byPath = {};
+      entries.forEach(function(entry){ byPath[entry.path] = entry; });
+      var duplicates = [];
+      var seen = {};
+      paths.forEach(function(path){ if(seen[path]) duplicates.push(path); seen[path] = true; });
+      var allowedRootFiles = {'CHANGELOG.md':1,'CLAUDE.md':1,'app.js':1,'change-pre.js':1,'change-post.js':1,'change.css':1,'firebase-messaging-sw.js':1,'firebase.json':1,'index.html':1,'manifest.json':1};
+      var allowedRootDirs = {'core':1,'features':1,'firebase':1,'icons':1,'styles':1};
+      var badRoot = paths.filter(function(path){
+        var first = path.split('/')[0];
+        if(path.indexOf('/') < 0) return !allowedRootFiles[first];
+        return !allowedRootDirs[first];
+      });
+      var textTargets = ['CLAUDE.md','CHANGELOG.md','features/settings/settingsPanel.js','features/pollen/pollenView.js'];
+      var texts = {};
+      for(var i=0;i<textTargets.length;i++){
+        var target = textTargets[i];
+        if(byPath[target]) texts[target] = await readZipText(zip, byPath[target]);
+      }
+      var versions = [];
+      Object.keys(texts).forEach(function(key){ versions = versions.concat(collectVersions(texts[key])); });
+      var nextVersion = maxVersion(versions);
+      var claudeText = texts['CLAUDE.md'] || '';
+      var versionHigher = nextVersion && compareVersions(nextVersion, APP_VERSION) > 0;
+      var claudePresent = !!byPath['CLAUDE.md'];
+      var claudeUpdated = !!(nextVersion && claudeText.indexOf('## Version '+nextVersion) >= 0 && claudeText.indexOf(nextVersion) >= 0);
+      var checks = [
+        {ok: claudePresent, label:'CLAUDE.md vorhanden', detail: claudePresent ? 'Dokumentation liegt im ZIP.' : 'CLAUDE.md fehlt.'},
+        {ok: !!nextVersion, label:'Zielversion erkannt', detail: nextVersion || 'Keine Version im ZIP gefunden.'},
+        {ok: !!versionHigher, label:'Version erhöht', detail: nextVersion ? APP_VERSION+' → '+nextVersion : 'Keine Zielversion erkannt.'},
+        {ok: claudeUpdated, label:'CLAUDE.md aktualisiert', detail: claudeUpdated ? 'Eintrag zur Zielversion gefunden.' : 'Kein passender Versionseintrag gefunden.'},
+        {ok: duplicates.length === 0, label:'Keine doppelten Dateien', detail: duplicates.length ? duplicates.slice(0,3).join(', ') : 'Pfade sind eindeutig.'},
+        {ok: badRoot.length === 0, label:'Keine unerwünschten Root-Dateien', detail: badRoot.length ? badRoot.slice(0,3).join(', ') : 'Root-Struktur ist sauber.'},
+        {ok: paths.length > 0, label:'Dateiliste lesbar', detail: paths.length+' Dateien erkannt.'}
+      ];
+      var ok = checks.every(function(check){ return check.ok; });
+      state.files = paths;
+      state.rootFiles = badRoot;
+      state.toVersion = nextVersion || '';
+      state.checks = checks;
+      state.status = ok ? 'ok' : 'error';
+      state.message = ok ? 'ZIP ist bereit für die manuelle Freigabe.' : 'ZIP braucht noch Korrekturen.';
+    }catch(e){
+      state.status = 'error';
+      state.message = e && e.message ? e.message : 'ZIP konnte nicht geprüft werden.';
+      state.checks = [{ok:false,label:'ZIP-Prüfung fehlgeschlagen',detail:state.message}];
+    }
+    refreshSameTab('app');
+  }
 
   function healthSummaryPill(){
     try{
@@ -554,7 +746,7 @@
         : '<div class="change-feature-note">Der Check wird erst angezeigt, wenn du ihn bewusst startest.</div><button class="btn btn-secondary btn-full" id="run-app-health" type="button">App-Gesundheitscheck prüfen</button>';
       health = settingsFeatureCard('🩺', 'App-Gesundheitscheck', appHealthExpanded ? 'GEPRÜFT' : 'BEREIT', appHealthExpanded ? 'ok' : 'off', 'Prüft Login, Cache, Sync und blockierende Overlays.', '', healthBody);
     }
-    return '<div class="change-settings-stack">' + installCard + themeCard + versionCard + health + '</div>';
+    return '<div class="change-settings-stack">' + installCard + themeCard + versionCard + githubUpdateCard() + health + '</div>';
   }
 
   var currentSettingsTab = 'dashboard';
@@ -805,6 +997,9 @@
     var clearSyncLog = $('clear-sync-log'); if(clearSyncLog) clearSyncLog.addEventListener('click', function(){ try{ localStorage.removeItem('change_v1_sync_log'); }catch(e){} refreshSameTab('sync'); });
     document.querySelectorAll('[data-change-theme]').forEach(function(btn){ btn.addEventListener('click', function(){ setAppTheme(btn.getAttribute('data-change-theme') || 'system'); refreshSameTab('app'); }); });
     var runHealth = $('run-app-health'); if(runHealth) runHealth.addEventListener('click', function(){ appHealthExpanded = true; refreshSameTab('app'); });
+    var githubZipInput = $('github-zip-input'); if(githubZipInput) githubZipInput.addEventListener('change', function(){ githubUpdateState.file = githubZipInput.files && githubZipInput.files[0] ? githubZipInput.files[0] : null; githubUpdateState.status = githubUpdateState.file ? 'selected' : 'empty'; githubUpdateState.message = githubUpdateState.file ? 'ZIP ausgewählt. Prüfung kann gestartet werden.' : 'Noch keine ZIP ausgewählt.'; githubUpdateState.files = []; githubUpdateState.checks = []; githubUpdateState.toVersion = ''; refreshSameTab('app'); });
+    var githubZipCheck = $('github-zip-check'); if(githubZipCheck) githubZipCheck.addEventListener('click', function(){ analyzeGithubZip(); });
+    var githubZipCommit = $('github-zip-commit'); if(githubZipCommit) githubZipCommit.addEventListener('click', function(){ if(typeof window.toast === 'function') window.toast('Backend-Freigabe ist noch nicht verbunden', 'err'); });
     var btnGoogleConnect = $('btn-google-connect'); if(btnGoogleConnect) btnGoogleConnect.addEventListener('click', function(){ if(typeof connectToGoogle==='function') connectToGoogle(); });
 
   }
