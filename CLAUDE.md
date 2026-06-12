@@ -1,9 +1,15 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-08 · Version 0.1.0161 mit fixierter Kalender-Hero-Wochenanzahl und entferntem Punkt
+> Zuletzt aktualisiert: 2026-06-12 · Version 0.1.0162 mit GitHub-Update-Kachel
 
 ---
 
+## Version 0.1.0162
+- Die sichtbare App-Version wurde auf `0.1.0162` erhöht.
+- In Einstellungen → App & Sicherheit wurde die Kachel „GitHub Update“ ergänzt.
+- Die Kachel kann ZIP-Dateien lokal prüfen, Von-/Auf-Version anzeigen, CLAUDE.md erkennen, doppelte Dateien und unerwünschte Root-Dateien melden.
+- Der echte GitHub-Commit bleibt bewusst gesperrt, bis ein geschütztes Backend oder eine GitHub Action verbunden ist.
+- Kein GitHub-Token wird im Browser gespeichert. Keine Änderung an Kalenderdaten, Firebase, Sync, Login oder Push.
 
 ## Version 0.1.0161
 - Die sichtbare App-Version wurde auf `0.1.0161` erhöht.

@@ -1,3 +1,9 @@
+## 0.1.0162 - GitHub-Update-Kachel
+- Sichtbare App-Version auf 0.1.0162 erhöht.
+- Einstellungen → App & Sicherheit enthält nun eine GitHub-Update-Kachel für ZIP-Prüfung.
+- Lokale ZIP-Prüfung erkennt Von-/Auf-Version, CLAUDE.md, doppelte Dateien und unerwünschte Root-Dateien.
+- Commit-Funktion bleibt ohne geschütztes Backend gesperrt.
+
 ## 0.1.0161 - Kalender-Hero-Wochenanzahl fixiert und Punkt entfernt
 - Sichtbare App-Version auf 0.1.0161 erhöht.
 - Die Terminanzahl im Kalender-Hero zählt immer die echte aktuelle Woche.
