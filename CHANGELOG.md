@@ -1,3 +1,9 @@
+## Version 0.1.0231
+- Die sichtbare App-Version wurde auf `0.1.0231` erhöht.
+- Allergieprofil-Icons neu: klare, erkennbare Linien im App-Stil (stroke-only mit leichten Fill-Akzenten). Jeder Typ hat ein markantes Merkmal auf 34px: Gräser mit gebogenen Ähren, Birke mit Krone + Kätzchen-Andeutung, Ambrosia mit 3 Blütenköpfen, Beifuß mit symmetrischen Blattpaaren, Erle mit hängenden Kätzchen-Ellipsen, Olive mit Krone + Früchten.
+- Kein Overload mehr auf kleiner Fläche — wenige, präzise Striche passend zum minimalistischen App-Design.
+- Keine Änderung an Pollenberechnung, Sortierung, Hero-Illustration, Kalender, Firebase, Sync oder Push.
+
 ## Version 0.1.0230
 - Die sichtbare App-Version wurde auf `0.1.0230` erhöht.
 - Pollen-Hero: Illustration ist jetzt dynamisch — je nach dominantem Pollentyp erscheint eine andere große SVG-Pflanzengrafik (Gräser-Ähren, Birkenbaum mit Kätzchen, Ambrosia-Blüte, Beifuß, Erle mit hängenden Kätzchen, Olivenbaum mit Früchten).
