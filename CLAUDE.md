@@ -1,10 +1,19 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0176 mit GitHub-Freigabecode- und Textbereinigung
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0177 mit GitHub-CSP- und Prüfungsbereinigung
 
 ---
 
 
+
+
+## Version 0.1.0177
+- Die sichtbare App-Version wurde auf `0.1.0177` erhöht.
+- Die Content-Security-Policy erlaubt nun die Verbindung zum geschützten Cloudflare Worker `https://change-github-update.ak2191.workers.dev`, damit die GitHub-Übertragung nicht mehr durch `connect-src` blockiert wird.
+- Die GitHub-ZIP-Prüfung wurde vereinfacht: `CLAUDE.md vorhanden` und `Zielversion erkannt` werden nicht mehr separat angezeigt.
+- `Dateiliste lesbar` wurde zu `Anzahl der Dateien` umbenannt.
+- `CHANGELOG.md aktualisiert` wurde als eigener Prüfpunkt ergänzt.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push oder Challenge-Logik.
 
 ## Version 0.1.0176
 - Die sichtbare App-Version wurde auf `0.1.0176` erhöht.

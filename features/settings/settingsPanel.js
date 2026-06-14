@@ -506,7 +506,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0176';
+  var APP_VERSION = '0.1.0177';
 
 
 
@@ -516,7 +516,7 @@
     message: '',
     files: [],
     checks: [],
-    fromVersion: '0.1.0176',
+    fromVersion: '0.1.0177',
     toVersion: '',
     rootFiles: []
   };
@@ -753,17 +753,17 @@
       Object.keys(texts).forEach(function(key){ versions = versions.concat(collectVersions(texts[key])); });
       var nextVersion = maxVersion(versions);
       var claudeText = texts['CLAUDE.md'] || '';
+      var changelogText = texts['CHANGELOG.md'] || '';
       var versionHigher = nextVersion && compareVersions(nextVersion, APP_VERSION) > 0;
-      var claudePresent = !!byPath['CLAUDE.md'];
       var claudeUpdated = !!(nextVersion && claudeText.indexOf('## Version '+nextVersion) >= 0 && claudeText.indexOf(nextVersion) >= 0);
+      var changelogUpdated = !!(nextVersion && changelogText.indexOf(nextVersion) >= 0);
       var checks = [
-        {ok: claudePresent, label:'CLAUDE.md vorhanden', detail: claudePresent ? 'Dokumentation liegt im ZIP.' : 'CLAUDE.md fehlt.'},
-        {ok: !!nextVersion, label:'Zielversion erkannt', detail: nextVersion || 'Keine Version im ZIP gefunden.'},
         {ok: !!versionHigher, label:'Version erhöht', detail: nextVersion ? APP_VERSION+' → '+nextVersion : 'Keine Zielversion erkannt.'},
         {ok: claudeUpdated, label:'CLAUDE.md aktualisiert', detail: claudeUpdated ? 'Eintrag zur Zielversion gefunden.' : 'Kein passender Versionseintrag gefunden.'},
+        {ok: changelogUpdated, label:'CHANGELOG.md aktualisiert', detail: changelogUpdated ? 'Eintrag zur Zielversion gefunden.' : 'Kein passender Versionseintrag gefunden.'},
         {ok: duplicates.length === 0, label:'Keine doppelten Dateien', detail: duplicates.length ? duplicates.slice(0,3).join(', ') : 'Pfade sind eindeutig.'},
         {ok: badRoot.length === 0, label:'Keine unerwünschten Root-Dateien', detail: badRoot.length ? badRoot.slice(0,3).join(', ') : 'Root-Struktur ist sauber.'},
-        {ok: paths.length > 0, label:'Dateiliste lesbar', detail: paths.length+' Dateien erkannt.'}
+        {ok: paths.length > 0, label:'Anzahl der Dateien', detail: paths.length+' Dateien erkannt.'}
       ];
       var ok = checks.every(function(check){ return check.ok; });
       state.files = paths;

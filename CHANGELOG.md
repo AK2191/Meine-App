@@ -1,3 +1,10 @@
+## 0.1.0177 - GitHub Übertragung und Prüfstruktur
+- Version auf `0.1.0177` erhöht.
+- Cloudflare Worker in der Content-Security-Policy für `connect-src` freigegeben.
+- GitHub-ZIP-Prüfung verschlankt und sinnvoller strukturiert.
+- `CHANGELOG.md aktualisiert` als Prüfpunkt ergänzt.
+- `Dateiliste lesbar` in `Anzahl der Dateien` umbenannt.
+
 ## 0.1.0176 - GitHub Freigabecode und Texte bereinigt
 - Version auf `0.1.0176` erhöht.
 - Globale Tastaturkürzel ignorieren Eingaben in Formularfeldern, damit Zahlen im Freigabe-Code nicht mehr zur Ansichtsnavigation führen.
