@@ -714,8 +714,25 @@ function bootMainApp(){
 function enforceDesktopContentVisibility(activeView){
   try{
     const desktop = window.matchMedia && window.matchMedia('(min-width:701px)').matches;
+    const mobile = !desktop || (document.body && document.body.classList.contains('change-mobile'));
+    if(mobile){
+      const main = document.getElementById('main-app');
+      const content = document.getElementById('content');
+      if(main){
+        ['display','grid-template-columns','grid-template-rows','width','height','overflow','flex-direction'].forEach(function(prop){ main.style.removeProperty(prop); });
+      }
+      if(content){
+        ['display','grid-column','grid-row','width','height','min-height','overflow','overflow-y','overflow-x','position','z-index'].forEach(function(prop){ content.style.removeProperty(prop); });
+      }
+      ['dashboard-view','cal-body','challenges-view','pollen-view','settings-view'].forEach(function(id){
+        const el = document.getElementById(id);
+        if(!el) return;
+        ['width','height','min-height','overflow-y','overflow-x'].forEach(function(prop){ el.style.removeProperty(prop); });
+      });
+      return;
+    }
     const main = document.getElementById('main-app');
-    if(desktop && main){
+    if(main){
       main.style.setProperty('display','grid','important');
       main.style.setProperty('grid-template-columns','108px minmax(0,1fr)','important');
       main.style.setProperty('grid-template-rows','100vh','important');

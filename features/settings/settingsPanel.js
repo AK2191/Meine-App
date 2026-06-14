@@ -1078,13 +1078,20 @@
     }catch(e){}
     try{ if(typeof window.enforceDesktopContentVisibility === 'function') window.enforceDesktopContentVisibility('settings'); }catch(e){}
     try{
+      var isDesktopSettings = window.matchMedia && window.matchMedia('(min-width:701px)').matches && !(document.body && document.body.classList.contains('change-mobile'));
       var content = document.getElementById('content');
       if(content){
         content.style.setProperty('display','block','important');
-        content.style.setProperty('grid-column','2','important');
-        content.style.setProperty('height','100vh','important');
         content.style.setProperty('visibility','visible','important');
         content.style.setProperty('opacity','1','important');
+        if(isDesktopSettings){
+          content.style.setProperty('grid-column','2','important');
+          content.style.setProperty('height','100vh','important');
+        }else{
+          content.style.removeProperty('grid-column');
+          content.style.removeProperty('height');
+          content.style.removeProperty('overflow');
+        }
       }
       view.style.setProperty('display','block','important');
       view.style.setProperty('visibility','visible','important');

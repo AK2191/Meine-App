@@ -1,10 +1,17 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0197 mit vereinheitlichten HeroCard-Flächen
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0198 mit mobilem Einstellungen-Scroll und kompakteren Kacheln
 
 ---
 
 
+
+## Version 0.1.0198
+- Die sichtbare App-Version wurde auf `0.1.0198` erhöht.
+- Ein mobiler Scroll-Bug nach dem Öffnen der Einstellungen wurde behoben: Desktop-Sidebar-/100vh-Inlinewerte werden auf Mobile nicht mehr dauerhaft übernommen.
+- Die Einstellungen erhalten mobil einen eigenen vertikalen Scrollbereich bis zur Bottom-Bar inklusive sichtbarer, dezenter Scrollbar.
+- Die Einstellungs-Kacheln wurden mobil kompakter im Stil der Allergieprofil-Karten aufgebaut: kleine ruhige Karten, weniger Text, klare Übersicht.
+- Desktop-Sidebar, HeroCard-Farbwelt, Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker und GitHub Action bleiben unverändert.
 
 ## Version 0.1.0197
 - Die sichtbare App-Version wurde auf `0.1.0197` erhöht.

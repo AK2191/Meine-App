@@ -1,3 +1,10 @@
+
+## 0.1.0198
+- Mobile Scroll-Sperre nach Einstellungen behoben.
+- Einstellungen mobil mit eigenem Scrollbereich und dezenter vertikaler Scrollbar.
+- Einstellungs-Kacheln mobil kompakter im Stil der Allergieprofil-Karten.
+- Version, CLAUDE.md und CHANGELOG.md aktualisiert.
+
 ## 0.1.0197 - HeroCard-Flächen vereinheitlicht
 - Version auf `0.1.0197` erhöht.
 - Kalender-HeroCard als visuelles Zielbild für große HeroCards übernommen.
