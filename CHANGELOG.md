@@ -1,3 +1,10 @@
+## Version 0.1.0226
+- Die sichtbare App-Version wurde auf `0.1.0226` erhöht.
+- Die GitHub-Update-Anzeige wurde mobil verdichtet: `Update bereit` und der laufende Status erscheinen nicht mehr als zwei getrennte Karten, sondern als ein aktueller Statusblock.
+- Die GitHub-Update-Details zeigen weiterhin Zielversion und Dateianzahl, sparen aber vertikalen Platz in der mobilen Ansicht.
+- Das mobile Scrollverhalten in den Einstellungen wurde erweitert, damit der untere GitHub-Button nicht mehr hinter der Bottom-Navigation hängen bleibt.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder GitHub Action.
+
 ## Version 0.1.0225
 - Die sichtbare App-Version wurde auf `0.1.0225` erhöht.
 - Die Challenges-HeroCard wurde aus der alten `chv222`/`challenge-goal` Override-Kette gelöst und nutzt nun neue `chv225-*` Klassen, damit alte Mobile-Patches nicht mehr in die HeroCard greifen.

@@ -2020,3 +2020,83 @@ body.change-theme-light.change-view-settings .change-settings-profile-stat stron
     height:0!important;
   }
 }
+
+/* v0.1.0226 · GitHub Mobile kompakter + Scrollende freigeben */
+.change-github-upload-panel-v226 .change-github-check-summary,
+.change-github-upload-panel-v226 .change-github-action{
+  margin-top:10px!important;
+}
+.change-github-upload-panel-v226 .change-github-action{
+  display:grid!important;
+  gap:10px!important;
+}
+.change-github-upload-panel-v226 .change-github-action-current{
+  display:grid!important;
+  grid-template-columns:14px minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:10px!important;
+}
+.change-github-upload-panel-v226 .change-github-action-current strong,
+.change-github-upload-panel-v226 .change-github-check-summary strong{
+  font-size:13px!important;
+  line-height:1.2!important;
+}
+.change-github-upload-panel-v226 .change-github-action-current small,
+.change-github-upload-panel-v226 .change-github-check-summary small{
+  font-size:12px!important;
+  line-height:1.25!important;
+  opacity:.72!important;
+}
+.change-github-upload-panel-v226 .change-github-action-links{
+  margin:0!important;
+}
+.change-github-upload-panel-v226 .change-github-action-links a{
+  display:inline-flex!important;
+  min-height:28px!important;
+  align-items:center!important;
+}
+@media(max-width:700px){
+  body.change-view-settings #content{
+    padding-bottom:calc(260px + env(safe-area-inset-bottom,0px))!important;
+    scroll-padding-bottom:calc(260px + env(safe-area-inset-bottom,0px))!important;
+  }
+  body.change-view-settings #settings-view,
+  body.change-view-settings #settings-view .change-settings-premium,
+  body.change-view-settings .change-settings-premium{
+    padding-bottom:calc(280px + env(safe-area-inset-bottom,0px))!important;
+  }
+  body.change-view-settings .change-settings-panel,
+  body.change-view-settings .change-settings-section,
+  body.change-view-settings .settings-card{
+    scroll-margin-bottom:calc(260px + env(safe-area-inset-bottom,0px))!important;
+  }
+  .change-github-upload-panel-v226{
+    gap:12px!important;
+    padding-bottom:18px!important;
+  }
+  .change-github-upload-panel-v226 .change-github-dropzone{
+    min-height:112px!important;
+    padding:18px 14px!important;
+  }
+  .change-github-upload-panel-v226 .change-github-check-summary{
+    display:grid!important;
+    grid-template-columns:12px minmax(0,1fr) auto!important;
+    gap:8px!important;
+    padding:12px 14px!important;
+  }
+  .change-github-upload-panel-v226 .change-github-action{
+    padding:12px 14px!important;
+  }
+  .change-github-upload-panel-v226 .change-github-action-current small,
+  .change-github-upload-panel-v226 .change-github-check-summary small{
+    white-space:normal!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+  }
+  .change-github-upload-panel-v226 #github-zip-commit,
+  .change-github-upload-panel-v226 #github-update-reload{
+    min-height:52px!important;
+    margin-top:8px!important;
+    margin-bottom:calc(28px + env(safe-area-inset-bottom,0px))!important;
+  }
+}

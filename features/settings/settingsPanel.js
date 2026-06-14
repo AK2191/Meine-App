@@ -514,7 +514,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0225';
+  var APP_VERSION = '0.1.0226';
 
 
 
@@ -780,6 +780,8 @@
     var current = githubActionCurrent();
     var cls = current.tone === 'ok' ? 'ok' : (current.tone === 'error' ? 'error' : 'checking');
     var target = latestGithubUpdateVersion();
+    var files = (state.files || []).length;
+    var compactDetail = current.detail + (files ? ' · ' + files + ' Dateien' : '');
     var link = state.actionRunUrl ? '<a href="'+esc(state.actionRunUrl)+'" target="_blank" rel="noopener">Technische Details öffnen</a>' : '';
     var button = state.updateReady && state.liveReady && githubUpdateNeedsReload()
       ? '<button class="btn btn-primary btn-full" id="github-update-reload" type="button">App vollständig neu laden</button>'
@@ -787,7 +789,7 @@
     var loaded = state.updateReady && state.liveReady && !githubUpdateNeedsReload()
       ? '<div class="change-github-loaded-note">Version '+esc(latestGithubUpdateVersion())+' ist bereits geladen.</div>'
       : '';
-    return '<div class="change-github-action '+esc(cls)+'"><div class="change-github-action-current '+esc(current.tone)+'"><span></span><div><strong>'+esc(current.label)+'</strong><small>'+esc(current.detail)+'</small></div></div>'+(link?'<div class="change-github-action-links">'+link+'</div>':'')+button+loaded+'</div>';
+    return '<div class="change-github-action '+esc(cls)+'"><div class="change-github-action-current '+esc(current.tone)+'"><span></span><div><strong>'+esc(current.label)+'</strong><small>'+esc(compactDetail)+'</small></div></div>'+(link?'<div class="change-github-action-links">'+link+'</div>':'')+button+loaded+'</div>';
   }
 
   async function reloadChangeUpdateVersion(){
@@ -946,17 +948,17 @@
   function githubUpdateBody(){
     var state = githubUpdateState;
     var selectedLabel = state.file ? esc(state.file.name)+' · '+Math.round((state.file.size || 0) / 1024)+' KB' : 'ZIP hier ablegen oder auswählen';
-    var checks = githubCheckSummary();
-    var statusLine = state.message && state.status !== 'ok' ? '<div class="change-github-status '+esc(state.status || 'empty')+'">'+esc(state.message || '')+'</div>' : '';
+    var actionPanel = githubActionStatusPanel();
+    var checks = actionPanel ? '' : githubCheckSummary();
+    var statusLine = state.message && state.status !== 'ok' && !actionPanel ? '<div class="change-github-status '+esc(state.status || 'empty')+'">'+esc(state.message || '')+'</div>' : '';
     return '<div class="change-github-update">'
       + '<label class="change-github-secret"><span>Freigabe-Code</span><input type="text" id="github-update-secret" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Freigabe-Code eingeben" value="'+esc(readGithubUpdateSecret())+'"></label>'
-      + '<div class="change-github-upload-panel">'
+      + '<div class="change-github-upload-panel change-github-upload-panel-v226">'
       + '<div class="change-github-upload-title"><span>ZIP Update</span></div>'
       + '<label class="change-github-dropzone" id="github-zip-dropzone"><input type="file" id="github-zip-input" accept=".zip,application/zip,application/x-zip-compressed"><span>'+selectedLabel+'</span><small>ZIP per Drag & Drop hier ablegen oder antippen.</small></label>'
       + statusLine
-      + (checks || '')
+      + (actionPanel || checks || '')
       + githubFileOverview()
-      + githubActionStatusPanel()
       + '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' ? '' : 'disabled')+'>Auf GitHub übertragen</button>'
       + '</div>'
       + '</div>';
