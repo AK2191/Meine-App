@@ -514,7 +514,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0208';
+  var APP_VERSION = '0.1.0209';
 
 
 
@@ -1265,9 +1265,13 @@
       var main = document.getElementById('main-app');
       if(main){ ['display','grid-template-columns','grid-template-rows','width','height','overflow','flex-direction'].forEach(function(prop){ main.style.removeProperty(prop); }); }
       var content = document.getElementById('content');
-      if(content){ ['display','visibility','opacity','grid-column','grid-row','width','height','min-height','overflow','overflow-y','overflow-x','position','z-index'].forEach(function(prop){ content.style.removeProperty(prop); }); }
+      if(content){ ['display','visibility','opacity','grid-column','grid-row','width','height','min-height','overflow','overflow-y','overflow-x','position','z-index','padding'].forEach(function(prop){ content.style.removeProperty(prop); }); }
       var view = document.getElementById('settings-view');
-      if(view){ ['display','visibility','opacity','width','height','min-height','overflow','overflow-y','overflow-x'].forEach(function(prop){ view.style.removeProperty(prop); }); }
+      if(view){ ['display','visibility','opacity','width','height','min-height','overflow','overflow-y','overflow-x','padding-bottom','flex','flex-direction'].forEach(function(prop){ view.style.removeProperty(prop); }); }
+      ['dashboard-view','cal-body','challenges-view','pollen-view','cal-controls','fab'].forEach(function(id){
+        var el = document.getElementById(id);
+        if(el) el.style.removeProperty('display');
+      });
       if(document.body){ document.body.classList.remove('change-view-settings','change-settings-premium-open'); }
     }catch(e){}
   }
@@ -1314,6 +1318,7 @@
       + '<div class="change-settings-page-head"><div class="change-settings-page-title"><span>⚙︎</span><strong>Einstellungen</strong></div></div>'
       + '<section class="change-settings-profile-card">'
       + '<div class="change-settings-profile-left"><div class="change-settings-profile-avatar">'+picture+'<i></i></div><div class="change-settings-profile-copy"><div class="change-settings-profile-name">'+esc(name)+'</div></div></div>'
+      + '<div class="change-settings-profile-center" aria-hidden="true"><span class="change-settings-profile-center-mark">C</span></div>'
       + '<div class="change-settings-profile-right">'+settingsHeroStatusRows(google)+'</div>'
       + '</section>'
       + '<div class="change-settings-workspace">'

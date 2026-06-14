@@ -1,17 +1,11 @@
-## Version 0.1.0208
-- Die sichtbare App-Version wurde auf `0.1.0208` erhöht.
-- Der GitHub-Update-Bereich zeigt ZIP-Prüfung und Live-Fortschritt jetzt kompakt in einer Zeile statt als mehrere Check-/Schritt-Karten.
-- Angezeigt wird nur noch der aktuellste Stand: ZIP-Prüfung, GitHub Action, Commit auf `main` oder Live-Version.
-- Die Einstellungen-HeroCard wurde lokal und mobil näher an die Pollen-HeroCard angeglichen; mobil werden die drei Statuswerte kompakt nebeneinander angezeigt.
-- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder Challenge-Daten.
-
-## Version 0.1.0207
-- Die sichtbare App-Version wurde auf `0.1.0207` erhöht.
-- Die Farb- und Oberflächenlogik der starken Pollen-HeroCard wurde weiter auf Kalender und Einstellungen übertragen.
-- Kalender- und Einstellungen-HeroCards nutzen nun noch näher die ruhige Pollen-Verlauf-, Kontur- und Schattenlogik.
-- Beim Verlassen der Einstellungen wird der Workspace-Shell-Zustand jetzt sauber zurückgesetzt, damit Kalender lokal und mobil nicht mehr in einem verschobenen oder veränderten App-Blick landen.
-- `setMainView('settings')` wird wieder sauber behandelt und öffnet die Einstellungen direkt, statt in einen Fallback-Zustand zu laufen.
-- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder Challenge-Daten.
+## Version 0.1.0209
+- Die sichtbare App-Version wurde auf `0.1.0209` erhöht.
+- Die Einstellungen-HeroCard nutzt jetzt lokal und mobil denselben Grundaufbau wie die Pollen-HeroCard: gleiche Höhe, gleiche Abstände, gleicher rechter Drei-Zeilen-Statusblock und eine eigene mittlere Visual-Zone.
+- Die mobile HeroCard zeigt Google-Status, Gesundheitscheck und Version vollständig in einer kompakten Zeile aus drei Statuskarten.
+- Der Settings-Workspace blendet Scrollbars wieder aus, bleibt aber weiter scrollbar; zusätzlich wurde unten mehr Platz ergänzt, damit mobil bis ganz nach unten gescrollt werden kann.
+- Beim Verlassen der Einstellungen werden versteckte Kalender-/Dashboard-/Pollen-/Challenge-Container sowie `cal-controls` und `fab` sauber zurückgesetzt, damit andere Ansichten nicht mehr schief oder versetzt wirken.
+- Der Desktop-Kalender wurde zusätzlich wieder etwas stärker mittig begrenzt, damit der Inhalt nicht zu weit links wirkt.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push oder GitHub Worker.
 
 ## Version 0.1.0206
 - Die sichtbare App-Version wurde auf `0.1.0206` erhöht.
@@ -52,7 +46,7 @@
 
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0208 mit einzeiligem GitHub-Status und Settings-Hero-Fix
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0209 mit Pollen-HeroCard-Fix und bereinigtem Settings-Scroll
 
 ---
 
