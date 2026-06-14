@@ -1,3 +1,15 @@
+## 0.1.0189 - GitHub Action Commit stabilisiert
+- Version auf `0.1.0189` erhöht.
+- Commit-Schritt der GitHub Action repariert; die Zielversion wird über `.change-update-version` übergeben.
+- Fehler `syntax error near unexpected token '('` im Workflow-Schritt „Änderungen committen“ vermieden.
+- ZIP-Übergaben werden weiterhin verarbeitet und danach aus `updates/` entfernt.
+
+## 0.1.0188 - Desktop Sidebar Routing repariert
+- Version auf `0.1.0188` erhöht.
+- `setMainView()` setzt Desktop-View-Klassen wieder korrekt.
+- Contentbereiche neben der Sidebar werden lokal/Desktop wieder sichtbar.
+- Mobile Bottom-Navigation bleibt unverändert.
+
 ## 0.1.0187 - Desktop-Sidebar Content stabilisiert
 - Version auf `0.1.0187` erhöht.
 - Desktop/lokale Sidebar erzwingt den Contentbereich rechts neben der Navigation wieder sichtbar.

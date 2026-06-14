@@ -712,7 +712,12 @@ function bootMainApp(){
 /* MAIN VIEW CONTROLLER */
 function setMainView(v){
   currentMainView=v;
-  try{ if(document.body){ document.body.classList.remove('change-view-settings','change-settings-premium-open'); } }catch(e){}
+  try{
+    if(document.body){
+      document.body.classList.remove('change-view-dashboard','change-view-calendar','change-view-challenges','change-view-pollen','change-view-settings','change-settings-premium-open');
+      document.body.classList.add('change-view-' + v);
+    }
+  }catch(e){}
   const views=['dashboard','calendar','challenges','pollen','settings'];
   views.forEach(vv=>{
     const el=document.getElementById(vv==='calendar'?'cal-body':vv+'-view');

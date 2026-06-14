@@ -200,5 +200,6 @@ copyDir(srcRoot, repoRoot);
 for(const zip of walk(path.join(repoRoot, 'updates')).filter((file) => file.toLowerCase().endsWith('.zip'))){
   fs.rmSync(zip, {force:true});
 }
+fs.writeFileSync(path.join(repoRoot, '.change-update-version'), result.targetVersion + '\n', 'utf8');
 fs.rmSync(tempDir, {recursive:true, force:true});
 console.log(`ZIP Update vorbereitet: ${result.targetVersion}, ${result.files.length} Dateien.`);

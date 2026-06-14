@@ -1,9 +1,25 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0187 mit Desktop-Sidebar-Content-Stabilisierung
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0189 mit GitHub-Action-Commit-Fix
 
 ---
 
+
+
+## Version 0.1.0189
+- Die sichtbare App-Version wurde auf `0.1.0189` erhöht.
+- Der GitHub-Action-Commit-Schritt wurde stabilisiert: Die Zielversion wird nun aus einer temporären `.change-update-version` gelesen statt per komplexem Bash/Node-Einzeiler im Workflow ermittelt.
+- `scripts/applyZipUpdate.mjs` schreibt die geprüfte Zielversion nach dem Entpacken in `.change-update-version`; der Workflow entfernt diese Datei vor dem Commit wieder.
+- Dadurch wird der Fehler `syntax error near unexpected token '('` im Schritt „Änderungen committen“ vermieden.
+- Die ZIP-Übergabe bleibt weiterhin temporär und wird nach erfolgreicher Verarbeitung aus `updates/` entfernt.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push oder Challenge-Daten.
+
+## Version 0.1.0188
+- Die sichtbare App-Version wurde auf `0.1.0188` erhöht.
+- `setMainView()` setzt nun wieder zuverlässig die globalen View-Klassen `change-view-dashboard`, `change-view-calendar`, `change-view-challenges` und `change-view-pollen`.
+- Dadurch greifen die Desktop-Sidebar-Regeln wieder korrekt und die Inhalte rechts neben der Sidebar bleiben lokal/Desktop sichtbar.
+- Die Einstellungen entfernen die View-Klassen weiterhin sauber beim Öffnen und Zurückwechseln.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, Challenge-Logik oder GitHub-Worker-Backend.
 
 
 ## Version 0.1.0187
