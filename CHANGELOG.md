@@ -1,3 +1,10 @@
+## 0.1.0195 - Mobile Shell sauber getrennt
+- Version auf `0.1.0195` erhöht.
+- Mobile Ansichten erzwingen wieder den normalen Top-Header, scrollbaren Content und die Bottom-Navigation.
+- Desktop-Sidebar-Regeln greifen auf Touch/Mobile nicht mehr durch.
+- Linker Rand und wildes Einstellungen-Layout auf Mobile wurden durch einen Mobile-Shell-Reset entfernt.
+- Keine Änderung an Firebase, Datenbank-Sync, Google Kalender, Push oder GitHub-Action.
+
 ## 0.1.0194 - Mobile Scroll Reset
 - Version auf `0.1.0194` erhöht.
 - Mobile Ansichten erhalten wieder normales Scroll-Verhalten.

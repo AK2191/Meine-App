@@ -5,6 +5,14 @@
 ---
 
 
+## Version 0.1.0195
+- Die sichtbare App-Version wurde auf `0.1.0195` erhöht.
+- Mobile Ansichten erzwingen wieder den normalen Top-Header, scrollbaren Content und die Bottom-Navigation.
+- Desktop-Sidebar-Regeln werden für Touch/Mobile zusätzlich zurückgesetzt, damit links kein Sidebar-Rand mehr entsteht.
+- Die Einstellungen nutzen mobil wieder die volle Breite und bleiben scrollbar.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub-Worker oder Challenge-Daten.
+
+
 
 
 

@@ -8962,3 +8962,318 @@ body.change-view-settings #header .avatar.google-on::after{background:#22c55e!im
     z-index:300!important;
   }
 }
+
+
+/* v0.1.0195 · Mobile Shell Reset nach Desktop-Sidebar
+   Touch/Mobile erzwingt wieder Top-Header + scrollbaren Content + Bottom-Bar.
+   Dadurch greift die Desktop-Sidebar nie auf echte Mobile-Ansichten durch. */
+@media (max-width:700px), (hover:none) and (pointer:coarse){
+  html,
+  body{
+    width:100%!important;
+    min-width:0!important;
+    height:100%!important;
+    min-height:100%!important;
+    max-height:none!important;
+    overflow:hidden!important;
+    position:relative!important;
+  }
+
+  body.change-view-dashboard,
+  body.change-view-calendar,
+  body.change-view-challenges,
+  body.change-view-pollen,
+  body.change-view-settings{
+    width:100%!important;
+    min-width:0!important;
+    height:100%!important;
+    min-height:100%!important;
+    max-height:none!important;
+    overflow:hidden!important;
+    padding:0!important;
+    margin:0!important;
+    background:#04090e!important;
+  }
+
+  body.change-view-dashboard #main-app,
+  body.change-view-calendar #main-app,
+  body.change-view-challenges #main-app,
+  body.change-view-pollen #main-app,
+  body.change-view-settings #main-app{
+    display:flex!important;
+    flex-direction:column!important;
+    grid-template-columns:none!important;
+    grid-template-rows:none!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    height:100dvh!important;
+    min-height:100dvh!important;
+    max-height:100dvh!important;
+    overflow:hidden!important;
+    position:relative!important;
+    background:#04090e!important;
+  }
+
+  body.change-view-dashboard #header,
+  body.change-view-calendar #header,
+  body.change-view-challenges #header,
+  body.change-view-pollen #header,
+  body.change-view-settings #header{
+    display:flex!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    grid-column:auto!important;
+    grid-row:auto!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    height:52px!important;
+    min-height:52px!important;
+    max-height:52px!important;
+    padding:0 14px!important;
+    margin:0!important;
+    position:relative!important;
+    inset:auto!important;
+    overflow:visible!important;
+    flex-shrink:0!important;
+    z-index:120!important;
+    border-right:0!important;
+    border-bottom:0!important;
+    background:rgba(7,12,18,.92)!important;
+    box-shadow:none!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-dashboard .h-logo,
+  body.change-view-calendar .h-logo,
+  body.change-view-challenges .h-logo,
+  body.change-view-pollen .h-logo,
+  body.change-view-settings .h-logo{
+    min-height:0!important;
+    height:auto!important;
+    padding:0!important;
+    margin:0!important;
+    display:flex!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    flex:0 0 auto!important;
+  }
+
+  body.change-view-dashboard .h-logo-icon,
+  body.change-view-calendar .h-logo-icon,
+  body.change-view-challenges .h-logo-icon,
+  body.change-view-pollen .h-logo-icon,
+  body.change-view-settings .h-logo-icon{
+    width:36px!important;
+    height:36px!important;
+    min-width:36px!important;
+    min-height:36px!important;
+    border-radius:10px!important;
+  }
+
+  body.change-view-dashboard .h-logo-icon svg,
+  body.change-view-calendar .h-logo-icon svg,
+  body.change-view-challenges .h-logo-icon svg,
+  body.change-view-pollen .h-logo-icon svg,
+  body.change-view-settings .h-logo-icon svg{
+    width:36px!important;
+    height:36px!important;
+  }
+
+  body.change-view-dashboard .h-logo-name,
+  body.change-view-calendar .h-logo-name,
+  body.change-view-challenges .h-logo-name,
+  body.change-view-pollen .h-logo-name,
+  body.change-view-settings .h-logo-name,
+  body.change-view-dashboard .h-sep,
+  body.change-view-calendar .h-sep,
+  body.change-view-challenges .h-sep,
+  body.change-view-pollen .h-sep,
+  body.change-view-settings .h-sep,
+  body.change-view-dashboard .h-tabs,
+  body.change-view-calendar .h-tabs,
+  body.change-view-challenges .h-tabs,
+  body.change-view-pollen .h-tabs,
+  body.change-view-settings .h-tabs{
+    display:none!important;
+  }
+
+  body.change-view-dashboard .h-right,
+  body.change-view-calendar .h-right,
+  body.change-view-challenges .h-right,
+  body.change-view-pollen .h-right,
+  body.change-view-settings .h-right{
+    margin-left:auto!important;
+    margin-top:0!important;
+    padding:0!important;
+    display:flex!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    gap:4px!important;
+    width:auto!important;
+    height:52px!important;
+    order:0!important;
+    flex:0 0 auto!important;
+  }
+
+  body.change-view-dashboard #settings-btn,
+  body.change-view-calendar #settings-btn,
+  body.change-view-challenges #settings-btn,
+  body.change-view-pollen #settings-btn,
+  body.change-view-settings #settings-btn,
+  body.change-view-dashboard #notif-bell-btn,
+  body.change-view-calendar #notif-bell-btn,
+  body.change-view-challenges #notif-bell-btn,
+  body.change-view-pollen #notif-bell-btn,
+  body.change-view-settings #notif-bell-btn{
+    position:relative!important;
+    inset:auto!important;
+    display:flex!important;
+    width:38px!important;
+    min-width:38px!important;
+    max-width:38px!important;
+    height:38px!important;
+    min-height:38px!important;
+    max-height:38px!important;
+    padding:0!important;
+    margin:0!important;
+    border-radius:12px!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:0!important;
+    order:0!important;
+    border:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    color:var(--t2)!important;
+  }
+
+  body.change-view-settings #settings-btn,
+  body.change-view-dashboard #settings-btn:hover,
+  body.change-view-calendar #settings-btn:hover,
+  body.change-view-challenges #settings-btn:hover,
+  body.change-view-pollen #settings-btn:hover,
+  body.change-view-settings #settings-btn:hover{
+    background:rgba(52,227,123,.14)!important;
+    color:#34e37b!important;
+  }
+
+  body.change-view-dashboard #settings-btn::after,
+  body.change-view-calendar #settings-btn::after,
+  body.change-view-challenges #settings-btn::after,
+  body.change-view-pollen #settings-btn::after,
+  body.change-view-settings #settings-btn::after{
+    display:none!important;
+    content:none!important;
+  }
+
+  body.change-view-dashboard .avatar,
+  body.change-view-calendar .avatar,
+  body.change-view-challenges .avatar,
+  body.change-view-pollen .avatar,
+  body.change-view-settings .avatar{
+    width:38px!important;
+    height:38px!important;
+    min-width:38px!important;
+    min-height:38px!important;
+    margin:0!important;
+    order:0!important;
+    box-shadow:none!important;
+  }
+
+  body.change-view-dashboard #content,
+  body.change-view-calendar #content,
+  body.change-view-challenges #content,
+  body.change-view-pollen #content,
+  body.change-view-settings #content{
+    display:block!important;
+    flex:1 1 auto!important;
+    grid-column:auto!important;
+    grid-row:auto!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:10px 0 calc(76px + env(safe-area-inset-bottom,0px))!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    position:relative!important;
+    box-sizing:border-box!important;
+    -webkit-overflow-scrolling:touch!important;
+    background:#04090e!important;
+  }
+
+  body.change-view-dashboard #dashboard-view,
+  body.change-view-calendar #cal-body,
+  body.change-view-challenges #challenges-view,
+  body.change-view-pollen #pollen-view,
+  body.change-view-settings #settings-view{
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:visible!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-settings .change-settings-premium,
+  body.change-view-settings .settings-premium,
+  body.change-view-pollen .pollen-neo,
+  body.change-view-pollen .premium-shell,
+  body.change-view-dashboard .premium-shell,
+  body.change-view-challenges .premium-shell{
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    height:auto!important;
+    max-height:none!important;
+    overflow:visible!important;
+    margin-left:0!important;
+    margin-right:0!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-dashboard #bottom-nav,
+  body.change-view-calendar #bottom-nav,
+  body.change-view-challenges #bottom-nav,
+  body.change-view-pollen #bottom-nav,
+  body.change-view-settings #bottom-nav{
+    display:block!important;
+    position:fixed!important;
+    left:0!important;
+    right:0!important;
+    bottom:0!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    height:auto!important;
+    margin:0!important;
+    padding-bottom:env(safe-area-inset-bottom,0px)!important;
+    border:0!important;
+    border-top:0!important;
+    box-shadow:none!important;
+    z-index:300!important;
+    background:rgba(13,17,18,.94)!important;
+    backdrop-filter:blur(18px)!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-dashboard .bnav-inner,
+  body.change-view-calendar .bnav-inner,
+  body.change-view-challenges .bnav-inner,
+  body.change-view-pollen .bnav-inner,
+  body.change-view-settings .bnav-inner{
+    height:64px!important;
+    width:100%!important;
+  }
+}
