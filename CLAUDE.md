@@ -1,9 +1,17 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0194 mit mobilem Scroll-Reset
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0197 mit vereinheitlichten HeroCard-Flächen
 
 ---
 
+
+
+## Version 0.1.0197
+- Die sichtbare App-Version wurde auf `0.1.0197` erhöht.
+- Die Kalender-HeroCard wurde als Zielbild für die großen HeroCards übernommen.
+- Dashboard-, Kalender-, Pollen- und Challenges-HeroCards nutzen nun dieselbe ruhige grüne Verlauf-/Kontur- und Schattenlogik.
+- Kleinere Kartenflächen in Kalender, Dashboard, Challenges, Pollen und Einstellungen wurden visuell angeglichen, ohne neue Komponenten oder doppelte Dateien einzuführen.
+- Mobile Abstände, Desktop-Sidebar, Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker und GitHub Action bleiben unverändert.
 
 ## Version 0.1.0196
 - Die sichtbare App-Version wurde auf `0.1.0196` erhöht.

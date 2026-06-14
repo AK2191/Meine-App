@@ -1,3 +1,10 @@
+## 0.1.0197 - HeroCard-Flächen vereinheitlicht
+- Version auf `0.1.0197` erhöht.
+- Kalender-HeroCard als visuelles Zielbild für große HeroCards übernommen.
+- Dashboard, Kalender, Pollen und Challenges verwenden eine einheitlichere grüne Verlauf-/Kontur- und Schattenlogik.
+- Kleinere Kartenflächen in Kalender, Dashboard, Challenges, Pollen und Einstellungen wurden dezenter an die Kalender-Farbwelt angepasst.
+- Keine Änderung an Login, Firebase, Sync, Google Kalender, Push, GitHub Worker oder GitHub Action.
+
 ## 0.1.0196 - Mobile Content-Abstände vereinheitlicht
 - Version auf `0.1.0196` erhöht.
 - Mobile Hauptbereiche verwenden den Dashboard-Abstand als Standard.
