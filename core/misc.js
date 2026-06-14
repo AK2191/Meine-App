@@ -333,12 +333,12 @@ window.renderGroupGoal = function(){
       <div class="challenge-goal-visual" aria-hidden="true"><span>C</span></div>
       <div class="challenge-goal-side challenge-goal-action-list">
         <button type="button" class="challenge-goal-side-link challenge-goal-side-link-clickable challenge-goal-badges-compact" onclick="event.stopPropagation();window.openBadgePanel&&window.openBadgePanel()" title="Abzeichen öffnen">
-          <span class="challenge-goal-link-icon">◇</span>
+          <span class="challenge-goal-link-icon">🏅</span>
           <span><b>Abzeichen</b><small>${badgeSub}</small></span>
           <strong>${badgeLabel}</strong>
         </button>
         <div class="challenge-goal-side-link challenge-goal-side-static"><span class="challenge-goal-link-icon">•</span><span><b>Heute</b><small>${myDoneCount ? myDoneCount+' erledigt' : 'noch nichts erledigt'}</small></span><strong>${myTodayPoints} P</strong></div>
-        <div class="challenge-goal-side-link challenge-goal-side-static"><span class="challenge-goal-link-icon">+</span><span><b>Offen</b><small>${openTodayCount===0 ? 'heute alles erledigt' : 'heute noch offen'}</small></span><strong>${openTodayCount}</strong></div>
+        <div class="challenge-goal-side-link challenge-goal-side-static"><span class="challenge-goal-link-icon">＋</span><span><b>Offen</b><small>${openTodayCount===0 ? 'heute alles erledigt' : 'heute noch offen'}</small></span><strong>${openTodayCount}</strong></div>
       </div>
     </div>
   `;
