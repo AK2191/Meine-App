@@ -514,7 +514,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0227';
+  var APP_VERSION = '0.1.0228';
 
 
 
@@ -1137,6 +1137,39 @@
     return '<div class="change-health-pill is-static off"><span>♡</span><strong>Status offen</strong></div>';
   }
 
+  function settingsHeroArtSvg(){
+    return '<svg class="settings-hero-illustration" viewBox="0 0 220 220" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">'
+      + '<defs>'
+      + '<linearGradient id="set-cog-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4ade80" stop-opacity="0.85"/><stop offset="1" stop-color="#166534" stop-opacity="0.35"/></linearGradient>'
+      + '</defs>'
+      // Großes Zahnrad
+      + '<circle cx="105" cy="108" r="30" fill="none" stroke="url(#set-cog-grad)" stroke-width="5" opacity="0.55"/>'
+      + '<circle cx="105" cy="108" r="14" fill="none" stroke="url(#set-cog-grad)" stroke-width="3.5" opacity="0.5"/>'
+      // Zahnrad-Zähne (8 Stück)
+      + '<rect x="101" y="68" width="8" height="14" rx="3" fill="url(#set-cog-grad)" opacity="0.45"/>'
+      + '<rect x="101" y="134" width="8" height="14" rx="3" fill="url(#set-cog-grad)" opacity="0.45"/>'
+      + '<rect x="65" y="104" width="14" height="8" rx="3" fill="url(#set-cog-grad)" opacity="0.45"/>'
+      + '<rect x="131" y="104" width="14" height="8" rx="3" fill="url(#set-cog-grad)" opacity="0.45"/>'
+      + '<rect x="74" y="77" width="8" height="14" rx="3" transform="rotate(45 78 84)" fill="url(#set-cog-grad)" opacity="0.38"/>'
+      + '<rect x="122" y="77" width="8" height="14" rx="3" transform="rotate(-45 126 84)" fill="url(#set-cog-grad)" opacity="0.38"/>'
+      + '<rect x="74" y="117" width="8" height="14" rx="3" transform="rotate(-45 78 124)" fill="url(#set-cog-grad)" opacity="0.38"/>'
+      + '<rect x="122" y="117" width="8" height="14" rx="3" transform="rotate(45 126 124)" fill="url(#set-cog-grad)" opacity="0.38"/>'
+      // Kleines Zahnrad oben rechts
+      + '<circle cx="158" cy="62" r="17" fill="none" stroke="rgba(74,222,128,0.3)" stroke-width="3.5"/>'
+      + '<circle cx="158" cy="62" r="8" fill="none" stroke="rgba(74,222,128,0.28)" stroke-width="2.5"/>'
+      + '<rect x="155" y="41" width="6" height="10" rx="2" fill="rgba(74,222,128,0.28)"/>'
+      + '<rect x="155" y="73" width="6" height="10" rx="2" fill="rgba(74,222,128,0.28)"/>'
+      + '<rect x="137" y="59" width="10" height="6" rx="2" fill="rgba(74,222,128,0.28)"/>'
+      + '<rect x="169" y="59" width="10" height="6" rx="2" fill="rgba(74,222,128,0.28)"/>'
+      // Verbindungslinie
+      + '<line x1="141" y1="79" x2="130" y2="90" stroke="rgba(74,222,128,0.18)" stroke-width="1.5"/>'
+      // Kleine Punkte
+      + '<circle cx="62" cy="155" r="3" fill="rgba(74,222,128,0.3)"/>'
+      + '<circle cx="72" cy="168" r="2" fill="rgba(74,222,128,0.2)"/>'
+      + '<circle cx="165" cy="148" r="2.5" fill="rgba(74,222,128,0.22)"/>'
+      + '</svg>';
+  }
+
   function settingsHeroStatusRows(google){
     var googleLoggedIn = !!(google && google.loggedIn);
     var healthTone = 'off';
@@ -1376,7 +1409,7 @@
       + '<div class="change-settings-page-head"><div class="change-settings-page-title"><span>⚙︎</span><strong>Einstellungen</strong></div></div>'
       + '<section class="change-settings-profile-card">'
       + '<div class="change-settings-profile-left"><div class="change-settings-profile-avatar">'+picture+'<i></i></div><div class="change-settings-profile-copy"><div class="change-settings-profile-name">'+esc(name)+'</div></div></div>'
-      + '<div class="change-settings-profile-center" aria-hidden="true"><span class="change-settings-profile-center-mark">▦</span></div>'
+      + '<div class="change-settings-profile-center" aria-hidden="true">'+settingsHeroArtSvg()+'</div>'
       + '<div class="change-settings-profile-right">'+settingsHeroStatusRows(google)+'</div>'
       + '</section>'
       + '<div class="change-settings-workspace">'

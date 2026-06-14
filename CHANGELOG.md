@@ -1,3 +1,13 @@
+## Version 0.1.0228
+- Die sichtbare App-Version wurde auf `0.1.0228` erhöht.
+- Alle vier HeroCards erhalten echte SVG-Illustrationen analog zur Pollen-HeroCard.
+- Dashboard: Bar-Chart-SVG mit Trendlinie (`dashHeroArtSvg()` in `features/dashboard/dashboard-logic.js`).
+- Kalender: Uhr-SVG mit Zeigern und Kalenderblatt (`calHeroArtSvg()` in `features/calendar/calendarPanels.js`).
+- Challenges: Pokal-SVG mit Stern und Glanzeffekt (`chv227-illustration` in `core/misc.js`).
+- Einstellungen: Zahnrad-SVG (`settingsHeroArtSvg()` in `features/settings/settingsPanel.js`).
+- Challenge-Stats mobil: Labels nie mehr abgeschnitten; Grid-Areas explizit gesetzt.
+- Keine Änderung an Logik, Punkten, Kalenderdaten, Firebase, Sync, Login oder Push.
+
 ## Version 0.1.0227
 - Die sichtbare App-Version wurde auf `0.1.0227` erhöht.
 - Die großen HeroCards wurden in einem zentralen Hero-Layer auf die Pollen-Referenz vereinheitlicht: Kartenfläche, Radius, Verlauf, Trennlinien, Statuszeilen, Typografie und mobile KPI-Leiste.

@@ -13293,3 +13293,141 @@ html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen.change-h
   html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen.change-hero-dashboard .dashp-insight-row b{font-size:9.5px!important;line-height:1.05!important;}
   html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen.change-hero-dashboard .dashp-insight-row small{font-size:12px!important;line-height:1.1!important;}
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   v0.1.0228 · Einheitliche HeroCard-SVG-Illustrationen
+   Alle HeroCards nutzen jetzt echte SVG-Illustrationen statt Emoji.
+   Dashboard: Bar-Chart · Kalender: Uhr+Kalenderblatt · Challenges: Pokal · Einstellungen: Zahnräder
+   UI-only: keine Änderung an Logik, Sync, Firebase, Login oder Push.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Gemeinsame Basis: SVG-Illustrationen ── */
+.dashp-hero-illustration,
+.cal-hero-illustration,
+.chv227-illustration,
+.settings-hero-illustration {
+  display:block!important;
+  pointer-events:none!important;
+  flex-shrink:0!important;
+  overflow:visible!important;
+}
+
+/* ── Dashboard Hero Illustration ── */
+.dashp-hero-visual {
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  align-self:stretch!important;
+  z-index:1!important;
+  position:relative!important;
+}
+.dashp-hero-illustration {
+  width:150px!important;
+  height:150px!important;
+  opacity:.72!important;
+  filter:drop-shadow(0 12px 18px rgba(0,0,0,.18))!important;
+}
+@media(max-width:700px){
+  .dashp-hero-illustration {
+    width:82px!important;
+    height:82px!important;
+    opacity:.55!important;
+  }
+}
+
+/* ── Kalender Hero Illustration ── */
+.cal-premium-hero-visual {
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  align-self:stretch!important;
+  z-index:1!important;
+  position:relative!important;
+}
+.cal-hero-illustration {
+  width:140px!important;
+  height:140px!important;
+  opacity:.68!important;
+  filter:drop-shadow(0 10px 16px rgba(0,0,0,.16))!important;
+}
+@media(max-width:700px){
+  .cal-hero-illustration {
+    width:82px!important;
+    height:82px!important;
+    opacity:.52!important;
+  }
+}
+
+/* ── Challenge Hero Illustration ── */
+.chv227-illustration {
+  width:150px!important;
+  height:150px!important;
+  opacity:.68!important;
+  align-self:center!important;
+  justify-self:center!important;
+  filter:drop-shadow(0 10px 16px rgba(0,0,0,.16))!important;
+}
+@media(max-width:700px){
+  html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-illustration {
+    grid-area:visual!important;
+    width:80px!important;
+    height:80px!important;
+    opacity:.50!important;
+    align-self:center!important;
+    justify-self:end!important;
+  }
+}
+
+/* ── Einstellungen Hero Illustration ── */
+.change-settings-profile-center {
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  align-self:stretch!important;
+}
+.settings-hero-illustration {
+  width:140px!important;
+  height:140px!important;
+  opacity:.65!important;
+  filter:drop-shadow(0 8px 14px rgba(0,0,0,.14))!important;
+}
+@media(max-width:700px){
+  .settings-hero-illustration {
+    width:82px!important;
+    height:82px!important;
+    opacity:.48!important;
+  }
+}
+
+/* ── Challenge Mobil: Grid-Area für Illustration ── */
+@media(max-width:700px){
+  html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-hero {
+    grid-template-areas:"main visual" "stats stats"!important;
+    grid-template-columns:minmax(0,1fr) 82px!important;
+    grid-template-rows:auto auto!important;
+    gap:0 12px!important;
+    align-items:start!important;
+    min-height:0!important;
+    padding:18px 16px 14px!important;
+  }
+  html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-main {
+    grid-area:main!important;
+  }
+}
+
+/* ── Challenge Stats: Labels nie abschneiden ── */
+@media(max-width:700px){
+  html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat span {
+    font-size:9px!important;
+    white-space:nowrap!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+  }
+  html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat strong {
+    font-size:11px!important;
+    white-space:nowrap!important;
+  }
+  html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat {
+    padding:0 4px!important;
+  }
+}

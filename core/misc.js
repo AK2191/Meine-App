@@ -327,13 +327,37 @@ window.renderGroupGoal = function(){
         <div class="chv227-progress" aria-label="Gruppenziel Fortschritt"><i style="width:${pct}%"></i></div>
         ${done ? '<div class="chv227-done">Ziel erreicht</div>' : ''}
       </div>
-      <div class="chv227-visual" aria-hidden="true"><span>◷</span></div>
+      <svg class="chv227-illustration" viewBox="0 0 220 220" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="chv-cup-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f9a825" stop-opacity="0.9"/><stop offset="1" stop-color="#c67c00" stop-opacity="0.4"/></linearGradient>
+          <linearGradient id="chv-shine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4ade80" stop-opacity="0.0"/><stop offset="0.5" stop-color="#4ade80" stop-opacity="0.18"/><stop offset="1" stop-color="#4ade80" stop-opacity="0.0"/></linearGradient>
+        </defs>
+        <!-- Pokal-Körper -->
+        <path d="M80 55 L140 55 L132 130 Q110 148 88 130 Z" fill="none" stroke="url(#chv-cup-grad)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+        <!-- Pokal-Henkel links -->
+        <path d="M80 70 Q50 70 50 100 Q50 125 80 118" fill="none" stroke="url(#chv-cup-grad)" stroke-width="5" stroke-linecap="round" opacity="0.5"/>
+        <!-- Pokal-Henkel rechts -->
+        <path d="M140 70 Q170 70 170 100 Q170 125 140 118" fill="none" stroke="url(#chv-cup-grad)" stroke-width="5" stroke-linecap="round" opacity="0.5"/>
+        <!-- Pokal-Stiel -->
+        <line x1="110" y1="148" x2="110" y2="168" stroke="url(#chv-cup-grad)" stroke-width="5" stroke-linecap="round" opacity="0.55"/>
+        <!-- Pokal-Sockel -->
+        <line x1="88" y1="168" x2="132" y2="168" stroke="url(#chv-cup-grad)" stroke-width="6" stroke-linecap="round" opacity="0.55"/>
+        <!-- Stern oben -->
+        <path d="M110 30 L113.5 41 L125 41 L115.7 47.8 L119 59 L110 52 L101 59 L104.3 47.8 L95 41 L106.5 41 Z" fill="#f9a825" opacity="0.55"/>
+        <!-- Glanzlicht -->
+        <ellipse cx="110" cy="92" rx="48" ry="30" fill="url(#chv-shine)" opacity="0.4"/>
+        <!-- Kleine Sternchen -->
+        <circle cx="68" cy="44" r="3" fill="#4ade80" opacity="0.4"/>
+        <circle cx="152" cy="38" r="2" fill="#4ade80" opacity="0.3"/>
+        <circle cx="60" cy="145" r="2.5" fill="#f9a825" opacity="0.3"/>
+        <circle cx="162" cy="150" r="2" fill="#f9a825" opacity="0.25"/>
+      </svg>
       <div class="chv227-stats">
         <button type="button" class="chv227-stat chv227-stat-button" onclick="event.stopPropagation();window.openBadgePanel&&window.openBadgePanel()" title="Abzeichen öffnen">
-          <i>🏅</i><span>Abzeichen</span><strong>${badgeLabel}</strong>
+          <i class="chv227-stat-icon">🏅</i><span>Abzeichen</span><strong>${badgeLabel}</strong>
         </button>
-        <div class="chv227-stat"><i>•</i><span>Heute</span><strong>${myTodayPoints} P</strong></div>
-        <div class="chv227-stat"><i>＋</i><span>Offen</span><strong>${openTodayCount}</strong></div>
+        <div class="chv227-stat"><i class="chv227-stat-icon">•</i><span>Heute</span><strong>${myTodayPoints} P</strong></div>
+        <div class="chv227-stat"><i class="chv227-stat-icon">＋</i><span>Offen</span><strong>${openTodayCount}</strong></div>
       </div>
     </div>
   `;

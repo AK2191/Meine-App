@@ -453,6 +453,34 @@
     `;
     document.head.appendChild(st);
   }
+  function dashHeroArtSvg(){
+    return '<svg class="dashp-hero-illustration" viewBox="0 0 220 220" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">'
+      + '<defs>'
+      + '<linearGradient id="dash-grid-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4ade80" stop-opacity="0.8"/><stop offset="1" stop-color="#166534" stop-opacity="0.3"/></linearGradient>'
+      + '<linearGradient id="dash-bar-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4ade80" stop-opacity="0.85"/><stop offset="1" stop-color="#4ade80" stop-opacity="0.25"/></linearGradient>'
+      + '</defs>'
+      // Hintergrund-Raster (leicht angedeutet)
+      + '<line x1="60" y1="50" x2="60" y2="170" stroke="rgba(74,222,128,0.10)" stroke-width="1"/>'
+      + '<line x1="95" y1="50" x2="95" y2="170" stroke="rgba(74,222,128,0.10)" stroke-width="1"/>'
+      + '<line x1="130" y1="50" x2="130" y2="170" stroke="rgba(74,222,128,0.10)" stroke-width="1"/>'
+      + '<line x1="165" y1="50" x2="165" y2="170" stroke="rgba(74,222,128,0.10)" stroke-width="1"/>'
+      + '<line x1="50" y1="85" x2="175" y2="85" stroke="rgba(74,222,128,0.10)" stroke-width="1"/>'
+      + '<line x1="50" y1="120" x2="175" y2="120" stroke="rgba(74,222,128,0.10)" stroke-width="1"/>'
+      + '<line x1="50" y1="155" x2="175" y2="155" stroke="rgba(74,222,128,0.10)" stroke-width="1"/>'
+      // Balken (Bar Chart Style)
+      + '<rect x="60" y="120" width="22" height="50" rx="5" fill="url(#dash-bar-grad)" opacity="0.5"/>'
+      + '<rect x="95" y="95" width="22" height="75" rx="5" fill="url(#dash-bar-grad)" opacity="0.6"/>'
+      + '<rect x="130" y="75" width="22" height="95" rx="5" fill="url(#dash-bar-grad)" opacity="0.75"/>'
+      + '<rect x="165" y="105" width="22" height="65" rx="5" fill="url(#dash-bar-grad)" opacity="0.55"/>'
+      // Linie über Balken
+      + '<polyline points="71,120 106,95 141,75 176,105" fill="none" stroke="url(#dash-grid-grad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>'
+      // Datenpunkte
+      + '<circle cx="71" cy="120" r="4" fill="#4ade80" opacity="0.7"/>'
+      + '<circle cx="106" cy="95" r="4" fill="#4ade80" opacity="0.7"/>'
+      + '<circle cx="141" cy="75" r="5.5" fill="#4ade80" opacity="0.85"/>'
+      + '<circle cx="176" cy="105" r="4" fill="#4ade80" opacity="0.7"/>'
+      + '</svg>';
+  }
   function renderDashboard(){
     installStyle();
     var grid = $('dash-grid');
@@ -472,7 +500,7 @@
       '<div class="dashp-hero">'
         + '<section class="dashp-card dashp-main-hero dashp-main-hero-pollen change-hero-card change-hero-dashboard">'
           + '<div class="dashp-hero-copy"><div class="dashp-eyebrow">Heute auf einen Blick</div><div class="dashp-hero-title">'+esc(greeting())+'</div></div>'
-          + '<div class="dashp-hero-visual" aria-hidden="true"><span>▦</span></div>'
+          + dashHeroArtSvg()
           + overviewRows(today.length, next, w, p, f, v)
         + '</section>'
       + '</div>'

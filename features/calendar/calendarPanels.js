@@ -238,6 +238,35 @@
         + '</button>';
     }).join('');
   }
+  function calHeroArtSvg(){
+    return '<svg class="cal-hero-illustration" viewBox="0 0 220 220" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">'
+      + '<defs>'
+      + '<linearGradient id="cal-arc-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4ade80" stop-opacity="0.9"/><stop offset="1" stop-color="#166534" stop-opacity="0.4"/></linearGradient>'
+      + '</defs>'
+      // Großer Kreis (Uhr-Kontur)
+      + '<circle cx="110" cy="112" r="72" fill="none" stroke="url(#cal-arc-grad)" stroke-width="5" stroke-dasharray="360 92" stroke-linecap="round" opacity="0.45"/>'
+      // Ziffernblatt-Ticks
+      + '<line x1="110" y1="44" x2="110" y2="56" stroke="#4ade80" stroke-width="3" stroke-linecap="round" opacity="0.5"/>'
+      + '<line x1="178" y1="112" x2="166" y2="112" stroke="#4ade80" stroke-width="3" stroke-linecap="round" opacity="0.35"/>'
+      + '<line x1="42" y1="112" x2="54" y2="112" stroke="#4ade80" stroke-width="3" stroke-linecap="round" opacity="0.35"/>'
+      + '<line x1="110" y1="180" x2="110" y2="168" stroke="#4ade80" stroke-width="3" stroke-linecap="round" opacity="0.35"/>'
+      // Stundenzeiger
+      + '<line x1="110" y1="112" x2="110" y2="70" stroke="#4ade80" stroke-width="5" stroke-linecap="round" opacity="0.7"/>'
+      // Minutenzeiger
+      + '<line x1="110" y1="112" x2="148" y2="100" stroke="#86efac" stroke-width="3.5" stroke-linecap="round" opacity="0.55"/>'
+      // Zentrum
+      + '<circle cx="110" cy="112" r="5" fill="#4ade80" opacity="0.6"/>'
+      // Kleines Kalenderblatt oben rechts
+      + '<rect x="142" y="42" width="46" height="40" rx="8" fill="rgba(74,222,128,0.08)" stroke="rgba(74,222,128,0.22)" stroke-width="1.5"/>'
+      + '<line x1="150" y1="42" x2="150" y2="36" stroke="#4ade80" stroke-width="2" stroke-linecap="round" opacity="0.5"/>'
+      + '<line x1="180" y1="42" x2="180" y2="36" stroke="#4ade80" stroke-width="2" stroke-linecap="round" opacity="0.5"/>'
+      + '<line x1="142" y1="54" x2="188" y2="54" stroke="rgba(74,222,128,0.18)" stroke-width="1"/>'
+      + '<rect x="152" y="60" width="6" height="6" rx="2" fill="rgba(74,222,128,0.45)"/>'
+      + '<rect x="163" y="60" width="6" height="6" rx="2" fill="rgba(74,222,128,0.28)"/>'
+      + '<rect x="174" y="60" width="6" height="6" rx="2" fill="rgba(74,222,128,0.18)"/>'
+      + '</svg>';
+  }
+
   function heroHtml(){
     // Der Hero bleibt bewusst immer auf dem echten heutigen Tag.
     // Auswahl in Woche/Mini-Monat steuert nur Tagesagenda und Monatskarte.
@@ -255,7 +284,7 @@
       + '<div class="cal-premium-hero-line cal-premium-week-count"><strong>'+weekCount+'</strong> '+(weekCount===1?'Termin':'Termine')+' diese Woche</div>'
       + '<div class="cal-premium-hero-line muted">Nächster Termin: <strong>'+esc(compactNextValue(next, nextTime, nextTitle))+'</strong></div>'
       + '</div>'
-      + '<div class="cal-premium-hero-visual" aria-hidden="true"><span>◷</span></div>'
+      + calHeroArtSvg()
       + heroSideHtml(next, nextTime, nextTitle)
       + '</section>'
       + '</div>';
