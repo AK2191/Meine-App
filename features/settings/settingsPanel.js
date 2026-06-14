@@ -514,7 +514,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0224';
+  var APP_VERSION = '0.1.0225';
 
 
 
@@ -1374,7 +1374,7 @@
       + '<div class="change-settings-page-head"><div class="change-settings-page-title"><span>⚙︎</span><strong>Einstellungen</strong></div></div>'
       + '<section class="change-settings-profile-card">'
       + '<div class="change-settings-profile-left"><div class="change-settings-profile-avatar">'+picture+'<i></i></div><div class="change-settings-profile-copy"><div class="change-settings-profile-name">'+esc(name)+'</div></div></div>'
-      + '<div class="change-settings-profile-center" aria-hidden="true"><span class="change-settings-profile-center-mark">C</span></div>'
+      + '<div class="change-settings-profile-center" aria-hidden="true"><span class="change-settings-profile-center-mark">▦</span></div>'
       + '<div class="change-settings-profile-right">'+settingsHeroStatusRows(google)+'</div>'
       + '</section>'
       + '<div class="change-settings-workspace">'

@@ -1,3 +1,10 @@
+## Version 0.1.0225
+- Die sichtbare App-Version wurde auf `0.1.0225` erhöht.
+- Die Challenges-HeroCard wurde aus der alten `chv222`/`challenge-goal` Override-Kette gelöst und nutzt nun neue `chv225-*` Klassen, damit alte Mobile-Patches nicht mehr in die HeroCard greifen.
+- Sichtbare `C`-Kreise wurden aus den Hero-Visuals entfernt; die Mitte ist nur noch ein dezentes flaches Hintergrundsymbol wie bei Pollen.
+- Dashboard, Kalender, Challenges und Einstellungen behalten ihre Funktionen; geändert wurden nur HeroCard-Rendering und CSS-Bereinigung.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder GitHub Action.
+
 ## Version 0.1.0224
 - Die sichtbare App-Version wurde auf `0.1.0224` erhöht.
 - Die Challenges-HeroCard wurde über einen finalen AppShell-Anker stabilisiert, damit ältere Challenge-Overrides die Pollen-Geometrie nicht mehr zerbrechen.
