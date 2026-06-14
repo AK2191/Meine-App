@@ -514,7 +514,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0202';
+  var APP_VERSION = '0.1.0204';
 
 
 
@@ -748,7 +748,11 @@
         state.actionMessage = 'GitHub Action wird gesucht…';
       }
     }catch(e){
-      state.actionMessage = e && e.message ? e.message : 'Status konnte nicht gelesen werden.';
+      var statusError = e && e.message ? e.message : 'Status konnte nicht gelesen werden.';
+      if(/404|Status Fehler 404|Not Found/i.test(statusError)){
+        statusError = 'Cloudflare Worker ist nicht aktuell: /status fehlt. Worker bitte neu deployen.';
+      }
+      state.actionMessage = statusError;
       state.actionConclusion = 'failure';
       state.actionCheckedAt = new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
     }
@@ -836,7 +840,7 @@
         throw new Error((result && result.message) || ('Worker Fehler '+response.status));
       }
       state.status = 'ok';
-      state.message = 'ZIP wurde an GitHub übertragen.';
+      state.message = 'ZIP wurde übertragen. GitHub Action wird geprüft…';
       state.uploadCommitSha = result.commitSha || '';
       state.actionRunUrl = result.actionsUrl || '';
       state.actionStatus = 'queued';

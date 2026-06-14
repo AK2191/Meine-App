@@ -10266,3 +10266,201 @@ body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium
   border-color:rgba(20,35,24,.10)!important;
   color:#213229!important;
 }
+
+/* v0.1.0203 · Kalender-Topabstand und Settings-HeroCard angeglichen
+   Ursache: alte Desktop-Guards haben im Kalender weiterhin Platz für #cal-controls reserviert,
+   obwohl der Premium-Kalender diese Leiste nicht mehr nutzt. */
+:root{
+  --change-settings-hero-height-desktop:238px;
+}
+
+@media (min-width:701px){
+  body:not(.change-login-active).change-view-calendar #cal-controls{
+    display:none!important;
+    visibility:hidden!important;
+    height:0!important;
+    min-height:0!important;
+    padding:0!important;
+    border:0!important;
+    pointer-events:none!important;
+  }
+
+  body:not(.change-login-active).change-view-calendar #content,
+  body:not(.change-login-active).change-view-settings #content{
+    padding:26px 34px 34px!important;
+    overflow:hidden!important;
+    box-sizing:border-box!important;
+  }
+
+  body:not(.change-login-active).change-view-calendar #cal-body,
+  body:not(.change-login-active).change-view-settings #settings-view{
+    width:100%!important;
+    height:100%!important;
+    max-height:none!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-calendar #calendar-premium-view,
+  body.change-view-settings #settings-view .change-settings-premium{
+    width:min(100%,1320px)!important;
+    max-width:1320px!important;
+    margin:0 auto!important;
+    padding:0!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-calendar #calendar-premium-view .cal-premium-top,
+  body.change-view-settings #settings-view .change-settings-page-head{
+    min-height:44px!important;
+    margin:0 0 24px!important;
+    padding:0!important;
+    display:flex!important;
+    align-items:center!important;
+    box-sizing:border-box!important;
+  }
+
+  html body.change-view-settings .change-settings-profile-card{
+    width:100%!important;
+    height:var(--change-settings-hero-height-desktop)!important;
+    min-height:var(--change-settings-hero-height-desktop)!important;
+    max-height:var(--change-settings-hero-height-desktop)!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1.12fr) minmax(380px,.88fr)!important;
+    gap:30px!important;
+    align-items:center!important;
+    padding:28px 30px 24px 28px!important;
+    margin:0 0 18px!important;
+    border-radius:28px!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+
+  html body.change-view-settings .change-settings-profile-left{
+    min-width:0!important;
+    gap:24px!important;
+  }
+
+  html body.change-view-settings .change-settings-profile-avatar{
+    width:88px!important;
+    height:88px!important;
+  }
+
+  html body.change-view-settings .change-settings-profile-right{
+    width:auto!important;
+    min-width:0!important;
+    height:100%!important;
+    border-left:1px solid rgba(255,255,255,.08)!important;
+    border-top:0!important;
+    padding:0 0 0 24px!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:16px!important;
+  }
+}
+
+@media (max-width:700px), (hover:none) and (pointer:coarse){
+  body.change-view-calendar #cal-controls{
+    display:none!important;
+    visibility:hidden!important;
+    height:0!important;
+    min-height:0!important;
+    padding:0!important;
+    border:0!important;
+    pointer-events:none!important;
+  }
+
+  body.change-view-settings #content{
+    padding:10px 16px calc(76px + env(safe-area-inset-bottom,0px))!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-settings #settings-view{
+    width:100%!important;
+    max-width:100%!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-settings #settings-view .change-settings-premium{
+    width:100%!important;
+    max-width:100%!important;
+    margin:0!important;
+    padding:0!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-settings #settings-view .change-settings-page-head{
+    min-height:42px!important;
+    margin:0 0 14px!important;
+    padding:0!important;
+    display:flex!important;
+    align-items:center!important;
+    box-sizing:border-box!important;
+  }
+
+  html body.change-view-settings .change-settings-profile-card{
+    height:var(--change-mobile-feature-hero-height,274px)!important;
+    min-height:var(--change-mobile-feature-hero-height,274px)!important;
+    max-height:var(--change-mobile-feature-hero-height,274px)!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    justify-content:space-between!important;
+    gap:14px!important;
+    padding:20px 18px 16px!important;
+    margin:0 0 14px!important;
+    border-radius:28px!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+
+  html body.change-view-settings .change-settings-profile-left{
+    width:100%!important;
+    min-width:0!important;
+    gap:14px!important;
+    align-items:center!important;
+  }
+
+  html body.change-view-settings .change-settings-profile-avatar{
+    width:68px!important;
+    height:68px!important;
+  }
+
+  html body.change-view-settings .change-settings-profile-name{
+    font-size:21px!important;
+    line-height:1.1!important;
+  }
+
+  html body.change-view-settings .change-settings-profile-sub{
+    margin-top:8px!important;
+    font-size:12px!important;
+  }
+
+  html body.change-view-settings .change-settings-profile-right{
+    width:100%!important;
+    min-width:0!important;
+    height:auto!important;
+    border-left:0!important;
+    border-top:1px solid rgba(255,255,255,.10)!important;
+    padding:12px 0 0!important;
+    align-items:flex-start!important;
+    justify-content:center!important;
+    gap:10px!important;
+  }
+}
+
+[data-theme="light"] html body.change-view-settings .change-settings-profile-right,
+body.theme-light.change-view-settings .change-settings-profile-right,
+body.change-theme-light.change-view-settings .change-settings-profile-right{
+  border-color:rgba(20,35,24,.10)!important;
+}
+

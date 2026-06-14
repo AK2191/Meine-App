@@ -1,3 +1,19 @@
+## Version 0.1.0204
+- Die sichtbare App-Version wurde auf `0.1.0204` erhöht.
+- Das ZIP-Update-Paket übernimmt den Kalender-/Einstellungen-HeroCard-Fix aus `0.1.0203` erneut sauber, falls `0.1.0203` durch den alten Workflow nicht committed wurde.
+- Der GitHub-Update-Workflow liest die Zielversion nicht mehr per Bash/Inline-Regex, sondern aus `.change-update-version`.
+- `.change-update-version` wird vor dem Commit entfernt, damit keine temporäre Root-Datei auf `main` bleibt.
+- Fehlerhafte ZIP-Übergaben in `updates/` werden bei Action-Fehlern bereinigt.
+- Die GitHub-Update-Anzeige meldet nach dem Upload nur noch die Übergabe und danach den echten GitHub-Action-Status.
+- Der Cloudflare-Worker-Code mit `/files`, `/status` und `/upload` bleibt als manuell zu deployender Worker-Code in `scripts/changeGithubUpdateWorker.js` dokumentiert.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push oder Challenge-Daten.
+
+## Version 0.1.0203
+- Die sichtbare App-Version wurde auf `0.1.0203` erhöht.
+- Der Kalender nutzt lokal/Desktop keinen reservierten Abstand mehr für die alte `#cal-controls`-Leiste; der Premium-Kalender startet dadurch auf derselben Workspace-Höhe wie die anderen Ansichten.
+- Die Einstellungen-HeroCard wurde lokal und mobil in Breite, Höhe, Innenabstand und Grid-Aufbau an die Kalender-HeroCard angeglichen.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push oder GitHub Worker.
+
 ## Version 0.1.0202
 - Die sichtbare App-Version wurde auf `0.1.0202` erhöht.
 - Kalender-Wochenpfeile sitzen jetzt direkt in der Wochenkarte, passend zur Monatsansicht.
@@ -7,7 +23,7 @@
 
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0199 mit einheitlichen HeroCard-Flächen
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0204 mit stabilem GitHub-ZIP-Update
 
 ---
 

@@ -1,3 +1,17 @@
+## Version 0.1.0204
+- Die sichtbare App-Version wurde auf `0.1.0204` erhöht.
+- Das ZIP-Update-Paket übernimmt den Kalender-/Einstellungen-HeroCard-Fix aus `0.1.0203` erneut sauber.
+- Der GitHub-Update-Workflow liest die Zielversion aus `.change-update-version`, entfernt diese Datei vor dem Commit und bereinigt fehlerhafte ZIP-Übergaben.
+- Die GitHub-Update-Anzeige unterscheidet nun klarer zwischen erfolgreicher ZIP-Übergabe und laufender GitHub-Action-Prüfung.
+- Der Cloudflare-Worker-Code mit `/files`, `/status` und `/upload` liegt im Paket für den manuellen Worker-Deploy bereit.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push oder Challenge-Daten.
+
+## Version 0.1.0203
+- Die sichtbare App-Version wurde auf `0.1.0203` erhöht.
+- Kalender-Topabstand korrigiert: Die alte `#cal-controls`-Reserve wird in der Premium-Ansicht nicht mehr angezeigt oder eingerechnet.
+- Einstellungen-HeroCard lokal und mobil an Höhe, Breite, Innenabstand und Aufbau der Kalender-HeroCard angeglichen.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push oder GitHub Worker.
+
 ## Version 0.1.0202
 - Die sichtbare App-Version wurde auf `0.1.0202` erhöht.
 - Kalender-Wochenpfeile sitzen jetzt direkt in der Wochenkarte, passend zur Monatsansicht.
