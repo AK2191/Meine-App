@@ -1,3 +1,17 @@
+## 0.1.0184 - GitHub Worker-Dateiliste und Action-Fix
+- Version auf `0.1.0184` erhöht.
+- Direkter Browser-Zugriff auf `api.github.com` im GitHub-Bereich entfernt.
+- Cloudflare Worker um `/files` für Dateiliste und Dateianzahl ergänzt.
+- ZIP-Action-Verarbeitung bleibt über `updates/` und bereinigt ZIP-Übergaben nach Anwendung.
+- Hinweis für Bootstrap: Workflow, Apply-Script und Worker-Code müssen einmalig manuell aktualisiert werden.
+
+## 0.1.0183 - GitHub Live-Status und Update-Ladebutton
+- Version auf `0.1.0183` erhöht.
+- Nach der direkten GitHub-Übertragung fragt die App den Worker temporär nach dem GitHub-Action-Status ab.
+- Die Statusabfrage stoppt automatisch bei Erfolg, Fehler oder spätestens nach zwei Minuten.
+- Nach erfolgreicher Action erscheint einmalig der Button `Update auf Version ... laden`, der Cache und Service-Worker aktualisiert und die App mit Versionsparameter neu lädt.
+- Die GitHub-Seite wird nach der Übertragung nicht mehr automatisch geöffnet.
+
 ## 0.1.0182 - GitHub Dateiübersicht verbessert
 - Version auf `0.1.0182` erhöht.
 - Die GitHub-ZIP-Prüfung liest die aktuelle Dateianzahl aus dem Repository und vergleicht sie mit der ausgewählten ZIP.

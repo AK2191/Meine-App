@@ -1,9 +1,28 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0181 mit GitHub Action ZIP-Fallback und Cleanup
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0184 mit GitHub-Worker-Dateiliste und robuster ZIP-Action
 
 ---
 
+
+
+## Version 0.1.0184
+- Die sichtbare App-Version wurde auf `0.1.0184` erhöht.
+- Die GitHub-Dateiliste wird nicht mehr direkt über `api.github.com` im Browser gelesen, sondern über den geschützten Cloudflare Worker-Endpunkt `/files`.
+- Dadurch verschwinden die CSP-Fehler im GitHub-Bereich; der Browser spricht weiterhin nur mit dem Worker.
+- Der Cloudflare Worker-Code wurde um `/files` ergänzt und liefert Dateianzahl sowie Dateiliste aus dem Repository.
+- Die ZIP-Action bleibt robust: ZIP-Übergaben werden aus `updates/` verarbeitet und nach erfolgreicher Anwendung entfernt.
+- Wichtig für die erste Nutzung: `.github/workflows/apply-zip-update.yml`, `scripts/applyZipUpdate.mjs` und der Cloudflare Worker-Code müssen einmal manuell aktualisiert werden, bevor der automatische ZIP-Update-Kreis zuverlässig läuft.
+- Keine Änderung an Firebase, Datenbank-Sync, Google Kalender, Push oder Challenge-Logik.
+
+## Version 0.1.0183
+- Die sichtbare App-Version wurde auf `0.1.0183` erhöht.
+- Nach der direkten GitHub-Übertragung fragt die App den Cloudflare Worker temporär nach dem GitHub-Action-Status ab.
+- Die Statusabfrage stoppt automatisch bei Erfolg, Fehler oder spätestens nach zwei Minuten, damit kein Dauer-Polling entsteht.
+- Nach erfolgreicher GitHub Action erscheint einmalig `Update auf Version ... laden`; der Button leert Browser-/Service-Worker-Caches soweit möglich und lädt die App mit Versionsparameter neu.
+- Die GitHub-Seite wird nach der Übertragung nicht mehr automatisch geöffnet.
+- Der Worker unterstützt zusätzlich `GET /status` für den Live-Status der GitHub Action.
+- Keine Änderung an Kalenderdaten, Firebase, Datenbank-Sync, Google Kalender, Push oder Challenge-Logik.
 
 ## Version 0.1.0181
 - Die sichtbare App-Version wurde auf `0.1.0181` erhöht.

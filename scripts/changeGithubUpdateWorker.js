@@ -17,7 +17,7 @@ function json(data, status = 200){
     headers: {
       'content-type': 'application/json; charset=utf-8',
       'access-control-allow-origin': '*',
-      'access-control-allow-methods': 'POST, OPTIONS',
+      'access-control-allow-methods': 'GET, POST, OPTIONS',
       'access-control-allow-headers': 'content-type'
     }
   });
@@ -113,6 +113,38 @@ function safeZipName(fileName, targetVersion){
   const name = base && base.toLowerCase().endsWith('.zip') ? base : `change-update-${version || stamp}.zip`;
   return `${stamp}-${name}`.slice(0, 180);
 }
+
+async function getRepositoryFiles(env){
+  const token = await getInstallationToken(env);
+  const body = await githubFetch(`/repos/${REPOSITORY}/git/trees/${BRANCH}?recursive=1`, { method: 'GET' }, token);
+  const files = Array.isArray(body && body.tree)
+    ? body.tree.filter((item) => item && item.type === 'blob' && item.path).map((item) => String(item.path).replace(/\\/g, '/')).sort()
+    : [];
+  return json({ ok: true, files, count: files.length });
+}
+
+async function getLatestWorkflowStatus(env, commitSha){
+  const token = await getInstallationToken(env);
+  const qs = new URLSearchParams({ per_page: '10', branch: BRANCH });
+  if(commitSha) qs.set('head_sha', String(commitSha));
+  const body = await githubFetch(`/repos/${REPOSITORY}/actions/runs?${qs.toString()}`, { method: 'GET' }, token);
+  const runs = Array.isArray(body && body.workflow_runs) ? body.workflow_runs : [];
+  const run = runs.find((item) => String(item && item.name || '').includes('Change ZIP Update')) || runs[0] || null;
+  return json({
+    ok: true,
+    run: run ? {
+      id: run.id,
+      name: run.name || '',
+      status: run.status || '',
+      conclusion: run.conclusion || '',
+      htmlUrl: run.html_url || '',
+      headSha: run.head_sha || '',
+      createdAt: run.created_at || '',
+      updatedAt: run.updated_at || ''
+    } : null
+  });
+}
+
 async function uploadZipToGitHub(env, payload){
   if(String(payload.secret || '') !== String(env.CHANGE_UPDATE_SECRET || '')){
     return json({ ok:false, message:'Freigabe-Code ist falsch.' }, 401);
@@ -146,8 +178,14 @@ export default {
     if(request.method === 'OPTIONS') return json({ ok:true });
     try{
       const url = new URL(request.url);
+      if(request.method === 'GET' && url.pathname === '/files'){
+        return await getRepositoryFiles(env);
+      }
+      if(request.method === 'GET' && url.pathname === '/status'){
+        return await getLatestWorkflowStatus(env, url.searchParams.get('commitSha') || '');
+      }
       if(request.method !== 'POST' || url.pathname !== '/upload'){
-        return json({ ok:false, message:'Nur POST /upload ist erlaubt.' }, 404);
+        return json({ ok:false, message:'Nur POST /upload, GET /status oder GET /files ist erlaubt.' }, 404);
       }
       const payload = await request.json();
       return await uploadZipToGitHub(env, payload);

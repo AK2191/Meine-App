@@ -514,7 +514,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0182';
+  var APP_VERSION = '0.1.0184';
 
 
 
@@ -524,12 +524,21 @@
     message: '',
     files: [],
     checks: [],
-    fromVersion: '0.1.0182',
+    fromVersion: '0.1.0183',
     toVersion: '',
     rootFiles: [],
     githubFiles: [],
     newFiles: [],
-    fileListOpen: false
+    fileListOpen: false,
+    uploadCommitSha: '',
+    actionRunUrl: '',
+    actionStatus: '',
+    actionConclusion: '',
+    actionMessage: '',
+    actionCheckedAt: '',
+    actionStartedAt: 0,
+    actionPollTimer: null,
+    updateReady: false
   };
 
   var GITHUB_UPDATE_WORKER_URL = 'https://change-github-update.ak2191.workers.dev';
@@ -656,6 +665,97 @@
     var title = check.key === 'files' ? '<button type="button" class="change-github-check-link" id="github-files-toggle">'+esc(label)+'</button>' : '<strong>'+esc(label)+'</strong>';
     return '<div class="change-github-check '+(ok?'ok':'warn')+'"><span>'+(ok?'✓':'!')+'</span><div>'+title+(detail?'<small>'+esc(detail)+'</small>':'')+'</div></div>';
   }
+  function githubActionStatusPanel(){
+    var state = githubUpdateState;
+    if(!state.actionMessage && !state.updateReady && !state.actionRunUrl) return '';
+    var cls = state.actionConclusion === 'success' ? 'ok' : (state.actionConclusion || state.actionStatus === 'failure' ? 'error' : 'checking');
+    var checked = state.actionCheckedAt ? '<small>Zuletzt geprüft: '+esc(state.actionCheckedAt)+'</small>' : '';
+    var link = state.actionRunUrl ? '<a href="'+esc(state.actionRunUrl)+'" target="_blank" rel="noopener">Details in GitHub öffnen</a>' : '';
+    var button = state.updateReady ? '<button class="btn btn-primary btn-full" id="github-update-reload" type="button">Update auf Version '+esc(state.toVersion || APP_VERSION)+' laden</button>' : '';
+    return '<div class="change-github-action '+esc(cls)+'"><strong>'+esc(state.actionMessage || '')+'</strong>'+checked+link+button+'</div>';
+  }
+
+  async function reloadChangeUpdateVersion(){
+    var version = githubUpdateState.toVersion || APP_VERSION;
+    try{
+      if(window.caches && caches.keys){
+        var keys = await caches.keys();
+        await Promise.all(keys.map(function(key){ return caches.delete(key); }));
+      }
+    }catch(e){}
+    try{
+      if(navigator.serviceWorker && navigator.serviceWorker.getRegistrations){
+        var regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(function(reg){ return reg.update().catch(function(){}); }));
+      }
+    }catch(e){}
+    var url = new URL(window.location.href);
+    url.searchParams.set('v', version);
+    url.searchParams.set('t', String(Date.now()));
+    window.location.replace(url.toString());
+  }
+
+  function stopGithubActionPolling(){
+    if(githubUpdateState.actionPollTimer){
+      clearTimeout(githubUpdateState.actionPollTimer);
+      githubUpdateState.actionPollTimer = null;
+    }
+  }
+
+  function scheduleGithubActionPoll(delay){
+    stopGithubActionPolling();
+    githubUpdateState.actionPollTimer = setTimeout(function(){ pollGithubActionStatus(); }, delay || 5000);
+  }
+
+  async function pollGithubActionStatus(){
+    var state = githubUpdateState;
+    if(!state.uploadCommitSha && !state.actionStartedAt) return;
+    if(Date.now() - (state.actionStartedAt || Date.now()) > 120000){
+      state.actionStatus = 'timeout';
+      state.actionConclusion = 'failure';
+      state.actionMessage = 'GitHub Action Status nicht rechtzeitig erkannt.';
+      state.actionCheckedAt = new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
+      stopGithubActionPolling();
+      refreshSameTab('github');
+      return;
+    }
+    try{
+      var url = GITHUB_UPDATE_WORKER_URL + '/status';
+      if(state.uploadCommitSha) url += '?commitSha=' + encodeURIComponent(state.uploadCommitSha);
+      var response = await fetch(url, {cache:'no-store'});
+      var result = null;
+      try{ result = await response.json(); }catch(parseErr){}
+      if(!response.ok || !result || !result.ok) throw new Error((result && result.message) || ('Status Fehler '+response.status));
+      var run = result.run || null;
+      state.actionCheckedAt = new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
+      if(run){
+        state.actionStatus = run.status || '';
+        state.actionConclusion = run.conclusion || '';
+        state.actionRunUrl = run.htmlUrl || state.actionRunUrl || '';
+        if(run.status === 'completed'){
+          stopGithubActionPolling();
+          if(run.conclusion === 'success'){
+            state.updateReady = true;
+            state.actionMessage = 'GitHub Action erfolgreich abgeschlossen.';
+          }else{
+            state.actionMessage = 'GitHub Action fehlgeschlagen.';
+          }
+          refreshSameTab('github');
+          return;
+        }
+        state.actionMessage = run.status === 'queued' ? 'GitHub Action wartet…' : 'GitHub Action läuft…';
+      }else{
+        state.actionMessage = 'GitHub Action wird gesucht…';
+      }
+    }catch(e){
+      state.actionMessage = e && e.message ? e.message : 'Status konnte nicht gelesen werden.';
+      state.actionConclusion = 'failure';
+      state.actionCheckedAt = new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
+    }
+    refreshSameTab('github');
+    if(!state.actionConclusion || state.actionStatus !== 'completed') scheduleGithubActionPoll(5000);
+  }
+
   function githubFileOverview(){
     var state = githubUpdateState;
     if(!state.fileListOpen || !(state.files || []).length) return '';
@@ -685,6 +785,7 @@
       + statusLine
       + (checks ? '<div class="change-github-checks">'+checks+'</div>' : '')
       + githubFileOverview()
+      + githubActionStatusPanel()
       + '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' ? '' : 'disabled')+'>Direkt auf GitHub übertragen</button>'
       + '</div>'
       + '</div>';
@@ -735,9 +836,17 @@
         throw new Error((result && result.message) || ('Worker Fehler '+response.status));
       }
       state.status = 'ok';
-      state.message = 'ZIP wurde an GitHub übertragen. Die GitHub Action verarbeitet jetzt das Update.';
+      state.message = 'ZIP wurde an GitHub übertragen.';
+      state.uploadCommitSha = result.commitSha || '';
+      state.actionRunUrl = result.actionsUrl || '';
+      state.actionStatus = 'queued';
+      state.actionConclusion = '';
+      state.actionMessage = 'GitHub Action wird gesucht…';
+      state.actionCheckedAt = '';
+      state.actionStartedAt = Date.now();
+      state.updateReady = false;
       if(typeof window.toast === 'function') window.toast('Update an GitHub übertragen', 'ok');
-      try{ if(result.actionsUrl) window.open(result.actionsUrl, '_blank', 'noopener'); }catch(e){}
+      scheduleGithubActionPoll(2500);
     }catch(e){
       state.status = 'error';
       state.message = e && e.message ? e.message : 'Übertragung fehlgeschlagen.';
@@ -748,13 +857,11 @@
 
   async function fetchGithubRepoFiles(){
     try{
-      var response = await fetch('https://api.github.com/repos/AK2191/Meine-App/git/trees/main?recursive=1', {cache:'no-store'});
-      if(!response.ok) throw new Error('GitHub API '+response.status);
+      var response = await fetch(GITHUB_UPDATE_WORKER_URL + '/files', {cache:'no-store'});
+      if(!response.ok) throw new Error('Worker Dateien '+response.status);
       var data = await response.json();
-      return (data.tree || [])
-        .filter(function(item){ return item && item.type === 'blob' && item.path; })
-        .map(function(item){ return String(item.path).replace(/\\/g, '/'); })
-        .sort();
+      if(!data || !data.ok || !Array.isArray(data.files)) throw new Error((data && data.message) || 'GitHub-Dateiliste nicht verfügbar');
+      return data.files.map(function(file){ return String(file || '').replace(/\\/g, '/'); }).filter(Boolean).sort();
     }catch(e){
       return [];
     }
@@ -803,7 +910,7 @@
       var newFiles = paths.filter(function(path){ return !githubSet[path]; });
       var fileDetail = githubFiles.length
         ? 'GitHub aktuell: '+githubFiles.length+' · ZIP: '+paths.length+' · Neu: '+newFiles.length
-        : 'ZIP: '+paths.length+' · GitHub aktuell nicht gelesen.';
+        : 'ZIP: '+paths.length+' · GitHub aktuell nicht gelesen';
       var checks = [
         {ok: !!versionHigher, label:'Version erhöht', detail: nextVersion ? APP_VERSION+' → '+nextVersion : 'Keine Zielversion erkannt.'},
         {ok: claudeUpdated, label:'CLAUDE.md aktualisiert', detail: claudeUpdated ? 'Eintrag zur Zielversion gefunden.' : 'Kein passender Versionseintrag gefunden.'},
@@ -1137,6 +1244,15 @@
       githubUpdateState.files = [];
       githubUpdateState.checks = [];
       githubUpdateState.toVersion = '';
+      githubUpdateState.uploadCommitSha = '';
+      githubUpdateState.actionRunUrl = '';
+      githubUpdateState.actionStatus = '';
+      githubUpdateState.actionConclusion = '';
+      githubUpdateState.actionMessage = '';
+      githubUpdateState.actionCheckedAt = '';
+      githubUpdateState.actionStartedAt = 0;
+      githubUpdateState.updateReady = false;
+      stopGithubActionPolling();
       if(githubUpdateState.file) analyzeGithubZip();
       else refreshSameTab('github');
     }
@@ -1169,6 +1285,7 @@
       refreshSameTab('github');
     });
     var githubZipCommit = $('github-zip-commit'); if(githubZipCommit) githubZipCommit.addEventListener('click', function(){ commitGithubZip(); });
+    var githubUpdateReload = $('github-update-reload'); if(githubUpdateReload) githubUpdateReload.addEventListener('click', function(){ reloadChangeUpdateVersion(); });
     var btnGoogleConnect = $('btn-google-connect'); if(btnGoogleConnect) btnGoogleConnect.addEventListener('click', function(){ if(typeof connectToGoogle==='function') connectToGoogle(); });
 
   }
