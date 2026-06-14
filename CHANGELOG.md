@@ -1,3 +1,10 @@
+## Version 0.1.0208
+- Die sichtbare App-Version wurde auf `0.1.0208` erhöht.
+- Der GitHub-Update-Bereich zeigt ZIP-Prüfung und Live-Fortschritt jetzt kompakt in einer Zeile statt als mehrere Check-/Schritt-Karten.
+- Angezeigt wird nur noch der aktuellste Stand: ZIP-Prüfung, GitHub Action, Commit auf `main` oder Live-Version.
+- Die Einstellungen-HeroCard wurde lokal und mobil näher an die Pollen-HeroCard angeglichen; mobil werden die drei Statuswerte kompakt nebeneinander angezeigt.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder Challenge-Daten.
+
 ## Version 0.1.0207
 - Die sichtbare App-Version wurde auf `0.1.0207` erhöht.
 - Die Farb- und Oberflächenlogik der starken Pollen-HeroCard wurde weiter auf Kalender und Einstellungen übertragen.
