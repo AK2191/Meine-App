@@ -316,24 +316,24 @@ window.renderGroupGoal = function(){
   var badgeLabel = earnedBadges.length + ' von ' + totalBadgeCount;
   var badgeSub = 'gesamt';
 
-  card.className = 'change-challenge-hero-v225';
+  card.className = 'change-challenge-hero-v227';
   card.innerHTML = `
-    <div class="chv225-hero">
-      <div class="chv225-main">
-        <div class="chv225-overline">DIESE WOCHE</div>
-        <div class="chv225-title">Gruppenziel</div>
-        <div class="chv225-sub">Kalenderwoche ${getWeekNumber()}</div>
-        <div class="chv225-progress-meta"><span>${pct}% erreicht</span><strong>${points} von ${goal.target} P</strong></div>
-        <div class="chv225-progress" aria-label="Gruppenziel Fortschritt"><i style="width:${pct}%"></i></div>
-        ${done ? '<div class="chv225-done">Ziel erreicht</div>' : ''}
+    <div class="chv227-hero">
+      <div class="chv227-main">
+        <div class="chv227-overline">DIESE WOCHE</div>
+        <div class="chv227-title">Gruppenziel</div>
+        <div class="chv227-sub">Kalenderwoche ${getWeekNumber()}</div>
+        <div class="chv227-progress-meta"><span>${pct}% erreicht</span><strong>${points} von ${goal.target} P</strong></div>
+        <div class="chv227-progress" aria-label="Gruppenziel Fortschritt"><i style="width:${pct}%"></i></div>
+        ${done ? '<div class="chv227-done">Ziel erreicht</div>' : ''}
       </div>
-      <div class="chv225-visual" aria-hidden="true"><span>◷</span></div>
-      <div class="chv225-stats">
-        <button type="button" class="chv225-stat chv225-stat-button" onclick="event.stopPropagation();window.openBadgePanel&&window.openBadgePanel()" title="Abzeichen öffnen">
+      <div class="chv227-visual" aria-hidden="true"><span>◷</span></div>
+      <div class="chv227-stats">
+        <button type="button" class="chv227-stat chv227-stat-button" onclick="event.stopPropagation();window.openBadgePanel&&window.openBadgePanel()" title="Abzeichen öffnen">
           <i>🏅</i><span>Abzeichen</span><strong>${badgeLabel}</strong>
         </button>
-        <div class="chv225-stat"><i>•</i><span>Heute</span><strong>${myTodayPoints} P</strong></div>
-        <div class="chv225-stat"><i>＋</i><span>Offen</span><strong>${openTodayCount}</strong></div>
+        <div class="chv227-stat"><i>•</i><span>Heute</span><strong>${myTodayPoints} P</strong></div>
+        <div class="chv227-stat"><i>＋</i><span>Offen</span><strong>${openTodayCount}</strong></div>
       </div>
     </div>
   `;

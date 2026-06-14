@@ -1,3 +1,10 @@
+## Version 0.1.0227
+- Die sichtbare App-Version wurde auf `0.1.0227` erhöht.
+- Die großen HeroCards wurden in einem zentralen Hero-Layer auf die Pollen-Referenz vereinheitlicht: Kartenfläche, Radius, Verlauf, Trennlinien, Statuszeilen, Typografie und mobile KPI-Leiste.
+- Dashboard, Kalender, Challenges und Einstellungen nutzen weiterhin ihre bestehenden Daten und Funktionen, werden aber am Ende von `styles/appShell.css` über eine gemeinsame v0.1.0227-Hero-Basis stabilisiert.
+- Die Challenges-HeroCard wurde aus der `chv225`-Kette gelöst und nutzt nun `chv227-*` Klassen; sichtbare C-Kreise bleiben entfernt, das Visual ist nur ein flaches Hintergrundsymbol.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder GitHub Action.
+
 ## Version 0.1.0226
 - Die sichtbare App-Version wurde auf `0.1.0226` erhöht.
 - Die GitHub-Update-Anzeige wurde mobil verdichtet: `Update bereit` und der laufende Status erscheinen nicht mehr als zwei getrennte Karten, sondern als ein aktueller Statusblock.
