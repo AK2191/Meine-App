@@ -1,4 +1,16 @@
+## 0.1.0176 - GitHub Freigabecode und Texte bereinigt
+- Version auf `0.1.0176` erhöht.
+- Globale Tastaturkürzel ignorieren Eingaben in Formularfeldern, damit Zahlen im Freigabe-Code nicht mehr zur Ansichtsnavigation führen.
+- Entfernt wurden die gewünschten erklärenden Texte im GitHub-Bereich und in der Einstellungen-Detailüberschrift.
+
 ## Version 0.1.0174
+
+## 0.1.0175 - Einstellungen Header angeglichen
+- Einstellungen-Header an die übrigen Masken angeglichen.
+- Rechte Header-Reihenfolge vereinheitlicht: Glocke, Zahnrad, Profil.
+- Profilrahmen mit Google-Status in den Einstellungen stabilisiert.
+- Keine Änderungen an Sync, Firebase oder GitHub-Worker.
+
 - Sichtbare App-Version auf `0.1.0174` erhöht.
 - Scrollen in Challenges und Einstellungen lokal/Desktop und mobil stabilisiert.
 - GitHub-ZIP-Upload als Drag-and-Drop-Fläche umgesetzt.

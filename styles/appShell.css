@@ -7901,3 +7901,118 @@ body.change-view-settings #settings-view{
     overflow:visible!important;
   }
 }
+
+
+/* v0.1.0175 · Header-Angleichung in Einstellungen
+   Einstellungen nutzen denselben rechten Header-Aufbau wie Dashboard, Kalender, Challenges und Pollen. */
+body.change-view-settings #header .h-right{
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+  margin:0 0 0 auto!important;
+  padding:0!important;
+  width:auto!important;
+  height:auto!important;
+  min-height:0!important;
+}
+body.change-view-settings #header #notif-bell-btn,
+body.change-view-settings #header #settings-btn,
+body.change-view-settings #header .avatar{
+  position:relative!important;
+  inset:auto!important;
+  top:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  left:auto!important;
+  transform:none!important;
+  flex:0 0 auto!important;
+  margin:0!important;
+}
+body.change-view-settings #header #notif-bell-btn{
+  order:1!important;
+  width:36px!important;
+  min-width:36px!important;
+  height:36px!important;
+  min-height:36px!important;
+  border-radius:10px!important;
+}
+body.change-view-settings #header #settings-btn{
+  order:2!important;
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:0!important;
+  width:36px!important;
+  min-width:36px!important;
+  max-width:36px!important;
+  height:36px!important;
+  min-height:36px!important;
+  max-height:36px!important;
+  padding:0!important;
+  border-radius:10px!important;
+  background:var(--acc-d)!important;
+  color:var(--acc)!important;
+  box-shadow:none!important;
+}
+body.change-view-settings #header #settings-btn::after{
+  content:none!important;
+  display:none!important;
+}
+body.change-view-settings #header #settings-btn svg,
+body.change-view-settings #header #notif-bell-btn svg{
+  width:20px!important;
+  height:20px!important;
+  stroke-width:2!important;
+}
+body.change-view-settings #header .avatar{
+  order:3!important;
+  width:36px!important;
+  min-width:36px!important;
+  max-width:36px!important;
+  height:36px!important;
+  min-height:36px!important;
+  max-height:36px!important;
+  border-radius:50%!important;
+  overflow:visible!important;
+  box-shadow:none!important;
+}
+body.change-view-settings #header .avatar img{
+  width:100%!important;
+  height:100%!important;
+  border-radius:50%!important;
+  object-fit:cover!important;
+}
+body.change-view-settings #header .avatar.google-on{
+  box-shadow:0 0 0 2.5px #22c55e,0 12px 30px rgba(0,0,0,.28)!important;
+}
+body.change-view-settings #header .avatar.google-off{
+  box-shadow:0 0 0 2.5px #ef4444,0 12px 30px rgba(0,0,0,.28)!important;
+}
+body.change-view-settings #header .avatar.google-on::after,
+body.change-view-settings #header .avatar.google-off::after{
+  content:""!important;
+  position:absolute!important;
+  right:1px!important;
+  bottom:1px!important;
+  width:12px!important;
+  height:12px!important;
+  border-radius:999px!important;
+  border:2px solid #04090e!important;
+  background:#ef4444!important;
+  z-index:3!important;
+  pointer-events:none!important;
+}
+body.change-view-settings #header .avatar.google-on::after{background:#22c55e!important;}
+@media(max-width:700px){
+  body.change-view-settings #header .h-right{gap:6px!important;margin-left:auto!important;}
+  body.change-view-settings #header #notif-bell-btn,
+  body.change-view-settings #header #settings-btn,
+  body.change-view-settings #header .avatar{
+    width:40px!important;min-width:40px!important;max-width:40px!important;
+    height:40px!important;min-height:40px!important;max-height:40px!important;
+  }
+  body.change-view-settings #header #settings-btn{border-radius:14px!important;}
+}

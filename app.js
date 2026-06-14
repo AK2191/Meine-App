@@ -1569,6 +1569,13 @@ async function logout(){
 
 /* ==== KEYBOARD ==== */
 document.addEventListener('keydown',e=>{
+  const target = e.target;
+  const tag = target && target.tagName ? target.tagName.toLowerCase() : '';
+  const isFormInput = tag === 'input' || tag === 'textarea' || tag === 'select' || (target && target.isContentEditable);
+  if(isFormInput){
+    if(e.key === 'Escape' && document.getElementById('side-panel').classList.contains('open')) closePanel();
+    return;
+  }
   if(document.getElementById('side-panel').classList.contains('open')){
     if(e.key==='Escape')closePanel();
     return;

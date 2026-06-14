@@ -1,9 +1,23 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0174 mit Scroll-Reparatur und GitHub-Drag-and-Drop
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0176 mit GitHub-Freigabecode- und Textbereinigung
 
 ---
 
+
+
+## Version 0.1.0176
+- Die sichtbare App-Version wurde auf `0.1.0176` erhöht.
+- Der Freigabe-Code im GitHub-Bereich löst beim Tippen von Zahlen keine globalen Tastatur-Navigationen mehr aus.
+- Technische Hinweistexte im GitHub-Bereich und in der Einstellungen-Detailüberschrift wurden entfernt.
+- Keine Änderung an Login, Sync, Firebase, Google Kalender oder GitHub-Worker-Backend.
+
+## Version 0.1.0175
+- Die sichtbare App-Version wurde auf `0.1.0175` erhöht.
+- Der Einstellungen-Header wurde an Dashboard, Kalender, Challenges und Pollen angeglichen.
+- Die rechte Aktionsgruppe bleibt jetzt konsistent: Glocke, Zahnrad, Profil.
+- Der Profilrahmen mit Login-Status wird auch in den Einstellungen wieder sichtbar.
+- Keine Änderungen an Login, Sync, Firebase oder GitHub-Worker-Backend.
 
 ## Version 0.1.0174
 - Die sichtbare App-Version wurde auf `0.1.0174` erhöht.

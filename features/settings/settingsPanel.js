@@ -506,7 +506,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0174';
+  var APP_VERSION = '0.1.0176';
 
 
 
@@ -516,7 +516,7 @@
     message: '',
     files: [],
     checks: [],
-    fromVersion: '0.1.0174',
+    fromVersion: '0.1.0176',
     toVersion: '',
     rootFiles: []
   };
@@ -650,10 +650,9 @@
     if((state.files || []).length > 8) filePreview += '<li>+'+((state.files || []).length - 8)+' weitere Dateien</li>';
     var statusLine = state.message ? '<div class="change-github-status '+esc(state.status || 'empty')+'">'+esc(state.message || '')+'</div>' : '';
     return '<div class="change-github-update">'
-      + '<div class="change-feature-note">Die ZIP wird an deinen geschützten Cloudflare Worker übertragen. Der Worker legt sie in <strong>updates/</strong> ab; die GitHub Action prüft danach serverseitig und committet auf <strong>main</strong>. Kein GitHub-Key liegt im Browser.</div>'
       + '<div class="change-github-version-grid"><div><span>Von Version</span><strong>'+esc(state.fromVersion || APP_VERSION)+'</strong></div><div><span>Auf Version</span><strong>'+esc(to)+'</strong></div></div>'
       + '<div class="change-github-upload-panel">'
-      + '<div class="change-github-upload-title"><span>ZIP Update</span><small>Prüfung und Übertragung bleiben getrennt.</small></div>'
+      + '<div class="change-github-upload-title"><span>ZIP Update</span></div>'
       + '<label class="change-github-dropzone" id="github-zip-dropzone"><input type="file" id="github-zip-input" accept=".zip,application/zip,application/x-zip-compressed"><span>'+selectedLabel+'</span><small>ZIP per Drag & Drop hier ablegen oder antippen.</small></label>'
       + '<button class="btn btn-secondary btn-full" id="github-zip-check" type="button" '+(!state.file?'disabled':'')+'>Änderungen prüfen</button>'
       + statusLine
@@ -667,7 +666,7 @@
   function githubUpdateCard(){
     var status = githubUpdateState.status === 'ok' ? 'BEREIT' : (githubUpdateState.status === 'error' ? 'FEHLER' : 'LOKAL');
     var tone = githubUpdateState.status === 'ok' ? 'ok' : (githubUpdateState.status === 'error' ? 'error' : 'off');
-    return settingsFeatureCard('⌁', 'GitHub', status, tone, 'ZIP Update als ausklappbarer Bereich. Prüfung und Übertragung bleiben getrennt.', '', githubUpdateBody());
+    return settingsFeatureCard('⌁', 'GitHub', status, tone, 'ZIP Update · Worker', '', githubUpdateBody());
   }
 
   async function commitGithubZip(){
@@ -974,7 +973,7 @@
       + nav
       + '</div>'
       + '<div class="change-settings-detail-card">'
-      + '<div class="change-settings-detail-head"><div><div class="change-settings-detail-title">'+(startTab==='dashboard'?'Dashboard':startTab==='calendar'?'Kalender':startTab==='challenges'?'Challenges':startTab==='sync'?'Daten & Sync':startTab==='github'?'GitHub':'App & Sicherheit')+'</div><div class="change-settings-detail-sub">Änderungen werden sofort übernommen und automatisch gespeichert.</div></div></div>'
+      + '<div class="change-settings-detail-head"><div><div class="change-settings-detail-title">'+(startTab==='dashboard'?'Dashboard':startTab==='calendar'?'Kalender':startTab==='challenges'?'Challenges':startTab==='sync'?'Daten & Sync':startTab==='github'?'GitHub':'App & Sicherheit')+'</div></div></div>'
       + '<div class="change-settings-pane '+(startTab==='dashboard'?'active':'')+'" data-pane="dashboard">'+dashboardPane()+'</div>'
       + '<div class="change-settings-pane '+(startTab==='calendar'?'active':'')+'" data-pane="calendar">'+calendarPane()+'</div>'
       + '<div class="change-settings-pane '+(startTab==='challenges'?'active':'')+'" data-pane="challenges">'+challengesPane()+'</div>'
