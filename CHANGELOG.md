@@ -1,3 +1,10 @@
+## Version 0.1.0222
+- Die sichtbare App-Version wurde auf `0.1.0222` erhöht.
+- Die mobile Challenges-HeroCard wurde aus der kaputten `challenge-goal-*` Override-Kette herausgelöst und nutzt jetzt eigene stabile `chv222-*` Klassen.
+- Die HeroCard zeigt wieder vollständig: `DIESE WOCHE`, `Gruppenziel`, Kalenderwoche, Fortschritt und die drei Statuswerte Abzeichen, Heute und Offen.
+- Zielscheibe bleibt entfernt; das ruhige C-Visual bleibt klein und rein dekorativ.
+- Änderung betrifft nur Challenges-Hero-Rendering/CSS. Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker und GitHub Action bleiben unverändert.
+
 ## Version 0.1.0221
 - Die sichtbare App-Version wurde auf `0.1.0221` erhöht.
 - Die Challenges-HeroCard wurde nach dem fehlerhaften Umbau erneut stabilisiert: keine übergroße Leerfläche, keine zerfallende KPI-Zeile und keine vertikal auseinanderbrechende Fortschrittsanzeige.

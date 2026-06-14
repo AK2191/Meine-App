@@ -316,29 +316,24 @@ window.renderGroupGoal = function(){
   var badgeLabel = earnedBadges.length + ' von ' + totalBadgeCount;
   var badgeSub = 'gesamt';
 
+  card.className = 'change-challenge-hero-v222';
   card.innerHTML = `
-    <div class="challenge-goal-hero-inner challenge-goal-hero-clean">
-      <div class="challenge-goal-main">
-        <div class="challenge-goal-kicker"><span>DIESE WOCHE</span></div>
-        <div class="challenge-goal-title">Gruppenziel</div>
-        <div class="challenge-goal-sub">Kalenderwoche ${getWeekNumber()}</div>
-        <div class="challenge-goal-progress-wrap">
-          <div class="challenge-goal-progress-meta"><span>${pct}% erreicht</span><span>${points} von ${goal.target} P</span></div>
-          <div class="challenge-goal-progress">
-            <div style="width:${pct}%;background:${done?'var(--grn)':'var(--acc)'}"></div>
-          </div>
-        </div>
-        ${done ? '<div class="challenge-goal-done">🎉 Ziel erreicht! Ihr seid großartig!</div>' : ''}
+    <div class="chv222-hero">
+      <div class="chv222-main">
+        <div class="chv222-overline">DIESE WOCHE</div>
+        <div class="chv222-title">Gruppenziel</div>
+        <div class="chv222-sub">Kalenderwoche ${getWeekNumber()}</div>
+        <div class="chv222-progress-meta"><span>${pct}% erreicht</span><strong>${points} von ${goal.target} P</strong></div>
+        <div class="chv222-progress" aria-label="Gruppenziel Fortschritt"><i style="width:${pct}%"></i></div>
+        ${done ? '<div class="chv222-done">Ziel erreicht</div>' : ''}
       </div>
-      <div class="challenge-goal-visual" aria-hidden="true"><span>C</span></div>
-      <div class="challenge-goal-side challenge-goal-action-list">
-        <button type="button" class="challenge-goal-side-link challenge-goal-side-link-clickable challenge-goal-badges-compact" onclick="event.stopPropagation();window.openBadgePanel&&window.openBadgePanel()" title="Abzeichen öffnen">
-          <span class="challenge-goal-link-icon">🏅</span>
-          <span><b>Abzeichen</b><small>${badgeSub}</small></span>
-          <strong>${badgeLabel}</strong>
+      <div class="chv222-visual" aria-hidden="true"><span>C</span></div>
+      <div class="chv222-stats">
+        <button type="button" class="chv222-stat chv222-stat-button" onclick="event.stopPropagation();window.openBadgePanel&&window.openBadgePanel()" title="Abzeichen öffnen">
+          <i>🏅</i><span>Abzeichen</span><strong>${badgeLabel}</strong>
         </button>
-        <div class="challenge-goal-side-link challenge-goal-side-static"><span class="challenge-goal-link-icon">•</span><span><b>Heute</b><small>${myDoneCount ? myDoneCount+' erledigt' : 'noch nichts erledigt'}</small></span><strong>${myTodayPoints} P</strong></div>
-        <div class="challenge-goal-side-link challenge-goal-side-static"><span class="challenge-goal-link-icon">＋</span><span><b>Offen</b><small>${openTodayCount===0 ? 'heute alles erledigt' : 'heute noch offen'}</small></span><strong>${openTodayCount}</strong></div>
+        <div class="chv222-stat"><i>•</i><span>Heute</span><strong>${myTodayPoints} P</strong></div>
+        <div class="chv222-stat"><i>＋</i><span>Offen</span><strong>${openTodayCount}</strong></div>
       </div>
     </div>
   `;
