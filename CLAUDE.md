@@ -1,10 +1,29 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0189 mit GitHub-Action-Commit-Fix
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0191 mit dokumentiertem Stabilitätsstand
 
 ---
 
 
+
+
+## Version 0.1.0191
+- Die sichtbare App-Version wurde auf `0.1.0191` erhöht.
+- Diese Version dokumentiert bewusst die aktuell offenen Prüfpunkte vor weiteren technischen Änderungen.
+- Offene Prüfpunkte:
+  - Desktop/lokale AppShell nach `0.1.0190` erneut testen, bevor weitere Layout-Fixes erfolgen.
+  - Cloudflare Worker muss mit dem aktuellen `scripts/changeGithubUpdateWorker.js` deployed sein, damit `/files` und `/status` nicht mehr `404` liefern.
+  - GitHub Action nach dem Commit-Fix erneut testen, inklusive Entpacken, Commit auf `main` und Entfernen der Übergabe-ZIP aus `updates/`.
+  - Alte ZIP-Dateien in `updates/` entfernen, damit das Repository nicht unnötig wächst.
+  - `APP_VERSION`, `CLAUDE.md` und `CHANGELOG.md` müssen bei jeder Folgeversion gemeinsam erhöht werden.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push oder Challenge-Punkten.
+
+## Version 0.1.0190
+- Die sichtbare App-Version wurde auf `0.1.0190` erhöht.
+- Für Desktop/lokal wurde ein finaler Content-Guard ergänzt: Sidebar links, aktiver Inhalt rechts sichtbar und scrollbar.
+- `setMainView()` erzwingt die Sichtbarkeit des aktiven Views zusätzlich per JS, damit ältere AppShell-Overrides den Content nicht mehr schwarz/leer schalten.
+- Die Einstellungen rufen dieselbe Sicherung beim Öffnen auf.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub-Worker oder Challenge-Daten.
 
 ## Version 0.1.0189
 - Die sichtbare App-Version wurde auf `0.1.0189` erhöht.

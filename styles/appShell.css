@@ -8667,3 +8667,137 @@ body.change-view-settings #header .avatar.google-on::after{background:#22c55e!im
     box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 12px 28px rgba(0,0,0,.20)!important;
   }
 }
+
+
+/* v0.1.0190 · Desktop Sidebar Content Guard
+   Letzte Desktop-Regel: Sidebar links, Content rechts sichtbar. Keine Logikänderung. */
+@media (min-width:701px){
+  body:not(.change-login-active).change-view-dashboard,
+  body:not(.change-login-active).change-view-calendar,
+  body:not(.change-login-active).change-view-challenges,
+  body:not(.change-login-active).change-view-pollen,
+  body:not(.change-login-active).change-view-settings{
+    overflow:hidden!important;
+    background:#04090e!important;
+  }
+
+  body:not(.change-login-active).change-view-dashboard #main-app,
+  body:not(.change-login-active).change-view-calendar #main-app,
+  body:not(.change-login-active).change-view-challenges #main-app,
+  body:not(.change-login-active).change-view-pollen #main-app,
+  body:not(.change-login-active).change-view-settings #main-app{
+    display:grid!important;
+    grid-template-columns:108px minmax(0,1fr)!important;
+    grid-template-rows:100vh!important;
+    width:100vw!important;
+    height:100vh!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    position:relative!important;
+    background:#04090e!important;
+  }
+
+  body:not(.change-login-active).change-view-dashboard #header,
+  body:not(.change-login-active).change-view-calendar #header,
+  body:not(.change-login-active).change-view-challenges #header,
+  body:not(.change-login-active).change-view-pollen #header,
+  body:not(.change-login-active).change-view-settings #header{
+    grid-column:1!important;
+    grid-row:1!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    justify-content:flex-start!important;
+    width:108px!important;
+    min-width:108px!important;
+    max-width:108px!important;
+    height:100vh!important;
+    min-height:100vh!important;
+    max-height:100vh!important;
+    padding:17px 0!important;
+    margin:0!important;
+    position:relative!important;
+    inset:auto!important;
+    overflow:hidden!important;
+    z-index:10!important;
+    border-right:1px solid rgba(255,255,255,.06)!important;
+    border-bottom:0!important;
+    background:linear-gradient(180deg,rgba(7,12,18,.98),rgba(4,9,14,.98))!important;
+  }
+
+  body:not(.change-login-active).change-view-dashboard #content,
+  body:not(.change-login-active).change-view-calendar #content,
+  body:not(.change-login-active).change-view-challenges #content,
+  body:not(.change-login-active).change-view-pollen #content,
+  body:not(.change-login-active).change-view-settings #content{
+    grid-column:2!important;
+    grid-row:1!important;
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    position:relative!important;
+    z-index:1!important;
+    width:auto!important;
+    min-width:0!important;
+    height:100vh!important;
+    min-height:0!important;
+    max-height:100vh!important;
+    margin:0!important;
+    overflow:hidden!important;
+    box-sizing:border-box!important;
+    background:radial-gradient(circle at 18% 8%,rgba(21,99,56,.08),transparent 28%),linear-gradient(180deg,#04090e,#04090e)!important;
+  }
+
+  body:not(.change-login-active).change-view-dashboard #content{padding:22px 26px 26px!important;}
+  body:not(.change-login-active).change-view-calendar #content{padding:78px 26px 26px!important;}
+  body:not(.change-login-active).change-view-challenges #content,
+  body:not(.change-login-active).change-view-pollen #content{padding:22px 26px 26px!important;}
+  body:not(.change-login-active).change-view-settings #content{padding:0!important;}
+
+  body:not(.change-login-active).change-view-dashboard #dashboard-view,
+  body:not(.change-login-active).change-view-calendar #cal-body,
+  body:not(.change-login-active).change-view-challenges #challenges-view,
+  body:not(.change-login-active).change-view-pollen #pollen-view,
+  body:not(.change-login-active).change-view-settings #settings-view{
+    visibility:visible!important;
+    opacity:1!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:100%!important;
+    box-sizing:border-box!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    background:transparent!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+
+  body:not(.change-login-active).change-view-dashboard #dashboard-view{display:block!important;}
+  body:not(.change-login-active).change-view-calendar #cal-body{display:flex!important;flex-direction:column!important;}
+  body:not(.change-login-active).change-view-challenges #challenges-view{display:flex!important;flex-direction:column!important;}
+  body:not(.change-login-active).change-view-pollen #pollen-view{display:flex!important;flex-direction:column!important;}
+  body:not(.change-login-active).change-view-settings #settings-view{display:block!important;}
+
+  body:not(.change-login-active).change-view-dashboard #cal-body,
+  body:not(.change-login-active).change-view-dashboard #challenges-view,
+  body:not(.change-login-active).change-view-dashboard #pollen-view,
+  body:not(.change-login-active).change-view-dashboard #settings-view,
+  body:not(.change-login-active).change-view-calendar #dashboard-view,
+  body:not(.change-login-active).change-view-calendar #challenges-view,
+  body:not(.change-login-active).change-view-calendar #pollen-view,
+  body:not(.change-login-active).change-view-calendar #settings-view,
+  body:not(.change-login-active).change-view-challenges #dashboard-view,
+  body:not(.change-login-active).change-view-challenges #cal-body,
+  body:not(.change-login-active).change-view-challenges #pollen-view,
+  body:not(.change-login-active).change-view-challenges #settings-view,
+  body:not(.change-login-active).change-view-pollen #dashboard-view,
+  body:not(.change-login-active).change-view-pollen #cal-body,
+  body:not(.change-login-active).change-view-pollen #challenges-view,
+  body:not(.change-login-active).change-view-pollen #settings-view,
+  body:not(.change-login-active).change-view-settings #dashboard-view,
+  body:not(.change-login-active).change-view-settings #cal-body,
+  body:not(.change-login-active).change-view-settings #challenges-view,
+  body:not(.change-login-active).change-view-settings #pollen-view{
+    display:none!important;
+  }
+}

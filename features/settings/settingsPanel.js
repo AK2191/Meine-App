@@ -514,7 +514,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0188';
+  var APP_VERSION = '0.1.0191';
 
 
 
@@ -1075,6 +1075,20 @@
         document.body.classList.remove('change-view-dashboard','change-view-calendar','change-view-challenges','change-view-pollen');
         document.body.classList.add('change-view-settings','change-settings-premium-open');
       }
+    }catch(e){}
+    try{ if(typeof window.enforceDesktopContentVisibility === 'function') window.enforceDesktopContentVisibility('settings'); }catch(e){}
+    try{
+      var content = document.getElementById('content');
+      if(content){
+        content.style.setProperty('display','block','important');
+        content.style.setProperty('grid-column','2','important');
+        content.style.setProperty('height','100vh','important');
+        content.style.setProperty('visibility','visible','important');
+        content.style.setProperty('opacity','1','important');
+      }
+      view.style.setProperty('display','block','important');
+      view.style.setProperty('visibility','visible','important');
+      view.style.setProperty('opacity','1','important');
     }catch(e){}
     try{ document.querySelectorAll('.h-tab,.bnav-item').forEach(function(item){ item.classList.remove('active'); }); }catch(e){}
     return true;

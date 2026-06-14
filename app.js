@@ -710,6 +710,43 @@ function bootMainApp(){
 }
 
 /* MAIN VIEW CONTROLLER */
+function enforceDesktopContentVisibility(activeView){
+  try{
+    const content = document.getElementById('content');
+    if(content){
+      content.style.setProperty('display','block','important');
+      content.style.setProperty('visibility','visible','important');
+      content.style.setProperty('opacity','1','important');
+      content.style.setProperty('grid-column','2','important');
+      content.style.setProperty('grid-row','1','important');
+      content.style.setProperty('width','auto','important');
+      content.style.setProperty('min-width','0','important');
+      content.style.setProperty('height','100vh','important');
+      content.style.setProperty('min-height','0','important');
+      content.style.setProperty('overflow','hidden','important');
+      content.style.setProperty('position','relative','important');
+      content.style.setProperty('z-index','1','important');
+    }
+    const ids = {dashboard:'dashboard-view', calendar:'cal-body', challenges:'challenges-view', pollen:'pollen-view', settings:'settings-view'};
+    Object.keys(ids).forEach(function(key){
+      const el = document.getElementById(ids[key]);
+      if(!el) return;
+      if(key === activeView){
+        el.style.setProperty('display', key === 'dashboard' || key === 'settings' ? 'block' : 'flex', 'important');
+        el.style.setProperty('visibility','visible','important');
+        el.style.setProperty('opacity','1','important');
+        el.style.setProperty('width','100%','important');
+        el.style.setProperty('height','100%','important');
+        el.style.setProperty('min-height','0','important');
+        el.style.setProperty('overflow-y','auto','important');
+        el.style.setProperty('overflow-x','hidden','important');
+      }else{
+        el.style.setProperty('display','none','important');
+      }
+    });
+  }catch(e){}
+}
+
 function setMainView(v){
   currentMainView=v;
   try{
@@ -721,34 +758,37 @@ function setMainView(v){
   const views=['dashboard','calendar','challenges','pollen','settings'];
   views.forEach(vv=>{
     const el=document.getElementById(vv==='calendar'?'cal-body':vv+'-view');
-    if(el) el.style.display='none';
+    if(el) el.style.setProperty('display','none','important');
   });
   if(v==='calendar'){
-    document.getElementById('cal-body').style.display='flex';
-    document.getElementById('cal-controls').style.display='flex';
+    document.getElementById('cal-body')?.style.setProperty('display','flex','important');
+    document.getElementById('cal-controls')?.style.setProperty('display','flex','important');
     renderCalendar();
     renderUpcoming();
   } else {
-    document.getElementById('cal-controls').style.display='none';
+    document.getElementById('cal-controls')?.style.setProperty('display','none','important');
     if(v==='challenges'){
-      document.getElementById('challenges-view')?.style.setProperty('display','flex');
+      document.getElementById('challenges-view')?.style.setProperty('display','flex','important');
       renderChallenges?.();
 
     } else if(v==='pollen'){
-      document.getElementById('pollen-view')?.style.setProperty('display','flex');
+      document.getElementById('pollen-view')?.style.setProperty('display','flex','important');
       if(typeof window.renderPollenView === 'function') window.renderPollenView();
 
     } else {
-      document.getElementById('dashboard-view').style.display='block';
+      document.getElementById('dashboard-view')?.style.setProperty('display','block','important');
       buildDashboard();
     }
   }
+  enforceDesktopContentVisibility(v);
   document.querySelectorAll('.h-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('htab-'+v)?.classList.add('active');
   document.querySelectorAll('.bnav-item').forEach(t=>t.classList.remove('active'));
   document.getElementById('bnav-'+v)?.classList.add('active');
   const fab=document.getElementById('fab'); if(fab) fab.style.display = v==='calendar' ? 'flex' : 'none';
 }
+
+try{ window.enforceDesktopContentVisibility = enforceDesktopContentVisibility; }catch(e){}
 
 function fabAction(){
   if(currentMainView==='calendar') openEventPanel(null);

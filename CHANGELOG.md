@@ -1,3 +1,16 @@
+## 0.1.0191 - Stabilitätsstand und offene Prüfpunkte
+- Version auf `0.1.0191` erhöht.
+- Bekannte offene Prüfpunkte dokumentiert: Desktop-AppShell, Cloudflare Worker `/files` und `/status`, GitHub Action Commit/ZIP-Cleanup, alter `updates/` Inhalt sowie konsistente Versionseinträge.
+- Keine neue Feature-Logik ergänzt; diese Version dient als sauber dokumentierter Zwischenstand für die nächste Prüfung.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push oder Challenge-Punkten.
+
+## 0.1.0190 - Desktop Sidebar Content Guard
+- Version auf `0.1.0190` erhöht.
+- Desktop/lokale Sidebar bleibt links, während der Contentbereich rechts wieder explizit sichtbar geschaltet wird.
+- `setMainView()` setzt die aktiven Inhalte zusätzlich per stabiler JS-Sicherung, damit lokale CSS-Overrides den Content nicht mehr leer schalten.
+- Einstellungen nutzen dieselbe Sichtbarkeits-Sicherung.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push oder Challenge-Daten.
+
 ## 0.1.0189 - GitHub Action Commit stabilisiert
 - Version auf `0.1.0189` erhöht.
 - Commit-Schritt der GitHub Action repariert; die Zielversion wird über `.change-update-version` übergeben.
