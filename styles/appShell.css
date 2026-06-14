@@ -8547,3 +8547,123 @@ body.change-view-settings #header .avatar.google-on::after{background:#22c55e!im
   body:not(.change-login-active).change-view-pollen #bottom-nav,
   body:not(.change-login-active).change-view-settings #bottom-nav{display:none!important;}
 }
+
+
+/* v0.1.0187 · Desktop Sidebar Content Stabilisierung
+   Erzwingt für Desktop/lokal eine stabile Sidebar mit sichtbarem Content.
+   Mobile Bottom-Navigation bleibt davon unberührt. */
+@media (min-width:701px){
+  body.change-view-dashboard,
+  body.change-view-calendar,
+  body.change-view-challenges,
+  body.change-view-pollen,
+  body.change-view-settings{
+    overflow:hidden!important;
+    background:#04090e!important;
+  }
+
+  body.change-view-dashboard #main-app,
+  body.change-view-calendar #main-app,
+  body.change-view-challenges #main-app,
+  body.change-view-pollen #main-app,
+  body.change-view-settings #main-app{
+    display:grid!important;
+    grid-template-columns:108px minmax(0,1fr)!important;
+    grid-template-rows:100vh!important;
+    width:100vw!important;
+    height:100vh!important;
+    min-height:0!important;
+    overflow:hidden!important;
+  }
+
+  body.change-view-dashboard #header,
+  body.change-view-calendar #header,
+  body.change-view-challenges #header,
+  body.change-view-pollen #header,
+  body.change-view-settings #header{
+    grid-column:1!important;
+    grid-row:1!important;
+    width:108px!important;
+    min-width:108px!important;
+    max-width:108px!important;
+    height:100vh!important;
+    min-height:0!important;
+    position:relative!important;
+    inset:auto!important;
+    display:flex!important;
+    flex-direction:column!important;
+    overflow:hidden!important;
+  }
+
+  body.change-view-dashboard #content,
+  body.change-view-calendar #content,
+  body.change-view-challenges #content,
+  body.change-view-pollen #content,
+  body.change-view-settings #content{
+    grid-column:2!important;
+    grid-row:1!important;
+    width:100%!important;
+    min-width:0!important;
+    height:100vh!important;
+    min-height:0!important;
+    display:block!important;
+    position:relative!important;
+    overflow:hidden!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-dashboard #dashboard-view,
+  body.change-view-calendar #cal-body,
+  body.change-view-challenges #challenges-view,
+  body.change-view-pollen #pollen-view,
+  body.change-view-settings #settings-view{
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    max-height:100%!important;
+    box-sizing:border-box!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+
+  body.change-view-dashboard #dashboard-view{display:block!important;}
+  body.change-view-calendar #cal-body{display:flex!important;}
+  body.change-view-challenges #challenges-view{display:flex!important;}
+  body.change-view-pollen #pollen-view{display:flex!important;}
+  body.change-view-settings #settings-view{display:block!important;}
+
+  body.change-view-dashboard #cal-body,
+  body.change-view-dashboard #challenges-view,
+  body.change-view-dashboard #pollen-view,
+  body.change-view-dashboard #settings-view,
+  body.change-view-calendar #dashboard-view,
+  body.change-view-calendar #challenges-view,
+  body.change-view-calendar #pollen-view,
+  body.change-view-calendar #settings-view,
+  body.change-view-challenges #dashboard-view,
+  body.change-view-challenges #cal-body,
+  body.change-view-challenges #pollen-view,
+  body.change-view-challenges #settings-view,
+  body.change-view-pollen #dashboard-view,
+  body.change-view-pollen #cal-body,
+  body.change-view-pollen #challenges-view,
+  body.change-view-pollen #settings-view,
+  body.change-view-settings #dashboard-view,
+  body.change-view-settings #cal-body,
+  body.change-view-settings #challenges-view,
+  body.change-view-settings #pollen-view{
+    display:none!important;
+  }
+
+  body.change-view-settings .h-tabs,
+  body.change-view-settings .h-right{
+    display:flex!important;
+  }
+
+  body.change-view-settings #settings-btn{
+    color:#4ade80!important;
+    background:linear-gradient(180deg,rgba(24,83,40,.68),rgba(13,45,24,.88))!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 12px 28px rgba(0,0,0,.20)!important;
+  }
+}

@@ -1,3 +1,9 @@
+## 0.1.0187 - Desktop-Sidebar Content stabilisiert
+- Version auf `0.1.0187` erhöht.
+- Desktop/lokale Sidebar erzwingt den Contentbereich rechts neben der Navigation wieder sichtbar.
+- Einstellungen nutzen dieselbe Sidebar-Struktur; der Einstellungen-Button bleibt stabil.
+- Mobile Bottom-Navigation unverändert.
+
 ## 0.1.0186 - Desktop-Sidebar Content repariert
 - Version auf `0.1.0186` erhöht.
 - Desktop/lokale Sidebar bleibt links, die Inhalte von Dashboard, Kalender, Challenges, Pollen und Einstellungen bleiben wieder sichtbar.
