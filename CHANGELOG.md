@@ -1,3 +1,12 @@
+## Version 0.1.0213
+- Die sichtbare App-Version wurde auf `0.1.0213` erhöht.
+- Die GitHub-Update-Anzeige wurde beruhigt: Im normalen Verlauf wird nur noch die Zielversion angezeigt, keine aktuelle Version, Live-Version, Main-Version, Commit-SHA oder letzte Prüfzeit.
+- Technische Begriffe wie `ZIP wurde übertragen`, `GitHub Action wird gesucht/geprüft` und `Commit auf main` wurden in der normalen Anzeige durch einfache Statusmeldungen ersetzt: `Update bereit`, `Update wird hochgeladen`, `Update wird angewendet`, `Update wird veröffentlicht`, `Update ist bereit`.
+- Der Reload-Button heißt jetzt `App vollständig neu laden`; wenn die Version bereits geladen ist, wird nur die geladene Version angezeigt.
+- Die Datei wird nach der ZIP-Prüfung im Speicher gehalten, damit der spätere Upload die Browser-Dateireferenz seltener verliert.
+- Dateilesefehler beim Upload werden verständlich als `Datei konnte nicht gelesen werden. Bitte ZIP neu auswählen und direkt erneut übertragen.` angezeigt.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder GitHub Action.
+
 ## Version 0.1.0212
 - Die sichtbare App-Version wurde auf `0.1.0212` erhöht.
 - Inhaltlich entspricht diese Version der HeroCard-Vereinheitlichung aus `0.1.0211`, wurde aber neu versioniert, damit die GitHub-Update-Funktion die ZIP korrekt als neuere Version akzeptiert.

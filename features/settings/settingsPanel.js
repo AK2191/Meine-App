@@ -514,12 +514,15 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0212';
+  var APP_VERSION = '0.1.0213';
 
 
 
   var githubUpdateState = {
     file: null,
+    fileBuffer: null,
+    fileName: '',
+    fileSize: 0,
     status: 'empty',
     message: '',
     files: [],
@@ -680,9 +683,9 @@
     var files = (state.files || []).length;
     var githubFiles = (state.githubFiles || []).length;
     var target = state.toVersion || '';
-    var label = ok ? 'ZIP bereit' : 'ZIP prüfen';
+    var label = ok ? 'Update bereit' : 'ZIP prüfen';
     var detail = ok
-      ? ((target ? (APP_VERSION + ' → ' + target) : 'Version erkannt') + (files ? ' · ' + files + ' Dateien' : '') + (githubFiles ? ' · GitHub gelesen' : ''))
+      ? ((target ? ('Zielversion ' + target) : 'Zielversion erkannt') + (files ? ' · ' + files + ' Dateien' : ''))
       : ((failed && failed.label ? failed.label : 'Prüfung offen') + (failed && failed.detail ? ' · ' + failed.detail : ''));
     var toggle = files ? '<button type="button" class="change-github-check-inline-link" id="github-files-toggle">Dateien</button>' : '';
     return '<div class="change-github-check-summary '+(ok?'ok':'warn')+'"><span></span><strong>'+esc(label)+'</strong><small>'+esc(detail)+'</small>'+toggle+'</div>';
@@ -720,54 +723,55 @@
     });
     return best || APP_VERSION;
   }
+  function githubTargetVersionLabel(){
+    var target = githubUpdateState.toVersion || latestGithubUpdateVersion();
+    return target ? ('Zielversion ' + target) : 'Zielversion offen';
+  }
+  function githubFriendlyError(message){
+    message = String(message || '').trim();
+    if(/requested file could not be read|permission problems|reference to a file was acquired|NotReadableError|file could not be read/i.test(message)){
+      return 'Datei konnte nicht gelesen werden. Bitte ZIP neu auswählen und direkt erneut übertragen.';
+    }
+    if(/Status Fehler 404|Not Found|\/status fehlt|404/i.test(message)){
+      return 'Status konnte nicht gelesen werden. Bitte Worker prüfen.';
+    }
+    if(message) return message;
+    return 'Update konnte nicht abgeschlossen werden.';
+  }
   function githubUpdateNeedsReload(){
     var version = latestGithubUpdateVersion();
     return !!(version && compareVersions(version, APP_VERSION) > 0);
   }
   function githubActionCurrent(){
     var state = githubUpdateState;
-    var target = state.toVersion || APP_VERSION;
+    var targetLine = githubTargetVersionLabel();
     var actionDone = state.actionStatus === 'completed';
     var actionOk = actionDone && state.actionConclusion === 'success';
     var actionError = state.actionConclusion && state.actionConclusion !== 'success';
     var tone = 'active';
-    var label = state.actionMessage || 'GitHub Status wird geprüft…';
-    var detail = '';
+    var label = 'Update wird vorbereitet…';
+    var detail = targetLine;
     if(actionError){
       tone = 'error';
-      label = state.actionMessage || 'GitHub Action fehlgeschlagen';
-      detail = state.actionRunUrl ? 'Details in GitHub prüfen' : 'Bitte Action-Log prüfen';
+      label = 'Update konnte nicht abgeschlossen werden';
+      detail = githubFriendlyError(state.actionMessage);
     }else if(state.updateReady && state.liveReady){
       tone = 'ok';
-      label = 'Update live bereit';
-      detail = target ? ('Version '+target+' ist erreichbar') : 'Live-Version ist erreichbar';
+      label = githubUpdateNeedsReload() ? 'Update ist bereit' : 'Du bist aktuell';
+      detail = githubUpdateNeedsReload() ? targetLine : ('Version ' + latestGithubUpdateVersion());
     }else if(state.targetCommitted && !state.liveReady){
-      tone = 'active';
-      label = 'Live-Version wird bereitgestellt…';
-      detail = state.liveVersion ? ('Live aktuell '+state.liveVersion) : 'Wartet auf GitHub Pages / Cache';
+      label = 'Update wird veröffentlicht…';
+      detail = targetLine;
     }else if(actionOk && !state.targetCommitted){
-      tone = 'active';
-      label = 'Commit auf main wird geprüft…';
-      detail = state.branchVersion ? ('Main '+state.branchVersion) : 'Action fertig, Commit wird gesucht';
-    }else if(state.actionStatus === 'queued'){
-      label = 'GitHub Action wartet…';
-      detail = 'ZIP übertragen · Workflow startet';
-    }else if(state.actionStatus === 'in_progress'){
-      label = 'GitHub Action läuft…';
-      detail = 'ZIP wird geprüft, entpackt und committed';
-    }else if(state.uploadCommitSha){
-      label = 'GitHub Action wird gesucht…';
-      detail = 'Upload-Commit '+shortSha(state.uploadCommitSha);
-    }else{
-      label = state.actionMessage || 'Wartet auf Upload';
-      detail = target ? ('Zielversion '+target) : '';
+      label = 'Update wird veröffentlicht…';
+      detail = targetLine;
+    }else if(state.actionStatus === 'queued' || state.actionStatus === 'in_progress' || state.uploadCommitSha){
+      label = 'Update wird angewendet…';
+      detail = targetLine;
+    }else if(state.actionMessage){
+      label = state.actionMessage;
+      detail = targetLine;
     }
-    var meta = [];
-    if(target) meta.push('Ziel '+target);
-    if(state.branchVersion) meta.push('Main '+state.branchVersion);
-    if(state.liveVersion) meta.push('Live '+state.liveVersion);
-    if(state.actionCheckedAt) meta.push('Stand '+state.actionCheckedAt);
-    if(meta.length) detail += (detail ? ' · ' : '') + meta.join(' · ');
     return {tone:tone,label:label,detail:detail};
   }
   function githubActionStatusPanel(){
@@ -776,12 +780,12 @@
     var current = githubActionCurrent();
     var cls = current.tone === 'ok' ? 'ok' : (current.tone === 'error' ? 'error' : 'checking');
     var target = latestGithubUpdateVersion();
-    var link = state.actionRunUrl ? '<a href="'+esc(state.actionRunUrl)+'" target="_blank" rel="noopener">Details in GitHub öffnen</a>' : '';
+    var link = state.actionRunUrl ? '<a href="'+esc(state.actionRunUrl)+'" target="_blank" rel="noopener">Technische Details öffnen</a>' : '';
     var button = state.updateReady && state.liveReady && githubUpdateNeedsReload()
-      ? '<button class="btn btn-primary btn-full" id="github-update-reload" type="button">Update vollständig neu laden</button>'
+      ? '<button class="btn btn-primary btn-full" id="github-update-reload" type="button">App vollständig neu laden</button>'
       : '';
     var loaded = state.updateReady && state.liveReady && !githubUpdateNeedsReload()
-      ? '<div class="change-github-loaded-note">Aktuelle Version ist bereits geladen.</div>'
+      ? '<div class="change-github-loaded-note">Version '+esc(latestGithubUpdateVersion())+' ist bereits geladen.</div>'
       : '';
     return '<div class="change-github-action '+esc(cls)+'"><div class="change-github-action-current '+esc(current.tone)+'"><span></span><div><strong>'+esc(current.label)+'</strong><small>'+esc(current.detail)+'</small></div></div>'+(link?'<div class="change-github-action-links">'+link+'</div>':'')+button+loaded+'</div>';
   }
@@ -793,7 +797,7 @@
       return;
     }
     try{
-      githubUpdateState.actionMessage = 'Cache wird vollständig geleert…';
+      githubUpdateState.actionMessage = 'App wird vollständig neu geladen…';
       refreshSameTab('github');
     }catch(e){}
     try{
@@ -885,17 +889,17 @@
             state.liveReady = !!(target && state.liveVersion && compareVersions(state.liveVersion, target) >= 0);
             if(state.liveReady){
               state.updateReady = true;
-              state.actionMessage = 'Update ist live bereit.';
+              state.actionMessage = 'Update ist bereit';
               stopGithubActionPolling();
               refreshSameTab('github');
               return;
             }
             state.updateReady = false;
-            state.actionMessage = state.targetCommitted ? 'Commit ist da. Live-Version wird bereitgestellt…' : 'GitHub Action fertig. Commit auf main wird geprüft…';
+            state.actionMessage = 'Update wird veröffentlicht…';
           }else{
             state.updateReady = false;
             state.liveReady = false;
-            state.actionMessage = 'GitHub Action fehlgeschlagen.';
+            state.actionMessage = 'Update konnte nicht abgeschlossen werden';
             stopGithubActionPolling();
             refreshSameTab('github');
             return;
@@ -903,19 +907,19 @@
         }else{
           state.updateReady = false;
           state.liveReady = false;
-          state.actionMessage = run.status === 'queued' ? 'GitHub Action wartet…' : 'GitHub Action läuft…';
+          state.actionMessage = 'Update wird angewendet…';
         }
       }else{
         state.updateReady = false;
         state.liveReady = false;
-        state.actionMessage = 'GitHub Action wird gesucht…';
+        state.actionMessage = 'Update wird angewendet…';
       }
     }catch(e){
       var statusError = e && e.message ? e.message : 'Status konnte nicht gelesen werden.';
       if(/404|Status Fehler 404|Not Found/i.test(statusError)){
-        statusError = 'Cloudflare Worker ist nicht aktuell: /status fehlt. Worker bitte neu deployen.';
+        statusError = 'Status konnte nicht gelesen werden. Bitte Worker prüfen.';
       }
-      state.actionMessage = statusError;
+      state.actionMessage = githubFriendlyError(statusError);
       state.actionConclusion = 'failure';
       state.actionCheckedAt = new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
     }
@@ -943,7 +947,7 @@
     var state = githubUpdateState;
     var selectedLabel = state.file ? esc(state.file.name)+' · '+Math.round((state.file.size || 0) / 1024)+' KB' : 'ZIP hier ablegen oder auswählen';
     var checks = githubCheckSummary();
-    var statusLine = state.message ? '<div class="change-github-status '+esc(state.status || 'empty')+'">'+esc(state.message || '')+'</div>' : '';
+    var statusLine = state.message && state.status !== 'ok' ? '<div class="change-github-status '+esc(state.status || 'empty')+'">'+esc(state.message || '')+'</div>' : '';
     return '<div class="change-github-update">'
       + '<label class="change-github-secret"><span>Freigabe-Code</span><input type="text" id="github-update-secret" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Freigabe-Code eingeben" value="'+esc(readGithubUpdateSecret())+'"></label>'
       + '<div class="change-github-upload-panel">'
@@ -953,7 +957,7 @@
       + (checks || '')
       + githubFileOverview()
       + githubActionStatusPanel()
-      + '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' ? '' : 'disabled')+'>Direkt auf GitHub übertragen</button>'
+      + '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' ? '' : 'disabled')+'>Auf GitHub übertragen</button>'
       + '</div>'
       + '</div>';
   }
@@ -980,17 +984,22 @@
     }
     writeGithubUpdateSecret(secret);
     state.status = 'checking';
-    state.message = 'ZIP wird an den geschützten Worker übertragen…';
+    state.message = 'Update wird hochgeladen…';
+    state.actionMessage = '';
     refreshSameTab('github');
     try{
-      var buffer = await state.file.arrayBuffer();
+      var buffer = state.fileBuffer || null;
+      if(!buffer){
+        try{ buffer = await state.file.arrayBuffer(); }
+        catch(fileErr){ throw new Error('Datei konnte nicht gelesen werden. Bitte ZIP neu auswählen und direkt erneut übertragen.'); }
+      }
       var payload = {
         secret: secret,
-        fileName: state.file.name || ('change-update-'+Date.now()+'.zip'),
+        fileName: state.fileName || state.file.name || ('change-update-'+Date.now()+'.zip'),
         contentBase64: arrayBufferToBase64(buffer),
         fromVersion: state.fromVersion || APP_VERSION,
         targetVersion: state.toVersion || '',
-        fileSize: state.file.size || buffer.byteLength || 0
+        fileSize: state.fileSize || state.file.size || buffer.byteLength || 0
       };
       var response = await fetch(GITHUB_UPDATE_WORKER_URL + '/upload', {
         method: 'POST',
@@ -1003,12 +1012,12 @@
         throw new Error((result && result.message) || ('Worker Fehler '+response.status));
       }
       state.status = 'ok';
-      state.message = 'ZIP wurde übertragen. GitHub Action wird geprüft…';
+      state.message = '';
       state.uploadCommitSha = result.commitSha || '';
       state.actionRunUrl = result.actionsUrl || '';
       state.actionStatus = 'queued';
       state.actionConclusion = '';
-      state.actionMessage = 'GitHub Action wird gesucht…';
+      state.actionMessage = 'Update wird angewendet…';
       state.actionCheckedAt = '';
       state.actionStartedAt = Date.now();
       state.branchCommitSha = '';
@@ -1018,11 +1027,12 @@
       state.liveReady = false;
       state.lastRunId = '';
       state.updateReady = false;
-      if(typeof window.toast === 'function') window.toast('Update an GitHub übertragen', 'ok');
+      if(typeof window.toast === 'function') window.toast('Update wird angewendet', 'ok');
       scheduleGithubActionPoll(2500);
     }catch(e){
       state.status = 'error';
-      state.message = e && e.message ? e.message : 'Übertragung fehlgeschlagen.';
+      state.message = githubFriendlyError(e && e.message ? e.message : 'Übertragung fehlgeschlagen.');
+      state.actionMessage = state.message;
       if(typeof window.toast === 'function') window.toast('GitHub Übertragung fehlgeschlagen', 'err');
     }
     refreshSameTab('github');
@@ -1048,6 +1058,9 @@
     refreshSameTab('github');
     try{
       var buffer = await state.file.arrayBuffer();
+      state.fileBuffer = buffer;
+      state.fileName = state.file.name || state.fileName || '';
+      state.fileSize = state.file.size || buffer.byteLength || state.fileSize || 0;
       var zip = parseZipDirectory(buffer);
       var entries = zip.entries.filter(function(entry){ return !entry.isDirectory; });
       var paths = entries.map(function(entry){ return entry.path; }).filter(Boolean).sort();
@@ -1085,7 +1098,7 @@
         ? 'GitHub aktuell: '+githubFiles.length+' · ZIP: '+paths.length+' · Neu: '+newFiles.length
         : 'ZIP: '+paths.length+' · GitHub aktuell nicht gelesen';
       var checks = [
-        {ok: !!versionHigher, label:'Version erhöht', detail: nextVersion ? APP_VERSION+' → '+nextVersion : 'Keine Zielversion erkannt.'},
+        {ok: !!versionHigher, label:'Zielversion', detail: nextVersion ? nextVersion : 'Keine Zielversion erkannt.'},
         {ok: claudeUpdated, label:'CLAUDE.md aktualisiert', detail: claudeUpdated ? 'Eintrag zur Zielversion gefunden.' : 'Kein passender Versionseintrag gefunden.'},
         {ok: changelogUpdated, label:'CHANGELOG.md aktualisiert', detail: changelogUpdated ? 'Eintrag zur Zielversion gefunden.' : 'Kein passender Versionseintrag gefunden.'},
         {ok: duplicates.length === 0, label:'Keine doppelten Dateien', detail: duplicates.length ? duplicates.slice(0,3).join(', ') : 'Pfade sind eindeutig.'},
@@ -1100,10 +1113,10 @@
       state.toVersion = nextVersion || '';
       state.checks = checks;
       state.status = ok ? 'ok' : 'error';
-      state.message = ok ? 'ZIP geprüft und bereit.' : 'ZIP braucht noch Korrekturen.';
+      state.message = ok ? '' : 'ZIP braucht noch Korrekturen.';
     }catch(e){
       state.status = 'error';
-      state.message = e && e.message ? e.message : 'ZIP konnte nicht geprüft werden.';
+      state.message = githubFriendlyError(e && e.message ? e.message : 'ZIP konnte nicht geprüft werden.');
       state.checks = [{ok:false,label:'ZIP-Prüfung fehlgeschlagen',detail:state.message}];
     }
     refreshSameTab('github');
@@ -1480,6 +1493,9 @@
     var runHealth = $('run-app-health'); if(runHealth) runHealth.addEventListener('click', function(){ appHealthExpanded = true; refreshSameTab('app'); });
     function setGithubZipFile(file){
       githubUpdateState.file = file || null;
+      githubUpdateState.fileBuffer = null;
+      githubUpdateState.fileName = file && file.name ? file.name : '';
+      githubUpdateState.fileSize = file && file.size ? file.size : 0;
       githubUpdateState.status = githubUpdateState.file ? 'selected' : 'empty';
       githubUpdateState.message = githubUpdateState.file ? '' : '';
       githubUpdateState.files = [];

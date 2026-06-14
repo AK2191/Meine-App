@@ -1955,3 +1955,24 @@ body.change-theme-light.change-view-settings .change-settings-profile-stat stron
 .change-github-action #github-update-reload{
   margin-top:2px!important;
 }
+
+
+/* v0.1.0213 · GitHub Update bewusst ruhig: nur Zielversion im Normalzustand */
+.change-github-check-summary{
+  grid-template-columns:10px minmax(0,1fr) auto!important;
+}
+.change-github-check-summary strong{white-space:nowrap!important;}
+.change-github-check-summary small{white-space:nowrap!important;}
+.change-github-action-current small{white-space:nowrap!important;}
+.change-github-action-links a{font-size:11.5px!important;font-weight:900!important;color:var(--acc)!important;text-decoration:none!important;}
+.change-github-status.error,
+.change-github-action.error .change-github-action-current small{
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+@media(max-width:520px){
+  .change-github-check-summary{grid-template-columns:10px minmax(0,1fr) auto!important;}
+  .change-github-check-summary small,
+  .change-github-action-current small{white-space:normal!important;line-height:1.3!important;}
+}
