@@ -1,3 +1,8 @@
+## Version 0.1.0212
+- Die sichtbare App-Version wurde auf `0.1.0212` erhöht.
+- Inhaltlich entspricht diese Version der HeroCard-Vereinheitlichung aus `0.1.0211`, wurde aber neu versioniert, damit die GitHub-Update-Funktion die ZIP korrekt als neuere Version akzeptiert.
+- Keine weitere Änderung an HeroCard-Rendering, Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder GitHub Action.
+
 ## Version 0.1.0211
 - Die sichtbare App-Version wurde auf `0.1.0211` erhöht.
 - Die ersten großen HeroCards von Dashboard, Kalender, Challenges und Einstellungen wurden auf ein gemeinsames Pollen-HeroCard-System vereinheitlicht.
