@@ -1,3 +1,9 @@
+## Version 0.1.0221
+- Die sichtbare App-Version wurde auf `0.1.0221` erhöht.
+- Die Challenges-HeroCard wurde nach dem fehlerhaften Umbau erneut stabilisiert: keine übergroße Leerfläche, keine zerfallende KPI-Zeile und keine vertikal auseinanderbrechende Fortschrittsanzeige.
+- Mobile Challenges nutzt jetzt wieder eine einfache Pollen-Geometrie: Hauptinhalt links, kleines ruhiges C-Visual rechts, Fortschritt sauber darunter und drei kompakte Statusspalten unten.
+- Die Änderung betrifft nur CSS/Rendering der Challenges-Oberfläche. Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker und GitHub Action bleiben unverändert.
+
 ## Version 0.1.0220
 - Die sichtbare App-Version wurde auf `0.1.0220` erhöht.
 - Die Challenges-Gruppenziel-HeroCard wurde als stabiler Pollen-Reset neu gesetzt: keine Zielscheibe, keine kollabierenden KPI-Texte, keine kaputte Zwischenstruktur.
@@ -129,7 +135,7 @@
 
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0220 mit stabilem Challenges-Pollen-Hero-Reset
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0221 mit reparierter mobiler Challenges-HeroCard
 
 ---
 
