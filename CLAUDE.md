@@ -1,10 +1,17 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0184 mit GitHub-Worker-Dateiliste und robuster ZIP-Action
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0185 mit Desktop-Sidebar-Reparatur
 
 ---
 
 
+
+## Version 0.1.0185
+- Die sichtbare App-Version wurde auf `0.1.0185` erhöht.
+- Desktop und lokale installierte Ansicht verwenden wieder die linke Sidebar-Navigation.
+- Die obere Header-Navigation wird ab Desktop-Breite wieder durch die Sidebar ersetzt.
+- Mobile Bottom-Navigation bleibt unverändert.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker, ZIP-Action oder Challenge-Logik.
 
 ## Version 0.1.0184
 - Die sichtbare App-Version wurde auf `0.1.0184` erhöht.

@@ -1,3 +1,9 @@
+## 0.1.0185 - Desktop-Sidebar wiederhergestellt
+- Version auf `0.1.0185` erhöht.
+- Desktop und lokale installierte Ansicht nutzen wieder die linke App-Sidebar statt der oberen Header-Navigation.
+- Mobile Bottom-Navigation bleibt unverändert.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder Challenge-Logik.
+
 ## 0.1.0184 - GitHub Worker-Dateiliste und Action-Fix
 - Version auf `0.1.0184` erhöht.
 - Direkter Browser-Zugriff auf `api.github.com` im GitHub-Bereich entfernt.
