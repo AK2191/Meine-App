@@ -506,7 +506,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0171';
+  var APP_VERSION = '0.1.0172';
 
 
 
@@ -516,7 +516,7 @@
     message: 'Noch keine ZIP ausgewählt.',
     files: [],
     checks: [],
-    fromVersion: '0.1.0171',
+    fromVersion: '0.1.0172',
     toVersion: '',
     rootFiles: []
   };
@@ -650,6 +650,7 @@
     if((state.files || []).length > 8) filePreview += '<li>+'+((state.files || []).length - 8)+' weitere Dateien</li>';
     var dropdownOpen = state.status !== 'empty' || !!state.file;
     return '<div class="change-github-update">'
+      + '<div class="change-feature-note">Die ZIP wird an deinen geschützten Cloudflare Worker übertragen. Der Worker legt sie in <strong>updates/</strong> ab; die GitHub Action prüft danach serverseitig und committet auf <strong>main</strong>. Kein GitHub-Key liegt im Browser.<br><br>ZIP Update als ausklappbarer Bereich. Prüfung und Übertragung bleiben getrennt.</div>'
       + '<div class="change-github-version-grid"><div><span>Von Version</span><strong>'+esc(state.fromVersion || APP_VERSION)+'</strong></div><div><span>Auf Version</span><strong>'+esc(to)+'</strong></div></div>'
       + '<details class="change-github-dropdown" '+(dropdownOpen ? 'open' : '')+'>'
       + '<summary><span>ZIP Update</span><small>'+esc(state.file ? state.file.name : 'ZIP auswählen, prüfen und übertragen')+'</small></summary>'
@@ -662,7 +663,6 @@
       + '<label class="change-github-secret"><span>Freigabe-Code</span><input type="password" id="github-update-secret" autocomplete="off" placeholder="Freigabe-Code eingeben" value="'+esc(readGithubUpdateSecret())+'"></label>'
       + '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' ? '' : 'disabled')+'>Direkt auf GitHub übertragen</button>'
       + '</div></details>'
-      + '<div class="change-feature-note">Die ZIP wird an deinen geschützten Cloudflare Worker übertragen. Der Worker legt sie in <strong>updates/</strong> ab; die GitHub Action prüft danach serverseitig und committet auf <strong>main</strong>. Kein GitHub-Key liegt im Browser.</div>'
       + '</div>';
   }
   function githubUpdateCard(){

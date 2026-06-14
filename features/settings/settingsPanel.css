@@ -1027,7 +1027,7 @@ body.change-theme-light:not(.change-view-settings) #panel-overlay{
 .change-github-secret input{width:100%;border:1px solid var(--b2);background:var(--s1);color:var(--t1);border-radius:12px;padding:10px 11px;font:inherit;font-size:13px;font-weight:800;outline:none}
 .change-github-secret input:focus{border-color:rgba(52,211,153,.45);box-shadow:0 0 0 3px rgba(52,211,153,.12)}
 
-/* v0.1.0171 · GitHub als eigener Einstellungsbereich mit ZIP-Dropdown */
+/* v0.1.0172 · GitHub als eigener Einstellungsbereich mit klaren Worker-Hinweisen */
 .change-github-dropdown{
   border:1px solid var(--b1);
   background:var(--s2);

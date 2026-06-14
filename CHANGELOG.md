@@ -1,5 +1,11 @@
 ## 0.1.0170 - Desktop-AppShell repariert
 
+## Version 0.1.0172
+- Sichtbare App-Version auf `0.1.0172` erhöht.
+- Lokale/Desktop-AppShell stabilisiert, damit Header und Navigation nach hartem Reload nicht falsch vertikal dargestellt werden.
+- GitHub-Bereich in den Einstellungen mit klaren Hinweisen zu Cloudflare Worker, `updates/`, GitHub Action, `main` und fehlendem Browser-Key ergänzt.
+- ZIP Upload bleibt als Dropdown; Prüfung und Übertragung bleiben getrennt.
+
 ## Version 0.1.0171
 - Sichtbare App-Version auf `0.1.0171` erhöht.
 - GitHub als eigener Einstellungsbereich eingebaut.

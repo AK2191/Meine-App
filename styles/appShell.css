@@ -7464,3 +7464,151 @@ body.change-theme-light.neo-pollen-shell #pollen-view .pollen-neo-hero-wide{
   }
 }
 
+
+/* v0.1.0172 · Lokale Desktop-AppShell-Reparatur
+   Stabilisiert den klassischen Desktop-Top-Header nach hartem Reload und verhindert,
+   dass die mobile/Sidebar-Navigation lokal vertikal zentriert hängen bleibt. */
+@media (min-width:701px){
+  body:not(.change-login-active) #main-app{
+    display:flex!important;
+    flex-direction:column!important;
+    grid-template-columns:none!important;
+    grid-template-rows:none!important;
+    height:100vh!important;
+    min-height:100vh!important;
+    width:100%!important;
+    overflow:hidden!important;
+  }
+
+  body:not(.change-login-active) #header{
+    display:flex!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    gap:12px!important;
+    height:52px!important;
+    min-height:52px!important;
+    width:100%!important;
+    padding:0 16px!important;
+    border-right:0!important;
+    border-bottom:1px solid var(--b1)!important;
+    background:var(--s1)!important;
+    box-shadow:none!important;
+    position:relative!important;
+    inset:auto!important;
+    z-index:100!important;
+  }
+
+  body:not(.change-login-active) #header .h-logo{
+    display:flex!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    gap:9px!important;
+    min-height:0!important;
+    padding:0!important;
+    margin:0!important;
+    width:auto!important;
+    flex:0 0 auto!important;
+  }
+
+  body:not(.change-login-active) #header .h-logo-icon,
+  body:not(.change-login-active) #header .h-logo-icon svg{
+    width:36px!important;
+    height:36px!important;
+    border-radius:10px!important;
+  }
+
+  body:not(.change-login-active) #header .h-logo-name{
+    display:inline!important;
+    font-size:16px!important;
+    font-weight:800!important;
+    color:var(--t1)!important;
+  }
+
+  body:not(.change-login-active) #header .h-sep{
+    display:block!important;
+    width:1px!important;
+    height:20px!important;
+    min-height:20px!important;
+    background:var(--b1)!important;
+    flex:0 0 auto!important;
+    margin:0!important;
+  }
+
+  body:not(.change-login-active) #header .h-tabs{
+    display:flex!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    gap:2px!important;
+    flex:1 1 auto!important;
+    width:auto!important;
+    height:auto!important;
+    min-height:0!important;
+    padding:0!important;
+    margin:0!important;
+    overflow:visible!important;
+  }
+
+  body:not(.change-login-active) #header .h-tab{
+    display:flex!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:6px!important;
+    width:auto!important;
+    height:auto!important;
+    min-width:0!important;
+    min-height:0!important;
+    padding:6px 12px!important;
+    margin:0!important;
+    border-radius:var(--rsm)!important;
+    background:transparent!important;
+    font-size:13px!important;
+    line-height:1!important;
+    text-align:left!important;
+  }
+
+  body:not(.change-login-active) #header .h-tab.active{
+    background:var(--acc-d)!important;
+    color:var(--acc)!important;
+  }
+
+  body:not(.change-login-active) #header .h-tab svg{
+    width:14px!important;
+    height:14px!important;
+    flex:0 0 14px!important;
+  }
+
+  body:not(.change-login-active) #header .h-right{
+    display:flex!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    gap:8px!important;
+    position:static!important;
+    inset:auto!important;
+    width:auto!important;
+    height:auto!important;
+    min-height:0!important;
+    margin:0 0 0 auto!important;
+    padding:0!important;
+    flex:0 0 auto!important;
+    transform:none!important;
+  }
+
+  body:not(.change-login-active) #content{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+  }
+
+  body:not(.change-login-active) #bottom-nav{
+    display:none!important;
+  }
+}
