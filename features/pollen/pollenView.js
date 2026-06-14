@@ -3,7 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0232';
+  var APP_VERSION = '0.1.0233';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var SELECTED_KEY = 'change_v1_pollen_selected_keys';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
@@ -526,7 +526,13 @@
     var selectedItem = todaySelected.item || dominantItem(today, selectedKeys) || {key:selectedKeys && selectedKeys[0], name:'Pollen', level:'none', value:0};
     var topLoadItem = relevantLoadItems(today)[0] || activeItems(today)[0] || selectedItem;
     var topLoadScore = Math.round(clampNum(topLoadItem && topLoadItem.value));
-    var dominantKey = (topLoadItem && topLoadItem.key) ? String(topLoadItem.key) : 'grass_pollen';
+    // Hero-Illustration: ausgewählten Typ priorisieren (Nutzerauswahl gewinnt),
+    // Fallback auf höchsten Messwert, dann Gräser als Default.
+    var _selKeys = Array.isArray(selectedKeys) ? selectedKeys : [];
+    var _selItem = _selKeys.length > 0 ? itemByKey(today, _selKeys[0]) : null;
+    var dominantKey = (_selItem && _selItem.key)
+      ? String(_selItem.key)
+      : ((topLoadItem && topLoadItem.key) ? String(topLoadItem.key) : 'grass_pollen');
     var nextTrend = trendText(selected);
     var score = Math.round(todaySelected.score || 0);
     var intensity = intensityTitle(todaySelected.level);

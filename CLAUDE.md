@@ -1,3 +1,10 @@
+## Version 0.1.0233
+- Die sichtbare App-Version wurde auf `0.1.0233` erhöht.
+- Symptom-Icons (Niesen, Augen, Nase, Atmung) komplett neu: klare, sofort erkennbare SVGs auf 22-25px. Niesen = Gesicht mit drei Tropfen-Strahlen, Augen = einzelnes großes Auge mit Tränenstrich, Nase = Nasensilhouette mit Tropfen, Atmung = zwei Lungenflügel.
+- Pollen-Hero-Illustration: zeigt jetzt den **ausgewählten** Pollentyp (Nutzerauswahl hat Priorität). Erst wenn keine Auswahl vorhanden, wird der höchste Messwert verwendet. Damit wechselt die Illustration korrekt wenn Olive, Erle, Birke etc. ausgewählt wird.
+- Umsetzung in `features/weather/pollenSymptoms.js` und `features/pollen/pollenView.js`.
+- Keine Änderung an Pollenberechnung, HeroCards, Kalender, Challenges, Firebase, Sync oder Push.
+
 ## Version 0.1.0232
 - Injiziertes CSS in `dashboard-logic.js` korrigiert: konkurrierender Gradient und horizontales Mobil-Grid entfernt.
 - `appShell.css`: Einziger finaler v0232-Block überschreibt alle alten HeroCard-Konflikte.
