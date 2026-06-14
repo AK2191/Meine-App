@@ -1,3 +1,9 @@
+## Version 0.1.0173
+- Sichtbare App-Version auf `0.1.0173` erhöht.
+- Einstellungen-Header lokal/Desktop und mobil repariert.
+- Rechte Symbol-Reihenfolge vereinheitlicht: Glocke, Zahnrad, Profil.
+- Keine Änderung an Login, Sync, Firebase, Kalenderdaten oder GitHub-Worker-Logik.
+
 ## 0.1.0170 - Desktop-AppShell repariert
 
 ## Version 0.1.0172

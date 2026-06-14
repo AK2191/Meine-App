@@ -1,8 +1,15 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0172 mit lokaler Desktop-AppShell-Reparatur und klareren GitHub-Hinweisen
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0173 mit reparierter Einstellungen-Header-Reihenfolge
 
 ---
+
+## Version 0.1.0173
+- Die sichtbare App-Version wurde auf `0.1.0173` erhöht.
+- Die Einstellungen nutzen lokal/Desktop wieder dieselbe horizontale Header-Reihenfolge wie Dashboard, Kalender, Challenges und Pollen.
+- Die rechte Aktionsgruppe bleibt überall konsistent: Glocke, Zahnrad, Profil.
+- Mobile Einstellungen behalten ebenfalls diese Reihenfolge, ohne vertauschte Symbole.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Kalenderdaten, Pollenberechnung oder GitHub-Worker-Logik.
 
 ## Version 0.1.0172
 - Die sichtbare App-Version wurde auf `0.1.0172` erhöht.
