@@ -1,3 +1,11 @@
+## Version 0.1.0215
+- Die sichtbare App-Version wurde auf `0.1.0215` erhöht.
+- Die HeroCards wurden nochmals näher an die Pollen-Referenz gezogen: Desktop nutzt dieselbe Drei-Zonen-Geometrie, dieselbe Statuszeilen-Logik und dieselben Textgrößen für Label/Wert.
+- Die Challenges-Statuszeilen wurden repariert, damit Label und Wert nicht mehr übereinander liegen und mobil wie bei Pollen sauber in drei Spalten stehen.
+- Der lokale/Desktop-Kalender wird nun über `#cal-body` mittig auf dieselbe Breite wie Pollen begrenzt, damit die Ansicht nicht mehr zu weit links startet.
+- Dashboard-, Kalender-, Challenges- und Einstellungen-HeroCards behalten ihre Funktionen; geändert wurden nur Rendering-Abstände und CSS-Styling.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder GitHub Action.
+
 ## Version 0.1.0214
 - Die sichtbare App-Version wurde auf `0.1.0214` erhöht.
 - Dashboard, Kalender, Challenges und Einstellungen nutzen jetzt denselben HeroCard-Aufbau wie Pollen: linke Inhaltszone, mittlere Visual-Zone und rechter Drei-Zeilen-Statusblock auf Desktop.
@@ -85,7 +93,7 @@
 
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0214 mit Pollen-HeroCard-Angleichung
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0215 mit HeroCard-Geometrie- und Kalender-Zentrierungsfix
 
 ---
 
