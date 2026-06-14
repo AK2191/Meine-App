@@ -1,3 +1,11 @@
+## Version 0.1.0229
+- Alle HeroCards pixelgenau auf Pollen-Referenz gebracht: Hintergrund-Gradient, Border, Shadow, Grid, Illustration-Größe, Stats-Zeilen-Layout identisch.
+- Desktop 3-spaltig: `minmax(0,1fr) 190px 232px`, `min-height:272px`.
+- Mobil: `"main art" / "stats stats"`, Stats als abgerundete Karten wie Pollen-Mobil.
+- Kalender: Date-Ring ausgeblendet, SVG-Illustration aktiv.
+- Challenges: Stats-Labels nie abgeschnitten.
+- Umsetzung ausschließlich in `styles/appShell.css` und Versionsanzeige.
+
 ## Version 0.1.0228
 - Die sichtbare App-Version wurde auf `0.1.0228` erhöht.
 - Alle vier HeroCards (Dashboard, Kalender, Challenges, Einstellungen) erhalten echte SVG-Illustrationen statt Emoji-Platzhaltern — analog zur Pollen-HeroCard mit ihrer Graswedel-SVG.
