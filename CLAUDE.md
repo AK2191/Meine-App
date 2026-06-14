@@ -1,3 +1,10 @@
+## Version 0.1.0218
+- Die sichtbare App-Version wurde auf `0.1.0218` erhöht.
+- Challenges wurden weiter in Richtung Pollen-Stil gebracht: Die Zielscheibe wurde aus der HeroCard entfernt und durch ein ruhiges Change-Visual ersetzt.
+- Die Hero-KPI-Zeilen nutzen jetzt neutralere Icons und weniger technische Zielscheiben-/Uhr-Symbole.
+- Challenge-Aufgabenkarten, Rangliste und Wochenkarte wurden ruhiger an den Pollen-Kartenstil angepasst: weniger Rahmenwirkung, weichere Flächen, kleinere Chips und kompaktere mobile Karten.
+- Die Challenge-Logik, Punkteberechnung, Ranglistenlogik, Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker und GitHub Action bleiben unverändert.
+
 ## Version 0.1.0217
 - Die sichtbare App-Version wurde auf `0.1.0217` erhöht.
 - Inhaltlich entspricht diese Version der Pollen-CSS-exakten HeroCard-Angleichung aus `0.1.0216`, wurde aber neu versioniert, damit die GitHub-Update-Funktion die ZIP korrekt als neuere Version akzeptiert.
@@ -106,7 +113,7 @@
 
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0217 mit neu versionierter Pollen-CSS-exakter HeroCard-Angleichung
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0218 mit Challenge-Pollen-Stil und Hero ohne Zielscheibe
 
 ---
 
