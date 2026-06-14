@@ -1,3 +1,9 @@
+## 0.1.0194 - Mobile Scroll Reset
+- Version auf `0.1.0194` erhöht.
+- Mobile Ansichten erhalten wieder normales Scroll-Verhalten.
+- Desktop-Sidebar-100vh/Overflow-Regeln werden auf Mobile überschrieben.
+- Bottom-Navigation bleibt fixiert ohne zusätzlichen unteren Rand.
+
 ## 0.1.0193 - Desktop Sidebar Content Inline-Fix
 - Version auf `0.1.0193` erhöht.
 - Lokale/Desktop-Inhalte waren leer, weil `#main-app` beim Start per Inline-Style als `flex` gesetzt wurde.

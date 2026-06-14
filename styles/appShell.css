@@ -8872,3 +8872,93 @@ body.change-view-settings #header .avatar.google-on::after{background:#22c55e!im
     box-shadow:none!important;
   }
 }
+
+
+/* v0.1.0194 · Mobile Scroll-Reset nach Desktop-Sidebar-Fixes
+   Mobile darf keine Desktop-100vh/overflow-hidden-Regeln übernehmen. */
+@media (max-width:700px){
+  html,
+  body{
+    height:auto!important;
+    min-height:100%!important;
+    max-height:none!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    position:relative!important;
+  }
+
+  body.change-view-dashboard,
+  body.change-view-calendar,
+  body.change-view-challenges,
+  body.change-view-pollen,
+  body.change-view-settings{
+    height:auto!important;
+    min-height:100dvh!important;
+    max-height:none!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+  }
+
+  body.change-view-dashboard #main-app,
+  body.change-view-calendar #main-app,
+  body.change-view-challenges #main-app,
+  body.change-view-pollen #main-app,
+  body.change-view-settings #main-app{
+    display:block!important;
+    height:auto!important;
+    min-height:100dvh!important;
+    max-height:none!important;
+    overflow:visible!important;
+  }
+
+  body.change-view-dashboard #content,
+  body.change-view-calendar #content,
+  body.change-view-challenges #content,
+  body.change-view-pollen #content,
+  body.change-view-settings #content{
+    height:auto!important;
+    min-height:100dvh!important;
+    max-height:none!important;
+    overflow:visible!important;
+    padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-dashboard #dashboard-view,
+  body.change-view-calendar #cal-body,
+  body.change-view-challenges #challenges-view,
+  body.change-view-pollen #pollen-view,
+  body.change-view-settings #settings-view{
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:visible!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+
+  body.change-view-dashboard .premium-shell,
+  body.change-view-calendar .premium-shell,
+  body.change-view-challenges .premium-shell,
+  body.change-view-pollen .premium-shell,
+  body.change-view-settings .change-settings-premium{
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:visible!important;
+    margin-bottom:0!important;
+  }
+
+  body.change-view-dashboard #bottom-nav,
+  body.change-view-calendar #bottom-nav,
+  body.change-view-challenges #bottom-nav,
+  body.change-view-pollen #bottom-nav,
+  body.change-view-settings #bottom-nav{
+    position:fixed!important;
+    left:0!important;
+    right:0!important;
+    bottom:0!important;
+    margin:0!important;
+    border-top:0!important;
+    z-index:300!important;
+  }
+}

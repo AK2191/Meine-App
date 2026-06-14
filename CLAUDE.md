@@ -1,6 +1,6 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0193 mit Desktop-AppShell-Inline-Fix
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0194 mit mobilem Scroll-Reset
 
 ---
 
@@ -8,6 +8,14 @@
 
 
 
+
+
+## Version 0.1.0194
+- Die sichtbare App-Version wurde auf `0.1.0194` erhöht.
+- Mobile Scroll-Regeln wurden nach den Desktop-Sidebar-Fixes zurückgesetzt, damit Dashboard, Kalender, Challenges, Pollen und Einstellungen wieder normal scrollbar bleiben.
+- Desktop-100vh- und `overflow:hidden`-Regeln werden auf Mobile explizit neutralisiert.
+- Die mobile Bottom-Navigation bleibt fixiert und ohne zusätzlichen Rand nutzbar.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder Challenge-Daten.
 
 ## Version 0.1.0193
 - Die sichtbare App-Version wurde auf `0.1.0193` erhöht.
