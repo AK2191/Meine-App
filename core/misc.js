@@ -330,6 +330,7 @@ window.renderGroupGoal = function(){
         </div>
         ${done ? '<div class="challenge-goal-done">🎉 Ziel erreicht! Ihr seid großartig!</div>' : ''}
       </div>
+      <div class="challenge-goal-visual" aria-hidden="true"><span>◷</span></div>
       <div class="challenge-goal-side challenge-goal-action-list">
         <button type="button" class="challenge-goal-side-link challenge-goal-side-link-clickable challenge-goal-badges-compact" onclick="event.stopPropagation();window.openBadgePanel&&window.openBadgePanel()" title="Abzeichen öffnen">
           <span class="challenge-goal-link-icon">🎯</span>

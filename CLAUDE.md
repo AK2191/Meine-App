@@ -1,3 +1,13 @@
+## Version 0.1.0211
+- Die sichtbare App-Version wurde auf `0.1.0211` erhöht.
+- Die ersten großen HeroCards von Dashboard, Kalender, Challenges und Einstellungen wurden auf ein gemeinsames Pollen-HeroCard-System vereinheitlicht.
+- Alle angepassten HeroCards nutzen nun dieselbe große Grundfläche, dieselbe ruhige grün-schwarze Verlaufssprache, dieselbe Border-/Schattenlogik, dieselbe Drei-Zonen-Struktur und dieselbe rechte Status-Zone mit drei Einträgen.
+- Kalender und Challenges erhalten eine eigene mittlere Visual-Zone, damit Aufbau und Trennlinien wie bei Pollen wirken.
+- Dashboard zeigt im Hero jetzt drei Statuszeilen statt einer uneinheitlichen 2x2-/4er-Aufteilung: Wetter, Pollen und nächster Termin.
+- Mobile HeroCards nutzen ein einheitliches Raster mit Hauptinhalt, kompakter Visual-Zone und drei Statusspalten unter einer horizontalen Trennlinie.
+- Die bestehenden Funktionsdaten bleiben erhalten; geändert wurden nur HeroCard-Rendering und UI-Styling.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder GitHub Action.
+
 ## Version 0.1.0210
 - Die sichtbare App-Version wurde auf `0.1.0210` erhöht.
 - Der Button `Update vollständig neu laden` nutzt jetzt nicht mehr nur einen normalen Reload, sondern löscht Cache-API-Caches, meldet vorhandene Service Worker ab und lädt die App mit leerer URL plus frischem `v`, `t` und `hard` Parameter neu.
@@ -53,7 +63,7 @@
 
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0210 mit hartem Update-Neuladen
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0211 mit einheitlichem Pollen-HeroCard-System
 
 ---
 

@@ -248,13 +248,14 @@
     var nextTime = next ? (timeOf(next) || 'Ganztägig') : '—';
     var nextTitle = next ? titleOf(next) : 'Kein Termin';
     return '<div class="cal-premium-hero-grid">'
-      + '<section class="cal-premium-hero cal-premium-hero-wide">'
+      + '<section class="cal-premium-hero cal-premium-hero-wide change-hero-card change-hero-calendar">'
       + '<div class="cal-premium-hero-main">'
       + '<div class="cal-premium-eyebrow">Heute</div>'
       + '<h2>'+esc(weekdayName(key))+', '+compactDate(key)+'</h2>'
       + '<div class="cal-premium-hero-line cal-premium-week-count"><strong>'+weekCount+'</strong> '+(weekCount===1?'Termin':'Termine')+' diese Woche</div>'
       + '<div class="cal-premium-hero-line muted">Nächster Termin: <strong>'+esc(compactNextValue(next, nextTime, nextTitle))+'</strong></div>'
       + '</div>'
+      + '<div class="cal-premium-hero-visual" aria-hidden="true"><span>◷</span></div>'
       + heroSideHtml(next, nextTime, nextTitle)
       + '</section>'
       + '</div>';
