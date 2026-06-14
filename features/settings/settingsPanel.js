@@ -514,7 +514,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0205';
+  var APP_VERSION = '0.1.0206';
 
 
 
@@ -1041,6 +1041,37 @@
     return '<div class="change-health-pill is-static off"><span>♡</span><strong>Status offen</strong></div>';
   }
 
+  function settingsHeroStatusRows(google){
+    var googleLoggedIn = !!(google && google.loggedIn);
+    var healthTone = 'off';
+    var healthValue = 'Status offen';
+    try{
+      if(window.ChangeAppStatus && window.ChangeAppStatus.getHealthScore){
+        var score = window.ChangeAppStatus.getHealthScore();
+        var ok = parseInt(score.ok,10) || 0;
+        var total = parseInt(score.total,10) || 0;
+        healthTone = score.tone === 'ok' ? 'ok' : (score.tone === 'error' ? 'error' : 'off');
+        healthValue = (healthTone === 'ok' ? 'Gesund' : 'Prüfen') + ' · ' + ok + '/' + total;
+      }
+    }catch(e){}
+    return ''
+      + '<div class="change-settings-profile-stat is-google '+(googleLoggedIn ? 'ok' : 'off')+'">'
+      + '<span class="change-settings-profile-stat-icon">G</span>'
+      + '<strong>Google</strong>'
+      + '<em>'+(googleLoggedIn ? 'Angemeldet' : 'Nicht angemeldet')+'</em>'
+      + '</div>'
+      + '<div class="change-settings-profile-stat is-health '+healthTone+'">'
+      + '<span class="change-settings-profile-stat-icon">♡</span>'
+      + '<strong>Gesundheitscheck</strong>'
+      + '<em>'+esc(healthValue)+'</em>'
+      + '</div>'
+      + '<div class="change-settings-profile-stat is-version ok">'
+      + '<span class="change-settings-profile-stat-icon">#</span>'
+      + '<strong>Version</strong>'
+      + '<em>'+esc(APP_VERSION)+'</em>'
+      + '</div>';
+  }
+
   function appPane(){
     var installed = installedLabel();
     var installCard = settingsFeatureCard(
@@ -1233,8 +1264,8 @@
     var html = '<div class="change-settings-premium">'
       + '<div class="change-settings-page-head"><div class="change-settings-page-title"><span>⚙︎</span><strong>Einstellungen</strong></div></div>'
       + '<section class="change-settings-profile-card">'
-      + '<div class="change-settings-profile-left"><div class="change-settings-profile-avatar">'+picture+'<i></i></div><div><div class="change-settings-profile-name">'+esc(name)+'</div><div class="change-settings-profile-sub"><span class="change-google-mark">G</span> '+(google.loggedIn?'Google angemeldet':'Google nicht angemeldet')+'</div></div></div>'
-      + '<div class="change-settings-profile-right">'+healthSummaryPill()+'<span>Version '+esc(APP_VERSION)+'</span></div>'
+      + '<div class="change-settings-profile-left"><div class="change-settings-profile-avatar">'+picture+'<i></i></div><div class="change-settings-profile-copy"><div class="change-settings-profile-name">'+esc(name)+'</div></div></div>'
+      + '<div class="change-settings-profile-right">'+settingsHeroStatusRows(google)+'</div>'
       + '</section>'
       + '<div class="change-settings-workspace">'
       + '<div class="change-settings-nav-grid">'

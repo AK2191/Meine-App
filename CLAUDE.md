@@ -1,3 +1,10 @@
+## Version 0.1.0206
+- Die sichtbare App-Version wurde auf `0.1.0206` erhöht.
+- Die Einstellungen-HeroCard übernimmt jetzt rechts denselben klaren Drei-Zeilen-Aufbau wie die Pollen-HeroCard: mit Innen-Trennlinie und drei Statuszeilen statt einer inneren Einzelkachel.
+- Rechts in der HeroCard stehen jetzt Google-Status, Gesundheitscheck und Version sauber untereinander.
+- Die HeroCard bleibt lokal und mobil ruhiger und konsistenter zum restlichen Pollen-/Kalender-Stil.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder Challenge-Daten.
+
 ## Version 0.1.0205
 - Die sichtbare App-Version wurde auf `0.1.0205` erhöht.
 - Die GitHub-Update-Anzeige zeigt jetzt einen klaren Live-Fortschritt: ZIP übertragen, GitHub Action, Commit auf `main`, Live-Version.
@@ -30,7 +37,7 @@
 
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0205 mit Live-GitHub-Update-Status
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0206 mit Pollen-ähnlicher Einstellungen-HeroCard
 
 ---
 
