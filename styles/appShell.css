@@ -11955,3 +11955,523 @@ body.change-theme-light.change-view-settings .change-settings-profile-stat stron
   }
   html body.change-view-challenges #challenges-view .challenge-goal-side-link small{display:none!important;}
 }
+
+/* v0.1.0216 · HeroCards wirklich auf die aktuelle Pollen-Geometrie legen
+   Referenz ist nicht nur Farbe, sondern die konkrete Pollen-Struktur:
+   Desktop: 3 Spalten mit Pollen-Breiten, mobile: copy/art + 3 Statusspalten. */
+@media (min-width:701px){
+  html body.change-view-calendar #cal-body{
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:0!important;
+    display:block!important;
+    box-sizing:border-box!important;
+  }
+  html body.change-view-calendar #calendar-premium-view,
+  html body.change-view-dashboard #dashboard-view,
+  html body.change-view-challenges #challenges-view,
+  html body.change-view-settings .change-settings-premium{
+    width:min(100%,1320px)!important;
+    max-width:1320px!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+    box-sizing:border-box!important;
+  }
+  html body.change-view-calendar #calendar-premium-view,
+  html body.change-view-dashboard #dashboard-view,
+  html body.change-view-challenges #challenges-view{
+    padding-left:0!important;
+    padding-right:0!important;
+  }
+
+  html body.change-view-dashboard #content #dashboard-view .dashp-hero > .dashp-main-hero-pollen.change-hero-dashboard,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide.change-hero-calendar,
+  html body.change-view-challenges #content #challenges-view .challenge-layout > #group-goal-card,
+  html body.change-view-settings #content .change-settings-profile-card{
+    position:relative!important;
+    overflow:hidden!important;
+    width:100%!important;
+    max-width:100%!important;
+    display:grid!important;
+    grid-template-columns:minmax(240px,1.08fr) minmax(132px,.58fr) minmax(196px,.86fr)!important;
+    gap:14px!important;
+    align-items:center!important;
+    min-height:238px!important;
+    height:auto!important;
+    padding:24px 26px 22px!important;
+    border-radius:28px!important;
+    border:1px solid rgba(93,183,92,.14)!important;
+    background:radial-gradient(circle at 16% 0%,rgba(64,143,75,.12),transparent 38%),linear-gradient(90deg,rgba(18,36,27,.78),rgba(8,16,20,.96))!important;
+    box-shadow:0 16px 42px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.03)!important;
+    box-sizing:border-box!important;
+  }
+  html body.change-view-dashboard #content #dashboard-view .dashp-main-hero-pollen.change-hero-dashboard::before,
+  html body.change-view-dashboard #content #dashboard-view .dashp-main-hero-pollen.change-hero-dashboard::after,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero.change-hero-calendar::before,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero.change-hero-calendar::after,
+  html body.change-view-challenges #content #challenges-view .challenge-layout > #group-goal-card::before,
+  html body.change-view-challenges #content #challenges-view .challenge-layout > #group-goal-card::after,
+  html body.change-view-settings #content .change-settings-profile-card::before,
+  html body.change-view-settings #content .change-settings-profile-card::after{
+    content:none!important;
+    display:none!important;
+  }
+
+  html body.change-view-dashboard #content #dashboard-view .dashp-hero-copy,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-main,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-main,
+  html body.change-view-settings #content .change-settings-profile-left{
+    grid-column:1!important;
+    min-width:0!important;
+    align-self:center!important;
+    justify-self:stretch!important;
+    margin:0!important;
+    padding:0!important;
+    text-align:left!important;
+    box-sizing:border-box!important;
+  }
+  html body.change-view-dashboard #content #dashboard-view .dashp-hero-visual,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-visual,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-visual,
+  html body.change-view-settings #content .change-settings-profile-center{
+    grid-column:2!important;
+    align-self:center!important;
+    justify-self:center!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    width:100%!important;
+    max-width:168px!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  html body.change-view-dashboard #content #dashboard-view .dashp-hero-visual span,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-visual span,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-visual span,
+  html body.change-view-settings #content .change-settings-profile-center-mark{
+    width:142px!important;
+    height:142px!important;
+    max-width:142px!important;
+    max-height:142px!important;
+    border-radius:999px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    font-size:52px!important;
+    font-weight:900!important;
+    color:rgba(124,233,135,.50)!important;
+    background:radial-gradient(circle at 50% 45%,rgba(74,222,128,.12),rgba(74,222,128,.02) 58%,transparent 72%)!important;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.03)!important;
+    filter:drop-shadow(0 12px 16px rgba(0,0,0,.14))!important;
+  }
+
+  html body.change-view-dashboard #content #dashboard-view .dashp-hero-insights,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-side,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-side.challenge-goal-action-list,
+  html body.change-view-settings #content .change-settings-profile-right{
+    grid-column:3!important;
+    display:grid!important;
+    grid-template-rows:repeat(3,minmax(0,1fr))!important;
+    align-self:stretch!important;
+    align-content:stretch!important;
+    gap:0!important;
+    min-width:0!important;
+    width:100%!important;
+    height:auto!important;
+    margin:0!important;
+    padding:0 0 0 16px!important;
+    border-left:1px solid rgba(255,255,255,.08)!important;
+    border-top:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    box-sizing:border-box!important;
+  }
+  html body.change-view-dashboard #content #dashboard-view .dashp-insight-row,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row,
+  html body.change-view-calendar #content #calendar-premium-view button.cal-premium-hero-row,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-side-link,
+  html body.change-view-settings #content .change-settings-profile-stat{
+    display:grid!important;
+    grid-template-columns:28px minmax(0,1fr)!important;
+    grid-template-rows:auto auto!important;
+    align-content:center!important;
+    align-items:center!important;
+    justify-items:start!important;
+    gap:0 10px!important;
+    min-width:0!important;
+    min-height:0!important;
+    height:auto!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    border-bottom:1px solid rgba(255,255,255,.08)!important;
+    border-radius:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    color:inherit!important;
+    text-align:left!important;
+    overflow:hidden!important;
+  }
+  html body.change-view-dashboard #content #dashboard-view .dashp-insight-row:last-child,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row:last-child,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-side-link:last-child,
+  html body.change-view-settings #content .change-settings-profile-stat:last-child{border-bottom:0!important;}
+
+  html body.change-view-dashboard #content #dashboard-view .dashp-insight-dot,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-icon,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-link-icon,
+  html body.change-view-settings #content .change-settings-profile-stat-icon{
+    grid-column:1!important;
+    grid-row:1 / 3!important;
+    width:22px!important;
+    height:22px!important;
+    min-width:22px!important;
+    min-height:22px!important;
+    border-radius:999px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    align-self:center!important;
+    justify-self:center!important;
+    margin:0!important;
+    background:rgba(255,255,255,.04)!important;
+    color:#4ade80!important;
+    font-size:11px!important;
+    line-height:1!important;
+  }
+  html body.change-view-dashboard #content #dashboard-view .dashp-insight-row > span:not(.dashp-insight-dot),
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-body,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-side-link > span:not(.challenge-goal-link-icon){
+    grid-column:2!important;
+    grid-row:1 / 3!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:center!important;
+    min-width:0!important;
+    max-width:100%!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  html body.change-view-dashboard #content #dashboard-view .dashp-insight-row b,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-body strong,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-side-link b,
+  html body.change-view-settings #content .change-settings-profile-stat strong{
+    grid-column:2!important;
+    grid-row:1!important;
+    display:block!important;
+    min-width:0!important;
+    max-width:100%!important;
+    margin:0!important;
+    padding:0!important;
+    font-size:12px!important;
+    line-height:1.15!important;
+    font-weight:720!important;
+    color:rgba(244,247,244,.72)!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  html body.change-view-dashboard #content #dashboard-view .dashp-insight-row small,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-body em,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-badge,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-side-link > strong,
+  html body.change-view-settings #content .change-settings-profile-stat em{
+    grid-column:2!important;
+    grid-row:2!important;
+    display:block!important;
+    min-width:0!important;
+    max-width:100%!important;
+    margin:0!important;
+    padding:0!important;
+    font-size:15px!important;
+    line-height:1.15!important;
+    font-weight:820!important;
+    color:#fff!important;
+    font-style:normal!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  html body.change-view-challenges #content #challenges-view .challenge-goal-side-link small{display:none!important;}
+
+  html body.change-view-dashboard #content #dashboard-view .dashp-eyebrow,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-eyebrow,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-kicker{
+    margin:0 0 13px!important;
+    font-size:11px!important;
+    line-height:1.2!important;
+    font-weight:780!important;
+    letter-spacing:.07em!important;
+    text-transform:uppercase!important;
+    color:rgba(244,247,244,.72)!important;
+  }
+  html body.change-view-dashboard #content #dashboard-view .dashp-hero-title,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero h2,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-title{
+    margin:0!important;
+    font-size:45px!important;
+    line-height:.98!important;
+    letter-spacing:-1.45px!important;
+    font-weight:850!important;
+    color:#fff!important;
+    text-align:left!important;
+  }
+}
+
+@media (max-width:700px){
+  html body.change-view-dashboard #content #dashboard-view .dashp-main-hero-pollen.change-hero-dashboard,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide.change-hero-calendar,
+  html body.change-view-challenges #content #challenges-view .challenge-layout > #group-goal-card,
+  html body.change-view-settings #content .change-settings-profile-card{
+    width:100%!important;
+    max-width:100%!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) 110px!important;
+    grid-template-areas:"main art" "stats stats"!important;
+    gap:0 12px!important;
+    min-height:0!important;
+    height:auto!important;
+    max-height:none!important;
+    padding:19px 18px 14px!important;
+    border-radius:22px!important;
+    overflow:hidden!important;
+    border:1px solid rgba(93,183,92,.14)!important;
+    background:radial-gradient(circle at 16% 8%,rgba(72,216,112,.12),transparent 34%),linear-gradient(135deg,rgba(12,35,25,.92),rgba(5,12,16,.94))!important;
+    box-shadow:0 14px 34px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.035)!important;
+    box-sizing:border-box!important;
+  }
+  html body.change-view-dashboard #content #dashboard-view .dashp-hero-copy,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-main,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-main,
+  html body.change-view-settings #content .change-settings-profile-left{
+    grid-area:main!important;
+    min-width:0!important;
+    align-self:center!important;
+    justify-self:stretch!important;
+    margin:0!important;
+    padding:0!important;
+    text-align:left!important;
+  }
+  html body.change-view-settings #content .change-settings-profile-left{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:flex-start!important;
+    gap:10px!important;
+  }
+  html body.change-view-settings #content .change-settings-profile-avatar{width:68px!important;height:68px!important;margin:0!important;}
+  html body.change-view-settings #content .change-settings-profile-name{font-size:22px!important;line-height:1.05!important;letter-spacing:-.7px!important;text-align:left!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;color:#fff!important;}
+
+  html body.change-view-dashboard #content #dashboard-view .dashp-hero-visual,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-visual,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-visual,
+  html body.change-view-settings #content .change-settings-profile-center{
+    grid-area:art!important;
+    width:110px!important;
+    max-width:110px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    align-self:center!important;
+    justify-self:end!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  html body.change-view-dashboard #content #dashboard-view .dashp-hero-visual span,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-visual span,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-visual span,
+  html body.change-view-settings #content .change-settings-profile-center-mark{
+    width:76px!important;
+    height:76px!important;
+    font-size:30px!important;
+    border-radius:999px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    color:rgba(124,233,135,.54)!important;
+    background:radial-gradient(circle at 50% 45%,rgba(74,222,128,.12),rgba(74,222,128,.02) 58%,transparent 72%)!important;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.03)!important;
+  }
+  html body.change-view-dashboard #content #dashboard-view .dashp-hero-insights,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-side,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-side.challenge-goal-action-list,
+  html body.change-view-settings #content .change-settings-profile-right{
+    grid-area:stats!important;
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    grid-template-rows:1fr!important;
+    gap:0!important;
+    width:100%!important;
+    min-width:0!important;
+    margin:16px 0 0!important;
+    padding:12px 0 0!important;
+    border-top:1px solid rgba(255,255,255,.10)!important;
+    border-left:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    box-sizing:border-box!important;
+  }
+  html body.change-view-dashboard #content #dashboard-view .dashp-insight-row:nth-child(1),
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row:nth-child(1),
+  html body.change-view-challenges #content #challenges-view .challenge-goal-side-link:nth-child(1),
+  html body.change-view-settings #content .change-settings-profile-stat:nth-child(1){grid-column:1!important;grid-row:1!important;}
+  html body.change-view-dashboard #content #dashboard-view .dashp-insight-row:nth-child(2),
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row:nth-child(2),
+  html body.change-view-challenges #content #challenges-view .challenge-goal-side-link:nth-child(2),
+  html body.change-view-settings #content .change-settings-profile-stat:nth-child(2){grid-column:2!important;grid-row:1!important;}
+  html body.change-view-dashboard #content #dashboard-view .dashp-insight-row:nth-child(3),
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row:nth-child(3),
+  html body.change-view-challenges #content #challenges-view .challenge-goal-side-link:nth-child(3),
+  html body.change-view-settings #content .change-settings-profile-stat:nth-child(3){grid-column:3!important;grid-row:1!important;}
+
+  html body.change-view-dashboard #content #dashboard-view .dashp-insight-row,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row,
+  html body.change-view-calendar #content #calendar-premium-view button.cal-premium-hero-row,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-side-link,
+  html body.change-view-settings #content .change-settings-profile-stat{
+    display:grid!important;
+    grid-template-columns:20px minmax(0,1fr)!important;
+    grid-template-rows:auto auto!important;
+    gap:8px!important;
+    min-width:0!important;
+    min-height:44px!important;
+    height:auto!important;
+    margin:0!important;
+    padding:0 8px!important;
+    border:0!important;
+    border-right:1px solid rgba(255,255,255,.09)!important;
+    border-radius:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    overflow:hidden!important;
+    align-content:center!important;
+    align-items:center!important;
+    text-align:left!important;
+  }
+  html body.change-view-dashboard #content #dashboard-view .dashp-insight-row:last-child,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row:last-child,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-side-link:last-child,
+  html body.change-view-settings #content .change-settings-profile-stat:last-child{border-right:0!important;}
+  html body.change-view-dashboard #content #dashboard-view .dashp-insight-dot,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-icon,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-link-icon,
+  html body.change-view-settings #content .change-settings-profile-stat-icon{
+    grid-column:1!important;
+    grid-row:1 / 3!important;
+    display:flex!important;
+    width:18px!important;
+    height:18px!important;
+    min-width:18px!important;
+    min-height:18px!important;
+    align-self:center!important;
+    justify-self:start!important;
+    align-items:center!important;
+    justify-content:center!important;
+    margin:0!important;
+    border-radius:999px!important;
+    font-size:8px!important;
+    line-height:1!important;
+    background:rgba(255,255,255,.04)!important;
+    color:#4ade80!important;
+  }
+  html body.change-view-dashboard #content #dashboard-view .dashp-insight-row > span:not(.dashp-insight-dot),
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-body,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-side-link > span:not(.challenge-goal-link-icon){
+    grid-column:2!important;
+    grid-row:1 / 3!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:center!important;
+    min-width:0!important;
+    max-width:100%!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  html body.change-view-dashboard #content #dashboard-view .dashp-insight-row b,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-body strong,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-side-link b,
+  html body.change-view-settings #content .change-settings-profile-stat strong{
+    display:block!important;
+    font-size:10px!important;
+    line-height:1.1!important;
+    font-weight:720!important;
+    color:rgba(244,247,244,.66)!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    margin:0!important;
+    padding:0!important;
+    min-width:0!important;
+  }
+  html body.change-view-dashboard #content #dashboard-view .dashp-insight-row small,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-body em,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-badge,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-side-link > strong,
+  html body.change-view-settings #content .change-settings-profile-stat em{
+    display:block!important;
+    font-size:12px!important;
+    line-height:1.12!important;
+    font-weight:900!important;
+    color:#fff!important;
+    font-style:normal!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    margin:0!important;
+    padding:0!important;
+    min-width:0!important;
+  }
+  html body.change-view-challenges #content #challenges-view .challenge-goal-side-link small{display:none!important;}
+
+  html body.change-view-dashboard #content #dashboard-view .dashp-eyebrow,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-eyebrow,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-kicker{
+    font-size:10px!important;
+    letter-spacing:.075em!important;
+    line-height:1.1!important;
+    font-weight:820!important;
+    margin:0 0 8px!important;
+    color:#4ade80!important;
+  }
+  html body.change-view-dashboard #content #dashboard-view .dashp-hero-title,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero h2,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-title{
+    font-size:40px!important;
+    line-height:.98!important;
+    margin:0!important;
+    letter-spacing:-1.15px!important;
+    font-weight:850!important;
+    color:#fff!important;
+    text-align:left!important;
+  }
+  html body.change-view-dashboard #content #dashboard-view .dashp-hero-title{font-size:34px!important;line-height:1.02!important;}
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-line,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-sub,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-progress-text,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-progress-wrap{
+    font-size:15px!important;
+    line-height:1.25!important;
+  }
+}
+
+@media (max-width:390px){
+  html body.change-view-dashboard #content #dashboard-view .dashp-main-hero-pollen.change-hero-dashboard,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide.change-hero-calendar,
+  html body.change-view-challenges #content #challenges-view .challenge-layout > #group-goal-card,
+  html body.change-view-settings #content .change-settings-profile-card{
+    grid-template-columns:minmax(0,1fr) 86px!important;
+    padding:17px 14px 13px!important;
+  }
+  html body.change-view-dashboard #content #dashboard-view .dashp-hero-visual,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-visual,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-visual,
+  html body.change-view-settings #content .change-settings-profile-center{width:86px!important;max-width:86px!important;}
+  html body.change-view-dashboard #content #dashboard-view .dashp-insight-row,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-side-link,
+  html body.change-view-settings #content .change-settings-profile-stat{grid-template-columns:16px minmax(0,1fr)!important;padding:0 5px!important;}
+  html body.change-view-dashboard #content #dashboard-view .dashp-insight-dot,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-icon,
+  html body.change-view-challenges #content #challenges-view .challenge-goal-link-icon,
+  html body.change-view-settings #content .change-settings-profile-stat-icon{width:15px!important;height:15px!important;min-width:15px!important;min-height:15px!important;}
+}

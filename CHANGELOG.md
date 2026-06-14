@@ -1,3 +1,11 @@
+## Version 0.1.0216
+- Die sichtbare App-Version wurde auf `0.1.0216` erhöht.
+- Die HeroCards werden nun an den tatsächlich aktuellen Pollen-CSS-Werten ausgerichtet: Desktop nutzt dieselben Spaltenverhältnisse, Höhe, Innenabstände, Statuszeilen-Größen und Icon-Größen wie die Pollen-HeroCard.
+- Die mobile HeroCard-Geometrie wurde auf das Pollen-Raster gelegt: Hauptinhalt plus Visual oben, danach eine Trennlinie und exakt drei Statusspalten mit denselben Abständen, Schriftgrößen und Icongrößen.
+- Der Kalender-Workspace wird auf Desktop zusätzlich über `#cal-body` und `#calendar-premium-view` mittig begrenzt, damit die Kalenderansicht nicht mehr zu weit links startet.
+- Dashboard, Kalender, Challenges und Einstellungen behalten ihre Funktionen; geändert wurden nur HeroCard-Rendering, Abstände und Styling.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder GitHub Action.
+
 ## Version 0.1.0215
 - Die sichtbare App-Version wurde auf `0.1.0215` erhöht.
 - Die HeroCards wurden nochmals näher an die Pollen-Referenz gezogen: Desktop nutzt dieselbe Drei-Zonen-Geometrie, dieselbe Statuszeilen-Logik und dieselben Textgrößen für Label/Wert.
