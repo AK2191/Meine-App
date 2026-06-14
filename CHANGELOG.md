@@ -1,3 +1,10 @@
+## 0.1.0199
+- Version auf `0.1.0199` erhöht.
+- Dashboard- und Kalender-HeroCard bleiben Zielstil; Pollen, Challenges und Einstellungen nutzen nun dieselbe grün-schwarze HeroCard-Fläche.
+- Kleine Kartenflächen in Pollen, Challenges und Einstellungen wurden farblich ruhiger an die Kalender-Farbwelt angepasst.
+- Mobile Einstellungen behalten den Scroll, aber die sichtbare Scrollbar wird ausgeblendet; linke und rechte Abstände wurden an Dashboard/Kalender angeglichen.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder Action-Logik.
+
 
 ## 0.1.0198
 - Mobile Scroll-Sperre nach Einstellungen behoben.
