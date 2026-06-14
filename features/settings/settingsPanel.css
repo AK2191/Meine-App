@@ -1020,3 +1020,9 @@ body.change-theme-light:not(.change-view-settings) #panel-overlay{
 .change-github-files ul{display:grid;gap:5px;list-style:none;margin:0;padding:0;max-height:160px;overflow:auto}
 .change-github-files li{font-family:var(--mono);font-size:11px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:520px){.change-github-version-grid{grid-template-columns:1fr}.change-github-file{padding:13px}}
+
+/* v0.1.0169 · GitHub Update direkte Worker-Übertragung */
+.change-github-secret{display:grid;gap:6px;border:1px solid var(--b1);background:var(--s2);border-radius:16px;padding:12px}
+.change-github-secret span{font-size:10px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;color:var(--t4)}
+.change-github-secret input{width:100%;border:1px solid var(--b2);background:var(--s1);color:var(--t1);border-radius:12px;padding:10px 11px;font:inherit;font-size:13px;font-weight:800;outline:none}
+.change-github-secret input:focus{border-color:rgba(52,211,153,.45);box-shadow:0 0 0 3px rgba(52,211,153,.12)}

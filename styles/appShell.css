@@ -7174,3 +7174,70 @@ body.change-view-calendar #calendar-premium-view .cal-premium-week-count .cal-pr
 body.change-view-calendar #calendar-premium-view .cal-premium-week-count{
   gap:5px !important;
 }
+
+
+/* v0.1.0165 · HeroCard-Hintergründe final an Kalender angeglichen
+   UI-only: Dashboard-, Kalender-, Challenges- und Pollen-HeroCards nutzen nun dieselbe
+   Kalender-Farbwelt als gemeinsame Hintergrundquelle. Gilt für Desktop und Mobile,
+   Hell- und Dunkelmodus. Keine Änderung an Logik, Kalenderdaten, Firebase, Sync,
+   Login, Push oder Challenge-Punkten. */
+:root{
+  --change-hero-calendar-bg-dark:radial-gradient(circle at 16% 8%,rgba(86,232,142,.18),transparent 42%),linear-gradient(115deg,rgba(26,72,48,.94),rgba(8,24,24,.98) 68%,rgba(4,12,14,.99));
+  --change-hero-calendar-border-dark:rgba(74,222,128,.18);
+  --change-hero-calendar-shadow-dark:0 18px 46px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.03);
+  --change-hero-calendar-bg-light:radial-gradient(circle at 14% 0%,rgba(36,190,91,.13),transparent 35%),linear-gradient(115deg,rgba(237,250,242,.97),rgba(255,255,252,.99) 58%,rgba(246,251,247,.99));
+  --change-hero-calendar-border-light:rgba(32,160,91,.18);
+  --change-hero-calendar-shadow-light:0 18px 42px rgba(20,45,30,.08), inset 0 1px 0 rgba(255,255,255,.62);
+}
+
+body.change-view-dashboard #dashboard-view .dashp-main-hero,
+body.change-view-dashboard #dashboard-view .dashp-hero > .dashp-main-hero,
+body.change-view-calendar #calendar-premium-view .cal-premium-hero,
+body.change-view-calendar #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide,
+body.change-view-challenges #challenges-view #group-goal-card,
+body.change-view-challenges #challenges-view .challenge-layout > #group-goal-card,
+body.change-view-pollen #pollen-view .pollen-neo-hero,
+body.change-view-pollen #pollen-view .pollen-neo-hero-wide,
+body.neo-pollen-shell #pollen-view .pollen-neo-hero,
+body.neo-pollen-shell #pollen-view .pollen-neo-hero-wide{
+  background:var(--change-hero-calendar-bg-dark) !important;
+  border-color:var(--change-hero-calendar-border-dark) !important;
+  box-shadow:var(--change-hero-calendar-shadow-dark) !important;
+  background-color:transparent !important;
+}
+
+[data-theme="light"] body.change-view-dashboard #dashboard-view .dashp-main-hero,
+body.theme-light.change-view-dashboard #dashboard-view .dashp-main-hero,
+body.change-theme-light.change-view-dashboard #dashboard-view .dashp-main-hero,
+[data-theme="light"] body.change-view-dashboard #dashboard-view .dashp-hero > .dashp-main-hero,
+body.theme-light.change-view-dashboard #dashboard-view .dashp-hero > .dashp-main-hero,
+body.change-theme-light.change-view-dashboard #dashboard-view .dashp-hero > .dashp-main-hero,
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-hero,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-hero,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-hero,
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide,
+[data-theme="light"] body.change-view-challenges #challenges-view #group-goal-card,
+body.theme-light.change-view-challenges #challenges-view #group-goal-card,
+body.change-theme-light.change-view-challenges #challenges-view #group-goal-card,
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-layout > #group-goal-card,
+body.theme-light.change-view-challenges #challenges-view .challenge-layout > #group-goal-card,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-layout > #group-goal-card,
+[data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-hero,
+body.theme-light.change-view-pollen #pollen-view .pollen-neo-hero,
+body.change-theme-light.change-view-pollen #pollen-view .pollen-neo-hero,
+[data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-hero-wide,
+body.theme-light.change-view-pollen #pollen-view .pollen-neo-hero-wide,
+body.change-theme-light.change-view-pollen #pollen-view .pollen-neo-hero-wide,
+[data-theme="light"] body.neo-pollen-shell #pollen-view .pollen-neo-hero,
+body.theme-light.neo-pollen-shell #pollen-view .pollen-neo-hero,
+body.change-theme-light.neo-pollen-shell #pollen-view .pollen-neo-hero,
+[data-theme="light"] body.neo-pollen-shell #pollen-view .pollen-neo-hero-wide,
+body.theme-light.neo-pollen-shell #pollen-view .pollen-neo-hero-wide,
+body.change-theme-light.neo-pollen-shell #pollen-view .pollen-neo-hero-wide{
+  background:var(--change-hero-calendar-bg-light) !important;
+  border-color:var(--change-hero-calendar-border-light) !important;
+  box-shadow:var(--change-hero-calendar-shadow-light) !important;
+  background-color:transparent !important;
+}

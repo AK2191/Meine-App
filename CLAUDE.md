@@ -1,11 +1,19 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-12 · Version 0.1.0167 mit GitHub-Action-Backend für ZIP Updates
+> Zuletzt aktualisiert: 2026-06-12 · Version 0.1.0169 mit GitHub Update per Cloudflare Worker
 
 ---
 
-## Version 0.1.0167
-- Die sichtbare App-Version wurde auf `0.1.0167` erhöht.
+## Version 0.1.0169
+- Die sichtbare App-Version wurde auf `0.1.0169` erhöht.
+- Die GitHub-Update-Kachel überträgt lokal geprüfte ZIPs nun direkt an den geschützten Cloudflare Worker `https://change-github-update.ak2191.workers.dev`.
+- Der Cloudflare Worker nutzt die GitHub App serverseitig, legt ZIPs in `updates/` ab und startet dadurch die bestehende GitHub Action für Prüfung und Commit auf `main`.
+- Ergänzt wurde `scripts/changeGithubUpdateWorker.js` als Worker-Code zum Kopieren in Cloudflare.
+- Im Browser werden weder GitHub Private Key noch Installation Token gespeichert; der Freigabe-Code wird nur als manuelle Übergabe an den Worker genutzt.
+- Keine Änderung an Kalenderdaten, Firebase, Datenbank-Sync, Google-Kalender, Push oder Challenge-Punkten.
+
+## Version 0.1.0168
+- Die sichtbare App-Version wurde auf `0.1.0168` erhöht.
 - Das zuvor geplante Firebase-Functions-Backend für GitHub Updates wurde entfernt.
 - ZIP Updates laufen nun über eine GitHub Action als geschütztes Backend: ZIP in `updates/` hochladen, Workflow prüft serverseitig Version und `CLAUDE.md`, entpackt und committet auf `main`.
 - Ergänzt wurden `.github/workflows/apply-zip-update.yml`, `scripts/applyZipUpdate.mjs` und `updates/README.md`.

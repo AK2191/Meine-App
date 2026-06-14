@@ -1,5 +1,12 @@
-## 0.1.0167 - GitHub Action Backend statt Firebase Functions
-- Sichtbare App-Version auf 0.1.0167 erhöht.
+## 0.1.0169 - GitHub Update per Cloudflare Worker
+- Sichtbare App-Version auf 0.1.0169 erhöht.
+- GitHub Update überträgt geprüfte ZIPs direkt an den geschützten Cloudflare Worker.
+- Der Worker-Code wurde unter scripts/changeGithubUpdateWorker.js ergänzt.
+- Der Worker legt ZIPs über die GitHub App in updates/ ab, danach verarbeitet die bestehende GitHub Action das Update auf main.
+- Kein GitHub Private Key oder Installation Token wird im Browser gespeichert.
+
+## 0.1.0168 - GitHub Action Backend statt Firebase Functions
+- Sichtbare App-Version auf 0.1.0168 erhöht.
 - Firebase-Functions-Backend für GitHub Update entfernt.
 - GitHub Update verweist nun auf den Upload nach updates/ und die GitHub Action übernimmt die serverseitige Prüfung und den Commit.
 - Workflow .github/workflows/apply-zip-update.yml und Script scripts/applyZipUpdate.mjs ergänzt.

@@ -516,7 +516,24 @@ function startDemo(){
 
 function showLogin(){
   hideLd();
-  document.getElementById('login-screen').style.display='flex';
+  try{ document.body.classList.add('change-login-active'); }catch(e){}
+  try{
+    var main = document.getElementById('main-app');
+    if(main){
+      main.style.setProperty('display','none','important');
+      main.style.setProperty('visibility','hidden','important');
+      main.style.setProperty('pointer-events','none','important');
+    }
+  }catch(e){}
+  try{
+    var login = document.getElementById('login-screen');
+    if(login){
+      login.style.setProperty('display','flex','important');
+      login.style.setProperty('visibility','visible','important');
+      login.style.setProperty('pointer-events','auto','important');
+      login.setAttribute('aria-hidden','false');
+    }
+  }catch(e){}
 }
 
 async function handleGoogleLogin(){
@@ -640,7 +657,7 @@ function releaseUiLock(reason){
       overlay.style.pointerEvents='none';
       overlay.setAttribute('aria-hidden','true');
     }
-    if(main) main.style.pointerEvents='auto';
+    if(main && !document.body.classList.contains('change-login-active')) main.style.pointerEvents='auto';
   }catch(e){ console.warn('[Change] UI-Lock-Freigabe fehlgeschlagen:', reason, e); }
 }
 
@@ -648,8 +665,26 @@ function releaseUiLock(reason){
 /* BOOT */
 function bootMainApp(){
   hideLd();
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('main-app').style.display='flex';
+  try{ document.body.classList.remove('change-login-active'); }catch(e){}
+  try{
+    var login = document.getElementById('login-screen');
+    if(login){
+      login.style.removeProperty('display');
+      login.style.setProperty('display','none','important');
+      login.style.setProperty('visibility','hidden','important');
+      login.style.setProperty('pointer-events','none','important');
+      login.setAttribute('aria-hidden','true');
+    }
+  }catch(e){}
+  try{
+    var main = document.getElementById('main-app');
+    if(main){
+      main.style.removeProperty('display');
+      main.style.removeProperty('visibility');
+      main.style.removeProperty('pointer-events');
+      main.style.setProperty('display','flex','important');
+    }
+  }catch(e){}
   exposeChangeGlobals();
   releaseUiLock('bootMainApp');
   /* Bereinige Demo-Termine die beim ersten Start gesetzt wurden */

@@ -506,7 +506,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0167';
+  var APP_VERSION = '0.1.0169';
 
 
 
@@ -516,10 +516,27 @@
     message: 'Noch keine ZIP ausgewählt.',
     files: [],
     checks: [],
-    fromVersion: '0.1.0167',
+    fromVersion: '0.1.0169',
     toVersion: '',
     rootFiles: []
   };
+
+  var GITHUB_UPDATE_WORKER_URL = 'https://change-github-update.ak2191.workers.dev';
+  function readGithubUpdateSecret(){
+    try{ return localStorage.getItem('change_github_update_secret') || ''; }catch(e){ return ''; }
+  }
+  function writeGithubUpdateSecret(value){
+    try{ localStorage.setItem('change_github_update_secret', String(value || '').trim()); }catch(e){}
+  }
+  function arrayBufferToBase64(buffer){
+    var bytes = new Uint8Array(buffer);
+    var chunk = 0x8000;
+    var binary = '';
+    for(var i=0;i<bytes.length;i+=chunk){
+      binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+    }
+    return btoa(binary);
+  }
 
   function versionParts(value){
     return String(value || '').split('.').map(function(part){ return parseInt(part, 10) || 0; });
@@ -638,8 +655,9 @@
       + '<div class="change-github-status '+esc(state.status || 'empty')+'">'+esc(state.message || '')+'</div>'
       + '<div class="change-github-checks">'+checks+'</div>'
       + (filePreview ? '<div class="change-github-files"><strong>Dateivorschau</strong><ul>'+filePreview+'</ul></div>' : '')
-      + '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' ? '' : 'disabled')+'>GitHub Action öffnen</button>'
-      + '<div class="change-feature-note">Der echte Commit läuft über GitHub Actions. Lade die geprüfte ZIP in GitHub unter <strong>updates/</strong> hoch. Kein GitHub-Token wird im Browser gespeichert.</div>'
+      + '<label class="change-github-secret"><span>Freigabe-Code</span><input type="password" id="github-update-secret" autocomplete="off" placeholder="CHANGE_UPDATE_SECRET" value="'+esc(readGithubUpdateSecret())+'"></label>'
+      + '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' ? '' : 'disabled')+'>Direkt auf GitHub übertragen</button>'
+      + '<div class="change-feature-note">Die ZIP wird an deinen geschützten Cloudflare Worker übertragen. Der Worker legt sie in <strong>updates/</strong> ab; die GitHub Action prüft danach serverseitig und committet auf <strong>main</strong>. Kein GitHub-Key liegt im Browser.</div>'
       + '</div>';
   }
   function githubUpdateCard(){
@@ -648,17 +666,54 @@
     return settingsFeatureCard('⌁', 'GitHub Update', status, tone, 'ZIP prüfen, Version vergleichen und Commit-Freigabe vorbereiten.', '', githubUpdateBody());
   }
 
-  function commitGithubZip(){
+  async function commitGithubZip(){
     var state = githubUpdateState;
     if(!state.file || state.status !== 'ok'){
       if(typeof window.toast === 'function') window.toast('Bitte ZIP zuerst erfolgreich prüfen', 'err');
       return;
     }
-    state.message = 'GitHub Action vorbereitet: ZIP in den Repository-Ordner updates/ hochladen. Der Workflow startet danach automatisch.';
+    var secretInput = $('github-update-secret');
+    var secret = secretInput ? String(secretInput.value || '').trim() : readGithubUpdateSecret();
+    if(!secret){
+      state.status = 'error';
+      state.message = 'Bitte den Cloudflare Freigabe-Code eintragen.';
+      if(typeof window.toast === 'function') window.toast('Freigabe-Code fehlt', 'err');
+      refreshSameTab('app');
+      return;
+    }
+    writeGithubUpdateSecret(secret);
+    state.status = 'checking';
+    state.message = 'ZIP wird an den geschützten Worker übertragen…';
+    refreshSameTab('app');
     try{
-      window.open('https://github.com/AK2191/Meine-App/upload/main/updates', '_blank', 'noopener');
-    }catch(e){}
-    if(typeof window.toast === 'function') window.toast('GitHub Upload geöffnet', 'ok');
+      var buffer = await state.file.arrayBuffer();
+      var payload = {
+        secret: secret,
+        fileName: state.file.name || ('change-update-'+Date.now()+'.zip'),
+        contentBase64: arrayBufferToBase64(buffer),
+        fromVersion: state.fromVersion || APP_VERSION,
+        targetVersion: state.toVersion || '',
+        fileSize: state.file.size || buffer.byteLength || 0
+      };
+      var response = await fetch(GITHUB_UPDATE_WORKER_URL + '/upload', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+      var result = null;
+      try{ result = await response.json(); }catch(parseErr){}
+      if(!response.ok || !result || !result.ok){
+        throw new Error((result && result.message) || ('Worker Fehler '+response.status));
+      }
+      state.status = 'ok';
+      state.message = 'ZIP wurde an GitHub übertragen. Die GitHub Action verarbeitet jetzt das Update.';
+      if(typeof window.toast === 'function') window.toast('Update an GitHub übertragen', 'ok');
+      try{ if(result.actionsUrl) window.open(result.actionsUrl, '_blank', 'noopener'); }catch(e){}
+    }catch(e){
+      state.status = 'error';
+      state.message = e && e.message ? e.message : 'Übertragung fehlgeschlagen.';
+      if(typeof window.toast === 'function') window.toast('GitHub Übertragung fehlgeschlagen', 'err');
+    }
     refreshSameTab('app');
   }
 

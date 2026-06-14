@@ -134,8 +134,41 @@ body{
 
 /* ==== LOGIN ==== */
 #login-screen{
-  display:none;flex-direction:column;align-items:center;justify-content:center;
-  height:100%;padding:24px;background:var(--bg);
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  width:100vw;
+  height:100vh;
+  min-height:100vh;
+  height:100dvh;
+  min-height:100dvh;
+  padding:24px;
+  background:var(--bg);
+  pointer-events:auto;
+  overflow:hidden;
+}
+body.change-login-active{
+  overflow:hidden!important;
+}
+body.change-login-active #login-screen{
+  display:flex!important;
+}
+body.change-login-active #main-app{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+  user-select:none!important;
+}
+body.change-login-active #header,
+body.change-login-active #bottom-nav,
+body.change-login-active #fab,
+body.change-login-active #toast-wrap{
+  display:none!important;
+  pointer-events:none!important;
 }
 .login-card{
   width:min(400px,100%);background:var(--s1);border:1px solid var(--b1);

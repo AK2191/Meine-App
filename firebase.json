@@ -4,8 +4,7 @@
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**",
-      "functions/**"
+      "**/node_modules/**"
     ],
     "headers": [
       {
@@ -28,9 +27,6 @@
         "destination": "/index.html"
       }
     ]
-  },
-  "functions": {
-    "source": "functions"
   },
   "firestore": {
     "rules": "firebase/firestore.rules"
