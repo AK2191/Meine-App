@@ -314,12 +314,12 @@ window.renderGroupGoal = function(){
   try{ totalBadgeCount = Array.isArray(BADGES) ? BADGES.length : Math.max(earnedBadges.length, 0); }catch(e){ totalBadgeCount = Math.max(earnedBadges.length, 0); }
   totalBadgeCount = Math.max(37, totalBadgeCount || 0, earnedBadges.length || 0);
   var badgeLabel = earnedBadges.length + ' von ' + totalBadgeCount;
-  var badgeSub = earnedBadges.length + ' aktiv von ' + totalBadgeCount + ' gesamt';
+  var badgeSub = 'gesamt';
 
   card.innerHTML = `
     <div class="challenge-goal-hero-inner challenge-goal-hero-clean">
       <div class="challenge-goal-main">
-        <div class="challenge-goal-kicker"><span>Challenge</span></div>
+        <div class="challenge-goal-kicker"><span>DIESE WOCHE</span></div>
         <div class="challenge-goal-title">Gruppenziel</div>
         <div class="challenge-goal-sub">Kalenderwoche ${getWeekNumber()}</div>
         <div class="challenge-goal-progress-wrap">

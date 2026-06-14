@@ -1,3 +1,11 @@
+## Version 0.1.0219
+- Die sichtbare App-Version wurde auf `0.1.0219` erhöht.
+- Die Challenges-Gruppenziel-HeroCard wurde nicht weiter nur überlagert, sondern in der Darstellung auf die mobile Pollen-Struktur beruhigt: Hauptinhalt links, ruhiges C-Visual rechts, Trennlinie und drei klare Statusspalten unten.
+- Die KPI-Zeile in Challenges wurde repariert, damit Label und Werte nicht mehr übereinander liegen.
+- Der Challenge-Kicker ist kein pillenförmiger Sonderstil mehr, sondern nutzt dieselbe ruhige Overline-Logik wie Pollen.
+- Aufgabenkarten und Rangliste wurden zusätzlich ruhiger an den Pollen-Kartenstil angenähert.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder GitHub Action.
+
 ## Version 0.1.0218
 - Die sichtbare App-Version wurde auf `0.1.0218` erhöht.
 - Challenges wurden weiter in Richtung Pollen-Stil gebracht: Die Zielscheibe wurde aus der HeroCard entfernt und durch ein ruhiges Change-Visual ersetzt.
