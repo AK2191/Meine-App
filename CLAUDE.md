@@ -1,3 +1,11 @@
+## Version 0.1.0207
+- Die sichtbare App-Version wurde auf `0.1.0207` erhöht.
+- Die Farb- und Oberflächenlogik der starken Pollen-HeroCard wurde weiter auf Kalender und Einstellungen übertragen.
+- Kalender- und Einstellungen-HeroCards nutzen nun noch näher die ruhige Pollen-Verlauf-, Kontur- und Schattenlogik.
+- Beim Verlassen der Einstellungen wird der Workspace-Shell-Zustand jetzt sauber zurückgesetzt, damit Kalender lokal und mobil nicht mehr in einem verschobenen oder veränderten App-Blick landen.
+- `setMainView('settings')` wird wieder sauber behandelt und öffnet die Einstellungen direkt, statt in einen Fallback-Zustand zu laufen.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder Challenge-Daten.
+
 ## Version 0.1.0206
 - Die sichtbare App-Version wurde auf `0.1.0206` erhöht.
 - Die Einstellungen-HeroCard übernimmt jetzt rechts denselben klaren Drei-Zeilen-Aufbau wie die Pollen-HeroCard: mit Innen-Trennlinie und drei Statuszeilen statt einer inneren Einzelkachel.
@@ -37,7 +45,7 @@
 
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0206 mit Pollen-ähnlicher Einstellungen-HeroCard
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0207 mit Pollen-Farbtransfer und Settings→Kalender-Shell-Fix
 
 ---
 

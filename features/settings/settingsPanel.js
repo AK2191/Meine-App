@@ -514,7 +514,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0206';
+  var APP_VERSION = '0.1.0207';
 
 
 
@@ -1222,11 +1222,22 @@
     try{ document.querySelectorAll('.h-tab,.bnav-item').forEach(function(item){ item.classList.remove('active'); }); }catch(e){}
     return true;
   }
+  function resetSettingsWorkspaceShell(){
+    try{
+      var main = document.getElementById('main-app');
+      if(main){ ['display','grid-template-columns','grid-template-rows','width','height','overflow','flex-direction'].forEach(function(prop){ main.style.removeProperty(prop); }); }
+      var content = document.getElementById('content');
+      if(content){ ['display','visibility','opacity','grid-column','grid-row','width','height','min-height','overflow','overflow-y','overflow-x','position','z-index'].forEach(function(prop){ content.style.removeProperty(prop); }); }
+      var view = document.getElementById('settings-view');
+      if(view){ ['display','visibility','opacity','width','height','min-height','overflow','overflow-y','overflow-x'].forEach(function(prop){ view.style.removeProperty(prop); }); }
+      if(document.body){ document.body.classList.remove('change-view-settings','change-settings-premium-open'); }
+    }catch(e){}
+  }
   function hideSettingsWorkspace(){
     try{
       var view = document.getElementById('settings-view');
       if(view){ view.style.display = 'none'; view.innerHTML = ''; }
-      if(document.body){ document.body.classList.remove('change-view-settings','change-settings-premium-open'); }
+      resetSettingsWorkspaceShell();
     }catch(e){}
   }
   function installSettingsRouteGuard(){
@@ -1495,6 +1506,8 @@
 
   window.ChangeSettingsPanel = {open: openSettingsPanel, getAutoChallengesEnabled: getAutoChallengesEnabled, setAutoChallengesState: setAutoChallengesState};
   window.openSettingsPanel = openSettingsPanel;
+  window.hideSettingsWorkspace = hideSettingsWorkspace;
+  window.resetSettingsWorkspaceShell = resetSettingsWorkspaceShell;
   window.openCalendarSettings = function(){ return openSettingsPanel('calendar'); };
   window.openPushSettingsPanel = function(){ return openSettingsPanel('sync'); };
 

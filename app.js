@@ -779,6 +779,10 @@ function enforceDesktopContentVisibility(activeView){
 function setMainView(v){
   currentMainView=v;
   try{
+    if(v !== 'settings' && typeof window.hideSettingsWorkspace === 'function') window.hideSettingsWorkspace();
+    else if(v !== 'settings' && typeof window.resetSettingsWorkspaceShell === 'function') window.resetSettingsWorkspaceShell();
+  }catch(e){}
+  try{
     if(document.body){
       document.body.classList.remove('change-view-dashboard','change-view-calendar','change-view-challenges','change-view-pollen','change-view-settings','change-settings-premium-open');
       document.body.classList.add('change-view-' + v);
@@ -789,7 +793,13 @@ function setMainView(v){
     const el=document.getElementById(vv==='calendar'?'cal-body':vv+'-view');
     if(el) el.style.setProperty('display','none','important');
   });
-  if(v==='calendar'){
+  if(v==='settings'){
+    if(typeof window.openSettingsPanel === 'function'){
+      window.openSettingsPanel('dashboard');
+      return;
+    }
+    document.getElementById('settings-view')?.style.setProperty('display','block','important');
+  } else if(v==='calendar'){
     document.getElementById('cal-body')?.style.setProperty('display','flex','important');
     document.getElementById('cal-controls')?.style.setProperty('display','flex','important');
     renderCalendar();
