@@ -506,17 +506,17 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0172';
+  var APP_VERSION = '0.1.0174';
 
 
 
   var githubUpdateState = {
     file: null,
     status: 'empty',
-    message: 'Noch keine ZIP ausgewählt.',
+    message: '',
     files: [],
     checks: [],
-    fromVersion: '0.1.0172',
+    fromVersion: '0.1.0174',
     toVersion: '',
     rootFiles: []
   };
@@ -643,26 +643,25 @@
   }
   function githubUpdateBody(){
     var state = githubUpdateState;
-    var fileLine = state.file ? esc(state.file.name)+' · '+Math.round((state.file.size || 0) / 1024)+' KB' : 'Keine Datei gewählt';
+    var selectedLabel = state.file ? esc(state.file.name)+' · '+Math.round((state.file.size || 0) / 1024)+' KB' : 'ZIP hier ablegen oder auswählen';
     var to = state.toVersion || 'Noch nicht erkannt';
     var checks = (state.checks || []).length ? state.checks.map(function(check){ return githubCheckLine(check.ok, check.label, check.detail); }).join('') : '<div class="change-feature-note">ZIP auswählen und Prüfung starten. Es wird noch nichts auf GitHub geschrieben.</div>';
     var filePreview = (state.files || []).slice(0, 8).map(function(path){ return '<li>'+esc(path)+'</li>'; }).join('');
     if((state.files || []).length > 8) filePreview += '<li>+'+((state.files || []).length - 8)+' weitere Dateien</li>';
-    var dropdownOpen = state.status !== 'empty' || !!state.file;
+    var statusLine = state.message ? '<div class="change-github-status '+esc(state.status || 'empty')+'">'+esc(state.message || '')+'</div>' : '';
     return '<div class="change-github-update">'
-      + '<div class="change-feature-note">Die ZIP wird an deinen geschützten Cloudflare Worker übertragen. Der Worker legt sie in <strong>updates/</strong> ab; die GitHub Action prüft danach serverseitig und committet auf <strong>main</strong>. Kein GitHub-Key liegt im Browser.<br><br>ZIP Update als ausklappbarer Bereich. Prüfung und Übertragung bleiben getrennt.</div>'
+      + '<div class="change-feature-note">Die ZIP wird an deinen geschützten Cloudflare Worker übertragen. Der Worker legt sie in <strong>updates/</strong> ab; die GitHub Action prüft danach serverseitig und committet auf <strong>main</strong>. Kein GitHub-Key liegt im Browser.</div>'
       + '<div class="change-github-version-grid"><div><span>Von Version</span><strong>'+esc(state.fromVersion || APP_VERSION)+'</strong></div><div><span>Auf Version</span><strong>'+esc(to)+'</strong></div></div>'
-      + '<details class="change-github-dropdown" '+(dropdownOpen ? 'open' : '')+'>'
-      + '<summary><span>ZIP Update</span><small>'+esc(state.file ? state.file.name : 'ZIP auswählen, prüfen und übertragen')+'</small></summary>'
-      + '<div class="change-github-dropdown-body">'
-      + '<label class="change-github-file"><input type="file" id="github-zip-input" accept=".zip,application/zip,application/x-zip-compressed"><span>ZIP auswählen</span><small>'+fileLine+'</small></label>'
+      + '<div class="change-github-upload-panel">'
+      + '<div class="change-github-upload-title"><span>ZIP Update</span><small>Prüfung und Übertragung bleiben getrennt.</small></div>'
+      + '<label class="change-github-dropzone" id="github-zip-dropzone"><input type="file" id="github-zip-input" accept=".zip,application/zip,application/x-zip-compressed"><span>'+selectedLabel+'</span><small>ZIP per Drag & Drop hier ablegen oder antippen.</small></label>'
       + '<button class="btn btn-secondary btn-full" id="github-zip-check" type="button" '+(!state.file?'disabled':'')+'>Änderungen prüfen</button>'
-      + '<div class="change-github-status '+esc(state.status || 'empty')+'">'+esc(state.message || '')+'</div>'
+      + statusLine
       + '<div class="change-github-checks">'+checks+'</div>'
       + (filePreview ? '<div class="change-github-files"><strong>Dateivorschau</strong><ul>'+filePreview+'</ul></div>' : '')
-      + '<label class="change-github-secret"><span>Freigabe-Code</span><input type="password" id="github-update-secret" autocomplete="off" placeholder="Freigabe-Code eingeben" value="'+esc(readGithubUpdateSecret())+'"></label>'
+      + '<label class="change-github-secret"><span>Freigabe-Code</span><input type="text" id="github-update-secret" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Freigabe-Code eingeben" value="'+esc(readGithubUpdateSecret())+'"></label>'
       + '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' ? '' : 'disabled')+'>Direkt auf GitHub übertragen</button>'
-      + '</div></details>'
+      + '</div>'
       + '</div>';
   }
   function githubUpdateCard(){
@@ -1083,7 +1082,36 @@
     var clearSyncLog = $('clear-sync-log'); if(clearSyncLog) clearSyncLog.addEventListener('click', function(){ try{ localStorage.removeItem('change_v1_sync_log'); }catch(e){} refreshSameTab('sync'); });
     document.querySelectorAll('[data-change-theme]').forEach(function(btn){ btn.addEventListener('click', function(){ setAppTheme(btn.getAttribute('data-change-theme') || 'system'); refreshSameTab('app'); }); });
     var runHealth = $('run-app-health'); if(runHealth) runHealth.addEventListener('click', function(){ appHealthExpanded = true; refreshSameTab('app'); });
-    var githubZipInput = $('github-zip-input'); if(githubZipInput) githubZipInput.addEventListener('change', function(){ githubUpdateState.file = githubZipInput.files && githubZipInput.files[0] ? githubZipInput.files[0] : null; githubUpdateState.status = githubUpdateState.file ? 'selected' : 'empty'; githubUpdateState.message = githubUpdateState.file ? 'ZIP ausgewählt. Prüfung kann gestartet werden.' : 'Noch keine ZIP ausgewählt.'; githubUpdateState.files = []; githubUpdateState.checks = []; githubUpdateState.toVersion = ''; refreshSameTab('github'); });
+    function setGithubZipFile(file){
+      githubUpdateState.file = file || null;
+      githubUpdateState.status = githubUpdateState.file ? 'selected' : 'empty';
+      githubUpdateState.message = githubUpdateState.file ? 'ZIP ausgewählt. Prüfung kann gestartet werden.' : '';
+      githubUpdateState.files = [];
+      githubUpdateState.checks = [];
+      githubUpdateState.toVersion = '';
+      refreshSameTab('github');
+    }
+    var githubZipInput = $('github-zip-input');
+    if(githubZipInput) githubZipInput.addEventListener('change', function(){ setGithubZipFile(githubZipInput.files && githubZipInput.files[0] ? githubZipInput.files[0] : null); });
+    var githubDropzone = $('github-zip-dropzone');
+    if(githubDropzone){
+      ['dragenter','dragover'].forEach(function(name){
+        githubDropzone.addEventListener(name, function(event){ event.preventDefault(); event.stopPropagation(); githubDropzone.classList.add('is-dragging'); });
+      });
+      ['dragleave','drop'].forEach(function(name){
+        githubDropzone.addEventListener(name, function(event){ event.preventDefault(); event.stopPropagation(); githubDropzone.classList.remove('is-dragging'); });
+      });
+      githubDropzone.addEventListener('drop', function(event){
+        var file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0] ? event.dataTransfer.files[0] : null;
+        if(file && !/\.zip$/i.test(file.name || '')){
+          githubUpdateState.status = 'error';
+          githubUpdateState.message = 'Bitte eine ZIP-Datei auswählen.';
+          refreshSameTab('github');
+          return;
+        }
+        setGithubZipFile(file);
+      });
+    }
     var githubZipCheck = $('github-zip-check'); if(githubZipCheck) githubZipCheck.addEventListener('click', function(){ analyzeGithubZip(); });
     var githubZipCommit = $('github-zip-commit'); if(githubZipCommit) githubZipCommit.addEventListener('click', function(){ commitGithubZip(); });
     var btnGoogleConnect = $('btn-google-connect'); if(btnGoogleConnect) btnGoogleConnect.addEventListener('click', function(){ if(typeof connectToGoogle==='function') connectToGoogle(); });

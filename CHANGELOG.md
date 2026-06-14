@@ -1,3 +1,10 @@
+## Version 0.1.0174
+- Sichtbare App-Version auf `0.1.0174` erhöht.
+- Scrollen in Challenges und Einstellungen lokal/Desktop und mobil stabilisiert.
+- GitHub-ZIP-Upload als Drag-and-Drop-Fläche umgesetzt.
+- Hinweis „Noch keine ZIP ausgewählt“ entfernt; Status erscheint nur bei echter Auswahl oder Prüfung.
+- Freigabe-Code-Feld entschärft, damit keine Browser-Warnung zum Passwortfeld entsteht.
+
 ## Version 0.1.0173
 - Sichtbare App-Version auf `0.1.0173` erhöht.
 - Einstellungen-Header lokal/Desktop und mobil repariert.

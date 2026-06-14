@@ -7868,3 +7868,36 @@ body.change-theme-light.neo-pollen-shell #pollen-view .pollen-neo-hero-wide{
   }
 }
 
+
+
+/* v0.1.0174 · Scroll-Reparatur für lokale Desktop/PWA-Ansicht */
+body.change-view-challenges #content,
+body.change-view-settings #content{
+  min-height:0!important;
+  overflow:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+  overscroll-behavior:contain!important;
+}
+body.change-view-challenges #challenges-view,
+body.change-view-challenges #challenges-view .challenge-layout,
+body.change-view-settings #settings-view{
+  height:auto!important;
+  min-height:0!important;
+  overflow:visible!important;
+}
+@media(max-width:700px){
+  body.change-view-challenges #content,
+  body.change-view-settings #content{
+    flex:1 1 auto!important;
+    height:auto!important;
+    min-height:0!important;
+    overflow:auto!important;
+    padding-bottom:calc(92px + env(safe-area-inset-bottom))!important;
+  }
+  body.change-view-challenges #challenges-view,
+  body.change-view-settings #settings-view{
+    height:auto!important;
+    min-height:100%!important;
+    overflow:visible!important;
+  }
+}

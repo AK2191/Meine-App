@@ -1,8 +1,17 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0173 mit reparierter Einstellungen-Header-Reihenfolge
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0174 mit Scroll-Reparatur und GitHub-Drag-and-Drop
 
 ---
+
+
+## Version 0.1.0174
+- Die sichtbare App-Version wurde auf `0.1.0174` erhöht.
+- Challenges und Einstellungen bleiben lokal/Desktop und mobil wieder zuverlässig scrollbar.
+- Der GitHub-Bereich nutzt nun eine Drag-and-Drop-ZIP-Fläche statt einer Dropdown-Leiste.
+- Der leere Hinweis „Noch keine ZIP ausgewählt“ wurde entfernt; der Auswahlzustand steht direkt in der Upload-Fläche.
+- Die Freigabe-Code-Warnung durch ein Passwortfeld außerhalb eines Formulars wurde entschärft.
+- Keine Änderung an Firebase, Datenbank-Sync, Google Kalender, Push oder Challenge-Punkten.
 
 ## Version 0.1.0173
 - Die sichtbare App-Version wurde auf `0.1.0173` erhöht.
