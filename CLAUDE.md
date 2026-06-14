@@ -1,10 +1,18 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0185 mit Desktop-Sidebar-Reparatur
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0186 mit Desktop-Sidebar-Content-Reparatur
 
 ---
 
 
+
+## Version 0.1.0186
+- Die sichtbare App-Version wurde auf `0.1.0186` erhöht.
+- Die Desktop-/lokale Sidebar bleibt links aktiv, ohne die Inhaltsbereiche leer zu schalten.
+- Dashboard, Kalender, Challenges, Pollen und Einstellungen werden rechts neben der Sidebar wieder sichtbar und scrollbar gehalten.
+- Der Einstellungen-Button links unten behält Größe und Stil der Sidebar auch im aktiven Zustand.
+- Mobile Bottom-Navigation bleibt unverändert.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker, ZIP-Action oder Challenge-Logik.
 
 ## Version 0.1.0185
 - Die sichtbare App-Version wurde auf `0.1.0185` erhöht.

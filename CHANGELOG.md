@@ -1,3 +1,10 @@
+## 0.1.0186 - Desktop-Sidebar Content repariert
+- Version auf `0.1.0186` erhöht.
+- Desktop/lokale Sidebar bleibt links, die Inhalte von Dashboard, Kalender, Challenges, Pollen und Einstellungen bleiben wieder sichtbar.
+- Die aktive Einstellungen-Schaltfläche links unten behält Größe und Stil der Sidebar bei.
+- Mobile Bottom-Navigation bleibt unverändert.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder ZIP-Action.
+
 ## 0.1.0185 - Desktop-Sidebar wiederhergestellt
 - Version auf `0.1.0185` erhöht.
 - Desktop und lokale installierte Ansicht nutzen wieder die linke App-Sidebar statt der oberen Header-Navigation.
