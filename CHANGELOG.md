@@ -1,3 +1,16 @@
+## 0.1.0182 - GitHub Dateiübersicht verbessert
+- Version auf `0.1.0182` erhöht.
+- Die GitHub-ZIP-Prüfung liest die aktuelle Dateianzahl aus dem Repository und vergleicht sie mit der ausgewählten ZIP.
+- Neue Dateien werden erkannt und in einer ausklappbaren Dateiübersicht angezeigt.
+- Die frühere dauerhafte Dateivorschau wurde entfernt; die Übersicht öffnet sich nur noch über `Anzahl der Dateien`.
+- Die Content-Security-Policy erlaubt dafür lesende Anfragen an `https://api.github.com`.
+
+## 0.1.0181 - GitHub Action ZIP-Fallback und Cleanup
+- Version auf `0.1.0181` erhöht.
+- Die GitHub Action lädt ZIP-Dateien bei Bedarf über die GitHub API nach, wenn sie nach dem Checkout nicht im lokalen `updates/` Ordner gefunden werden.
+- Fehlerhafte ZIP-Übergaben werden automatisch aus `updates/` entfernt, damit keine unentpackten ZIP-Dateien im Repository liegen bleiben.
+- `CHANGELOG.md` wird serverseitig als Pflichtprüfung ergänzt.
+
 ## 0.1.0180 - GitHub Versionskacheln entfernt
 - Version auf `0.1.0180` erhöht.
 - GitHub Update entfernt die großen Kacheln `Von Version` und `Auf Version`, da diese Informationen bereits in der Prüfung sichtbar sind.

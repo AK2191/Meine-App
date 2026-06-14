@@ -514,7 +514,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0180';
+  var APP_VERSION = '0.1.0182';
 
 
 
@@ -524,9 +524,12 @@
     message: '',
     files: [],
     checks: [],
-    fromVersion: '0.1.0180',
+    fromVersion: '0.1.0182',
     toVersion: '',
-    rootFiles: []
+    rootFiles: [],
+    githubFiles: [],
+    newFiles: [],
+    fileListOpen: false
   };
 
   var GITHUB_UPDATE_WORKER_URL = 'https://change-github-update.ak2191.workers.dev';
@@ -646,15 +649,33 @@
     else throw new Error('ZIP-Kompression wird nicht unterstützt: '+entry.path);
     return decodeUtf8(data);
   }
-  function githubCheckLine(ok, label, detail){
-    return '<div class="change-github-check '+(ok?'ok':'warn')+'"><span>'+(ok?'✓':'!')+'</span><div><strong>'+esc(label)+'</strong>'+(detail?'<small>'+esc(detail)+'</small>':'')+'</div></div>';
+  function githubCheckLine(check){
+    var ok = !!check.ok;
+    var label = check.label || '';
+    var detail = check.detail || '';
+    var title = check.key === 'files' ? '<button type="button" class="change-github-check-link" id="github-files-toggle">'+esc(label)+'</button>' : '<strong>'+esc(label)+'</strong>';
+    return '<div class="change-github-check '+(ok?'ok':'warn')+'"><span>'+(ok?'✓':'!')+'</span><div>'+title+(detail?'<small>'+esc(detail)+'</small>':'')+'</div></div>';
+  }
+  function githubFileOverview(){
+    var state = githubUpdateState;
+    if(!state.fileListOpen || !(state.files || []).length) return '';
+    var newFiles = state.newFiles || [];
+    var zipFiles = state.files || [];
+    var newList = newFiles.slice(0, 20).map(function(path){ return '<li>'+esc(path)+'</li>'; }).join('') || '<li>Keine neuen Dateien erkannt.</li>';
+    if(newFiles.length > 20) newList += '<li>+'+(newFiles.length - 20)+' weitere neue Dateien</li>';
+    var zipList = zipFiles.slice(0, 40).map(function(path){ return '<li>'+esc(path)+'</li>'; }).join('');
+    if(zipFiles.length > 40) zipList += '<li>+'+(zipFiles.length - 40)+' weitere Dateien</li>';
+    return '<div class="change-github-files">'
+      + '<strong>Dateiübersicht</strong>'
+      + '<div class="change-github-file-stats"><span>GitHub aktuell: '+esc((state.githubFiles || []).length || 'nicht gelesen')+'</span><span>ZIP: '+esc(zipFiles.length)+'</span><span>Neu: '+esc(newFiles.length)+'</span></div>'
+      + '<div class="change-github-file-section"><b>Neue Dateien</b><ul>'+newList+'</ul></div>'
+      + '<div class="change-github-file-section"><b>ZIP-Dateien</b><ul>'+zipList+'</ul></div>'
+      + '</div>';
   }
   function githubUpdateBody(){
     var state = githubUpdateState;
     var selectedLabel = state.file ? esc(state.file.name)+' · '+Math.round((state.file.size || 0) / 1024)+' KB' : 'ZIP hier ablegen oder auswählen';
-    var checks = (state.checks || []).length ? state.checks.map(function(check){ return githubCheckLine(check.ok, check.label, check.detail); }).join('') : '';
-    var filePreview = (state.files || []).slice(0, 8).map(function(path){ return '<li>'+esc(path)+'</li>'; }).join('');
-    if((state.files || []).length > 8) filePreview += '<li>+'+((state.files || []).length - 8)+' weitere Dateien</li>';
+    var checks = (state.checks || []).length ? state.checks.map(function(check){ return githubCheckLine(check); }).join('') : '';
     var statusLine = state.message ? '<div class="change-github-status '+esc(state.status || 'empty')+'">'+esc(state.message || '')+'</div>' : '';
     return '<div class="change-github-update">'
       + '<label class="change-github-secret"><span>Freigabe-Code</span><input type="text" id="github-update-secret" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Freigabe-Code eingeben" value="'+esc(readGithubUpdateSecret())+'"></label>'
@@ -663,7 +684,7 @@
       + '<label class="change-github-dropzone" id="github-zip-dropzone"><input type="file" id="github-zip-input" accept=".zip,application/zip,application/x-zip-compressed"><span>'+selectedLabel+'</span><small>ZIP per Drag & Drop hier ablegen oder antippen.</small></label>'
       + statusLine
       + (checks ? '<div class="change-github-checks">'+checks+'</div>' : '')
-      + (filePreview ? '<div class="change-github-files"><strong>Dateivorschau</strong><ul>'+filePreview+'</ul></div>' : '')
+      + githubFileOverview()
       + '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' ? '' : 'disabled')+'>Direkt auf GitHub übertragen</button>'
       + '</div>'
       + '</div>';
@@ -725,6 +746,20 @@
     refreshSameTab('github');
   }
 
+  async function fetchGithubRepoFiles(){
+    try{
+      var response = await fetch('https://api.github.com/repos/AK2191/Meine-App/git/trees/main?recursive=1', {cache:'no-store'});
+      if(!response.ok) throw new Error('GitHub API '+response.status);
+      var data = await response.json();
+      return (data.tree || [])
+        .filter(function(item){ return item && item.type === 'blob' && item.path; })
+        .map(function(item){ return String(item.path).replace(/\\/g, '/'); })
+        .sort();
+    }catch(e){
+      return [];
+    }
+  }
+
   async function analyzeGithubZip(){
     var state = githubUpdateState;
     if(!state.file){ state.message = 'Bitte zuerst eine ZIP auswählen.'; state.status = 'error'; refreshSameTab('github'); return; }
@@ -762,16 +797,25 @@
       var versionHigher = nextVersion && compareVersions(nextVersion, APP_VERSION) > 0;
       var claudeUpdated = !!(nextVersion && claudeText.indexOf('## Version '+nextVersion) >= 0 && claudeText.indexOf(nextVersion) >= 0);
       var changelogUpdated = !!(nextVersion && changelogText.indexOf(nextVersion) >= 0);
+      var githubFiles = await fetchGithubRepoFiles();
+      var githubSet = {};
+      githubFiles.forEach(function(path){ githubSet[path] = true; });
+      var newFiles = paths.filter(function(path){ return !githubSet[path]; });
+      var fileDetail = githubFiles.length
+        ? 'GitHub aktuell: '+githubFiles.length+' · ZIP: '+paths.length+' · Neu: '+newFiles.length
+        : 'ZIP: '+paths.length+' · GitHub aktuell nicht gelesen.';
       var checks = [
         {ok: !!versionHigher, label:'Version erhöht', detail: nextVersion ? APP_VERSION+' → '+nextVersion : 'Keine Zielversion erkannt.'},
         {ok: claudeUpdated, label:'CLAUDE.md aktualisiert', detail: claudeUpdated ? 'Eintrag zur Zielversion gefunden.' : 'Kein passender Versionseintrag gefunden.'},
         {ok: changelogUpdated, label:'CHANGELOG.md aktualisiert', detail: changelogUpdated ? 'Eintrag zur Zielversion gefunden.' : 'Kein passender Versionseintrag gefunden.'},
         {ok: duplicates.length === 0, label:'Keine doppelten Dateien', detail: duplicates.length ? duplicates.slice(0,3).join(', ') : 'Pfade sind eindeutig.'},
         {ok: badRoot.length === 0, label:'Keine unerwünschten Root-Dateien', detail: badRoot.length ? badRoot.slice(0,3).join(', ') : 'Root-Struktur ist sauber.'},
-        {ok: paths.length > 0, label:'Anzahl der Dateien', detail: paths.length+' Dateien erkannt.'}
+        {ok: paths.length > 0, key:'files', label:'Anzahl der Dateien', detail: fileDetail}
       ];
       var ok = checks.every(function(check){ return check.ok; });
       state.files = paths;
+      state.githubFiles = githubFiles;
+      state.newFiles = newFiles;
       state.rootFiles = badRoot;
       state.toVersion = nextVersion || '';
       state.checks = checks;
@@ -1117,6 +1161,13 @@
         setGithubZipFile(file);
       });
     }
+    var githubFilesToggle = $('github-files-toggle');
+    if(githubFilesToggle) githubFilesToggle.addEventListener('click', function(event){
+      event.preventDefault();
+      event.stopPropagation();
+      githubUpdateState.fileListOpen = !githubUpdateState.fileListOpen;
+      refreshSameTab('github');
+    });
     var githubZipCommit = $('github-zip-commit'); if(githubZipCommit) githubZipCommit.addEventListener('click', function(){ commitGithubZip(); });
     var btnGoogleConnect = $('btn-google-connect'); if(btnGoogleConnect) btnGoogleConnect.addEventListener('click', function(){ if(typeof connectToGoogle==='function') connectToGoogle(); });
 

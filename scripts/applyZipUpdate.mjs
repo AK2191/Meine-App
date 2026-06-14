@@ -59,18 +59,80 @@ function walk(dir){
   }
   return result;
 }
-function findZip(){
+function eventZipCandidates(){
+  const eventPath = process.env.GITHUB_EVENT_PATH || '';
+  if(!eventPath || !fs.existsSync(eventPath)) return [];
+  try{
+    const event = JSON.parse(fs.readFileSync(eventPath, 'utf8'));
+    const candidates = [];
+    const add = (file) => {
+      const value = String(file || '').replace(/\\/g, '/');
+      if(/^updates\/[^/]+\.zip$/i.test(value) && !candidates.includes(value)) candidates.push(value);
+    };
+    add(event?.head_commit?.added?.find((file) => /\.zip$/i.test(file)));
+    add(event?.head_commit?.modified?.find((file) => /\.zip$/i.test(file)));
+    for(const commit of event?.commits || []){
+      for(const file of commit.added || []) add(file);
+      for(const file of commit.modified || []) add(file);
+    }
+    return candidates;
+  }catch(error){
+    console.warn('WARNUNG: GitHub Event konnte nicht gelesen werden:', error.message);
+    return [];
+  }
+}
+async function downloadGitHubZip(relativePath){
+  const token = process.env.GITHUB_TOKEN || '';
+  const repository = process.env.GITHUB_REPOSITORY || '';
+  const ref = process.env.GITHUB_SHA || 'main';
+  if(!token || !repository) return null;
+  const apiPath = relativePath.split('/').map(encodeURIComponent).join('/');
+  const url = `https://api.github.com/repos/${repository}/contents/${apiPath}?ref=${encodeURIComponent(ref)}`;
+  const response = await fetch(url, {
+    headers: {
+      accept: 'application/vnd.github+json',
+      authorization: `Bearer ${token}`,
+      'user-agent': 'Change-ZIP-Update-Action',
+      'x-github-api-version': '2022-11-28'
+    }
+  });
+  if(!response.ok){
+    console.warn(`WARNUNG: ZIP konnte nicht über GitHub API geladen werden (${response.status}).`);
+    return null;
+  }
+  const body = await response.json();
+  if(!body || body.type !== 'file' || !body.content) return null;
+  const localPath = path.join(repoRoot, relativePath);
+  fs.mkdirSync(path.dirname(localPath), {recursive:true});
+  fs.writeFileSync(localPath, Buffer.from(String(body.content).replace(/\s+/g, ''), 'base64'));
+  console.log(`ZIP über GitHub API nachgeladen: ${relativePath}`);
+  return localPath;
+}
+async function findZip(){
   if(explicitZip){
     const full = path.resolve(repoRoot, explicitZip);
     if(!full.startsWith(repoRoot + path.sep)) fail('ZIP-Pfad liegt außerhalb des Repositorys.');
-    if(!fs.existsSync(full)) fail(`ZIP nicht gefunden: ${explicitZip}`);
+    if(!fs.existsSync(full)){
+      const downloaded = await downloadGitHubZip(explicitZip);
+      if(downloaded && fs.existsSync(downloaded)) return downloaded;
+      fail(`ZIP nicht gefunden: ${explicitZip}`);
+    }
     return full;
   }
+
   const updateDir = path.join(repoRoot, 'updates');
-  const zips = walk(updateDir).filter((file) => file.toLowerCase().endsWith('.zip'));
-  if(!zips.length) fail('Keine ZIP in updates/ gefunden.');
-  zips.sort((a,b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
-  return zips[0];
+  const localZips = walk(updateDir).filter((file) => file.toLowerCase().endsWith('.zip'));
+  if(localZips.length){
+    localZips.sort((a,b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
+    return localZips[0];
+  }
+
+  for(const candidate of eventZipCandidates()){
+    const downloaded = await downloadGitHubZip(candidate);
+    if(downloaded && fs.existsSync(downloaded)) return downloaded;
+  }
+
+  fail('Keine ZIP in updates/ gefunden.');
 }
 function findExtractRoot(tempDir){
   const entries = fs.readdirSync(tempDir).filter((name) => !name.startsWith('__MACOSX'));
@@ -83,9 +145,11 @@ function findExtractRoot(tempDir){
 function assertSafeTree(srcRoot){
   const files = walk(srcRoot).map((file) => path.relative(srcRoot, file).replace(/\\/g, '/'));
   if(!files.includes('CLAUDE.md')) fail('CLAUDE.md fehlt in der ZIP.');
+  if(!files.includes('CHANGELOG.md')) fail('CHANGELOG.md fehlt in der ZIP.');
   const bad = files.filter((file) => {
     if(file.includes('..')) return true;
     if(file.startsWith('.git/')) return true;
+    if(file.startsWith('updates/') && file.toLowerCase().endsWith('.zip')) return true;
     return false;
   });
   if(bad.length) fail(`Unsichere Pfade gefunden: ${bad.slice(0,5).join(', ')}`);
@@ -103,6 +167,8 @@ function assertSafeTree(srcRoot){
   if(compareVersions(targetVersion, currentVersion) <= 0) fail(`Zielversion ist nicht höher: ${currentVersion} → ${targetVersion}`);
   const claude = readText(path.join(srcRoot, 'CLAUDE.md'));
   if(!claude.includes(`## Version ${targetVersion}`)) fail(`CLAUDE.md enthält keinen Eintrag für ${targetVersion}.`);
+  const changelog = readText(path.join(srcRoot, 'CHANGELOG.md'));
+  if(!changelog.includes(targetVersion)) fail(`CHANGELOG.md enthält keinen Eintrag für ${targetVersion}.`);
   console.log(`Version geprüft: ${currentVersion} → ${targetVersion}`);
   return { currentVersion, targetVersion, files };
 }
@@ -123,7 +189,7 @@ function copyDir(src, dest){
   }
 }
 
-const zipPath = findZip();
+const zipPath = await findZip();
 console.log(`Nutze ZIP: ${path.relative(repoRoot, zipPath)}`);
 const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'change-zip-'));
 execFileSync('unzip', ['-q', zipPath, '-d', tempDir], {stdio:'inherit'});

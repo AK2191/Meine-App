@@ -1,9 +1,16 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0180 mit GitHub Versionskacheln entfernt
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0181 mit GitHub Action ZIP-Fallback und Cleanup
 
 ---
 
+
+## Version 0.1.0181
+- Die sichtbare App-Version wurde auf `0.1.0181` erhöht.
+- Die GitHub Action für ZIP Updates wurde robuster gemacht: Wenn die ZIP nach dem Checkout nicht lokal gefunden wird, wird sie über die GitHub API anhand des Push-Events nachgeladen.
+- Fehlerhafte ZIP-Übergaben werden nach einem fehlgeschlagenen Lauf automatisch aus `updates/` entfernt, damit das Repository nicht durch unentpackte ZIP-Dateien anwächst.
+- `CHANGELOG.md` wird serverseitig als Pflichtdokument geprüft.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push oder Challenge-Logik.
 
 ## Version 0.1.0180
 - Die sichtbare App-Version wurde auf `0.1.0180` erhöht.
@@ -20,6 +27,14 @@
 - Der eigene Einstellungen-Bereich „GitHub“ nutzt nun das GitHub-Mark als Icon statt des bisherigen Platzhaltersymbols.
 - Das Icon wird sowohl in der GitHub-Kachel als auch in der Detailkarte angezeigt.
 - Keine Änderung an GitHub-Worker, ZIP-Prüfung, Upload-Logik, Login, Firebase, Sync, Kalender oder Challenges.
+
+## Version 0.1.0182
+- Die sichtbare App-Version wurde auf `0.1.0182` erhöht.
+- Die GitHub-ZIP-Prüfung liest nun zusätzlich die aktuelle Dateianzahl aus dem Repository und vergleicht sie mit der ZIP-Dateiliste.
+- Neue Dateien werden erkannt und in einer ausklappbaren Übersicht unter `Anzahl der Dateien` angezeigt.
+- Die dauerhafte Dateivorschau wurde entfernt, damit der GitHub-Bereich ruhiger bleibt.
+- Die Content-Security-Policy erlaubt lesende Anfragen an `https://api.github.com`; kein GitHub-Key liegt im Browser.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push oder Challenge-Logik.
 
 ## Version 0.1.0177
 - Die sichtbare App-Version wurde auf `0.1.0177` erhöht.
