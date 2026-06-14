@@ -1,3 +1,8 @@
+## Version 0.1.0217
+- Die sichtbare App-Version wurde auf `0.1.0217` erhöht.
+- Inhaltlich entspricht diese Version der Pollen-CSS-exakten HeroCard-Angleichung aus `0.1.0216`, wurde aber neu versioniert, damit die GitHub-Update-Funktion die ZIP korrekt als neuere Version akzeptiert.
+- Keine weitere Änderung an HeroCard-Rendering, Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder GitHub Action.
+
 ## Version 0.1.0216
 - Die sichtbare App-Version wurde auf `0.1.0216` erhöht.
 - Die HeroCards werden nun an den tatsächlich aktuellen Pollen-CSS-Werten ausgerichtet: Desktop nutzt dieselben Spaltenverhältnisse, Höhe, Innenabstände, Statuszeilen-Größen und Icon-Größen wie die Pollen-HeroCard.
