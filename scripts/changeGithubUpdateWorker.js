@@ -114,6 +114,50 @@ function safeZipName(fileName, targetVersion){
   return `${stamp}-${name}`.slice(0, 180);
 }
 
+function versionParts(value){
+  return String(value || '').split('.').map((part) => Number.parseInt(part, 10) || 0);
+}
+function compareVersions(a, b){
+  const av = versionParts(a); const bv = versionParts(b);
+  for(let i = 0; i < Math.max(av.length, bv.length); i++){
+    const left = av[i] || 0; const right = bv[i] || 0;
+    if(left > right) return 1;
+    if(left < right) return -1;
+  }
+  return 0;
+}
+function decodeBase64Utf8(value){
+  const clean = String(value || '').replace(/\s+/g, '');
+  if(!clean) return '';
+  const binary = atob(clean);
+  const bytes = new Uint8Array(binary.length);
+  for(let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new TextDecoder('utf-8').decode(bytes);
+}
+function appVersionFromText(text){
+  const match = String(text || '').match(/APP_VERSION\s*=\s*['"](\d+\.\d+\.\d+)['"]/);
+  return match ? match[1] : '';
+}
+async function getBranchStatus(token, targetVersion){
+  let branchSha = '';
+  let version = '';
+  try{
+    const ref = await githubFetch(`/repos/${REPOSITORY}/git/ref/heads/${BRANCH}`, { method: 'GET' }, token);
+    branchSha = ref && ref.object ? ref.object.sha || '' : '';
+  }catch(error){}
+  try{
+    const path = encodeURIComponent('features/pollen/pollenView.js').replace(/%2F/g, '/');
+    const file = await githubFetch(`/repos/${REPOSITORY}/contents/${path}?ref=${encodeURIComponent(BRANCH)}`, { method: 'GET' }, token);
+    version = appVersionFromText(decodeBase64Utf8(file && file.content));
+  }catch(error){}
+  return {
+    headSha: branchSha,
+    version,
+    targetVersion: String(targetVersion || ''),
+    targetVersionCommitted: !!(targetVersion && version && compareVersions(version, targetVersion) >= 0)
+  };
+}
+
 async function getRepositoryFiles(env){
   const token = await getInstallationToken(env);
   const body = await githubFetch(`/repos/${REPOSITORY}/git/trees/${BRANCH}?recursive=1`, { method: 'GET' }, token);
@@ -123,13 +167,14 @@ async function getRepositoryFiles(env){
   return json({ ok: true, files, count: files.length });
 }
 
-async function getLatestWorkflowStatus(env, commitSha){
+async function getLatestWorkflowStatus(env, commitSha, targetVersion){
   const token = await getInstallationToken(env);
   const qs = new URLSearchParams({ per_page: '10', branch: BRANCH });
   if(commitSha) qs.set('head_sha', String(commitSha));
   const body = await githubFetch(`/repos/${REPOSITORY}/actions/runs?${qs.toString()}`, { method: 'GET' }, token);
   const runs = Array.isArray(body && body.workflow_runs) ? body.workflow_runs : [];
   const run = runs.find((item) => String(item && item.name || '').includes('Change ZIP Update')) || runs[0] || null;
+  const branch = await getBranchStatus(token, targetVersion);
   return json({
     ok: true,
     run: run ? {
@@ -141,7 +186,8 @@ async function getLatestWorkflowStatus(env, commitSha){
       headSha: run.head_sha || '',
       createdAt: run.created_at || '',
       updatedAt: run.updated_at || ''
-    } : null
+    } : null,
+    branch
   });
 }
 
@@ -182,7 +228,7 @@ export default {
         return await getRepositoryFiles(env);
       }
       if(request.method === 'GET' && url.pathname === '/status'){
-        return await getLatestWorkflowStatus(env, url.searchParams.get('commitSha') || '');
+        return await getLatestWorkflowStatus(env, url.searchParams.get('commitSha') || '', url.searchParams.get('targetVersion') || '');
       }
       if(request.method !== 'POST' || url.pathname !== '/upload'){
         return json({ ok:false, message:'Nur POST /upload, GET /status oder GET /files ist erlaubt.' }, 404);

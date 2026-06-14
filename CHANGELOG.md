@@ -1,3 +1,10 @@
+## Version 0.1.0205
+- Die sichtbare App-Version wurde auf `0.1.0205` erhöht.
+- Die GitHub-Update-Anzeige zeigt jetzt einen Live-Fortschritt mit ZIP-Upload, GitHub Action, Commit auf `main` und Live-Version.
+- Der Button `Update laden` erscheint erst, wenn die Zielversion auch live über GitHub Pages erreichbar ist.
+- Der Cloudflare-Worker-Status kann zusätzlich die aktuelle `main`-Version und den Commit-SHA zurückgeben.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push oder Challenge-Daten.
+
 ## Version 0.1.0204
 - Die sichtbare App-Version wurde auf `0.1.0204` erhöht.
 - Das ZIP-Update-Paket übernimmt den Kalender-/Einstellungen-HeroCard-Fix aus `0.1.0203` erneut sauber.

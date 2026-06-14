@@ -514,7 +514,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0204';
+  var APP_VERSION = '0.1.0205';
 
 
 
@@ -538,7 +538,13 @@
     actionCheckedAt: '',
     actionStartedAt: 0,
     actionPollTimer: null,
-    updateReady: false
+    updateReady: false,
+    branchCommitSha: '',
+    branchVersion: '',
+    targetCommitted: false,
+    liveVersion: '',
+    liveReady: false,
+    lastRunId: ''
   };
 
   var GITHUB_UPDATE_WORKER_URL = 'https://change-github-update.ak2191.workers.dev';
@@ -665,14 +671,57 @@
     var title = check.key === 'files' ? '<button type="button" class="change-github-check-link" id="github-files-toggle">'+esc(label)+'</button>' : '<strong>'+esc(label)+'</strong>';
     return '<div class="change-github-check '+(ok?'ok':'warn')+'"><span>'+(ok?'✓':'!')+'</span><div>'+title+(detail?'<small>'+esc(detail)+'</small>':'')+'</div></div>';
   }
+  function shortSha(value){
+    value = String(value || '').trim();
+    return value ? value.slice(0, 7) : '';
+  }
+  function appVersionFromText(text){
+    var match = String(text || '').match(/APP_VERSION\s*=\s*['"](\d+\.\d+\.\d+)['"]/);
+    return match ? match[1] : '';
+  }
+  async function readLiveAppVersion(targetVersion){
+    try{
+      var cacheKey = encodeURIComponent(targetVersion || String(Date.now()));
+      var response = await fetch('./features/pollen/pollenView.js?v='+cacheKey+'&t='+Date.now(), {cache:'no-store'});
+      if(!response.ok) throw new Error('Live-Datei '+response.status);
+      return appVersionFromText(await response.text());
+    }catch(e){
+      return '';
+    }
+  }
+  function githubActionSteps(){
+    var state = githubUpdateState;
+    var target = state.toVersion || APP_VERSION;
+    var runKnown = !!(state.lastRunId || state.actionStatus || state.actionRunUrl);
+    var actionDone = state.actionStatus === 'completed';
+    var actionOk = actionDone && state.actionConclusion === 'success';
+    var actionError = state.actionConclusion && state.actionConclusion !== 'success';
+    var committed = !!state.targetCommitted;
+    var live = !!state.liveReady;
+    var steps = [
+      {label:'ZIP übertragen', detail: state.uploadCommitSha ? 'Upload-Commit '+shortSha(state.uploadCommitSha) : 'Wartet auf Upload', state: state.uploadCommitSha ? 'ok' : 'wait'},
+      {label:'GitHub Action', detail: actionDone ? (actionOk ? 'Erfolgreich abgeschlossen' : 'Fehlgeschlagen') : (runKnown ? (state.actionStatus === 'queued' ? 'Wartet in GitHub' : 'Läuft gerade') : 'Wird gesucht'), state: actionError ? 'error' : (actionDone ? 'ok' : (runKnown ? 'active' : 'wait'))},
+      {label:'Commit auf main', detail: state.branchVersion ? ('Version '+state.branchVersion+(state.branchCommitSha ? ' · '+shortSha(state.branchCommitSha) : '')) : 'Wird nach der Action geprüft', state: committed ? 'ok' : (actionOk ? 'active' : 'wait')},
+      {label:'Live-Version', detail: state.liveVersion ? ('Aktuell erreichbar: '+state.liveVersion) : 'Wartet auf GitHub Pages / Cache', state: live ? 'ok' : (committed ? 'active' : 'wait')}
+    ];
+    return '<div class="change-github-action-steps">'+steps.map(function(step){
+      return '<div class="change-github-action-step '+esc(step.state)+'"><span></span><div><strong>'+esc(step.label)+'</strong><small>'+esc(step.detail)+'</small></div></div>';
+    }).join('')+'</div>';
+  }
   function githubActionStatusPanel(){
     var state = githubUpdateState;
-    if(!state.actionMessage && !state.updateReady && !state.actionRunUrl) return '';
-    var cls = state.actionConclusion === 'success' ? 'ok' : (state.actionConclusion || state.actionStatus === 'failure' ? 'error' : 'checking');
+    if(!state.actionMessage && !state.updateReady && !state.actionRunUrl && !state.uploadCommitSha) return '';
+    var cls = state.updateReady ? 'ok' : (state.actionConclusion && state.actionConclusion !== 'success' ? 'error' : 'checking');
     var checked = state.actionCheckedAt ? '<small>Zuletzt geprüft: '+esc(state.actionCheckedAt)+'</small>' : '';
+    var target = state.toVersion || APP_VERSION;
+    var meta = '<div class="change-github-action-meta">'
+      + (target ? '<span>Zielversion '+esc(target)+'</span>' : '')
+      + (state.branchVersion ? '<span>Main '+esc(state.branchVersion)+'</span>' : '')
+      + (state.liveVersion ? '<span>Live '+esc(state.liveVersion)+'</span>' : '')
+      + '</div>';
     var link = state.actionRunUrl ? '<a href="'+esc(state.actionRunUrl)+'" target="_blank" rel="noopener">Details in GitHub öffnen</a>' : '';
-    var button = state.updateReady ? '<button class="btn btn-primary btn-full" id="github-update-reload" type="button">Update auf Version '+esc(state.toVersion || APP_VERSION)+' laden</button>' : '';
-    return '<div class="change-github-action '+esc(cls)+'"><strong>'+esc(state.actionMessage || '')+'</strong>'+checked+link+button+'</div>';
+    var button = state.updateReady && state.liveReady ? '<button class="btn btn-primary btn-full" id="github-update-reload" type="button">Update auf Version '+esc(target)+' laden</button>' : '';
+    return '<div class="change-github-action '+esc(cls)+'"><strong>'+esc(state.actionMessage || '')+'</strong>'+checked+meta+githubActionSteps()+link+button+'</div>';
   }
 
   async function reloadChangeUpdateVersion(){
@@ -710,10 +759,11 @@
   async function pollGithubActionStatus(){
     var state = githubUpdateState;
     if(!state.uploadCommitSha && !state.actionStartedAt) return;
-    if(Date.now() - (state.actionStartedAt || Date.now()) > 120000){
+    var target = state.toVersion || APP_VERSION;
+    if(Date.now() - (state.actionStartedAt || Date.now()) > 480000){
       state.actionStatus = 'timeout';
       state.actionConclusion = 'failure';
-      state.actionMessage = 'GitHub Action Status nicht rechtzeitig erkannt.';
+      state.actionMessage = 'Update wurde nicht rechtzeitig live erkannt.';
       state.actionCheckedAt = new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
       stopGithubActionPolling();
       refreshSameTab('github');
@@ -721,30 +771,61 @@
     }
     try{
       var url = GITHUB_UPDATE_WORKER_URL + '/status';
-      if(state.uploadCommitSha) url += '?commitSha=' + encodeURIComponent(state.uploadCommitSha);
+      var params = [];
+      if(state.uploadCommitSha) params.push('commitSha=' + encodeURIComponent(state.uploadCommitSha));
+      if(target) params.push('targetVersion=' + encodeURIComponent(target));
+      if(params.length) url += '?' + params.join('&');
       var response = await fetch(url, {cache:'no-store'});
       var result = null;
       try{ result = await response.json(); }catch(parseErr){}
       if(!response.ok || !result || !result.ok) throw new Error((result && result.message) || ('Status Fehler '+response.status));
       var run = result.run || null;
+      var branch = result.branch || null;
       state.actionCheckedAt = new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
+      if(branch){
+        state.branchCommitSha = branch.headSha || state.branchCommitSha || '';
+        state.branchVersion = branch.version || state.branchVersion || '';
+        if(branch.targetVersionCommitted === true || (target && state.branchVersion && compareVersions(state.branchVersion, target) >= 0)){
+          state.targetCommitted = true;
+        }
+      }
       if(run){
+        state.lastRunId = run.id || state.lastRunId || '';
         state.actionStatus = run.status || '';
         state.actionConclusion = run.conclusion || '';
         state.actionRunUrl = run.htmlUrl || state.actionRunUrl || '';
         if(run.status === 'completed'){
-          stopGithubActionPolling();
           if(run.conclusion === 'success'){
-            state.updateReady = true;
-            state.actionMessage = 'GitHub Action erfolgreich abgeschlossen.';
+            if(!state.targetCommitted && !branch){
+              state.targetCommitted = true;
+            }
+            state.liveVersion = await readLiveAppVersion(target);
+            state.liveReady = !!(target && state.liveVersion && compareVersions(state.liveVersion, target) >= 0);
+            if(state.liveReady){
+              state.updateReady = true;
+              state.actionMessage = 'Update ist live bereit.';
+              stopGithubActionPolling();
+              refreshSameTab('github');
+              return;
+            }
+            state.updateReady = false;
+            state.actionMessage = state.targetCommitted ? 'Commit ist da. Live-Version wird bereitgestellt…' : 'GitHub Action fertig. Commit auf main wird geprüft…';
           }else{
+            state.updateReady = false;
+            state.liveReady = false;
             state.actionMessage = 'GitHub Action fehlgeschlagen.';
+            stopGithubActionPolling();
+            refreshSameTab('github');
+            return;
           }
-          refreshSameTab('github');
-          return;
+        }else{
+          state.updateReady = false;
+          state.liveReady = false;
+          state.actionMessage = run.status === 'queued' ? 'GitHub Action wartet…' : 'GitHub Action läuft…';
         }
-        state.actionMessage = run.status === 'queued' ? 'GitHub Action wartet…' : 'GitHub Action läuft…';
       }else{
+        state.updateReady = false;
+        state.liveReady = false;
         state.actionMessage = 'GitHub Action wird gesucht…';
       }
     }catch(e){
@@ -757,7 +838,7 @@
       state.actionCheckedAt = new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
     }
     refreshSameTab('github');
-    if(!state.actionConclusion || state.actionStatus !== 'completed') scheduleGithubActionPoll(5000);
+    if(!state.updateReady && !(state.actionConclusion && state.actionConclusion !== 'success')) scheduleGithubActionPoll(5000);
   }
 
   function githubFileOverview(){
@@ -848,6 +929,12 @@
       state.actionMessage = 'GitHub Action wird gesucht…';
       state.actionCheckedAt = '';
       state.actionStartedAt = Date.now();
+      state.branchCommitSha = '';
+      state.branchVersion = '';
+      state.targetCommitted = false;
+      state.liveVersion = '';
+      state.liveReady = false;
+      state.lastRunId = '';
       state.updateReady = false;
       if(typeof window.toast === 'function') window.toast('Update an GitHub übertragen', 'ok');
       scheduleGithubActionPoll(2500);

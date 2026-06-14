@@ -1,3 +1,10 @@
+## Version 0.1.0205
+- Die sichtbare App-Version wurde auf `0.1.0205` erhöht.
+- Die GitHub-Update-Anzeige zeigt jetzt einen klaren Live-Fortschritt: ZIP übertragen, GitHub Action, Commit auf `main`, Live-Version.
+- `Update laden` wird erst aktiv, wenn die Zielversion nach erfolgreicher Action auch wirklich live über die App-Datei erreichbar ist.
+- Der Cloudflare-Worker-Status unterstützt zusätzlich `targetVersion` und liefert die aktuelle `main`-Version inklusive Commit-SHA zurück.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push oder Challenge-Daten.
+
 ## Version 0.1.0204
 - Die sichtbare App-Version wurde auf `0.1.0204` erhöht.
 - Das ZIP-Update-Paket übernimmt den Kalender-/Einstellungen-HeroCard-Fix aus `0.1.0203` erneut sauber, falls `0.1.0203` durch den alten Workflow nicht committed wurde.
@@ -23,7 +30,7 @@
 
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0204 mit stabilem GitHub-ZIP-Update
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0205 mit Live-GitHub-Update-Status
 
 ---
 

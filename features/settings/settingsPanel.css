@@ -1412,3 +1412,70 @@ body.change-view-settings #header .avatar.google-on::after{background:#22c55e!im
     border-radius:24px!important;
   }
 }
+
+/* v0.1.0205 · GitHub Update Live-Fortschritt */
+.change-github-action-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+.change-github-action-meta span{
+  display:inline-flex;
+  align-items:center;
+  min-height:22px;
+  padding:4px 8px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.035);
+  color:var(--t3);
+  font-size:10.5px;
+  font-weight:900;
+}
+.change-github-action-steps{
+  display:grid;
+  gap:7px;
+  margin-top:2px;
+}
+.change-github-action-step{
+  display:grid;
+  grid-template-columns:18px minmax(0,1fr);
+  gap:8px;
+  align-items:start;
+  padding:8px 9px;
+  border-radius:13px;
+  border:1px solid rgba(255,255,255,.06);
+  background:rgba(255,255,255,.025);
+}
+.change-github-action-step>span{
+  width:10px;
+  height:10px;
+  margin-top:3px;
+  border-radius:50%;
+  background:var(--t4);
+  box-shadow:0 0 0 4px rgba(255,255,255,.035);
+}
+.change-github-action-step div{
+  display:grid;
+  gap:2px;
+  min-width:0;
+}
+.change-github-action-step strong{
+  font-size:11.5px;
+  line-height:1.2;
+  color:var(--t2)!important;
+}
+.change-github-action-step small{
+  font-size:10.5px;
+  line-height:1.25;
+  color:var(--t4)!important;
+}
+.change-github-action-step.ok>span{background:var(--grn);box-shadow:0 0 0 4px rgba(34,197,94,.13)}
+.change-github-action-step.active>span{background:var(--acc);box-shadow:0 0 0 4px rgba(52,211,153,.15)}
+.change-github-action-step.error>span{background:var(--red);box-shadow:0 0 0 4px rgba(239,68,68,.14)}
+.change-github-action-step.wait{opacity:.72}
+.change-github-action-step.ok strong{color:var(--grn)!important}
+.change-github-action-step.active strong{color:var(--acc)!important}
+.change-github-action-step.error strong{color:var(--red)!important}
+@media(max-width:520px){
+  .change-github-action-meta span{width:100%;justify-content:center}
+}
