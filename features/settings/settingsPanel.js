@@ -514,7 +514,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0222';
+  var APP_VERSION = '0.1.0223';
 
 
 
@@ -970,7 +970,6 @@
   async function commitGithubZip(){
     var state = githubUpdateState;
     if(!state.file || state.status !== 'ok'){
-      if(typeof window.toast === 'function') window.toast('Bitte ZIP zuerst erfolgreich prüfen', 'err');
       return;
     }
     var secretInput = $('github-update-secret');

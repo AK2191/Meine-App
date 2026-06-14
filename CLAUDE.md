@@ -1,3 +1,10 @@
+## Version 0.1.0223
+- Die sichtbare App-Version wurde auf `0.1.0223` erhöht.
+- Die rote GitHub-Toastmeldung `Bitte ZIP zuerst erfolgreich prüfen` wurde entfernt; ein Klick während Prüfung/Upload bleibt still blockiert, ohne störende Fehlermeldung.
+- Das mobile Scrollverhalten in den Einstellungen wurde stabilisiert: `body`, `#main-app`, `#content` und `#settings-view` dürfen mobil wieder bis zum Ende scrollen, die Scrollbar bleibt unsichtbar.
+- Zusätzlicher unterer Sicherheitsabstand schützt Inhalte vor der mobilen Bottom-Navigation.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker, GitHub Action oder Challenges-Logik.
+
 ## Version 0.1.0222
 - Die sichtbare App-Version wurde auf `0.1.0222` erhöht.
 - Die mobile Challenges-HeroCard wurde aus der kaputten `challenge-goal-*` Override-Kette herausgelöst und nutzt jetzt eigene stabile `chv222-*` Klassen.
@@ -142,7 +149,7 @@
 
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0222 mit stabiler Challenges-HeroCard auf eigenen Klassen
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0223 mit ruhiger GitHub-Upload-Meldung und mobilem Settings-Scroll-Fix
 
 ---
 
