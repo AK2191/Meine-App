@@ -1,3 +1,10 @@
+## Version 0.1.0224
+- Die sichtbare App-Version wurde auf `0.1.0224` erhöht.
+- Die Challenges-HeroCard wurde über einen finalen AppShell-Anker stabilisiert, damit ältere Challenge-Overrides die Pollen-Geometrie nicht mehr zerbrechen.
+- Challenges nutzt mobil und desktop wieder sichtbar dieselbe Hero-Logik wie Pollen: Overline, großer Titel, Subline, Fortschritt, ruhiges C-Visual und drei Statuswerte.
+- Die KPI-Zeile in Challenges bleibt einzeilig und bricht nicht mehr in leere/verschobene Fragmente um.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder GitHub Action.
+
 ## Version 0.1.0223
 - Die sichtbare App-Version wurde auf `0.1.0223` erhöht.
 - Die rote GitHub-Toastmeldung `Bitte ZIP zuerst erfolgreich prüfen` wurde entfernt; ein Klick während Prüfung/Upload bleibt still blockiert, ohne störende Fehlermeldung.
