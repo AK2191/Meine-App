@@ -33,6 +33,11 @@ jobs:
           node-version: 20
 
       - name: ZIP prüfen und anwenden
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
         run: node scripts/applyZipUpdate.mjs "${{ github.event.inputs.zip_path }}"
 
       - name: Änderungen committen
@@ -43,7 +48,24 @@ jobs:
           fi
           git config user.name "change-zip-update-bot"
           git config user.email "actions@github.com"
-          VERSION=$(node -e "const fs=require('fs'); const m=fs.readFileSync('features/pollen/pollenView.js','utf8').match(/APP_VERSION\s*=\s*['"]([^'"]+)/); console.log(m?m[1]:'unknown')")
+          VERSION="unknown"
+          if [ -f ".change-update-version" ]; then
+            VERSION="$(cat .change-update-version | tr -d '\r\n')"
+            rm -f .change-update-version
+          fi
           git add -A
           git commit -m "Update Change App auf v${VERSION} [skip ci]"
+          git push
+
+      - name: ZIP Übergabe bei Fehler bereinigen
+        if: failure()
+        run: |
+          git config user.name "change-zip-update-bot"
+          git config user.email "actions@github.com"
+          git rm -f updates/*.zip || true
+          if git diff --cached --quiet; then
+            echo "Keine ZIP Übergabe zum Bereinigen."
+            exit 0
+          fi
+          git commit -m "Fehlerhafte ZIP Übergabe entfernen [skip ci]"
           git push
