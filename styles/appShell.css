@@ -10176,3 +10176,93 @@ body.change-view-settings .change-settings-nav-card{
     padding:12px 8px!important;
   }
 }
+
+
+/* v0.1.0202 · Kalender/Challenges Pfeile in Karten */
+body.change-view-calendar #calendar-premium-view .cal-week-block .change-outside-section-row,
+body.change-view-challenges #challenges-view .challenge-week-block .change-outside-section-row{
+  margin-bottom:8px!important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-week,
+body.change-view-challenges #challenges-view #challenge-week-points-card{
+  position:relative!important;
+  overflow:hidden!important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-card-nav,
+body.change-view-challenges #challenges-view .challenge-card-nav{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:10px!important;
+  padding:0 0 14px!important;
+  margin:0!important;
+}
+body.change-view-calendar #calendar-premium-view .change-week-nav-controls,
+body.change-view-challenges #challenges-view .change-week-nav-controls,
+body.change-view-challenges #challenges-view .challenge-week-actions-head{
+  display:none!important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-card-nav .change-week-nav-btn,
+body.change-view-challenges #challenges-view .challenge-card-nav .change-week-nav-btn,
+body.change-view-calendar #calendar-premium-view .cal-premium-month-nav button{
+  width:38px!important;
+  height:38px!important;
+  min-width:38px!important;
+  border-radius:14px!important;
+  border:1px solid rgba(255,255,255,.09)!important;
+  background:rgba(10,18,24,.66)!important;
+  color:rgba(244,247,244,.86)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04)!important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-card-nav .change-week-nav-btn:hover,
+body.change-view-challenges #challenges-view .challenge-card-nav .change-week-nav-btn:hover,
+body.change-view-calendar #calendar-premium-view .cal-premium-month-nav button:hover{
+  background:rgba(20,83,45,.42)!important;
+  color:#4ade80!important;
+  border-color:rgba(74,222,128,.26)!important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-week-row,
+body.change-view-challenges #challenges-view .challenge-week-grid{
+  margin-top:0!important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-week{
+  padding:12px 12px 14px!important;
+}
+body.change-view-challenges #challenges-view #challenge-week-points-card{
+  padding:12px 12px 14px!important;
+}
+body.change-view-challenges #challenges-view #challenge-week-points-card .challenge-week-grid{
+  padding:0!important;
+}
+@media (max-width:700px){
+  body.change-view-calendar #calendar-premium-view .cal-premium-week,
+  body.change-view-challenges #challenges-view #challenge-week-points-card{
+    padding:10px 10px 12px!important;
+  }
+  body.change-view-calendar #calendar-premium-view .cal-premium-card-nav,
+  body.change-view-challenges #challenges-view .challenge-card-nav{
+    padding-bottom:10px!important;
+    gap:8px!important;
+  }
+  body.change-view-calendar #calendar-premium-view .cal-premium-card-nav .change-week-nav-btn,
+  body.change-view-challenges #challenges-view .challenge-card-nav .change-week-nav-btn,
+  body.change-view-calendar #calendar-premium-view .cal-premium-month-nav button{
+    width:36px!important;
+    height:36px!important;
+    min-width:36px!important;
+    border-radius:13px!important;
+  }
+}
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-card-nav .change-week-nav-btn,
+[data-theme="light"] body.change-view-challenges #challenges-view .challenge-card-nav .change-week-nav-btn,
+[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-month-nav button,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-card-nav .change-week-nav-btn,
+body.theme-light.change-view-challenges #challenges-view .challenge-card-nav .change-week-nav-btn,
+body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-month-nav button,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-card-nav .change-week-nav-btn,
+body.change-theme-light.change-view-challenges #challenges-view .challenge-card-nav .change-week-nav-btn,
+body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-month-nav button{
+  background:rgba(255,255,255,.70)!important;
+  border-color:rgba(20,35,24,.10)!important;
+  color:#213229!important;
+}

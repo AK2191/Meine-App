@@ -178,12 +178,12 @@
     block.innerHTML =
       '<div class="change-outside-section-row change-week-nav-row">'+
         '<div class="change-outside-section-title challenge-week-title change-week-nav-title">WOCHE</div>'+
-        '<div class="change-week-nav-controls">'+
+      '</div>'+
+      '<div id="challenge-week-points-card" class="challenge-week-card">'+
+        '<div class="challenge-card-nav">'+
           '<button class="change-week-nav-btn" id="cwp-prev" aria-label="Vorherige Woche">‹</button>'+
           '<button class="change-week-nav-btn" id="cwp-next" aria-label="Nächste Woche">›</button>'+
         '</div>'+
-      '</div>'+
-      '<div id="challenge-week-points-card" class="challenge-week-card">'+
         '<div id="challenge-week-points-grid" class="challenge-week-grid"></div>'+
       '</div>';
     layout.insertBefore(block, layout.firstChild);

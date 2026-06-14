@@ -273,11 +273,13 @@
     return '<div class="change-section-block cal-week-block">'
       + '<div class="change-outside-section-row change-week-nav-row">'
       + '<div class="change-outside-section-title change-week-nav-title">'+esc(('WOCHE · ' + weekRangeLabel(days)).toUpperCase())+'</div>'
-      + '<div class="change-week-nav-controls">'
+      + '</div>'
+      + '<section class="cal-premium-week">'
+      + '<div class="cal-premium-card-nav">'
       + '<button type="button" class="change-week-nav-btn" data-cal-week-nav="-1" aria-label="Vorherige Woche">‹</button>'
       + '<button type="button" class="change-week-nav-btn" data-cal-week-nav="1" aria-label="Nächste Woche">›</button>'
-      + '</div></div>'
-      + '<section class="cal-premium-week"><div class="cal-premium-week-row">'
+      + '</div>'
+      + '<div class="cal-premium-week-row">'
       + days.map(function(key){
           var d=dateObj(key); var count=eventsFor(key).length;
           return '<button type="button" class="cal-premium-week-day '+(key===selectedKey?'selected ':'')+(isToday(key)?'today ':'')+'" data-cal-day="'+key+'"><span>'+WEEK_SHORT[d.getDay()]+'</span><strong>'+compactDate(key)+'</strong><i '+(count?'':'class="empty"')+'></i></button>';

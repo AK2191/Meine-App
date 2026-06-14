@@ -1,10 +1,9 @@
-## 0.1.0201
-- Version auf `0.1.0201` erhöht.
-- Kalender-Abstände zwischen Wochen-/Monatsumschalter, aktiver Ansicht und Tagesagenda beruhigt und vereinheitlicht.
-- Wechsel zwischen Woche und Monat behält die Scrollposition, damit die Ansicht nicht nach oben springt.
-- Pollen-, Challenges- und Einstellungen-HeroCards nutzen erneut exakt dieselbe Surface wie Dashboard und Kalender.
-- Einstellungen-Kacheln bleiben mobil und lokal nebeneinander; sichtbare Scrollbars bleiben ausgeblendet.
-- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder Challenge-Daten.
+## Version 0.1.0202
+- Die sichtbare App-Version wurde auf `0.1.0202` erhöht.
+- Kalender-Wochenpfeile sitzen jetzt direkt in der Wochenkarte, passend zur Monatsansicht.
+- Challenge-Wochenpfeile sitzen jetzt ebenfalls direkt in der Wochenkarte.
+- Wochen-/Monatskarten bleiben optisch ruhiger, ohne zusätzliche externe Button-Zeile.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push oder GitHub Worker.
 
 ## 0.1.0199
 - Version auf `0.1.0199` erhöht.
