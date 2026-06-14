@@ -1,11 +1,25 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0177 mit GitHub-CSP- und Prüfungsbereinigung
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0180 mit GitHub Versionskacheln entfernt
 
 ---
 
 
+## Version 0.1.0180
+- Die sichtbare App-Version wurde auf `0.1.0180` erhöht.
+- Im GitHub Update wurden die großen Kacheln `Von Version` und `Auf Version` entfernt; die Versionsprüfung bleibt in der Prüfliste erhalten.
 
+## Version 0.1.0179
+- Die sichtbare App-Version wurde auf `0.1.0179` erhöht.
+- Der GitHub-Bereich in den Einstellungen startet nun mit dem Freigabe-Code.
+- ZIPs werden direkt nach Auswahl oder Drag & Drop geprüft; der separate Button „Änderungen prüfen“ wurde entfernt.
+- Der Hinweistext „ZIP auswählen und Prüfung starten“ sowie der Untertitel „ZIP Update · Worker“ wurden entfernt.
+
+## Version 0.1.0178
+- Die sichtbare App-Version wurde auf `0.1.0178` erhöht.
+- Der eigene Einstellungen-Bereich „GitHub“ nutzt nun das GitHub-Mark als Icon statt des bisherigen Platzhaltersymbols.
+- Das Icon wird sowohl in der GitHub-Kachel als auch in der Detailkarte angezeigt.
+- Keine Änderung an GitHub-Worker, ZIP-Prüfung, Upload-Logik, Login, Firebase, Sync, Kalender oder Challenges.
 
 ## Version 0.1.0177
 - Die sichtbare App-Version wurde auf `0.1.0177` erhöht.

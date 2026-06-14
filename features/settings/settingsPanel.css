@@ -1304,3 +1304,10 @@ body.change-view-settings #header .avatar.google-on::after{background:#22c55e!im
   }
   body.change-view-settings #header #settings-btn{border-radius:14px!important;}
 }
+
+
+/* GitHub: offizielles Mark als Icon */
+
+.change-github-mark{width:20px;height:20px;display:block;object-fit:contain;filter:none}
+.change-settings-nav-icon .change-github-mark{width:24px;height:24px}
+.change-feature-icon .change-github-mark{width:22px;height:22px}

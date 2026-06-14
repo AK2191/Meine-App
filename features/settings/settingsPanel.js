@@ -7,6 +7,14 @@
     if(model && model.esc) return model.esc(value);
     return String(value == null ? '' : value).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; });
   }
+  function iconMarkup(value){
+    var raw = String(value == null ? '' : value);
+    if(raw.indexOf('<') === 0) return raw;
+    return esc(raw);
+  }
+  function githubIcon(){
+    return '<img class="change-github-mark" src="./icons/github-mark.png" alt="" aria-hidden="true">';
+  }
   function readBool(key, fallback){
     try{
       if(typeof window.ls === 'function'){
@@ -452,7 +460,7 @@
   function settingsFeatureCard(icon, title, badgeText, badgeTone, subtitle, controlHtml, bodyHtml){
     return '<div class="change-settings-feature-card">'
       + '<div class="change-feature-head">'
-      + '<div class="change-feature-left"><div class="change-feature-icon">'+esc(icon)+'</div><div>'
+      + '<div class="change-feature-left"><div class="change-feature-icon">'+iconMarkup(icon)+'</div><div>'
       + '<div class="change-feature-title">'+esc(title)+' '+pill(badgeText, badgeTone)+'</div>'
       + (subtitle ? '<div class="change-feature-sub">'+esc(subtitle)+'</div>' : '')
       + '</div></div>'
@@ -506,7 +514,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0177';
+  var APP_VERSION = '0.1.0180';
 
 
 
@@ -516,7 +524,7 @@
     message: '',
     files: [],
     checks: [],
-    fromVersion: '0.1.0177',
+    fromVersion: '0.1.0180',
     toVersion: '',
     rootFiles: []
   };
@@ -644,21 +652,18 @@
   function githubUpdateBody(){
     var state = githubUpdateState;
     var selectedLabel = state.file ? esc(state.file.name)+' · '+Math.round((state.file.size || 0) / 1024)+' KB' : 'ZIP hier ablegen oder auswählen';
-    var to = state.toVersion || 'Noch nicht erkannt';
-    var checks = (state.checks || []).length ? state.checks.map(function(check){ return githubCheckLine(check.ok, check.label, check.detail); }).join('') : '<div class="change-feature-note">ZIP auswählen und Prüfung starten. Es wird noch nichts auf GitHub geschrieben.</div>';
+    var checks = (state.checks || []).length ? state.checks.map(function(check){ return githubCheckLine(check.ok, check.label, check.detail); }).join('') : '';
     var filePreview = (state.files || []).slice(0, 8).map(function(path){ return '<li>'+esc(path)+'</li>'; }).join('');
     if((state.files || []).length > 8) filePreview += '<li>+'+((state.files || []).length - 8)+' weitere Dateien</li>';
     var statusLine = state.message ? '<div class="change-github-status '+esc(state.status || 'empty')+'">'+esc(state.message || '')+'</div>' : '';
     return '<div class="change-github-update">'
-      + '<div class="change-github-version-grid"><div><span>Von Version</span><strong>'+esc(state.fromVersion || APP_VERSION)+'</strong></div><div><span>Auf Version</span><strong>'+esc(to)+'</strong></div></div>'
+      + '<label class="change-github-secret"><span>Freigabe-Code</span><input type="text" id="github-update-secret" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Freigabe-Code eingeben" value="'+esc(readGithubUpdateSecret())+'"></label>'
       + '<div class="change-github-upload-panel">'
       + '<div class="change-github-upload-title"><span>ZIP Update</span></div>'
       + '<label class="change-github-dropzone" id="github-zip-dropzone"><input type="file" id="github-zip-input" accept=".zip,application/zip,application/x-zip-compressed"><span>'+selectedLabel+'</span><small>ZIP per Drag & Drop hier ablegen oder antippen.</small></label>'
-      + '<button class="btn btn-secondary btn-full" id="github-zip-check" type="button" '+(!state.file?'disabled':'')+'>Änderungen prüfen</button>'
       + statusLine
-      + '<div class="change-github-checks">'+checks+'</div>'
+      + (checks ? '<div class="change-github-checks">'+checks+'</div>' : '')
       + (filePreview ? '<div class="change-github-files"><strong>Dateivorschau</strong><ul>'+filePreview+'</ul></div>' : '')
-      + '<label class="change-github-secret"><span>Freigabe-Code</span><input type="text" id="github-update-secret" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Freigabe-Code eingeben" value="'+esc(readGithubUpdateSecret())+'"></label>'
       + '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' ? '' : 'disabled')+'>Direkt auf GitHub übertragen</button>'
       + '</div>'
       + '</div>';
@@ -666,7 +671,7 @@
   function githubUpdateCard(){
     var status = githubUpdateState.status === 'ok' ? 'BEREIT' : (githubUpdateState.status === 'error' ? 'FEHLER' : 'LOKAL');
     var tone = githubUpdateState.status === 'ok' ? 'ok' : (githubUpdateState.status === 'error' ? 'error' : 'off');
-    return settingsFeatureCard('⌁', 'GitHub', status, tone, 'ZIP Update · Worker', '', githubUpdateBody());
+    return settingsFeatureCard(githubIcon(), 'GitHub', status, tone, '', '', githubUpdateBody());
   }
 
   async function commitGithubZip(){
@@ -771,7 +776,7 @@
       state.toVersion = nextVersion || '';
       state.checks = checks;
       state.status = ok ? 'ok' : 'error';
-      state.message = ok ? 'ZIP ist bereit für die manuelle Freigabe.' : 'ZIP braucht noch Korrekturen.';
+      state.message = ok ? 'ZIP geprüft und bereit.' : 'ZIP braucht noch Korrekturen.';
     }catch(e){
       state.status = 'error';
       state.message = e && e.message ? e.message : 'ZIP konnte nicht geprüft werden.';
@@ -871,7 +876,7 @@
   function tabButton(id, label, active){ return '<button class="change-settings-tab '+(active===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'+label+'</button>'; }
   function settingsNavCard(id, icon, title, sub, active){
     return '<button class="change-settings-nav-card '+(active===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'
-      + '<span class="change-settings-nav-icon">'+esc(icon)+'</span>'
+      + '<span class="change-settings-nav-icon">'+iconMarkup(icon)+'</span>'
       + '<span class="change-settings-nav-copy"><strong>'+esc(title)+'</strong><small>'+esc(sub)+'</small></span>'
       + '<span class="change-settings-nav-arrow">›</span>'
       + '</button>';
@@ -961,7 +966,7 @@
       + settingsNavCard('challenges','🏆','Challenges',String(getAutoChallengeCount())+' Tagesaufgaben',startTab)
       + settingsNavCard('sync','↻','Daten & Sync','Manuell · keine Auto-Starts',startTab)
       + settingsNavCard('app','🛡','App & Sicherheit','Darstellung · Version '+APP_VERSION,startTab)
-      + settingsNavCard('github','⌁','GitHub','ZIP Update · Worker',startTab);
+      + settingsNavCard('github',githubIcon(),'GitHub','',startTab);
     var html = '<div class="change-settings-premium">'
       + '<div class="change-settings-page-head"><div class="change-settings-page-title"><span>⚙︎</span><strong>Einstellungen</strong></div></div>'
       + '<section class="change-settings-profile-card">'
@@ -1084,11 +1089,12 @@
     function setGithubZipFile(file){
       githubUpdateState.file = file || null;
       githubUpdateState.status = githubUpdateState.file ? 'selected' : 'empty';
-      githubUpdateState.message = githubUpdateState.file ? 'ZIP ausgewählt. Prüfung kann gestartet werden.' : '';
+      githubUpdateState.message = githubUpdateState.file ? '' : '';
       githubUpdateState.files = [];
       githubUpdateState.checks = [];
       githubUpdateState.toVersion = '';
-      refreshSameTab('github');
+      if(githubUpdateState.file) analyzeGithubZip();
+      else refreshSameTab('github');
     }
     var githubZipInput = $('github-zip-input');
     if(githubZipInput) githubZipInput.addEventListener('change', function(){ setGithubZipFile(githubZipInput.files && githubZipInput.files[0] ? githubZipInput.files[0] : null); });
@@ -1111,7 +1117,6 @@
         setGithubZipFile(file);
       });
     }
-    var githubZipCheck = $('github-zip-check'); if(githubZipCheck) githubZipCheck.addEventListener('click', function(){ analyzeGithubZip(); });
     var githubZipCommit = $('github-zip-commit'); if(githubZipCommit) githubZipCommit.addEventListener('click', function(){ commitGithubZip(); });
     var btnGoogleConnect = $('btn-google-connect'); if(btnGoogleConnect) btnGoogleConnect.addEventListener('click', function(){ if(typeof connectToGoogle==='function') connectToGoogle(); });
 

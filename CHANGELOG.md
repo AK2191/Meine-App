@@ -1,3 +1,19 @@
+## 0.1.0180 - GitHub Versionskacheln entfernt
+- Version auf `0.1.0180` erhöht.
+- GitHub Update entfernt die großen Kacheln `Von Version` und `Auf Version`, da diese Informationen bereits in der Prüfung sichtbar sind.
+
+## 0.1.0179 - GitHub Update Ablauf vereinfacht
+- Version auf `0.1.0179` erhöht.
+- Freigabe-Code im GitHub-Bereich nach oben gesetzt.
+- ZIP-Prüfung startet automatisch nach Datei-Auswahl oder Drag & Drop.
+- Separaten Button „Änderungen prüfen“ entfernt.
+- Hinweise „ZIP auswählen und Prüfung starten“ und „ZIP Update · Worker“ entfernt.
+
+## 0.1.0178 - GitHub Icon
+- Version auf `0.1.0178` erhöht.
+- GitHub-Bereich in den Einstellungen nutzt nun das GitHub-Mark als Icon.
+- Keine Änderung an Upload, Worker oder Prüf-Logik.
+
 ## 0.1.0177 - GitHub Übertragung und Prüfstruktur
 - Version auf `0.1.0177` erhöht.
 - Cloudflare Worker in der Content-Security-Policy für `connect-src` freigegeben.
