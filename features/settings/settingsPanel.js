@@ -514,7 +514,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0209';
+  var APP_VERSION = '0.1.0210';
 
 
 
@@ -705,6 +705,25 @@
       return '';
     }
   }
+  function latestGithubUpdateVersion(){
+    var values = [
+      githubUpdateState.toVersion,
+      githubUpdateState.liveVersion,
+      githubUpdateState.branchVersion,
+      APP_VERSION
+    ];
+    var best = '';
+    values.forEach(function(value){
+      value = String(value || '').trim();
+      if(!/^\d+\.\d+\.\d+$/.test(value)) return;
+      if(!best || compareVersions(value, best) > 0) best = value;
+    });
+    return best || APP_VERSION;
+  }
+  function githubUpdateNeedsReload(){
+    var version = latestGithubUpdateVersion();
+    return !!(version && compareVersions(version, APP_VERSION) > 0);
+  }
   function githubActionCurrent(){
     var state = githubUpdateState;
     var target = state.toVersion || APP_VERSION;
@@ -756,14 +775,27 @@
     if(!state.actionMessage && !state.updateReady && !state.actionRunUrl && !state.uploadCommitSha) return '';
     var current = githubActionCurrent();
     var cls = current.tone === 'ok' ? 'ok' : (current.tone === 'error' ? 'error' : 'checking');
-    var target = state.toVersion || APP_VERSION;
+    var target = latestGithubUpdateVersion();
     var link = state.actionRunUrl ? '<a href="'+esc(state.actionRunUrl)+'" target="_blank" rel="noopener">Details in GitHub öffnen</a>' : '';
-    var button = state.updateReady && state.liveReady ? '<button class="btn btn-primary btn-full" id="github-update-reload" type="button">Update auf Version '+esc(target)+' laden</button>' : '';
-    return '<div class="change-github-action '+esc(cls)+'"><div class="change-github-action-current '+esc(current.tone)+'"><span></span><div><strong>'+esc(current.label)+'</strong><small>'+esc(current.detail)+'</small></div></div>'+(link?'<div class="change-github-action-links">'+link+'</div>':'')+button+'</div>';
+    var button = state.updateReady && state.liveReady && githubUpdateNeedsReload()
+      ? '<button class="btn btn-primary btn-full" id="github-update-reload" type="button">Update vollständig neu laden</button>'
+      : '';
+    var loaded = state.updateReady && state.liveReady && !githubUpdateNeedsReload()
+      ? '<div class="change-github-loaded-note">Aktuelle Version ist bereits geladen.</div>'
+      : '';
+    return '<div class="change-github-action '+esc(cls)+'"><div class="change-github-action-current '+esc(current.tone)+'"><span></span><div><strong>'+esc(current.label)+'</strong><small>'+esc(current.detail)+'</small></div></div>'+(link?'<div class="change-github-action-links">'+link+'</div>':'')+button+loaded+'</div>';
   }
 
   async function reloadChangeUpdateVersion(){
-    var version = githubUpdateState.toVersion || APP_VERSION;
+    var version = latestGithubUpdateVersion();
+    if(!version || compareVersions(version, APP_VERSION) <= 0){
+      if(typeof window.toast === 'function') window.toast('Aktuelle Version ist bereits geladen', 'ok');
+      return;
+    }
+    try{
+      githubUpdateState.actionMessage = 'Cache wird vollständig geleert…';
+      refreshSameTab('github');
+    }catch(e){}
     try{
       if(window.caches && caches.keys){
         var keys = await caches.keys();
@@ -773,12 +805,24 @@
     try{
       if(navigator.serviceWorker && navigator.serviceWorker.getRegistrations){
         var regs = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(regs.map(function(reg){ return reg.update().catch(function(){}); }));
+        await Promise.all(regs.map(function(reg){
+          return reg.unregister ? reg.unregister().catch(function(){}) : Promise.resolve();
+        }));
       }
     }catch(e){}
+    try{
+      localStorage.setItem('change_v1_last_hard_reload_version', version);
+      sessionStorage.setItem('change_v1_force_reload_version', version);
+    }catch(e){}
     var url = new URL(window.location.href);
+    url.search = '';
+    url.hash = '';
     url.searchParams.set('v', version);
     url.searchParams.set('t', String(Date.now()));
+    url.searchParams.set('hard', '1');
+    try{
+      await fetch(url.toString(), {cache:'reload', credentials:'same-origin'});
+    }catch(e){}
     window.location.replace(url.toString());
   }
 

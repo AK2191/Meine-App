@@ -1,3 +1,10 @@
+## Version 0.1.0210
+- Die sichtbare App-Version wurde auf `0.1.0210` erhöht.
+- Der Button `Update vollständig neu laden` nutzt jetzt nicht mehr nur einen normalen Reload, sondern löscht Cache-API-Caches, meldet vorhandene Service Worker ab und lädt die App mit leerer URL plus frischem `v`, `t` und `hard` Parameter neu.
+- Der Update-Button wird nur noch angezeigt, wenn die live erkannte Zielversion wirklich höher ist als die aktuell geladene App-Version.
+- Wenn die erkannte Live-Version bereits der geladenen App-Version entspricht, zeigt die App nur noch `Aktuelle Version ist bereits geladen` statt erneut denselben Update-Button anzubieten.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, Kalenderlogik oder Challenge-Daten.
+
 ## Version 0.1.0209
 - Die sichtbare App-Version wurde auf `0.1.0209` erhöht.
 - Die Einstellungen-HeroCard nutzt jetzt lokal und mobil denselben Grundaufbau wie die Pollen-HeroCard: gleiche Höhe, gleiche Abstände, gleicher rechter Drei-Zeilen-Statusblock und eine eigene mittlere Visual-Zone.
@@ -46,7 +53,7 @@
 
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0209 mit Pollen-HeroCard-Fix und bereinigtem Settings-Scroll
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0210 mit hartem Update-Neuladen
 
 ---
 
