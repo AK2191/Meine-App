@@ -682,7 +682,8 @@ function bootMainApp(){
       main.style.removeProperty('display');
       main.style.removeProperty('visibility');
       main.style.removeProperty('pointer-events');
-      main.style.setProperty('display','flex','important');
+      /* Desktop-AppShell wird über View-Klassen als Grid gesetzt; kein globales Flex erzwingen. */
+      main.style.removeProperty('flex-direction');
     }
   }catch(e){}
   exposeChangeGlobals();
@@ -712,6 +713,17 @@ function bootMainApp(){
 /* MAIN VIEW CONTROLLER */
 function enforceDesktopContentVisibility(activeView){
   try{
+    const desktop = window.matchMedia && window.matchMedia('(min-width:701px)').matches;
+    const main = document.getElementById('main-app');
+    if(desktop && main){
+      main.style.setProperty('display','grid','important');
+      main.style.setProperty('grid-template-columns','108px minmax(0,1fr)','important');
+      main.style.setProperty('grid-template-rows','100vh','important');
+      main.style.setProperty('width','100vw','important');
+      main.style.setProperty('height','100vh','important');
+      main.style.setProperty('overflow','hidden','important');
+      main.style.removeProperty('flex-direction');
+    }
     const content = document.getElementById('content');
     if(content){
       content.style.setProperty('display','block','important');

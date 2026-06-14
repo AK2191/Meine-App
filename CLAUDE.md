@@ -1,11 +1,26 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0191 mit dokumentiertem Stabilitätsstand
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0193 mit Desktop-AppShell-Inline-Fix
 
 ---
 
 
 
+
+
+
+## Version 0.1.0193
+- Die sichtbare App-Version wurde auf `0.1.0193` erhöht.
+- Der lokale/Desktop-Content blieb leer, weil `#main-app` beim Start per Inline-Style als `flex` erzwungen wurde und damit die Desktop-Sidebar-Grid-Regeln aushebelte.
+- `bootMainApp()` erzwingt kein globales Flex-Layout mehr; `setMainView()` stellt für Desktop explizit das Sidebar-Grid wieder her.
+- Dashboard, Kalender, Challenges, Pollen und Einstellungen bleiben damit rechts neben der Sidebar sichtbar.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder Challenge-Daten.
+
+## Version 0.1.0192
+- Die sichtbare App-Version wurde auf `0.1.0192` erhöht.
+- In der mobilen Einstellungen-Ansicht wurde die Bottom-Navigation an Dashboard, Kalender, Challenges und Pollen angeglichen.
+- Die sichtbare Trennkante oberhalb der Bottom-Bar wurde entfernt, damit die Ansicht wieder randlos bis zur Navigation wirkt.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder Challenge-Daten.
 
 ## Version 0.1.0191
 - Die sichtbare App-Version wurde auf `0.1.0191` erhöht.

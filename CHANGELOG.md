@@ -1,3 +1,16 @@
+## 0.1.0193 - Desktop Sidebar Content Inline-Fix
+- Version auf `0.1.0193` erhöht.
+- Lokale/Desktop-Inhalte waren leer, weil `#main-app` beim Start per Inline-Style als `flex` gesetzt wurde.
+- Der Start erzwingt kein globales Flex-Layout mehr; die Desktop-Sidebar nutzt wieder das Grid-Layout mit sichtbarem Content rechts.
+- Dashboard, Kalender, Challenges, Pollen und Einstellungen bleiben sichtbar und scrollbar.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push oder Challenge-Daten.
+
+## 0.1.0192 - Mobile Einstellungen Bottom-Bar randlos
+- Version auf `0.1.0192` erhöht.
+- Mobile Einstellungen nutzen wieder dieselbe rahmenlose Bottom-Navigation wie Dashboard, Kalender, Challenges und Pollen.
+- Die sichtbare Trennkante oberhalb der mobilen Bottom-Bar wurde für die Einstellungen entfernt.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder Challenge-Daten.
+
 ## 0.1.0191 - Stabilitätsstand und offene Prüfpunkte
 - Version auf `0.1.0191` erhöht.
 - Bekannte offene Prüfpunkte dokumentiert: Desktop-AppShell, Cloudflare Worker `/files` und `/status`, GitHub Action Commit/ZIP-Cleanup, alter `updates/` Inhalt sowie konsistente Versionseinträge.

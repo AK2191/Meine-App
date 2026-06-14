@@ -8801,3 +8801,74 @@ body.change-view-settings #header .avatar.google-on::after{background:#22c55e!im
     display:none!important;
   }
 }
+
+
+/* v0.1.0192 · Mobile Einstellungen randlos bis zur Bottom-Bar
+   Settings nutzen dieselbe rahmenlose Bottom-Navigation wie Dashboard, Kalender, Challenges und Pollen. */
+@media (max-width:700px){
+  body.change-view-settings #bottom-nav{
+    display:block!important;
+    background:rgba(13,17,18,.92)!important;
+    border:0!important;
+    border-top:0!important;
+    box-shadow:none!important;
+    outline:0!important;
+    backdrop-filter:blur(18px)!important;
+    margin:0!important;
+  }
+  body.change-view-settings #bottom-nav::before,
+  body.change-view-settings #bottom-nav::after{
+    display:none!important;
+    content:none!important;
+  }
+  body.change-view-settings .bnav-inner{
+    height:64px!important;
+    align-items:stretch!important;
+  }
+  body.change-view-settings .bnav-item{
+    position:relative!important;
+    isolation:isolate!important;
+    min-height:64px!important;
+    margin:0!important;
+    padding:6px 4px!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+    transform:none!important;
+    translate:none!important;
+    line-height:1!important;
+  }
+  body.change-view-settings .bnav-item.active{
+    color:#34e37b!important;
+    margin:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    transform:none!important;
+    translate:none!important;
+  }
+  body.change-view-settings .bnav-item.active::before{
+    content:""!important;
+    position:absolute!important;
+    inset:6px 4px!important;
+    border-radius:18px!important;
+    background:linear-gradient(180deg,rgba(52,227,123,.14),rgba(52,227,123,.02))!important;
+    z-index:-1!important;
+    pointer-events:none!important;
+  }
+  body.change-view-settings #content{
+    background:#04090e!important;
+  }
+  body.change-view-settings #settings-view{
+    margin-bottom:0!important;
+    scroll-padding-bottom:calc(64px + env(safe-area-inset-bottom))!important;
+  }
+
+  [data-theme="light"] body.change-view-settings #bottom-nav,
+  body.theme-light.change-view-settings #bottom-nav,
+  body.change-theme-light.change-view-settings #bottom-nav{
+    background:rgba(255,255,255,.92)!important;
+    border:0!important;
+    border-top:0!important;
+    box-shadow:none!important;
+  }
+}
