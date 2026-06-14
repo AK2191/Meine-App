@@ -12,6 +12,7 @@
   var originalSetCalView = null;
   var originalNavigate = null;
   var currentPremiumView = 'month';
+  var calendarSurfaceMode = 'week';
 
   function $(id){ return document.getElementById(id); }
   function esc(v){ return M.esc ? M.esc(v) : String(v == null ? '' : v).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
@@ -258,6 +259,15 @@
       + '</section>'
       + '</div>';
   }
+
+  function modeSwitchHtml(){
+    return '<div class="change-section-block cal-mode-block">'
+      + '<div class="cal-premium-mode-switch" role="tablist" aria-label="Kalender Ansicht">'
+      + '<button type="button" class="'+(calendarSurfaceMode==='week'?'active':'')+'" data-cal-surface="week">Woche</button>'
+      + '<button type="button" class="'+(calendarSurfaceMode==='month'?'active':'')+'" data-cal-surface="month">Monat</button>'
+      + '</div></div>';
+  }
+
   function weekHtml(){
     var days = selectedWeek();
     return '<div class="change-section-block cal-week-block">'
@@ -308,10 +318,10 @@
       body.insertBefore(existing, body.firstChild);
     }
     var control = '<div class="cal-premium-top"><div class="cal-premium-title"><span>▣</span><h1>Kalender</h1></div></div>';
-    existing.innerHTML = control + heroHtml() + weekHtml()
-      + '<div class="cal-premium-main-grid">'
+    var calendarSurface = calendarSurfaceMode === 'month' ? miniMonthHtml() : weekHtml();
+    existing.innerHTML = control + heroHtml() + modeSwitchHtml() + calendarSurface
+      + '<div class="cal-premium-main-grid cal-premium-main-grid-agenda-only">'
       + '<div class="change-section-block cal-agenda-block"><div class="change-outside-section-row"><div class="change-outside-section-title">TAGESAGENDA</div></div><section class="cal-premium-card cal-premium-agenda"><div class="cal-premium-agenda-list">'+eventRows(selectedKey)+'</div><div class="cal-premium-agenda-footer"><button class="cal-premium-add" type="button" data-cal-add="1">+ Termin hinzufügen</button></div></section></div>'
-      + '<aside class="cal-premium-side">'+miniMonthHtml()+'</aside>'
       + '</div>';
     var mg=$('month-grid'), wday=$('wday-row'), ag=$('agenda-view');
     if(mg) mg.style.display='none'; if(wday) wday.style.display='none'; if(ag) ag.style.display='none';
@@ -322,6 +332,7 @@
     root.querySelectorAll('[data-cal-day]').forEach(function(btn){ btn.onclick=function(){ selectedKey=this.getAttribute('data-cal-day'); setCurrentDate(dateObj(selectedKey)); renderPremium(); }; });
     root.querySelectorAll('[data-cal-nav]').forEach(function(btn){ btn.onclick=function(){ var d=selectedDate(); d.setMonth(d.getMonth()+parseInt(this.getAttribute('data-cal-nav'),10)); selectedKey=keyOf(new Date(d.getFullYear(),d.getMonth(),1)); setCurrentDate(dateObj(selectedKey)); renderPremium(); }; });
     root.querySelectorAll('[data-cal-week-nav]').forEach(function(btn){ btn.onclick=function(){ selectedKey = addDays(selectedKey || M.todayKey(), parseInt(this.getAttribute('data-cal-week-nav'),10) * 7); setCurrentDate(dateObj(selectedKey)); renderPremium(); }; });
+    root.querySelectorAll('[data-cal-surface]').forEach(function(btn){ btn.onclick=function(){ calendarSurfaceMode = this.getAttribute('data-cal-surface') === 'month' ? 'month' : 'week'; renderPremium(); }; });
     var monthSelect = root.querySelector('[data-cal-month]');
     var yearSelect = root.querySelector('[data-cal-year]');
     function changeMonthYear(){

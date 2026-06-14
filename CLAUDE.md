@@ -1,10 +1,17 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0199 mit einheitlichen HeroCard-Flächen
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0200 mit Kalender-Ansichtswechsel und kompakter Tagesagenda
 
 ---
 
 
+
+## Version 0.1.0200
+- Die sichtbare App-Version wurde auf `0.1.0200` erhöht.
+- Kalender nutzt jetzt einen klaren Wechsel zwischen `Woche` und `Monat`; nur die aktive Kalender-Kachel wird angezeigt.
+- Die Tagesagenda ist kompakter und einheitlicher gestaltet, damit Ganztägig- und Uhrzeit-Termine ruhiger wirken.
+- Einstellungen zeigen die Modul-Kacheln nebeneinander im konsistenten Kartenstil.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder Challenge-Daten.
 
 ## Version 0.1.0199
 - Die sichtbare App-Version wurde auf `0.1.0199` erhöht.

@@ -1,3 +1,10 @@
+## 0.1.0200
+- Version auf `0.1.0200` erhöht.
+- Kalender erhält einen klaren Wechsel zwischen Woche und Monat; die jeweilige Kachel wird nur bei aktiver Auswahl angezeigt.
+- Tagesagenda im Kalender wurde kompakter und einheitlicher gestaltet, inklusive ruhigerer Zeit- und Ganztägig-Darstellung.
+- Einstellungen zeigen die Modul-Kacheln nebeneinander im ruhigen Kartenstil.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder Challenge-Daten.
+
 ## 0.1.0199
 - Version auf `0.1.0199` erhöht.
 - Dashboard- und Kalender-HeroCard bleiben Zielstil; Pollen, Challenges und Einstellungen nutzen nun dieselbe grün-schwarze HeroCard-Fläche.
