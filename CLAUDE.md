@@ -1,3 +1,14 @@
+## Version 0.1.0232
+- Injiziertes CSS in `dashboard-logic.js` korrigiert: konkurrierender Gradient und horizontales Mobil-Grid entfernt.
+- `appShell.css`: Einziger finaler v0232-Block überschreibt alle alten HeroCard-Konflikte.
+- Desktop: einheitlicher Pollen-Gradient, `grid-template-columns: 1fr 190px 232px`, `min-height:272px`.
+- Mobil: Stats als vertikale Karten wie Pollen-Mobil (`border-radius:18px`), nicht horizontal.
+- CHANGELOG.md und CLAUDE.md korrekt gepflegt.
+
+## Version 0.1.0231
+- Allergieprofil-Icons überarbeitet: klare erkennbare Linien im App-Stil, wenige Striche.
+- Kein Overload mehr auf kleiner Fläche — botanisch treffend und zum Design passend.
+
 ## Version 0.1.0230
 - Pollen-Hero-Illustration dynamisch je nach höchstem Pollentyp (6 verschiedene botanische SVGs).
 - Allergieprofil nach Belastungswert absteigend sortiert.

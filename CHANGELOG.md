@@ -1,3 +1,12 @@
+## Version 0.1.0232
+- Die sichtbare App-Version wurde auf `0.1.0232` erhöht.
+- **HeroCard-Chaos bereinigt**: Der injizierte CSS-Block in `features/dashboard/dashboard-logic.js` setzte einen konkurrierenden Gradient und ein anderes Grid (3-spaltig horizontal mobil), der den `appShell.css`-Anweisungen entgegenwirkte. Dieser Block wurde direkt auf Pollen-Werte korrigiert.
+- **`styles/appShell.css`**: Alle alten v0.1.0211–v0.1.0229 HeroCard-Blöcke bleiben erhalten, aber ein einziger sauberer Abschluss-Block (v0.1.0232) mit `@media(min-width:701px)` und `@media(max-width:700px)` überschreibt alle Konflikte final.
+- Desktop: `grid-template-columns: minmax(0,1fr) 190px 232px`, `min-height:272px`, gleiches `radial-gradient`-Hintergrundmuster und `border:1px solid rgba(74,222,128,.18)` wie Pollen — für alle vier Karten.
+- Mobil: Grid `"main art" / "stats stats"`, Illustration 100px oben rechts, Stats darunter als einzelne abgerundete Karten (`border-radius:18px`, `background:rgba(255,255,255,.045)`) — identisch zu Pollen-Mobil.
+- Challenges mobil: Stats-Zeilen als vertikale Karten (nicht mehr horizontal 3-spaltig).
+- Keine Änderung an Logik, Pollenberechnung, Kalender, Firebase, Sync, Login oder Push.
+
 ## Version 0.1.0231
 - Die sichtbare App-Version wurde auf `0.1.0231` erhöht.
 - Allergieprofil-Icons neu: klare, erkennbare Linien im App-Stil (stroke-only mit leichten Fill-Akzenten). Jeder Typ hat ein markantes Merkmal auf 34px: Gräser mit gebogenen Ähren, Birke mit Krone + Kätzchen-Andeutung, Ambrosia mit 3 Blütenköpfen, Beifuß mit symmetrischen Blattpaaren, Erle mit hängenden Kätzchen-Ellipsen, Olive mit Krone + Früchten.
