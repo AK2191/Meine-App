@@ -5671,3 +5671,25 @@ body.change-theme-light #pollen-view .pollen-hourly-y text{
 #pollen-view .pollen-hourly-y text{
   letter-spacing:-.035em!important;
 }
+
+/* v0.1.0230 – Realistischere Profil-Icons & dynamische Hero-Illustration */
+#pollen-view .pollen-neo-profile-card .pollen-neo-icon-svg svg {
+  width: 32px!important;
+  height: 32px!important;
+}
+#pollen-view .pollen-neo-profile-card.high .pollen-neo-icon-svg {
+  color: #ff6b4a!important;
+}
+#pollen-view .pollen-neo-profile-card.medium .pollen-neo-icon-svg {
+  color: #fbbf24!important;
+}
+#pollen-view .pollen-neo-profile-card.low .pollen-neo-icon-svg {
+  color: #7ac85a!important;
+}
+#pollen-view .pollen-neo-profile-card.none .pollen-neo-icon-svg {
+  color: rgba(244,247,244,.35)!important;
+}
+/* Aktive (selektierte) Karte: Icon etwas prominenter */
+#pollen-view .pollen-neo-profile-card.active .pollen-neo-icon-svg {
+  opacity: 1!important;
+}

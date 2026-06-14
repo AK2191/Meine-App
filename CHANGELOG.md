@@ -1,3 +1,12 @@
+## Version 0.1.0230
+- Die sichtbare App-Version wurde auf `0.1.0230` erhöht.
+- Pollen-Hero: Illustration ist jetzt dynamisch — je nach dominantem Pollentyp erscheint eine andere große SVG-Pflanzengrafik (Gräser-Ähren, Birkenbaum mit Kätzchen, Ambrosia-Blüte, Beifuß, Erle mit hängenden Kätzchen, Olivenbaum mit Früchten).
+- Pollen-Hero: Der dominante Typ wird aus dem höchsten Messwert (`relevantLoadItems`) ermittelt — immer das höchste oben.
+- Allergieprofil: Einträge werden nach Belastungswert absteigend sortiert — höchste Belastung zuerst.
+- Profil-Icons: Realistischere botanische SVGs mit mehr Detail (Kätzchen, Früchte, Blütenköpfe, Ähren, Gefieder) und levelabhängiger Farbe (rot/gelb/grün/grau).
+- Umsetzung in `features/pollen/pollenView.js` und `features/pollen/pollenView.css`.
+- Keine Änderung an Pollenberechnung, Kalender, Challenges, Firebase, Sync, Login oder Push.
+
 ## Version 0.1.0229
 - Die sichtbare App-Version wurde auf `0.1.0229` erhöht.
 - Alle HeroCards (Dashboard, Kalender, Challenges, Einstellungen) pixelgenau auf das Pollen-HeroCard-Layout gebracht: gleiches `radial-gradient`-Hintergrundmuster, gleiche grüne Border, gleicher Box-Shadow, gleiche Grid-Struktur (`1fr / Illustration / Stats`), gleiche Stats-Zeilen-Geometrie.

@@ -1,3 +1,9 @@
+## Version 0.1.0230
+- Pollen-Hero-Illustration dynamisch je nach höchstem Pollentyp (6 verschiedene botanische SVGs).
+- Allergieprofil nach Belastungswert absteigend sortiert.
+- Profil-Icons realistischer (Kätzchen, Früchte, Blütenköpfe) mit levelabhängiger Farbe.
+- Umsetzung in `features/pollen/pollenView.js` und `features/pollen/pollenView.css`.
+
 ## Version 0.1.0229
 - Alle HeroCards pixelgenau auf Pollen-Referenz gebracht: Hintergrund-Gradient, Border, Shadow, Grid, Illustration-Größe, Stats-Zeilen-Layout identisch.
 - Desktop 3-spaltig: `minmax(0,1fr) 190px 232px`, `min-height:272px`.
