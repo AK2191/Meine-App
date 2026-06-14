@@ -426,53 +426,53 @@
       @media(max-width:1180px){.dashp-quick-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;}}
       @media(max-width:700px){.dashp-quick-grid{display:flex!important;overflow-x:auto!important;gap:8px!important;padding-bottom:6px!important;scrollbar-width:none!important}.dashp-quick-grid::-webkit-scrollbar{display:none!important}.dashp-quick-grid .dashp-mini-card{min-width:152px!important;display:inline-flex!important;}.dashp-hero{white-space:normal!important;overflow:visible!important;}.dashp-main-hero{margin-bottom:12px!important;}}
 
-      /* v0.1.0232 · Dashboard HeroCard — identisch zu Pollen-Referenz */
+            /* v0.1.0234 · Dashboard HeroCard — pixel-identisch zu Pollen (pollenView.css:156) */
       .dashp-main-hero-pollen.change-hero-dashboard{
         position:relative!important;overflow:hidden!important;display:grid!important;
-        grid-template-columns:minmax(0,1fr) 190px 232px!important;
+        grid-template-columns:minmax(0,1fr) 178px 232px!important;
         gap:16px!important;align-items:center!important;min-height:272px!important;
-        padding:26px 28px 24px!important;border-radius:26px!important;
-        border:1px solid rgba(74,222,128,.18)!important;
-        background:radial-gradient(circle at 16% 0%,rgba(74,222,128,.14),transparent 36%),
-                   linear-gradient(90deg,rgba(20,45,28,.80),rgba(8,18,21,.95))!important;
-        box-shadow:0 22px 74px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.03)!important;
+        padding:28px 30px 26px!important;border-radius:28px!important;
+        border:1px solid rgba(93,183,92,.14)!important;
+        background:radial-gradient(circle at 16% 0%,rgba(64,143,75,.12),transparent 38%),
+                   linear-gradient(90deg,rgba(18,36,27,.78),rgba(8,16,20,.96))!important;
+        box-shadow:0 16px 42px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.03)!important;
       }
       .dashp-main-hero-pollen.change-hero-dashboard::after{display:none!important;}
       .dashp-main-hero-pollen.change-hero-dashboard .dashp-hero-copy{
         min-width:0!important;display:flex!important;flex-direction:column!important;
-        justify-content:center!important;align-self:stretch!important;position:relative!important;z-index:2!important;
+        justify-content:center!important;align-self:stretch!important;
       }
       .dashp-main-hero-pollen.change-hero-dashboard .dashp-eyebrow{
         font-size:11px!important;font-weight:900!important;letter-spacing:.08em!important;
-        line-height:1.1!important;color:rgba(244,247,244,.72)!important;
-        text-transform:uppercase!important;margin:0!important;
+        text-transform:uppercase!important;color:rgba(244,247,244,.72)!important;margin:0!important;
       }
       .dashp-main-hero-pollen.change-hero-dashboard .dashp-hero-title{
-        margin-top:16px!important;font-size:40px!important;font-weight:950!important;
-        line-height:.98!important;letter-spacing:-1.4px!important;color:#fff!important;margin-bottom:0!important;
+        margin-top:16px!important;font-size:49px!important;font-weight:950!important;
+        line-height:.95!important;letter-spacing:-1.8px!important;color:#fff!important;
       }
       .dashp-hero-visual{
-        position:relative!important;display:flex!important;align-items:center!important;
-        justify-content:center!important;align-self:stretch!important;z-index:1!important;
+        display:flex!important;align-items:flex-end!important;justify-content:center!important;
+        align-self:stretch!important;
       }
       .dashp-main-hero-pollen.change-hero-dashboard .dashp-hero-insights{
-        align-self:stretch!important;display:grid!important;
+        display:grid!important;align-self:stretch!important;
         grid-template-rows:repeat(3,minmax(0,1fr))!important;
-        align-content:stretch!important;border-left:1px solid rgba(255,255,255,.08)!important;
-        padding-left:20px!important;gap:0!important;
+        gap:0!important;padding-left:20px!important;
+        border-left:1px solid rgba(255,255,255,.08)!important;
       }
       .dashp-main-hero-pollen.change-hero-dashboard .dashp-insight-row{
+        all:unset!important;box-sizing:border-box!important;
         display:grid!important;grid-template-columns:30px minmax(0,1fr)!important;
-        grid-template-rows:auto auto!important;align-content:center!important;
-        align-items:center!important;gap:0 12px!important;padding:0!important;
-        border:0!important;border-bottom:1px solid rgba(255,255,255,.08)!important;
-        background:transparent!important;box-shadow:none!important;text-align:left!important;
+        grid-template-rows:auto auto!important;align-content:center!important;align-items:center!important;
+        gap:0 12px!important;padding:0!important;border:0!important;
+        border-bottom:1px solid rgba(255,255,255,.08)!important;
+        background:transparent!important;box-shadow:none!important;
       }
       .dashp-main-hero-pollen.change-hero-dashboard .dashp-insight-row:last-child{border-bottom:0!important;}
       .dashp-main-hero-pollen.change-hero-dashboard .dashp-insight-dot{
-        grid-column:1!important;grid-row:1 / 3!important;
+        grid-column:1!important;grid-row:1/3!important;
         width:24px!important;height:24px!important;min-width:24px!important;
-        border-radius:999px!important;background:rgba(255,255,255,.05)!important;font-size:12px!important;
+        border-radius:999px!important;background:rgba(255,255,255,.04)!important;font-size:12px!important;
         display:flex!important;align-items:center!important;justify-content:center!important;
       }
       .dashp-main-hero-pollen.change-hero-dashboard .dashp-insight-row b{
@@ -485,26 +485,24 @@
         font-size:17px!important;font-weight:900!important;color:#fff!important;
         line-height:1.15!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
       }
-      /* Mobil: "main art" / "stats stats" — Stats als vertikale Karten wie Pollen-Mobil */
+      /* Mobil */
       @media(max-width:700px){
         .dashp-main-hero-pollen.change-hero-dashboard{
-          display:grid!important;
-          grid-template-areas:"main art" "stats stats"!important;
-          grid-template-columns:minmax(0,1fr) 100px!important;
-          grid-template-rows:auto auto!important;
+          display:flex!important;flex-direction:column!important;gap:20px!important;
           min-height:0!important;height:auto!important;max-height:none!important;
-          padding:22px 18px 18px!important;border-radius:22px!important;gap:0 12px!important;
-          align-items:start!important;
+          padding:26px 24px!important;border-radius:28px!important;position:relative!important;
         }
-        .dashp-main-hero-pollen.change-hero-dashboard::after{display:none!important;}
-        .dashp-main-hero-pollen.change-hero-dashboard .dashp-hero-copy{grid-area:main!important;align-self:start!important;}
-        .dashp-main-hero-pollen.change-hero-dashboard .dashp-eyebrow{font-size:12px!important;margin:0!important;}
-        .dashp-main-hero-pollen.change-hero-dashboard .dashp-hero-title{font-size:34px!important;margin-top:12px!important;letter-spacing:-1.1px!important;}
-        .dashp-hero-visual{grid-area:art!important;align-self:center!important;justify-self:end!important;}
+        .dashp-hero-visual{
+          position:absolute!important;top:18px!important;right:18px!important;
+          width:110px!important;height:110px!important;
+        }
+        .dashp-main-hero-pollen.change-hero-dashboard .dashp-eyebrow{font-size:12px!important;}
+        .dashp-main-hero-pollen.change-hero-dashboard .dashp-hero-title{
+          margin-top:14px!important;font-size:52px!important;letter-spacing:-1.4px!important;
+        }
         .dashp-main-hero-pollen.change-hero-dashboard .dashp-hero-insights{
-          grid-area:stats!important;
           display:grid!important;grid-template-columns:1fr!important;grid-template-rows:unset!important;
-          gap:8px!important;margin-top:18px!important;padding:16px 0 0!important;
+          gap:10px!important;padding:14px 0 0!important;
           border-left:0!important;border-top:1px solid rgba(255,255,255,.08)!important;
         }
         .dashp-main-hero-pollen.change-hero-dashboard .dashp-insight-row{
@@ -515,7 +513,7 @@
           border-radius:18px!important;background:rgba(255,255,255,.045)!important;border:0!important;
         }
         .dashp-main-hero-pollen.change-hero-dashboard .dashp-insight-dot{
-          grid-column:1!important;grid-row:1 / 3!important;
+          grid-column:1!important;grid-row:1/3!important;
           width:28px!important;height:28px!important;min-width:28px!important;
           border-radius:999px!important;background:rgba(255,255,255,.06)!important;font-size:13px!important;
           display:flex!important;align-items:center!important;justify-content:center!important;
@@ -523,22 +521,20 @@
         .dashp-main-hero-pollen.change-hero-dashboard .dashp-insight-row b{
           grid-column:2!important;grid-row:1!important;
           font-size:13px!important;font-weight:800!important;color:rgba(244,247,244,.72)!important;
-          line-height:1.15!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+          line-height:1.15!important;white-space:nowrap!important;
         }
         .dashp-main-hero-pollen.change-hero-dashboard .dashp-insight-row small{
           grid-column:2!important;grid-row:2!important;
           font-size:19px!important;font-weight:900!important;color:#fff!important;
-          line-height:1.15!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+          line-height:1.15!important;white-space:nowrap!important;
         }
       }
-      /* Light-Theme */
+      /* Light */
       [data-theme="light"] .dashp-main-hero-pollen.change-hero-dashboard,
-      body.theme-light .dashp-main-hero-pollen.change-hero-dashboard,
-      body.change-theme-light .dashp-main-hero-pollen.change-hero-dashboard{
+      body.theme-light .dashp-main-hero-pollen.change-hero-dashboard{
         background:radial-gradient(circle at 16% 0%,rgba(64,143,75,.10),transparent 38%),
                    linear-gradient(135deg,rgba(237,250,241,.94),rgba(255,255,255,.82))!important;
         border-color:rgba(20,35,24,.10)!important;
-        box-shadow:0 18px 46px rgba(31,53,38,.09),inset 0 1px 0 rgba(255,255,255,.92)!important;
       }
     `;
     document.head.appendChild(st);

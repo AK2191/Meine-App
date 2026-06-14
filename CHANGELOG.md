@@ -1,3 +1,11 @@
+## Version 0.1.0234
+- Die sichtbare App-Version wurde auf `0.1.0234` erhöht.
+- HeroCards komplett neu kalibriert: Alle Werte direkt aus `pollenView.css` übernommen — kein Schätzen, kein Annähern.
+- Desktop: `font-size:49px` (Titel), `font-size:18px` (Subline), Illustration `align-self:end` (unten ausgerichtet wie Pollen), `padding:28px 30px 26px`, `border:rgba(93,183,92,.14)`, `background:rgba(18,36,27,.78)`.
+- Mobil: `display:flex; flex-direction:column; gap:20px` (wie Pollen, kein Grid!), Titel `52px`, Subline `19px`, Stats als Karten mit `grid-template-columns:34px 1fr`, `gap:0 10px`, `padding:12px 14px`, `border-radius:18px`.
+- `features/dashboard/dashboard-logic.js`: injiziertes CSS auf exakt dieselben Werte aktualisiert.
+- Keine Änderung an Logik, Pollenberechnung, Kalender, Challenges, Firebase, Sync oder Push.
+
 ## Version 0.1.0233
 - Die sichtbare App-Version wurde auf `0.1.0233` erhöht.
 - Symptom-Icons (Niesen, Augen, Nase, Atmung) komplett neu: klare, sofort erkennbare SVGs auf 22-25px. Niesen = Gesicht mit drei Tropfen-Strahlen, Augen = einzelnes großes Auge mit Tränenstrich, Nase = Nasensilhouette mit Tropfen, Atmung = zwei Lungenflügel.
