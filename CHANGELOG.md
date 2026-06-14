@@ -1,3 +1,9 @@
+## 0.1.0196 - Mobile Content-Abstände vereinheitlicht
+- Version auf `0.1.0196` erhöht.
+- Mobile Hauptbereiche verwenden den Dashboard-Abstand als Standard.
+- Kalender, Pollen, Challenges und Einstellungen bekommen einheitliche Seitenränder.
+- Keine Änderung an Desktop-Sidebar, GitHub Worker, GitHub Action, Login, Firebase, Datenbank-Sync, Google Kalender oder Push.
+
 ## 0.1.0195 - Mobile Shell sauber getrennt
 - Version auf `0.1.0195` erhöht.
 - Mobile Ansichten erzwingen wieder den normalen Top-Header, scrollbaren Content und die Bottom-Navigation.

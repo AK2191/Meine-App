@@ -9277,3 +9277,81 @@ body.change-view-settings #header .avatar.google-on::after{background:#22c55e!im
     width:100%!important;
   }
 }
+
+
+/* v0.1.0196 · Mobile Content-Breite vereinheitlicht
+   Dashboard ist Referenz: alle mobilen Hauptbereiche bekommen denselben ruhigen Seitenabstand.
+   Desktop-Sidebar-Regeln bleiben unberührt. */
+@media (max-width:700px), (hover:none) and (pointer:coarse){
+  body.change-view-dashboard #content,
+  body.change-view-calendar #content,
+  body.change-view-challenges #content,
+  body.change-view-pollen #content,
+  body.change-view-settings #content{
+    padding:10px 16px calc(76px + env(safe-area-inset-bottom,0px))!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-dashboard #dashboard-view,
+  body.change-view-calendar #cal-body,
+  body.change-view-challenges #challenges-view,
+  body.change-view-pollen #pollen-view,
+  body.change-view-settings #settings-view,
+  body.change-view-calendar #calendar-premium-view{
+    width:100%!important;
+    max-width:100%!important;
+    margin-left:0!important;
+    margin-right:0!important;
+    padding-left:0!important;
+    padding-right:0!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-dashboard .premium-shell,
+  body.change-view-calendar .premium-shell,
+  body.change-view-calendar .cal-premium-shell,
+  body.change-view-challenges .premium-shell,
+  body.change-view-pollen .premium-shell,
+  body.change-view-pollen .pollen-neo,
+  body.change-view-pollen .pollen-neo-shell,
+  body.change-view-settings .change-settings-premium,
+  body.change-view-settings .settings-premium{
+    width:100%!important;
+    max-width:100%!important;
+    margin-left:0!important;
+    margin-right:0!important;
+    padding-left:0!important;
+    padding-right:0!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-dashboard .dash-hero,
+  body.change-view-calendar .cal-premium-hero,
+  body.change-view-calendar .calendar-hero,
+  body.change-view-challenges .challenge-hero,
+  body.change-view-pollen .pollen-neo-hero-wide,
+  body.change-view-settings .settings-profile-card,
+  body.change-view-settings .change-settings-profile,
+  body.change-view-settings .settings-detail-card{
+    max-width:100%!important;
+    margin-left:0!important;
+    margin-right:0!important;
+    box-sizing:border-box!important;
+  }
+
+  body.change-view-calendar .cal-week-strip,
+  body.change-view-calendar .cal-premium-week,
+  body.change-view-calendar .cal-premium-agenda,
+  body.change-view-challenges .challenge-layout,
+  body.change-view-pollen .pollen-neo-grid,
+  body.change-view-settings .settings-layout,
+  body.change-view-settings .settings-grid{
+    width:100%!important;
+    max-width:100%!important;
+    margin-left:0!important;
+    margin-right:0!important;
+    box-sizing:border-box!important;
+  }
+}

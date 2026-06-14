@@ -5,6 +5,12 @@
 ---
 
 
+## Version 0.1.0196
+- Die sichtbare App-Version wurde auf `0.1.0196` erhöht.
+- Mobile Hauptansichten nutzen jetzt denselben linken und rechten Content-Abstand wie das Dashboard.
+- Kalender, Pollen, Challenges und Einstellungen wirken dadurch nicht mehr randnah oder gestreckt.
+- Desktop-Sidebar, GitHub Worker, GitHub Action, Login, Firebase, Datenbank-Sync, Google Kalender und Push bleiben unverändert.
+
 ## Version 0.1.0195
 - Die sichtbare App-Version wurde auf `0.1.0195` erhöht.
 - Mobile Ansichten erzwingen wieder den normalen Top-Header, scrollbaren Content und die Bottom-Navigation.
