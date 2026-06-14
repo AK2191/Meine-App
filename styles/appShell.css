@@ -7241,3 +7241,226 @@ body.change-theme-light.neo-pollen-shell #pollen-view .pollen-neo-hero-wide{
   box-shadow:var(--change-hero-calendar-shadow-light) !important;
   background-color:transparent !important;
 }
+
+/* v0.1.0170 · Desktop-AppShell Reparatur
+   UI-only: Der Desktop darf nicht in die mobile/Sidebar-Navigation kippen.
+   Header, Tabs, Profil und Content werden ab 701px wieder als normale horizontale
+   App-Leiste gesetzt. Mobile Bottom-Bar bleibt unverändert. */
+@media (min-width:701px){
+  body.change-view-dashboard #main-app,
+  body.change-view-calendar #main-app,
+  body.change-view-challenges #main-app,
+  body.change-view-pollen #main-app{
+    display:flex!important;
+    flex-direction:column!important;
+    grid-template-columns:none!important;
+    grid-template-rows:none!important;
+    width:100%!important;
+    max-width:none!important;
+    height:100vh!important;
+    min-height:0!important;
+    overflow:hidden!important;
+  }
+
+  body.change-view-dashboard #header,
+  body.change-view-calendar #header,
+  body.change-view-challenges #header,
+  body.change-view-pollen #header{
+    height:52px!important;
+    min-height:52px!important;
+    max-height:52px!important;
+    width:100%!important;
+    padding:0 16px!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    gap:12px!important;
+    border-right:0!important;
+    border-bottom:1px solid var(--b1)!important;
+    background:var(--s1)!important;
+    box-shadow:none!important;
+    position:relative!important;
+    z-index:120!important;
+  }
+
+  body.change-view-dashboard .h-logo,
+  body.change-view-calendar .h-logo,
+  body.change-view-challenges .h-logo,
+  body.change-view-pollen .h-logo{
+    min-height:0!important;
+    padding:0!important;
+    justify-content:flex-start!important;
+    align-items:center!important;
+    gap:9px!important;
+  }
+
+  body.change-view-dashboard .h-logo-icon,
+  body.change-view-calendar .h-logo-icon,
+  body.change-view-challenges .h-logo-icon,
+  body.change-view-pollen .h-logo-icon,
+  body.change-view-dashboard .h-logo-icon svg,
+  body.change-view-calendar .h-logo-icon svg,
+  body.change-view-challenges .h-logo-icon svg,
+  body.change-view-pollen .h-logo-icon svg{
+    width:36px!important;
+    height:36px!important;
+  }
+
+  body.change-view-dashboard .h-logo-name,
+  body.change-view-calendar .h-logo-name,
+  body.change-view-challenges .h-logo-name,
+  body.change-view-pollen .h-logo-name{
+    display:block!important;
+  }
+
+  body.change-view-dashboard .h-sep,
+  body.change-view-calendar .h-sep,
+  body.change-view-challenges .h-sep,
+  body.change-view-pollen .h-sep{
+    display:block!important;
+  }
+
+  body.change-view-dashboard .h-tabs,
+  body.change-view-calendar .h-tabs,
+  body.change-view-challenges .h-tabs,
+  body.change-view-pollen .h-tabs{
+    flex:1 1 auto!important;
+    display:flex!important;
+    flex-direction:row!important;
+    gap:2px!important;
+    padding:0!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+  }
+
+  body.change-view-dashboard .h-tab,
+  body.change-view-calendar .h-tab,
+  body.change-view-challenges .h-tab,
+  body.change-view-pollen .h-tab{
+    width:auto!important;
+    min-height:0!important;
+    height:auto!important;
+    padding:6px 12px!important;
+    border-radius:var(--rsm)!important;
+    display:flex!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:6px!important;
+    font-size:13px!important;
+    font-weight:600!important;
+    color:var(--t3)!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    text-align:left!important;
+    line-height:1!important;
+  }
+
+  body.change-view-dashboard .h-tab.active,
+  body.change-view-calendar .h-tab.active,
+  body.change-view-challenges .h-tab.active,
+  body.change-view-pollen .h-tab.active{
+    background:var(--acc-d)!important;
+    color:var(--acc)!important;
+    box-shadow:none!important;
+  }
+
+  body.change-view-dashboard .h-tab svg,
+  body.change-view-calendar .h-tab svg,
+  body.change-view-challenges .h-tab svg,
+  body.change-view-pollen .h-tab svg{
+    width:14px!important;
+    height:14px!important;
+    stroke-width:2!important;
+  }
+
+  body.change-view-dashboard .h-right,
+  body.change-view-calendar .h-right,
+  body.change-view-challenges .h-right,
+  body.change-view-pollen .h-right{
+    margin-top:0!important;
+    margin-left:auto!important;
+    display:flex!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    gap:8px!important;
+    padding:0!important;
+  }
+
+  body.change-view-dashboard .avatar,
+  body.change-view-calendar .avatar,
+  body.change-view-challenges .avatar,
+  body.change-view-pollen .avatar{
+    width:36px!important;
+    height:36px!important;
+    order:initial!important;
+  }
+
+  body.change-view-dashboard #settings-btn,
+  body.change-view-calendar #settings-btn,
+  body.change-view-challenges #settings-btn,
+  body.change-view-pollen #settings-btn,
+  body.change-view-dashboard #notif-bell-btn,
+  body.change-view-calendar #notif-bell-btn,
+  body.change-view-challenges #notif-bell-btn,
+  body.change-view-pollen #notif-bell-btn{
+    position:relative!important;
+    top:auto!important;
+    right:auto!important;
+    width:36px!important;
+    height:36px!important;
+    min-height:36px!important;
+    padding:0!important;
+    border-radius:10px!important;
+    display:flex!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:0!important;
+    background:transparent!important;
+    color:var(--t2)!important;
+    order:initial!important;
+  }
+
+  body.change-view-dashboard #settings-btn::after,
+  body.change-view-calendar #settings-btn::after,
+  body.change-view-challenges #settings-btn::after,
+  body.change-view-pollen #settings-btn::after{
+    content:none!important;
+  }
+
+  body.change-view-dashboard #settings-btn svg,
+  body.change-view-calendar #settings-btn svg,
+  body.change-view-challenges #settings-btn svg,
+  body.change-view-pollen #settings-btn svg,
+  body.change-view-dashboard #notif-bell-btn svg,
+  body.change-view-calendar #notif-bell-btn svg,
+  body.change-view-challenges #notif-bell-btn svg,
+  body.change-view-pollen #notif-bell-btn svg{
+    width:20px!important;
+    height:20px!important;
+    stroke-width:2!important;
+  }
+
+  body.change-view-dashboard #content,
+  body.change-view-calendar #content,
+  body.change-view-challenges #content,
+  body.change-view-pollen #content{
+    grid-column:auto!important;
+    grid-row:auto!important;
+    flex:1 1 auto!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    overflow:hidden!important;
+  }
+
+  body.change-view-dashboard #bottom-nav,
+  body.change-view-calendar #bottom-nav,
+  body.change-view-challenges #bottom-nav,
+  body.change-view-pollen #bottom-nav{
+    display:none!important;
+  }
+}
+

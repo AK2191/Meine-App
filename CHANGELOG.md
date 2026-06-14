@@ -1,3 +1,16 @@
+## 0.1.0170 - Desktop-AppShell repariert
+
+## Version 0.1.0171
+- Sichtbare App-Version auf `0.1.0171` erhöht.
+- GitHub als eigener Einstellungsbereich eingebaut.
+- ZIP-Upload, Prüfung und Übertragung als Dropdown aufgebaut.
+- GitHub-Worker-Anbindung bleibt erhalten.
+
+- Sichtbare App-Version auf 0.1.0170 erhöht.
+- Desktop-Layout repariert, damit die Navigation nicht mehr vertikal/zentriert in die mobile Shell kippt.
+- Header, Tabs, Profil, Einstellungen, Glocke und Content werden ab 701px wieder horizontal und vollständig nutzbar dargestellt.
+- Mobile Bottom-Bar, GitHub Worker, Sync, Kalenderdaten und Challenge-Logik bleiben unverändert.
+
 ## 0.1.0169 - GitHub Update per Cloudflare Worker
 - Sichtbare App-Version auf 0.1.0169 erhöht.
 - GitHub Update überträgt geprüfte ZIPs direkt an den geschützten Cloudflare Worker.

@@ -506,7 +506,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0169';
+  var APP_VERSION = '0.1.0171';
 
 
 
@@ -516,7 +516,7 @@
     message: 'Noch keine ZIP ausgewählt.',
     files: [],
     checks: [],
-    fromVersion: '0.1.0169',
+    fromVersion: '0.1.0171',
     toVersion: '',
     rootFiles: []
   };
@@ -648,22 +648,27 @@
     var checks = (state.checks || []).length ? state.checks.map(function(check){ return githubCheckLine(check.ok, check.label, check.detail); }).join('') : '<div class="change-feature-note">ZIP auswählen und Prüfung starten. Es wird noch nichts auf GitHub geschrieben.</div>';
     var filePreview = (state.files || []).slice(0, 8).map(function(path){ return '<li>'+esc(path)+'</li>'; }).join('');
     if((state.files || []).length > 8) filePreview += '<li>+'+((state.files || []).length - 8)+' weitere Dateien</li>';
+    var dropdownOpen = state.status !== 'empty' || !!state.file;
     return '<div class="change-github-update">'
       + '<div class="change-github-version-grid"><div><span>Von Version</span><strong>'+esc(state.fromVersion || APP_VERSION)+'</strong></div><div><span>Auf Version</span><strong>'+esc(to)+'</strong></div></div>'
+      + '<details class="change-github-dropdown" '+(dropdownOpen ? 'open' : '')+'>'
+      + '<summary><span>ZIP Update</span><small>'+esc(state.file ? state.file.name : 'ZIP auswählen, prüfen und übertragen')+'</small></summary>'
+      + '<div class="change-github-dropdown-body">'
       + '<label class="change-github-file"><input type="file" id="github-zip-input" accept=".zip,application/zip,application/x-zip-compressed"><span>ZIP auswählen</span><small>'+fileLine+'</small></label>'
       + '<button class="btn btn-secondary btn-full" id="github-zip-check" type="button" '+(!state.file?'disabled':'')+'>Änderungen prüfen</button>'
       + '<div class="change-github-status '+esc(state.status || 'empty')+'">'+esc(state.message || '')+'</div>'
       + '<div class="change-github-checks">'+checks+'</div>'
       + (filePreview ? '<div class="change-github-files"><strong>Dateivorschau</strong><ul>'+filePreview+'</ul></div>' : '')
-      + '<label class="change-github-secret"><span>Freigabe-Code</span><input type="password" id="github-update-secret" autocomplete="off" placeholder="CHANGE_UPDATE_SECRET" value="'+esc(readGithubUpdateSecret())+'"></label>'
+      + '<label class="change-github-secret"><span>Freigabe-Code</span><input type="password" id="github-update-secret" autocomplete="off" placeholder="Freigabe-Code eingeben" value="'+esc(readGithubUpdateSecret())+'"></label>'
       + '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' ? '' : 'disabled')+'>Direkt auf GitHub übertragen</button>'
+      + '</div></details>'
       + '<div class="change-feature-note">Die ZIP wird an deinen geschützten Cloudflare Worker übertragen. Der Worker legt sie in <strong>updates/</strong> ab; die GitHub Action prüft danach serverseitig und committet auf <strong>main</strong>. Kein GitHub-Key liegt im Browser.</div>'
       + '</div>';
   }
   function githubUpdateCard(){
     var status = githubUpdateState.status === 'ok' ? 'BEREIT' : (githubUpdateState.status === 'error' ? 'FEHLER' : 'LOKAL');
     var tone = githubUpdateState.status === 'ok' ? 'ok' : (githubUpdateState.status === 'error' ? 'error' : 'off');
-    return settingsFeatureCard('⌁', 'GitHub Update', status, tone, 'ZIP prüfen, Version vergleichen und Commit-Freigabe vorbereiten.', '', githubUpdateBody());
+    return settingsFeatureCard('⌁', 'GitHub', status, tone, 'ZIP Update als ausklappbarer Bereich. Prüfung und Übertragung bleiben getrennt.', '', githubUpdateBody());
   }
 
   async function commitGithubZip(){
@@ -678,13 +683,13 @@
       state.status = 'error';
       state.message = 'Bitte den Cloudflare Freigabe-Code eintragen.';
       if(typeof window.toast === 'function') window.toast('Freigabe-Code fehlt', 'err');
-      refreshSameTab('app');
+      refreshSameTab('github');
       return;
     }
     writeGithubUpdateSecret(secret);
     state.status = 'checking';
     state.message = 'ZIP wird an den geschützten Worker übertragen…';
-    refreshSameTab('app');
+    refreshSameTab('github');
     try{
       var buffer = await state.file.arrayBuffer();
       var payload = {
@@ -714,15 +719,15 @@
       state.message = e && e.message ? e.message : 'Übertragung fehlgeschlagen.';
       if(typeof window.toast === 'function') window.toast('GitHub Übertragung fehlgeschlagen', 'err');
     }
-    refreshSameTab('app');
+    refreshSameTab('github');
   }
 
   async function analyzeGithubZip(){
     var state = githubUpdateState;
-    if(!state.file){ state.message = 'Bitte zuerst eine ZIP auswählen.'; state.status = 'error'; refreshSameTab('app'); return; }
+    if(!state.file){ state.message = 'Bitte zuerst eine ZIP auswählen.'; state.status = 'error'; refreshSameTab('github'); return; }
     state.status = 'checking';
     state.message = 'ZIP wird geprüft…';
-    refreshSameTab('app');
+    refreshSameTab('github');
     try{
       var buffer = await state.file.arrayBuffer();
       var zip = parseZipDirectory(buffer);
@@ -774,7 +779,7 @@
       state.message = e && e.message ? e.message : 'ZIP konnte nicht geprüft werden.';
       state.checks = [{ok:false,label:'ZIP-Prüfung fehlgeschlagen',detail:state.message}];
     }
-    refreshSameTab('app');
+    refreshSameTab('github');
   }
 
   function healthSummaryPill(){
@@ -822,7 +827,10 @@
         : '<div class="change-feature-note">Der Check wird erst angezeigt, wenn du ihn bewusst startest.</div><button class="btn btn-secondary btn-full" id="run-app-health" type="button">App-Gesundheitscheck prüfen</button>';
       health = settingsFeatureCard('🩺', 'App-Gesundheitscheck', appHealthExpanded ? 'GEPRÜFT' : 'BEREIT', appHealthExpanded ? 'ok' : 'off', 'Prüft Login, Cache, Sync und blockierende Overlays.', '', healthBody);
     }
-    return '<div class="change-settings-stack">' + installCard + themeCard + versionCard + githubUpdateCard() + health + '</div>';
+    return '<div class="change-settings-stack">' + installCard + themeCard + versionCard + health + '</div>';
+  }
+  function githubPane(){
+    return '<div class="change-settings-stack">' + githubUpdateCard() + '</div>';
   }
 
   var currentSettingsTab = 'dashboard';
@@ -936,7 +944,7 @@
     }
   }
   function openSettingsPanel(startTab){
-    startTab = ['dashboard','calendar','challenges','sync','app'].indexOf(startTab) >= 0 ? startTab : (currentSettingsTab || 'dashboard');
+    startTab = ['dashboard','calendar','challenges','sync','app','github'].indexOf(startTab) >= 0 ? startTab : (currentSettingsTab || 'dashboard');
     currentSettingsTab = startTab;
     var scrollBeforeRender = captureSettingsScrollState();
     ensurePremiumSettingsCloseBridge();
@@ -954,7 +962,8 @@
       + settingsNavCard('calendar','□','Kalender',calendarSummary,startTab)
       + settingsNavCard('challenges','🏆','Challenges',String(getAutoChallengeCount())+' Tagesaufgaben',startTab)
       + settingsNavCard('sync','↻','Daten & Sync','Manuell · keine Auto-Starts',startTab)
-      + settingsNavCard('app','🛡','App & Sicherheit','Darstellung · Version '+APP_VERSION,startTab);
+      + settingsNavCard('app','🛡','App & Sicherheit','Darstellung · Version '+APP_VERSION,startTab)
+      + settingsNavCard('github','⌁','GitHub','ZIP Update · Worker',startTab);
     var html = '<div class="change-settings-premium">'
       + '<div class="change-settings-page-head"><div class="change-settings-page-title"><span>⚙︎</span><strong>Einstellungen</strong></div></div>'
       + '<section class="change-settings-profile-card">'
@@ -966,19 +975,20 @@
       + nav
       + '</div>'
       + '<div class="change-settings-detail-card">'
-      + '<div class="change-settings-detail-head"><div><div class="change-settings-detail-title">'+(startTab==='dashboard'?'Dashboard':startTab==='calendar'?'Kalender':startTab==='challenges'?'Challenges':startTab==='sync'?'Daten & Sync':'App & Sicherheit')+'</div><div class="change-settings-detail-sub">Änderungen werden sofort übernommen und automatisch gespeichert.</div></div></div>'
+      + '<div class="change-settings-detail-head"><div><div class="change-settings-detail-title">'+(startTab==='dashboard'?'Dashboard':startTab==='calendar'?'Kalender':startTab==='challenges'?'Challenges':startTab==='sync'?'Daten & Sync':startTab==='github'?'GitHub':'App & Sicherheit')+'</div><div class="change-settings-detail-sub">Änderungen werden sofort übernommen und automatisch gespeichert.</div></div></div>'
       + '<div class="change-settings-pane '+(startTab==='dashboard'?'active':'')+'" data-pane="dashboard">'+dashboardPane()+'</div>'
       + '<div class="change-settings-pane '+(startTab==='calendar'?'active':'')+'" data-pane="calendar">'+calendarPane()+'</div>'
       + '<div class="change-settings-pane '+(startTab==='challenges'?'active':'')+'" data-pane="challenges">'+challengesPane()+'</div>'
       + '<div class="change-settings-pane '+(startTab==='sync'?'active':'')+'" data-pane="sync">'+syncPane()+'</div>'
       + '<div class="change-settings-pane '+(startTab==='app'?'active':'')+'" data-pane="app">'+appPane()+'</div>'
+      + '<div class="change-settings-pane '+(startTab==='github'?'active':'')+'" data-pane="github">'+githubPane()+'</div>'
       + '</div></div></div>';
     activateSettingsView(html);
     restoreSettingsScrollState(scrollBeforeRender);
     setTimeout(bindSettings, 30);
   }
   function refreshSameTab(tab){
-    if(tab && ['dashboard','calendar','challenges','sync','app'].indexOf(tab) >= 0) currentSettingsTab = tab;
+    if(tab && ['dashboard','calendar','challenges','sync','app','github'].indexOf(tab) >= 0) currentSettingsTab = tab;
     var active = document.querySelector('.change-settings-tab.active');
     var next = active ? active.getAttribute('data-settings-tab') : currentSettingsTab;
     openSettingsPanel(next || 'dashboard');
@@ -1073,7 +1083,7 @@
     var clearSyncLog = $('clear-sync-log'); if(clearSyncLog) clearSyncLog.addEventListener('click', function(){ try{ localStorage.removeItem('change_v1_sync_log'); }catch(e){} refreshSameTab('sync'); });
     document.querySelectorAll('[data-change-theme]').forEach(function(btn){ btn.addEventListener('click', function(){ setAppTheme(btn.getAttribute('data-change-theme') || 'system'); refreshSameTab('app'); }); });
     var runHealth = $('run-app-health'); if(runHealth) runHealth.addEventListener('click', function(){ appHealthExpanded = true; refreshSameTab('app'); });
-    var githubZipInput = $('github-zip-input'); if(githubZipInput) githubZipInput.addEventListener('change', function(){ githubUpdateState.file = githubZipInput.files && githubZipInput.files[0] ? githubZipInput.files[0] : null; githubUpdateState.status = githubUpdateState.file ? 'selected' : 'empty'; githubUpdateState.message = githubUpdateState.file ? 'ZIP ausgewählt. Prüfung kann gestartet werden.' : 'Noch keine ZIP ausgewählt.'; githubUpdateState.files = []; githubUpdateState.checks = []; githubUpdateState.toVersion = ''; refreshSameTab('app'); });
+    var githubZipInput = $('github-zip-input'); if(githubZipInput) githubZipInput.addEventListener('change', function(){ githubUpdateState.file = githubZipInput.files && githubZipInput.files[0] ? githubZipInput.files[0] : null; githubUpdateState.status = githubUpdateState.file ? 'selected' : 'empty'; githubUpdateState.message = githubUpdateState.file ? 'ZIP ausgewählt. Prüfung kann gestartet werden.' : 'Noch keine ZIP ausgewählt.'; githubUpdateState.files = []; githubUpdateState.checks = []; githubUpdateState.toVersion = ''; refreshSameTab('github'); });
     var githubZipCheck = $('github-zip-check'); if(githubZipCheck) githubZipCheck.addEventListener('click', function(){ analyzeGithubZip(); });
     var githubZipCommit = $('github-zip-commit'); if(githubZipCommit) githubZipCommit.addEventListener('click', function(){ commitGithubZip(); });
     var btnGoogleConnect = $('btn-google-connect'); if(btnGoogleConnect) btnGoogleConnect.addEventListener('click', function(){ if(typeof connectToGoogle==='function') connectToGoogle(); });

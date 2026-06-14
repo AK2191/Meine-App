@@ -1,8 +1,23 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-12 · Version 0.1.0169 mit GitHub Update per Cloudflare Worker
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0171 mit eigenem GitHub-Einstellungsbereich und ZIP-Dropdown
 
 ---
+
+## Version 0.1.0171
+- Die sichtbare App-Version wurde auf `0.1.0171` erhöht.
+- Der bisherige Punkt „GitHub Update“ wurde aus „App & Sicherheit“ herausgenommen.
+- GitHub ist nun ein eigener Bereich in den Einstellungen.
+- Der ZIP-Upload ist dort als ausklappbarer Dropdown-Bereich aufgebaut.
+- Die Worker-Übertragung bleibt erhalten; kein GitHub-Key liegt im Browser.
+- Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender oder Push.
+
+## Version 0.1.0170
+- Die sichtbare App-Version wurde auf `0.1.0170` erhöht.
+- Die Desktop-AppShell wurde repariert, damit Header, Tabs, Profil, Einstellungen und Content ab 701px wieder horizontal und korrekt angeordnet sind.
+- Die mobile Bottom-Navigation bleibt unverändert.
+- Der GitHub-Update-Worker und die ZIP-Übertragung bleiben erhalten.
+- Keine Änderung an Kalenderdaten, Firebase, Datenbank-Sync, Google-Kalender, Push oder Challenge-Punkten.
 
 ## Version 0.1.0169
 - Die sichtbare App-Version wurde auf `0.1.0169` erhöht.
