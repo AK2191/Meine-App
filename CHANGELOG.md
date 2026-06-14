@@ -1,8 +1,9 @@
-## 0.1.0200
-- Version auf `0.1.0200` erhöht.
-- Kalender erhält einen klaren Wechsel zwischen Woche und Monat; die jeweilige Kachel wird nur bei aktiver Auswahl angezeigt.
-- Tagesagenda im Kalender wurde kompakter und einheitlicher gestaltet, inklusive ruhigerer Zeit- und Ganztägig-Darstellung.
-- Einstellungen zeigen die Modul-Kacheln nebeneinander im ruhigen Kartenstil.
+## 0.1.0201
+- Version auf `0.1.0201` erhöht.
+- Kalender-Abstände zwischen Wochen-/Monatsumschalter, aktiver Ansicht und Tagesagenda beruhigt und vereinheitlicht.
+- Wechsel zwischen Woche und Monat behält die Scrollposition, damit die Ansicht nicht nach oben springt.
+- Pollen-, Challenges- und Einstellungen-HeroCards nutzen erneut exakt dieselbe Surface wie Dashboard und Kalender.
+- Einstellungen-Kacheln bleiben mobil und lokal nebeneinander; sichtbare Scrollbars bleiben ausgeblendet.
 - Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder Challenge-Daten.
 
 ## 0.1.0199

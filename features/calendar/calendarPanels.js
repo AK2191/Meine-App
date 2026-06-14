@@ -332,7 +332,20 @@
     root.querySelectorAll('[data-cal-day]').forEach(function(btn){ btn.onclick=function(){ selectedKey=this.getAttribute('data-cal-day'); setCurrentDate(dateObj(selectedKey)); renderPremium(); }; });
     root.querySelectorAll('[data-cal-nav]').forEach(function(btn){ btn.onclick=function(){ var d=selectedDate(); d.setMonth(d.getMonth()+parseInt(this.getAttribute('data-cal-nav'),10)); selectedKey=keyOf(new Date(d.getFullYear(),d.getMonth(),1)); setCurrentDate(dateObj(selectedKey)); renderPremium(); }; });
     root.querySelectorAll('[data-cal-week-nav]').forEach(function(btn){ btn.onclick=function(){ selectedKey = addDays(selectedKey || M.todayKey(), parseInt(this.getAttribute('data-cal-week-nav'),10) * 7); setCurrentDate(dateObj(selectedKey)); renderPremium(); }; });
-    root.querySelectorAll('[data-cal-surface]').forEach(function(btn){ btn.onclick=function(){ calendarSurfaceMode = this.getAttribute('data-cal-surface') === 'month' ? 'month' : 'week'; renderPremium(); }; });
+    root.querySelectorAll('[data-cal-surface]').forEach(function(btn){ btn.onclick=function(){
+      var nextMode = this.getAttribute('data-cal-surface') === 'month' ? 'month' : 'week';
+      if(nextMode === calendarSurfaceMode) return;
+      var scrollHost = document.getElementById('calendar-premium-view') || document.getElementById('cal-body') || document.scrollingElement;
+      var scrollY = scrollHost && typeof scrollHost.scrollTop === 'number' ? scrollHost.scrollTop : (window.pageYOffset || 0);
+      calendarSurfaceMode = nextMode;
+      renderPremium();
+      requestAnimationFrame(function(){
+        try{
+          if(scrollHost && typeof scrollHost.scrollTop === 'number') scrollHost.scrollTop = scrollY;
+          else window.scrollTo(0, scrollY);
+        }catch(e){}
+      });
+    }; });
     var monthSelect = root.querySelector('[data-cal-month]');
     var yearSelect = root.querySelector('[data-cal-year]');
     function changeMonthYear(){

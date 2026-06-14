@@ -9981,3 +9981,198 @@ body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium
   color:#142018!important;
   background:#fff!important;
 }
+
+/* v0.1.0201 · Kalender-Abstände, View-Wechsel ohne Sprung und finale HeroCard-Surface */
+:root{
+  --change-unified-hero-bg:radial-gradient(circle at 88% 24%,rgba(74,222,128,.16),transparent 34%),linear-gradient(135deg,rgba(15,36,27,.86),rgba(7,12,18,.94));
+  --change-unified-card-bg:radial-gradient(circle at 82% 18%,rgba(74,222,128,.10),transparent 34%),linear-gradient(135deg,rgba(12,25,20,.86),rgba(7,12,18,.94));
+  --change-unified-border:rgba(74,222,128,.22);
+  --change-unified-border-strong:rgba(74,222,128,.32);
+  --change-unified-shadow:0 22px 60px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.03);
+}
+
+/* Eine identische HeroCard-Fläche für Dashboard, Kalender, Pollen, Challenges und Einstellungen. */
+html body.change-view-dashboard #dashboard-view .dashp-main-hero,
+html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen,
+html body.change-view-calendar #calendar-premium-view .cal-premium-hero,
+html body.change-view-pollen #pollen-view .pollen-neo-hero,
+html body.change-view-pollen #pollen-view .pollen-neo-hero.low,
+html body.change-view-pollen #pollen-view .pollen-neo-hero.medium,
+html body.change-view-pollen #pollen-view .pollen-neo-hero.high,
+html body.change-view-pollen #pollen-view .pollen-neo-hero-wide,
+html body.change-view-pollen #pollen-view .pollen-neo-hero-wide.low,
+html body.change-view-pollen #pollen-view .pollen-neo-hero-wide.medium,
+html body.change-view-pollen #pollen-view .pollen-neo-hero-wide.high,
+html body.change-view-challenges #challenges-view #group-goal-card,
+html body.change-view-challenges #challenges-view .challenge-layout > #group-goal-card,
+html body.change-view-challenges #challenges-view #group-goal-card.challenge-hero-card,
+html body.change-view-settings .change-settings-profile-card{
+  background:var(--change-unified-hero-bg)!important;
+  border:1px solid var(--change-unified-border)!important;
+  box-shadow:var(--change-unified-shadow)!important;
+  color:#f5fff9!important;
+}
+
+html body.change-view-calendar #calendar-premium-view .cal-month-block .cal-premium-side-card,
+html body.change-view-calendar #calendar-premium-view .cal-week-block .cal-premium-week,
+html body.change-view-settings .change-settings-nav-card,
+html body.change-view-settings .change-settings-detail-card,
+html body.change-view-pollen #pollen-view .pollen-neo-card,
+html body.change-view-pollen #pollen-view .pollen-neo-forecast-list,
+html body.change-view-pollen #pollen-view .change-symptom-card,
+html body.change-view-pollen #pollen-view .pollen-neo-profile-card,
+html body.change-view-challenges #challenges-view .challenge-card,
+html body.change-view-challenges #challenges-view .leader-card,
+html body.change-view-challenges #challenges-view .challenge-week-card{
+  background:var(--change-unified-card-bg)!important;
+  border-color:rgba(255,255,255,.085)!important;
+  box-shadow:0 14px 40px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.03)!important;
+}
+
+/* Kalender: saubere Abstände zwischen Umschalter, Wochen-/Monatskarte und Tagesagenda. */
+body.change-view-calendar #calendar-premium-view .cal-mode-block{
+  margin:0 0 12px!important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-mode-switch{
+  width:100%!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+  margin:0!important;
+  padding:5px!important;
+  border-color:rgba(74,222,128,.22)!important;
+  background:rgba(5,12,17,.64)!important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-mode-switch button{
+  min-width:0!important;
+  height:40px!important;
+  border-radius:14px!important;
+}
+body.change-view-calendar #calendar-premium-view .cal-week-block,
+body.change-view-calendar #calendar-premium-view .cal-month-block,
+body.change-view-calendar #calendar-premium-view .cal-agenda-block{
+  margin-top:0!important;
+  margin-bottom:14px!important;
+}
+body.change-view-calendar #calendar-premium-view .change-outside-section-row{
+  min-height:26px!important;
+  padding:0 2px 8px!important;
+  align-items:center!important;
+}
+body.change-view-calendar #calendar-premium-view .change-week-nav-row{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  gap:10px!important;
+}
+body.change-view-calendar #calendar-premium-view .change-week-nav-controls,
+body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{
+  gap:8px!important;
+}
+body.change-view-calendar #calendar-premium-view .change-week-nav-btn,
+body.change-view-calendar #calendar-premium-view .cal-premium-month-nav button{
+  width:38px!important;
+  height:38px!important;
+  border-radius:14px!important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-week,
+body.change-view-calendar #calendar-premium-view .cal-month-block .cal-premium-side-card{
+  padding:14px!important;
+  border-radius:24px!important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-week-row{
+  gap:8px!important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-week-day{
+  min-height:68px!important;
+  border-radius:16px!important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-main-grid-agenda-only{
+  margin-top:2px!important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-agenda{
+  padding:14px!important;
+  border-radius:24px!important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-agenda-row{
+  min-height:56px!important;
+  grid-template-columns:88px minmax(0,1fr)!important;
+  padding:10px 12px!important;
+  gap:10px!important;
+  border-radius:15px!important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-agenda-time{
+  font-size:13px!important;
+  padding-right:8px!important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-event-icon{
+  width:30px!important;
+  height:30px!important;
+  flex:0 0 30px!important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-agenda-main strong{
+  font-size:13.5px!important;
+  line-height:1.15!important;
+}
+
+/* Einstellungen: gleiche Seitenluft wie Dashboard, Kacheln nebeneinander und ohne sichtbare Scrollbar. */
+body.change-view-settings #settings-view,
+body.change-view-settings .change-settings-premium{
+  scrollbar-width:none!important;
+  -ms-overflow-style:none!important;
+}
+body.change-view-settings #settings-view::-webkit-scrollbar,
+body.change-view-settings .change-settings-premium::-webkit-scrollbar{
+  width:0!important;
+  height:0!important;
+  display:none!important;
+}
+body.change-view-settings .change-settings-nav-grid{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:12px!important;
+}
+body.change-view-settings .change-settings-nav-card{
+  min-height:104px!important;
+  padding:13px 10px!important;
+  border-radius:18px!important;
+}
+
+@media(max-width:700px){
+  body.change-view-calendar #calendar-premium-view .cal-mode-block,
+  body.change-view-calendar #calendar-premium-view .cal-week-block,
+  body.change-view-calendar #calendar-premium-view .cal-month-block,
+  body.change-view-calendar #calendar-premium-view .cal-agenda-block{
+    margin-bottom:12px!important;
+  }
+  body.change-view-calendar #calendar-premium-view .change-outside-section-row{
+    padding:0 0 7px!important;
+  }
+  body.change-view-calendar #calendar-premium-view .cal-premium-week,
+  body.change-view-calendar #calendar-premium-view .cal-month-block .cal-premium-side-card,
+  body.change-view-calendar #calendar-premium-view .cal-premium-agenda{
+    padding:12px!important;
+    border-radius:22px!important;
+  }
+  body.change-view-calendar #calendar-premium-view .cal-premium-week-row{
+    gap:7px!important;
+  }
+  body.change-view-calendar #calendar-premium-view .cal-premium-week-day{
+    min-height:66px!important;
+    padding:9px 7px!important;
+  }
+  body.change-view-calendar #calendar-premium-view .cal-premium-agenda-row{
+    grid-template-columns:82px minmax(0,1fr)!important;
+    min-height:54px!important;
+    padding:9px 10px!important;
+  }
+  body.change-view-settings .change-settings-premium{
+    padding-left:16px!important;
+    padding-right:16px!important;
+  }
+  body.change-view-settings .change-settings-nav-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:10px!important;
+  }
+  body.change-view-settings .change-settings-nav-card{
+    min-height:100px!important;
+    padding:12px 8px!important;
+  }
+}

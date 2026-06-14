@@ -1,16 +1,17 @@
 # CLAUDE.md – Change App
 > Die einzige Wahrheit. Jede Änderung an der App MUSS hier dokumentiert werden.
-> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0200 mit Kalender-Ansichtswechsel und kompakter Tagesagenda
+> Zuletzt aktualisiert: 2026-06-14 · Version 0.1.0201 mit Kalender-Abständen und einheitlichen HeroCards
 
 ---
 
 
 
-## Version 0.1.0200
-- Die sichtbare App-Version wurde auf `0.1.0200` erhöht.
-- Kalender nutzt jetzt einen klaren Wechsel zwischen `Woche` und `Monat`; nur die aktive Kalender-Kachel wird angezeigt.
-- Die Tagesagenda ist kompakter und einheitlicher gestaltet, damit Ganztägig- und Uhrzeit-Termine ruhiger wirken.
-- Einstellungen zeigen die Modul-Kacheln nebeneinander im konsistenten Kartenstil.
+## Version 0.1.0201
+- Die sichtbare App-Version wurde auf `0.1.0201` erhöht.
+- Kalender-Abstände zwischen Wochen-/Monatsumschalter, aktiver Ansicht und Tagesagenda wurden beruhigt und vereinheitlicht.
+- Der Wechsel zwischen Woche und Monat behält die aktuelle Scrollposition, damit die Ansicht nicht nach oben springt.
+- Pollen-, Challenges- und Einstellungen-HeroCards nutzen erneut exakt dieselbe Surface wie Dashboard und Kalender.
+- Einstellungen-Kacheln bleiben mobil und lokal nebeneinander angeordnet; sichtbare Scrollbars in Einstellungen bleiben ausgeblendet.
 - Keine Änderung an Login, Firebase, Datenbank-Sync, Google Kalender, Push, GitHub Worker oder Challenge-Daten.
 
 ## Version 0.1.0199
