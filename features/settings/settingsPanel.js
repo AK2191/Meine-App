@@ -514,7 +514,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0213';
+  var APP_VERSION = '0.1.0214';
 
 
 
@@ -1153,7 +1153,7 @@
       + '<div class="change-settings-profile-stat is-google '+(googleLoggedIn ? 'ok' : 'off')+'">'
       + '<span class="change-settings-profile-stat-icon">G</span>'
       + '<strong>Google</strong>'
-      + '<em>'+(googleLoggedIn ? 'Angemeldet' : 'Nicht angemeldet')+'</em>'
+      + '<em>'+(googleLoggedIn ? 'Angemeldet' : 'Nicht angem.')+'</em>'
       + '</div>'
       + '<div class="change-settings-profile-stat is-health '+healthTone+'">'
       + '<span class="change-settings-profile-stat-icon">♡</span>'

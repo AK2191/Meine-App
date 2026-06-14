@@ -170,14 +170,14 @@
     return 'vor ' + Math.abs(diff) + ' Tagen';
   }
   function compactNextValue(next, nextTime, nextTitle){
-    if(!next) return 'Kein Termin geplant';
+    if(!next) return 'Kein Termin';
     var r = rangeOf(next);
     var rel = r && r.start ? relativeDateLabel(r.start) : '';
     return rel || 'Heute';
   }
   function compactFriseurValue(row){
     var text = cleanHeroText((row && (row.sub || row.badge)) || '');
-    if(!text) return 'Noch keine Friseur-Info';
+    if(!text) return 'Nicht geplant';
     if(/Läuft gerade/i.test(text)) return 'Läuft gerade';
     if(/Heute geplant/i.test(text)) return 'Heute geplant';
     if(/Morgen geplant/i.test(text)) return 'Morgen geplant';
@@ -192,11 +192,11 @@
   }
   function compactUrlaubValue(row){
     var text = cleanHeroText((row && (row.badge || row.sub)) || '');
-    if(!text) return 'Noch keine Urlaubs-Info';
+    if(!text) return 'Keine Info';
     if(/vollständig verplant/i.test(text)) return 'vollständig verplant';
     if(/überzogen/i.test(text)) return text.replace(/^⚠\s*/,'');
     var m = text.match(/([0-9]+(?:[,.][0-9]+)?)\s*Urlaubstage?\s+übrig/i);
-    if(m) return m[1].replace('.', ',') + ' Urlaubstage übrig';
+    if(m) return m[1].replace('.', ',') + ' Tage übrig';
     return text;
   }
   function calendarHeroRow(icon, title, value, onclick){
