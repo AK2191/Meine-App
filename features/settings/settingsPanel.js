@@ -505,7 +505,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0250';
+  var APP_VERSION = '0.1.0251';
 
 
 
@@ -955,16 +955,22 @@
     } else if(githubCommitHistory.length === 0){
       rows = '<div class="change-github-history-empty">Noch nicht geladen.</div>';
     } else {
-      rows = githubCommitHistory.map(function(c, i){
+      // Dedupliziere: nur ersten (neuesten) Commit pro Version zeigen
+      var _seen = {};
+      var _dedup = githubCommitHistory.filter(function(c){
+        if(!c.version && !/ZIP Update bereitstellen/i.test(c.message)) return false;
+        var key = c.version || c.sha;
+        if(_seen[key]) return false;
+        _seen[key] = true;
+        return true;
+      });
+      rows = _dedup.map(function(c, i){
         var isFirst = i === 0;
         var date = c.date ? new Date(c.date).toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
-        var versionBadge = c.version ? '<span class="change-github-commit-version">v'+esc(c.version)+'</span>' : '';
         var currentBadge = isFirst ? '<span class="change-github-commit-current">Aktuell</span>' : '';
         var rollbackBtn = !isFirst
           ? '<button class="change-github-rollback-btn" data-sha="'+esc(c.sha)+'" data-msg="'+esc(c.message)+'" type="button">Zurück</button>'
           : '<button class="change-github-rollback-btn is-current" disabled type="button">Aktuell</button>';
-        // Nur ZIP-Update Commits anzeigen
-        if(!c.version && !/ZIP Update|Update Change App/i.test(c.message)) return '';
         var displayVersion = c.version ? 'v'+esc(c.version) : esc(c.shortSha);
         return '<div class="change-github-commit-row'+(isFirst?' is-current':'')+'">'
           + '<div class="change-github-commit-sha">'+esc(c.shortSha)+'</div>'
@@ -974,7 +980,7 @@
           + '</div>'
           + rollbackBtn
           + '</div>';
-      }).join('');
+      }).join('') || '<div class="change-github-history-empty">Keine Update-Commits gefunden.</div>';
     }
     var rollbackStatus = githubRollbackState.running
       ? '<div class="change-github-rollback-status running">Rollback wird durchgeführt…</div>'

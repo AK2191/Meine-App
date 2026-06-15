@@ -188,7 +188,7 @@ async function getLatestWorkflowStatus(env, commitSha, targetVersion){
 /* NEU: Letzte N Commits mit Version auslesen */
 async function getCommitHistory(env, count){
   const token = await getInstallationToken(env);
-  const n = Math.min(Math.max(parseInt(count) || 10, 1), 30);
+  const n = Math.min(Math.max(parseInt(count) || 20, 1), 50); // Mehr laden um genug ZIP-Commits zu finden
   const body = await githubFetch(
     `/repos/${REPOSITORY}/commits?sha=${BRANCH}&per_page=${n}`,
     { method: 'GET' },
@@ -196,7 +196,12 @@ async function getCommitHistory(env, count){
   );
   const commits = Array.isArray(body) ? body : [];
   // Lese Version aus pollenView.js fuer jeden Commit
-  const results = await Promise.all(commits.map(async (commit) => {
+  // Nur ZIP-Update-Commits auswerten (erster Commit pro Version)
+  const zipCommits = commits.filter(c => {
+    const msg = (c.commit && c.commit.message || '').split('\n')[0];
+    return /ZIP Update bereitstellen/i.test(msg);
+  });
+  const results = await Promise.all(zipCommits.map(async (commit) => {
     let version = '';
     try {
       const sha = commit.sha;
@@ -217,7 +222,15 @@ async function getCommitHistory(env, count){
       version
     };
   }));
-  return json({ ok: true, commits: results });
+  // Dedupliziere nach Version — nur ersten (neuesten) pro Version
+  const seen = new Set();
+  const unique = results.filter(c => {
+    const key = c.version || c.sha;
+    if(seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  return json({ ok: true, commits: unique });
 }
 
 /* NEU: Branch auf bestimmten Commit zuruecksetzen (force push) */

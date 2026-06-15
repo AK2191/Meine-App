@@ -1,3 +1,8 @@
+## Version 0.1.0251
+- Commit-Verlauf: Nur noch ein Eintrag pro Version (Deduplizierung). Kein Doppel-Commit mehr (ZIP-Upload + Action-Commit).
+- Worker /commits: Laedt 20 Commits, filtert auf 'ZIP Update bereitstellen', dedupliziert nach Version.
+- Frontend: Zusaetzliche Deduplizierung nach Version als Fallback.
+
 ## Version 0.1.0250-fix
 - APP_VERSION in settingsPanel.js und pollenView.js auf 0.1.0250 korrigiert. Die Versionsnummer war nach dem CSS-Restore auf 0.1.0246 steckengeblieben.
 
