@@ -1,3 +1,12 @@
+## Version 0.1.0240
+- Die sichtbare App-Version wurde auf `0.1.0240` erhöht.
+- **HeroCards komplett neu strukturiert**: Alle alten Hero-Blöcke (v0.1.0234–v0.1.0239) aus appShell.css entfernt. Ersetzt durch einen einzigen sauberen Block ohne Konflikte.
+- Root-Ursache des Abschneidens bei Challenges behoben: Mehrfach-Definitionen von `.chv227-hero` erzeugten Konflikte. Jetzt ein Block, klare Reihenfolge.
+- Desktop: `grid-template-columns:minmax(0,1fr) 178px 232px`, Illustration `align-self:end`.
+- Mobil: `flex-direction:column; gap:20px`, Illustration `position:absolute; top:20px; right:20px; 108px`, Haupttext `padding-right:120px`, Titel 52px.
+- Stats mobil: `34px minmax(0,1fr)`, `min-height:58px`, `border-radius:18px`, `background:rgba(255,255,255,.045)`.
+- Injiziertes CSS in dashboard-logic.js ebenfalls bereinigt und auf identische Werte gebracht.
+
 ## Version 0.1.0239
 - Die sichtbare App-Version wurde auf `0.1.0239` erhöht.
 - HeroCards mobil: Challenges, Kalender, Einstellungen auf `display:flex; flex-direction:column; gap:20px` korrigiert — identisch zu Pollen.

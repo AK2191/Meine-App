@@ -426,7 +426,7 @@
       @media(max-width:1180px){.dashp-quick-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;}}
       @media(max-width:700px){.dashp-quick-grid{display:flex!important;overflow-x:auto!important;gap:8px!important;padding-bottom:6px!important;scrollbar-width:none!important}.dashp-quick-grid::-webkit-scrollbar{display:none!important}.dashp-quick-grid .dashp-mini-card{min-width:152px!important;display:inline-flex!important;}.dashp-hero{white-space:normal!important;overflow:visible!important;}.dashp-main-hero{margin-bottom:12px!important;}}
 
-            /* v0.1.0234 · Dashboard HeroCard — pixel-identisch zu Pollen (pollenView.css:156) */
+            /* v0.1.0240 · Dashboard HeroCard identisch Pollen */
       .dashp-main-hero-pollen.change-hero-dashboard{
         position:relative!important;overflow:hidden!important;display:grid!important;
         grid-template-columns:minmax(0,1fr) 178px 232px!important;
@@ -451,8 +451,7 @@
         line-height:.95!important;letter-spacing:-1.8px!important;color:#fff!important;
       }
       .dashp-hero-visual{
-        display:flex!important;align-items:flex-end!important;justify-content:center!important;
-        align-self:stretch!important;
+        display:flex!important;align-items:flex-end!important;justify-content:center!important;align-self:stretch!important;
       }
       .dashp-main-hero-pollen.change-hero-dashboard .dashp-hero-insights{
         display:grid!important;align-self:stretch!important;
@@ -465,8 +464,7 @@
         display:grid!important;grid-template-columns:30px minmax(0,1fr)!important;
         grid-template-rows:auto auto!important;align-content:center!important;align-items:center!important;
         gap:0 12px!important;padding:0!important;border:0!important;
-        border-bottom:1px solid rgba(255,255,255,.08)!important;
-        background:transparent!important;box-shadow:none!important;
+        border-bottom:1px solid rgba(255,255,255,.08)!important;background:transparent!important;
       }
       .dashp-main-hero-pollen.change-hero-dashboard .dashp-insight-row:last-child{border-bottom:0!important;}
       .dashp-main-hero-pollen.change-hero-dashboard .dashp-insight-dot{
@@ -485,21 +483,19 @@
         font-size:17px!important;font-weight:900!important;color:#fff!important;
         line-height:1.15!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
       }
-      /* Mobil */
       @media(max-width:700px){
         .dashp-main-hero-pollen.change-hero-dashboard{
           display:flex!important;flex-direction:column!important;gap:20px!important;
-          min-height:0!important;height:auto!important;max-height:none!important;
-          padding:26px 24px!important;border-radius:28px!important;position:relative!important;
+          min-height:0!important;height:auto!important;padding:26px 24px!important;
+          border-radius:28px!important;position:relative!important;overflow:hidden!important;
         }
         .dashp-hero-visual{
-          position:absolute!important;top:18px!important;right:18px!important;
-          width:110px!important;height:110px!important;
+          position:absolute!important;top:20px!important;right:20px!important;
+          width:108px!important;height:108px!important;
         }
+        .dashp-main-hero-pollen.change-hero-dashboard .dashp-hero-copy{padding-right:120px!important;box-sizing:border-box!important;}
         .dashp-main-hero-pollen.change-hero-dashboard .dashp-eyebrow{font-size:12px!important;}
-        .dashp-main-hero-pollen.change-hero-dashboard .dashp-hero-title{
-          margin-top:14px!important;font-size:52px!important;letter-spacing:-1.4px!important;
-        }
+        .dashp-main-hero-pollen.change-hero-dashboard .dashp-hero-title{margin-top:14px!important;font-size:52px!important;letter-spacing:-1.4px!important;}
         .dashp-main-hero-pollen.change-hero-dashboard .dashp-hero-insights{
           display:grid!important;grid-template-columns:1fr!important;grid-template-rows:unset!important;
           gap:10px!important;padding:14px 0 0!important;
@@ -529,7 +525,6 @@
           line-height:1.15!important;white-space:nowrap!important;
         }
       }
-      /* Light */
       [data-theme="light"] .dashp-main-hero-pollen.change-hero-dashboard,
       body.theme-light .dashp-main-hero-pollen.change-hero-dashboard{
         background:radial-gradient(circle at 16% 0%,rgba(64,143,75,.10),transparent 38%),
