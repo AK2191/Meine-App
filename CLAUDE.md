@@ -1,3 +1,12 @@
+## Version 0.1.0241
+- Die sichtbare App-Version wurde auf `0.1.0241` erhöht.
+- GitHub-Sektion in Einstellungen: Freigabe-Code-Karte, Upload-Panel und Dropzone im einheitlichen App-Stil (gleiche Hintergrundfarbe, gleicher Border-Radius wie Einstellungs-Karten).
+- Freigabe-Code: transparenter Input auf dunklem Hintergrund, FREIGABE-CODE als uppercase Label.
+- Dropzone: dezent grüner gestrichelter Rahmen, hover-Effekt.
+- "Auf GitHub übertragen" Button: voller grüner Primary-Button mit border-radius:999px.
+- Settings: `padding-bottom` für Tab-Bar gesetzt damit bis zum Ende gescrollt werden kann.
+- Keine Änderung an HeroCards, Pollenberechnung, Kalender, Firebase, Sync oder Push.
+
 ## Version 0.1.0240
 - Die sichtbare App-Version wurde auf `0.1.0240` erhöht.
 - **HeroCards komplett neu strukturiert**: Alle alten Hero-Blöcke (v0.1.0234–v0.1.0239) aus appShell.css entfernt. Ersetzt durch einen einzigen sauberen Block ohne Konflikte.

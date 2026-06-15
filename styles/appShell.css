@@ -13715,3 +13715,128 @@ body.change-view-challenges #challenges-view #leaderboard-list .live-dot { displ
 body.change-view-challenges #challenges-view #leaderboard-list .live-dot.off { background:rgba(244,247,244,.25)!important; }
 body.change-view-challenges #challenges-view .nudge-btn { display:inline-flex!important; align-items:center!important; gap:5px!important; padding:5px 12px!important; border-radius:999px!important; border:1px solid rgba(255,255,255,.12)!important; background:rgba(255,255,255,.06)!important; color:rgba(244,247,244,.8)!important; font-size:12px!important; font-weight:800!important; cursor:pointer!important; }
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   v0.1.0241 · GitHub-Sektion Styling + Settings Scroll
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Settings: bis zum Ende scrollbar ──────────────────────────────────── */
+body.change-view-settings #settings-view,
+body.change-view-settings #content {
+  overflow-y:auto!important;
+  padding-bottom:calc(86px + env(safe-area-inset-bottom,0px) + 24px)!important;
+}
+body.change-view-settings .change-settings-stack {
+  padding-bottom:calc(86px + env(safe-area-inset-bottom,0px) + 24px)!important;
+}
+@media(min-width:701px){
+  body.change-view-settings #settings-view,
+  body.change-view-settings #content {
+    padding-bottom:40px!important;
+  }
+  body.change-view-settings .change-settings-stack {
+    padding-bottom:0!important;
+  }
+}
+
+/* ── GitHub Freigabe-Code: gleicher Stil wie andere Settings-Karten ────── */
+html body.change-view-settings .change-github-secret {
+  display:grid!important;
+  gap:8px!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  background:rgba(255,255,255,.038)!important;
+  border-radius:18px!important;
+  padding:16px!important;
+}
+html body.change-view-settings .change-github-secret span {
+  font-size:11px!important;
+  font-weight:900!important;
+  letter-spacing:.08em!important;
+  text-transform:uppercase!important;
+  color:rgba(244,247,244,.5)!important;
+}
+html body.change-view-settings .change-github-secret input {
+  width:100%!important;
+  border:0!important;
+  background:transparent!important;
+  color:#fff!important;
+  border-radius:0!important;
+  padding:4px 0!important;
+  font:inherit!important;
+  font-size:16px!important;
+  font-weight:800!important;
+  outline:none!important;
+  -webkit-text-security:disc!important;
+}
+
+/* ── GitHub Upload-Panel: gleicher Stil ─────────────────────────────────── */
+html body.change-view-settings .change-github-upload-panel {
+  display:grid!important;
+  gap:14px!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  background:rgba(255,255,255,.038)!important;
+  border-radius:18px!important;
+  padding:18px!important;
+}
+html body.change-view-settings .change-github-upload-title span {
+  font-size:17px!important;
+  font-weight:950!important;
+  color:#fff!important;
+  letter-spacing:-.2px!important;
+}
+
+/* ── Dropzone: dezenter passend zum Dark-Design ─────────────────────────── */
+html body.change-view-settings .change-github-dropzone {
+  min-height:110px!important;
+  border:1.5px dashed rgba(74,222,128,.28)!important;
+  background:rgba(74,222,128,.05)!important;
+  border-radius:16px!important;
+  padding:20px 16px!important;
+  transition:border-color .16s,background .16s!important;
+}
+html body.change-view-settings .change-github-dropzone:hover,
+html body.change-view-settings .change-github-dropzone.is-dragging {
+  border-color:rgba(74,222,128,.6)!important;
+  background:rgba(74,222,128,.10)!important;
+}
+html body.change-view-settings .change-github-dropzone span {
+  font-size:15px!important;
+  font-weight:950!important;
+  color:#fff!important;
+}
+html body.change-view-settings .change-github-dropzone small {
+  font-size:12px!important;
+  color:rgba(244,247,244,.55)!important;
+  margin-top:4px!important;
+}
+
+/* ── GitHub-Feature-Card: einheitlicher Kachel-Rahmen ──────────────────── */
+html body.change-view-settings .change-settings-feature-card {
+  border:1px solid rgba(255,255,255,.08)!important;
+  background:rgba(255,255,255,.038)!important;
+  border-radius:22px!important;
+  overflow:hidden!important;
+}
+
+/* ── "Auf GitHub übertragen" Button: wie btn-primary im App-Stil ─────────── */
+html body.change-view-settings #github-zip-commit {
+  width:100%!important;
+  height:52px!important;
+  border-radius:999px!important;
+  background:linear-gradient(135deg,#4ade80,#22c55e)!important;
+  color:#052a0f!important;
+  font-size:16px!important;
+  font-weight:950!important;
+  letter-spacing:-.2px!important;
+  border:0!important;
+  cursor:pointer!important;
+  transition:opacity .16s!important;
+}
+html body.change-view-settings #github-zip-commit:disabled {
+  opacity:.38!important;
+  cursor:not-allowed!important;
+}
+html body.change-view-settings #github-zip-commit:not(:disabled):hover {
+  opacity:.88!important;
+}
+
