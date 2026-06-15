@@ -1,3 +1,9 @@
+## Version 0.1.0247
+- CSS-Dateien auf Original-Stand zurueckgesetzt. HeroCard-Block als Anhang.
+- Dashboard Event-Zeit: flex-direction:column (uebereinander). Kalender date-ring: display:none.
+- dashp-quick-grid deaktiviert. Settings change-feature-note ausgeblendet.
+- Keine Aenderung an Logik, Firebase, Sync oder Push.
+
 ## Version 0.1.0246
 - Die sichtbare App-Version wurde auf `0.1.0246` erhöht.
 - **Dashboard weiße Kacheln behoben**: Im injizierten CSS von dashboard-logic.js überschrieb `.dashp-hero{grid-template-columns:1fr!important}` unser 3-Spalten-Grid — entfernt. Außerdem `.dashp-quick-grid` (altes 6-Kacheln-Layout) entfernt das die weißen Mini-Cards erzeugte.

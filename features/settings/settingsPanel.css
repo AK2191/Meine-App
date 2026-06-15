@@ -1,9 +1,12 @@
+.change-settings-tabs{display:flex;gap:8px;padding:0 0 16px;border-bottom:1px solid var(--b1);margin-bottom:16px;overflow:auto}
+.change-settings-tab{display:flex;align-items:center;gap:6px;padding:8px 14px;border:none;border-radius:999px;font-family:var(--font);font-size:13px;font-weight:700;color:var(--t3);background:var(--s2);cursor:pointer;white-space:nowrap;transition:all .15s}
 .change-settings-tab.active{background:var(--acc);color:#fff}.change-settings-tab:hover{background:var(--s3);color:var(--t1)}.change-settings-tab.active:hover{background:var(--acc);color:#fff}
 .change-settings-pane{display:none}.change-settings-pane.active{display:block}
 .change-settings-card{background:var(--s1);border:1px solid var(--b1);border-radius:16px;overflow:hidden;margin-bottom:12px}
 .change-settings-label{font-size:10px;font-weight:900;color:var(--t4);text-transform:uppercase;letter-spacing:.08em;padding:10px 13px;background:var(--s2);border-bottom:1px solid var(--b1)}
 .change-settings-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 14px;border-bottom:1px solid var(--b1)}.change-settings-row:last-child{border-bottom:0}
 .change-settings-title{font-size:13px;font-weight:850;color:var(--t1);display:flex;align-items:center;gap:6px}.change-settings-sub{font-size:11px;color:var(--t4);margin-top:3px;line-height:1.35}.change-settings-actions{padding:12px 14px}
+.change-status-pill{display:inline-flex;align-items:center;border-radius:999px;padding:3px 7px;font-size:10px;font-weight:900;line-height:1;background:var(--s2);color:var(--t4)}.change-status-pill.ok{background:var(--grn-d);color:var(--grn)}.change-status-pill.off{background:var(--s3);color:var(--t4)}.change-status-pill.error{background:var(--red-d);color:#dc2626}
 .change-status-dot{width:7px;height:7px;border-radius:999px;background:var(--t4);display:inline-block}.change-status-dot.ok{background:#22c55e}.change-status-dot.error{background:#ef4444}.change-status-dot.off{background:#9ca3af}
 .activity-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--b1)}.activity-row:last-child{border-bottom:0}.activity-icon{width:28px;height:28px;border-radius:10px;background:var(--acc-d);display:flex;align-items:center;justify-content:center}.activity-title{font-size:13px;font-weight:850;color:var(--t1)}.activity-sub{font-size:11px;color:var(--t4);margin-top:2px}
 @media(max-width:760px){.change-settings-tab{padding:8px 12px;font-size:12px}.change-settings-row{padding:12px}}
@@ -13,13 +16,25 @@
 .change-settings-card input.finput,.change-settings-card select.finput{width:100%}
 
 /* Step 5 · Settings UI Cleanup: getrennte Sync-Karten + ruhige App-Info */
+.change-settings-tabs{scrollbar-width:none;-ms-overflow-style:none}
 .change-settings-tabs::-webkit-scrollbar{display:none}
+.change-settings-stack{display:grid;gap:12px}
+.change-settings-feature-card{background:var(--s1);border:1px solid var(--b1);border-radius:18px;padding:14px;box-shadow:0 1px 0 rgba(255,255,255,.03) inset}
+.change-feature-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.change-feature-left{display:flex;align-items:flex-start;gap:11px;min-width:0}
+.change-feature-icon{width:34px;height:34px;border-radius:12px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 auto}
+.change-feature-title{font-size:13.5px;font-weight:900;color:var(--t1);display:flex;align-items:center;gap:7px;line-height:1.2;flex-wrap:wrap}
+.change-feature-sub{font-size:11.5px;color:var(--t4);line-height:1.35;margin-top:4px;max-width:300px}
 .change-feature-control{display:flex;align-items:center;justify-content:flex-end;flex:0 0 auto}
+.change-feature-body{margin-top:13px;padding-top:13px;border-top:1px solid var(--b1);display:grid;gap:10px}
 .change-feature-chips{display:flex;flex-wrap:wrap;gap:6px}
 .change-feature-chips span{display:inline-flex;align-items:center;border-radius:999px;padding:5px 8px;background:var(--s2);border:1px solid var(--b1);font-size:10.5px;font-weight:850;color:var(--t3)}
 .change-feature-note{border-radius:12px;background:var(--s2);border:1px solid var(--b1);padding:10px 11px;font-size:11.5px;color:var(--t4);line-height:1.35}
 .btn-compact{font-size:11px;padding:6px 11px;white-space:nowrap}
+.change-about-card{display:flex;align-items:center;gap:12px;padding:14px}
+.change-about-logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#052e1d,#0f5132);color:#50e3a4;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:950;box-shadow:0 6px 18px rgba(0,0,0,.18)}
 .change-about-copy{min-width:0;flex:1}.change-about-title{font-size:15px;font-weight:950;color:var(--t1);line-height:1.15}.change-about-sub{font-size:11.5px;color:var(--t4);margin-top:4px;line-height:1.3}
+.change-version-chip{display:inline-flex;align-items:center;border-radius:999px;padding:5px 9px;background:var(--s2);border:1px solid var(--b1);font-size:11px;font-weight:900;color:var(--t3);white-space:nowrap}
 .change-about-meta{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--b1)}
 .change-about-meta>div{padding:11px 14px;display:grid;gap:3px}.change-about-meta>div+div{border-left:1px solid var(--b1)}
 .change-about-meta span{font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--t4)}
@@ -27,8 +42,12 @@
 @media(max-width:480px){.change-feature-head{align-items:center}.change-feature-sub{max-width:none}.change-feature-icon{width:32px;height:32px}.change-about-meta{grid-template-columns:1fr}.change-about-meta>div+div{border-left:0;border-top:1px solid var(--b1)}}
 
 /* Kalender-Settings: Features als eigene ruhige Karten, ohne doppelte Divider */
+.change-feature-row{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.change-feature-row-title{font-size:13px;font-weight:850;color:var(--t1);line-height:1.25}
+.change-feature-row-sub{font-size:11.5px;color:var(--t4);line-height:1.35;margin-top:4px}
 .change-feature-field{display:grid;gap:7px}
 .change-feature-field .flabel{display:block;font-size:10.5px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--t4)}
+.change-feature-field .finput{width:100%}
 .change-feature-body>.change-feature-row+.change-feature-row,
 .change-feature-body>.change-feature-field+.change-feature-row,
 .change-feature-body>.change-feature-row+.change-feature-field,
@@ -36,16 +55,25 @@
 
 
 /* Status/Diagnose/Protokoll */
+.change-sync-status-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.change-sync-status-item{border:1px solid var(--b1);background:var(--s2);border-radius:14px;padding:11px;display:grid;gap:4px;min-width:0}
+.change-sync-status-item span{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--t4)}
+.change-sync-status-item strong{font-size:13px;font-weight:950;color:var(--t1)}
 .change-sync-status-item small{font-size:11px;line-height:1.35;color:var(--t4)}
 .change-sync-log-list{display:grid;gap:8px}
+.change-sync-log-row{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--b1);background:var(--s2);border-radius:14px;padding:10px}
+.change-sync-log-icon{width:22px;height:22px;border-radius:999px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;font-size:12px;font-weight:950;background:var(--s3);color:var(--t4)}
 .change-sync-log-icon.ok{background:var(--grn-d);color:var(--grn)}
 .change-sync-log-icon.error{background:var(--red-d);color:#dc2626}
 .change-sync-log-title{font-size:12.5px;font-weight:900;color:var(--t1);line-height:1.2}
 .change-sync-log-detail{font-size:11.2px;color:var(--t4);line-height:1.35;margin-top:2px}
+.change-sync-log-time{font-size:10.5px;color:var(--t4);margin-top:4px}
 .change-health-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
 .change-health-title{font-size:13.5px;font-weight:950;color:var(--t1)}
 .change-health-sub{font-size:11.5px;color:var(--t4);margin-top:3px}
 .change-health-list{display:grid;gap:8px}
+.change-health-row{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--b1);background:var(--s2);border-radius:14px;padding:10px}
+.change-health-dot{width:9px;height:9px;border-radius:999px;background:#9ca3af;margin-top:4px;flex:0 0 auto}
 .change-health-dot.ok{background:#22c55e}.change-health-dot.error{background:#ef4444}
 .change-health-name{font-size:12.5px;font-weight:900;color:var(--t1);line-height:1.2}
 .change-health-detail{font-size:11.2px;color:var(--t4);line-height:1.35;margin-top:2px}
@@ -56,6 +84,7 @@
 
 /* Settings · konsistenter Feature-Karten-Stil für alle Tabs */
 .change-settings-pane .change-settings-card{display:none}
+.change-settings-feature-card{margin:0}
 .change-feature-body .change-feature-field+.change-feature-field,
 .change-feature-body .change-feature-field+.change-feature-note,
 .change-feature-body .change-feature-note+.change-feature-field,
@@ -67,6 +96,7 @@
 .change-feature-body .change-halfday-controls .btn{flex:1;min-width:120px}
 .change-feature-body .change-halfday-list{margin-top:9px}
 .change-feature-body .change-about-card{padding:0}
+.change-feature-body .change-about-meta{border:1px solid var(--b1);border-radius:14px;overflow:hidden;background:var(--s2);margin-top:12px}
 .change-feature-body .change-about-meta>div{padding:10px 12px}
 
 .change-sync-log-count{display:inline-flex;align-items:center;justify-content:center;margin-left:6px;padding:1px 6px;border-radius:999px;background:var(--s2);border:1px solid var(--b1);color:var(--t3);font-size:10px;font-weight:800;vertical-align:middle}
@@ -344,10 +374,42 @@ body.change-settings-premium-open #side-panel .panel-body{
 }
 .change-settings-save-pill,
 .change-health-pill{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:38px;
+  padding:0 18px;
+  border-radius:16px;
+  border:1px solid var(--b1);
+  background:rgba(255,255,255,.04);
+  color:var(--t2);
+  font-size:13px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.change-health-pill{
   cursor:pointer;
   font-family:var(--font);
 }
 .change-settings-profile-card,
+.change-settings-workspace{
+  max-width:1460px;
+  margin:0 auto;
+}
+.change-settings-profile-card{
+  min-height:132px;
+  margin-bottom:26px;
+  padding:24px 32px;
+  border-radius:28px;
+  border:1px solid var(--b1);
+  background:linear-gradient(135deg,rgba(255,255,255,.055),rgba(255,255,255,.025));
+  box-shadow:0 22px 58px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.05);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:28px;
+}
 .change-settings-profile-left{
   display:flex;
   align-items:center;
@@ -397,8 +459,77 @@ body.change-settings-premium-open #side-panel .panel-body{
   color:var(--t1);
   line-height:1.1;
 }
+.change-settings-profile-sub{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:12px;
+  color:var(--t3);
+  font-size:14px;
+  font-weight:750;
+}
+.change-google-mark{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:22px;
+  height:22px;
+  border-radius:999px;
+  background:rgba(66,133,244,.10);
+  color:#4285f4;
+  font-weight:950;
+}
+.change-settings-profile-right{
+  min-width:300px;
+  align-self:stretch;
+  border-left:1px solid var(--b1);
+  padding-left:34px;
+  display:grid;
+  align-content:center;
+  gap:0;
+}
+.change-settings-profile-stat{
+  display:grid;
+  grid-template-columns:28px minmax(0,1fr);
+  gap:0 12px;
+  align-content:center;
+  padding:12px 0;
+  border-bottom:1px solid var(--b1);
+}
 .change-settings-profile-stat:last-child{
   border-bottom:0;
+}
+.change-settings-profile-stat-icon{
+  grid-row:1 / 3;
+  width:24px;
+  height:24px;
+  border-radius:999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(255,255,255,.06);
+  color:rgba(244,247,244,.88);
+  font-size:11px;
+  font-weight:950;
+  line-height:1;
+}
+.change-settings-profile-stat strong{
+  font-size:13px;
+  font-weight:800;
+  color:rgba(244,247,244,.70);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.change-settings-profile-stat em{
+  font-style:normal;
+  font-size:18px;
+  font-weight:900;
+  color:var(--t1);
+  line-height:1.15;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 .change-settings-profile-stat.is-google .change-settings-profile-stat-icon{
   background:rgba(66,133,244,.12);
@@ -779,6 +910,8 @@ body.change-view-settings #settings-btn{display:flex!important;width:100%!import
 body.change-view-settings #settings-btn svg{width:22px!important;height:22px!important;stroke-width:1.9!important;}
 body.change-view-settings #settings-btn::after{content:"Einstellungen";font-size:11.5px;font-weight:690;line-height:1.1;}
 body.change-view-settings #notif-bell-btn{display:flex!important;position:fixed!important;top:18px!important;right:18px!important;width:42px!important;height:42px!important;border-radius:16px!important;border:1px solid rgba(255,255,255,.08)!important;background:rgba(7,12,18,.72)!important;backdrop-filter:blur(18px)!important;color:rgba(244,247,244,.88)!important;z-index:180!important;order:0!important;box-shadow:0 12px 30px rgba(0,0,0,.22)!important;}
+body.change-view-settings #content{height:100vh!important;min-height:0!important;overflow:hidden!important;padding:0!important;background:radial-gradient(circle at 18% 8%,rgba(45,106,79,.26),transparent 30%),linear-gradient(180deg,#04090e,#02070b)!important;}
+body.change-view-settings #settings-view{display:flex!important;height:100%!important;overflow:auto!important;}
 body.change-view-settings #settings-view .change-settings-premium{width:100%;}
 body.change-view-settings #panel-overlay,
 body.change-view-settings #side-panel{display:none!important;pointer-events:none!important;}
@@ -995,6 +1128,7 @@ body.change-theme-light:not(.change-view-settings) #panel-overlay{
 /* v0.1.0169 · GitHub Update direkte Worker-Übertragung */
 .change-github-secret{display:grid;gap:6px;border:1px solid var(--b1);background:var(--s2);border-radius:16px;padding:12px}
 .change-github-secret span{font-size:10px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;color:var(--t4)}
+.change-github-secret input{width:100%;border:1px solid var(--b2);background:var(--s1);color:var(--t1);border-radius:12px;padding:10px 11px;font:inherit;font-size:13px;font-weight:800;outline:none}
 .change-github-secret input:focus{border-color:rgba(52,211,153,.45);box-shadow:0 0 0 3px rgba(52,211,153,.12)}
 
 /* v0.1.0172 · GitHub als eigener Einstellungsbereich mit klaren Worker-Hinweisen */
@@ -1140,6 +1274,10 @@ body.change-view-settings #content{
   overflow:auto!important;
   -webkit-overflow-scrolling:touch!important;
 }
+body.change-view-settings #settings-view{
+  min-height:0!important;
+  overflow:visible!important;
+}
 @media(max-width:700px){
   body.change-view-settings #content{
     flex:1 1 auto!important;
@@ -1173,6 +1311,17 @@ body.change-view-settings #header .h-right{
 }
 body.change-view-settings #header #notif-bell-btn,
 body.change-view-settings #header #settings-btn,
+body.change-view-settings #header .avatar{
+  position:relative!important;
+  inset:auto!important;
+  top:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  left:auto!important;
+  transform:none!important;
+  flex:0 0 auto!important;
+  margin:0!important;
+}
 body.change-view-settings #header #notif-bell-btn{
   order:1!important;
   width:36px!important;
@@ -1279,6 +1428,14 @@ body.change-view-settings #header .avatar.google-on::after{background:#22c55e!im
 @media(max-width:520px){.change-github-file-stats{grid-template-columns:1fr}.change-github-file-stats span{white-space:normal}}
 
 /* v0.1.0183 · GitHub Live-Status und Update-Ladebutton */
+.change-github-action{
+  display:grid;
+  gap:7px;
+  border:1px solid var(--b1);
+  border-radius:16px;
+  padding:12px;
+  background:var(--s2);
+}
 .change-github-action strong{
   font-size:12.5px;
   font-weight:950;
@@ -1378,6 +1535,11 @@ body.change-view-settings #header .avatar.google-on::after{background:#22c55e!im
   font-size:10.5px;
   font-weight:900;
 }
+.change-github-action-steps{
+  display:grid;
+  gap:7px;
+  margin-top:2px;
+}
 .change-github-action-step{
   display:grid;
   grid-template-columns:18px minmax(0,1fr);
@@ -1462,11 +1624,24 @@ body.change-theme-light .change-settings-profile-stat{
 /* v0.1.0208 · GitHub Status einzeilig, Settings-Hero im Pollen-Stil */
 .change-github-checks,
 .change-github-action-steps{display:none!important;}
+.change-github-check-summary{
+  display:grid!important;
+  grid-template-columns:10px auto minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:8px!important;
+  min-width:0!important;
+  border:1px solid var(--b1)!important;
+  border-radius:14px!important;
+  padding:10px 11px!important;
+  background:var(--s2)!important;
+}
 .change-github-check-summary>span{
   width:8px!important;height:8px!important;border-radius:999px!important;
   background:var(--amb)!important;box-shadow:0 0 0 4px rgba(245,158,11,.12)!important;
 }
 .change-github-check-summary.ok>span{background:var(--grn)!important;box-shadow:0 0 0 4px rgba(34,197,94,.13)!important;}
+.change-github-check-summary strong{font-size:12.5px!important;font-weight:950!important;color:var(--t1)!important;white-space:nowrap!important;line-height:1.2!important;}
+.change-github-check-summary small{font-size:11.2px!important;font-weight:750!important;color:var(--t4)!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;min-width:0!important;}
 .change-github-check-inline-link{border:0!important;background:transparent!important;color:var(--acc)!important;font:inherit!important;font-size:11.5px!important;font-weight:900!important;cursor:pointer!important;padding:0!important;white-space:nowrap!important;}
 .change-github-action{gap:9px!important;}
 .change-github-action-current{display:grid!important;grid-template-columns:10px minmax(0,1fr)!important;align-items:center!important;gap:10px!important;min-width:0!important;}
@@ -1475,6 +1650,7 @@ body.change-theme-light .change-settings-profile-stat{
 .change-github-action-current.error>span{background:var(--red)!important;box-shadow:0 0 0 4px rgba(239,68,68,.14)!important;}
 .change-github-action-current div{display:grid!important;gap:2px!important;min-width:0!important;}
 .change-github-action-current strong{font-size:12.8px!important;font-weight:950!important;line-height:1.2!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+.change-github-action-current small{font-size:11.2px!important;font-weight:750!important;line-height:1.25!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;color:var(--t4)!important;}
 .change-github-action-links{display:flex!important;align-items:center!important;justify-content:flex-start!important;min-width:0!important;}
 @media(max-width:520px){
   .change-github-check-summary{grid-template-columns:10px minmax(0,1fr) auto!important;gap:7px!important;}
@@ -1483,6 +1659,38 @@ body.change-theme-light .change-settings-profile-stat{
   .change-github-check-inline-link{grid-column:3!important;grid-row:1!important;}
   .change-github-action-current small{white-space:normal!important;}
 }
+body.change-view-settings .change-settings-profile-card{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(300px,360px)!important;
+  align-items:center!important;
+  min-height:226px!important;
+  padding:28px 30px 26px!important;
+  gap:22px!important;
+  overflow:hidden!important;
+  border-radius:28px!important;
+  border-color:rgba(93,183,92,.14)!important;
+  background:radial-gradient(circle at 16% 0%,rgba(64,143,75,.12),transparent 38%),linear-gradient(90deg,rgba(18,36,27,.78),rgba(8,16,20,.96))!important;
+  box-shadow:0 16px 42px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.03)!important;
+}
+body.change-view-settings .change-settings-profile-left{align-self:center!important;gap:22px!important;min-width:0!important;}
+body.change-view-settings .change-settings-profile-avatar{width:86px!important;height:86px!important;}
+body.change-view-settings .change-settings-profile-name{font-size:25px!important;line-height:1.08!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+body.change-view-settings .change-settings-profile-right{
+  min-width:0!important;
+  align-self:stretch!important;
+  display:grid!important;
+  grid-template-rows:repeat(3,1fr)!important;
+  align-content:stretch!important;
+  gap:0!important;
+  border-left:1px solid rgba(255,255,255,.08)!important;
+  border-top:0!important;
+  padding:0 0 0 20px!important;
+}
+body.change-view-settings .change-settings-profile-stat{display:grid!important;grid-template-columns:28px minmax(0,1fr)!important;align-content:center!important;gap:0 12px!important;padding:0!important;border-bottom:1px solid rgba(255,255,255,.08)!important;min-width:0!important;}
+body.change-view-settings .change-settings-profile-stat:last-child{border-bottom:0!important;}
+body.change-view-settings .change-settings-profile-stat-icon{width:24px!important;height:24px!important;background:rgba(255,255,255,.04)!important;}
+body.change-view-settings .change-settings-profile-stat strong{font-size:13px!important;font-weight:800!important;color:rgba(244,247,244,.70)!important;line-height:1.15!important;}
+body.change-view-settings .change-settings-profile-stat em{font-size:17px!important;font-weight:900!important;color:#fff!important;line-height:1.12!important;}
 @media(max-width:700px){
   body.change-view-settings .change-settings-premium{padding:76px 14px 24px!important;}
   body.change-view-settings .change-settings-page-head{margin-bottom:12px!important;}
@@ -1499,13 +1707,16 @@ body.change-theme-light .change-settings-profile-stat{
 }
 [data-theme="light"] body.change-view-settings .change-settings-profile-card,
 body.theme-light.change-view-settings .change-settings-profile-card,
+body.change-theme-light.change-view-settings .change-settings-profile-card{background:radial-gradient(circle at 16% 0%,rgba(64,143,75,.10),transparent 38%),linear-gradient(135deg,rgba(237,250,241,.94),rgba(255,255,255,.82))!important;border-color:rgba(20,35,24,.10)!important;box-shadow:0 18px 46px rgba(31,53,38,.09),inset 0 1px 0 rgba(255,255,255,.92)!important;}
 [data-theme="light"] body.change-view-settings .change-settings-profile-right,
 [data-theme="light"] body.change-view-settings .change-settings-profile-stat,
 body.theme-light.change-view-settings .change-settings-profile-right,
 body.theme-light.change-view-settings .change-settings-profile-stat,
 body.change-theme-light.change-view-settings .change-settings-profile-right,
+body.change-theme-light.change-view-settings .change-settings-profile-stat{border-color:rgba(20,35,24,.10)!important;}
 [data-theme="light"] body.change-view-settings .change-settings-profile-stat em,
 body.theme-light.change-view-settings .change-settings-profile-stat em,
+body.change-theme-light.change-view-settings .change-settings-profile-stat em{color:#17231c!important;}
 
 
 /* v0.1.0209 · Einstellungen HeroCard exakt an Pollen angleichen + Scroll bereinigen */
@@ -1812,6 +2023,9 @@ body.change-theme-light.change-view-settings .change-settings-profile-stat stron
 
 /* v0.1.0226 · GitHub Mobile kompakter + Scrollende freigeben */
 .change-github-upload-panel-v226 .change-github-check-summary,
+.change-github-upload-panel-v226 .change-github-action{
+  margin-top:10px!important;
+}
 .change-github-upload-panel-v226 .change-github-action{
   display:grid!important;
   gap:10px!important;
