@@ -13765,3 +13765,231 @@ html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen.change-h
   html body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-badge { display:none!important; }
   html body.change-view-calendar #calendar-premium-view .cal-premium-date-ring { display:none!important; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   v0.1.0237 · Challenges Wochenkacheln + Rangliste
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Wochenkacheln: Punkte-Badge statt roher Text ─────────────────────── */
+body.change-view-challenges #challenges-view .challenge-week-day-points {
+  display: inline-flex!important;
+  align-items: center!important;
+  justify-content: center!important;
+  margin-top: auto!important;
+  padding-top: 10px!important;
+  font-size: 12px!important;
+  font-weight: 900!important;
+  color: #4ade80!important;
+  letter-spacing: .02em!important;
+}
+body.change-view-challenges #challenges-view .challenge-week-day.has-points .challenge-week-day-points {
+  background: rgba(74,222,128,.12)!important;
+  border: 1px solid rgba(74,222,128,.22)!important;
+  border-radius: 999px!important;
+  padding: 3px 8px!important;
+  font-size: 11px!important;
+  color: #4ade80!important;
+  margin-top: 10px!important;
+}
+body.change-view-challenges #challenges-view .challenge-week-day.empty .challenge-week-day-points {
+  background: transparent!important;
+  border: 0!important;
+  color: rgba(244,247,244,.25)!important;
+  padding: 0!important;
+}
+/* Kachel-Grundform verbessert */
+body.change-view-challenges #challenges-view .challenge-week-day {
+  min-height: 90px!important;
+  padding: 14px 12px!important;
+  border-radius: 16px!important;
+  border: 1px solid rgba(255,255,255,.08)!important;
+  background: rgba(255,255,255,.032)!important;
+  display: flex!important;
+  flex-direction: column!important;
+  align-items: flex-start!important;
+  gap: 0!important;
+  overflow: hidden!important;
+}
+body.change-view-challenges #challenges-view .challenge-week-day.is-today {
+  border-color: rgba(74,222,128,.55)!important;
+  background: linear-gradient(160deg, rgba(74,222,128,.11), rgba(74,222,128,.03))!important;
+}
+body.change-view-challenges #challenges-view .challenge-week-day-name {
+  font-size: 11px!important;
+  font-weight: 900!important;
+  letter-spacing: .06em!important;
+  text-transform: uppercase!important;
+  color: rgba(244,247,244,.45)!important;
+  margin: 0!important;
+}
+body.change-view-challenges #challenges-view .challenge-week-day-date {
+  font-size: 17px!important;
+  font-weight: 950!important;
+  color: #fff!important;
+  margin-top: 5px!important;
+  line-height: 1.1!important;
+}
+
+/* ── Rangliste: sauber, kein Überlappen ──────────────────────────────── */
+body.change-view-challenges #challenges-view #leaderboard-list {
+  display: flex!important;
+  flex-direction: column!important;
+  gap: 10px!important;
+  max-height: none!important;
+  overflow: visible!important;
+  padding: 0!important;
+}
+body.change-view-challenges #challenges-view #leaderboard-list .leader-row {
+  position: relative!important;
+  display: flex!important;
+  align-items: flex-start!important;
+  gap: 12px!important;
+  padding: 16px!important;
+  border-radius: 18px!important;
+  border: 1px solid rgba(255,255,255,.08)!important;
+  background: rgba(255,255,255,.038)!important;
+  box-shadow: none!important;
+  transform: none!important;
+  overflow: hidden!important;
+  min-height: 0!important;
+  height: auto!important;
+  max-height: none!important;
+  flex-shrink: 0!important;
+}
+body.change-view-challenges #challenges-view #leaderboard-list .leader-rank {
+  flex-shrink: 0!important;
+  width: 36px!important;
+  height: 36px!important;
+  display: flex!important;
+  align-items: center!important;
+  justify-content: center!important;
+  font-size: 20px!important;
+  line-height: 1!important;
+  margin-top: 2px!important;
+}
+body.change-view-challenges #challenges-view #leaderboard-list .leader-main {
+  flex: 1!important;
+  min-width: 0!important;
+  display: flex!important;
+  flex-direction: column!important;
+  gap: 6px!important;
+}
+body.change-view-challenges #challenges-view #leaderboard-list .leader-head {
+  display: flex!important;
+  align-items: center!important;
+  justify-content: space-between!important;
+  gap: 8px!important;
+}
+body.change-view-challenges #challenges-view #leaderboard-list .leader-name {
+  font-size: 15px!important;
+  font-weight: 900!important;
+  color: #fff!important;
+  display: flex!important;
+  align-items: center!important;
+  gap: 6px!important;
+  white-space: nowrap!important;
+  overflow: hidden!important;
+  text-overflow: ellipsis!important;
+}
+body.change-view-challenges #challenges-view #leaderboard-list .leader-score-box {
+  flex-shrink: 0!important;
+  display: flex!important;
+  align-items: baseline!important;
+  gap: 3px!important;
+}
+body.change-view-challenges #challenges-view #leaderboard-list .leader-score {
+  font-size: 17px!important;
+  font-weight: 950!important;
+  color: #4ade80!important;
+}
+body.change-view-challenges #challenges-view #leaderboard-list .leader-score-label {
+  font-size: 11px!important;
+  font-weight: 700!important;
+  color: rgba(244,247,244,.5)!important;
+}
+body.change-view-challenges #challenges-view #leaderboard-list .leader-detail {
+  font-size: 12px!important;
+  font-weight: 700!important;
+  color: rgba(244,247,244,.55)!important;
+  white-space: nowrap!important;
+  overflow: hidden!important;
+  text-overflow: ellipsis!important;
+}
+body.change-view-challenges #challenges-view #leaderboard-list .leader-foot {
+  display: flex!important;
+  align-items: center!important;
+  justify-content: space-between!important;
+  gap: 8px!important;
+  margin-top: 2px!important;
+}
+body.change-view-challenges #challenges-view #leaderboard-list .leader-self-tag {
+  display: inline-flex!important;
+  align-items: center!important;
+  padding: 1px 7px!important;
+  border-radius: 999px!important;
+  background: rgba(74,222,128,.15)!important;
+  color: #4ade80!important;
+  font-size: 10px!important;
+  font-weight: 900!important;
+  letter-spacing: .04em!important;
+}
+body.change-view-challenges #challenges-view #leaderboard-list .live-dot {
+  display: inline-block!important;
+  width: 7px!important;
+  height: 7px!important;
+  border-radius: 999px!important;
+  background: #4ade80!important;
+  flex-shrink: 0!important;
+}
+body.change-view-challenges #challenges-view #leaderboard-list .live-dot.off {
+  background: rgba(244,247,244,.25)!important;
+}
+/* Anfeuern-Button */
+body.change-view-challenges #challenges-view .nudge-btn {
+  display: inline-flex!important;
+  align-items: center!important;
+  gap: 5px!important;
+  padding: 5px 12px!important;
+  border-radius: 999px!important;
+  border: 1px solid rgba(255,255,255,.12)!important;
+  background: rgba(255,255,255,.06)!important;
+  color: rgba(244,247,244,.8)!important;
+  font-size: 12px!important;
+  font-weight: 800!important;
+  cursor: pointer!important;
+  white-space: nowrap!important;
+}
+
+/* ── Mobil: Ranglisten-Kacheln volle Breite ──────────────────────────── */
+@media(max-width:700px){
+  body.change-view-challenges #challenges-view #leaderboard-list {
+    gap: 8px!important;
+  }
+  body.change-view-challenges #challenges-view #leaderboard-list .leader-row {
+    padding: 14px 12px!important;
+    border-radius: 16px!important;
+    width: 100%!important;
+    box-sizing: border-box!important;
+    min-height: 0!important;
+    height: auto!important;
+  }
+  body.change-view-challenges #challenges-view #leaderboard-list .leader-name {
+    font-size: 14px!important;
+  }
+  body.change-view-challenges #challenges-view #leaderboard-list .leader-detail {
+    font-size: 11px!important;
+  }
+  /* Wochenkacheln mobil: kompakter */
+  body.change-view-challenges #challenges-view .challenge-week-day {
+    min-height: 72px!important;
+    padding: 10px 8px!important;
+    border-radius: 14px!important;
+  }
+  body.change-view-challenges #challenges-view .challenge-week-day-date {
+    font-size: 15px!important;
+  }
+  body.change-view-challenges #challenges-view .challenge-week-day-name {
+    font-size: 10px!important;
+  }
+}
+

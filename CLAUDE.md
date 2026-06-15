@@ -1,3 +1,10 @@
+## Version 0.1.0237
+- Die sichtbare App-Version wurde auf `0.1.0237` erhöht.
+- Challenges Wochenkacheln: Punkte-Badge mit grünem Hintergrund und Border statt reiner Text. Kacheln sauberer (border-radius:16px, einheitliche Abstände).
+- Rangliste: `display:flex; flex-direction:column; gap:10px` verhindert Überlappen. Jede `.leader-row` hat `overflow:hidden`, feste Abstände, kein Höhenproblem mehr. Mobil volle Breite mit `box-sizing:border-box`.
+- Symptom-Icons: Niesen = Person von rechts niest nach links, Nase = Frontansicht mit Nasenflügeln.
+- Keine Änderung an HeroCards, Pollenberechnung, Kalender, Firebase, Sync oder Push.
+
 ## Version 0.1.0236
 - Die sichtbare App-Version wurde auf `0.1.0236` erhöht.
 - **HeroCard-Root-Ursache behoben**: In `dashboard-logic.js` wurden drei alte CSS-Regeln entfernt die unsere korrekten Werte überschrieben: `.dashp-main-hero-pollen` mit 2-spaltigem Grid, mobiles `display:block`, und `.dashp-main-hero{min-height:174px}`. Außerdem `.dashp-eyebrow` Farbe von `#4ade80` auf `rgba(244,247,244,.72)` korrigiert.
