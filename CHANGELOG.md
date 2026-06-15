@@ -1,3 +1,17 @@
+## Version 0.1.0246
+- Die sichtbare App-Version wurde auf `0.1.0246` erhöht.
+- **Dashboard weiße Kacheln behoben**: Im injizierten CSS von dashboard-logic.js überschrieb `.dashp-hero{grid-template-columns:1fr!important}` unser 3-Spalten-Grid — entfernt. Außerdem `.dashp-quick-grid` (altes 6-Kacheln-Layout) entfernt das die weißen Mini-Cards erzeugte.
+- **Kalender-Uhr riesig behoben**: `calendarPanels.css` setzte `.cal-premium-hero{padding:28px 260px 24px 28px}` — der 260px rechte Padding ließ die Uhr riesig erscheinen. Korrigiert auf `28px`.
+- **Challenges-Pokal-Layout**: Das Layout-Problem (`chv227-hero` fehlte in challenges-mobile.css) wird durch v0240-Block in appShell.css korrekt gelöst.
+- Keine Änderung an GitHub-Upload, Pollenberechnung, Firebase oder Push.
+
+## Version 0.1.0245
+- Die sichtbare App-Version wurde auf `0.1.0245` erhöht.
+- GitHub Upload: "Auf GitHub übertragen" wird während des aktiven Upload/Action-Prozesses ausgeblendet (nicht nur disabled). Der Button erscheint erst wieder wenn `actionConclusion` gesetzt ist (Erfolg oder Fehler).
+- GitHub Upload: "Auf GitHub übertragen" ist auch disabled wenn `updateReady` bereits true — verhindert Doppel-Uploads.
+- "App vollständig neu laden": Guard prüft `state.liveReady && state.updateReady` bevor der Hard-Reload ausgeführt wird. Bei nicht-bereitem Update erscheint ein Toast.
+- Keine Änderung an Upload-Logik, Firebase, Kalender oder Pollen.
+
 ## Version 0.1.0244
 - Die sichtbare App-Version wurde auf `0.1.0244` erhöht.
 - **Erklärende Subtexte entfernt**: Alle 18 `change-feature-note` Divs aus settingsPanel.js entfernt — nur selbsterklärende Toggle-Titel bleiben.

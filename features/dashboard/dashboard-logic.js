@@ -403,12 +403,6 @@
       [data-theme="light"] .dashp-card-head,body.theme-light .dashp-card-head,body.change-theme-light .dashp-card-head,[data-theme="light"] .dashp-forecast-row,body.theme-light .dashp-forecast-row,body.change-theme-light .dashp-forecast-row{border-color:rgba(20,35,24,.08)!important;}
 
       body.change-view-dashboard .dash-hello p{display:none!important;}
-      .dashp-hero{grid-template-columns:1fr!important;gap:14px!important;}
-      .dashp-quick-grid{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:14px!important;}
-      .dashp-quick-grid .dashp-mini-card{min-height:132px!important;}
-      .dashp-mini-card small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-      @media(max-width:1180px){.dashp-quick-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;}}
-      @media(max-width:700px){.dashp-quick-grid{display:flex!important;overflow-x:auto!important;gap:8px!important;padding-bottom:6px!important;scrollbar-width:none!important}.dashp-quick-grid::-webkit-scrollbar{display:none!important}.dashp-quick-grid .dashp-mini-card{min-width:152px!important;display:inline-flex!important;}.dashp-hero{white-space:normal!important;overflow:visible!important;}.dashp-main-hero{margin-bottom:12px!important;}}
 
       .dashp-hero-visual{
         display:flex!important;align-items:flex-end!important;justify-content:center!important;align-self:stretch!important;

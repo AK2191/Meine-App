@@ -505,7 +505,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0244';
+  var APP_VERSION = '0.1.0246';
 
 
 
@@ -784,6 +784,12 @@
   }
 
   async function reloadChangeUpdateVersion(){
+    var state = githubUpdateState;
+    // Nur ausführen wenn GitHub-Deployment wirklich abgeschlossen ist
+    if(!state.liveReady || !state.updateReady){
+      if(typeof window.toast === 'function') window.toast('Warte bis das Update bereit ist…', '');
+      return;
+    }
     var version = latestGithubUpdateVersion();
     if(!version || compareVersions(version, APP_VERSION) <= 0){
       if(typeof window.toast === 'function') window.toast('Aktuelle Version ist bereits geladen', 'ok');
@@ -950,7 +956,7 @@
       + statusLine
       + (actionPanel || checks || '')
       + githubFileOverview()
-      + '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' ? '' : 'disabled')+'>Auf GitHub übertragen</button>'
+      + ((!state.actionStartedAt || state.actionConclusion) ? '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' && !state.updateReady ? '' : 'disabled')+'>Auf GitHub übertragen</button>' : '')
       + '</div>'
       + '</div>';
   }
