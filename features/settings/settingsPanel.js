@@ -956,7 +956,7 @@
       + statusLine
       + (actionPanel || checks || '')
       + githubFileOverview()
-      + ((!state.actionStartedAt || state.actionConclusion) ? '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' && !state.updateReady ? '' : 'disabled')+'>Auf GitHub übertragen</button>' : '')
+      + ((!state.actionStartedAt && !state.actionMessage && !state.uploadCommitSha) ? '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' && !state.updateReady ? '' : 'disabled')+'>Auf GitHub übertragen</button>' : (state.actionConclusion && !state.updateReady ? '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' ? '' : 'disabled')+'>Erneut versuchen</button>' : ''))
       + '</div>'
       + '</div>';
   }

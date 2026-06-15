@@ -1,3 +1,7 @@
+## Version 0.1.0248
+- GitHub Upload: Button-Bedingung verschaerft: ausgeblendet wenn actionStartedAt, actionMessage ODER uploadCommitSha gesetzt. Damit erscheint der Button nie waehrend eines laufenden Prozesses, unabhaengig von actionConclusion-State.
+- Nach fehlgeschlagener Action erscheint 'Erneut versuchen' statt 'Auf GitHub uebertragen'.
+
 ## Version 0.1.0247
 - CSS-Dateien auf Original-Stand zurueckgesetzt. HeroCard-Block als Anhang.
 - Dashboard Event-Zeit: flex-direction:column (uebereinander). Kalender date-ring: display:none.
