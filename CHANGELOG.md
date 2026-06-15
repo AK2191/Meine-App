@@ -1,3 +1,21 @@
+## Version 0.1.0243
+- Die sichtbare App-Version wurde auf `0.1.0243` erhöht.
+- **Vollständige Code-Bereinigung** nach Analyse aller CSS-Dateien auf konkurrierende Definitionen.
+- `calendarPanels.css`: 936 → 403 Zeilen (-57%). Alle 16 Hero-Patch-Blöcke (v0.1.0053–v0.1.0207) entfernt. `cal-premium-hero-wide` war 29× definiert (grid-template-columns allein 24×). Hero-Layout kommt jetzt ausschließlich aus appShell.css v0240.
+- `challenges-mobile.css`: 3330 → 2963 Zeilen (-11%). `challenge-week-day` war 47× definiert (color 14×, background 8×). Alle entfernt — appShell v0240 ist alleinige Quelle.
+- Gesamt über alle CSS-Dateien: 25.905 → 22.379 Zeilen (-3.526 Zeilen, -14%).
+- `settingsPanel.css` und `pollenView.css` sind autark und konfliktfrei — keine Änderungen nötig.
+- Keine Änderung an Logik, Pollenberechnung, Kalender-Events, Firebase, Sync oder Push.
+
+## Version 0.1.0242
+- Die sichtbare App-Version wurde auf `0.1.0242` erhöht.
+- **Code-Bereinigung**: 2.972 redundante Zeilen entfernt die sich gegenseitig überschrieben haben.
+- `styles/appShell.css`: 13.842 → 11.216 Zeilen (-19%). 2.829 Zeilen der Hero-Patch-Blöcke v0.1.0211–v0.1.0239 entfernt, da alle durch den finalen v0.1.0240-Block mit höherer Spezifität überschrieben wurden. Nicht-Hero Regeln (challenge-goal-*, settings-page-title) wurden bewahrt.
+- `features/dashboard/dashboard-logic.js`: Injiziertes CSS 187 → 74 Zeilen (-60%). Alle Hero-Definitionen entfernt die mit appShell.css v0240 konkurrierten.
+- `features/challenges/challenges-mobile.css`: 3.330 → 3.096 Zeilen (-7%). Alle 11× leader-row und 40× leaderboard-list Definitionen entfernt die mit appShell.css v0240 konkurrierten.
+- Ergebnis: Keine konkurrierenden CSS-Regeln mehr für HeroCards, Rangliste und Stats-Zeilen.
+- Keine Änderung an Logik, Pollenberechnung, Firebase, Sync oder Push.
+
 ## Version 0.1.0241
 - Die sichtbare App-Version wurde auf `0.1.0241` erhöht.
 - GitHub-Sektion in Einstellungen: Freigabe-Code-Karte, Upload-Panel und Dropzone im einheitlichen App-Stil (gleiche Hintergrundfarbe, gleicher Border-Radius wie Einstellungs-Karten).
