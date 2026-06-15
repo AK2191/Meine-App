@@ -1,3 +1,12 @@
+## Version 0.1.0239
+- Die sichtbare App-Version wurde auf `0.1.0239` erhöht.
+- HeroCards mobil: Challenges, Kalender, Einstellungen auf `display:flex; flex-direction:column; gap:20px` korrigiert — identisch zu Pollen.
+- Challenges mobil: `.chv227-hero` jetzt explizit flex-column. Illustration absolut positioniert (top:18px, right:18px). Titel 52px. Stats als vertikale Karten mit `34px 1fr`, `min-height:58px`, `border-radius:18px`.
+- Kalender mobil: Hero-Haupt-Bereich mit `padding-right:110px` für Illustration. Stats-Karten identisch zu Pollen-Mobil.
+- Einstellungen mobil: gleicher Aufbau.
+- Symptom-Icons Nase und Niesen nach Referenzbildern überarbeitet.
+- Keine Änderung an Pollenberechnung, Firebase, Sync oder Push.
+
 ## Version 0.1.0238
 - Die sichtbare App-Version wurde auf `0.1.0238` erhöht.
 - Symptom-Icon Nase: Seitenansicht nach Referenzbild — schlanke Linie von oben, Nasenflügel unten als geschwungener Bogen.
