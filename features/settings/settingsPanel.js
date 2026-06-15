@@ -942,6 +942,90 @@
       + '<div class="change-github-file-section"><b>ZIP-Dateien</b><ul>'+zipList+'</ul></div>'
       + '</div>';
   }
+  var githubCommitHistory = [];
+  var githubCommitHistoryLoading = false;
+  var githubRollbackState = { running: false, message: '', error: '' };
+
+  function githubCommitHistoryPanel(){
+    var secret = readGithubUpdateSecret();
+    if(!secret) return '';
+    var rows = '';
+    if(githubCommitHistoryLoading){
+      rows = '<div class="change-github-history-loading">Commits werden geladen…</div>';
+    } else if(githubCommitHistory.length === 0){
+      rows = '<div class="change-github-history-empty">Noch nicht geladen.</div>';
+    } else {
+      rows = githubCommitHistory.map(function(c, i){
+        var isFirst = i === 0;
+        var date = c.date ? new Date(c.date).toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+        var versionBadge = c.version ? '<span class="change-github-commit-version">v'+esc(c.version)+'</span>' : '';
+        var currentBadge = isFirst ? '<span class="change-github-commit-current">Aktuell</span>' : '';
+        var rollbackBtn = !isFirst
+          ? '<button class="change-github-rollback-btn" data-sha="'+esc(c.sha)+'" data-msg="'+esc(c.message)+'" type="button">Zurück</button>'
+          : '<button class="change-github-rollback-btn is-current" disabled type="button">Aktuell</button>';
+        return '<div class="change-github-commit-row'+(isFirst?' is-current':'')+'">'
+          + '<div class="change-github-commit-sha">'+esc(c.shortSha)+'</div>'
+          + '<div class="change-github-commit-info">'
+          + '<div class="change-github-commit-msg">'+esc(c.message)+'</div>'
+          + '<div class="change-github-commit-meta">'+esc(date)+'  '+versionBadge+currentBadge+'</div>'
+          + '</div>'
+          + rollbackBtn
+          + '</div>';
+      }).join('');
+    }
+    var rollbackStatus = githubRollbackState.running
+      ? '<div class="change-github-rollback-status running">Rollback wird durchgeführt…</div>'
+      : githubRollbackState.message
+        ? '<div class="change-github-rollback-status ok">'+esc(githubRollbackState.message)+'</div>'
+        : githubRollbackState.error
+          ? '<div class="change-github-rollback-status error">'+esc(githubRollbackState.error)+'</div>'
+          : '';
+    return '<div class="change-github-history-panel">'
+      + '<div class="change-github-history-head"><span>Commit-Verlauf</span>'
+      + '<button class="change-github-history-refresh" id="github-history-refresh" type="button">↻ Laden</button>'
+      + '</div>'
+      + rollbackStatus + rows + '</div>';
+  }
+
+  async function loadGithubCommitHistory(){
+    if(githubCommitHistoryLoading) return;
+    githubCommitHistoryLoading = true;
+    githubCommitHistory = [];
+    refreshSameTab('github');
+    try{
+      var response = await fetch(GITHUB_UPDATE_WORKER_URL + '/commits?count=10', {cache:'no-store'});
+      var result = await response.json();
+      githubCommitHistory = (result && result.ok && Array.isArray(result.commits)) ? result.commits : [];
+    }catch(e){ githubCommitHistory = []; }
+    githubCommitHistoryLoading = false;
+    refreshSameTab('github');
+  }
+
+  async function rollbackToCommit(sha, message){
+    var secret = readGithubUpdateSecret();
+    if(!secret){ if(typeof window.toast === 'function') window.toast('Bitte Freigabe-Code eintragen', 'err'); return; }
+    if(!confirm('Wirklich zu Commit '+sha.slice(0,7)+' zur\u00fcckgehen?\n'+message)) return;
+    githubRollbackState = { running: true, message: '', error: '' };
+    refreshSameTab('github');
+    try{
+      var response = await fetch(GITHUB_UPDATE_WORKER_URL + '/rollback', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ secret:secret, sha:sha })
+      });
+      var result = await response.json();
+      if(result && result.ok){
+        githubRollbackState = { running:false, message:'Zurückgesetzt auf '+result.shortSha+' — GitHub Action startet.', error:'' };
+        githubCommitHistory = [];
+        if(typeof window.toast === 'function') window.toast('Rollback gestartet', 'ok');
+        setTimeout(function(){ loadGithubCommitHistory(); }, 3000);
+      } else {
+        githubRollbackState = { running:false, message:'', error:(result&&result.message)||'Rollback fehlgeschlagen.' };
+        if(typeof window.toast === 'function') window.toast('Rollback fehlgeschlagen', 'err');
+      }
+    }catch(e){ githubRollbackState = { running:false, message:'', error:'Netzwerkfehler.' }; }
+    refreshSameTab('github');
+  }
+
   function githubUpdateBody(){
     var state = githubUpdateState;
     var selectedLabel = state.file ? esc(state.file.name)+' · '+Math.round((state.file.size || 0) / 1024)+' KB' : 'ZIP hier ablegen oder auswählen';
@@ -958,6 +1042,7 @@
       + githubFileOverview()
       + ((!state.actionStartedAt && !state.actionMessage && !state.uploadCommitSha) ? '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' && !state.updateReady ? '' : 'disabled')+'>Auf GitHub übertragen</button>' : (state.actionConclusion && !state.updateReady ? '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' ? '' : 'disabled')+'>Erneut versuchen</button>' : ''))
       + '</div>'
+      + githubCommitHistoryPanel()
       + '</div>';
   }
   function githubUpdateCard(){
@@ -1580,6 +1665,12 @@
     });
     var githubZipCommit = $('github-zip-commit'); if(githubZipCommit) githubZipCommit.addEventListener('click', function(){ commitGithubZip(); });
     var githubUpdateReload = $('github-update-reload'); if(githubUpdateReload) githubUpdateReload.addEventListener('click', function(){ reloadChangeUpdateVersion(); });
+    var githubHistoryRefresh = $('github-history-refresh'); if(githubHistoryRefresh) githubHistoryRefresh.addEventListener('click', function(){ loadGithubCommitHistory(); });
+    document.querySelectorAll('.change-github-rollback-btn:not(:disabled)').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        rollbackToCommit(btn.getAttribute('data-sha') || '', btn.getAttribute('data-msg') || '');
+      });
+    });
     var btnGoogleConnect = $('btn-google-connect'); if(btnGoogleConnect) btnGoogleConnect.addEventListener('click', function(){ if(typeof connectToGoogle==='function') connectToGoogle(); });
 
   }

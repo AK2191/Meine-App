@@ -1,3 +1,9 @@
+## Version 0.1.0249
+- GitHub Rollback: Commit-Verlauf der letzten 10 Commits mit SHA, Nachricht, Datum und App-Version. Jeder Commit hat einen 'Zurueck'-Button. Bestaetigung per confirm() vor dem Rollback.
+- Cloudflare Worker: neue Endpoints /commits (GET) und /rollback (POST) in changeGithubUpdateWorker.js.
+- Rollback setzt Branch per force-push auf den Ziel-Commit. GitHub Action startet automatisch.
+- CSS fuer Commit-Verlauf in appShell.css ergaenzt.
+
 ## Version 0.1.0248
 - GitHub Upload: Button-Bedingung verschaerft: ausgeblendet wenn actionStartedAt, actionMessage ODER uploadCommitSha gesetzt. Damit erscheint der Button nie waehrend eines laufenden Prozesses, unabhaengig von actionConclusion-State.
 - Nach fehlgeschlagener Action erscheint 'Erneut versuchen' statt 'Auf GitHub uebertragen'.

@@ -1,11 +1,6 @@
 /**
  * Cloudflare Worker · Change GitHub Update Service
- *
- * Einsatz:
- * 1. In Cloudflare Worker-Code vollständig ersetzen.
- * 2. Secrets setzen:
- *    GITHUB_APP_ID, GITHUB_INSTALLATION_ID, GITHUB_PRIVATE_KEY, CHANGE_UPDATE_SECRET
- * 3. Die Change-App sendet geprüfte ZIPs an /upload.
+ * v2 — mit /commits und /rollback Endpoints
  */
 const REPOSITORY = 'AK2191/Meine-App';
 const BRANCH = 'main';
@@ -113,7 +108,6 @@ function safeZipName(fileName, targetVersion){
   const name = base && base.toLowerCase().endsWith('.zip') ? base : `change-update-${version || stamp}.zip`;
   return `${stamp}-${name}`.slice(0, 180);
 }
-
 function versionParts(value){
   return String(value || '').split('.').map((part) => Number.parseInt(part, 10) || 0);
 }
@@ -191,6 +185,77 @@ async function getLatestWorkflowStatus(env, commitSha, targetVersion){
   });
 }
 
+/* NEU: Letzte N Commits mit Version auslesen */
+async function getCommitHistory(env, count){
+  const token = await getInstallationToken(env);
+  const n = Math.min(Math.max(parseInt(count) || 10, 1), 30);
+  const body = await githubFetch(
+    `/repos/${REPOSITORY}/commits?sha=${BRANCH}&per_page=${n}`,
+    { method: 'GET' },
+    token
+  );
+  const commits = Array.isArray(body) ? body : [];
+  // Lese Version aus pollenView.js fuer jeden Commit
+  const results = await Promise.all(commits.map(async (commit) => {
+    let version = '';
+    try {
+      const sha = commit.sha;
+      const path = 'features/pollen/pollenView.js';
+      const file = await githubFetch(
+        `/repos/${REPOSITORY}/contents/${path}?ref=${encodeURIComponent(sha)}`,
+        { method: 'GET' },
+        token
+      );
+      version = appVersionFromText(decodeBase64Utf8(file && file.content));
+    } catch(e) {}
+    return {
+      sha: commit.sha || '',
+      shortSha: (commit.sha || '').slice(0, 7),
+      message: (commit.commit && commit.commit.message || '').split('\n')[0].slice(0, 80),
+      date: commit.commit && commit.commit.author && commit.commit.author.date || '',
+      author: commit.commit && commit.commit.author && commit.commit.author.name || '',
+      version
+    };
+  }));
+  return json({ ok: true, commits: results });
+}
+
+/* NEU: Branch auf bestimmten Commit zuruecksetzen (force push) */
+async function rollbackToCommit(env, payload){
+  if(String(payload.secret || '') !== String(env.CHANGE_UPDATE_SECRET || '')){
+    return json({ ok:false, message:'Freigabe-Code ist falsch.' }, 401);
+  }
+  const targetSha = String(payload.sha || '').trim();
+  if(!targetSha || targetSha.length < 7){
+    return json({ ok:false, message:'Kein gueltiger Commit-SHA angegeben.' }, 400);
+  }
+  const token = await getInstallationToken(env);
+  // Verifiziere dass der Commit existiert
+  let commitInfo = null;
+  try {
+    commitInfo = await githubFetch(`/repos/${REPOSITORY}/commits/${targetSha}`, { method: 'GET' }, token);
+  } catch(e) {
+    return json({ ok:false, message:'Commit nicht gefunden: ' + targetSha }, 404);
+  }
+  // Force-update den Branch auf diesen Commit
+  await githubFetch(
+    `/repos/${REPOSITORY}/git/refs/heads/${BRANCH}`,
+    {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ sha: commitInfo.sha, force: true })
+    },
+    token
+  );
+  return json({
+    ok: true,
+    message: `Branch ${BRANCH} wurde auf Commit ${commitInfo.sha.slice(0,7)} zurueckgesetzt.`,
+    sha: commitInfo.sha,
+    shortSha: commitInfo.sha.slice(0,7),
+    commitMessage: commitInfo.commit && commitInfo.commit.message ? commitInfo.commit.message.split('\n')[0] : ''
+  });
+}
+
 async function uploadZipToGitHub(env, payload){
   if(String(payload.secret || '') !== String(env.CHANGE_UPDATE_SECRET || '')){
     return json({ ok:false, message:'Freigabe-Code ist falsch.' }, 401);
@@ -199,7 +264,7 @@ async function uploadZipToGitHub(env, payload){
   const contentBase64 = String(payload.contentBase64 || '').replace(/^data:.*?;base64,/, '');
   if(!contentBase64) return json({ ok:false, message:'ZIP-Inhalt fehlt.' }, 400);
   const byteLength = Math.floor(contentBase64.length * 3 / 4);
-  if(byteLength > MAX_ZIP_BYTES) return json({ ok:false, message:'ZIP ist zu groß. Limit: 8 MB.' }, 413);
+  if(byteLength > MAX_ZIP_BYTES) return json({ ok:false, message:'ZIP ist zu gross. Limit: 8 MB.' }, 413);
   const token = await getInstallationToken(env);
   const path = `updates/${fileName}`;
   const result = await githubFetch(`/repos/${REPOSITORY}/contents/${encodeURIComponent(path).replace(/%2F/g, '/')}`, {
@@ -219,6 +284,7 @@ async function uploadZipToGitHub(env, payload){
     actionsUrl: `https://github.com/${REPOSITORY}/actions`
   });
 }
+
 export default {
   async fetch(request, env){
     if(request.method === 'OPTIONS') return json({ ok:true });
@@ -230,8 +296,15 @@ export default {
       if(request.method === 'GET' && url.pathname === '/status'){
         return await getLatestWorkflowStatus(env, url.searchParams.get('commitSha') || '', url.searchParams.get('targetVersion') || '');
       }
+      if(request.method === 'GET' && url.pathname === '/commits'){
+        return await getCommitHistory(env, url.searchParams.get('count') || '10');
+      }
+      if(request.method === 'POST' && url.pathname === '/rollback'){
+        const payload = await request.json();
+        return await rollbackToCommit(env, payload);
+      }
       if(request.method !== 'POST' || url.pathname !== '/upload'){
-        return json({ ok:false, message:'Nur POST /upload, GET /status oder GET /files ist erlaubt.' }, 404);
+        return json({ ok:false, message:'Nur POST /upload, POST /rollback, GET /status, GET /commits oder GET /files ist erlaubt.' }, 404);
       }
       const payload = await request.json();
       return await uploadZipToGitHub(env, payload);
