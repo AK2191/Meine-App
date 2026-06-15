@@ -355,7 +355,7 @@
       .dashp-hero{grid-column:1 / -1;display:grid;grid-template-columns:minmax(0,1.6fr) repeat(4,minmax(160px,.55fr));gap:14px;align-items:stretch;}
       .dashp-card{border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(13,22,29,.74),rgba(8,15,21,.74));border-radius:22px;box-shadow:0 18px 44px rgba(0,0,0,.20);overflow:hidden;}
       .dashp-main-hero{position:relative;min-height:178px;padding:28px 30px;background:radial-gradient(circle at 78% 45%,rgba(74,222,128,.18),transparent 28%),linear-gradient(135deg,rgba(19,71,43,.50),rgba(8,15,21,.78));display:flex;justify-content:space-between;gap:18px;}
-      .dashp-eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.12em;font-weight:950;color:#4ade80;margin-bottom:12px;}
+      .dashp-eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:900;color:rgba(244,247,244,.72);margin-bottom:12px;}
       .dashp-hero-title{font-size:31px;font-weight:950;letter-spacing:-.9px;line-height:1.05;color:#fff;margin-bottom:12px;}
       .dashp-hero-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
       .dashp-pill{display:inline-flex;align-items:center;gap:7px;padding:8px 11px;border-radius:999px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08);font-size:12px;font-weight:850;color:rgba(244,247,244,.88);}
@@ -394,13 +394,13 @@
       @media(max-width:700px){body.change-view-dashboard #content{padding:18px 14px calc(86px + env(safe-area-inset-bottom,0px))!important;}body.change-view-dashboard #dashboard-view{padding:0!important;max-width:none!important;}body.change-view-dashboard .dash-hello{min-height:42px!important;display:flex!important;align-items:center!important;margin:0 0 14px!important;padding:0!important;}body.change-view-dashboard .dash-hello h1{font-size:24px!important;line-height:1!important;}body.change-view-dashboard #dash-grid{display:block!important;}.dashp-hero{display:block;margin-bottom:12px;}.dashp-main-hero{min-height:0;padding:20px;border-radius:22px;margin-bottom:12px;}.dashp-hero-orb{display:none}.dashp-hero-title{font-size:25px}.dashp-hero-meta{gap:7px}.dashp-pill{font-size:11px;padding:7px 9px}.dashp-mini-card{display:inline-flex;width:154px;min-height:118px;margin-right:8px;padding:14px;border-radius:18px;vertical-align:top}.dashp-hero .dashp-mini-card{display:inline-flex}.dashp-hero{white-space:nowrap;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}.dashp-hero::-webkit-scrollbar{display:none}.dashp-mini-card span{white-space:normal}.dashp-mini-icon{width:34px;height:34px;border-radius:13px;font-size:18px}.dashp-mini-card b{font-size:20px}.dashp-mini-card small{font-size:11px}.dashp-card{border-radius:20px;margin-bottom:12px}.dashp-card-head{padding:15px 16px}.dashp-card-title{font-size:16px}.dashp-card-body{padding:12px}.dashp-event-row,.dashp-task-row,.dashp-player-row{min-height:56px;padding:10px;margin-bottom:8px}.dashp-event-time{min-width:58px;font-size:14px}.dashp-event-icon,.dashp-task-icon{width:34px;height:34px;flex-basis:34px}.dashp-forecast-row{grid-template-columns:30px 52px 26px 1fr auto;font-size:12px;gap:7px}.dashp-side-stack{display:block;}}
 
       /* v0.1.0069 Dashboard Hero nach Pollen-Vorbild */
-      .dashp-main-hero-pollen{display:grid!important;grid-template-columns:minmax(0,1.05fr) minmax(320px,.95fr)!important;align-items:stretch!important;gap:24px!important;min-height:178px!important;padding:28px 30px!important;}
+      /* dashp-main-hero-pollen: via change-hero-dashboard override */
       .dashp-main-hero-pollen .dashp-hero-copy{display:flex!important;flex-direction:column!important;min-width:0!important;}
       .dashp-main-hero-pollen .dashp-next{margin-top:auto!important;}
       .dashp-hero-insights{border-left:1px solid rgba(255,255,255,.10);padding-left:22px;display:grid;gap:0;align-content:center;}
       .dashp-insight-row{appearance:none;border:0;border-bottom:1px solid rgba(255,255,255,.08);background:transparent;color:inherit;padding:11px 0;display:flex;align-items:center;gap:12px;text-align:left;cursor:pointer;}
       .dashp-insight-row:last-child{border-bottom:0}.dashp-insight-row:hover b{color:#4ade80}.dashp-insight-dot{width:28px;height:28px;border-radius:999px;background:rgba(74,222,128,.10);display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;font-size:15px}.dashp-insight-row b{display:block;font-size:13px;font-weight:950;color:#fff;line-height:1.15}.dashp-insight-row small{display:block;margin-top:3px;font-size:11px;font-weight:750;color:rgba(244,247,244,.62);line-height:1.25}.dashp-header-pill{display:inline-flex;align-items:center;border-radius:999px;padding:6px 10px;background:rgba(74,222,128,.10);border:1px solid rgba(74,222,128,.18);color:#4ade80;font-size:12px;font-weight:950}.dashp-players-card{grid-column:1 / 2}.dashp-event-time{display:grid;gap:2px;min-width:86px}.dashp-event-time strong{font-size:17px;line-height:1;color:#fff}.dashp-event-time small{font-size:11px;color:rgba(244,247,244,.55);font-weight:850}
-      @media(max-width:700px){.dashp-main-hero-pollen{display:block!important;padding:20px!important}.dashp-hero-insights{border-left:0!important;border-top:1px solid rgba(255,255,255,.10)!important;padding-left:0!important;margin-top:16px!important;padding-top:8px!important}.dashp-insight-row{padding:10px 0!important}.dashp-event-time{min-width:72px!important}}
+      /* mobile pollen hero: via change-hero-dashboard override */
 
       [data-theme="light"] body.change-view-dashboard .dash-hello h1,body.theme-light.change-view-dashboard .dash-hello h1,body.change-theme-light.change-view-dashboard .dash-hello h1{color:#142018!important;}
       [data-theme="light"] .dashp-card,body.theme-light .dashp-card,body.change-theme-light .dashp-card,[data-theme="light"] .dashp-mini-card,body.theme-light .dashp-mini-card,body.change-theme-light .dashp-mini-card{background:rgba(255,255,255,.78)!important;border-color:rgba(20,35,24,.10)!important;box-shadow:0 18px 38px rgba(31,53,38,.08)!important;}
@@ -419,7 +419,7 @@
       /* v0.1.0065 Dashboard Cleanup */
       body.change-view-dashboard .dash-hello p{display:none!important;}
       .dashp-hero{grid-template-columns:1fr!important;gap:14px!important;}
-      .dashp-main-hero{min-height:174px!important;}
+      /* dashp-main-hero min-height: via change-hero-dashboard */
       .dashp-quick-grid{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:14px!important;}
       .dashp-quick-grid .dashp-mini-card{min-height:132px!important;}
       .dashp-mini-card small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}

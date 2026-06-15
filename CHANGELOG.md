@@ -1,3 +1,10 @@
+## Version 0.1.0236
+- Die sichtbare App-Version wurde auf `0.1.0236` erhöht.
+- **HeroCard-Root-Ursache behoben**: In `dashboard-logic.js` wurden drei alte CSS-Regeln entfernt die unsere korrekten Werte überschrieben: `.dashp-main-hero-pollen` mit 2-spaltigem Grid, mobiles `display:block`, und `.dashp-main-hero{min-height:174px}`. Außerdem `.dashp-eyebrow` Farbe von `#4ade80` auf `rgba(244,247,244,.72)` korrigiert.
+- Symptom-Icon Niesen: Person von rechts, Niesstrahl fächert nach links mit 3 Tropfen.
+- Symptom-Icon Nase: Frontansicht mit Nasenbrücke, zwei Nasenflügeln als Ellipsen, Tropfen unten.
+- Keine Änderung an Pollenberechnung, Kalender, Challenges, Firebase, Sync oder Push.
+
 ## Version 0.1.0235
 - Die sichtbare App-Version wurde auf `0.1.0235` erhöht.
 - Symptom-Icon Nase: Seitenansicht der Nase mit Tropfen — deutlich erkennbarer als Frontalansicht.
