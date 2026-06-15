@@ -1,3 +1,9 @@
+## Version 0.1.0238
+- Die sichtbare App-Version wurde auf `0.1.0238` erhöht.
+- Symptom-Icon Nase: Seitenansicht nach Referenzbild — schlanke Linie von oben, Nasenflügel unten als geschwungener Bogen.
+- Symptom-Icon Niesen: Profil-Gesicht nach rechts mit Stirn/Nase/Kinn-Linie, drei horizontale Luftstrahlen nach rechts mit Punkten am Ende.
+- Keine anderen Änderungen.
+
 ## Version 0.1.0237
 - Die sichtbare App-Version wurde auf `0.1.0237` erhöht.
 - Challenges Wochenkacheln: Punkte-Badge mit grünem Hintergrund und Border statt reiner Text. Kacheln sauberer (border-radius:16px, einheitliche Abstände).
