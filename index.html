@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<!-- [FIX HIGH-3 + CRIT-2] Content Security Policy — blockiert XSS & Clickjacking -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self' https://www.gstatic.com https://*.gstatic.com https://apis.google.com https://accounts.google.com https://cdn.jsdelivr.net 'unsafe-inline';
+  script-src-elem 'self' https://www.gstatic.com https://*.gstatic.com https://apis.google.com https://accounts.google.com https://cdn.jsdelivr.net 'unsafe-inline';
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  font-src 'self' https://fonts.gstatic.com;
+  connect-src 'self' https://*.googleapis.com https://apis.google.com https://*.firebaseio.com https://securetoken.googleapis.com https://identitytoolkit.googleapis.com https://fcm.googleapis.com wss://*.firebaseio.com https://www.gstatic.com https://*.gstatic.com https://cdn.jsdelivr.net https://api.open-meteo.com https://air-quality-api.open-meteo.com https://change-github-update.ak2191.workers.dev;
+  img-src 'self' data: https://*.googleusercontent.com https://lh3.googleusercontent.com https://*.gstatic.com;
+  frame-src https://accounts.google.com https://apis.google.com https://*.firebaseapp.com https://*.web.app;
+  child-src https://accounts.google.com https://apis.google.com https://*.firebaseapp.com https://*.web.app;
+  worker-src 'self';
+  object-src 'none';
+  base-uri 'self';
+  form-action 'self';
+  upgrade-insecure-requests;
+">
+<!-- [FIX MED-2] Referrer Policy -->
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<!-- [FIX LOW-2] Permissions Policy — deaktiviert nicht benötigte Browser-APIs -->
+<meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(self), payment=(), usb=(), bluetooth=()">
+<!-- [FIX LOW-3] Theme-Color — einmalig definiert -->
+<meta name="theme-color" content="#F8F7F3">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Change">
+<title>Change · Workspace</title>
+<link rel="icon" type="image/svg+xml" href="./icons/icon-change-512.svg">
+<link rel="apple-touch-icon" href="./icons/icon-change-192.png">
+<!-- [FIX MED-2] Fonts mit noopener -->
+<!-- [FIX HIGH-1] Externe Scripts mit crossorigin & referrerpolicy -->
+<link rel="manifest" href="./manifest.json">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" referrerpolicy="no-referrer">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin referrerpolicy="no-referrer">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" referrerpolicy="no-referrer">
+
+  <!-- CSS — Reihenfolge wichtig -->
+  <link rel="stylesheet" href="./styles/tokens.css">
+  <link rel="stylesheet" href="./styles/app.css">
+  <link rel="stylesheet" href="./change.css">
+  <link rel="stylesheet" href="./features/notifications/notificationBell.css">
+  <link rel="stylesheet" href="./features/calendar/calendarPanels.css">
+  <link rel="stylesheet" href="./features/settings/settingsPanel.css">
+  <link rel="stylesheet" href="./features/challenges/challenges-mobile.css">
+  <link rel="stylesheet" href="./features/weather/weatherCard.css">
+  <link rel="stylesheet" href="./features/pollen/pollenView.css">
+  <link rel="stylesheet" href="./features/vacation/vacationPanel.css">
+  <link rel="stylesheet" href="./features/friseur/friseur.css">
+  <link rel="stylesheet" href="./features/birthdays/birthdays.css">
+  <link rel="stylesheet" href="./styles/appShell.css">
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading">
+  <div class="ld-icon">
+    <svg viewBox="0 0 512 512" width="72" height="72" xmlns="http://www.w3.org/2000/svg" style="border-radius:20px;display:block;"><defs><clipPath id="ic2"><path d="M256,22 C340,-10 432,28 458,114 C484,200 470,284 448,334 C420,396 372,426 312,432 C252,438 196,420 154,386 C98,344 58,280 50,214 C38,142 64,78 106,46 C150,12 200,46 256,22Z"/></clipPath></defs><path d="M256,22 C340,-10 432,28 458,114 C484,200 470,284 448,334 C420,396 372,426 312,432 C252,438 196,420 154,386 C98,344 58,280 50,214 C38,142 64,78 106,46 C150,12 200,46 256,22Z" fill="#080c18"/><g clip-path="url(#ic2)"><rect x="0" y="0" width="512" height="144" fill="#0d1f3c"/><rect x="0" y="140" width="512" height="148" fill="#1e1458"/><rect x="0" y="284" width="512" height="160" fill="#0d0b2e"/><path d="M256 232 Q238 194 256 170 Q278 142 308 162 Q342 184 328 220 Q312 260 272 260 Q216 258 194 216 Q168 166 198 122 Q230 72 282 84 Q342 98 360 156 Q380 220 352 272 Q318 330 252 332 Q170 330 130 264 Q84 192 110 126 Q140 52 222 44 Q314 36 364 108 Q414 178 396 262" fill="none" stroke="#818cf8" stroke-width="6" stroke-linecap="round"/><path d="M256 232 Q234 190 256 164 Q282 134 318 158 Q354 184 336 226 Q316 268 270 270 Q206 268 180 218 Q148 162 182 112 Q218 58 282 72 Q352 88 374 156 Q398 228 366 286 Q328 346 252 348 Q160 346 114 272 Q62 194 94 116 Q130 32 226 28 Q330 24 384 106 Q438 186 412 278" fill="none" stroke="#c7d2fe" stroke-width="2" stroke-linecap="round" opacity="0.3"/><rect x="244" y="32" width="24" height="92" rx="12" fill="#818cf8" opacity="0.55"/><rect x="244" y="318" width="24" height="82" rx="12" fill="#818cf8" opacity="0.35"/><circle cx="98" cy="218" r="12" fill="#e879f9" opacity="0.88"/><circle cx="400" cy="244" r="12" fill="#34d399" opacity="0.88"/><circle cx="256" cy="76" r="9" fill="#f472b6" opacity="0.75"/><circle cx="256" cy="230" r="26" fill="#1e1458"/><circle cx="256" cy="230" r="15" fill="#818cf8" opacity="0.92"/><circle cx="256" cy="230" r="6" fill="#fff"/></g></svg>
+  </div>
+  <div class="ld-text">Change wird geladen…</div>
+</div>
+
+<!-- Setup Modal -->
+<div id="setup-modal">
+  <div class="modal-box">
+    <div class="modal-badge">⚙ Einmalige Einrichtung</div>
+    <div class="modal-h">Google API konfigurieren</div>
+    <div class="modal-sub">Für Google-Login und Kalender-Synchronisation bitte einmalig eine OAuth Client-ID eintragen. Challenges, Mitspieler und Punkte laufen über Firebase.</div>
+    <div class="setup-steps">
+      <div class="step"><div class="step-n">1</div><div class="step-t">Öffne <strong>console.cloud.google.com</strong> → Projekt erstellen</div></div>
+      <div class="step"><div class="step-n">2</div><div class="step-t">API aktivieren: <strong>Google Calendar API</strong></div></div>
+      <div class="step"><div class="step-n">3</div><div class="step-t">Anmeldedaten → OAuth 2.0 → <strong>Web-Anwendung</strong> → Ihre Domain eintragen</div></div>
+      <div class="step"><div class="step-n">4</div><div class="step-t">Client-ID kopieren (endet auf <code>.apps.googleusercontent.com</code>)</div></div>
+    </div>
+    <div class="fl-group">
+      <label class="fl-label">Google OAuth Client-ID</label>
+      <input type="text" class="fl-input" id="client-id-input" placeholder="1234567890-xxxx.apps.googleusercontent.com" autocomplete="off" maxlength="200" spellcheck="false">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" style="flex:1" onclick="saveClientId()">Speichern &amp; Starten</button>
+    </div>
+  </div>
+</div>
+
+<!-- Panel overlay -->
+<div id="panel-overlay" onclick="closePanel()"></div>
+
+<!-- Side Panel -->
+<div id="side-panel">
+  <div class="panel-hd">
+    <div class="panel-title" id="panel-title">Panel</div>
+    <button class="panel-close-btn" onclick="closePanel()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="panel-body" id="panel-body"></div>
+</div>
+
+<!-- Toast -->
+<div id="toast-wrap"></div>
+
+<!-- ==== APP ==== -->
+<div id="app">
+
+  <!-- Login -->
+  <div id="login-screen">
+    <div class="login-card">
+      <div class="login-logo">
+        <svg viewBox="0 0 512 512" width="72" height="72" xmlns="http://www.w3.org/2000/svg" style="border-radius:20px;display:block;"><defs><clipPath id="ic3"><path d="M256,22 C340,-10 432,28 458,114 C484,200 470,284 448,334 C420,396 372,426 312,432 C252,438 196,420 154,386 C98,344 58,280 50,214 C38,142 64,78 106,46 C150,12 200,46 256,22Z"/></clipPath></defs><path d="M256,22 C340,-10 432,28 458,114 C484,200 470,284 448,334 C420,396 372,426 312,432 C252,438 196,420 154,386 C98,344 58,280 50,214 C38,142 64,78 106,46 C150,12 200,46 256,22Z" fill="#080c18"/><g clip-path="url(#ic3)"><rect x="0" y="0" width="512" height="144" fill="#0d1f3c"/><rect x="0" y="140" width="512" height="148" fill="#1e1458"/><rect x="0" y="284" width="512" height="160" fill="#0d0b2e"/><path d="M256 232 Q238 194 256 170 Q278 142 308 162 Q342 184 328 220 Q312 260 272 260 Q216 258 194 216 Q168 166 198 122 Q230 72 282 84 Q342 98 360 156 Q380 220 352 272 Q318 330 252 332 Q170 330 130 264 Q84 192 110 126 Q140 52 222 44 Q314 36 364 108 Q414 178 396 262" fill="none" stroke="#818cf8" stroke-width="6" stroke-linecap="round"/><path d="M256 232 Q234 190 256 164 Q282 134 318 158 Q354 184 336 226 Q316 268 270 270 Q206 268 180 218 Q148 162 182 112 Q218 58 282 72 Q352 88 374 156 Q398 228 366 286 Q328 346 252 348 Q160 346 114 272 Q62 194 94 116 Q130 32 226 28 Q330 24 384 106 Q438 186 412 278" fill="none" stroke="#c7d2fe" stroke-width="2" stroke-linecap="round" opacity="0.3"/><rect x="244" y="32" width="24" height="92" rx="12" fill="#818cf8" opacity="0.55"/><rect x="244" y="318" width="24" height="82" rx="12" fill="#818cf8" opacity="0.35"/><circle cx="98" cy="218" r="12" fill="#e879f9" opacity="0.88"/><circle cx="400" cy="244" r="12" fill="#34d399" opacity="0.88"/><circle cx="256" cy="76" r="9" fill="#f472b6" opacity="0.75"/><circle cx="256" cy="230" r="26" fill="#1e1458"/><circle cx="256" cy="230" r="15" fill="#818cf8" opacity="0.92"/><circle cx="256" cy="230" r="6" fill="#fff"/></g></svg>
+      </div>
+      <div class="login-h">Change</div>
+      <div class="login-sub">Kalender &amp; Challenges — gemeinsam.</div>
+      <button class="google-btn" onclick="handleGoogleLogin()">
+        <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Mit Google anmelden
+      </button>
+      <div class="login-note">Kalender synchronisiert mit Google. Challenges, Mitspieler, Punkte und Push laufen über Firebase.</div>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div id="main-app">
+
+    <!-- Header -->
+    <div id="header">
+      <div class="h-logo">
+        <div class="h-logo-icon">
+          <svg viewBox="0 0 40 40" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="lg-icon" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#1a3a2a"/>
+                <stop offset="100%" stop-color="#0d1f17"/>
+              </linearGradient>
+              <linearGradient id="lg-c" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#4ade80"/>
+                <stop offset="100%" stop-color="#2d6a4f"/>
+              </linearGradient>
+            </defs>
+            <rect width="40" height="40" rx="10" fill="url(#lg-icon)"/>
+            <path d="M27 14.5 A10 10 0 1 0 27 25.5" fill="none" stroke="url(#lg-c)" stroke-width="3.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="h-logo-name">Change</span>
+      </div>
+      <div class="h-sep"></div>
+      <!-- Desktop Tabs -->
+      <div class="h-tabs">
+        <button class="h-tab active" id="htab-dashboard" onclick="setMainView('dashboard')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </button>
+        <button class="h-tab" id="htab-calendar" onclick="setMainView('calendar')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Kalender
+        </button>
+        <button class="h-tab" id="htab-challenges" onclick="setMainView('challenges')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/></svg>
+          Challenges
+        </button>
+        <button class="h-tab" id="htab-pollen" onclick="setMainView('pollen')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22c4-4 7-8 7-13a7 7 0 0 0-14 0c0 5 3 9 7 13z"/><path d="M12 14c-2-2-3-4-3-7"/><path d="M12 14c2-2 3-4 3-7"/></svg>
+          Pollen
+        </button>
+      </div>
+
+      <!-- Cal controls (only shown in calendar) -->
+      <div id="cal-controls" style="display:none">
+        <button class="h-nav-btn" onclick="navigate(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <span class="h-month" id="month-label" onclick="goToday()">Mai 2025</span>
+        <button class="h-nav-btn" onclick="navigate(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 18 15 12 9 6"/></svg></button>
+        <button class="h-today-btn" onclick="goToday()">Heute</button>
+        <div class="view-toggle">
+          <button class="vbtn" id="vbtn-year" onclick="setCalView('year')">Jahr</button>
+          <button class="vbtn active" id="vbtn-month" onclick="setCalView('month')">Monat</button>
+          <button class="vbtn" id="vbtn-workweek" onclick="setCalView('workweek')">Arbeitswoche</button>
+          <button class="vbtn" id="vbtn-today" onclick="setCalView('today')">Heute</button>
+        </div>
+      </div>
+
+      <div class="h-right">
+        <button class="icon-btn" onclick="openNotifPanel()" title="Benachrichtigungen" id="notif-bell-btn" style="position:relative">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <div class="notif-dot" id="notif-dot"></div>
+          <div id="notif-count-badge" style="display:none;position:absolute;top:4px;right:4px;min-width:17px;height:17px;background:var(--red);color:#fff;border-radius:999px;font-size:10px;font-weight:700;line-height:17px;text-align:center;padding:0 4px;border:1.5px solid var(--s1)"></div>
+        </button>
+        <button class="icon-btn" id="settings-btn" type="button" onclick="window.openSettingsPanel&&window.openSettingsPanel('calendar')" title="Einstellungen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.33 1.82V22a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1.82-.33H2a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-.6 1.65 1.65 0 0 0 .33-1.82V2a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.12.69.31 1 .6.31.29.51.64.6 1H22a2 2 0 1 1 0 4h-.09c-.37.09-.72.29-1 .6-.29.31-.48.64-.51 1z"/></svg>
+        </button>
+        <div class="avatar" id="user-avatar" onclick="confirmLogout()" title="Abmelden">
+          <span id="avatar-initials">?</span>
+          <span id="avatar-status-dot"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div id="content">
+
+      <!-- DASHBOARD -->
+      <div id="dashboard-view">
+        <div class="dash-hello">
+          <h1 id="dash-greeting">Guten Tag</h1>
+          <p id="dash-sub">Ihr persönlicher Überblick</p>
+        </div>
+        <div class="kpi-grid" id="kpi-grid"></div>
+        <div class="dash-grid" id="dash-grid"></div>
+      </div>
+
+      <!-- CALENDAR -->
+      <div id="cal-body" style="display:none">
+        <div class="wday-row" id="wday-row">
+          <div class="wday-cell">Mo</div><div class="wday-cell">Di</div>
+          <div class="wday-cell">Mi</div><div class="wday-cell">Do</div>
+          <div class="wday-cell">Fr</div>
+          <div class="wday-cell">Sa</div><div class="wday-cell">So</div>
+        </div>
+        <div id="month-grid"></div>
+        <div id="agenda-view"></div>
+      </div>
+
+      <!-- CHALLENGES -->
+      <div id="challenges-view" style="display:none;flex:1;overflow:hidden;flex-direction:column">
+        <div class="list-header challenge-neo-header">
+          <div><div class="list-title">Challenges</div></div>
+          <div class="challenge-view-actions"><button class="btn btn-ghost btn-sm" onclick="window.resetTodayChallenges&&window.resetTodayChallenges()">Heute zurücksetzen</button></div>
+        </div>
+        <!-- Wochenbar: wird von ensureWeekBar hier eingefügt -->
+        <!-- Layout -->
+        <div class="challenge-layout" style="flex:1;min-height:0;overflow-y:auto">
+          <div class="change-section-block challenge-leader-block" style="order:1">
+            <div class="change-outside-section-row">
+              <div class="change-outside-section-title">RANGLISTE</div>
+            </div>
+            <div class="leader-card">
+              <div id="leaderboard-list"></div>
+            </div>
+          </div>
+          <div class="change-section-block challenge-tasks-block" style="order:2">
+            <div class="change-outside-section-row challenge-tasks-head-row">
+              <div class="change-outside-section-title">HEUTIGE AUFGABEN</div>
+              <button class="btn btn-ghost btn-sm" onclick="window.resetTodayChallenges&&window.resetTodayChallenges()">Heute zurücksetzen</button>
+            </div>
+            <div class="challenge-card">
+              <div id="challenges-list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- POLLEN -->
+      <div id="pollen-view" style="display:none;flex:1;overflow:hidden;flex-direction:column">
+        <div class="list-header">
+          <div>
+            <div class="list-title">Pollen</div>
+            <div class="pollen-view-sub">Allergieprofil, Symptome und persönlicher Ausblick</div>
+          </div>
+        </div>
+        <div id="pollen-view-body" class="pollen-view-body"></div>
+      </div>
+
+    </div><!-- /content -->
+
+    <!-- Bottom Nav -->
+    <div id="bottom-nav">
+      <div class="bnav-inner">
+        <button class="bnav-item" id="bnav-dashboard" onclick="setMainView('dashboard')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          <span class="bnav-label">Dashboard</span>
+        </button>
+        <button class="bnav-item" id="bnav-calendar" onclick="setMainView('calendar')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span class="bnav-label">Kalender</span>
+        </button>
+        <button class="bnav-item" id="bnav-challenges" onclick="setMainView('challenges')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/></svg>
+          <span class="bnav-label">Challenges</span>
+        </button>
+        <button class="bnav-item" id="bnav-pollen" onclick="setMainView('pollen')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22c4-4 7-8 7-13a7 7 0 0 0-14 0c0 5 3 9 7 13z"/><path d="M12 14c-2-2-3-4-3-7"/><path d="M12 14c2-2 3-4 3-7"/></svg>
+          <span class="bnav-label">Pollen</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- FAB (context-sensitive) -->
+    <button id="fab" onclick="fabAction()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+
+  </div><!-- /main-app -->
+</div><!-- /app -->
+<!-- Entfernt: historischer Alt-Patch-Block. Die aktiven/finalen Overrides liegen nach change-post.js. -->
+
+<!-- USER FINAL CALENDAR FIX: no duplicate UI, compact points, holidays inline, settings stable -->
+
+<!-- ====
+     CHANGE · FINAL STABLE OVERRIDE v2
+     Fixes: Dashboard, Feiertage, Challenges, Account-ID,
+            Datumsbereich, 7 Übungen, Optional-Sektion.
+==== -->
+<!-- ====
+     CHANGE · DASHBOARD EVENT FIX
+     Fixes: endDate für Google-Termine, Zeitraum-Events erscheinen heute,
+            korrekte Uhrzeiten, Titel aus Google summary
+==== -->
+
+<!-- ====
+     CHANGE · EINSTELLUNGEN + AVATAR DOT + FIXES
+==== -->
+
+<!-- ====
+     CHANGE · FRISEUR-TRACKER
+     Zeigt im Dashboard wie lange der letzte
+     Friseur-Termin her ist + Benachrichtigung
+     nach X Wochen (Standard: 3)
+==== -->
+
+<!-- ====
+     CHANGE · GLOBAL CHALLENGE POINT SYNC
+     Nur gemeinsame Challenge-Punkte; Termine/Dashboard bleiben privat.
+     WICHTIG: completeChallenge/undoChallenge werden NICHT überschrieben.
+==== -->
+
+<!-- Change Notifications: zentrale Glocke + Read-State -->
+
+  <!-- ════════════════════════════════════
+       SCRIPTS — Reihenfolge nicht ändern
+  ════════════════════════════════════ -->
+  <script src="https://accounts.google.com/gsi/client" async referrerpolicy="no-referrer"></script>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging-compat.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="./firebase/firebase-config.js"></script>
+
+  <!-- Core: Integrationen -->
+  <script src="./core/integrations/firebaseAuthBridge.js"></script>
+  <script src="./core/bootstrap.js"></script>
+
+  <!-- Extern -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+  <!-- Core: Logik -->
+  <script src="./core/calendar/calendarModel.js"></script>
+  <script src="./core/calendar/eventShare.js"></script>
+  <script src="./core/challenges/challengeDifficulty.js"></script>
+  <script src="./core/birthdays/birthdayParser.js"></script>
+  <script src="./core/integrations/googleSyncStatus.js"></script>
+  <script src="./core/system/appStatus.js"></script>
+  <script src="./core/activity/playerActivity.js"></script>
+  <script src="./core/weather/weatherStore.js"></script>
+  <script src="./core/weather/weatherService.js"></script>
+  <script src="./core/weather/weatherRules.js"></script>
+  <script src="./core/notifications/notificationStore.js"></script>
+  <script src="./core/notifications/notificationCenter.js"></script>
+  <script src="./core/notifications/pushController.js"></script>
+  <script src="./core/notifications/notify-style.js"></script>
+  <script src="./core/ui/viewState.js"></script>
+  <script src="./core/misc.js"></script>
+
+  <!-- Haupt-App -->
+  <script src="./change-pre.js"></script>
+  <script src="./change-post.js"></script>
+  <script src="./app.js"></script>
+
+  <!-- Features -->
+  <script src="./features/notifications/notificationBell.js"></script>
+  <script src="./features/calendar/calendarPanels.js"></script>
+  <script src="./features/calendar/calendar-logic.js"></script>
+  <script src="./features/weather/pollenSymptoms.js"></script>
+  <script src="./features/weather/weatherCard.js"></script>
+  <script src="./features/pollen/pollenView.js"></script>
+  <script src="./features/vacation/vacationPanel.js"></script>
+  <script src="./features/friseur/friseur.js"></script>
+  <script src="./features/birthdays/birthdays.js"></script>
+  <script src="./features/settings/settingsPanel.js"></script>
+  <script src="./features/settings/settings-logic.js"></script>
+  <script src="./features/dashboard/dashboard-logic.js"></script>
+  <!-- Challenges: kompletter Neubau, 40 Übungen, 7/Tag -->
+  <script src="./features/challenges/challenges.js"></script>
+
+  <!-- Core: zentraler manueller Firebase-Sync -->
+  <script src="./core/integrations/firebaseSyncController.js"></script>
+
+  <!-- Firestore-Guard: MUSS ZULETZT laden -->
+  <script src="./core/firestore-guard.js"></script>
+  <script src="./core/ui/interactionGuard.js"></script>
+
+</body>
+</html>

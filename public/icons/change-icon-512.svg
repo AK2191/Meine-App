@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <clipPath id="blob">
+      <path d="M256,22 C340,-10 432,28 458,114
+               C484,200 470,284 448,334
+               C420,396 372,426 312,432
+               C252,438 196,420 154,386
+               C98,344 58,280 50,214
+               C38,142 64,78 106,46
+               C150,12 200,46 256,22Z"/>
+    </clipPath>
+  </defs>
+  <path d="M256,22 C340,-10 432,28 458,114
+           C484,200 470,284 448,334
+           C420,396 372,426 312,432
+           C252,438 196,420 154,386
+           C98,344 58,280 50,214
+           C38,142 64,78 106,46
+           C150,12 200,46 256,22Z"
+    fill="#0F172A"/>
+  <g clip-path="url(#blob)">
+    <rect x="0"   y="0"   width="512" height="144" fill="#0D1F3C"/>
+    <rect x="0"   y="140" width="512" height="148" fill="#1E1458"/>
+    <rect x="0"   y="284" width="512" height="160" fill="#0D0B2E"/>
+    <rect x="0" y="138" width="512" height="4" fill="#2D1F72" opacity="0.5"/>
+    <rect x="0" y="282" width="512" height="4" fill="#1A1050" opacity="0.5"/>
+    <path d="M256 232 Q238 194 256 170 Q278 142 308 162 Q342 184 328 220
+             Q312 260 272 260 Q216 258 194 216 Q168 166 198 122
+             Q230 72 282 84 Q342 98 360 156 Q380 220 352 272
+             Q318 330 252 332 Q170 330 130 264 Q84 192 110 126
+             Q140 52 222 44 Q314 36 364 108 Q414 178 396 262"
+      fill="none" stroke="#818CF8" stroke-width="6"
+      stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M256 232 Q234 190 256 164 Q282 134 318 158 Q354 184 336 226
+             Q316 268 270 270 Q206 268 180 218 Q148 162 182 112
+             Q218 58 282 72 Q352 88 374 156 Q398 228 366 286
+             Q328 346 252 348 Q160 346 114 272 Q62 194 94 116
+             Q130 32 226 28 Q330 24 384 106 Q438 186 412 278"
+      fill="none" stroke="#C7D2FE" stroke-width="2"
+      stroke-linecap="round" opacity="0.3"/>
+    <rect x="244" y="32"  width="24" height="92" rx="12" fill="#818CF8" opacity="0.55"/>
+    <rect x="244" y="318" width="24" height="82" rx="12" fill="#818CF8" opacity="0.35"/>
+    <circle cx="98"  cy="218" r="12" fill="#E879F9" opacity="0.88"/>
+    <circle cx="400" cy="244" r="12" fill="#34D399"  opacity="0.88"/>
+    <circle cx="256" cy="76"  r="9"  fill="#F472B6" opacity="0.75"/>
+    <circle cx="370" cy="108" r="6"  fill="#FCD34D" opacity="0.6"/>
+    <circle cx="132" cy="308" r="6"  fill="#60A5FA" opacity="0.6"/>
+    <circle cx="256" cy="230" r="26" fill="#1E1458"/>
+    <circle cx="256" cy="230" r="15" fill="#818CF8" opacity="0.92"/>
+    <circle cx="256" cy="230" r="6"  fill="#ffffff"/>
+  </g>
+</svg>
