@@ -1,3 +1,9 @@
+## Version 0.1.0253
+- Challenges-HeroCard auf das Pollen-Raster vereinheitlicht (nur Challenges geaendert).
+- Ursache: Die Statszeile war in appShell.css mehrfach definiert; ein spaeterer "Box-Block" hat die sauberen Zeilen zu gerundeten Boxen ueberschrieben (zusaetzlich global wirksam durch ein vorbestehendes verirrtes schliessendes }).
+- Fix: Alle chv227-Selektoren aus dem Box-Block entfernt. Dadurch greifen wieder die korrekten Definitionen: Desktop = Trennlinien-Zeilen, Mobil = drei KPIs nebeneinander - wie Kalender/Einstellungen/Pollen.
+- Kein Markup geaendert, keine neuen Override-Bloecke. Keine Aenderung an Dashboard, Kalender, Einstellungen, Pollen, Firebase, Sync oder Push.
+
 ## Version 0.1.0252
 - 'Erneut versuchen' Button entfernt. ZIP entfernen setzt jetzt den kompletten Action-State zurueck.
 - ZIP Clear ✕ als kleiner Kreis-Button integriert oben rechts in der Dropzone.

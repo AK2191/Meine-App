@@ -1,4 +1,13 @@
-## Version 0.1.0252
+## Version 0.1.0253
+- **Challenges-HeroCard auf Pollen-Raster vereinheitlicht (nur Challenges geändert).**
+- Root-Ursache: In `styles/appShell.css` war die `chv227`-Statszeile **dreifach** definiert — Desktop-Zeilen (ab 12938, korrekt), Mobil-3er (ab 13162, korrekt) und ein konkurrierender „Box-Block" (ab 13300). Letzterer rendert die Stats als gerundete Boxen mit Hintergrund und gewann (spätere Regel + gleiche Spezifität).
+- Zusätzlich verstärkt durch ein vorbestehendes verirrtes `}` bei Zeile ~13295, das `@media(max-width:700px)` zu früh schließt → der Box-Block liegt dadurch **global** (greift auch auf Desktop). Deshalb erschienen die Challenges-Stats auf Desktop UND Mobil als Boxen statt als Pollen-Zeilen.
+- Fix: Alle `chv227`-Selektoren aus dem Box-Block entfernt (Container-, Stat-, Icon-, Label-, Wert-Regel + die chv227-eigene Button-Regel). Dadurch greifen für Challenges wieder ausschließlich die korrekten Definitionen: Desktop = Trennlinien-Zeilen, Mobil = 3 KPIs nebeneinander — identisch zu Kalender/Einstellungen und im Pollen-Raster.
+- Keine Markup-Änderung in `core/misc.js`; Struktur passte bereits. Klammer-Bilanz von `appShell.css` unverändert (vorher wie nachher -1 durch das vorbestehende verirrte `}`).
+- **Offen für Folgeschritte (nicht in dieser Version):** Das verirrte `}` bei ~13295 leakt den Box-Block weiterhin global für Dashboard/Kalender/Einstellungen — wird in den jeweiligen Hero-Schritten sauber geschlossen.
+- Keine Änderung an Dashboard-, Kalender-, Einstellungen-, Pollen-Rendering, Firebase, Sync, Push oder Google Kalender.
+
+
 - 'Erneut versuchen' Button entfernt. ZIP entfernen setzt jetzt den kompletten Action-State zurueck.
 - ZIP Clear ✕ als kleiner Kreis-Button integriert oben rechts in der Dropzone.
 - Alle grauen Flaechen (--s2/--b1) in GitHub-Kachel auf dunkle App-Farben geaendert: Dropzone, Action-Panel, Steps, Status, Freigabe-Code.

@@ -13299,7 +13299,6 @@ html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen.change-h
   }
   html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen.change-hero-dashboard .dashp-hero-insights,
   html body.change-view-calendar  #calendar-premium-view .cal-premium-hero-side,
-  html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stats,
   html body.change-view-settings  .change-settings-profile-right {
     display:grid!important; grid-template-columns:1fr!important; grid-template-rows:unset!important;
     gap:10px!important; padding:14px 0 0!important;
@@ -13307,8 +13306,6 @@ html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen.change-h
   }
   html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen.change-hero-dashboard .dashp-insight-row,
   html body.change-view-calendar  #calendar-premium-view .cal-premium-hero-row,
-  html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat,
-  html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 button.chv227-stat,
   html body.change-view-settings  .change-settings-profile-stat {
     all:unset!important; box-sizing:border-box!important;
     display:grid!important; grid-template-columns:34px minmax(0,1fr)!important;
@@ -13316,13 +13313,8 @@ html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen.change-h
     gap:0 10px!important; min-height:58px!important; padding:12px 14px!important;
     border-radius:18px!important; background:rgba(255,255,255,.045)!important; border:0!important;
   }
-  html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 button.chv227-stat {
-    cursor:pointer!important; width:100%!important; text-align:left!important;
-  }
   html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen.change-hero-dashboard .dashp-insight-dot,
   html body.change-view-calendar  #calendar-premium-view .cal-premium-hero-row-icon,
-  html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat i,
-  html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat-icon,
   html body.change-view-settings  .change-settings-profile-stat-icon {
     grid-column:1!important; grid-row:1/3!important;
     width:28px!important; height:28px!important; min-width:28px!important;
@@ -13332,7 +13324,6 @@ html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen.change-h
   }
   html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen.change-hero-dashboard .dashp-insight-row b,
   html body.change-view-calendar  #calendar-premium-view .cal-premium-hero-row-body strong,
-  html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat span,
   html body.change-view-settings  .change-settings-profile-stat strong,
   html body.change-view-settings  .change-settings-profile-stat b {
     grid-column:2!important; grid-row:1!important;
@@ -13341,7 +13332,6 @@ html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen.change-h
   }
   html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen.change-hero-dashboard .dashp-insight-row small,
   html body.change-view-calendar  #calendar-premium-view .cal-premium-hero-row-body em,
-  html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat strong,
   html body.change-view-settings  .change-settings-profile-stat em,
   html body.change-view-settings  .change-settings-profile-stat small {
     grid-column:2!important; grid-row:2!important;
