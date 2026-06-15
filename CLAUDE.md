@@ -1,3 +1,9 @@
+## Version 0.1.0252
+- 'Erneut versuchen' Button entfernt. ZIP entfernen setzt jetzt den kompletten Action-State zurueck.
+- ZIP Clear ✕ als kleiner Kreis-Button integriert oben rechts in der Dropzone.
+- Alle grauen Flaechen (--s2/--b1) in GitHub-Kachel auf dunkle App-Farben geaendert: Dropzone, Action-Panel, Steps, Status, Freigabe-Code.
+- Action-Steps mit Puls-Animation fuer laufende Schritte.
+
 ## Version 0.1.0251
 - Commit-Verlauf: Nur noch ein Eintrag pro Version (Deduplizierung). Kein Doppel-Commit mehr (ZIP-Upload + Action-Commit).
 - Worker /commits: Laedt 20 Commits, filtert auf 'ZIP Update bereitstellen', dedupliziert nach Version.

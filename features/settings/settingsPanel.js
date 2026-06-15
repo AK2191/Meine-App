@@ -505,7 +505,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0251';
+  var APP_VERSION = '0.1.0252';
 
 
 
@@ -1056,12 +1056,14 @@
       + '<label class="change-github-secret"><span>Freigabe-Code</span><input type="text" id="github-update-secret" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Freigabe-Code eingeben" value="'+esc(readGithubUpdateSecret())+'"></label>'
       + '<div class="change-github-upload-panel change-github-upload-panel-v226">'
       + '<div class="change-github-upload-title"><span>ZIP Update</span></div>'
-      + '<label class="change-github-dropzone" id="github-zip-dropzone"><input type="file" id="github-zip-input" accept=".zip,application/zip,application/x-zip-compressed"><span>'+selectedLabel+'</span><small>ZIP per Drag & Drop hier ablegen oder antippen.</small></label>'
-      + (state.file ? '<button class="change-github-zip-clear" id="github-zip-clear" type="button">× ZIP entfernen</button>' : '')
+      + '<div class="change-github-dropzone-wrap">'
+      + '<label class="change-github-dropzone" id="github-zip-dropzone"><input type="file" id="github-zip-input" accept=".zip,application/zip,application/x-zip-compressed"><span>'+selectedLabel+'</span>'+(state.file ? '' : '<small>ZIP per Drag & Drop hier ablegen oder antippen.</small>')+'</label>'
+      + (state.file ? '<button class="change-github-zip-clear" id="github-zip-clear" type="button" title="ZIP entfernen">×</button>' : '')
+      + '</div>'
       + statusLine
       + (actionPanel || checks || '')
       + githubFileOverview()
-      + ((!state.actionStartedAt && !state.actionMessage && !state.uploadCommitSha) ? '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' && !state.updateReady ? '' : 'disabled')+'>Auf GitHub übertragen</button>' : (state.actionConclusion && !state.updateReady ? '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' ? '' : 'disabled')+'>Erneut versuchen</button>' : ''))
+      + ((!state.actionStartedAt && !state.actionMessage && !state.uploadCommitSha && !state.actionConclusion) ? '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' && !state.updateReady ? '' : 'disabled')+'>Auf GitHub übertragen</button>' : '')
       + '</div>'
       + githubCommitHistoryPanel()
       + '</div>';
@@ -1687,7 +1689,7 @@
     var githubZipCommit = $('github-zip-commit'); if(githubZipCommit) githubZipCommit.addEventListener('click', function(){ commitGithubZip(); });
     var githubUpdateReload = $('github-update-reload'); if(githubUpdateReload) githubUpdateReload.addEventListener('click', function(){ reloadChangeUpdateVersion(); });
     var githubHistoryRefresh = $('github-history-refresh'); if(githubHistoryRefresh) githubHistoryRefresh.addEventListener('click', function(){ loadGithubCommitHistory(); });
-    var githubZipClear = $('github-zip-clear'); if(githubZipClear) githubZipClear.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); githubUpdateState.file = null; githubUpdateState.fileBuffer = null; githubUpdateState.status = 'empty'; githubUpdateState.message = ''; var inp = $('github-zip-input'); if(inp) inp.value = ''; refreshSameTab('github'); });
+    var githubZipClear = $('github-zip-clear'); if(githubZipClear) githubZipClear.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); githubUpdateState.file = null; githubUpdateState.fileBuffer = null; githubUpdateState.status = 'empty'; githubUpdateState.message = ''; githubUpdateState.actionConclusion = ''; githubUpdateState.actionStartedAt = 0; githubUpdateState.actionMessage = ''; githubUpdateState.uploadCommitSha = ''; var inp = $('github-zip-input'); if(inp) inp.value = ''; refreshSameTab('github'); });
     document.querySelectorAll('.change-github-rollback-btn:not(:disabled)').forEach(function(btn){
       btn.addEventListener('click', function(){
         rollbackToCommit(btn.getAttribute('data-sha') || '', btn.getAttribute('data-msg') || '');
