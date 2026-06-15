@@ -1,3 +1,6 @@
+## Version 0.1.0250-fix
+- APP_VERSION in settingsPanel.js und pollenView.js auf 0.1.0250 korrigiert. Die Versionsnummer war nach dem CSS-Restore auf 0.1.0246 steckengeblieben.
+
 ## Version 0.1.0250
 - Commit-Verlauf: zeigt nur ZIP-Update Commits, Haupttext ist die Versionsnummer in Gruen, nur Datum daneben.
 - ZIP entfernen Button: roter X-Button unter der Dropzone wenn ZIP gewaehlt.
