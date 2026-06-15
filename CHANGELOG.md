@@ -1,3 +1,11 @@
+## Version 0.1.0250
+- Commit-Verlauf: zeigt nur ZIP-Update Commits, Haupttext ist die Versionsnummer in Gruen, nur Datum daneben.
+- ZIP entfernen Button: roter X-Button unter der Dropzone wenn ZIP gewaehlt.
+- Rollback-Dialog: schoen gestalteter eigener Modal statt Browser-confirm.
+- Rollback auch waehrend Upload-Prozess moeglich.
+- Version-Card aus App & Sicherheit entfernt (steht in Herocard).
+- GitHub Farben: Badges, Status-Texte in korrekten App-Farben.
+
 ## Version 0.1.0249
 - GitHub Rollback: Commit-Verlauf der letzten 10 Commits mit SHA, Nachricht, Datum und App-Version. Jeder Commit hat einen 'Zurueck'-Button. Bestaetigung per confirm() vor dem Rollback.
 - Cloudflare Worker: neue Endpoints /commits (GET) und /rollback (POST) in changeGithubUpdateWorker.js.

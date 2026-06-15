@@ -963,11 +963,14 @@
         var rollbackBtn = !isFirst
           ? '<button class="change-github-rollback-btn" data-sha="'+esc(c.sha)+'" data-msg="'+esc(c.message)+'" type="button">Zurück</button>'
           : '<button class="change-github-rollback-btn is-current" disabled type="button">Aktuell</button>';
+        // Nur ZIP-Update Commits anzeigen
+        if(!c.version && !/ZIP Update|Update Change App/i.test(c.message)) return '';
+        var displayVersion = c.version ? 'v'+esc(c.version) : esc(c.shortSha);
         return '<div class="change-github-commit-row'+(isFirst?' is-current':'')+'">'
           + '<div class="change-github-commit-sha">'+esc(c.shortSha)+'</div>'
           + '<div class="change-github-commit-info">'
-          + '<div class="change-github-commit-msg">'+esc(c.message)+'</div>'
-          + '<div class="change-github-commit-meta">'+esc(date)+'  '+versionBadge+currentBadge+'</div>'
+          + '<div class="change-github-commit-version-main">'+displayVersion+currentBadge+'</div>'
+          + '<div class="change-github-commit-meta">'+esc(date)+'</div>'
           + '</div>'
           + rollbackBtn
           + '</div>';
@@ -1004,7 +1007,18 @@
   async function rollbackToCommit(sha, message){
     var secret = readGithubUpdateSecret();
     if(!secret){ if(typeof window.toast === 'function') window.toast('Bitte Freigabe-Code eintragen', 'err'); return; }
-    if(!confirm('Wirklich zu Commit '+sha.slice(0,7)+' zur\u00fcckgehen?\n'+message)) return;
+    // Schöner Dialog statt browser confirm
+    var confirmed = false;
+    var dlgHtml = '<div class="change-rollback-dialog"><div class="change-rollback-dialog-box"><div class="change-rollback-dialog-title">↺ Rollback zu '+sha.slice(0,7)+'?</div><div class="change-rollback-dialog-msg">'+esc(message)+'</div><div class="change-rollback-dialog-btns"><button class="change-rollback-cancel" id="rb-cancel" type="button">Abbrechen</button><button class="change-rollback-ok" id="rb-ok" type="button">Zurücksetzen</button></div></div></div>';
+    var dlgEl = document.createElement('div');
+    dlgEl.innerHTML = dlgHtml;
+    document.body.appendChild(dlgEl);
+    await new Promise(function(resolve){
+      dlgEl.querySelector('#rb-ok').onclick = function(){ confirmed = true; document.body.removeChild(dlgEl); resolve(); };
+      dlgEl.querySelector('#rb-cancel').onclick = function(){ document.body.removeChild(dlgEl); resolve(); };
+      dlgEl.querySelector('.change-rollback-dialog').onclick = function(e){ if(e.target===dlgEl.querySelector('.change-rollback-dialog')){ document.body.removeChild(dlgEl); resolve(); } };
+    });
+    if(!confirmed) return;
     githubRollbackState = { running: true, message: '', error: '' };
     refreshSameTab('github');
     try{
@@ -1037,6 +1051,7 @@
       + '<div class="change-github-upload-panel change-github-upload-panel-v226">'
       + '<div class="change-github-upload-title"><span>ZIP Update</span></div>'
       + '<label class="change-github-dropzone" id="github-zip-dropzone"><input type="file" id="github-zip-input" accept=".zip,application/zip,application/x-zip-compressed"><span>'+selectedLabel+'</span><small>ZIP per Drag & Drop hier ablegen oder antippen.</small></label>'
+      + (state.file ? '<button class="change-github-zip-clear" id="github-zip-clear" type="button">× ZIP entfernen</button>' : '')
       + statusLine
       + (actionPanel || checks || '')
       + githubFileOverview()
@@ -1314,7 +1329,7 @@
         : '<div class="change-feature-note">Der Check wird erst angezeigt, wenn du ihn bewusst startest.</div><button class="btn btn-secondary btn-full" id="run-app-health" type="button">App-Gesundheitscheck prüfen</button>';
       health = settingsFeatureCard('🩺', 'App-Gesundheitscheck', appHealthExpanded ? 'GEPRÜFT' : 'BEREIT', appHealthExpanded ? 'ok' : 'off', '', '', healthBody);
     }
-    return '<div class="change-settings-stack">' + installCard + themeCard + versionCard + health + '</div>';
+    return '<div class="change-settings-stack">' + installCard + themeCard + health + '</div>';
   }
   function githubPane(){
     return '<div class="change-settings-stack">' + githubUpdateCard() + '</div>';
@@ -1666,6 +1681,7 @@
     var githubZipCommit = $('github-zip-commit'); if(githubZipCommit) githubZipCommit.addEventListener('click', function(){ commitGithubZip(); });
     var githubUpdateReload = $('github-update-reload'); if(githubUpdateReload) githubUpdateReload.addEventListener('click', function(){ reloadChangeUpdateVersion(); });
     var githubHistoryRefresh = $('github-history-refresh'); if(githubHistoryRefresh) githubHistoryRefresh.addEventListener('click', function(){ loadGithubCommitHistory(); });
+    var githubZipClear = $('github-zip-clear'); if(githubZipClear) githubZipClear.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); githubUpdateState.file = null; githubUpdateState.fileBuffer = null; githubUpdateState.status = 'empty'; githubUpdateState.message = ''; var inp = $('github-zip-input'); if(inp) inp.value = ''; refreshSameTab('github'); });
     document.querySelectorAll('.change-github-rollback-btn:not(:disabled)').forEach(function(btn){
       btn.addEventListener('click', function(){
         rollbackToCommit(btn.getAttribute('data-sha') || '', btn.getAttribute('data-msg') || '');
