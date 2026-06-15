@@ -1,3 +1,10 @@
+## Version 0.1.0235
+- Die sichtbare App-Version wurde auf `0.1.0235` erhöht.
+- Symptom-Icon Nase: Seitenansicht der Nase mit Tropfen — deutlich erkennbarer als Frontalansicht.
+- Symptom-Icon Niesen: Person die nach rechts niest — Kopf links, geschwungener Niesstrahl mit drei Tropfen rechts.
+- ZIP neu gebaut nach GitHub-Action Fehler bei v0.1.0234.
+- Keine Änderung an HeroCards, Pollenberechnung, Kalender, Firebase, Sync oder Push.
+
 ## Version 0.1.0234
 - Die sichtbare App-Version wurde auf `0.1.0234` erhöht.
 - HeroCards komplett neu kalibriert: Alle Werte direkt aus `pollenView.css` übernommen — kein Schätzen, kein Annähern.
