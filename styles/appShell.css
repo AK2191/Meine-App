@@ -161,52 +161,6 @@
     box-shadow:0 12px 30px rgba(0,0,0,.28)!important;
   }
 
-  body.change-view-dashboard #settings-btn,
-  body.change-view-calendar #settings-btn,
-  body.change-view-challenges #settings-btn,
-  body.change-view-pollen #settings-btn{
-    display:flex!important;
-    width:100%!important;
-    height:auto!important;
-    min-height:66px!important;
-    padding:12px 8px!important;
-    border-radius:16px!important;
-    flex-direction:column!important;
-    align-items:center!important;
-    justify-content:center!important;
-    gap:8px!important;
-    background:transparent!important;
-    color:rgba(244,247,244,.78)!important;
-    order:2!important;
-  }
-
-  body.change-view-dashboard #settings-btn:hover,
-  body.change-view-calendar #settings-btn:hover,
-  body.change-view-challenges #settings-btn:hover,
-  body.change-view-pollen #settings-btn:hover{
-    background:rgba(255,255,255,.04)!important;
-    color:#fff!important;
-  }
-
-  body.change-view-dashboard #settings-btn svg,
-  body.change-view-calendar #settings-btn svg,
-  body.change-view-challenges #settings-btn svg,
-  body.change-view-pollen #settings-btn svg{
-    width:22px!important;
-    height:22px!important;
-    stroke-width:1.9!important;
-  }
-
-  body.change-view-dashboard #settings-btn::after,
-  body.change-view-calendar #settings-btn::after,
-  body.change-view-challenges #settings-btn::after,
-  body.change-view-pollen #settings-btn::after{
-    content:"Einstellungen";
-    font-size:11.5px;
-    font-weight:690;
-    line-height:1.1;
-  }
-
   body.change-view-dashboard #notif-bell-btn,
   body.change-view-calendar #notif-bell-btn,
   body.change-view-challenges #notif-bell-btn,
@@ -389,20 +343,6 @@
     box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 12px 28px rgba(31,53,38,.08)!important;
   }
 
-  [data-theme="light"] body.change-view-dashboard #settings-btn,
-  [data-theme="light"] body.change-view-calendar #settings-btn,
-  [data-theme="light"] body.change-view-challenges #settings-btn,
-  [data-theme="light"] body.change-view-pollen #settings-btn,
-  body.theme-light.change-view-dashboard #settings-btn,
-  body.theme-light.change-view-calendar #settings-btn,
-  body.theme-light.change-view-challenges #settings-btn,
-  body.theme-light.change-view-pollen #settings-btn,
-  body.change-theme-light.change-view-dashboard #settings-btn,
-  body.change-theme-light.change-view-calendar #settings-btn,
-  body.change-theme-light.change-view-challenges #settings-btn,
-  body.change-theme-light.change-view-pollen #settings-btn{
-    color:#5c6760!important;
-  }
 
   [data-theme="light"] body.change-view-dashboard #notif-bell-btn,
   [data-theme="light"] body.change-view-calendar #notif-bell-btn,
@@ -1164,7 +1104,6 @@ body.change-theme-light.change-view-challenges #challenges-view .challenge-view-
     padding-bottom:0!important;
     margin-bottom:0!important;
   }
-  body.change-view-pollen #pollen-view .pollen-neo-forecast-list,
   body.change-view-challenges .challenge-card,
   body.change-view-challenges .leader-card,
   body.change-view-challenges .challenge-week-card{
@@ -1277,7 +1216,6 @@ body.change-theme-light.change-view-challenges #challenges-view .challenge-view-
   }
 
   body.change-view-dashboard .dash-hello h1,
-  body.change-view-calendar .cal-premium-title h1,
   body.change-view-challenges #challenges-view .list-title,
   body.change-view-pollen #pollen-view .list-title{
     margin:0!important;
@@ -1338,7 +1276,6 @@ body.change-theme-light.change-view-challenges #challenges-view .challenge-view-
   }
 
   body.change-view-dashboard .dash-hello h1,
-  body.change-view-calendar .cal-premium-title h1,
   body.change-view-challenges #challenges-view .list-title,
   body.change-view-pollen #pollen-view .list-title{
     margin:0!important;
@@ -1564,7 +1501,6 @@ body.change-view-calendar #agenda-view{
 }
 body.change-view-calendar #calendar-premium-view .cal-premium-main-grid.single{grid-template-columns:1fr!important;}
 body.change-view-calendar #calendar-premium-view aside,
-body.change-view-calendar #calendar-premium-view .cal-premium-mini,
 body.change-view-calendar #calendar-premium-view .cal-premium-filter,
 body.change-view-calendar #calendar-premium-view .cal-premium-switch{display:none!important;}
 
@@ -1685,31 +1621,17 @@ body.change-view-challenges .leader-row{
   }
   body.change-view-calendar #calendar-premium-view aside.cal-premium-side,
   body.change-view-calendar #calendar-premium-view .cal-premium-side,
-  body.change-view-calendar #calendar-premium-view .cal-premium-mini{
-    display:block!important;
-    visibility:visible!important;
-    opacity:1!important;
-    height:auto!important;
-    min-height:0!important;
-    max-height:none!important;
-    overflow:visible!important;
-  }
   body.change-view-calendar #calendar-premium-view .cal-premium-filter{display:none!important;}
 }
 body.change-view-dashboard .dashp-section-card .dashp-card-title{white-space:nowrap;}
 body.change-view-dashboard .dashp-hero-insights .dashp-insight-row:first-child{margin-top:0;}
 
 /* v0.1.0072 · Kalender-Monatskarte bleibt Desktop rechts und mobil sichtbar */
-body.change-view-calendar #calendar-premium-view .cal-premium-agenda-actions,
 body.change-view-calendar #calendar-premium-view .cal-premium-open,
 body.change-view-calendar #calendar-premium-view .cal-premium-share{display:none!important;}
-body.change-view-calendar #calendar-premium-view .cal-premium-agenda-footer{margin-top:14px;padding-top:14px;border-top:1px dashed rgba(255,255,255,.10);}
-body.change-view-calendar #calendar-premium-view .cal-premium-add{display:flex!important;margin:0!important;}
 @media(max-width:700px){
   body.change-view-calendar #calendar-premium-view .cal-premium-side,
   body.change-view-calendar #calendar-premium-view aside.cal-premium-side,
-  body.change-view-calendar #calendar-premium-view .cal-premium-mini{display:block!important;visibility:visible!important;height:auto!important;max-height:none!important;}
-}
 
 
 /* v0.1.0076 · Challenge Hero final alignment like Pollen */
@@ -1740,13 +1662,6 @@ body.change-view-challenges #challenges-view .challenge-layout>#group-goal-card{
 }
 body.change-view-challenges #challenges-view .challenge-layout>#group-goal-card::before{content:none!important;display:none!important;}
 body.change-view-challenges #challenges-view .challenge-layout>#group-goal-card::after{opacity:.11!important;right:42px!important;top:34px!important;transform:none!important;pointer-events:none!important;}
-body.change-view-challenges #challenges-view .challenge-goal-hero-inner.challenge-goal-hero-clean{
-  display:grid!important;
-  grid-template-columns:minmax(0,1fr) minmax(300px,390px)!important;
-  align-items:center!important;
-  gap:34px!important;
-  min-height:168px!important;
-}
 body.change-view-challenges #challenges-view .challenge-goal-main{
   min-width:0!important;
   min-height:0!important;
@@ -1756,57 +1671,7 @@ body.change-view-challenges #challenges-view .challenge-goal-main{
   position:relative!important;
   z-index:2!important;
 }
-body.change-view-challenges #challenges-view .challenge-goal-title{font-size:28px!important;line-height:1.04!important;margin:0!important;}
-body.change-view-challenges #challenges-view .challenge-goal-progress-wrap{max-width:560px!important;margin-top:18px!important;}
-body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
-  position:relative!important;
-  z-index:4!important;
-  justify-self:stretch!important;
-  max-width:390px!important;
-  border-left:1px solid rgba(244,247,244,.10)!important;
-  padding-left:28px!important;
-  display:grid!important;
-  grid-template-columns:1fr!important;
-  gap:10px!important;
-  align-content:center!important;
-}
-body.change-view-challenges #challenges-view .challenge-goal-side-link{
-  width:100%!important;
-  min-height:48px!important;
-  appearance:none!important;
-  border:1px solid rgba(255,255,255,.075)!important;
-  background:rgba(255,255,255,.035)!important;
-  border-radius:16px!important;
-  padding:10px 12px!important;
-  display:grid!important;
-  grid-template-columns:34px minmax(0,1fr) auto!important;
-  align-items:center!important;
-  gap:10px!important;
-  color:#f4f7f4!important;
-  text-align:left!important;
-  font:inherit!important;
-  box-shadow:0 1px 0 rgba(255,255,255,.03) inset!important;
-}
 body.change-view-challenges #challenges-view .challenge-goal-side-static{cursor:default!important;pointer-events:none!important;}
-body.change-view-challenges #challenges-view .challenge-goal-side-link-clickable{cursor:pointer!important;}
-body.change-view-challenges #challenges-view .challenge-goal-side-link-clickable:hover{background:rgba(74,222,128,.08)!important;border-color:rgba(74,222,128,.22)!important;}
-body.change-view-challenges #challenges-view .challenge-goal-side-link:active{transform:none!important;}
-body.change-view-challenges #challenges-view .challenge-goal-link-icon{
-  width:34px!important;height:34px!important;border-radius:13px!important;
-  display:flex!important;align-items:center!important;justify-content:center!important;
-  background:rgba(74,222,128,.11)!important;color:#57d76a!important;font-size:15px!important;
-}
-body.change-view-challenges #challenges-view .challenge-goal-side-link b{display:block!important;font-size:12.5px!important;font-weight:950!important;color:#fff!important;line-height:1.15!important;}
-body.change-view-challenges #challenges-view .challenge-goal-side-link small{display:block!important;margin-top:2px!important;font-size:10.5px!important;font-weight:750!important;color:rgba(244,247,244,.58)!important;line-height:1.2!important;}
-body.change-view-challenges #challenges-view .challenge-goal-side-link strong{font-size:13px!important;font-weight:950!important;color:#57d76a!important;white-space:nowrap!important;}
-body.change-view-challenges #challenges-view .challenge-layout>#challenge-week-points-card{
-  grid-column:1 / -1!important;
-  grid-row:auto!important;
-  position:relative!important;
-  z-index:2!important;
-  margin:0!important;
-  clear:both!important;
-}
 body.change-view-challenges #challenges-view .challenge-layout>.challenge-card{grid-column:1!important;grid-row:auto!important;}
 body.change-view-challenges #challenges-view .challenge-layout>.leader-card{grid-column:2!important;grid-row:auto!important;display:flex!important;flex-direction:column!important;visibility:visible!important;opacity:1!important;}
 body.change-view-challenges #challenges-view #leaderboard-list{display:block!important;visibility:visible!important;opacity:1!important;}
@@ -1819,23 +1684,6 @@ body.change-theme-light.change-view-challenges #challenges-view .challenge-layou
   background:linear-gradient(115deg,rgba(237,250,242,.96),rgba(255,255,252,.98) 58%,rgba(246,251,247,.98))!important;
   border-color:rgba(32,160,91,.18)!important;
   box-shadow:0 20px 48px rgba(20,45,30,.08)!important;
-}
-[data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side-link,
-body.theme-light.change-view-challenges #challenges-view .challenge-goal-side-link,
-body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side-link{background:rgba(255,255,255,.68)!important;border-color:rgba(31,53,38,.08)!important;color:#142018!important;}
-[data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side-link b,
-body.theme-light.change-view-challenges #challenges-view .challenge-goal-side-link b,
-body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side-link b{color:#142018!important;}
-@media(max-width:760px){
-  body.change-view-challenges #challenges-view .challenge-layout{display:flex!important;flex-direction:column!important;gap:12px!important;padding:0 12px calc(110px + env(safe-area-inset-bottom))!important;}
-  body.change-view-challenges #challenges-view .challenge-layout>#group-goal-card{order:0!important;padding:16px!important;border-radius:22px!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-hero-inner.challenge-goal-hero-clean{grid-template-columns:1fr!important;gap:14px!important;min-height:0!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-title{font-size:24px!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{max-width:none!important;border-left:0!important;border-top:1px solid rgba(244,247,244,.10)!important;padding-left:0!important;padding-top:12px!important;grid-template-columns:1fr!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-side-link{min-height:46px!important;}
-  body.change-view-challenges #challenges-view .challenge-layout>#challenge-week-points-card{order:1!important;}
-  body.change-view-challenges #challenges-view .challenge-layout>.challenge-card{order:2!important;}
-  body.change-view-challenges #challenges-view .challenge-layout>.leader-card{order:3!important;}
 }
 
 
@@ -1954,25 +1802,12 @@ body.change-view-challenges #challenges-view .challenge-layout > #group-goal-car
     border-radius:28px!important;
   }
 
-  body.change-view-challenges #challenges-view .challenge-goal-hero-inner.challenge-goal-hero-clean{
-    display:grid!important;
-    grid-template-columns:minmax(0,1fr) minmax(300px,390px)!important;
-    gap:30px!important;
-    align-items:center!important;
-    width:100%!important;
-    min-height:0!important;
-  }
 
   body.change-view-challenges #challenges-view .challenge-goal-main{
     min-width:0!important;
     min-height:0!important;
   }
 
-  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
-    max-width:390px!important;
-    justify-self:stretch!important;
-    align-self:center!important;
-  }
 
   body.change-view-challenges #challenges-view .challenge-layout > #challenge-week-points-card{
     grid-area:week!important;
@@ -2036,26 +1871,6 @@ body.change-view-challenges #challenges-view .challenge-layout > #group-goal-car
   body.change-view-challenges #challenges-view .challenge-layout > .challenge-card{order:2!important;}
   body.change-view-challenges #challenges-view .challenge-layout > .leader-card{order:3!important;}
 
-  body.change-view-challenges #challenges-view .challenge-goal-hero-inner.challenge-goal-hero-clean{
-    grid-template-columns:1fr!important;
-    gap:14px!important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
-    max-width:none!important;
-    border-left:0!important;
-    border-top:1px solid rgba(244,247,244,.12)!important;
-    padding:12px 0 0!important;
-    grid-template-columns:repeat(2,minmax(0,1fr))!important;
-    gap:8px!important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link{
-    border:1px solid rgba(244,247,244,.08)!important;
-    border-radius:15px!important;
-    padding:10px!important;
-    background:rgba(255,255,255,.03)!important;
-  }
 }
 
 /* Mobile: eigener Scroll im Content, keine gestapelten Overlays, keine überbreiten Karten. */
@@ -2115,34 +1930,6 @@ body.change-view-challenges #challenges-view .challenge-layout > #group-goal-car
     overflow:hidden!important;
   }
 
-  body.change-view-challenges #challenges-view .challenge-goal-hero-inner.challenge-goal-hero-clean{
-    display:grid!important;
-    grid-template-columns:1fr!important;
-    gap:14px!important;
-    min-height:0!important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-title{
-    font-size:24px!important;
-    line-height:1.05!important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
-    max-width:none!important;
-    border-left:0!important;
-    border-top:1px solid rgba(244,247,244,.12)!important;
-    padding:12px 0 0!important;
-    grid-template-columns:repeat(2,minmax(0,1fr))!important;
-    gap:8px!important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link{
-    border:1px solid rgba(244,247,244,.08)!important;
-    border-radius:15px!important;
-    padding:10px!important;
-    background:rgba(255,255,255,.03)!important;
-  }
-
   body.change-view-challenges #challenges-view .challenge-layout > #challenge-week-points-card{
     order:1!important;
     z-index:1!important;
@@ -2175,20 +1962,6 @@ body.change-view-challenges #challenges-view .challenge-layout > #group-goal-car
 }
 
 /* Hellmodus-Korrektur für die neue letzte Ebene. */
-[data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list,
-body.theme-light.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list,
-body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
-  border-color:rgba(15,32,23,.12)!important;
-}
-
-[data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side-link,
-body.theme-light.change-view-challenges #challenges-view .challenge-goal-side-link,
-body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side-link{
-  background:rgba(255,255,255,.68)!important;
-  border-color:rgba(31,53,38,.10)!important;
-}
-
-
 
 /* ---------- CONSOLIDATED FROM: styles/mobileShellFix.css ---------- */
 
@@ -2423,8 +2196,6 @@ body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-
   }
 }
 
-
-
 /* ---------- CONSOLIDATED FROM: styles/pollenTypographyFix.css ---------- */
 
 /* Change App · v0.1.0092
@@ -2439,19 +2210,7 @@ body.neo-pollen-shell #pollen-view{
   font-family:var(--font,"Plus Jakarta Sans",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif)!important;
 }
 
-body.change-view-pollen #pollen-view .pollen-neo-section-head,
-body.neo-pollen-shell #pollen-view .pollen-neo-section-head,
-body.change-view-pollen #pollen-view .pollen-neo-symptoms .pollen-neo-section-head,
-body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .pollen-neo-section-head{
-  margin:0 0 8px!important;
-  padding:0!important;
-  border:0!important;
-  background:transparent!important;
-  min-height:0!important;
-}
 
-body.change-view-pollen #pollen-view .pollen-neo-section-head span,
-body.neo-pollen-shell #pollen-view .pollen-neo-section-head span,
 body.change-view-pollen #pollen-view .pollen-hourly-title span,
 body.neo-pollen-shell #pollen-view .pollen-hourly-title span,
 body.change-view-pollen #pollen-view .pollen-neo-symptoms-title span,
@@ -2680,14 +2439,6 @@ body.neo-pollen-shell #pollen-view .change-symptom-insight span{
   }
 }
 
-[data-theme="light"] #pollen-view .pollen-neo-section-head span,
-body.theme-light #pollen-view .pollen-neo-section-head span,
-body.change-theme-light #pollen-view .pollen-neo-section-head span{
-  color:rgba(31,53,38,.70)!important;
-}
-
-
-
 /* ---------- CONSOLIDATED FROM: styles/workspaceConsistencyFix.css ---------- */
 
 /* Change App · v0.1.0093
@@ -2755,7 +2506,6 @@ body.change-theme-light #pollen-view .pollen-neo-section-head span{
   }
 
   body.change-view-dashboard .dash-hello h1,
-  body.change-view-calendar .cal-premium-title h1,
   body.change-view-challenges #challenges-view .list-title,
   body.change-view-pollen #pollen-view .list-title{
     margin:0 !important;
@@ -2784,7 +2534,6 @@ body.change-theme-light #pollen-view .pollen-neo-section-head span{
     display:none !important;
   }
 
-  body.change-view-calendar .cal-premium-title,
   body.change-view-pollen #pollen-view .list-title,
   body.change-view-challenges #challenges-view .list-title{
     display:flex !important;
@@ -2792,15 +2541,6 @@ body.change-theme-light #pollen-view .pollen-neo-section-head span{
     gap:var(--change-page-title-gap) !important;
   }
 
-  body.change-view-calendar .cal-premium-title span{
-    width:var(--change-page-icon-size-desktop) !important;
-    min-width:var(--change-page-icon-size-desktop) !important;
-    display:inline-flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    font-size:20px !important;
-    line-height:1 !important;
-  }
 
   body.change-view-pollen #pollen-view .list-title::before,
   body.change-view-challenges #challenges-view .list-title::before{
@@ -2858,7 +2598,6 @@ body.change-theme-light #pollen-view .pollen-neo-section-head span{
   }
 
   body.change-view-dashboard .dash-hello h1,
-  body.change-view-calendar .cal-premium-title h1,
   body.change-view-challenges #challenges-view .list-title,
   body.change-view-pollen #pollen-view .list-title{
     margin:0 !important;
@@ -2887,7 +2626,6 @@ body.change-theme-light #pollen-view .pollen-neo-section-head span{
     display:none !important;
   }
 
-  body.change-view-calendar .cal-premium-title,
   body.change-view-pollen #pollen-view .list-title,
   body.change-view-challenges #challenges-view .list-title{
     display:flex !important;
@@ -2895,15 +2633,6 @@ body.change-theme-light #pollen-view .pollen-neo-section-head span{
     gap:12px !important;
   }
 
-  body.change-view-calendar .cal-premium-title span{
-    width:var(--change-page-icon-size-mobile) !important;
-    min-width:var(--change-page-icon-size-mobile) !important;
-    display:inline-flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    font-size:18px !important;
-    line-height:1 !important;
-  }
 
   body.change-view-pollen #pollen-view .list-title::before,
   body.change-view-challenges #challenges-view .list-title::before{
@@ -2912,8 +2641,6 @@ body.change-theme-light #pollen-view .pollen-neo-section-head span{
     flex:0 0 var(--change-page-icon-size-mobile) !important;
   }
 }
-
-
 
 /* ---------- CONSOLIDATED FROM: styles/pollenHeroConsolidationFix.css ---------- */
 
@@ -2938,116 +2665,20 @@ body.change-theme-light #pollen-view .pollen-neo-section-head span{
     min-height:238px !important;
   }
 
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats-extended{
-    display:grid !important;
-    grid-template-columns:repeat(4, minmax(0,1fr)) !important;
-    gap:0 !important;
-    align-self:stretch !important;
-    padding-left:18px !important;
-    border-left:1px solid rgba(255,255,255,.08) !important;
-    border-top:0 !important;
-  }
-
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended > div,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats-extended > div{
-    display:grid !important;
-    grid-template-columns:28px minmax(0,1fr) !important;
-    grid-template-rows:auto auto !important;
-    align-content:center !important;
-    gap:0 10px !important;
-    padding:0 14px !important;
-    border-bottom:0 !important;
-    border-right:1px solid rgba(255,255,255,.08) !important;
-    min-width:0 !important;
-  }
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended > div:last-child,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats-extended > div:last-child{
-    border-right:0 !important;
-    padding-right:0 !important;
-  }
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended > div:first-child,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats-extended > div:first-child{
-    padding-left:0 !important;
-  }
-
-  body.change-view-pollen #pollen-view .pollen-neo-sidecards,
-  body.neo-pollen-shell #pollen-view .pollen-neo-sidecards{
-    display:none !important;
-  }
 }
 
 @media (max-width:900px){
-  body.change-view-pollen #pollen-view .pollen-neo-sidecards,
-  body.neo-pollen-shell #pollen-view .pollen-neo-sidecards{
-    display:none !important;
-  }
 
   body.change-view-pollen #pollen-view .pollen-neo-top,
   body.neo-pollen-shell #pollen-view .pollen-neo-top{
     grid-template-columns:1fr !important;
   }
 
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats-extended{
-    grid-template-columns:repeat(2, minmax(0,1fr)) !important;
-    gap:8px !important;
-    padding-left:0 !important;
-    padding-top:10px !important;
-    border-left:0 !important;
-    border-top:1px solid rgba(255,255,255,.08) !important;
-  }
 
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended > div,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats-extended > div{
-    border-right:0 !important;
-    background:rgba(255,255,255,.05) !important;
-    border-radius:16px !important;
-    padding:12px !important;
-    grid-template-columns:24px minmax(0,1fr) !important;
-  }
 }
 
 @media (max-width:560px){
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats-extended{
-    grid-template-columns:1fr !important;
-  }
 }
-
-body.change-view-pollen #pollen-view .pollen-neo-hero-stats .mark.ring,
-body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats .mark.ring{
-  position:relative;
-}
-body.change-view-pollen #pollen-view .pollen-neo-hero-stats .mark.ring::before,
-body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats .mark.ring::before{
-  content:"";
-  position:absolute;
-  inset:5px;
-  border-radius:50%;
-  border:2px solid #ff6a55;
-}
-body.change-view-pollen #pollen-view .pollen-neo-hero-stats .mark.ring::after,
-body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats .mark.ring::after{
-  content:"";
-  position:absolute;
-  inset:9px;
-  border-radius:50%;
-  background:#ff6a55;
-}
-
-[data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended,
-body.theme-light.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended,
-body.change-theme-light.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended{
-  border-color:rgba(23,41,30,.12) !important;
-}
-[data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended > div,
-body.theme-light.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended > div,
-body.change-theme-light.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended > div{
-  border-color:rgba(23,41,30,.12) !important;
-}
-
-
 
 /* ---------- CONSOLIDATED FROM: styles/mobileScrollEndFix.css ---------- */
 
@@ -3105,18 +2736,14 @@ body.change-theme-light.change-view-pollen #pollen-view .pollen-neo-hero-stats-e
     pointer-events:none!important;
   }
 
-  body.change-view-pollen #pollen-view .pollen-neo-forecast-list,
   body.change-view-pollen #pollen-view .pollen-neo-card,
   body.change-view-dashboard .dashp-card,
   body.change-view-calendar .cal-premium-card,
-  body.change-view-calendar .cal-premium-side-card,
   body.change-view-challenges .challenge-card,
   body.change-view-challenges .leader-card{
     transform:translateZ(0);
   }
 }
-
-
 
 /* v0.1.0097 · END CONSOLIDATED FINAL OVERRIDES */
 
@@ -3288,8 +2915,6 @@ body.change-theme-light.change-view-pollen #pollen-view .pollen-neo-hero-insight
   color:#5c6760!important;
 }
 
-
-
 /* v0.1.0100 · Mobile bottom reach fix
    Sorgt dafür, dass in allen vier Hauptansichten auf Mobil wirklich bis unter die letzte Karte gescrollt werden kann. */
 @media (max-width:700px){
@@ -3391,320 +3016,26 @@ body.change-view-challenges #challenges-view #leaderboard-list::-webkit-scrollba
 
 /* v0.1.0107 · Pollen mobile hero stats horizontal */
 @media (max-width:700px){
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats-extended,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats{
-    display:grid!important;
-    grid-template-columns:repeat(3,minmax(0,1fr))!important;
-    gap:0!important;
-    align-items:stretch!important;
-    padding-left:0!important;
-    padding-top:12px!important;
-    border-left:0!important;
-    border-top:1px solid rgba(255,255,255,.10)!important;
-  }
 
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended > div,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats-extended > div,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats > div,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats > div{
-    display:grid!important;
-    grid-template-columns:18px minmax(0,1fr)!important;
-    grid-template-rows:auto auto!important;
-    gap:0 8px!important;
-    align-content:center!important;
-    padding:0 8px!important;
-    min-width:0!important;
-    border-right:1px solid rgba(255,255,255,.09)!important;
-    border-bottom:0!important;
-    background:transparent!important;
-    border-radius:0!important;
-  }
-
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended > div:last-child,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats-extended > div:last-child,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats > div:last-child,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats > div:last-child{
-    border-right:0!important;
-  }
-
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats .dot,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats .mark,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats .dot,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats .mark,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended .dot,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended .mark,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats-extended .dot,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats-extended .mark{
-    display:flex!important;
-    width:18px!important;
-    height:18px!important;
-    align-self:center!important;
-  }
-
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats strong,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended strong,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats strong,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats-extended strong{
-    font-size:10px!important;
-    line-height:1.1!important;
-    white-space:nowrap!important;
-    overflow:hidden!important;
-    text-overflow:ellipsis!important;
-  }
-
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats em,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats-extended em,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats em,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats-extended em{
-    font-size:12px!important;
-    line-height:1.12!important;
-    white-space:nowrap!important;
-    overflow:hidden!important;
-    text-overflow:ellipsis!important;
-  }
 }
-
-
 
 /* v0.1.0109 · Challenges mobile hero status inline */
 @media (max-width:700px){
-  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
-    display:grid!important;
-    grid-template-columns:repeat(3,minmax(0,1fr))!important;
-    gap:0!important;
-    max-width:none!important;
-    border-left:0!important;
-    border-top:1px solid rgba(244,247,244,.12)!important;
-    padding:12px 0 0!important;
-  }
 
-  body.change-view-challenges #challenges-view .challenge-goal-side-link{
-    display:grid!important;
-    grid-template-columns:20px minmax(0,1fr)!important;
-    grid-template-rows:auto auto!important;
-    align-content:center!important;
-    gap:0 7px!important;
-    min-height:54px!important;
-    padding:0 8px!important;
-    border:0!important;
-    border-right:1px solid rgba(244,247,244,.10)!important;
-    border-radius:0!important;
-    background:transparent!important;
-    box-shadow:none!important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:last-child{
-    border-right:0!important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-link-icon{
-    grid-column:1!important;
-    grid-row:1 / 3!important;
-    width:18px!important;
-    height:18px!important;
-    min-width:18px!important;
-    font-size:10px!important;
-    align-self:center!important;
-    justify-self:center!important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link > span:not(.challenge-goal-link-icon){
-    grid-column:2!important;
-    grid-row:1!important;
-    min-width:0!important;
-    display:block!important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b{
-    display:block!important;
-    font-size:11px!important;
-    line-height:1.1!important;
-    white-space:nowrap!important;
-    overflow:hidden!important;
-    text-overflow:ellipsis!important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link small{
-    display:block!important;
-    margin-top:2px!important;
-    font-size:9px!important;
-    line-height:1.1!important;
-    white-space:nowrap!important;
-    overflow:hidden!important;
-    text-overflow:ellipsis!important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-    grid-column:2!important;
-    grid-row:2!important;
-    justify-self:start!important;
-    align-self:end!important;
-    margin-top:4px!important;
-    font-size:12px!important;
-    line-height:1!important;
-    white-space:nowrap!important;
-  }
 }
 
 @media (max-width:380px){
-  body.change-view-challenges #challenges-view .challenge-goal-side-link{
-    grid-template-columns:18px minmax(0,1fr)!important;
-    gap:0 5px!important;
-    padding:0 6px!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b{
-    font-size:10px!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link small{
-    font-size:8.5px!important;
-  }
 }
 
 
 /* v0.1.0110 · Challenges hero status styling aligned to pollen */
-body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
-  display:grid!important;
-  grid-template-columns:repeat(3,minmax(0,1fr))!important;
-  gap:0!important;
-  max-width:none!important;
-  border-left:1px solid rgba(244,247,244,.10)!important;
-  padding-left:18px!important;
-  align-self:stretch!important;
-}
-
-body.change-view-challenges #challenges-view .challenge-goal-side-link{
-  display:grid!important;
-  grid-template-columns:18px minmax(0,1fr)!important;
-  grid-template-rows:auto auto!important;
-  align-content:center!important;
-  gap:2px 10px!important;
-  min-height:74px!important;
-  padding:6px 14px!important;
-  border:0!important;
-  border-right:1px solid rgba(244,247,244,.10)!important;
-  border-radius:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-}
-
-body.change-view-challenges #challenges-view .challenge-goal-side-link:last-child{
-  border-right:0!important;
-}
-
-body.change-view-challenges #challenges-view .challenge-goal-side-link-clickable,
-body.change-view-challenges #challenges-view .challenge-goal-side-link-clickable:hover{
-  background:transparent!important;
-  border-color:rgba(244,247,244,.10)!important;
-}
-
-body.change-view-challenges #challenges-view .challenge-goal-link-icon{
-  grid-column:1!important;
-  grid-row:1 / 3!important;
-  width:18px!important;
-  height:18px!important;
-  min-width:18px!important;
-  font-size:10px!important;
-  align-self:center!important;
-  justify-self:center!important;
-}
-
-body.change-view-challenges #challenges-view .challenge-goal-side-link > span:not(.challenge-goal-link-icon){
-  grid-column:2!important;
-  grid-row:1 / 3!important;
-  min-width:0!important;
-  display:flex!important;
-  flex-direction:column!important;
-  justify-content:center!important;
-}
-
-body.change-view-challenges #challenges-view .challenge-goal-side-link b{
-  display:block!important;
-  font-size:11px!important;
-  line-height:1.1!important;
-  font-weight:900!important;
-  color:rgba(244,247,244,.86)!important;
-  white-space:nowrap!important;
-  overflow:hidden!important;
-  text-overflow:ellipsis!important;
-}
-
-body.change-view-challenges #challenges-view .challenge-goal-side-link small{
-  display:none!important;
-}
-
-body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-  display:block!important;
-  margin-top:4px!important;
-  font-size:22px!important;
-  line-height:1!important;
-  font-weight:950!important;
-  color:#57d76a!important;
-  white-space:nowrap!important;
-}
-
-[data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list,
-body.theme-light.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list,
-body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
-  border-left-color:rgba(15,32,23,.10)!important;
-}
-
-[data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side-link,
-body.theme-light.change-view-challenges #challenges-view .challenge-goal-side-link,
-body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side-link{
-  border-right-color:rgba(15,32,23,.10)!important;
-}
-
-[data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side-link b,
-body.theme-light.change-view-challenges #challenges-view .challenge-goal-side-link b,
-body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side-link b{
-  color:#425048!important;
-}
 
 @media (max-width:700px){
-  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
-    border-left:0!important;
-    border-top:1px solid rgba(244,247,244,.12)!important;
-    padding:12px 0 0!important;
-  }
 
-  body.change-view-challenges #challenges-view .challenge-goal-side-link{
-    min-height:58px!important;
-    padding:0 8px!important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b{
-    font-size:10.5px!important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-    margin-top:3px!important;
-    font-size:16px!important;
-  }
 }
 
 @media (max-width:380px){
-  body.change-view-challenges #challenges-view .challenge-goal-side-link{
-    grid-template-columns:16px minmax(0,1fr)!important;
-    gap:1px 5px!important;
-    padding:0 6px!important;
-  }
 
-  body.change-view-challenges #challenges-view .challenge-goal-link-icon{
-    width:16px!important;
-    height:16px!important;
-    min-width:16px!important;
-    font-size:9px!important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b{
-    font-size:9.5px!important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-    font-size:14px!important;
-  }
 }
 
 
@@ -3735,393 +3066,31 @@ body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-
   body.change-view-challenges #challenges-view .challenge-layout > .challenge-card{grid-area:tasks!important;grid-column:1!important;order:2!important;}
   body.change-view-challenges #challenges-view .challenge-layout > .leader-card{grid-area:leaders!important;grid-column:2!important;order:3!important;}
 
-  body.change-view-challenges #challenges-view .challenge-goal-hero-inner.challenge-goal-hero-clean{
-    grid-template-columns:minmax(0,1fr) 320px!important;
-    gap:24px!important;
-    align-items:start!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
-    display:grid!important;
-    grid-template-columns:1fr!important;
-    gap:0!important;
-    border-left:1px solid rgba(244,247,244,.10)!important;
-    padding-left:20px!important;
-    max-width:none!important;
-    align-self:stretch!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link{
-    display:grid!important;
-    grid-template-columns:18px minmax(0,1fr)!important;
-    align-items:center!important;
-    gap:4px 10px!important;
-    min-height:64px!important;
-    padding:10px 0!important;
-    border:0!important;
-    border-bottom:1px solid rgba(244,247,244,.10)!important;
-    border-right:0!important;
-    border-radius:0!important;
-    background:transparent!important;
-    box-shadow:none!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:last-child{border-bottom:0!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-link-icon{
-    width:18px!important;height:18px!important;min-width:18px!important;font-size:10px!important;align-self:center!important;justify-self:center!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link > span:not(.challenge-goal-link-icon){
-    display:flex!important;flex-direction:column!important;min-width:0!important;grid-column:2!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b{
-    font-size:12px!important;line-height:1.1!important;font-weight:900!important;color:rgba(244,247,244,.86)!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link small{display:none!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-    margin-top:6px!important;font-size:28px!important;line-height:1!important;font-weight:950!important;color:#57d76a!important;white-space:nowrap!important;grid-column:2!important;
-  }
 }
 
 @media (max-width:700px){
-  body.change-view-challenges #challenges-view .challenge-goal-hero-inner.challenge-goal-hero-clean{
-    gap:14px!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
-    display:grid!important;
-    grid-template-columns:repeat(3,minmax(0,1fr))!important;
-    gap:0!important;
-    border-left:0!important;
-    border-top:1px solid rgba(244,247,244,.12)!important;
-    padding:12px 0 0!important;
-    max-width:none!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link{
-    display:flex!important;
-    flex-direction:column!important;
-    align-items:center!important;
-    justify-content:flex-start!important;
-    gap:2px!important;
-    min-height:62px!important;
-    padding:0 4px!important;
-    border:0!important;
-    border-right:1px solid rgba(244,247,244,.10)!important;
-    border-radius:0!important;
-    background:transparent!important;
-    box-shadow:none!important;
-    text-align:center!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:last-child{border-right:0!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-link-icon{
-    width:16px!important;height:16px!important;min-width:16px!important;font-size:9px!important;margin-bottom:2px!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link > span:not(.challenge-goal-link-icon){
-    display:flex!important;flex-direction:column!important;align-items:center!important;min-width:0!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b{
-    font-size:9.5px!important;line-height:1.05!important;font-weight:900!important;color:rgba(244,247,244,.86)!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:100%!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link small{display:none!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-    margin-top:3px!important;font-size:13px!important;line-height:1!important;font-weight:950!important;color:#57d76a!important;white-space:nowrap!important;max-width:100%!important;
-  }
 }
 
 @media (max-width:380px){
-  body.change-view-challenges #challenges-view .challenge-goal-side-link{padding:0 2px!important;min-height:58px!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b{font-size:8.5px!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{font-size:11.5px!important;}
-}
 
 
 /* v0.1.0113 · Challenges status points styled exactly like pollen */
-body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
-  position:relative!important;
-}
-body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list::before,
-body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list::after{
-  content:none!important;
-}
-body.change-view-challenges #challenges-view .challenge-goal-side-link,
-body.change-view-challenges #challenges-view .challenge-goal-side-link-clickable,
-body.change-view-challenges #challenges-view .challenge-goal-side-link-clickable:hover{
-  box-shadow:none!important;
-  background:transparent!important;
-}
-body.change-view-challenges #challenges-view .challenge-goal-side-link strong,
-body.change-view-challenges #challenges-view .challenge-goal-side-link b,
-body.change-view-challenges #challenges-view .challenge-goal-side-link small{
-  text-shadow:none!important;
-}
 
 /* Desktop: vertical rows like pollen hero side */
 @media (min-width:701px){
-  body.change-view-challenges #challenges-view .challenge-goal-hero-inner.challenge-goal-hero-clean{
-    grid-template-columns:minmax(0,1fr) 340px!important;
-    gap:26px!important;
-    align-items:center!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
-    display:flex!important;
-    flex-direction:column!important;
-    gap:0!important;
-    border-left:1px solid rgba(244,247,244,.10)!important;
-    padding-left:20px!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link{
-    display:grid!important;
-    grid-template-columns:38px minmax(0,1fr)!important;
-    grid-template-rows:auto auto!important;
-    align-items:center!important;
-    gap:2px 12px!important;
-    min-height:74px!important;
-    padding:10px 0!important;
-    border:0!important;
-    border-bottom:1px solid rgba(244,247,244,.10)!important;
-    border-right:0!important;
-    border-radius:0!important;
-    text-align:left!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:last-child{border-bottom:0!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-link-icon{
-    grid-column:1!important;
-    grid-row:1 / 3!important;
-    width:28px!important;
-    height:28px!important;
-    min-width:28px!important;
-    border-radius:999px!important;
-    display:flex!important;
-    align-items:center!important;
-    justify-content:center!important;
-    font-size:12px!important;
-    font-weight:900!important;
-    color:#ffffff!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:nth-child(1) .challenge-goal-link-icon{background:rgba(245,158,11,.16)!important;color:#fbbf24!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:nth-child(2) .challenge-goal-link-icon{background:rgba(239,68,68,.14)!important;color:#fb7185!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:nth-child(3) .challenge-goal-link-icon{background:rgba(74,222,128,.14)!important;color:#7ddc5b!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-side-link > span:not(.challenge-goal-link-icon){
-    grid-column:2!important;
-    grid-row:1 / 3!important;
-    display:flex!important;
-    flex-direction:column!important;
-    align-items:flex-start!important;
-    justify-content:center!important;
-    min-width:0!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b{
-    display:block!important;
-    font-size:14px!important;
-    line-height:1.1!important;
-    font-weight:900!important;
-    color:#ffffff!important;
-    white-space:nowrap!important;
-    overflow:hidden!important;
-    text-overflow:ellipsis!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link small{display:none!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-    display:block!important;
-    margin-top:4px!important;
-    font-size:16px!important;
-    line-height:1.15!important;
-    font-weight:900!important;
-    color:#ffffff!important;
-    white-space:nowrap!important;
-  }
 }
 
 /* Mobile: three horizontal pollen-like columns */
 @media (max-width:700px){
-  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
-    display:grid!important;
-    grid-template-columns:repeat(3,minmax(0,1fr))!important;
-    gap:0!important;
-    border-left:0!important;
-    border-top:1px solid rgba(244,247,244,.12)!important;
-    padding:12px 0 0!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link{
-    display:grid!important;
-    grid-template-columns:18px minmax(0,1fr)!important;
-    grid-template-rows:auto auto!important;
-    gap:0 8px!important;
-    align-content:center!important;
-    min-height:58px!important;
-    padding:0 8px!important;
-    border:0!important;
-    border-right:1px solid rgba(244,247,244,.10)!important;
-    border-radius:0!important;
-    text-align:left!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:last-child{border-right:0!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-link-icon{
-    grid-column:1!important;
-    grid-row:1 / 3!important;
-    width:18px!important;
-    height:18px!important;
-    min-width:18px!important;
-    border-radius:999px!important;
-    display:flex!important;
-    align-items:center!important;
-    justify-content:center!important;
-    font-size:9px!important;
-    font-weight:900!important;
-    color:#ffffff!important;
-    margin:0!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:nth-child(1) .challenge-goal-link-icon{background:rgba(245,158,11,.16)!important;color:#fbbf24!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:nth-child(2) .challenge-goal-link-icon{background:rgba(239,68,68,.14)!important;color:#fb7185!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:nth-child(3) .challenge-goal-link-icon{background:rgba(74,222,128,.14)!important;color:#7ddc5b!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-side-link > span:not(.challenge-goal-link-icon){
-    grid-column:2!important;
-    grid-row:1 / 3!important;
-    display:flex!important;
-    flex-direction:column!important;
-    align-items:flex-start!important;
-    justify-content:center!important;
-    min-width:0!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b{
-    display:block!important;
-    font-size:10px!important;
-    line-height:1.05!important;
-    font-weight:900!important;
-    color:#ffffff!important;
-    white-space:nowrap!important;
-    overflow:hidden!important;
-    text-overflow:ellipsis!important;
-    max-width:100%!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link small{display:none!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-    display:block!important;
-    margin-top:2px!important;
-    font-size:11px!important;
-    line-height:1.05!important;
-    font-weight:900!important;
-    color:#ffffff!important;
-    white-space:nowrap!important;
-    overflow:hidden!important;
-    text-overflow:ellipsis!important;
-    max-width:100%!important;
-  }
 }
 
 @media (max-width:390px){
-  body.change-view-challenges #challenges-view .challenge-goal-side-link{padding:0 5px!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b{font-size:9px!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{font-size:10px!important;}
-}
 
 /* v0.1.0114 · Challenges mobile overlap hard fix */
 @media (max-width:700px){
-  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
-    display:grid!important;
-    grid-template-columns:repeat(3,minmax(0,1fr))!important;
-    gap:0!important;
-    border-left:0!important;
-    border-top:1px solid rgba(244,247,244,.12)!important;
-    padding:12px 0 0!important;
-    overflow:hidden!important;
-  }
 
-  body.change-view-challenges #challenges-view .challenge-goal-side-link,
-  body.change-view-challenges #challenges-view button.challenge-goal-side-link{
-    display:grid!important;
-    grid-template-columns:17px minmax(0,1fr)!important;
-    grid-template-rows:auto auto!important;
-    align-content:center!important;
-    align-items:center!important;
-    justify-items:start!important;
-    gap:1px 6px!important;
-    min-width:0!important;
-    max-width:100%!important;
-    min-height:58px!important;
-    padding:0 6px!important;
-    border:0!important;
-    border-right:1px solid rgba(244,247,244,.10)!important;
-    border-radius:0!important;
-    background:transparent!important;
-    box-shadow:none!important;
-    text-align:left!important;
-    overflow:hidden!important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:last-child{
-    border-right:0!important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-link-icon{
-    grid-column:1!important;
-    grid-row:1 / 3!important;
-    width:17px!important;
-    height:17px!important;
-    min-width:17px!important;
-    margin:0!important;
-    align-self:center!important;
-    justify-self:center!important;
-    font-size:8.5px!important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link > span:not(.challenge-goal-link-icon){
-    grid-column:2!important;
-    grid-row:1!important;
-    display:block!important;
-    width:100%!important;
-    min-width:0!important;
-    max-width:100%!important;
-    overflow:hidden!important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b{
-    display:block!important;
-    width:100%!important;
-    min-width:0!important;
-    max-width:100%!important;
-    font-size:9px!important;
-    line-height:1.05!important;
-    font-weight:900!important;
-    color:#ffffff!important;
-    white-space:nowrap!important;
-    overflow:hidden!important;
-    text-overflow:ellipsis!important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link small{
-    display:none!important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-    grid-column:2!important;
-    grid-row:2!important;
-    display:block!important;
-    justify-self:start!important;
-    align-self:start!important;
-    width:100%!important;
-    min-width:0!important;
-    max-width:100%!important;
-    margin:2px 0 0!important;
-    font-size:10px!important;
-    line-height:1.05!important;
-    font-weight:900!important;
-    color:#ffffff!important;
-    white-space:nowrap!important;
-    overflow:hidden!important;
-    text-overflow:ellipsis!important;
-  }
 }
 @media (max-width:380px){
-  body.change-view-challenges #challenges-view .challenge-goal-side-link,
-  body.change-view-challenges #challenges-view button.challenge-goal-side-link{
-    grid-template-columns:14px minmax(0,1fr)!important;
-    gap:1px 4px!important;
-    padding:0 4px!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-link-icon{
-    width:14px!important;
-    height:14px!important;
-    min-width:14px!important;
-    font-size:7px!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b{font-size:8px!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{font-size:8.5px!important;}
 }
 
 
@@ -4146,162 +3115,14 @@ body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-badge{
 }
 
 /* Challenges-Hero: exakt dieselbe Leserichtung wie Pollen: Icon links, Titel rechts oben, Wert rechts unten */
-body.change-view-challenges #challenges-view .challenge-goal-side-link b{
-  color:rgba(244,247,244,.70)!important;
-  font-weight:900!important;
-}
-body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-  color:#ffffff!important;
-  font-weight:900!important;
-}
 
 @media (min-width:701px){
-  body.change-view-challenges #challenges-view .challenge-goal-side-link,
-  body.change-view-challenges #challenges-view button.challenge-goal-side-link{
-    display:grid!important;
-    grid-template-columns:32px minmax(0,1fr)!important;
-    grid-template-rows:auto auto!important;
-    align-content:center!important;
-    align-items:center!important;
-    gap:2px 12px!important;
-    min-height:68px!important;
-    padding:10px 0!important;
-    border:0!important;
-    border-bottom:1px solid rgba(244,247,244,.10)!important;
-    border-radius:0!important;
-    background:transparent!important;
-    box-shadow:none!important;
-    text-align:left!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:last-child{border-bottom:0!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-link-icon{
-    grid-column:1!important;
-    grid-row:1 / 3!important;
-    width:24px!important;
-    height:24px!important;
-    min-width:24px!important;
-    align-self:center!important;
-    justify-self:center!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link > span:not(.challenge-goal-link-icon){
-    grid-column:2!important;
-    grid-row:1!important;
-    display:block!important;
-    min-width:0!important;
-    overflow:hidden!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b{
-    display:block!important;
-    font-size:13px!important;
-    line-height:1.1!important;
-    white-space:nowrap!important;
-    overflow:hidden!important;
-    text-overflow:ellipsis!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link small{display:none!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-    grid-column:2!important;
-    grid-row:2!important;
-    display:block!important;
-    margin:3px 0 0!important;
-    font-size:16px!important;
-    line-height:1.1!important;
-    white-space:nowrap!important;
-    overflow:hidden!important;
-    text-overflow:ellipsis!important;
-  }
 }
 
 @media (max-width:700px){
-  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
-    display:grid!important;
-    grid-template-columns:repeat(3,minmax(0,1fr))!important;
-    gap:0!important;
-    border-left:0!important;
-    border-top:1px solid rgba(244,247,244,.12)!important;
-    padding:12px 0 0!important;
-    overflow:hidden!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link,
-  body.change-view-challenges #challenges-view button.challenge-goal-side-link{
-    display:grid!important;
-    grid-template-columns:16px minmax(0,1fr)!important;
-    grid-template-rows:auto auto!important;
-    align-content:center!important;
-    align-items:center!important;
-    gap:1px 6px!important;
-    min-width:0!important;
-    min-height:58px!important;
-    padding:0 6px!important;
-    border:0!important;
-    border-right:1px solid rgba(244,247,244,.10)!important;
-    border-radius:0!important;
-    background:transparent!important;
-    box-shadow:none!important;
-    text-align:left!important;
-    overflow:hidden!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:last-child{border-right:0!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-link-icon{
-    grid-column:1!important;
-    grid-row:1 / 3!important;
-    width:16px!important;
-    height:16px!important;
-    min-width:16px!important;
-    font-size:8px!important;
-    align-self:center!important;
-    justify-self:center!important;
-    margin:0!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link > span:not(.challenge-goal-link-icon){
-    grid-column:2!important;
-    grid-row:1!important;
-    display:block!important;
-    min-width:0!important;
-    max-width:100%!important;
-    overflow:hidden!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b{
-    display:block!important;
-    font-size:9px!important;
-    line-height:1.05!important;
-    white-space:nowrap!important;
-    overflow:hidden!important;
-    text-overflow:ellipsis!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link small{display:none!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-    grid-column:2!important;
-    grid-row:2!important;
-    display:block!important;
-    justify-self:start!important;
-    align-self:start!important;
-    min-width:0!important;
-    max-width:100%!important;
-    margin:2px 0 0!important;
-    font-size:10px!important;
-    line-height:1.05!important;
-    white-space:nowrap!important;
-    overflow:hidden!important;
-    text-overflow:ellipsis!important;
-  }
 }
 
 @media (max-width:380px){
-  body.change-view-challenges #challenges-view .challenge-goal-side-link,
-  body.change-view-challenges #challenges-view button.challenge-goal-side-link{
-    grid-template-columns:14px minmax(0,1fr)!important;
-    gap:1px 4px!important;
-    padding:0 4px!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-link-icon{
-    width:14px!important;
-    height:14px!important;
-    min-width:14px!important;
-    font-size:7px!important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b{font-size:8px!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{font-size:8.5px!important;}
 }
 
 
@@ -4466,38 +3287,8 @@ body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
 /* v0.1.0118 · Challenges mobile missing divider fix
    Ergänzt mobil den fehlenden Zwischenstrich zwischen Heute und Offen. */
 @media (max-width:700px){
-  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
-    column-gap:0!important;
-  }
 
-  body.change-view-challenges #challenges-view .challenge-goal-side-link{
-    position:relative!important;
-    border-right:0!important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link::after{
-    content:""!important;
-    position:absolute!important;
-    top:8px!important;
-    right:0!important;
-    bottom:8px!important;
-    width:1px!important;
-    background:rgba(244,247,244,.14)!important;
-    pointer-events:none!important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:last-child::after{
-    content:none!important;
-    display:none!important;
-  }
 }
-
-[data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side-link::after,
-body.theme-light.change-view-challenges #challenges-view .challenge-goal-side-link::after,
-body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side-link::after{
-  background:rgba(15,32,23,.12)!important;
-}
-
 
 /* v0.1.0119 · Pollen-style section headings for Challenges and Calendar */
 body.change-view-challenges #challenges-view .challenge-title,
@@ -4523,18 +3314,7 @@ body.change-view-challenges #challenges-view .challenge-week-sub{
   display:none!important;
 }
 
-body.change-view-calendar #calendar-premium-view .cal-premium-section-head strong,
 body.change-view-calendar #calendar-premium-view .cal-premium-side-head strong,
-body.change-view-calendar #calendar-premium-view .cal-premium-month-head strong,
-body.change-view-calendar #calendar-premium-view .cal-premium-agenda .cal-premium-section-head strong,
-body.change-view-calendar #calendar-premium-view .cal-premium-week .cal-premium-section-head strong{
-  font-size:12px!important;
-  line-height:1.2!important;
-  font-weight:900!important;
-  text-transform:uppercase!important;
-  letter-spacing:.08em!important;
-  color:rgba(244,247,244,.72)!important;
-}
 
 [data-theme="light"] body.change-view-challenges #challenges-view .challenge-title,
 [data-theme="light"] body.change-view-challenges #challenges-view .challenge-week-title,
@@ -4542,11 +3322,8 @@ body.theme-light.change-view-challenges #challenges-view .challenge-title,
 body.theme-light.change-view-challenges #challenges-view .challenge-week-title,
 body.change-theme-light.change-view-challenges #challenges-view .challenge-title,
 body.change-theme-light.change-view-challenges #challenges-view .challenge-week-title,
-[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-section-head strong,
 [data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-side-head strong,
-body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-section-head strong,
 body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-side-head strong,
-body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-section-head strong,
 body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-side-head strong{
   color:rgba(20,32,24,.58)!important;
 }
@@ -4611,14 +3388,9 @@ body.change-view-challenges #challenges-view .challenge-layout > .challenge-task
 body.change-view-challenges #challenges-view .challenge-layout > .challenge-leader-block{grid-area:leaders;grid-column:2;order:3;}
 body.change-view-challenges #challenges-view .challenge-tasks-head-row .btn{margin-left:auto;}
 
-body.change-view-calendar #calendar-premium-view .cal-premium-section-head,
 body.change-view-calendar #calendar-premium-view .cal-premium-side-head strong{display:none!important;}
 body.change-view-calendar #calendar-premium-view .cal-premium-week,
 body.change-view-calendar #calendar-premium-view .cal-premium-card,
-body.change-view-calendar #calendar-premium-view .cal-premium-side-card{padding-top:18px!important;}
-body.change-view-calendar #calendar-premium-view .cal-premium-side-head{margin-bottom:12px!important;justify-content:flex-end!important;}
-body.change-view-calendar #calendar-premium-view .cal-premium-month-head{display:flex!important;}
-body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:flex;align-items:center;}
 
 @media (max-width:700px){
   .change-outside-section-row{margin-bottom:8px;}
@@ -4650,205 +3422,31 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
 
 /* v0.1.0131 · Challenges mobile stat dividers aligned to Pollen */
 @media (max-width:700px){
-  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
-    display:grid !important;
-    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
-    align-items:stretch !important;
-    column-gap:0 !important;
-    row-gap:0 !important;
-    padding-top:12px !important;
-    border-top:1px solid rgba(244,247,244,.10) !important;
-    border-left:0 !important;
-  }
 
-  body.change-view-challenges #challenges-view .challenge-goal-side-link{
-    position:relative !important;
-    min-height:54px !important;
-    height:100% !important;
-    display:grid !important;
-    grid-template-columns:20px minmax(0,1fr) !important;
-    align-content:center !important;
-    align-items:center !important;
-    gap:0 8px !important;
-    padding:0 10px !important;
-    margin:0 !important;
-    border:0 !important;
-    border-radius:0 !important;
-    background:transparent !important;
-    box-shadow:none !important;
-    overflow:hidden !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link::after{
-    content:none !important;
-    display:none !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:not(:last-child){
-    border-right:1px solid rgba(244,247,244,.10) !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-link-icon{
-    grid-column:1 !important;
-    grid-row:1 / 3 !important;
-    width:18px !important;
-    height:18px !important;
-    min-width:18px !important;
-    min-height:18px !important;
-    align-self:center !important;
-    justify-self:start !important;
-    margin:0 !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link > span:not(.challenge-goal-link-icon){
-    grid-column:2 !important;
-    grid-row:1 / 3 !important;
-    display:flex !important;
-    flex-direction:column !important;
-    align-items:flex-start !important;
-    justify-content:center !important;
-    min-width:0 !important;
-    gap:1px !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b{
-    font-size:9.5px !important;
-    line-height:1.05 !important;
-    color:rgba(244,247,244,.72) !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-    font-size:11px !important;
-    line-height:1.08 !important;
-    color:#fff !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
 }
 
 @media (max-width:380px){
-  body.change-view-challenges #challenges-view .challenge-goal-side-link{
-    grid-template-columns:18px minmax(0,1fr) !important;
-    gap:0 6px !important;
-    padding:0 7px !important;
-  }
 }
 
 
 /* v0.1.0132 · Challenges mobile stat text overlap fix */
 @media (max-width:700px){
-  body.change-view-challenges #challenges-view .challenge-goal-side-link{
-    grid-template-columns:22px minmax(0,1fr) !important;
-    grid-template-rows:auto auto !important;
-    align-content:center !important;
-    align-items:center !important;
-    min-height:58px !important;
-    gap:1px 8px !important;
-    padding:0 9px !important;
-    overflow:hidden !important;
-  }
 
-  body.change-view-challenges #challenges-view .challenge-goal-link-icon{
-    grid-column:1 !important;
-    grid-row:1 / 3 !important;
-    align-self:center !important;
-    justify-self:start !important;
-    width:18px !important;
-    height:18px !important;
-    min-width:18px !important;
-    min-height:18px !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link > span:not(.challenge-goal-link-icon){
-    display:contents !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b{
-    grid-column:2 !important;
-    grid-row:1 !important;
-    display:block !important;
-    margin:0 !important;
-    padding:0 !important;
-    font-size:9.5px !important;
-    line-height:1.08 !important;
-    font-weight:850 !important;
-    color:rgba(244,247,244,.72) !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-    transform:none !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link small{
-    display:none !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-    grid-column:2 !important;
-    grid-row:2 !important;
-    display:block !important;
-    margin:1px 0 0 0 !important;
-    padding:0 !important;
-    font-size:11px !important;
-    line-height:1.08 !important;
-    font-weight:950 !important;
-    color:#ffffff !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-    transform:none !important;
-  }
 }
 
 @media (max-width:380px){
-  body.change-view-challenges #challenges-view .challenge-goal-side-link{
-    grid-template-columns:20px minmax(0,1fr) !important;
-    gap:1px 6px !important;
-    padding:0 6px !important;
-  }
 
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b{
-    font-size:8.5px !important;
-  }
 
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-    font-size:10px !important;
-  }
 }
 
 
 /* v0.1.0134 · Challenges mobile Abzeichen spacing fix */
 @media (max-width:700px){
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:first-child{
-    padding-left:14px !important;
-    padding-right:8px !important;
-    grid-template-columns:20px minmax(0,1fr) !important;
-    gap:0 7px !important;
-  }
 
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:first-child .challenge-goal-link-icon{
-    justify-self:start !important;
-    margin-left:0 !important;
-  }
 
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:first-child b,
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:first-child strong{
-    padding-left:0 !important;
-    margin-left:0 !important;
-  }
 }
 
 @media (max-width:380px){
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:first-child{
-    padding-left:10px !important;
-    padding-right:5px !important;
-    grid-template-columns:18px minmax(0,1fr) !important;
-    gap:0 5px !important;
-  }
 }
 
 
@@ -4869,11 +3467,6 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
     display:block !important;
   }
 
-  body.change-view-challenges #challenges-view .challenge-goal-hero-inner.challenge-goal-hero-clean{
-    min-height:calc(var(--change-mobile-hero-min-height) - 36px) !important;
-    display:grid !important;
-    grid-template-rows:auto 1fr auto !important;
-  }
 
   body.change-view-calendar #calendar-premium-view .cal-premium-hero{
     display:grid !important;
@@ -4899,11 +3492,6 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
     overflow:hidden !important;
   }
 
-  body.change-view-challenges #challenges-view .challenge-goal-hero-inner.challenge-goal-hero-clean{
-    height:100% !important;
-    min-height:0 !important;
-    box-sizing:border-box !important;
-  }
 
   body.change-view-calendar #calendar-premium-view .cal-premium-hero{
     align-content:stretch !important;
@@ -5066,7 +3654,6 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
   }
 
   body.change-view-calendar #calendar-premium-view .cal-premium-eyebrow,
-  body.change-view-challenges #challenges-view .challenge-goal-kicker,
   body.change-view-dashboard #dashboard-view .dashp-eyebrow,
   body.change-view-pollen #pollen-view .pollen-neo-hero .pollen-neo-label,
   body.neo-pollen-shell #pollen-view .pollen-neo-hero .pollen-neo-label{
@@ -5081,7 +3668,6 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
   }
 
   body.change-view-calendar #calendar-premium-view .cal-premium-hero h2,
-  body.change-view-challenges #challenges-view .challenge-goal-title,
   body.change-view-dashboard #dashboard-view .dashp-hero-title,
   body.change-view-pollen #pollen-view .pollen-neo-hero-title,
   body.neo-pollen-shell #pollen-view .pollen-neo-hero-title{
@@ -5103,7 +3689,6 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
   body.neo-pollen-shell #pollen-view .pollen-neo-hero.low .pollen-neo-hero-title{color:var(--change-mobile-hero-green) !important;}
 
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-line,
-  body.change-view-challenges #challenges-view .challenge-goal-sub,
   body.change-view-dashboard #dashboard-view .dashp-next,
   body.change-view-pollen #pollen-view .pollen-neo-subline,
   body.neo-pollen-shell #pollen-view .pollen-neo-subline{
@@ -5124,9 +3709,6 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
   }
 
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-side,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats,
-  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list,
   body.change-view-dashboard #dashboard-view .dashp-hero-insights{
     width:100% !important;
     margin:0 !important;
@@ -5143,9 +3725,6 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
 
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-row,
   body.change-view-calendar #calendar-premium-view button.cal-premium-hero-row,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats > div,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats > div,
-  body.change-view-challenges #challenges-view .challenge-goal-side-link,
   body.change-view-dashboard #dashboard-view .dashp-insight-row{
     min-height:58px !important;
     padding:0 8px !important;
@@ -5165,19 +3744,11 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
   }
 
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-row:last-child,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats > div:last-child,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats > div:last-child,
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:last-child,
   body.change-view-dashboard #dashboard-view .dashp-insight-row:last-child{
     border-right:0 !important;
   }
 
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-icon,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats .dot,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats .mark,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats .dot,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats .mark,
-  body.change-view-challenges #challenges-view .challenge-goal-link-icon,
   body.change-view-dashboard #dashboard-view .dashp-insight-dot{
     grid-column:1 !important;
     grid-row:1 / 3 !important;
@@ -5199,24 +3770,10 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
 
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body,
   body.change-view-dashboard #dashboard-view .dashp-insight-row > span:not(.dashp-insight-dot),
-  body.change-view-challenges #challenges-view .challenge-goal-side-link > span:not(.challenge-goal-link-icon){
-    grid-column:2 !important;
-    grid-row:1 / 3 !important;
-    display:flex !important;
-    flex-direction:column !important;
-    justify-content:center !important;
-    min-width:0 !important;
-  }
 
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body strong,
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body em,
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-badge,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats strong,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats em,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats strong,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats em,
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b,
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong,
   body.change-view-dashboard #dashboard-view .dashp-insight-row b,
   body.change-view-dashboard #dashboard-view .dashp-insight-row small{
     display:block !important;
@@ -5229,9 +3786,6 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
   }
 
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body strong,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats strong,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats strong,
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b,
   body.change-view-dashboard #dashboard-view .dashp-insight-row b{
     margin:0 0 2px !important;
     font-size:10px !important;
@@ -5242,9 +3796,6 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
 
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body em,
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-badge,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats em,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats em,
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong,
   body.change-view-dashboard #dashboard-view .dashp-insight-row small{
     margin:0 !important;
     font-size:11px !important;
@@ -5309,9 +3860,6 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
     margin:0 !important;
     opacity:.58 !important;
   }
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats{grid-area:stats !important;}
-  body.change-view-pollen #pollen-view .pollen-neo-cta,
   body.neo-pollen-shell #pollen-view .pollen-neo-cta{
     margin-top:14px !important;
     padding:8px 12px !important;
@@ -5319,15 +3867,6 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
     line-height:1.1 !important;
   }
 
-  body.change-view-challenges #challenges-view .challenge-goal-hero-inner.challenge-goal-hero-clean{
-    height:100% !important;
-    min-height:0 !important;
-    display:grid !important;
-    grid-template-columns:1fr !important;
-    grid-template-rows:minmax(0,1fr) auto !important;
-    gap:12px !important;
-    align-items:stretch !important;
-  }
   body.change-view-challenges #challenges-view .challenge-goal-main{
     display:flex !important;
     flex-direction:column !important;
@@ -5335,11 +3874,6 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
     align-items:flex-start !important;
     min-width:0 !important;
     text-align:left !important;
-  }
-  body.change-view-challenges #challenges-view .challenge-goal-progress-wrap{
-    width:100% !important;
-    max-width:none !important;
-    margin-top:auto !important;
   }
 
   [data-theme="light"] body.change-view-dashboard #dashboard-view .dashp-hero > .dashp-main-hero,
@@ -5362,9 +3896,6 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
   [data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-hero h2,
   body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-hero h2,
   body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-hero h2,
-  [data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-title,
-  body.theme-light.change-view-challenges #challenges-view .challenge-goal-title,
-  body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-title,
   [data-theme="light"] body.change-view-dashboard #dashboard-view .dashp-hero-title,
   body.theme-light.change-view-dashboard #dashboard-view .dashp-hero-title,
   body.change-theme-light.change-view-dashboard #dashboard-view .dashp-hero-title,
@@ -5374,9 +3905,6 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
   [data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body em,
   body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body em,
   body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body em,
-  [data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side-link strong,
-  body.theme-light.change-view-challenges #challenges-view .challenge-goal-side-link strong,
-  body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side-link strong,
   [data-theme="light"] body.change-view-dashboard #dashboard-view .dashp-insight-row small,
   body.theme-light.change-view-dashboard #dashboard-view .dashp-insight-row small,
   body.change-theme-light.change-view-dashboard #dashboard-view .dashp-insight-row small{
@@ -5386,9 +3914,6 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
   [data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-hero-line,
   body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-hero-line,
   body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-hero-line,
-  [data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-sub,
-  body.theme-light.change-view-challenges #challenges-view .challenge-goal-sub,
-  body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-sub,
   [data-theme="light"] body.change-view-dashboard #dashboard-view .dashp-next,
   body.theme-light.change-view-dashboard #dashboard-view .dashp-next,
   body.change-theme-light.change-view-dashboard #dashboard-view .dashp-next,
@@ -5398,17 +3923,12 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
   [data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body strong,
   body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body strong,
   body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body strong,
-  [data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side-link b,
-  body.theme-light.change-view-challenges #challenges-view .challenge-goal-side-link b,
-  body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side-link b,
   [data-theme="light"] body.change-view-dashboard #dashboard-view .dashp-insight-row b,
   body.theme-light.change-view-dashboard #dashboard-view .dashp-insight-row b,
   body.change-theme-light.change-view-dashboard #dashboard-view .dashp-insight-row b{
     color:#5d6b61 !important;
   }
 }
-
-
 
 /* v0.1.0147 · Pollen mobile HeroCard Restversatz entfernt
    UI-only: Pollen bekommt mobil dieselbe sichtbare Nähe zwischen Titel und HeroCard wie Kalender und Challenges. */
@@ -5484,159 +4004,16 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
     align-self:center !important;
   }
 
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats{
-    grid-area:stats !important;
-    align-self:end !important;
-  }
 }
 
 /* v0.1.0149 · Challenges mobile Hero-Metriken ohne Überlappung
    UI-only: Nur die innere Kennzahlenzeile der Gruppen-Ziel-HeroCard wird stabilisiert. */
 @media (max-width:700px){
-  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
-    width:100% !important;
-    margin:0 !important;
-    padding:12px 0 0 !important;
-    border-left:0 !important;
-    border-top:1px solid var(--change-mobile-hero-line,rgba(244,247,244,.10)) !important;
-    display:grid !important;
-    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
-    gap:0 !important;
-    align-items:stretch !important;
-    align-content:end !important;
-    overflow:hidden !important;
-    box-sizing:border-box !important;
-  }
 
-  body.change-view-challenges #challenges-view .challenge-goal-side-link,
-  body.change-view-challenges #challenges-view button.challenge-goal-side-link{
-    position:relative !important;
-    min-width:0 !important;
-    max-width:100% !important;
-    min-height:62px !important;
-    height:62px !important;
-    padding:0 8px !important;
-    border:0 !important;
-    border-right:1px solid var(--change-mobile-hero-line,rgba(244,247,244,.10)) !important;
-    border-radius:0 !important;
-    background:transparent !important;
-    box-shadow:none !important;
-    display:grid !important;
-    grid-template-columns:22px minmax(0,1fr) !important;
-    grid-template-rows:auto auto !important;
-    column-gap:8px !important;
-    row-gap:2px !important;
-    align-content:center !important;
-    align-items:center !important;
-    justify-items:start !important;
-    text-align:left !important;
-    overflow:hidden !important;
-    box-sizing:border-box !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:last-child,
-  body.change-view-challenges #challenges-view button.challenge-goal-side-link:last-child{
-    border-right:0 !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-link-icon{
-    grid-column:1 !important;
-    grid-row:1 / 3 !important;
-    width:22px !important;
-    height:22px !important;
-    min-width:22px !important;
-    margin:0 !important;
-    border-radius:999px !important;
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    align-self:center !important;
-    justify-self:center !important;
-    font-size:11px !important;
-    line-height:1 !important;
-    transform:none !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link > span:not(.challenge-goal-link-icon){
-    grid-column:2 !important;
-    grid-row:1 !important;
-    display:block !important;
-    width:100% !important;
-    min-width:0 !important;
-    max-width:100% !important;
-    height:auto !important;
-    min-height:0 !important;
-    margin:0 !important;
-    padding:0 !important;
-    overflow:hidden !important;
-    transform:none !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b{
-    display:block !important;
-    width:100% !important;
-    min-width:0 !important;
-    max-width:100% !important;
-    margin:0 !important;
-    padding:0 !important;
-    font-size:10px !important;
-    line-height:1.05 !important;
-    font-weight:900 !important;
-    color:var(--change-mobile-hero-muted,rgba(244,247,244,.68)) !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link small{
-    display:none !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-    grid-column:2 !important;
-    grid-row:2 !important;
-    display:block !important;
-    width:100% !important;
-    min-width:0 !important;
-    max-width:100% !important;
-    margin:1px 0 0 !important;
-    padding:0 !important;
-    justify-self:start !important;
-    align-self:start !important;
-    font-size:12px !important;
-    line-height:1.05 !important;
-    font-weight:950 !important;
-    color:var(--change-mobile-hero-text,#fff) !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-    text-align:left !important;
-  }
 }
 
 @media (max-width:380px){
-  body.change-view-challenges #challenges-view .challenge-goal-side-link,
-  body.change-view-challenges #challenges-view button.challenge-goal-side-link{
-    grid-template-columns:18px minmax(0,1fr) !important;
-    column-gap:6px !important;
-    padding:0 6px !important;
-  }
 
-  body.change-view-challenges #challenges-view .challenge-goal-link-icon{
-    width:18px !important;
-    height:18px !important;
-    min-width:18px !important;
-    font-size:9px !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b{
-    font-size:9px !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-    font-size:11px !important;
-  }
 }
 
 
@@ -5644,180 +4021,16 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
    UI-only: Die untere Kennzahlenzeile der Gruppenziel-HeroCard nutzt wieder dieselbe
    3-Spalten-Geometrie wie Pollen, damit die vertikalen Striche optisch nicht versetzt wirken. */
 @media (max-width:700px){
-  body.change-view-challenges #challenges-view .challenge-goal-hero-inner.challenge-goal-hero-clean{
-    height:100% !important;
-    min-height:0 !important;
-    display:grid !important;
-    grid-template-columns:1fr !important;
-    grid-template-rows:minmax(0,1fr) auto !important;
-    gap:12px !important;
-    align-items:stretch !important;
-  }
 
-  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
-    width:100% !important;
-    max-width:100% !important;
-    margin:0 !important;
-    padding:12px 0 0 !important;
-    border-left:0 !important;
-    border-top:1px solid var(--change-mobile-hero-line,rgba(244,247,244,.10)) !important;
-    display:grid !important;
-    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
-    gap:0 !important;
-    align-self:end !important;
-    align-items:stretch !important;
-    align-content:end !important;
-    overflow:hidden !important;
-    box-sizing:border-box !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link,
-  body.change-view-challenges #challenges-view button.challenge-goal-side-link{
-    position:relative !important;
-    min-width:0 !important;
-    max-width:100% !important;
-    min-height:58px !important;
-    height:58px !important;
-    margin:0 !important;
-    padding:0 8px !important;
-    border:0 !important;
-    border-right:1px solid var(--change-mobile-hero-line,rgba(244,247,244,.10)) !important;
-    border-radius:0 !important;
-    background:transparent !important;
-    box-shadow:none !important;
-    display:grid !important;
-    grid-template-columns:18px minmax(0,1fr) !important;
-    grid-template-rows:auto auto !important;
-    column-gap:7px !important;
-    row-gap:1px !important;
-    align-content:center !important;
-    align-items:center !important;
-    justify-items:start !important;
-    text-align:left !important;
-    overflow:hidden !important;
-    box-sizing:border-box !important;
-    transform:none !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:last-child,
-  body.change-view-challenges #challenges-view button.challenge-goal-side-link:last-child{
-    border-right:0 !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-link-icon{
-    grid-column:1 !important;
-    grid-row:1 / 3 !important;
-    width:18px !important;
-    height:18px !important;
-    min-width:18px !important;
-    min-height:18px !important;
-    margin:0 !important;
-    border-radius:999px !important;
-    align-self:center !important;
-    justify-self:center !important;
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    font-size:9px !important;
-    line-height:1 !important;
-    transform:none !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link > span:not(.challenge-goal-link-icon){
-    grid-column:2 !important;
-    grid-row:1 !important;
-    display:block !important;
-    min-width:0 !important;
-    max-width:100% !important;
-    width:100% !important;
-    height:auto !important;
-    margin:0 !important;
-    padding:0 !important;
-    overflow:hidden !important;
-    align-self:end !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b,
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-    display:block !important;
-    width:100% !important;
-    min-width:0 !important;
-    max-width:100% !important;
-    margin:0 !important;
-    padding:0 !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-    text-align:left !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b{
-    font-size:10px !important;
-    line-height:1.05 !important;
-    font-weight:900 !important;
-    color:var(--change-mobile-hero-muted,rgba(244,247,244,.68)) !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link small{
-    display:none !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-    grid-column:2 !important;
-    grid-row:2 !important;
-    align-self:start !important;
-    justify-self:start !important;
-    font-size:11px !important;
-    line-height:1.08 !important;
-    font-weight:950 !important;
-    color:var(--change-mobile-hero-text,#fff) !important;
-  }
 }
 
 @media (max-width:380px){
-  body.change-view-challenges #challenges-view .challenge-goal-side-link,
-  body.change-view-challenges #challenges-view button.challenge-goal-side-link{
-    grid-template-columns:18px minmax(0,1fr) !important;
-    column-gap:6px !important;
-    padding:0 6px !important;
-  }
 
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b{
-    font-size:9.5px !important;
-  }
 
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-    font-size:10.5px !important;
-  }
 }
 
 @media (max-width:700px){
-  [data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list,
-  body.theme-light.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list,
-  body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
-    border-top-color:rgba(15,32,23,.12) !important;
-  }
 
-  [data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side-link,
-  [data-theme="light"] body.change-view-challenges #challenges-view button.challenge-goal-side-link,
-  body.theme-light.change-view-challenges #challenges-view .challenge-goal-side-link,
-  body.theme-light.change-view-challenges #challenges-view button.challenge-goal-side-link,
-  body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side-link,
-  body.change-theme-light.change-view-challenges #challenges-view button.challenge-goal-side-link{
-    border-right-color:rgba(15,32,23,.12) !important;
-  }
-
-  [data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side-link b,
-  body.theme-light.change-view-challenges #challenges-view .challenge-goal-side-link b,
-  body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side-link b{
-    color:#5d6b61 !important;
-  }
-
-  [data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side-link strong,
-  body.theme-light.change-view-challenges #challenges-view .challenge-goal-side-link strong,
-  body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-    color:#142018 !important;
-  }
 }
 
 /* v0.1.0151 · Lokale HeroCards rechts im Pollen-Raster
@@ -5847,14 +4060,6 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
     display:block !important;
   }
 
-  body.change-view-challenges #challenges-view .challenge-goal-hero-inner.challenge-goal-hero-clean{
-    display:grid !important;
-    grid-template-columns:minmax(0,1fr) minmax(252px,332px) !important;
-    gap:32px !important;
-    align-items:stretch !important;
-    min-height:188px !important;
-    width:100% !important;
-  }
 
   html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen{
     display:grid !important;
@@ -5865,10 +4070,7 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
     padding:24px 28px !important;
   }
 
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats,
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-side,
-  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list,
   html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen .dashp-hero-insights{
     align-self:stretch !important;
     width:100% !important;
@@ -5890,21 +4092,13 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
     box-sizing:border-box !important;
   }
 
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats,
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-side,
-  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
-    grid-template-rows:repeat(3,minmax(0,1fr)) !important;
-  }
 
   html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen .dashp-hero-insights{
     grid-template-rows:repeat(4,minmax(0,1fr)) !important;
   }
 
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats > div,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats > div,
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-row,
-  body.change-view-challenges #challenges-view .challenge-goal-side-link,
   body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen .dashp-insight-row{
     min-width:0 !important;
     min-height:0 !important;
@@ -5930,43 +4124,15 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
     overflow:hidden !important;
   }
 
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats > div:last-child,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats > div:last-child,
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-row:last-child,
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:last-child,
   body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen .dashp-insight-row:last-child{
     border-bottom:0 !important;
   }
 
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-icon,
-  body.change-view-challenges #challenges-view .challenge-goal-link-icon,
   body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen .dashp-insight-dot,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats .dot,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats .mark,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats .dot,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats .mark{
-    grid-column:1 !important;
-    grid-row:1 / 3 !important;
-    width:24px !important;
-    height:24px !important;
-    min-width:24px !important;
-    min-height:24px !important;
-    margin:0 !important;
-    border-radius:999px !important;
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    justify-self:center !important;
-    align-self:center !important;
-    background:var(--change-local-hero-dot-bg) !important;
-    font-size:12px !important;
-    line-height:1 !important;
-    flex:0 0 auto !important;
-    box-shadow:none !important;
-  }
 
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body,
-  body.change-view-challenges #challenges-view .challenge-goal-side-link > span:not(.challenge-goal-link-icon),
   body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen .dashp-insight-row > span:not(.dashp-insight-dot){
     grid-column:2 !important;
     grid-row:1 / 3 !important;
@@ -5982,75 +4148,20 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
     overflow:hidden !important;
   }
 
-  body.change-view-challenges #challenges-view .challenge-goal-side-link small{
-    display:none !important;
-  }
 
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body strong,
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b,
   body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen .dashp-insight-row b,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats strong,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats strong{
-    display:block !important;
-    width:100% !important;
-    min-width:0 !important;
-    margin:0 !important;
-    padding:0 !important;
-    color:var(--change-local-hero-muted) !important;
-    font-size:12px !important;
-    line-height:1.08 !important;
-    font-weight:850 !important;
-    letter-spacing:0 !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
 
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body em,
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong,
   body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen .dashp-insight-row small,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats em,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats em{
-    display:block !important;
-    width:100% !important;
-    min-width:0 !important;
-    margin:0 !important;
-    padding:0 !important;
-    color:var(--change-local-hero-value) !important;
-    font-style:normal !important;
-    font-size:14px !important;
-    line-height:1.12 !important;
-    font-weight:950 !important;
-    letter-spacing:-.01em !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
 
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-    grid-column:2 !important;
-    grid-row:2 !important;
-    justify-self:start !important;
-    align-self:start !important;
-  }
 
   body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen .dashp-insight-row:hover,
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-row:hover,
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:hover{
-    background:transparent !important;
-    box-shadow:none !important;
-    border-color:var(--change-local-hero-divider) !important;
-  }
 
-  [data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-hero-stats,
-  body.theme-light.change-view-pollen #pollen-view .pollen-neo-hero-stats,
-  body.change-theme-light.change-view-pollen #pollen-view .pollen-neo-hero-stats,
   [data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-hero-side,
   body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-hero-side,
   body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-hero-side,
-  [data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list,
-  body.theme-light.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list,
-  body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list,
   [data-theme="light"] body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen .dashp-hero-insights,
   body.theme-light.change-view-dashboard #dashboard-view .dashp-main-hero-pollen .dashp-hero-insights,
   body.change-theme-light.change-view-dashboard #dashboard-view .dashp-main-hero-pollen .dashp-hero-insights{
@@ -6071,13 +4182,6 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
     padding:18px !important;
   }
 
-  body.change-view-challenges #challenges-view .challenge-goal-hero-inner.challenge-goal-hero-clean{
-    display:grid !important;
-    grid-template-columns:1fr !important;
-    grid-template-rows:minmax(0,1fr) auto !important;
-    gap:12px !important;
-    align-items:stretch !important;
-  }
 
   body.change-view-challenges #challenges-view .challenge-goal-main{
     min-width:0 !important;
@@ -6087,131 +4191,6 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
     justify-content:flex-start !important;
   }
 
-  body.change-view-challenges #challenges-view .challenge-goal-progress-wrap{
-    width:100% !important;
-    max-width:none !important;
-    margin-top:auto !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
-    width:100% !important;
-    margin:0 !important;
-    padding:12px 0 0 !important;
-    border-left:0 !important;
-    border-top:1px solid var(--change-mobile-hero-line) !important;
-    display:grid !important;
-    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
-    gap:0 !important;
-    align-items:stretch !important;
-    align-content:end !important;
-    box-sizing:border-box !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link{
-    position:relative !important;
-    min-height:58px !important;
-    margin:0 !important;
-    padding:0 8px !important;
-    border:0 !important;
-    border-radius:0 !important;
-    background:transparent !important;
-    box-shadow:none !important;
-    display:grid !important;
-    grid-template-columns:18px minmax(0,1fr) !important;
-    grid-template-rows:auto auto !important;
-    gap:0 7px !important;
-    align-content:center !important;
-    align-items:center !important;
-    text-align:left !important;
-    overflow:hidden !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link::after{
-    content:"" !important;
-    position:absolute !important;
-    top:0 !important;
-    right:0 !important;
-    width:1px !important;
-    height:100% !important;
-    background:var(--change-mobile-hero-line) !important;
-    pointer-events:none !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:last-child::after{
-    display:none !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link .challenge-goal-link-icon{
-    grid-column:1 !important;
-    grid-row:1 / 3 !important;
-    width:18px !important;
-    height:18px !important;
-    min-width:18px !important;
-    border-radius:999px !important;
-    align-self:center !important;
-    justify-self:center !important;
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    margin:0 !important;
-    font-size:9px !important;
-    line-height:1 !important;
-    background:rgba(74,222,128,.14) !important;
-    color:var(--change-mobile-hero-green) !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link > span:not(.challenge-goal-link-icon){
-    grid-column:2 !important;
-    grid-row:1 / 3 !important;
-    display:flex !important;
-    flex-direction:column !important;
-    justify-content:center !important;
-    min-width:0 !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b,
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-    display:block !important;
-    min-width:0 !important;
-    max-width:100% !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-    text-align:left !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b{
-    margin:0 0 2px !important;
-    font-size:10px !important;
-    line-height:1.05 !important;
-    font-weight:900 !important;
-    color:var(--change-mobile-hero-muted) !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link small{
-    display:none !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-    margin:0 !important;
-    font-size:11px !important;
-    line-height:1.08 !important;
-    font-weight:950 !important;
-    color:var(--change-mobile-hero-text) !important;
-    font-style:normal !important;
-  }
-
-  [data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side-link strong,
-  body.theme-light.change-view-challenges #challenges-view .challenge-goal-side-link strong,
-  body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-    color:#142018 !important;
-  }
-
-  [data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side-link b,
-  body.theme-light.change-view-challenges #challenges-view .challenge-goal-side-link b,
-  body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side-link b{
-    color:#5d6b61 !important;
-  }
 }
 
 
@@ -6233,7 +4212,6 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
   }
 
   body.change-view-calendar #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide,
-  body.change-view-challenges #challenges-view .challenge-goal-hero-inner.challenge-goal-hero-clean,
   html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen{
     display:grid !important;
     grid-template-columns:minmax(0,1fr) minmax(0,var(--change-local-hero-right-width)) !important;
@@ -6252,97 +4230,22 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
   }
 
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-side,
-  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list,
   html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen .dashp-hero-insights,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats{
-    align-self:stretch !important;
-    width:100% !important;
-    min-width:0 !important;
-    margin:0 !important;
-    padding:0 0 0 18px !important;
-    border-left:1px solid var(--change-local-hero-divider) !important;
-    border-top:0 !important;
-    display:grid !important;
-    gap:0 !important;
-    align-content:stretch !important;
-    align-items:stretch !important;
-    background:transparent !important;
-    box-shadow:none !important;
-    overflow:hidden !important;
-    box-sizing:border-box !important;
-  }
 
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-side,
-  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats{
-    grid-template-rows:repeat(3,minmax(0,1fr)) !important;
-  }
 
   html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen .dashp-hero-insights{
     grid-template-rows:repeat(4,minmax(0,1fr)) !important;
   }
 
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-row,
-  body.change-view-challenges #challenges-view .challenge-goal-side-link,
   html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen .dashp-insight-row,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats > div,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats > div{
-    min-width:0 !important;
-    min-height:0 !important;
-    margin:0 !important;
-    padding:var(--change-local-hero-row-pad) 0 !important;
-    border:0 !important;
-    border-bottom:1px solid var(--change-local-hero-divider) !important;
-    border-radius:0 !important;
-    background:transparent !important;
-    box-shadow:none !important;
-    display:grid !important;
-    grid-template-columns:var(--change-local-hero-row-icon) minmax(0,1fr) !important;
-    grid-template-rows:auto auto !important;
-    gap:0 var(--change-local-hero-row-gap) !important;
-    align-content:center !important;
-    align-items:center !important;
-    justify-items:start !important;
-    text-align:left !important;
-    overflow:hidden !important;
-    box-sizing:border-box !important;
-  }
 
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-row:last-child,
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:last-child,
   html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen .dashp-insight-row:last-child,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats > div:last-child,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats > div:last-child{
-    border-bottom:0 !important;
-  }
 
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-icon,
-  body.change-view-challenges #challenges-view .challenge-goal-link-icon,
   html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen .dashp-insight-dot,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats .dot,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats .mark,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats .dot,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats .mark{
-    grid-column:1 !important;
-    grid-row:1 / 3 !important;
-    width:var(--change-local-hero-row-icon) !important;
-    height:var(--change-local-hero-row-icon) !important;
-    min-width:var(--change-local-hero-row-icon) !important;
-    min-height:var(--change-local-hero-row-icon) !important;
-    margin:0 !important;
-    border-radius:999px !important;
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    justify-self:center !important;
-    align-self:center !important;
-    background:var(--change-local-hero-dot-bg) !important;
-    font-size:12px !important;
-    line-height:1 !important;
-    box-shadow:none !important;
-  }
 
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body,
   html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen .dashp-insight-row > span:not(.dashp-insight-dot){
@@ -6359,74 +4262,15 @@ body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{display:
     overflow:hidden !important;
   }
 
-  body.change-view-challenges #challenges-view .challenge-goal-side-link > span:not(.challenge-goal-link-icon){
-    grid-column:2 !important;
-    grid-row:1 !important;
-    width:100% !important;
-    min-width:0 !important;
-    display:block !important;
-    margin:0 !important;
-    padding:0 !important;
-    overflow:hidden !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link small{
-    display:none !important;
-  }
-
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body strong,
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b,
   html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen .dashp-insight-row b,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats strong,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats strong{
-    display:block !important;
-    width:100% !important;
-    min-width:0 !important;
-    margin:0 !important;
-    padding:0 !important;
-    color:var(--change-local-hero-muted) !important;
-    font-size:var(--change-local-hero-label-size) !important;
-    line-height:1.08 !important;
-    font-weight:850 !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
 
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body em,
   html body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen .dashp-insight-row small,
-  body.change-view-pollen #pollen-view .pollen-neo-hero-stats em,
-  body.neo-pollen-shell #pollen-view .pollen-neo-hero-stats em,
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-    display:block !important;
-    width:100% !important;
-    min-width:0 !important;
-    margin:0 !important;
-    padding:0 !important;
-    color:var(--change-local-hero-value) !important;
-    font-style:normal !important;
-    font-size:var(--change-local-hero-value-size) !important;
-    line-height:1.12 !important;
-    font-weight:950 !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
 
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong{
-    grid-column:2 !important;
-    grid-row:2 !important;
-    justify-self:start !important;
-    align-self:start !important;
-  }
 
   body.change-view-dashboard #dashboard-view .dashp-main-hero-pollen .dashp-insight-row:hover,
   body.change-view-calendar #calendar-premium-view .cal-premium-hero-row:hover,
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:hover{
-    background:transparent !important;
-    box-shadow:none !important;
-    border-color:var(--change-local-hero-divider) !important;
-  }
 }
 
 
@@ -6438,29 +4282,10 @@ body.change-view-dashboard #dashboard-view .dashp-next{
   display:none !important;
 }
 
-body.change-view-calendar #calendar-premium-view .cal-premium-agenda-row{
-  grid-template-columns:118px minmax(0,1fr) !important;
-}
-body.change-view-calendar #calendar-premium-view .cal-premium-agenda-time{
-  min-width:0 !important;
-  white-space:nowrap !important;
-  overflow:visible !important;
-  text-overflow:clip !important;
-}
-body.change-view-calendar #calendar-premium-view .cal-premium-agenda-main{
-  min-width:0 !important;
-}
 body.change-view-calendar #calendar-premium-view .cal-premium-event-icon.google{
   margin-left:2px !important;
 }
 @media (max-width:700px){
-  body.change-view-calendar #calendar-premium-view .cal-premium-agenda-row{
-    grid-template-columns:88px minmax(0,1fr) !important;
-  }
-  body.change-view-calendar #calendar-premium-view .cal-premium-agenda-time{
-    font-size:15px !important;
-    padding-right:12px !important;
-  }
 }
 
 
@@ -6485,14 +4310,6 @@ body.change-view-calendar #calendar-premium-view .cal-premium-event-icon.google{
     box-shadow:var(--change-mobile-hero-shadow-calendar) !important;
   }
 
-  body.change-view-challenges #challenges-view .challenge-goal-hero-inner.challenge-goal-hero-clean{
-    display:grid !important;
-    grid-template-columns:1fr !important;
-    grid-template-rows:minmax(0,1fr) auto !important;
-    gap:12px !important;
-    align-items:stretch !important;
-    min-height:0 !important;
-  }
 
   body.change-view-challenges #challenges-view .challenge-goal-main{
     min-width:0 !important;
@@ -6500,140 +4317,6 @@ body.change-view-calendar #calendar-premium-view .cal-premium-event-icon.google{
     flex-direction:column !important;
     align-items:flex-start !important;
     justify-content:flex-start !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-progress-wrap{
-    width:100% !important;
-    max-width:none !important;
-    margin-top:auto !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side.challenge-goal-action-list{
-    width:100% !important;
-    margin:0 !important;
-    padding:12px 0 0 !important;
-    border-left:0 !important;
-    border-top:1px solid var(--change-mobile-hero-line) !important;
-    display:grid !important;
-    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
-    gap:0 !important;
-    align-items:stretch !important;
-    align-content:end !important;
-    box-sizing:border-box !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link,
-  body.change-view-challenges #challenges-view button.challenge-goal-side-link{
-    position:relative !important;
-    min-height:58px !important;
-    margin:0 !important;
-    padding:0 8px !important;
-    border:0 !important;
-    border-right:1px solid var(--change-mobile-hero-line) !important;
-    border-radius:0 !important;
-    background:transparent !important;
-    box-shadow:none !important;
-    display:grid !important;
-    grid-template-columns:18px minmax(0,1fr) !important;
-    grid-template-rows:auto auto !important;
-    gap:0 7px !important;
-    align-content:center !important;
-    align-items:center !important;
-    text-align:left !important;
-    overflow:hidden !important;
-    transform:none !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:last-child,
-  body.change-view-challenges #challenges-view button.challenge-goal-side-link:last-child{
-    border-right:0 !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link::after,
-  body.change-view-challenges #challenges-view button.challenge-goal-side-link::after{
-    content:none !important;
-    display:none !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-link-icon{
-    grid-column:1 !important;
-    grid-row:1 / 3 !important;
-    width:18px !important;
-    height:18px !important;
-    min-width:18px !important;
-    border-radius:999px !important;
-    align-self:center !important;
-    justify-self:center !important;
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    margin:0 !important;
-    font-size:9px !important;
-    line-height:1 !important;
-    background:rgba(74,222,128,.14) !important;
-    color:var(--change-mobile-hero-green) !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:nth-child(1) .challenge-goal-link-icon,
-  body.change-view-challenges #challenges-view button.challenge-goal-side-link:nth-child(1) .challenge-goal-link-icon{background:rgba(245,158,11,.16)!important;color:#fbbf24!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:nth-child(2) .challenge-goal-link-icon,
-  body.change-view-challenges #challenges-view button.challenge-goal-side-link:nth-child(2) .challenge-goal-link-icon{background:rgba(239,68,68,.14)!important;color:#fb7185!important;}
-  body.change-view-challenges #challenges-view .challenge-goal-side-link:nth-child(3) .challenge-goal-link-icon,
-  body.change-view-challenges #challenges-view button.challenge-goal-side-link:nth-child(3) .challenge-goal-link-icon{background:rgba(74,222,128,.14)!important;color:#7ddc5b!important;}
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link > span:not(.challenge-goal-link-icon),
-  body.change-view-challenges #challenges-view button.challenge-goal-side-link > span:not(.challenge-goal-link-icon){
-    grid-column:2 !important;
-    grid-row:1 !important;
-    display:block !important;
-    min-width:0 !important;
-    width:100% !important;
-    margin:0 !important;
-    padding:0 !important;
-    overflow:hidden !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b,
-  body.change-view-challenges #challenges-view button.challenge-goal-side-link b,
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong,
-  body.change-view-challenges #challenges-view button.challenge-goal-side-link strong{
-    display:block !important;
-    min-width:0 !important;
-    max-width:100% !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-    text-align:left !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link b,
-  body.change-view-challenges #challenges-view button.challenge-goal-side-link b{
-    margin:0 0 2px !important;
-    font-size:10px !important;
-    line-height:1.05 !important;
-    font-weight:900 !important;
-    color:var(--change-mobile-hero-muted) !important;
-    letter-spacing:0 !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link small,
-  body.change-view-challenges #challenges-view button.challenge-goal-side-link small{
-    display:none !important;
-  }
-
-  body.change-view-challenges #challenges-view .challenge-goal-side-link strong,
-  body.change-view-challenges #challenges-view button.challenge-goal-side-link strong{
-    grid-column:2 !important;
-    grid-row:2 !important;
-    margin:0 !important;
-    font-size:11px !important;
-    line-height:1.08 !important;
-    font-weight:950 !important;
-    color:var(--change-mobile-hero-text) !important;
-    font-style:normal !important;
-    justify-self:start !important;
-    align-self:start !important;
-    letter-spacing:0 !important;
   }
 
   [data-theme="light"] body.change-view-dashboard #dashboard-view .dashp-hero > .dashp-main-hero,
@@ -6653,23 +4336,7 @@ body.change-view-calendar #calendar-premium-view .cal-premium-event-icon.google{
     box-shadow:0 18px 42px rgba(20,45,30,.08), inset 0 1px 0 rgba(255,255,255,.62) !important;
   }
 
-  [data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side-link strong,
-  body.theme-light.change-view-challenges #challenges-view .challenge-goal-side-link strong,
-  body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side-link strong,
-  [data-theme="light"] body.change-view-challenges #challenges-view button.challenge-goal-side-link strong,
-  body.theme-light.change-view-challenges #challenges-view button.challenge-goal-side-link strong,
-  body.change-theme-light.change-view-challenges #challenges-view button.challenge-goal-side-link strong{
-    color:#142018 !important;
-  }
 
-  [data-theme="light"] body.change-view-challenges #challenges-view .challenge-goal-side-link b,
-  body.theme-light.change-view-challenges #challenges-view .challenge-goal-side-link b,
-  body.change-theme-light.change-view-challenges #challenges-view .challenge-goal-side-link b,
-  [data-theme="light"] body.change-view-challenges #challenges-view button.challenge-goal-side-link b,
-  body.theme-light.change-view-challenges #challenges-view button.challenge-goal-side-link b,
-  body.change-theme-light.change-view-challenges #challenges-view button.challenge-goal-side-link b{
-    color:#5d6b61 !important;
-  }
 }
 
 
@@ -7042,52 +4709,6 @@ body.change-theme-light.change-view-challenges #challenges-view .challenge-week-
    UI-only: Die Kacheln im Pollen-Allergieprofil nutzen nun dieselbe Kartenfarbwelt wie die
    Innenkacheln aus dem Kalender-Wochenbereich. Gilt lokal/desktop und mobil. Keine Änderung
    an Logik, Pollenwerten, Daten, Sync, Login oder Push. */
-body.change-view-pollen #pollen-view .pollen-neo-profile-card,
-body.neo-pollen-shell #pollen-view .pollen-neo-profile-card{
-  border:1px solid rgba(255,255,255,.09) !important;
-  border-radius:17px !important;
-  background:rgba(255,255,255,.035) !important;
-  box-shadow:none !important;
-}
-body.change-view-pollen #pollen-view .pollen-neo-profile-card:hover,
-body.neo-pollen-shell #pollen-view .pollen-neo-profile-card:hover{
-  background:rgba(255,255,255,.055) !important;
-  transform:none !important;
-}
-body.change-view-pollen #pollen-view .pollen-neo-profile-card.active,
-body.neo-pollen-shell #pollen-view .pollen-neo-profile-card.active,
-body.change-view-pollen #pollen-view .pollen-neo-profile-card.high.active,
-body.neo-pollen-shell #pollen-view .pollen-neo-profile-card.high.active{
-  border-color:rgba(74,222,128,.72) !important;
-  background:linear-gradient(180deg,rgba(74,222,128,.13),rgba(74,222,128,.035)) !important;
-  box-shadow:0 12px 30px rgba(34,197,94,.08) !important;
-}
-[data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-profile-card,
-body.theme-light.change-view-pollen #pollen-view .pollen-neo-profile-card,
-body.change-theme-light.change-view-pollen #pollen-view .pollen-neo-profile-card,
-[data-theme="light"] body.neo-pollen-shell #pollen-view .pollen-neo-profile-card,
-body.theme-light.neo-pollen-shell #pollen-view .pollen-neo-profile-card,
-body.change-theme-light.neo-pollen-shell #pollen-view .pollen-neo-profile-card{
-  background:rgba(255,255,255,.72) !important;
-  border-color:rgba(20,35,24,.10) !important;
-  box-shadow:none !important;
-}
-[data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-profile-card.active,
-body.theme-light.change-view-pollen #pollen-view .pollen-neo-profile-card.active,
-body.change-theme-light.change-view-pollen #pollen-view .pollen-neo-profile-card.active,
-[data-theme="light"] body.neo-pollen-shell #pollen-view .pollen-neo-profile-card.active,
-body.theme-light.neo-pollen-shell #pollen-view .pollen-neo-profile-card.active,
-body.change-theme-light.neo-pollen-shell #pollen-view .pollen-neo-profile-card.active,
-[data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-profile-card.high.active,
-body.theme-light.change-view-pollen #pollen-view .pollen-neo-profile-card.high.active,
-body.change-theme-light.change-view-pollen #pollen-view .pollen-neo-profile-card.high.active,
-[data-theme="light"] body.neo-pollen-shell #pollen-view .pollen-neo-profile-card.high.active,
-body.theme-light.neo-pollen-shell #pollen-view .pollen-neo-profile-card.high.active,
-body.change-theme-light.neo-pollen-shell #pollen-view .pollen-neo-profile-card.high.active{
-  border-color:rgba(74,222,128,.72) !important;
-  background:linear-gradient(180deg,rgba(74,222,128,.16),rgba(74,222,128,.05)) !important;
-  box-shadow:0 12px 24px rgba(34,197,94,.10) !important;
-}
 
 
 /* v0.1.0160 · Mobile Wochenkalender-Schriftgrößen und Ziffern vereinheitlicht
@@ -7397,10 +5018,6 @@ body.change-theme-light.neo-pollen-shell #pollen-view .pollen-neo-hero-wide{
     order:initial!important;
   }
 
-  body.change-view-dashboard #settings-btn,
-  body.change-view-calendar #settings-btn,
-  body.change-view-challenges #settings-btn,
-  body.change-view-pollen #settings-btn,
   body.change-view-dashboard #notif-bell-btn,
   body.change-view-calendar #notif-bell-btn,
   body.change-view-challenges #notif-bell-btn,
@@ -7423,17 +5040,7 @@ body.change-theme-light.neo-pollen-shell #pollen-view .pollen-neo-hero-wide{
     order:initial!important;
   }
 
-  body.change-view-dashboard #settings-btn::after,
-  body.change-view-calendar #settings-btn::after,
-  body.change-view-challenges #settings-btn::after,
-  body.change-view-pollen #settings-btn::after{
-    content:none!important;
-  }
 
-  body.change-view-dashboard #settings-btn svg,
-  body.change-view-calendar #settings-btn svg,
-  body.change-view-challenges #settings-btn svg,
-  body.change-view-pollen #settings-btn svg,
   body.change-view-dashboard #notif-bell-btn svg,
   body.change-view-calendar #notif-bell-btn svg,
   body.change-view-challenges #notif-bell-btn svg,
@@ -7749,7 +5356,6 @@ body.change-theme-light.neo-pollen-shell #pollen-view .pollen-neo-hero-wide{
   }
 
   body.change-view-settings #notif-bell-btn,
-  body.change-view-settings #settings-btn,
   body.change-view-settings .avatar{
     position:relative!important;
     top:auto!important;
@@ -7766,22 +5372,6 @@ body.change-theme-light.neo-pollen-shell #pollen-view .pollen-neo-hero-wide{
     order:1!important;
   }
 
-  body.change-view-settings #settings-btn{
-    order:2!important;
-    display:flex!important;
-    width:36px!important;
-    min-width:36px!important;
-    height:36px!important;
-    min-height:36px!important;
-    padding:0!important;
-    border-radius:10px!important;
-    flex-direction:row!important;
-    align-items:center!important;
-    justify-content:center!important;
-    gap:0!important;
-    background:var(--acc-d)!important;
-    color:var(--acc)!important;
-  }
 
   body.change-view-settings .avatar{
     order:3!important;
@@ -7789,11 +5379,7 @@ body.change-theme-light.neo-pollen-shell #pollen-view .pollen-neo-hero-wide{
     height:36px!important;
   }
 
-  body.change-view-settings #settings-btn::after{
-    content:none!important;
-  }
 
-  body.change-view-settings #settings-btn svg,
   body.change-view-settings #notif-bell-btn svg{
     width:20px!important;
     height:20px!important;
@@ -7840,35 +5426,12 @@ body.change-theme-light.neo-pollen-shell #pollen-view .pollen-neo-hero-wide{
     box-shadow:none!important;
   }
 
-  body.change-view-settings #settings-btn{
-    order:2!important;
-    width:40px!important;
-    min-width:40px!important;
-    height:40px!important;
-    min-height:40px!important;
-    padding:0!important;
-    border-radius:14px!important;
-    display:flex!important;
-    flex-direction:row!important;
-    align-items:center!important;
-    justify-content:center!important;
-    background:var(--acc-d)!important;
-    color:var(--acc)!important;
-  }
-
-  body.change-view-settings #settings-btn::after{
-    content:none!important;
-    display:none!important;
-  }
-
   body.change-view-settings .avatar{
     order:3!important;
     width:40px!important;
     height:40px!important;
   }
 }
-
-
 
 /* v0.1.0174 · Scroll-Reparatur für lokale Desktop/PWA-Ansicht */
 body.change-view-challenges #content,
@@ -7918,7 +5481,6 @@ body.change-view-settings #header .h-right{
   min-height:0!important;
 }
 body.change-view-settings #header #notif-bell-btn,
-body.change-view-settings #header #settings-btn,
 body.change-view-settings #header .avatar{
   position:relative!important;
   inset:auto!important;
@@ -7938,30 +5500,6 @@ body.change-view-settings #header #notif-bell-btn{
   min-height:36px!important;
   border-radius:10px!important;
 }
-body.change-view-settings #header #settings-btn{
-  order:2!important;
-  display:flex!important;
-  flex-direction:row!important;
-  align-items:center!important;
-  justify-content:center!important;
-  gap:0!important;
-  width:36px!important;
-  min-width:36px!important;
-  max-width:36px!important;
-  height:36px!important;
-  min-height:36px!important;
-  max-height:36px!important;
-  padding:0!important;
-  border-radius:10px!important;
-  background:var(--acc-d)!important;
-  color:var(--acc)!important;
-  box-shadow:none!important;
-}
-body.change-view-settings #header #settings-btn::after{
-  content:none!important;
-  display:none!important;
-}
-body.change-view-settings #header #settings-btn svg,
 body.change-view-settings #header #notif-bell-btn svg{
   width:20px!important;
   height:20px!important;
@@ -8009,13 +5547,10 @@ body.change-view-settings #header .avatar.google-on::after{background:#22c55e!im
 @media(max-width:700px){
   body.change-view-settings #header .h-right{gap:6px!important;margin-left:auto!important;}
   body.change-view-settings #header #notif-bell-btn,
-  body.change-view-settings #header #settings-btn,
   body.change-view-settings #header .avatar{
     width:40px!important;min-width:40px!important;max-width:40px!important;
     height:40px!important;min-height:40px!important;max-height:40px!important;
   }
-  body.change-view-settings #header #settings-btn{border-radius:14px!important;}
-}
 
 
 /* v0.1.0185 · Desktop-/Lokal-AppShell wieder als linke Sidebar
@@ -8218,60 +5753,6 @@ body.change-view-settings #header .avatar.google-on::after{background:#22c55e!im
     height:58px!important;
     order:1!important;
     box-shadow:0 12px 30px rgba(0,0,0,.28)!important;
-  }
-
-  body:not(.change-login-active).change-view-dashboard #header #settings-btn,
-  body:not(.change-login-active).change-view-calendar #header #settings-btn,
-  body:not(.change-login-active).change-view-challenges #header #settings-btn,
-  body:not(.change-login-active).change-view-pollen #header #settings-btn,
-  body:not(.change-login-active).change-view-settings #header #settings-btn{
-    display:flex!important;
-    position:relative!important;
-    top:auto!important;
-    right:auto!important;
-    width:100%!important;
-    height:auto!important;
-    min-height:66px!important;
-    padding:12px 8px!important;
-    border-radius:16px!important;
-    flex-direction:column!important;
-    align-items:center!important;
-    justify-content:center!important;
-    gap:8px!important;
-    background:transparent!important;
-    color:rgba(244,247,244,.78)!important;
-    order:2!important;
-  }
-
-  body:not(.change-login-active).change-view-settings #header #settings-btn,
-  body:not(.change-login-active).change-view-dashboard #header #settings-btn:hover,
-  body:not(.change-login-active).change-view-calendar #header #settings-btn:hover,
-  body:not(.change-login-active).change-view-challenges #header #settings-btn:hover,
-  body:not(.change-login-active).change-view-pollen #header #settings-btn:hover{
-    color:#4ade80!important;
-    background:linear-gradient(180deg,rgba(24,83,40,.68),rgba(13,45,24,.88))!important;
-  }
-
-  body:not(.change-login-active).change-view-dashboard #header #settings-btn::after,
-  body:not(.change-login-active).change-view-calendar #header #settings-btn::after,
-  body:not(.change-login-active).change-view-challenges #header #settings-btn::after,
-  body:not(.change-login-active).change-view-pollen #header #settings-btn::after,
-  body:not(.change-login-active).change-view-settings #header #settings-btn::after{
-    content:"Einstellungen"!important;
-    display:block!important;
-    font-size:11.5px!important;
-    font-weight:690!important;
-    line-height:1.1!important;
-  }
-
-  body:not(.change-login-active).change-view-dashboard #header #settings-btn svg,
-  body:not(.change-login-active).change-view-calendar #header #settings-btn svg,
-  body:not(.change-login-active).change-view-challenges #header #settings-btn svg,
-  body:not(.change-login-active).change-view-pollen #header #settings-btn svg,
-  body:not(.change-login-active).change-view-settings #header #settings-btn svg{
-    width:22px!important;
-    height:22px!important;
-    stroke-width:1.9!important;
   }
 
   body:not(.change-login-active).change-view-dashboard #header #notif-bell-btn,
@@ -8514,33 +5995,6 @@ body.change-view-settings #header .avatar.google-on::after{background:#22c55e!im
     flex:0 0 54px!important;
   }
 
-  body:not(.change-login-active).change-view-dashboard #header #settings-btn,
-  body:not(.change-login-active).change-view-calendar #header #settings-btn,
-  body:not(.change-login-active).change-view-challenges #header #settings-btn,
-  body:not(.change-login-active).change-view-pollen #header #settings-btn,
-  body:not(.change-login-active).change-view-settings #header #settings-btn{
-    width:88px!important;
-    min-width:88px!important;
-    max-width:88px!important;
-    min-height:64px!important;
-    height:64px!important;
-    padding:10px 6px!important;
-    border-radius:16px!important;
-    order:2!important;
-    flex:0 0 64px!important;
-    display:flex!important;
-    flex-direction:column!important;
-    align-items:center!important;
-    justify-content:center!important;
-    gap:7px!important;
-    transform:none!important;
-  }
-
-  body:not(.change-login-active).change-view-settings #header #settings-btn{
-    color:#4ade80!important;
-    background:linear-gradient(180deg,rgba(24,83,40,.68),rgba(13,45,24,.88))!important;
-  }
-
   body:not(.change-login-active).change-view-dashboard #bottom-nav,
   body:not(.change-login-active).change-view-calendar #bottom-nav,
   body:not(.change-login-active).change-view-challenges #bottom-nav,
@@ -8661,11 +6115,6 @@ body.change-view-settings #header .avatar.google-on::after{background:#22c55e!im
     display:flex!important;
   }
 
-  body.change-view-settings #settings-btn{
-    color:#4ade80!important;
-    background:linear-gradient(180deg,rgba(24,83,40,.68),rgba(13,45,24,.88))!important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 12px 28px rgba(0,0,0,.20)!important;
-  }
 }
 
 
@@ -9120,11 +6569,6 @@ body.change-view-settings #header .avatar.google-on::after{background:#22c55e!im
     flex:0 0 auto!important;
   }
 
-  body.change-view-dashboard #settings-btn,
-  body.change-view-calendar #settings-btn,
-  body.change-view-challenges #settings-btn,
-  body.change-view-pollen #settings-btn,
-  body.change-view-settings #settings-btn,
   body.change-view-dashboard #notif-bell-btn,
   body.change-view-calendar #notif-bell-btn,
   body.change-view-challenges #notif-bell-btn,
@@ -9151,25 +6595,6 @@ body.change-view-settings #header .avatar.google-on::after{background:#22c55e!im
     background:transparent!important;
     box-shadow:none!important;
     color:var(--t2)!important;
-  }
-
-  body.change-view-settings #settings-btn,
-  body.change-view-dashboard #settings-btn:hover,
-  body.change-view-calendar #settings-btn:hover,
-  body.change-view-challenges #settings-btn:hover,
-  body.change-view-pollen #settings-btn:hover,
-  body.change-view-settings #settings-btn:hover{
-    background:rgba(52,227,123,.14)!important;
-    color:#34e37b!important;
-  }
-
-  body.change-view-dashboard #settings-btn::after,
-  body.change-view-calendar #settings-btn::after,
-  body.change-view-challenges #settings-btn::after,
-  body.change-view-pollen #settings-btn::after,
-  body.change-view-settings #settings-btn::after{
-    display:none!important;
-    content:none!important;
   }
 
   body.change-view-dashboard .avatar,
@@ -9343,7 +6768,6 @@ body.change-view-settings #header .avatar.google-on::after{background:#22c55e!im
 
   body.change-view-calendar .cal-week-strip,
   body.change-view-calendar .cal-premium-week,
-  body.change-view-calendar .cal-premium-agenda,
   body.change-view-challenges .challenge-layout,
   body.change-view-pollen .pollen-neo-grid,
   body.change-view-settings .settings-layout,
@@ -9414,13 +6838,11 @@ html body.change-view-challenges #challenges-view #group-goal-card.challenge-her
 html body.change-view-dashboard .dash-card,
 html body.change-view-calendar #calendar-premium-view .cal-premium-week,
 html body.change-view-calendar #calendar-premium-view .cal-premium-card,
-html body.change-view-calendar #calendar-premium-view .cal-premium-side-card,
 html body.change-view-challenges #challenges-view .challenge-week-card,
 html body.change-view-challenges #challenges-view .challenge-card,
 html body.change-view-challenges #challenges-view .leader-card,
 html body.change-view-pollen #pollen-view .pollen-neo-card,
 html body.change-view-settings .change-settings-profile-card,
-html body.change-view-settings .change-settings-nav-card,
 html body.change-view-settings .change-settings-detail-card,
 html body.change-view-settings .change-settings-feature-card{
   border-color:var(--change-surface-card-border)!important;
@@ -9430,7 +6852,6 @@ html body.change-view-settings .change-settings-feature-card{
   box-shadow:0 18px 48px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.045)!important;
 }
 
-html body.change-view-settings .change-settings-nav-card.active,
 html body.change-view-calendar #calendar-premium-view .cal-premium-week-day.selected,
 html body.change-view-challenges #challenges-view .challenge-week-day.is-today,
 html body.change-view-pollen #pollen-view .pollen-neo-card.active{
@@ -9441,7 +6862,6 @@ html body.change-view-pollen #pollen-view .pollen-neo-card.active{
 }
 
 html body.change-view-dashboard .dash-card-head,
-html body.change-view-calendar #calendar-premium-view .cal-premium-agenda-row,
 html body.change-view-calendar #calendar-premium-view .cal-premium-week-day,
 html body.change-view-settings .change-feature-note,
 html body.change-view-settings .change-sync-status-item,
@@ -9493,37 +6913,31 @@ body.change-theme-light.change-view-challenges #challenges-view #group-goal-card
 [data-theme="light"] html body.change-view-dashboard .dash-card,
 [data-theme="light"] html body.change-view-calendar #calendar-premium-view .cal-premium-week,
 [data-theme="light"] html body.change-view-calendar #calendar-premium-view .cal-premium-card,
-[data-theme="light"] html body.change-view-calendar #calendar-premium-view .cal-premium-side-card,
 [data-theme="light"] html body.change-view-challenges #challenges-view .challenge-week-card,
 [data-theme="light"] html body.change-view-challenges #challenges-view .challenge-card,
 [data-theme="light"] html body.change-view-challenges #challenges-view .leader-card,
 [data-theme="light"] html body.change-view-pollen #pollen-view .pollen-neo-card,
 [data-theme="light"] html body.change-view-settings .change-settings-profile-card,
-[data-theme="light"] html body.change-view-settings .change-settings-nav-card,
 [data-theme="light"] html body.change-view-settings .change-settings-detail-card,
 [data-theme="light"] html body.change-view-settings .change-settings-feature-card,
 body.theme-light.change-view-dashboard .dash-card,
 body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-week,
 body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-card,
-body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-side-card,
 body.theme-light.change-view-challenges #challenges-view .challenge-week-card,
 body.theme-light.change-view-challenges #challenges-view .challenge-card,
 body.theme-light.change-view-challenges #challenges-view .leader-card,
 body.theme-light.change-view-pollen #pollen-view .pollen-neo-card,
 body.theme-light.change-view-settings .change-settings-profile-card,
-body.theme-light.change-view-settings .change-settings-nav-card,
 body.theme-light.change-view-settings .change-settings-detail-card,
 body.theme-light.change-view-settings .change-settings-feature-card,
 body.change-theme-light.change-view-dashboard .dash-card,
 body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-week,
 body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-card,
-body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-side-card,
 body.change-theme-light.change-view-challenges #challenges-view .challenge-week-card,
 body.change-theme-light.change-view-challenges #challenges-view .challenge-card,
 body.change-theme-light.change-view-challenges #challenges-view .leader-card,
 body.change-theme-light.change-view-pollen #pollen-view .pollen-neo-card,
 body.change-theme-light.change-view-settings .change-settings-profile-card,
-body.change-theme-light.change-view-settings .change-settings-nav-card,
 body.change-theme-light.change-view-settings .change-settings-detail-card,
 body.change-theme-light.change-view-settings .change-settings-feature-card{
   border-color:rgba(16,185,129,.16)!important;
@@ -9647,14 +7061,11 @@ html body.change-view-pollen #pollen-view .pollen-neo-hero.low{
 
 /* Kleine Modul-Karten: gleiche ruhige Surface-Sprache wie Kalender, aber flacher als HeroCards. */
 html body.change-view-pollen #pollen-view .pollen-neo-card,
-html body.change-view-pollen #pollen-view .pollen-neo-forecast-list,
 html body.change-view-pollen #pollen-view .change-symptom-card,
-html body.change-view-pollen #pollen-view .pollen-neo-profile-card,
 html body.change-view-challenges #challenges-view .challenge-card,
 html body.change-view-challenges #challenges-view .leader-card,
 html body.change-view-challenges #challenges-view .challenge-week-card,
 html body.change-view-challenges #challenges-view .challenge-item,
-html body.change-view-settings .change-settings-nav-card,
 html body.change-view-settings .change-settings-detail-card,
 html body.change-view-settings .change-settings-feature-card,
 html body.change-view-settings .change-github-file,
@@ -9666,9 +7077,6 @@ html body.change-view-settings .change-github-files{
   box-shadow:0 14px 40px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.03)!important;
 }
 
-html body.change-view-settings .change-settings-nav-card.active,
-html body.change-view-settings .change-settings-nav-card:hover,
-html body.change-view-pollen #pollen-view .pollen-neo-profile-card.active,
 html body.change-view-challenges #challenges-view .challenge-week-day.is-today,
 html body.change-view-challenges #challenges-view .challenge-done{
   border-color:rgba(74,222,128,.55)!important;
@@ -9719,17 +7127,6 @@ body.change-view-settings .change-settings-premium::-webkit-scrollbar{
   body.change-view-settings .change-settings-nav-grid{
     gap:12px!important;
     grid-template-columns:repeat(3,minmax(0,1fr))!important;
-  }
-  body.change-view-settings .change-settings-nav-card{
-    min-height:102px!important;
-    padding:14px 10px!important;
-    border-radius:18px!important;
-    display:flex!important;
-    flex-direction:column!important;
-    align-items:center!important;
-    justify-content:center!important;
-    gap:10px!important;
-    text-align:center!important;
   }
   body.change-view-settings .change-settings-nav-icon{
     width:38px!important;
@@ -9820,51 +7217,6 @@ body.change-view-calendar #calendar-premium-view .cal-premium-mode-switch button
 body.change-view-calendar #calendar-premium-view .cal-premium-main-grid-agenda-only{
   grid-template-columns:1fr!important;
 }
-body.change-view-calendar #calendar-premium-view .cal-premium-agenda{
-  min-height:0!important;
-  padding:16px!important;
-}
-body.change-view-calendar #calendar-premium-view .cal-premium-agenda-list{
-  gap:8px!important;
-}
-body.change-view-calendar #calendar-premium-view .cal-premium-agenda-row{
-  min-height:62px!important;
-  grid-template-columns:104px minmax(0,1fr)!important;
-  gap:12px!important;
-  padding:11px 13px!important;
-  margin-bottom:0!important;
-  border-radius:16px!important;
-  border-color:rgba(74,222,128,.14)!important;
-  background:linear-gradient(180deg,rgba(12,22,25,.82),rgba(8,13,18,.90))!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.025)!important;
-}
-body.change-view-calendar #calendar-premium-view .cal-premium-agenda-time{
-  min-width:0!important;
-  padding-right:12px!important;
-  color:#f5fff9!important;
-  font-size:14px!important;
-  font-weight:900!important;
-  line-height:1.1!important;
-  white-space:normal!important;
-  word-break:normal!important;
-  overflow-wrap:break-word!important;
-}
-body.change-view-calendar #calendar-premium-view .cal-premium-agenda-main{
-  gap:10px!important;
-  min-width:0!important;
-}
-body.change-view-calendar #calendar-premium-view .cal-premium-agenda-main strong{
-  font-size:14px!important;
-  line-height:1.18!important;
-  font-weight:900!important;
-  letter-spacing:-.02em!important;
-}
-body.change-view-calendar #calendar-premium-view .cal-premium-agenda-main div div{
-  margin-top:3px!important;
-  font-size:11.5px!important;
-  line-height:1.2!important;
-  color:rgba(226,244,232,.58)!important;
-}
 body.change-view-calendar #calendar-premium-view .cal-premium-event-icon{
   width:32px!important;
   height:32px!important;
@@ -9872,36 +7224,18 @@ body.change-view-calendar #calendar-premium-view .cal-premium-event-icon{
   border-radius:13px!important;
   font-size:13px!important;
 }
-body.change-view-calendar #calendar-premium-view .cal-premium-agenda-footer{
-  margin-top:10px!important;
-  padding-top:10px!important;
-}
 body.change-view-calendar #calendar-premium-view .cal-premium-add{
   min-height:44px!important;
   border-radius:15px!important;
 }
-body.change-view-calendar #calendar-premium-view .cal-month-block .cal-premium-side-card,
 body.change-view-calendar #calendar-premium-view .cal-week-block .cal-premium-week{
   border-color:var(--change-calendar-surface-border)!important;
   background:var(--change-calendar-surface-bg)!important;
   box-shadow:0 18px 46px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.035)!important;
 }
-body.change-view-calendar #calendar-premium-view .cal-month-block .cal-premium-mini{
-  width:100%!important;
-}
 body.change-view-settings .change-settings-nav-grid{
   grid-template-columns:repeat(3,minmax(0,1fr))!important;
   gap:14px!important;
-}
-body.change-view-settings .change-settings-nav-card{
-  min-height:118px!important;
-  grid-template-columns:1fr!important;
-  grid-template-rows:auto auto!important;
-  justify-items:center!important;
-  align-content:center!important;
-  gap:10px!important;
-  text-align:center!important;
-  padding:16px 12px!important;
 }
 body.change-view-settings .change-settings-nav-copy strong{
   font-size:14px!important;
@@ -9929,27 +7263,10 @@ body.change-view-settings .change-settings-nav-icon{
     min-width:0!important;
     width:100%!important;
   }
-  body.change-view-calendar #calendar-premium-view .cal-premium-agenda{
-    padding:14px!important;
-  }
-  body.change-view-calendar #calendar-premium-view .cal-premium-agenda-row{
-    grid-template-columns:82px minmax(0,1fr)!important;
-    min-height:58px!important;
-    padding:10px 11px!important;
-    gap:10px!important;
-    border-radius:15px!important;
-  }
-  body.change-view-calendar #calendar-premium-view .cal-premium-agenda-time{
-    font-size:13px!important;
-    padding-right:8px!important;
-  }
   body.change-view-calendar #calendar-premium-view .cal-premium-event-icon{
     width:30px!important;
     height:30px!important;
     flex-basis:30px!important;
-  }
-  body.change-view-calendar #calendar-premium-view .cal-premium-agenda-main strong{
-    font-size:13px!important;
   }
   body.change-view-settings .change-settings-premium{
     padding-left:16px!important;
@@ -9958,10 +7275,6 @@ body.change-view-settings .change-settings-nav-icon{
   body.change-view-settings .change-settings-nav-grid{
     grid-template-columns:repeat(3,minmax(0,1fr))!important;
     gap:10px!important;
-  }
-  body.change-view-settings .change-settings-nav-card{
-    min-height:104px!important;
-    padding:12px 8px!important;
   }
 }
 [data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-mode-switch,
@@ -10013,14 +7326,10 @@ html body.change-view-settings .change-settings-profile-card{
   color:#f5fff9!important;
 }
 
-html body.change-view-calendar #calendar-premium-view .cal-month-block .cal-premium-side-card,
 html body.change-view-calendar #calendar-premium-view .cal-week-block .cal-premium-week,
-html body.change-view-settings .change-settings-nav-card,
 html body.change-view-settings .change-settings-detail-card,
 html body.change-view-pollen #pollen-view .pollen-neo-card,
-html body.change-view-pollen #pollen-view .pollen-neo-forecast-list,
 html body.change-view-pollen #pollen-view .change-symptom-card,
-html body.change-view-pollen #pollen-view .pollen-neo-profile-card,
 html body.change-view-challenges #challenges-view .challenge-card,
 html body.change-view-challenges #challenges-view .leader-card,
 html body.change-view-challenges #challenges-view .challenge-week-card{
@@ -10064,20 +7373,8 @@ body.change-view-calendar #calendar-premium-view .change-week-nav-row{
   gap:10px!important;
 }
 body.change-view-calendar #calendar-premium-view .change-week-nav-controls,
-body.change-view-calendar #calendar-premium-view .cal-premium-month-nav{
-  gap:8px!important;
-}
 body.change-view-calendar #calendar-premium-view .change-week-nav-btn,
-body.change-view-calendar #calendar-premium-view .cal-premium-month-nav button{
-  width:38px!important;
-  height:38px!important;
-  border-radius:14px!important;
-}
 body.change-view-calendar #calendar-premium-view .cal-premium-week,
-body.change-view-calendar #calendar-premium-view .cal-month-block .cal-premium-side-card{
-  padding:14px!important;
-  border-radius:24px!important;
-}
 body.change-view-calendar #calendar-premium-view .cal-premium-week-row{
   gap:8px!important;
 }
@@ -10088,29 +7385,10 @@ body.change-view-calendar #calendar-premium-view .cal-premium-week-day{
 body.change-view-calendar #calendar-premium-view .cal-premium-main-grid-agenda-only{
   margin-top:2px!important;
 }
-body.change-view-calendar #calendar-premium-view .cal-premium-agenda{
-  padding:14px!important;
-  border-radius:24px!important;
-}
-body.change-view-calendar #calendar-premium-view .cal-premium-agenda-row{
-  min-height:56px!important;
-  grid-template-columns:88px minmax(0,1fr)!important;
-  padding:10px 12px!important;
-  gap:10px!important;
-  border-radius:15px!important;
-}
-body.change-view-calendar #calendar-premium-view .cal-premium-agenda-time{
-  font-size:13px!important;
-  padding-right:8px!important;
-}
 body.change-view-calendar #calendar-premium-view .cal-premium-event-icon{
   width:30px!important;
   height:30px!important;
   flex:0 0 30px!important;
-}
-body.change-view-calendar #calendar-premium-view .cal-premium-agenda-main strong{
-  font-size:13.5px!important;
-  line-height:1.15!important;
 }
 
 /* Einstellungen: gleiche Seitenluft wie Dashboard, Kacheln nebeneinander und ohne sichtbare Scrollbar. */
@@ -10129,11 +7407,6 @@ body.change-view-settings .change-settings-nav-grid{
   grid-template-columns:repeat(3,minmax(0,1fr))!important;
   gap:12px!important;
 }
-body.change-view-settings .change-settings-nav-card{
-  min-height:104px!important;
-  padding:13px 10px!important;
-  border-radius:18px!important;
-}
 
 @media(max-width:700px){
   body.change-view-calendar #calendar-premium-view .cal-mode-block,
@@ -10146,22 +7419,12 @@ body.change-view-settings .change-settings-nav-card{
     padding:0 0 7px!important;
   }
   body.change-view-calendar #calendar-premium-view .cal-premium-week,
-  body.change-view-calendar #calendar-premium-view .cal-month-block .cal-premium-side-card,
-  body.change-view-calendar #calendar-premium-view .cal-premium-agenda{
-    padding:12px!important;
-    border-radius:22px!important;
-  }
   body.change-view-calendar #calendar-premium-view .cal-premium-week-row{
     gap:7px!important;
   }
   body.change-view-calendar #calendar-premium-view .cal-premium-week-day{
     min-height:66px!important;
     padding:9px 7px!important;
-  }
-  body.change-view-calendar #calendar-premium-view .cal-premium-agenda-row{
-    grid-template-columns:82px minmax(0,1fr)!important;
-    min-height:54px!important;
-    padding:9px 10px!important;
   }
   body.change-view-settings .change-settings-premium{
     padding-left:16px!important;
@@ -10170,10 +7433,6 @@ body.change-view-settings .change-settings-nav-card{
   body.change-view-settings .change-settings-nav-grid{
     grid-template-columns:repeat(3,minmax(0,1fr))!important;
     gap:10px!important;
-  }
-  body.change-view-settings .change-settings-nav-card{
-    min-height:100px!important;
-    padding:12px 8px!important;
   }
 }
 
@@ -10204,23 +7463,8 @@ body.change-view-challenges #challenges-view .challenge-week-actions-head{
 }
 body.change-view-calendar #calendar-premium-view .cal-premium-card-nav .change-week-nav-btn,
 body.change-view-challenges #challenges-view .challenge-card-nav .change-week-nav-btn,
-body.change-view-calendar #calendar-premium-view .cal-premium-month-nav button{
-  width:38px!important;
-  height:38px!important;
-  min-width:38px!important;
-  border-radius:14px!important;
-  border:1px solid rgba(255,255,255,.09)!important;
-  background:rgba(10,18,24,.66)!important;
-  color:rgba(244,247,244,.86)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.04)!important;
-}
 body.change-view-calendar #calendar-premium-view .cal-premium-card-nav .change-week-nav-btn:hover,
 body.change-view-challenges #challenges-view .challenge-card-nav .change-week-nav-btn:hover,
-body.change-view-calendar #calendar-premium-view .cal-premium-month-nav button:hover{
-  background:rgba(20,83,45,.42)!important;
-  color:#4ade80!important;
-  border-color:rgba(74,222,128,.26)!important;
-}
 body.change-view-calendar #calendar-premium-view .cal-premium-week-row,
 body.change-view-challenges #challenges-view .challenge-week-grid{
   margin-top:0!important;
@@ -10246,26 +7490,13 @@ body.change-view-challenges #challenges-view #challenge-week-points-card .challe
   }
   body.change-view-calendar #calendar-premium-view .cal-premium-card-nav .change-week-nav-btn,
   body.change-view-challenges #challenges-view .challenge-card-nav .change-week-nav-btn,
-  body.change-view-calendar #calendar-premium-view .cal-premium-month-nav button{
-    width:36px!important;
-    height:36px!important;
-    min-width:36px!important;
-    border-radius:13px!important;
-  }
 }
 [data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-card-nav .change-week-nav-btn,
 [data-theme="light"] body.change-view-challenges #challenges-view .challenge-card-nav .change-week-nav-btn,
-[data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-month-nav button,
 body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-card-nav .change-week-nav-btn,
 body.theme-light.change-view-challenges #challenges-view .challenge-card-nav .change-week-nav-btn,
-body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-month-nav button,
 body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-card-nav .change-week-nav-btn,
 body.change-theme-light.change-view-challenges #challenges-view .challenge-card-nav .change-week-nav-btn,
-body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-month-nav button{
-  background:rgba(255,255,255,.70)!important;
-  border-color:rgba(20,35,24,.10)!important;
-  color:#213229!important;
-}
 
 /* v0.1.0203 · Kalender-Topabstand und Settings-HeroCard angeglichen
    Ursache: alte Desktop-Guards haben im Kalender weiterhin Platz für #cal-controls reserviert,
@@ -10463,9 +7694,6 @@ body.theme-light.change-view-settings .change-settings-profile-right,
 body.change-theme-light.change-view-settings .change-settings-profile-right{
   border-color:rgba(20,35,24,.10)!important;
 }
-
-
-
 
 /* Bewahrte Nicht-Hero Regeln aus Mittelteil */
 body.change-view-settings .change-settings-page-title span{
@@ -10667,8 +7895,6 @@ body.change-view-challenges #challenges-view .challenge-goal-side-link > strong{
     font-size:15px!important;
     line-height:1.25!important;
   }
-
-
 
 /* ═══════════════════════════════════════════════════════════════════════════
    v0.1.0240 · HeroCards — EINZIGE QUELLE DER WAHRHEIT
@@ -11212,5 +8438,184 @@ html body.change-view-settings #github-zip-commit:disabled {
 }
 html body.change-view-settings #github-zip-commit:not(:disabled):hover {
   opacity:.88!important;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   v0.1.0244 · HeroCards + Dashboard Event-Layout + Settings Stile
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Dashboard: Event-Zeit-Block (Heute/15.06 zusammengeschrieben) ──────── */
+.dashp-event-time {
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  min-width:68px!important;
+  flex-shrink:0!important;
+}
+.dashp-event-time strong {
+  display:block!important;
+  font-size:15px!important;
+  font-weight:950!important;
+  color:#fff!important;
+  line-height:1.1!important;
+  white-space:nowrap!important;
+}
+.dashp-event-time small {
+  display:block!important;
+  font-size:12px!important;
+  font-weight:700!important;
+  color:rgba(244,247,244,.55)!important;
+  line-height:1.2!important;
+  margin-top:2px!important;
+  white-space:nowrap!important;
+}
+
+/* ── Kalender-Hero: zu weit links → Padding korrigieren ─────────────────── */
+@media(min-width:701px){
+  html body.change-view-calendar #calendar-premium-view .cal-premium-hero-main {
+    padding-left:0!important;
+    padding-right:0!important;
+  }
+  html body.change-view-calendar #calendar-premium-view .cal-premium-hero-grid {
+    padding:0!important;
+    margin:0!important;
+  }
+}
+
+/* ── Settings Feature-Cards: einheitlicher Stil ──────────────────────────── */
+/* change-feature-note: komplett ausblenden */
+html body.change-view-settings .change-feature-note {
+  display:none!important;
+}
+
+/* Settings Toggle-Rows: sauberer ohne Subtext */
+html body.change-view-settings .change-settings-toggle-row {
+  min-height:52px!important;
+  padding:14px 18px!important;
+  border-radius:18px!important;
+  background:rgba(255,255,255,.038)!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:12px!important;
+}
+html body.change-view-settings .change-settings-toggle-row + .change-settings-toggle-row {
+  margin-top:8px!important;
+}
+html body.change-view-settings .change-settings-toggle-label {
+  flex:1!important;
+  font-size:15px!important;
+  font-weight:900!important;
+  color:#fff!important;
+}
+html body.change-view-settings .change-settings-toggle-icon {
+  width:32px!important;
+  height:32px!important;
+  border-radius:12px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  background:rgba(74,222,128,.12)!important;
+  font-size:16px!important;
+  flex-shrink:0!important;
+}
+
+/* Settings Abschnitt-Überschriften: gleicher Stil wie GitHub-Karte */
+html body.change-view-settings .change-settings-section-title,
+html body.change-view-settings .change-settings-detail-title {
+  font-size:20px!important;
+  font-weight:950!important;
+  color:#fff!important;
+  letter-spacing:-.4px!important;
+  margin:0 0 14px!important;
+  padding:0!important;
+}
+
+/* Settings Feature-Cards: wie andere Karten */
+html body.change-view-settings .change-settings-feature-card {
+  border:1px solid rgba(255,255,255,.08)!important;
+  background:rgba(255,255,255,.038)!important;
+  border-radius:22px!important;
+  overflow:hidden!important;
+  padding:0!important;
+}
+html body.change-view-settings .change-feature-head {
+  display:flex!important;
+  align-items:center!important;
+  gap:14px!important;
+  padding:18px 20px!important;
+  border-bottom:1px solid rgba(255,255,255,.06)!important;
+}
+html body.change-view-settings .change-feature-icon {
+  width:36px!important;
+  height:36px!important;
+  border-radius:12px!important;
+  background:rgba(74,222,128,.12)!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  font-size:18px!important;
+  flex-shrink:0!important;
+}
+html body.change-view-settings .change-feature-title {
+  flex:1!important;
+  font-size:16px!important;
+  font-weight:950!important;
+  color:#fff!important;
+  letter-spacing:-.2px!important;
+}
+html body.change-view-settings .change-feature-badge {
+  font-size:10px!important;
+  font-weight:900!important;
+  letter-spacing:.06em!important;
+  text-transform:uppercase!important;
+  padding:2px 8px!important;
+  border-radius:999px!important;
+  background:rgba(74,222,128,.16)!important;
+  color:#4ade80!important;
+}
+html body.change-view-settings .change-feature-body {
+  padding:12px 20px 18px!important;
+}
+
+/* Settings: select / input Felder einheitlich */
+html body.change-view-settings .finput,
+html body.change-view-settings .change-settings-select {
+  width:100%!important;
+  background:rgba(255,255,255,.06)!important;
+  border:1px solid rgba(255,255,255,.1)!important;
+  border-radius:14px!important;
+  color:#fff!important;
+  font:inherit!important;
+  font-size:14px!important;
+  font-weight:800!important;
+  padding:10px 14px!important;
+  outline:none!important;
+  -webkit-appearance:none!important;
+}
+html body.change-view-settings .finput:focus,
+html body.change-view-settings .change-settings-select:focus {
+  border-color:rgba(74,222,128,.45)!important;
+  box-shadow:0 0 0 3px rgba(74,222,128,.12)!important;
+}
+
+/* Settings Stack: Abstand zwischen Karten */
+html body.change-view-settings .change-settings-stack {
+  display:grid!important;
+  gap:14px!important;
+}
+
+/* Mobil-Fixes */
+@media(max-width:700px){
+  .dashp-event-time {
+    min-width:56px!important;
+  }
+  .dashp-event-time strong {
+    font-size:14px!important;
+  }
+  .dashp-event-time small {
+    font-size:11px!important;
+  }
 }
 

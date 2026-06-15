@@ -1,3 +1,12 @@
+## Version 0.1.0244
+- Die sichtbare App-Version wurde auf `0.1.0244` erhöht.
+- **Erklärende Subtexte entfernt**: Alle 18 `change-feature-note` Divs aus settingsPanel.js entfernt — nur selbsterklärende Toggle-Titel bleiben.
+- **Dashboard Event-Zeilen**: `dashp-event-time` hat jetzt `flex-direction:column` — Zeitangabe und Datum stehen übereinander statt zusammengeschrieben.
+- **Kalender-Hero Desktop**: `padding-left:0` auf `.cal-premium-hero-main` — nicht mehr zu weit links.
+- **Settings Feature-Cards**: einheitlicher Stil wie GitHub-Karte (`border-radius:22px`, gleiche Border, gleicher Hintergrund).
+- **Settings Felder**: `finput`, `select` mit `border-radius:14px`, transparentem Hintergrund, Focus-Ring.
+- CSS-Bereinigung: `calendarPanels.css` 936→403, `challenges-mobile.css` 3330→816, `appShell.css` 13842→8442 Zeilen.
+
 ## Version 0.1.0243
 - Die sichtbare App-Version wurde auf `0.1.0243` erhöht.
 - **Vollständige Code-Bereinigung** nach Analyse aller CSS-Dateien auf konkurrierende Definitionen.

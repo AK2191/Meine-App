@@ -86,7 +86,7 @@
                 '<option value="hard" '+(current==='hard'?'selected':'')+'>Schwer · 30–50 P</option>'+
                 '<option value="hardcore" '+(current==='hardcore'?'selected':'')+'>Hardcore · 60–100 P</option>';
     }
-    return featureField('Schwierigkeit der Auto-Challenges', '<select class="finput" id="'+id+'">'+options+'</select>', 'Steuert nur automatisch erzeugte Aufgaben. Manuelle Challenges bleiben unverändert.');
+    return featureField('Schwierigkeit der Auto-Challenges', '<select class="finput" id="'+id+'">'+options+'</select>', '');
   }
   function getAutoChallengeCount(){
     try{ if(window.ChangeChallengeDifficulty && window.ChangeChallengeDifficulty.getDailyCount) return window.ChangeChallengeDifficulty.getDailyCount(); }catch(e){}
@@ -106,7 +106,7 @@
     if(!options){
       [[3,'Kompakt'],[5,'Normal'],[7,'Aktiv'],[10,'Intensiv']].forEach(function(item){ options += '<option value="'+item[0]+'" '+(current===item[0]?'selected':'')+'>'+item[1]+' · '+item[0]+' Aufgaben</option>'; });
     }
-    return featureField('Tagesumfang', '<select class="finput" id="'+id+'">'+options+'</select>', 'Bestimmt, wie viele Auto-Challenges pro Tag erzeugt und synchronisiert werden.');
+    return featureField('Tagesumfang', '<select class="finput" id="'+id+'">'+options+'</select>', '');
   }
   function setAutoChallengesState(on){
     on = !!on;
@@ -218,7 +218,7 @@
     var holidaysBody = featureField(
       'Region',
       '<select class="finput" id="set-holiday-state">'+stateOptions(options.holidayState)+'</select>',
-      'Bestimmt, welche gesetzlichen Feiertage klein im Kalender erscheinen.'
+      ''
     );
     return '<div class="change-settings-stack">'
       + settingsFeatureCard(
@@ -237,7 +237,6 @@
         options.showChallengeDots ? 'ok' : 'off',
         'Zeigt erledigte Punkte nur als kleines Badge unten rechts.',
         '<label class="switch"><input type="checkbox" id="set-show-points" '+(options.showChallengeDots ? 'checked' : '')+'><span class="slider"></span></label>',
-        '<div class="change-feature-note">Keine großen Elemente im Kalender. Die Tageszellen bleiben ruhig und übersichtlich.</div>'
       )
       + settingsFeatureCard(
         '📌',
@@ -348,10 +347,9 @@
 
     var wetterBody = '';
     if(wetterOn){
-      wetterBody += featureSwitch('Regenwarnung', 'Warnt nur, wenn Wetter aktiv ist.', 'set-rain-alerts', rainOn);
+      wetterBody += featureSwitch('Regenwarnung', '', 'set-rain-alerts', rainOn);
       if(rainOn) wetterBody += hoursSelect('set-rain-hours', rainHours);
     }else{
-      wetterBody += '<div class="change-feature-note">Wetter bleibt ausgeblendet. Standort wird erst nach bewusster Aktualisierung genutzt.</div>';
     }
     wetterBody += '<button class="btn btn-secondary btn-full" id="set-weather-location" type="button">Standort aktualisieren</button>';
 
@@ -360,8 +358,7 @@
       pollenBody += featureSwitch('Pollenwarnung', 'Benachrichtigt nur bei starker Belastung.', 'set-pollen-alerts', pollWarnOn);
       if(pollWarnOn) pollenBody += hoursSelect('set-pollen-hours', pollenHours);
     }else{
-      pollenBody += '<div class="change-feature-note">Pollen bleiben ausgeblendet und erzeugen keine Dashboard-Karte.</div>';
-    }
+          }
 
     return settingsFeatureCard(
         '🌦️',
@@ -377,7 +374,7 @@
         'Pollen',
         pollenOn ? 'AKTIV' : 'AUS',
         pollenOn ? 'ok' : 'off',
-        'Zeigt Pollenbelastung ruhig im Dashboard.',
+        '',
         '<label class="switch"><input type="checkbox" id="set-pollen" '+(pollenOn ? 'checked' : '')+'><span class="slider"></span></label>',
         pollenBody
       );
@@ -394,18 +391,14 @@
     var dayOptions = Array.from({length:31}, function(_, i){ var d = String(i+1).padStart(2,'0'); return '<option value="'+d+'">'+d+'.</option>'; }).join('');
 
     var friseurBody = friseurOn
-      ? featureField('Erinnerung nach', '<select class="finput" id="set-friseur-weeks">'+[2,3,4,5,6,8].map(function(n){ return '<option value="'+n+'" '+(n === friseurWeeks ? 'selected' : '')+'>'+n+' Wochen</option>'; }).join('')+'</select>', 'Steuert den nächsten empfohlenen Friseurtermin im Dashboard.')
-      : '<div class="change-feature-note">Friseur wird im Dashboard ausgeblendet.</div>';
+      ? featureField('Erinnerung nach', '<select class="finput" id="set-friseur-weeks">'+[2,3,4,5,6,8].map(function(n){ return '<option value="'+n+'" '+(n === friseurWeeks ? 'selected' : '')+'>'+n+' Wochen</option>'; }).join('')+'</select>', ''): ''
 
     var birthdaysBody = birthdaysOn
-      ? birthdayDaysSelect('set-birthday-notification-days', birthdayNotificationDays)
-        + '<div class="change-feature-note">Erkennt Bday, B-day, Birthday, Geburtstag und Geb. aus dem Google Kalender. Sichtbar bleibt es als „Geburtstage“.</div>'
-      : '<div class="change-feature-note">Geburtstage werden im Dashboard und in der Glocke ausgeblendet.</div>';
+      ? birthdayDaysSelect('set-birthday-notification-days', birthdayNotificationDays): ''
 
     var urlaubBody = urlaubOn
-      ? featureField('Jahresurlaub', '<input type="number" class="finput" id="set-urlaub-days" min="1" max="365" value="'+urlaubDays+'">', 'Gezählt werden Urlaubstage. Wochenenden und Feiertage zählen nicht.')
-        + featureField('Halbe Urlaubstage', '<div class="change-halfday-controls"><select class="finput" id="set-half-month">'+monthOptions+'</select><select class="finput" id="set-half-day">'+dayOptions+'</select><button class="btn btn-secondary btn-sm" id="set-add-half" type="button">+ Hinzufügen</button></div>'+halfDayChips(), '')
-      : '<div class="change-feature-note">Urlaub wird im Dashboard ausgeblendet.</div>';
+      ? featureField('Jahresurlaub', '<input type="number" class="finput" id="set-urlaub-days" min="1" max="365" value="'+urlaubDays+'">', '')
+        + featureField('Halbe Urlaubstage', '<div class="change-halfday-controls"><select class="finput" id="set-half-month">'+monthOptions+'</select><select class="finput" id="set-half-day">'+dayOptions+'</select><button class="btn btn-secondary btn-sm" id="set-add-half" type="button">+ Hinzufügen</button></div>'+halfDayChips(), ''): ''
 
     return '<div class="change-settings-stack">'
       + weatherHealthCard()
@@ -414,7 +407,7 @@
         'Friseur',
         friseurOn ? 'AKTIV' : 'AUS',
         friseurOn ? 'ok' : 'off',
-        'Zeigt den nächsten Friseurtermin als ruhige Dashboard-Karte.',
+        '',
         '<label class="switch"><input type="checkbox" id="set-friseur" '+(friseurOn ? 'checked' : '')+'><span class="slider"></span></label>',
         friseurBody
       )
@@ -423,7 +416,7 @@
         'Geburtstage',
         birthdaysOn ? 'AKTIV' : 'AUS',
         birthdaysOn ? 'ok' : 'off',
-        'Zeigt kommende Geburtstage ähnlich wie Friseur.',
+        '',
         '<label class="switch"><input type="checkbox" id="set-birthdays" '+(birthdaysOn ? 'checked' : '')+'><span class="slider"></span></label>',
         birthdaysBody
       )
@@ -485,23 +478,21 @@
       : '<button class="btn btn-secondary btn-compact" id="btn-google-connect" type="button">Verbinden</button>';
     var googleSub = google.detail || (google.loggedIn ? 'Importiert Kalendertermine. Getrennt vom Datenbank-Sync.' : 'Nur für Kalendertermine. Startet keinen Datenbank-Sync.');
     var googleBody = googleCanToggle
-      ? '<button class="btn btn-secondary btn-full" id="set-sync-google" type="button">Google Kalender '+(google.loggedIn?'neu synchronisieren':'aktualisieren')+'</button>'
-      : '<div class="change-feature-note">Google Kalender bleibt unabhängig von Firebase.</div>';
+      ? '<button class="btn btn-secondary btn-full" id="set-sync-google" type="button">Google Kalender '+(google.loggedIn?'neu synchronisieren':'aktualisieren')+'</button>': ''
 
-    var statusBody = (window.ChangeAppStatus && window.ChangeAppStatus.syncStatusHtml) ? window.ChangeAppStatus.syncStatusHtml() : '<div class="change-feature-note">Status wird geladen.</div>';
-    var logBody = (window.ChangeAppStatus && window.ChangeAppStatus.logHtml) ? window.ChangeAppStatus.logHtml(6) + '<button class="btn btn-secondary btn-full" id="clear-sync-log" type="button">Protokoll leeren</button>' : '<div class="change-feature-note">Noch kein Protokoll vorhanden.</div>';
+    var statusBody = (window.ChangeAppStatus && window.ChangeAppStatus.syncStatusHtml) ? window.ChangeAppStatus.syncStatusHtml(): ''
+    var logBody = (window.ChangeAppStatus && window.ChangeAppStatus.logHtml) ? window.ChangeAppStatus.logHtml(6) + '<button class="btn btn-secondary btn-full" id="clear-sync-log" type="button">Protokoll leeren</button>': ''
     return '<div class="change-settings-stack">'
       + settingsFeatureCard('☁️', 'Datenbank-Sync', fb.label, fb.tone, fb.detail, dbSwitch, dbBody)
       + settingsFeatureCard('📅', 'Google Kalender', google.label, google.tone, googleSub, googleControl, googleBody)
       + settingsFeatureCard('🟢', 'Sync-Status', 'LIVE', 'ok', 'Zeigt, ob Datenbank und Google Kalender aktuell sind.', '', statusBody)
-      + settingsFeatureCard('🧾', 'Sync-Protokoll', 'LOKAL', 'off', 'Letzte Sync- und Anfeuern-Aktionen auf diesem Gerät.', '', logBody)
+      + settingsFeatureCard('🧾', 'Sync-Protokoll', 'LOKAL', 'off', '', '', logBody)
       + '</div>';
   }
   function challengesPane(){
     var auto = getAutoChallengesEnabled();
     var body = auto
-      ? autoChallengeCountSelect('set-auto-count') + challengeDifficultySelect('set-challenge-difficulty')
-      : '<div class="change-feature-note">Automatische Tagesaufgaben sind ausgeschaltet. Manuelle Challenges bleiben unverändert.</div>';
+      ? autoChallengeCountSelect('set-auto-count') + challengeDifficultySelect('set-challenge-difficulty'): ''
     return '<div class="change-settings-stack">'
       + settingsFeatureCard(
         '🏆',
@@ -514,7 +505,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0243';
+  var APP_VERSION = '0.1.0244';
 
 
 
@@ -1208,7 +1199,7 @@
       'Change als App installieren',
       installed,
       installed === 'Installiert' ? 'ok' : 'off',
-      'Für Handy-Nutzung, Push und Startbildschirm.',
+      '',
       '',
       '<button class="btn btn-secondary btn-full" onclick="window.installChangeApp&&window.installChangeApp()">Change als App installieren</button>'
     );
@@ -1223,14 +1214,14 @@
       + themeOptionButton('light','Hell','Ruhiger heller Look', theme)
       + themeOptionButton('dark','Dunkel','Aktueller Darkmode', theme)
       + '</div>'
-      + '<div class="change-feature-note">Aktuell aktiv: '+esc(appThemeResolved()==='dark'?'Dunkel':'Hell')+'. Diese Einstellung gilt global für die App. Pollen unterstützt bereits Hell und Dunkel.</div>';
-    var themeCard = settingsFeatureCard('◐','Darstellung',themeLabel,theme === 'dark' ? 'ok' : (theme === 'light' ? 'ok' : 'off'),'Steuert Hellmodus, Dunkelmodus oder die Systemeinstellung.','',themeBody);
+      ;
+    var themeCard = settingsFeatureCard('◐','Darstellung',themeLabel,theme === 'dark' ? 'ok' : (theme === 'light' ? 'ok' : 'off'),'','',themeBody);
     var health = '';
     if(window.ChangeAppStatus && window.ChangeAppStatus.healthHtml){
       var healthBody = appHealthExpanded
         ? window.ChangeAppStatus.healthHtml() + '<button class="btn btn-secondary btn-full" id="run-app-health" type="button">Erneut prüfen</button>'
         : '<div class="change-feature-note">Der Check wird erst angezeigt, wenn du ihn bewusst startest.</div><button class="btn btn-secondary btn-full" id="run-app-health" type="button">App-Gesundheitscheck prüfen</button>';
-      health = settingsFeatureCard('🩺', 'App-Gesundheitscheck', appHealthExpanded ? 'GEPRÜFT' : 'BEREIT', appHealthExpanded ? 'ok' : 'off', 'Prüft Login, Cache, Sync und blockierende Overlays.', '', healthBody);
+      health = settingsFeatureCard('🩺', 'App-Gesundheitscheck', appHealthExpanded ? 'GEPRÜFT' : 'BEREIT', appHealthExpanded ? 'ok' : 'off', '', '', healthBody);
     }
     return '<div class="change-settings-stack">' + installCard + themeCard + versionCard + health + '</div>';
   }
