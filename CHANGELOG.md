@@ -1,3 +1,7 @@
+## Version 0.1.0257
+- Challenges-Hero Overline-Farbe an Pollen angeglichen (gruen #4ade80 -> gedaempftes Grau rgba(244,247,244,.72)).
+- Enthaelt auch den Mobil-Rand-Fix aus 0.1.0256 (.challenge-layout 26 -> 18px).
+
 ## Version 0.1.0256
 - Challenges-Hero Mobil: Seitenraender der Card an Pollen angeglichen (.challenge-layout horizontal 26px -> 18px im @media max-width:700px).
 - Nur Challenges geaendert, Desktop unberuehrt.

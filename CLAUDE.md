@@ -1,3 +1,8 @@
+## Version 0.1.0257
+- **Challenges-Hero Overline-Farbe an Pollen angeglichen.** `.chv227-overline` ("DIESE WOCHE") war `#4ade80` (kräftiges Grün); Pollen `.pollen-neo-label` ("DEINE POLLEN HEUTE") ist `rgba(244,247,244,.72)` (gedämpftes Grau). → auf `var(--change-hero227-muted)` (= rgba(244,247,244,.72)) gesetzt, jetzt identisch.
+- Enthält außerdem den Mobil-Rand-Fix aus 0.1.0256 (`.challenge-layout` 26→18px), falls 0256 noch nicht live war.
+- Offen/zur Klärung: Pollen-Subline ist heller (#e7ece7, 17px/900) als chv227-Sub "Kalenderwoche 25" (rgba(244,247,244,.72), 16px/800); Pollen-Titel ist level-farbig (grün/amber/rot) statt weiß. Diese sind aber inhaltlich unterschiedlich — erst Rückmeldung, dann ggf. angleichen.
+
 ## Version 0.1.0256
 - **Challenges-Hero Mobil: Seitenränder an Pollen angeglichen.** `.challenge-layout` hatte im `@media(max-width:700px)` ein horizontales Padding von 26px; Pollen nutzt 18px (#pollen-view). → auf `10px 18px …` reduziert, damit die Card mobil gleich breit ist wie bei Pollen.
 - Nur Challenges/`.challenge-layout` geändert; Desktop unberührt (Regel liegt in der Mobile-Media). Card-Innenpadding (chv227 mobil 18px horiz vs. Pollen ~14px) bewusst noch nicht angefasst — erst Bestätigung, dann ggf. Feinschliff.

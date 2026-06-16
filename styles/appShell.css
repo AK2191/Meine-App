@@ -12950,7 +12950,7 @@ html body.change-view-challenges #challenges-view #group-goal-card.change-challe
 }
 html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-overline{
   margin:0 0 14px!important;
-  color:var(--change-hero227-green)!important;
+  color:var(--change-hero227-muted)!important;
   font-size:12px!important;
   line-height:1.1!important;
   font-weight:900!important;
