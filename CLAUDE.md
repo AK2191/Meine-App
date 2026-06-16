@@ -1,3 +1,7 @@
+## Version 0.1.0256
+- **Challenges-Hero Mobil: Seitenränder an Pollen angeglichen.** `.challenge-layout` hatte im `@media(max-width:700px)` ein horizontales Padding von 26px; Pollen nutzt 18px (#pollen-view). → auf `10px 18px …` reduziert, damit die Card mobil gleich breit ist wie bei Pollen.
+- Nur Challenges/`.challenge-layout` geändert; Desktop unberührt (Regel liegt in der Mobile-Media). Card-Innenpadding (chv227 mobil 18px horiz vs. Pollen ~14px) bewusst noch nicht angefasst — erst Bestätigung, dann ggf. Feinschliff.
+
 ## Version 0.1.0255
 - **Challenges-Hero-Statzeilen exakt an Pollen angeglichen (Feinschliff, nur Challenges).** Farben/Striche waren bereits gleich (`--change-hero227-line`=rgba(255,255,255,.08), `--change-hero227-muted`=rgba(244,247,244,.72)); abweichend waren nur Größen/Gewichte und das Icon.
 - Desktop (`appShell.css`, chv227-Block): Icon 24→22px, Label 13/800→12/720, Wert 17/900→15/820, `padding-left` 20→16px, Spalte 30→28px, Gap 0 12→0 10 — identisch zu den finalen Pollen-Werten.

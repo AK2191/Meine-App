@@ -1,3 +1,7 @@
+## Version 0.1.0256
+- Challenges-Hero Mobil: Seitenraender der Card an Pollen angeglichen (.challenge-layout horizontal 26px -> 18px im @media max-width:700px).
+- Nur Challenges geaendert, Desktop unberuehrt.
+
 ## Version 0.1.0255
 - Challenges-Hero-Statzeilen exakt an Pollen angeglichen: Icon 22px, Label 12px/720, Wert 15px/820, padding-left 16px (Desktop).
 - Icon-Glyph Emoji 🏅 durch monochrome Marke ★ ersetzt; Abzeichen-Icon mit Gold-Akzent, Heute/Offen gruen.

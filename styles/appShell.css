@@ -12685,7 +12685,7 @@ body.change-view-settings .change-settings-profile-center-mark{font-size:68px!im
 
 @media(max-width:700px){
   html body.change-view-challenges #challenges-view .challenge-layout{
-    padding:10px 26px calc(126px + env(safe-area-inset-bottom,0px))!important;
+    padding:10px 18px calc(126px + env(safe-area-inset-bottom,0px))!important;
     gap:18px!important;
     overflow-y:auto!important;
   }
