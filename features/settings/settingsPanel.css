@@ -1457,6 +1457,26 @@ body.change-view-settings #header .avatar.google-on::after{background:#22c55e!im
 .change-github-action.checking{background:var(--acc-d);border-color:rgba(52,211,153,.22)}
 .change-github-action.checking strong,.change-github-action.checking a{color:var(--acc)}
 
+/* NEU: ruhiger Fortschrittsbalken statt nur Punkt+Text — 4 Phasen: hochladen, anwenden, veröffentlichen, live */
+.change-github-progress-track{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:2px 0 1px;
+}
+.change-github-progress-dot{
+  height:4px;
+  flex:1 1 0;
+  border-radius:999px;
+  background:var(--b1);
+  transition:background-color .25s ease;
+}
+.change-github-progress-dot.done{background:var(--acc)}
+.change-github-progress-dot.active{background:var(--acc);opacity:.55;animation:changeGithubPulse 1.4s ease-in-out infinite}
+.change-github-action.ok .change-github-progress-dot.done,
+.change-github-action.ok .change-github-progress-dot.active{background:var(--grn);opacity:1;animation:none}
+@keyframes changeGithubPulse{0%,100%{opacity:.35}50%{opacity:.85}}
+
 /* v0.1.0198 · Mobile Settings Cards kompakter im Allergieprofil-Stil */
 @media(max-width:700px){
   body.change-view-settings .change-settings-premium{

@@ -1,4 +1,10 @@
-## Version 0.1.0260
+## Version 0.1.0261
+- GitHub-Update-Erkennung auf echten Status umgestellt statt Live-Datei-Raten: Worker fragt jetzt den echten GitHub Pages Build-Status ab (`/pages/builds/latest`), Fallback auf alte Heuristik falls nicht verfuegbar.
+- Frontend-Status-Logik vereinheitlicht: eine zentrale State-Machine (`computeGithubPhase`) statt verschachtelter if-Kette aus drei Flags.
+- Rollback ist jetzt symmetrisch zum Update: durchlaeuft denselben Status-Flow inkl. Fortschrittsbalken statt eigener isolierter Mini-Statusbox.
+- Neuer ruhiger 4-Punkte-Fortschrittsbalken im Update-Statusblock (erledigt/aktiv/offen).
+- Nur GitHub-Update-Mechanik geaendert (Worker + Settings-Panel). Kalender, Dashboard, Challenges, Login, Firebase, Sync, Google Kalender, Push unveraendert.
+
 - Echte Wurzelursache behoben: Die Card #group-goal-card war mobil ein 2-Spalten-Grid (minmax(0,1fr) 82px) mit leerer 2. Spalte -> Hero/Stats nur ~65% breit, "Abzeichen/0 von 37" abgeschnitten.
 - Fix: Card fuer chv227 mobil auf 1 Spalte (grid-template-columns:1fr) -> volle Breite, kein Abschneiden mehr.
 - Nur Challenges geaendert.

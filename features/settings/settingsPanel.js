@@ -505,7 +505,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0260';
+  var APP_VERSION = '0.1.0261';
 
 
 
@@ -538,7 +538,13 @@
     targetCommitted: false,
     liveVersion: '',
     liveReady: false,
-    lastRunId: ''
+    lastRunId: '',
+    // NEU: einzelne State-Machine-Phase statt verstreuter Flag-Kombinationen.
+    // Werte: 'idle' | 'queued' | 'workflow_running' | 'pages_building' | 'live' | 'error'
+    phase: 'idle',
+    pagesAvailable: false,
+    pagesStatus: '',
+    direction: 'update' // 'update' | 'rollback' — bestimmt nur die Beschriftung
   };
 
   var GITHUB_UPDATE_WORKER_URL = 'https://change-github-update.ak2191.workers.dev';
@@ -733,55 +739,100 @@
     var version = latestGithubUpdateVersion();
     return !!(version && compareVersions(version, APP_VERSION) > 0);
   }
+  /* NEU: Einzige Quelle der Wahrheit fuer die Update-Phase.
+     Ersetzt die bisherige verschachtelte if-Kette, die drei Flags
+     (actionStatus, targetCommitted, liveReady) einzeln kombiniert hat. */
+  function computeGithubPhase(){
+    var state = githubUpdateState;
+    var actionDone = state.actionStatus === 'completed';
+    var actionFailed = actionDone && state.actionConclusion && state.actionConclusion !== 'success';
+    var pagesErrored = state.pagesAvailable && state.pagesStatus === 'errored';
+
+    if(actionFailed || pagesErrored){
+      return { key: 'error', tone: 'error' };
+    }
+    if(state.updateReady && state.liveReady){
+      return { key: 'live', tone: 'ok' };
+    }
+    // Workflow erfolgreich, Branch trägt Zielversion, aber Pages hat es noch nicht ausgeliefert.
+    if(state.targetCommitted && state.pagesAvailable && state.pagesStatus === 'building'){
+      return { key: 'pages_building', tone: 'active' };
+    }
+    if(state.targetCommitted){
+      return { key: 'pages_building', tone: 'active' };
+    }
+    if(actionDone && state.actionConclusion === 'success'){
+      return { key: 'pages_building', tone: 'active' };
+    }
+    if(state.actionStatus === 'queued' || state.actionStatus === 'in_progress'){
+      return { key: 'workflow_running', tone: 'active' };
+    }
+    if(state.uploadCommitSha){
+      return { key: 'queued', tone: 'active' };
+    }
+    return { key: 'idle', tone: 'active' };
+  }
+  function githubPhaseLabel(phaseKey, direction){
+    var isRollback = direction === 'rollback';
+    switch(phaseKey){
+      case 'queued': return isRollback ? 'Rückstufung wird vorbereitet…' : 'Update wird vorbereitet…';
+      case 'workflow_running': return isRollback ? 'Rückstufung wird angewendet…' : 'Update wird angewendet…';
+      case 'pages_building': return isRollback ? 'Rückstufung wird veröffentlicht…' : 'Update wird veröffentlicht…';
+      case 'live': return githubUpdateNeedsReload() ? (isRollback ? 'Rückstufung ist bereit' : 'Update ist bereit') : 'Du bist aktuell';
+      case 'error': return isRollback ? 'Rückstufung konnte nicht abgeschlossen werden' : 'Update konnte nicht abgeschlossen werden';
+      default: return isRollback ? 'Rückstufung wird vorbereitet…' : 'Update wird vorbereitet…';
+    }
+  }
   function githubActionCurrent(){
     var state = githubUpdateState;
     var targetLine = githubTargetVersionLabel();
-    var actionDone = state.actionStatus === 'completed';
-    var actionOk = actionDone && state.actionConclusion === 'success';
-    var actionError = state.actionConclusion && state.actionConclusion !== 'success';
-    var tone = 'active';
-    var label = 'Update wird vorbereitet…';
+    var phase = computeGithubPhase();
+    var label = githubPhaseLabel(phase.key, state.direction);
     var detail = targetLine;
-    if(actionError){
-      tone = 'error';
-      label = 'Update konnte nicht abgeschlossen werden';
+    if(phase.key === 'error'){
       detail = githubFriendlyError(state.actionMessage);
-    }else if(state.updateReady && state.liveReady){
-      tone = 'ok';
-      label = githubUpdateNeedsReload() ? 'Update ist bereit' : 'Du bist aktuell';
+    }else if(phase.key === 'live'){
       detail = githubUpdateNeedsReload() ? targetLine : ('Version ' + latestGithubUpdateVersion());
-    }else if(state.targetCommitted && !state.liveReady){
-      label = 'Update wird veröffentlicht…';
-      detail = targetLine;
-    }else if(actionOk && !state.targetCommitted){
-      label = 'Update wird veröffentlicht…';
-      detail = targetLine;
-    }else if(state.actionStatus === 'queued' || state.actionStatus === 'in_progress' || state.uploadCommitSha){
-      label = 'Update wird angewendet…';
-      detail = targetLine;
-    }else if(state.actionMessage){
-      label = state.actionMessage;
-      detail = targetLine;
     }
-    return {tone:tone,label:label,detail:detail};
+    state.phase = phase.key;
+    return { tone: phase.tone, label: label, detail: detail };
+  }
+
+  var GITHUB_PHASE_ORDER = ['queued', 'workflow_running', 'pages_building', 'live'];
+  function githubPhaseProgress(phaseKey){
+    if(phaseKey === 'error') return -1;
+    var idx = GITHUB_PHASE_ORDER.indexOf(phaseKey);
+    return idx < 0 ? 0 : idx;
+  }
+  function githubProgressTrack(phaseKey){
+    var progress = githubPhaseProgress(phaseKey);
+    if(progress < 0) return ''; // Fehlerzustand: kein Fortschrittsbalken, Fehlertext reicht
+    var dots = GITHUB_PHASE_ORDER.map(function(step, i){
+      var state = i < progress ? 'done' : (i === progress ? 'active' : 'wait');
+      return '<span class="change-github-progress-dot '+state+'"></span>';
+    }).join('');
+    return '<div class="change-github-progress-track">'+dots+'</div>';
   }
   function githubActionStatusPanel(){
     var state = githubUpdateState;
     if(!state.actionMessage && !state.updateReady && !state.actionRunUrl && !state.uploadCommitSha) return '';
     var current = githubActionCurrent();
     var cls = current.tone === 'ok' ? 'ok' : (current.tone === 'error' ? 'error' : 'checking');
-    var target = latestGithubUpdateVersion();
     var files = (state.files || []).length;
     var compactDetail = current.detail + (files ? ' · ' + files + ' Dateien' : '');
     var link = state.actionRunUrl ? '<a href="'+esc(state.actionRunUrl)+'" target="_blank" rel="noopener">Technische Details öffnen</a>' : '';
+    var isRollback = state.direction === 'rollback';
+    var buttonLabel = isRollback ? 'App vollständig neu laden (Rückstufung)' : 'App vollständig neu laden';
     var button = state.updateReady && state.liveReady && githubUpdateNeedsReload()
-      ? '<button class="btn btn-primary btn-full" id="github-update-reload" type="button">App vollständig neu laden</button>'
+      ? '<button class="btn btn-primary btn-full" id="github-update-reload" type="button">'+esc(buttonLabel)+'</button>'
       : '';
     var loaded = state.updateReady && state.liveReady && !githubUpdateNeedsReload()
       ? '<div class="change-github-loaded-note">Version '+esc(latestGithubUpdateVersion())+' ist bereits geladen.</div>'
       : '';
-    return '<div class="change-github-action '+esc(cls)+'"><div class="change-github-action-current '+esc(current.tone)+'"><span></span><div><strong>'+esc(current.label)+'</strong><small>'+esc(compactDetail)+'</small></div></div>'+(link?'<div class="change-github-action-links">'+link+'</div>':'')+button+loaded+'</div>';
+    var progress = githubProgressTrack(state.phase);
+    return '<div class="change-github-action '+esc(cls)+'"><div class="change-github-action-current '+esc(current.tone)+'"><span></span><div><strong>'+esc(current.label)+'</strong><small>'+esc(compactDetail)+'</small></div></div>'+progress+(link?'<div class="change-github-action-links">'+link+'</div>':'')+button+loaded+'</div>';
   }
+
 
   async function reloadChangeUpdateVersion(){
     var state = githubUpdateState;
@@ -848,7 +899,9 @@
     if(Date.now() - (state.actionStartedAt || Date.now()) > 480000){
       state.actionStatus = 'timeout';
       state.actionConclusion = 'failure';
-      state.actionMessage = 'Update wurde nicht rechtzeitig live erkannt.';
+      state.actionMessage = state.direction === 'rollback'
+        ? 'Rückstufung wurde nicht rechtzeitig live erkannt.'
+        : 'Update wurde nicht rechtzeitig live erkannt.';
       state.actionCheckedAt = new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
       stopGithubActionPolling();
       refreshSameTab('github');
@@ -866,6 +919,7 @@
       if(!response.ok || !result || !result.ok) throw new Error((result && result.message) || ('Status Fehler '+response.status));
       var run = result.run || null;
       var branch = result.branch || null;
+      var pages = result.pages || null;
       state.actionCheckedAt = new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
       if(branch){
         state.branchCommitSha = branch.headSha || state.branchCommitSha || '';
@@ -873,6 +927,10 @@
         if(branch.targetVersionCommitted === true || (target && state.branchVersion && compareVersions(state.branchVersion, target) >= 0)){
           state.targetCommitted = true;
         }
+      }
+      if(pages){
+        state.pagesAvailable = !!pages.available;
+        state.pagesStatus = pages.status || '';
       }
       if(run){
         state.lastRunId = run.id || state.lastRunId || '';
@@ -884,21 +942,34 @@
             if(!state.targetCommitted && !branch){
               state.targetCommitted = true;
             }
-            state.liveVersion = await readLiveAppVersion(target);
-            state.liveReady = !!(target && state.liveVersion && compareVersions(state.liveVersion, target) >= 0);
+            // Bevorzugt: echter Pages-Build-Status fuer den Ziel-Commit.
+            // Fallback (Pages-API nicht erreichbar/keine Berechtigung): alte Live-Datei-Heuristik.
+            if(pages && pages.available){
+              state.liveReady = pages.status === 'built' && (pages.matchesCommit || !state.branchCommitSha);
+              if(!state.liveReady && pages.status === 'errored'){
+                state.actionConclusion = 'failure';
+                state.actionMessage = pages.error || 'GitHub Pages Build fehlgeschlagen.';
+                stopGithubActionPolling();
+                refreshSameTab('github');
+                return;
+              }
+            }else{
+              state.liveVersion = await readLiveAppVersion(target);
+              state.liveReady = !!(target && state.liveVersion && compareVersions(state.liveVersion, target) >= 0);
+            }
             if(state.liveReady){
               state.updateReady = true;
-              state.actionMessage = 'Update ist bereit';
+              state.actionMessage = githubPhaseLabel('live', state.direction);
               stopGithubActionPolling();
               refreshSameTab('github');
               return;
             }
             state.updateReady = false;
-            state.actionMessage = 'Update wird veröffentlicht…';
+            state.actionMessage = githubPhaseLabel('pages_building', state.direction);
           }else{
             state.updateReady = false;
             state.liveReady = false;
-            state.actionMessage = 'Update konnte nicht abgeschlossen werden';
+            state.actionMessage = githubPhaseLabel('error', state.direction);
             stopGithubActionPolling();
             refreshSameTab('github');
             return;
@@ -906,12 +977,12 @@
         }else{
           state.updateReady = false;
           state.liveReady = false;
-          state.actionMessage = 'Update wird angewendet…';
+          state.actionMessage = githubPhaseLabel('workflow_running', state.direction);
         }
       }else{
         state.updateReady = false;
         state.liveReady = false;
-        state.actionMessage = 'Update wird angewendet…';
+        state.actionMessage = githubPhaseLabel('workflow_running', state.direction);
       }
     }catch(e){
       var statusError = e && e.message ? e.message : 'Status konnte nicht gelesen werden.';
@@ -1038,6 +1109,22 @@
         githubCommitHistory = [];
         if(typeof window.toast === 'function') window.toast('Rollback gestartet', 'ok');
         setTimeout(function(){ loadGithubCommitHistory(); }, 3000);
+        // Symmetrisch zum Upload: denselben Status-Flow durchlaufen, nur mit direction='rollback'.
+        var state = githubUpdateState;
+        state.direction = 'rollback';
+        state.uploadCommitSha = result.commitSha || result.sha || '';
+        state.toVersion = result.targetVersion || '';
+        state.actionStatus = '';
+        state.actionConclusion = '';
+        state.actionRunUrl = '';
+        state.actionMessage = githubPhaseLabel('queued', 'rollback');
+        state.actionStartedAt = Date.now();
+        state.targetCommitted = false;
+        state.liveReady = false;
+        state.updateReady = false;
+        state.pagesAvailable = false;
+        state.pagesStatus = '';
+        scheduleGithubActionPoll(4000);
       } else {
         githubRollbackState = { running:false, message:'', error:(result&&result.message)||'Rollback fehlgeschlagen.' };
         if(typeof window.toast === 'function') window.toast('Rollback fehlgeschlagen', 'err');
@@ -1119,11 +1206,12 @@
       }
       state.status = 'ok';
       state.message = '';
+      state.direction = 'update';
       state.uploadCommitSha = result.commitSha || '';
       state.actionRunUrl = result.actionsUrl || '';
       state.actionStatus = 'queued';
       state.actionConclusion = '';
-      state.actionMessage = 'Update wird angewendet…';
+      state.actionMessage = githubPhaseLabel('queued', 'update');
       state.actionCheckedAt = '';
       state.actionStartedAt = Date.now();
       state.branchCommitSha = '';
@@ -1133,6 +1221,8 @@
       state.liveReady = false;
       state.lastRunId = '';
       state.updateReady = false;
+      state.pagesAvailable = false;
+      state.pagesStatus = '';
       if(typeof window.toast === 'function') window.toast('Update wird angewendet', 'ok');
       scheduleGithubActionPoll(2500);
     }catch(e){

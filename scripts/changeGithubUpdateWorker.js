@@ -132,6 +132,25 @@ function appVersionFromText(text){
   const match = String(text || '').match(/APP_VERSION\s*=\s*['"](\d+\.\d+\.\d+)['"]/);
   return match ? match[1] : '';
 }
+/* NEU: Echten GitHub Pages Build-Status abfragen statt Live-Datei zu raten */
+async function getPagesDeploymentStatus(token, sinceSha){
+  try{
+    const body = await githubFetch(`/repos/${REPOSITORY}/pages/builds/latest`, { method: 'GET' }, token);
+    const status = body && body.status ? String(body.status) : '';
+    const commitSha = body && body.commit ? String(body.commit) : '';
+    return {
+      available: true,
+      status, // 'built' | 'building' | 'errored' | 'queued'
+      commitSha,
+      matchesCommit: !!(sinceSha && commitSha && commitSha === sinceSha),
+      error: body && body.error && body.error.message ? body.error.message : '',
+      updatedAt: body && body.updated_at ? body.updated_at : ''
+    };
+  }catch(error){
+    // Kein Pages-Zugriff (Berechtigung fehlt) oder Pages nicht ueber Branch-Deployment konfiguriert.
+    return { available: false, status: '', commitSha: '', matchesCommit: false, error: error && error.message ? error.message : '' };
+  }
+}
 async function getBranchStatus(token, targetVersion){
   let branchSha = '';
   let version = '';
@@ -169,6 +188,7 @@ async function getLatestWorkflowStatus(env, commitSha, targetVersion){
   const runs = Array.isArray(body && body.workflow_runs) ? body.workflow_runs : [];
   const run = runs.find((item) => String(item && item.name || '').includes('Change ZIP Update')) || runs[0] || null;
   const branch = await getBranchStatus(token, targetVersion);
+  const pages = await getPagesDeploymentStatus(token, branch.headSha);
   return json({
     ok: true,
     run: run ? {
@@ -181,7 +201,8 @@ async function getLatestWorkflowStatus(env, commitSha, targetVersion){
       createdAt: run.created_at || '',
       updatedAt: run.updated_at || ''
     } : null,
-    branch
+    branch,
+    pages
   });
 }
 
@@ -250,6 +271,13 @@ async function rollbackToCommit(env, payload){
   } catch(e) {
     return json({ ok:false, message:'Commit nicht gefunden: ' + targetSha }, 404);
   }
+  // Version des Ziel-Commits lesen, damit das Frontend weiss ob es ein Update oder Downgrade ist
+  let targetVersion = '';
+  try{
+    const path = 'features/pollen/pollenView.js';
+    const file = await githubFetch(`/repos/${REPOSITORY}/contents/${path}?ref=${encodeURIComponent(commitInfo.sha)}`, { method: 'GET' }, token);
+    targetVersion = appVersionFromText(decodeBase64Utf8(file && file.content));
+  }catch(e){}
   // Force-update den Branch auf diesen Commit
   await githubFetch(
     `/repos/${REPOSITORY}/git/refs/heads/${BRANCH}`,
@@ -264,7 +292,10 @@ async function rollbackToCommit(env, payload){
     ok: true,
     message: `Branch ${BRANCH} wurde auf Commit ${commitInfo.sha.slice(0,7)} zurueckgesetzt.`,
     sha: commitInfo.sha,
+    commitSha: commitInfo.sha,
     shortSha: commitInfo.sha.slice(0,7),
+    targetVersion,
+    direction: 'rollback',
     commitMessage: commitInfo.commit && commitInfo.commit.message ? commitInfo.commit.message.split('\n')[0] : ''
   });
 }
