@@ -354,7 +354,7 @@ window.renderGroupGoal = function(){
       </svg>
       <div class="chv227-stats">
         <button type="button" class="chv227-stat chv227-stat-button" onclick="event.stopPropagation();window.openBadgePanel&&window.openBadgePanel()" title="Abzeichen öffnen">
-          <i class="chv227-stat-icon">🏅</i><span>Abzeichen</span><strong>${badgeLabel}</strong>
+          <i class="chv227-stat-icon">★</i><span>Abzeichen</span><strong>${badgeLabel}</strong>
         </button>
         <div class="chv227-stat"><i class="chv227-stat-icon">•</i><span>Heute</span><strong>${myTodayPoints} P</strong></div>
         <div class="chv227-stat"><i class="chv227-stat-icon">＋</i><span>Offen</span><strong>${openTodayCount}</strong></div>

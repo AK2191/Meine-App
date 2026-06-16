@@ -13032,7 +13032,7 @@ html body.change-view-challenges #challenges-view #group-goal-card.change-challe
   align-self:stretch!important;
   gap:0!important;
   min-width:0!important;
-  padding-left:20px!important;
+  padding-left:16px!important;
   border-left:1px solid var(--change-hero227-line)!important;
 }
 html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat,
@@ -13040,11 +13040,11 @@ html body.change-view-challenges #challenges-view #group-goal-card.change-challe
   all:unset!important;
   box-sizing:border-box!important;
   display:grid!important;
-  grid-template-columns:30px minmax(0,1fr)!important;
+  grid-template-columns:28px minmax(0,1fr)!important;
   grid-template-rows:auto auto!important;
   align-content:center!important;
   align-items:center!important;
-  gap:0 12px!important;
+  gap:0 10px!important;
   padding:0!important;
   border-bottom:1px solid var(--change-hero227-line)!important;
   min-width:0!important;
@@ -13055,17 +13055,20 @@ html body.change-view-challenges #challenges-view #group-goal-card.change-challe
 html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat i{
   grid-column:1!important;
   grid-row:1 / 3!important;
-  width:24px!important;
-  height:24px!important;
+  width:22px!important;
+  height:22px!important;
   border-radius:999px!important;
   display:flex!important;
   align-items:center!important;
   justify-content:center!important;
   background:rgba(255,255,255,.04)!important;
   color:var(--change-hero227-green)!important;
-  font-size:11px!important;
+  font-size:12px!important;
   font-style:normal!important;
   line-height:1!important;
+}
+html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat:first-child i{
+  color:#fbbf24!important;
 }
 html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat span,
 html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat strong{
@@ -13078,16 +13081,16 @@ html body.change-view-challenges #challenges-view #group-goal-card.change-challe
 html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat span{
   grid-row:1!important;
   color:var(--change-hero227-muted)!important;
-  font-size:13px!important;
+  font-size:12px!important;
   line-height:1.15!important;
-  font-weight:800!important;
+  font-weight:720!important;
 }
 html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat strong{
   grid-row:2!important;
   color:#fff!important;
-  font-size:17px!important;
+  font-size:15px!important;
   line-height:1.15!important;
-  font-weight:900!important;
+  font-weight:820!important;
 }
 
 /* Mobile: alle HeroCards gleich wie Pollen-Screenshot: Inhalt oben, flaches Symbol rechts, KPI-Leiste unten. */
@@ -13185,15 +13188,15 @@ html body.change-view-challenges #challenges-view #group-goal-card.change-challe
   }
   html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat,
   html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 button.chv227-stat{
-    grid-template-columns:20px minmax(0,1fr)!important;
+    grid-template-columns:18px minmax(0,1fr)!important;
     min-height:52px!important;
-    padding:0 7px!important;
-    gap:0 6px!important;
+    padding:0 6px!important;
+    gap:0 5px!important;
     border-bottom:0!important;
     border-right:1px solid var(--change-hero227-line)!important;
   }
   html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat:last-child{border-right:0!important;}
-  html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat i{width:18px!important;height:18px!important;font-size:8px!important;}
+  html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat i{width:16px!important;height:16px!important;font-size:9px!important;}
   html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat span{font-size:9.5px!important;line-height:1.05!important;}
   html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat strong{font-size:12px!important;line-height:1.1!important;}
 }

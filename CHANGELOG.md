@@ -1,3 +1,13 @@
+## Version 0.1.0255
+- Challenges-Hero-Statzeilen exakt an Pollen angeglichen: Icon 22px, Label 12px/720, Wert 15px/820, padding-left 16px (Desktop).
+- Icon-Glyph Emoji 🏅 durch monochrome Marke ★ ersetzt; Abzeichen-Icon mit Gold-Akzent, Heute/Offen gruen.
+- Mobil: Icon-Spalte/Gap verkleinert, damit Werte (z. B. "0 von 37") nicht mehr abschneiden.
+- Nur Challenges geaendert.
+
+## Version 0.1.0254
+- Vollstaendiges Repo-ZIP zur Wiederherstellung nach unvollstaendigem 0.1.0253-Deploy (der Worker loescht den kompletten Root ausser .git/.github/scripts/updates).
+- Enthaelt den kompletten App-Baum + den Challenges-Hero-Fix aus 0.1.0253. Keine zusaetzlichen Code-Aenderungen, nur Versionssprung.
+
 ## Version 0.1.0253
 - Challenges-HeroCard auf das Pollen-Raster vereinheitlicht (nur Challenges geaendert).
 - Ursache: Die Statszeile war in appShell.css mehrfach definiert; ein spaeterer "Box-Block" hat die sauberen Zeilen zu gerundeten Boxen ueberschrieben (zusaetzlich global wirksam durch ein vorbestehendes verirrtes schliessendes }).

@@ -1,4 +1,17 @@
+## Version 0.1.0255
+- **Challenges-Hero-Statzeilen exakt an Pollen angeglichen (Feinschliff, nur Challenges).** Farben/Striche waren bereits gleich (`--change-hero227-line`=rgba(255,255,255,.08), `--change-hero227-muted`=rgba(244,247,244,.72)); abweichend waren nur Größen/Gewichte und das Icon.
+- Desktop (`appShell.css`, chv227-Block): Icon 24→22px, Label 13/800→12/720, Wert 17/900→15/820, `padding-left` 20→16px, Spalte 30→28px, Gap 0 12→0 10 — identisch zu den finalen Pollen-Werten.
+- Icon-Glyph: Emoji `🏅` → monochrome Marke `★` (in `core/misc.js`), damit es wie Pollens CSS-Marken wirkt. Abzeichen-Icon erhält Gold-Akzent (#fbbf24, wie Pollens gelbe Marke / der Pokal), `•` und `＋` bleiben grün.
+- Mobil (Block A): Icon-Spalte 20→18px, Gap 6→5px, Icon 18→16px — behebt das Abschneiden der Werte („0 von 37").
+- Keine anderen Systeme berührt (Dashboard/Kalender/Einstellungen/Pollen/Firebase/Sync/Push unverändert).
+
+## Version 0.1.0254
+- **Vollständiges Repo-ZIP zur Wiederherstellung.** Der vorige 0.1.0253-Deploy lief mit einem ZIP, das nur die geänderten Dateien enthielt — der Worker löscht aber den kompletten Root (außer `.git`/`.github`/`scripts`/`updates`), wodurch `app.js`, `index.html`, `change.css`, `core/` usw. verloren gingen.
+- Dieses ZIP enthält den **kompletten App-Baum** + den Challenges-Hero-Fix aus 0.1.0253. Versionssprung auf 0.1.0254 nötig, weil der unvollständige 0.1.0253-Deploy bereits live war (Worker verlangt höhere Zielversion).
+- Inhaltlich identisch zum geplanten 0.1.0253-Stand; keine zusätzlichen Code-Änderungen.
+
 ## Version 0.1.0253
+- **KRITISCHE DEPLOY-REGEL:** Der GitHub-Worker (`scripts/applyZipUpdate.mjs`, `removeOldAppFiles()`) **löscht beim Deploy den kompletten Repo-Root** außer `.git`, `.github`, `scripts`, `updates` und ersetzt ihn durch den ZIP-Inhalt. Ein ZIP mit nur geänderten Dateien löscht daher den Rest der App. → **Update-ZIPs müssen IMMER den vollständigen App-Baum enthalten** (app.js, index.html, change.css, core/, features/, styles/, firebase/, icons/, public/, manifest.json, CLAUDE.md, CHANGELOG.md …), nicht nur die geänderten Dateien.
 - **Challenges-HeroCard auf Pollen-Raster vereinheitlicht (nur Challenges geändert).**
 - Root-Ursache: In `styles/appShell.css` war die `chv227`-Statszeile **dreifach** definiert — Desktop-Zeilen (ab 12938, korrekt), Mobil-3er (ab 13162, korrekt) und ein konkurrierender „Box-Block" (ab 13300). Letzterer rendert die Stats als gerundete Boxen mit Hintergrund und gewann (spätere Regel + gleiche Spezifität).
 - Zusätzlich verstärkt durch ein vorbestehendes verirrtes `}` bei Zeile ~13295, das `@media(max-width:700px)` zu früh schließt → der Box-Block liegt dadurch **global** (greift auch auf Desktop). Deshalb erschienen die Challenges-Stats auf Desktop UND Mobil als Boxen statt als Pollen-Zeilen.
