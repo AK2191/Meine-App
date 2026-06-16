@@ -1268,6 +1268,59 @@ body.change-theme-light:not(.change-view-settings) #panel-overlay{
   .change-github-dropzone{min-height:96px!important;padding:16px 12px!important;}
 }
 
+/* v0.1.0263 · GitHub-Panel: Tabs statt durchgehender Stapel, eine ruhige Fläche statt vieler Kästen */
+.change-github-tabs{
+  display:flex!important;
+  gap:6px!important;
+  padding:4px!important;
+  border:1px solid var(--b1)!important;
+  background:var(--s2)!important;
+  border-radius:14px!important;
+}
+.change-github-tab{
+  all:unset!important;
+  flex:1!important;
+  text-align:center!important;
+  padding:9px 10px!important;
+  border-radius:11px!important;
+  font-size:13px!important;
+  font-weight:850!important;
+  color:var(--t3)!important;
+  cursor:pointer!important;
+  box-sizing:border-box!important;
+}
+.change-github-tab.is-active{
+  background:var(--s1)!important;
+  color:var(--t1)!important;
+  box-shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 4px 10px rgba(0,0,0,.18)!important;
+}
+.change-github-tabpane{display:grid!important;gap:0!important;}
+
+/* Eine durchgehende Fläche für Code + Dropzone + Status statt vier separate Kästen.
+   .change-github-secret bleibt eigenständig (liegt oberhalb der Tabs, gemeinsam für beide). */
+.change-github-secret{border-radius:16px 16px 4px 4px!important;}
+.change-github-upload-panel{border-top-left-radius:4px!important;border-top-right-radius:4px!important;}
+
+.change-github-history-toolbar{
+  display:flex!important;
+  justify-content:flex-end!important;
+  margin-bottom:8px!important;
+}
+.change-github-history-refresh{
+  all:unset!important;
+  font-size:12.5px!important;
+  font-weight:800!important;
+  color:var(--acc)!important;
+  cursor:pointer!important;
+  padding:5px 12px!important;
+  border-radius:999px!important;
+  border:1px solid rgba(52,211,153,.25)!important;
+  background:rgba(52,211,153,.08)!important;
+}
+.change-github-history-refresh:hover{
+  background:rgba(52,211,153,.14)!important;
+}
+
 /* v0.1.0174 · Einstellungen sicher scrollbar halten */
 body.change-view-settings #content{
   min-height:0!important;

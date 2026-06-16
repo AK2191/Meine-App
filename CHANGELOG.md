@@ -1,4 +1,13 @@
-## Version 0.1.0262
+## Version 0.1.0263
+- GitHub-Panel beruhigt: Tabs ("Update"/"Verlauf") statt durchgehendem Stapel aus 5 einzelnen Kaesten. Update ist beim Oeffnen immer der aktive Tab.
+- Freigabe-Code und laufender Update-/Rollback-Fortschritt bleiben oberhalb beider Tabs sichtbar (werden fuer beide Tabs gebraucht bzw. sollen beim Tab-Wechsel nicht verschwinden).
+- Commit-Verlauf vereinfacht: Version ist die einzige fette/farbige Information pro Zeile, Hash+Datum in einer kleinen grauen Meta-Zeile darunter. "Zurueck" ist jetzt ein dezenter Text-Link statt Pillen-Button (zweitrangig gegenueber dem gruenen Upload-Button).
+- Verlauf zeigt standardmaessig 5 Eintraege mit "+X weitere anzeigen"-Button statt der vollen Liste.
+- Verlauf-Tab zeigt einen Hinweistext statt leerer Flaeche, wenn kein Freigabe-Code gesetzt ist.
+- Totes/dupliziertes CSS entfernt (alter History-Head-Block, ungenutzte Commit-Sha/-Msg/-Version-Klassen, eine zweite spaeter stehende Dopplung von .change-github-commit-version-main, die immer Gruen gesetzt und die neue is-current-Unterscheidung aufgehoben haette).
+- Nur Darstellung des GitHub-Update-Panels geaendert (settingsPanel.js/css, appShell.css). Keine Aenderung an Sync-, Firebase-, Push-, Google-Kalender- oder Worker-Logik.
+
+
 - Challenges-HeroCard und Pollen-HeroCard sind jetzt browserverifiziert stilgleich (echte Wurzelursache behoben, nicht nur Feinschliff).
 - Wurzelursache: Die gemeinsame Hero-Basis in appShell.css (--change-hero227-*) hatte erratene statt gemessene Werte. Pollen selbst hat 5 konkurrierende .pollen-neo-hero-Bloecke in pollenView.css, die sich gegenseitig ueberschreiben -> fruehere Vergleiche prueften nie den echten Browser-Endwert.
 - Methode: Mit Playwright getComputedStyle() beider Karten in identischer CSS-Ladereihenfolge gemessen, dann appShell.css exakt auf die gemessenen Pollen-Werte gesetzt und erneut verifiziert.

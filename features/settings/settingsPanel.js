@@ -505,7 +505,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0262';
+  var APP_VERSION = '0.1.0263';
 
 
 
@@ -544,7 +544,8 @@
     phase: 'idle',
     pagesAvailable: false,
     pagesStatus: '',
-    direction: 'update' // 'update' | 'rollback' — bestimmt nur die Beschriftung
+    direction: 'update', // 'update' | 'rollback' — bestimmt nur die Beschriftung
+    panelTab: 'update' // 'update' | 'history' — UI-Tab, immer 'update' beim Öffnen
   };
 
   var GITHUB_UPDATE_WORKER_URL = 'https://change-github-update.ak2191.workers.dev';
@@ -1015,12 +1016,14 @@
   }
   var githubCommitHistory = [];
   var githubCommitHistoryLoading = false;
+  var githubCommitHistoryVisible = 5;
   var githubRollbackState = { running: false, message: '', error: '' };
 
   function githubCommitHistoryPanel(){
     var secret = readGithubUpdateSecret();
     if(!secret) return '';
     var rows = '';
+    var moreBtn = '';
     if(githubCommitHistoryLoading){
       rows = '<div class="change-github-history-loading">Commits werden geladen…</div>';
     } else if(githubCommitHistory.length === 0){
@@ -1035,23 +1038,26 @@
         _seen[key] = true;
         return true;
       });
-      rows = _dedup.map(function(c, i){
+      var _visible = _dedup.slice(0, githubCommitHistoryVisible);
+      rows = _visible.map(function(c, i){
         var isFirst = i === 0;
         var date = c.date ? new Date(c.date).toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
-        var currentBadge = isFirst ? '<span class="change-github-commit-current">Aktuell</span>' : '';
-        var rollbackBtn = !isFirst
-          ? '<button class="change-github-rollback-btn" data-sha="'+esc(c.sha)+'" data-msg="'+esc(c.message)+'" type="button">Zurück</button>'
-          : '<button class="change-github-rollback-btn is-current" disabled type="button">Aktuell</button>';
         var displayVersion = c.version ? 'v'+esc(c.version) : esc(c.shortSha);
+        var metaLine = esc(c.shortSha)+' · '+esc(date);
+        var trailing = isFirst
+          ? '<span class="change-github-commit-current">Aktuell</span>'
+          : '<button class="change-github-rollback-link" data-sha="'+esc(c.sha)+'" data-msg="'+esc(c.message)+'" type="button">Zurück</button>';
         return '<div class="change-github-commit-row'+(isFirst?' is-current':'')+'">'
-          + '<div class="change-github-commit-sha">'+esc(c.shortSha)+'</div>'
           + '<div class="change-github-commit-info">'
-          + '<div class="change-github-commit-version-main">'+displayVersion+currentBadge+'</div>'
-          + '<div class="change-github-commit-meta">'+esc(date)+'</div>'
+          + '<div class="change-github-commit-version-main">'+displayVersion+'</div>'
+          + '<div class="change-github-commit-meta">'+metaLine+'</div>'
           + '</div>'
-          + rollbackBtn
+          + trailing
           + '</div>';
       }).join('') || '<div class="change-github-history-empty">Keine Update-Commits gefunden.</div>';
+      if(_dedup.length > githubCommitHistoryVisible){
+        moreBtn = '<button class="change-github-history-more" id="github-history-more" type="button">+'+(_dedup.length - githubCommitHistoryVisible)+' weitere anzeigen</button>';
+      }
     }
     var rollbackStatus = githubRollbackState.running
       ? '<div class="change-github-rollback-status running">Rollback wird durchgeführt…</div>'
@@ -1061,10 +1067,7 @@
           ? '<div class="change-github-rollback-status error">'+esc(githubRollbackState.error)+'</div>'
           : '';
     return '<div class="change-github-history-panel">'
-      + '<div class="change-github-history-head"><span>Commit-Verlauf</span>'
-      + '<button class="change-github-history-refresh" id="github-history-refresh" type="button">↻ Laden</button>'
-      + '</div>'
-      + rollbackStatus + rows + '</div>';
+      + rollbackStatus + rows + moreBtn + '</div>';
   }
 
   async function loadGithubCommitHistory(){
@@ -1133,26 +1136,45 @@
     refreshSameTab('github');
   }
 
+  function githubTabBar(){
+    var tab = githubUpdateState.panelTab || 'update';
+    return '<div class="change-github-tabs">'
+      + '<button class="change-github-tab'+(tab==='update'?' is-active':'')+'" id="github-tab-update" type="button">Update</button>'
+      + '<button class="change-github-tab'+(tab==='history'?' is-active':'')+'" id="github-tab-history" type="button">Verlauf</button>'
+      + '</div>';
+  }
+
   function githubUpdateBody(){
     var state = githubUpdateState;
+    var tab = state.panelTab || 'update';
     var selectedLabel = state.file ? esc(state.file.name)+' · '+Math.round((state.file.size || 0) / 1024)+' KB' : 'ZIP hier ablegen oder auswählen';
     var actionPanel = githubActionStatusPanel();
     var checks = actionPanel ? '' : githubCheckSummary();
     var statusLine = state.message && state.status !== 'ok' && !actionPanel ? '<div class="change-github-status '+esc(state.status || 'empty')+'">'+esc(state.message || '')+'</div>' : '';
-    return '<div class="change-github-update">'
-      + '<label class="change-github-secret"><span>Freigabe-Code</span><input type="text" id="github-update-secret" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Freigabe-Code eingeben" value="'+esc(readGithubUpdateSecret())+'"></label>'
-      + '<div class="change-github-upload-panel change-github-upload-panel-v226">'
-      + '<div class="change-github-upload-title"><span>ZIP Update</span></div>'
+
+    var updatePane = '<div class="change-github-upload-panel change-github-upload-panel-v226">'
       + '<div class="change-github-dropzone-wrap">'
       + '<label class="change-github-dropzone" id="github-zip-dropzone"><input type="file" id="github-zip-input" accept=".zip,application/zip,application/x-zip-compressed"><span>'+selectedLabel+'</span>'+(state.file ? '' : '<small>ZIP per Drag & Drop hier ablegen oder antippen.</small>')+'</label>'
       + (state.file ? '<button class="change-github-zip-clear" id="github-zip-clear" type="button" title="ZIP entfernen">×</button>' : '')
       + '</div>'
       + statusLine
-      + (actionPanel || checks || '')
+      + (actionPanel ? '' : checks)
       + githubFileOverview()
       + ((!state.actionStartedAt && !state.actionMessage && !state.uploadCommitSha && !state.actionConclusion) ? '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' && !state.updateReady ? '' : 'disabled')+'>Auf GitHub übertragen</button>' : '')
+      + '</div>';
+
+    var historyPane = !readGithubUpdateSecret()
+      ? '<div class="change-github-history-empty">Freigabe-Code eintragen, um den Verlauf zu laden.</div>'
+      : '<div class="change-github-history-toolbar"><button class="change-github-history-refresh" id="github-history-refresh" type="button">↻ Laden</button></div>'
+        + githubCommitHistoryPanel();
+
+    return '<div class="change-github-update">'
+      + '<label class="change-github-secret"><span>Freigabe-Code</span><input type="text" id="github-update-secret" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Freigabe-Code eingeben" value="'+esc(readGithubUpdateSecret())+'"></label>'
+      + (actionPanel || '')
+      + githubTabBar()
+      + '<div class="change-github-tabpane">'
+      + (tab === 'history' ? historyPane : updatePane)
       + '</div>'
-      + githubCommitHistoryPanel()
       + '</div>';
   }
   function githubUpdateCard(){
@@ -1779,8 +1801,11 @@
     var githubZipCommit = $('github-zip-commit'); if(githubZipCommit) githubZipCommit.addEventListener('click', function(){ commitGithubZip(); });
     var githubUpdateReload = $('github-update-reload'); if(githubUpdateReload) githubUpdateReload.addEventListener('click', function(){ reloadChangeUpdateVersion(); });
     var githubHistoryRefresh = $('github-history-refresh'); if(githubHistoryRefresh) githubHistoryRefresh.addEventListener('click', function(){ loadGithubCommitHistory(); });
+    var githubHistoryMore = $('github-history-more'); if(githubHistoryMore) githubHistoryMore.addEventListener('click', function(){ githubCommitHistoryVisible += 5; refreshSameTab('github'); });
+    var githubTabUpdate = $('github-tab-update'); if(githubTabUpdate) githubTabUpdate.addEventListener('click', function(){ githubUpdateState.panelTab = 'update'; refreshSameTab('github'); });
+    var githubTabHistory = $('github-tab-history'); if(githubTabHistory) githubTabHistory.addEventListener('click', function(){ githubUpdateState.panelTab = 'history'; if(!githubCommitHistory.length && !githubCommitHistoryLoading) loadGithubCommitHistory(); else refreshSameTab('github'); });
     var githubZipClear = $('github-zip-clear'); if(githubZipClear) githubZipClear.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); githubUpdateState.file = null; githubUpdateState.fileBuffer = null; githubUpdateState.status = 'empty'; githubUpdateState.message = ''; githubUpdateState.actionConclusion = ''; githubUpdateState.actionStartedAt = 0; githubUpdateState.actionMessage = ''; githubUpdateState.uploadCommitSha = ''; var inp = $('github-zip-input'); if(inp) inp.value = ''; refreshSameTab('github'); });
-    document.querySelectorAll('.change-github-rollback-btn:not(:disabled)').forEach(function(btn){
+    document.querySelectorAll('.change-github-rollback-link:not(:disabled)').forEach(function(btn){
       btn.addEventListener('click', function(){
         rollbackToCommit(btn.getAttribute('data-sha') || '', btn.getAttribute('data-msg') || '');
       });
