@@ -1,3 +1,8 @@
+## Version 0.1.0258
+- Challenges-Hero Layout-Bug behoben: CSS zielte auf .chv227-visual, Markup nutzt .chv227-illustration (SVG) -> Regeln griffen nicht, SVG ungesteuert (~300px) sprengte das Grid.
+- Fix: CSS auf .chv227-illustration mit fester Groesse (Desktop 150px, Mobil 72px); .chv227-stats mobil auf volle Breite gezwungen (kein Abschneiden mehr); Stat-Icon mobil 18px.
+- Nur Challenges geaendert.
+
 ## Version 0.1.0257
 - Challenges-Hero Overline-Farbe an Pollen angeglichen (gruen #4ade80 -> gedaempftes Grau rgba(244,247,244,.72)).
 - Enthaelt auch den Mobil-Rand-Fix aus 0.1.0256 (.challenge-layout 26 -> 18px).

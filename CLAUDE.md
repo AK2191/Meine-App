@@ -1,3 +1,9 @@
+## Version 0.1.0258
+- **Challenges-Hero: echter Layout-Bug behoben.** Das CSS steuerte `.chv227-visual` / `.chv227-visual span`, im Markup heißt die Trophäe aber `.chv227-illustration` (ein SVG) — die Regeln griffen ins Leere. Dadurch war das SVG ungesteuert (Default ~300px), hat das Grid gesprengt (überlappende Trophäe, Stat-Leiste nicht über volle Breite → „Abzeichen/0 von 37" abgeschnitten).
+- Fix: CSS auf `.chv227-illustration` umgestellt mit fester Größe (Desktop 150px, Mobil 72px) + Positionierung. Mobil zusätzlich `.chv227-stats` mit `grid-column:1/-1; width:100%` auf volle Breite gezwungen → kein Abschneiden mehr. Stat-Icon mobil 16→18px (wie Pollen).
+- Dürfte auch die zu großen Mobil-Außenränder mit erledigen (der überlaufende SVG hat die Breite verzerrt).
+- Nur Challenges geändert.
+
 ## Version 0.1.0257
 - **Challenges-Hero Overline-Farbe an Pollen angeglichen.** `.chv227-overline` ("DIESE WOCHE") war `#4ade80` (kräftiges Grün); Pollen `.pollen-neo-label` ("DEINE POLLEN HEUTE") ist `rgba(244,247,244,.72)` (gedämpftes Grau). → auf `var(--change-hero227-muted)` (= rgba(244,247,244,.72)) gesetzt, jetzt identisch.
 - Enthält außerdem den Mobil-Rand-Fix aus 0.1.0256 (`.challenge-layout` 26→18px), falls 0256 noch nicht live war.
