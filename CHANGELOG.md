@@ -1,4 +1,11 @@
-## Version 0.1.0263
+## Version 0.1.0264
+- Mobiles Scroll-Problem in Einstellungen behoben: Inhalte aller Settings-Kacheln waren am unteren Rand nicht erreichbar, blieben hinter der fixen Bottom-Navigation versteckt, selbst nach vollstaendigem Scrollen.
+- Echte Ursache: #settings-view hatte aus einer aelteren Regel eine eigene, zweite Scrollbox mit fixer Hoehe (height:100%). Spaetere Regeln setzten zwar overflow:visible, aendertern aber nie die height-Eigenschaft selbst zurueck auf auto - dadurch blieb der Inhalt ueber der festen Boxhoehe zwar sichtbar, zaehlte aber nicht zur scrollHeight-Berechnung des aeusseren Containers. Fruehere Fixes (mehrfach erhoehtes Padding) wirkten deshalb nie, weil das Padding am falschen Element ansetzte.
+- Fix: height:auto;min-height:0;max-height:none in der tatsaechlich gewinnenden #settings-view-Regel ergaenzt, damit der Container korrekt mit seinem Inhalt mitwaechst.
+- Verifiziert mit Playwright ueber lokalen HTTP-Server (file:// blockiert cssRules-Zugriff): Abstand Button-zu-Bottom-Nav vorher -47px (Ueberlappung), nachher +53px (vollstaendig sichtbar). Korrektur liegt ausschliesslich in einem Mobile/Touch-Media-Query, betrifft Desktop nicht.
+- Nur appShell.css geaendert (eine Property-Ergaenzung). Keine Aenderung an Dashboard-, Kalender-, Challenges-, Pollen-, Sync-, Firebase-, Push- oder Google-Kalender-Logik.
+
+
 - GitHub-Panel beruhigt: Tabs ("Update"/"Verlauf") statt durchgehendem Stapel aus 5 einzelnen Kaesten. Update ist beim Oeffnen immer der aktive Tab.
 - Freigabe-Code und laufender Update-/Rollback-Fortschritt bleiben oberhalb beider Tabs sichtbar (werden fuer beide Tabs gebraucht bzw. sollen beim Tab-Wechsel nicht verschwinden).
 - Commit-Verlauf vereinfacht: Version ist die einzige fette/farbige Information pro Zeile, Hash+Datum in einer kleinen grauen Meta-Zeile darunter. "Zurueck" ist jetzt ein dezenter Text-Link statt Pillen-Button (zweitrangig gegenueber dem gruenen Upload-Button).
