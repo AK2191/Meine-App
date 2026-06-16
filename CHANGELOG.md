@@ -1,3 +1,12 @@
+## Version 0.1.0262
+- Challenges-HeroCard und Pollen-HeroCard sind jetzt browserverifiziert stilgleich (echte Wurzelursache behoben, nicht nur Feinschliff).
+- Wurzelursache: Die gemeinsame Hero-Basis in appShell.css (--change-hero227-*) hatte erratene statt gemessene Werte. Pollen selbst hat 5 konkurrierende .pollen-neo-hero-Bloecke in pollenView.css, die sich gegenseitig ueberschreiben -> fruehere Vergleiche prueften nie den echten Browser-Endwert.
+- Methode: Mit Playwright getComputedStyle() beider Karten in identischer CSS-Ladereihenfolge gemessen, dann appShell.css exakt auf die gemessenen Pollen-Werte gesetzt und erneut verifiziert.
+- Korrigiert: Radius 28->26px, Padding 28/30/26->24/26/22px, Min-Height 236->238px, Grid-Spalten von festen Pixeln auf Pollens minmax()-Verhaeltnisse, Gap 16->14px, Label/Titel-Typografie, Illustrationsgroesse/-Opazitaet, Stat-Zeilenhoehe (1.15->1.5).
+- Entfernt: dekoratives ::after-Trennstrich-Pseudoelement, das es bei Pollen nie gab.
+- Challenges-Titel bleibt bewusst weiss (kein Ampel-System wie bei Pollen) und Akzentfarbe bleibt gruen - das ist inhaltlich, nicht stilistisch.
+- Nur appShell.css geaendert (chv227/gemeinsame-Hero-Basis-Regeln) + Versionsnummer. Pollen selbst unveraendert (ist die Referenz). Kein Eingriff in Dashboard-, Kalender-, Sync-, Firebase-, Push- oder Google-Kalender-Logik.
+
 ## Version 0.1.0261
 - GitHub-Update-Erkennung auf echten Status umgestellt statt Live-Datei-Raten: Worker fragt jetzt den echten GitHub Pages Build-Status ab (`/pages/builds/latest`), Fallback auf alte Heuristik falls nicht verfuegbar.
 - Frontend-Status-Logik vereinheitlicht: eine zentrale State-Machine (`computeGithubPhase`) statt verschachtelter if-Kette aus drei Flags.
