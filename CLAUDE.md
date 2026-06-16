@@ -1,3 +1,10 @@
+## Version 0.1.0259
+- **Challenges-Hero Mobil: Layout komplett auf robustes Block-Layout umgebaut** (kein `grid-template-areas` mehr). Das Grid-Area-System ("main visual"/"stats stats") hat die Stat-Leiste nur auf Spalte 1 gerendert (halbe Breite) → „Abzeichen / 0 von 37" abgeschnitten.
+- Neu: `.chv227-hero{display:block}`, `.chv227-main` volle Breite mit `padding-right` für die Trophäe, `.chv227-illustration{position:absolute;top/right}` (aus dem Fluss → verzerrt die Breite nicht mehr), `.chv227-stats{display:grid;width:100%;repeat(3,1fr)}` = garantiert volle Breite, kein Abschneiden.
+- Stat-Schrift mobil lesbarer (Label 11px, Wert 13px) da jetzt Platz da ist. Icon 18px.
+- Da die Illustration jetzt absolut/aus dem Fluss ist, sollte sich damit auch der zu große Mobil-Außenrand erledigen (der überlaufende SVG hat die Breite verzerrt).
+- Nur Challenges geändert.
+
 ## Version 0.1.0258
 - **Challenges-Hero: echter Layout-Bug behoben.** Das CSS steuerte `.chv227-visual` / `.chv227-visual span`, im Markup heißt die Trophäe aber `.chv227-illustration` (ein SVG) — die Regeln griffen ins Leere. Dadurch war das SVG ungesteuert (Default ~300px), hat das Grid gesprengt (überlappende Trophäe, Stat-Leiste nicht über volle Breite → „Abzeichen/0 von 37" abgeschnitten).
 - Fix: CSS auf `.chv227-illustration` umgestellt mit fester Größe (Desktop 150px, Mobil 72px) + Positionierung. Mobil zusätzlich `.chv227-stats` mit `grid-column:1/-1; width:100%` auf volle Breite gezwungen → kein Abschneiden mehr. Stat-Icon mobil 16→18px (wie Pollen).

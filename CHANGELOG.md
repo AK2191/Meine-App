@@ -1,3 +1,8 @@
+## Version 0.1.0259
+- Challenges-Hero Mobil auf robustes Block-Layout umgebaut (kein grid-template-areas): Stats jetzt garantiert volle Breite, kein Abschneiden von "Abzeichen / 0 von 37" mehr.
+- Trophae position:absolute (aus dem Fluss) -> behebt auch verzerrte Breite/Aussenrand. Stat-Schrift mobil lesbarer.
+- Nur Challenges geaendert.
+
 ## Version 0.1.0258
 - Challenges-Hero Layout-Bug behoben: CSS zielte auf .chv227-visual, Markup nutzt .chv227-illustration (SVG) -> Regeln griffen nicht, SVG ungesteuert (~300px) sprengte das Grid.
 - Fix: CSS auf .chv227-illustration mit fester Groesse (Desktop 150px, Mobil 72px); .chv227-stats mobil auf volle Breite gezwungen (kein Abschneiden mehr); Stat-Icon mobil 18px.
