@@ -1,3 +1,9 @@
+## Version 0.1.0260
+- **ECHTE Wurzelursache der schmalen/abgeschnittenen Stats gefunden und behoben.** Nicht der Hero war das Problem, sondern die **Card selbst**: Der Shared-Mobile-Block (`@media max-width:700px`) setzt `#group-goal-card.change-challenge-hero-v227` auf `grid-template-columns:minmax(0,1fr) 82px` — also 2 Spalten mit einer **leeren 82px-Spalte 2** (Altlast aus der Zeit, als die Illustration ein direktes Card-Kind war). Der gesamte Hero saß dadurch in Spalte 1 (~65% Breite) → Stats schmal, „Abzeichen/0 von 37" abgeschnitten, Titel lief optisch in die leere Spalte über.
+- Fix: Card für chv227 mobil auf `grid-template-columns:1fr` (eine Spalte) gezwungen (Regel liegt nach dem Shared-Block, gewinnt). Hero + Stats nutzen jetzt die **volle Card-Breite**.
+- Zusammen mit dem Block-Layout (0259) + absoluter Illustration (0258) ist das mobile Challenges-Hero jetzt strukturell wie Pollen.
+- Nur Challenges geändert.
+
 ## Version 0.1.0259
 - **Challenges-Hero Mobil: Layout komplett auf robustes Block-Layout umgebaut** (kein `grid-template-areas` mehr). Das Grid-Area-System ("main visual"/"stats stats") hat die Stat-Leiste nur auf Spalte 1 gerendert (halbe Breite) → „Abzeichen / 0 von 37" abgeschnitten.
 - Neu: `.chv227-hero{display:block}`, `.chv227-main` volle Breite mit `padding-right` für die Trophäe, `.chv227-illustration{position:absolute;top/right}` (aus dem Fluss → verzerrt die Breite nicht mehr), `.chv227-stats{display:grid;width:100%;repeat(3,1fr)}` = garantiert volle Breite, kein Abschneiden.

@@ -1,3 +1,8 @@
+## Version 0.1.0260
+- Echte Wurzelursache behoben: Die Card #group-goal-card war mobil ein 2-Spalten-Grid (minmax(0,1fr) 82px) mit leerer 2. Spalte -> Hero/Stats nur ~65% breit, "Abzeichen/0 von 37" abgeschnitten.
+- Fix: Card fuer chv227 mobil auf 1 Spalte (grid-template-columns:1fr) -> volle Breite, kein Abschneiden mehr.
+- Nur Challenges geaendert.
+
 ## Version 0.1.0259
 - Challenges-Hero Mobil auf robustes Block-Layout umgebaut (kein grid-template-areas): Stats jetzt garantiert volle Breite, kein Abschneiden von "Abzeichen / 0 von 37" mehr.
 - Trophae position:absolute (aus dem Fluss) -> behebt auch verzerrte Breite/Aussenrand. Stat-Schrift mobil lesbarer.

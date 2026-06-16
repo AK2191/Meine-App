@@ -13150,6 +13150,9 @@ html body.change-view-challenges #challenges-view #group-goal-card.change-challe
   html body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body em,
   html body.change-view-settings .change-settings-profile-stat em{font-size:12px!important;line-height:1.1!important;}
 
+  html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227{
+    grid-template-columns:1fr!important;
+  }
   html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-hero{
     display:block!important;
     position:relative!important;
