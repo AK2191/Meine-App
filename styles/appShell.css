@@ -13152,8 +13152,9 @@ html body.change-view-challenges #challenges-view #group-goal-card.change-challe
     margin-right:-18px!important;
     width:calc(100% + 36px)!important;
     max-width:calc(100% + 36px)!important;
-    padding:19px 18px 14px!important;
+    padding:24px 18px 18px!important;
     border-radius:26px!important;
+    background:radial-gradient(circle at 88% 24%,rgba(74,222,128,.16),transparent 34%),linear-gradient(135deg,rgba(15,36,27,.86),rgba(7,12,18,.94))!important;
   }
   html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-hero{
     display:block!important;
@@ -13166,18 +13167,19 @@ html body.change-view-challenges #challenges-view #group-goal-card.change-challe
     min-width:0!important;
     padding-right:72px!important;
   }
-  html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-overline{font-size:12px!important;margin-bottom:12px!important;}
+  html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-overline{font-size:12px!important;margin-bottom:16px!important;}
   html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-title{font-size:40px!important;line-height:1!important;letter-spacing:-1.3px!important;}
-  html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-sub{font-size:16px!important;margin-top:10px!important;}
-  html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-progress-meta{font-size:13px!important;margin-top:14px!important;gap:12px!important;}
+  html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-sub{font-size:16px!important;margin-top:14px!important;}
+  html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-progress-meta{font-size:13px!important;margin-top:18px!important;gap:12px!important;}
   html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-progress{height:9px!important;}
   html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-illustration{
     position:absolute!important;
-    top:52px!important;
-    right:16px!important;
-    width:82px!important;
+    top:50%!important;
+    right:14px!important;
+    transform:translateY(-50%)!important;
+    width:100px!important;
     height:auto!important;
-    opacity:.55!important;
+    opacity:.6!important;
     pointer-events:none!important;
   }
   html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stats{

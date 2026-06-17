@@ -1,4 +1,11 @@
-## Version 0.1.0267
+## Version 0.1.0268
+- Hintergrund-Glanz der Challenges-HeroCard sass links oben (Textseite), Pollen-Referenz hat ihn rechts oben (Illustrationsseite) - korrigiert auf identische Position wie Pollen.
+- Gesamtkachel groesszuegiger gemacht: mehr Abstand zwischen Overline/Titel/Subzeile/Fortschritt, mehr Innenpadding. Neue Hoehe 279px (Pollen: 274px), vorher 259px.
+- Pokal-Icon nochmals vergroessert (82px -> 100px) und auf transformbasierte vertikale Zentrierung umgestellt statt festem Pixel-Versatz (robuster gegen Hoehenaenderungen wie die in dieser Version selbst vorgenommene).
+- Alle drei Werte gegen Pollens gemessene Referenzwerte abgeglichen und mit Playwright verifiziert.
+- Nur appShell.css geaendert. Keine Logikaenderung.
+
+
 - Pokal-Icon weiter nachgeschaerft (nach Nutzer-Feedback zu v0.1.0266): schlanker (96px -> 82px), mehr Abstand nach oben (28px -> 52px) und zum rechten Rand (8px -> 16px), jetzt fast exakt auf Pollens gemessenen Referenzwerten.
 - Nur appShell.css geaendert (drei Werte in einer bestehenden Regel). Keine Logikaenderung.
 
