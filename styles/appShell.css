@@ -12690,7 +12690,7 @@ body.change-view-settings .change-settings-profile-center-mark{font-size:68px!im
 
 @media(max-width:700px){
   html body.change-view-challenges #challenges-view .challenge-layout{
-    padding:10px 18px calc(126px + env(safe-area-inset-bottom,0px))!important;
+    padding:1px 18px calc(126px + env(safe-area-inset-bottom,0px))!important;
     gap:18px!important;
     overflow-y:auto!important;
   }
@@ -13175,7 +13175,7 @@ html body.change-view-challenges #challenges-view #group-goal-card.change-challe
   html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-illustration{
     position:absolute!important;
     top:50%!important;
-    right:14px!important;
+    right:-4px!important;
     transform:translateY(-50%)!important;
     width:100px!important;
     height:auto!important;

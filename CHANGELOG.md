@@ -1,4 +1,9 @@
-## Version 0.1.0268
+## Version 0.1.0269
+- Abstand zwischen Seitenueberschrift "Challenges" und HeroCard war ca. 9px groesser als bei Pollen (per Pixelmessung an Vergleichsscreenshots ermittelt) - .challenge-layout oberes Padding von 10px auf 1px reduziert.
+- Pokal-Icon nochmals nach rechts verschoben (right: 14px -> -4px) nach explizitem Nutzer-Feedback, freier Randabstand sank von 24px auf 6px.
+- Nur appShell.css geaendert (zwei Werte). Keine Logikaenderung.
+
+
 - Hintergrund-Glanz der Challenges-HeroCard sass links oben (Textseite), Pollen-Referenz hat ihn rechts oben (Illustrationsseite) - korrigiert auf identische Position wie Pollen.
 - Gesamtkachel groesszuegiger gemacht: mehr Abstand zwischen Overline/Titel/Subzeile/Fortschritt, mehr Innenpadding. Neue Hoehe 279px (Pollen: 274px), vorher 259px.
 - Pokal-Icon nochmals vergroessert (82px -> 100px) und auf transformbasierte vertikale Zentrierung umgestellt statt festem Pixel-Versatz (robuster gegen Hoehenaenderungen wie die in dieser Version selbst vorgenommene).
