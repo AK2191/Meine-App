@@ -1,4 +1,8 @@
-## Version 0.1.0266
+## Version 0.1.0267
+- Pokal-Icon weiter nachgeschaerft (nach Nutzer-Feedback zu v0.1.0266): schlanker (96px -> 82px), mehr Abstand nach oben (28px -> 52px) und zum rechten Rand (8px -> 16px), jetzt fast exakt auf Pollens gemessenen Referenzwerten.
+- Nur appShell.css geaendert (drei Werte in einer bestehenden Regel). Keine Logikaenderung.
+
+
 - "DIESE WOCHE" Overline in der Challenges-HeroCard war faelschlich grau statt gruen (Regression aus der v227-Migration, Pollen-Vorlage nutzt gruen) - zurueck auf #4ade80 korrigiert.
 - Pokal-Icon vergroessert (64px -> 96px) und nach unten verschoben (top:28px statt 2px), damit es auf Hoehe des grossen Titels sitzt statt klein und isoliert an der oberen Kartenkante zu kleben.
 - Wochentag-Tick ("-" bzw. "X P") auf Mobile von 10.5px auf 13px vergroessert; stoerenden grauen Hintergrund-Fleck entfernt, der urspruenglich fuer ein anderes Element (Kalender-Punkt-Icon) gedacht war und beim Challenges-Textelement unregelmaessig aussah.

@@ -1,4 +1,12 @@
-## Version 0.1.0266
+## Version 0.1.0267
+- **Pokal-Icon in der Challenges-HeroCard weiter an die Pollen-Vorlage angeglichen (Größe, Proportion, Randabstand) — Nachschärfung nach v0.1.0266, da der erste Versuch laut Nutzer-Feedback noch zu klobig wirkte.**
+- **Maßvergleich mit Pollens Illustration als Referenz:** Pollens Gras-Illustration ist `88×112px` (schmal-hochformatig), sitzt `75px` von oben, `19px` vom rechten Rand, fast vertikal zentriert in der `274px` hohen Karte. Der Pokal war zuvor `96×96px` (quadratisch-kompakt), `28px` von oben, `8px` vom rechten Rand — dadurch wirkte er im Vergleich breiter/wuchtiger und enger an die Kante gedrängt, trotz korrekter vertikaler Grundposition aus v0.1.0266.
+- **Fix:** Breite von `96px` auf `82px` reduziert (schlankere Wirkung, näher an Pollens Seitenverhältnis), `top` von `28px` auf `52px` erhöht (jetzt `72px` effektiver Abstand von der Kartenoberkante, nahezu identisch zu Pollens `75px`), `right` von `8px` auf `16px` erhöht (mehr Luft zum Kartenrand, kein "Kleben an der Kante" mehr).
+- **Verifikation:** Exakte Maße von Pollens Illustration und der Challenges-Illustration vor und nach dem Fix per Playwright gemessen (Abstand zu allen vier Kartenrändern), danach Screenshot-Vergleich mit echtem Pokal-SVG-Markup (nicht nur Platzhalter).
+- Geändert: `styles/appShell.css`, eine bestehende Mobile-Regel (drei Werte angepasst). Keine Änderung an Logik.
+- `node --check` für beide JS-Dateien grün. Klammer-Bilanz unverändert (`1668/1669`).
+
+
 - **Drei kleine Korrekturen an der Challenges-HeroCard und dem Wochenstreifen, alle auf Basis konkreter Nutzer-Rückmeldung zu Screenshots.**
 - **"DIESE WOCHE" hatte falsche Farbe (Regression):** Die Overline der HeroCard war bei der Migration von `chv225` auf `chv227` (frühere Session) versehentlich von Grün (`#4ade80`, wie bei Pollens "DEINE POLLEN HEUTE") auf die neutrale gedämpfte Variable `--change-hero227-muted` reduziert worden. Fix: `.chv227-overline` bekommt wieder direkt `color:#4ade80`. Die gemeinsame Variable selbst wurde nicht verändert, da `.chv227-sub` ("Kalenderwoche 25") und die Stat-Labels ("Abzeichen"/"Heute"/"Offen") bewusst gedämpft bleiben sollen.
 - **Pokal-Icon wirkte verloren in der Ecke:** Das Icon saß bei `top:2px;right:0;width:64px;opacity:.45` direkt an der oberen Kartenkante auf Höhe der kleinen Overline-Zeile, während der riesige "Gruppenziel"-Titel darunter viel mehr Raum einnahm — dadurch wirkte der Pokal klein und unbalanciert. Fix: vergrößert auf `96px`, nach unten verschoben auf `top:28px` (jetzt auf Höhe des Titels statt der Overline), Opazität leicht erhöht auf `.55` für bessere Sichtbarkeit ohne zu dominant zu wirken.
