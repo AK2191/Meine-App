@@ -505,7 +505,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0272';
+  var APP_VERSION = '0.1.0273';
 
 
 
@@ -1158,6 +1158,7 @@
       + (state.file ? '<button class="change-github-zip-clear" id="github-zip-clear" type="button" title="ZIP entfernen">×</button>' : '')
       + '</div>'
       + statusLine
+      + (actionPanel || '')
       + (actionPanel ? '' : checks)
       + githubFileOverview()
       + ((!state.actionStartedAt && !state.actionMessage && !state.uploadCommitSha && !state.actionConclusion) ? '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' && !state.updateReady ? '' : 'disabled')+'>Auf GitHub übertragen</button>' : '')
@@ -1170,7 +1171,6 @@
 
     return '<div class="change-github-update">'
       + '<label class="change-github-secret"><span>Freigabe-Code</span><input type="text" id="github-update-secret" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Freigabe-Code eingeben" value="'+esc(readGithubUpdateSecret())+'"></label>'
-      + (actionPanel || '')
       + githubTabBar()
       + '<div class="change-github-tabpane">'
       + (tab === 'history' ? historyPane : updatePane)

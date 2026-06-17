@@ -1,4 +1,10 @@
-## Version 0.1.0272
+## Version 0.1.0273
+- Bugfix: Lade-/Fortschrittsanzeige bei laufendem GitHub-Update/Rollback sprang ueber die Tabs "Update"/"Verlauf" statt im Update-Tab ueber der ZIP-Karte zu erscheinen.
+- Ursache: actionPanel wurde in githubUpdateBody() fix vor githubTabBar() gerendert statt im Tabpane.
+- Fix: actionPanel jetzt innerhalb von updatePane direkt ueber der Datei-Uebersicht platziert, Tabs bleiben in jedem Zustand an fester Position.
+- Geaendert: features/settings/settingsPanel.js (nur Reihenfolge der HTML-Bausteine in githubUpdateBody()). Keine Aenderung an Worker, Polling, Rollback-Logik, Kalender, Dashboard, Challenges.
+
+
 - Alle fuenf mobilen HeroCards (Dashboard, Kalender, Challenges, Pollen, Einstellungen) auf exakt 216px Hoehe vereinheitlicht (Referenz: Einstellungen-Profilkarte), explizite Nutzeranforderung.
 - Vorher: Pollen 274px, Challenges 273px, Kalender 258px, Dashboard 193px. Zentrale Variable --change-mobile-hero-card-height von 274px auf 216px geaendert, zusaetzlich pro Karte die internen Abstaende/Schriftgroessen gezielt angepasst (Pollen/Challenges geschrumpft inkl. kompakterer CTA-Button bei Pollen mit Nutzererlaubnis, Kalender-Titel-Umbruch behoben, Dashboard-Abstaende vergroessert).
 - Nebenfund: Pollen-Karte ueberlappte die Seitenueberschrift (-19px Abstand) durch einen alten margin-top:-42px-Trick - auf -4px reduziert, jetzt 19px positiver Abstand wie bei den anderen Views.
