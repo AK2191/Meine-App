@@ -1,4 +1,11 @@
-## Version 0.1.0271
+## Version 0.1.0272
+- Alle fuenf mobilen HeroCards (Dashboard, Kalender, Challenges, Pollen, Einstellungen) auf exakt 216px Hoehe vereinheitlicht (Referenz: Einstellungen-Profilkarte), explizite Nutzeranforderung.
+- Vorher: Pollen 274px, Challenges 273px, Kalender 258px, Dashboard 193px. Zentrale Variable --change-mobile-hero-card-height von 274px auf 216px geaendert, zusaetzlich pro Karte die internen Abstaende/Schriftgroessen gezielt angepasst (Pollen/Challenges geschrumpft inkl. kompakterer CTA-Button bei Pollen mit Nutzererlaubnis, Kalender-Titel-Umbruch behoben, Dashboard-Abstaende vergroessert).
+- Nebenfund: Pollen-Karte ueberlappte die Seitenueberschrift (-19px Abstand) durch einen alten margin-top:-42px-Trick - auf -4px reduziert, jetzt 19px positiver Abstand wie bei den anderen Views.
+- Alle vier Titel-zu-Karte-Abstaende abschliessend auf Ueberlappungsfreiheit geprueft, Screenshots aller fuenf Karten verglichen.
+- Nur appShell.css geaendert (eine Variable, ein Margin-Wert, eine neue gesammelte Override-Sektion am Dateiende). Keine Logikaenderung.
+
+
 - "DIESE WOCHE" sass auf Mobile zu weit von der Kartenoberkante entfernt (25px Abstand statt Pollens 19px) - Nebeneffekt einer fruehreren Korrektur (v0.1.0268 hatte das Karten-Padding fuer mehr Gesamthoehe erhoeht, dabei aber auch den oberen Abstand vergroessert).
 - padding-top zurueck auf 18px (Pollens Wert) gesetzt, padding-bottom bleibt bei 18px. Gesamthoehe bleibt dank der ebenfalls in v0.1.0268 erhoehten Zeilenabstaende nahezu gleich (273px vs. Pollens 274px).
 - Trennlinien (Stat-Zeile, vertikale Striche zwischen Stat-Werten) systematisch verglichen - identisch zwischen beiden Karten, keine weitere Abweichung gefunden.
