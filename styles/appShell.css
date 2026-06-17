@@ -13144,8 +13144,14 @@ html body.change-view-challenges #challenges-view #group-goal-card.change-challe
   html body.change-view-calendar #calendar-premium-view .cal-premium-hero-row-body em,
   html body.change-view-settings .change-settings-profile-stat em{font-size:12px!important;line-height:1.1!important;}
 
-  html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227{
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227{
     grid-template-columns:1fr!important;
+    margin-left:-18px!important;
+    margin-right:-18px!important;
+    width:calc(100% + 36px)!important;
+    max-width:calc(100% + 36px)!important;
+    padding:19px 18px 14px!important;
+    border-radius:26px!important;
   }
   html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-hero{
     display:block!important;

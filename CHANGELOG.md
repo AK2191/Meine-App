@@ -1,4 +1,13 @@
-## Version 0.1.0264
+## Version 0.1.0265
+- Challenges-HeroCard im mobilen Layout endgueltig auf Pollen-Niveau angeglichen: Breite, Innenabstand (18px) und Eckenradius (26px) stimmen jetzt exakt mit der Pollen-Vorlage ueberein.
+- Ursache der Differenz: doppeltes Padding (Eltern-Container 18px + Karte selbst 14px), waehrend Pollen keinen Zwischen-Container mit eigenem Padding hat. Fix kompensiert das Eltern-Padding per negativem Margin auf der Karte selbst, ohne das Layout-Padding anzufassen (wird von Rangliste/Aufgaben-Karten weiter benoetigt).
+- Mehrere Korrekturversuche noetig, da 25-47 konkurrierende Altlast-Regeln (aus chv222/chv225/chv226-Vorgaengerversionen) um dieselben Eigenschaften stritten; Gewinner war nicht die letzte Regel im Quelltext, sondern die mit hoechster Selektor-Spezifitaet (#content-Praefix). Fix wurde auf dieselbe Spezifitaet gehoben.
+- theme-color-Meta-Tag von hellem Altwert (#F8F7F3) auf #080c18 korrigiert (passend zum dunklen Header und zu manifest.json).
+- Klargestellt: die graue Flaeche ganz oben in den Vergleichsscreenshots ist Browser-eigene Tab-Leiste (Chrome-Desktop-UI), keine App-Komponente - Pixelwerte waren zwischen Pollen und Challenges an dieser Stelle identisch.
+- Verifiziert mit Playwright (lokaler Server, da file:// cssRules-Zugriff blockiert): Breite, Padding und Radius stimmen jetzt bei 390px Viewport exakt zwischen beiden HeroCards ueberein.
+- Nur appShell.css (eine Mobile-Regel erweitert) und index.html (Meta-Tag) geaendert. Keine Aenderung an Dashboard-, Kalender-, Rangliste-, Aufgaben-, Sync-, Firebase-, Push- oder Google-Kalender-Logik.
+
+
 - Mobiles Scroll-Problem in Einstellungen behoben: Inhalte aller Settings-Kacheln waren am unteren Rand nicht erreichbar, blieben hinter der fixen Bottom-Navigation versteckt, selbst nach vollstaendigem Scrollen.
 - Echte Ursache: #settings-view hatte aus einer aelteren Regel eine eigene, zweite Scrollbox mit fixer Hoehe (height:100%). Spaetere Regeln setzten zwar overflow:visible, aendertern aber nie die height-Eigenschaft selbst zurueck auf auto - dadurch blieb der Inhalt ueber der festen Boxhoehe zwar sichtbar, zaehlte aber nicht zur scrollHeight-Berechnung des aeusseren Containers. Fruehere Fixes (mehrfach erhoehtes Padding) wirkten deshalb nie, weil das Padding am falschen Element ansetzte.
 - Fix: height:auto;min-height:0;max-height:none in der tatsaechlich gewinnenden #settings-view-Regel ergaenzt, damit der Container korrekt mit seinem Inhalt mitwaechst.
