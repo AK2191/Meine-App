@@ -13152,7 +13152,7 @@ html body.change-view-challenges #challenges-view #group-goal-card.change-challe
     margin-right:-18px!important;
     width:calc(100% + 36px)!important;
     max-width:calc(100% + 36px)!important;
-    padding:24px 18px 18px!important;
+    padding:18px 18px 18px!important;
     border-radius:26px!important;
     background:radial-gradient(circle at 88% 24%,rgba(74,222,128,.16),transparent 34%),linear-gradient(135deg,rgba(15,36,27,.86),rgba(7,12,18,.94))!important;
   }

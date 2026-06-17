@@ -1,4 +1,10 @@
-## Version 0.1.0270
+## Version 0.1.0271
+- "DIESE WOCHE" sass auf Mobile zu weit von der Kartenoberkante entfernt (25px Abstand statt Pollens 19px) - Nebeneffekt einer fruehreren Korrektur (v0.1.0268 hatte das Karten-Padding fuer mehr Gesamthoehe erhoeht, dabei aber auch den oberen Abstand vergroessert).
+- padding-top zurueck auf 18px (Pollens Wert) gesetzt, padding-bottom bleibt bei 18px. Gesamthoehe bleibt dank der ebenfalls in v0.1.0268 erhoehten Zeilenabstaende nahezu gleich (273px vs. Pollens 274px).
+- Trennlinien (Stat-Zeile, vertikale Striche zwischen Stat-Werten) systematisch verglichen - identisch zwischen beiden Karten, keine weitere Abweichung gefunden.
+- Nur appShell.css geaendert (ein Padding-Wert). Keine Logikaenderung.
+
+
 - Tatsaechliche Ursache fuer "Pokal noch nicht weit genug rechts" gefunden: nicht die CSS-Position war falsch, sondern die SVG viewBox hatte ca. 23% unsichtbaren Leerraum rund um den sichtbaren Pokal. CSS right-Werte positionierten die groessere unsichtbare Box, nicht den sichtbaren Inhalt - jede bisherige Korrektur wurde dadurch teilweise "aufgefressen".
 - Fix: viewBox von "0 0 220 220" auf "40 18 142 164" verengt (exakt auf den sichtbaren Pokal-Inhalt zugeschnitten). Bestehende CSS-Positionierung wirkt jetzt direkt auf den sichtbaren Pokal.
 - Nur core/misc.js geaendert (eine viewBox-Zeichenkette). Kein CSS in dieser Version beruehrt, keine Logikaenderung.
