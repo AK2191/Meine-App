@@ -1,4 +1,11 @@
-## Version 0.1.0265
+## Version 0.1.0266
+- "DIESE WOCHE" Overline in der Challenges-HeroCard war faelschlich grau statt gruen (Regression aus der v227-Migration, Pollen-Vorlage nutzt gruen) - zurueck auf #4ade80 korrigiert.
+- Pokal-Icon vergroessert (64px -> 96px) und nach unten verschoben (top:28px statt 2px), damit es auf Hoehe des grossen Titels sitzt statt klein und isoliert an der oberen Kartenkante zu kleben.
+- Wochentag-Tick ("-" bzw. "X P") auf Mobile von 10.5px auf 13px vergroessert; stoerenden grauen Hintergrund-Fleck entfernt, der urspruenglich fuer ein anderes Element (Kalender-Punkt-Icon) gedacht war und beim Challenges-Textelement unregelmaessig aussah.
+- Alle drei Fixes erforderten das Identifizieren der tatsaechlich im Cascade gewinnenden Regel unter mehreren Kandidaten in verschiedenen Dateien (appShell.css laedt zuletzt und gewinnt typischerweise).
+- Nur Darstellung geaendert (appShell.css, change.css, challenges-mobile.css). Keine Aenderung an Sync-, Firebase-, Push- oder Datenlogik.
+
+
 - Challenges-HeroCard im mobilen Layout endgueltig auf Pollen-Niveau angeglichen: Breite, Innenabstand (18px) und Eckenradius (26px) stimmen jetzt exakt mit der Pollen-Vorlage ueberein.
 - Ursache der Differenz: doppeltes Padding (Eltern-Container 18px + Karte selbst 14px), waehrend Pollen keinen Zwischen-Container mit eigenem Padding hat. Fix kompensiert das Eltern-Padding per negativem Margin auf der Karte selbst, ohne das Layout-Padding anzufassen (wird von Rangliste/Aufgaben-Karten weiter benoetigt).
 - Mehrere Korrekturversuche noetig, da 25-47 konkurrierende Altlast-Regeln (aus chv222/chv225/chv226-Vorgaengerversionen) um dieselben Eigenschaften stritten; Gewinner war nicht die letzte Regel im Quelltext, sondern die mit hoechster Selektor-Spezifitaet (#content-Praefix). Fix wurde auf dieselbe Spezifitaet gehoben.

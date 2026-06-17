@@ -6988,10 +6988,12 @@ body.change-view-challenges #challenges-view .challenge-week-day-points{
   color:#4ade80 !important;
 }
 
-body.change-view-calendar #calendar-premium-view .cal-premium-week-day i.empty,
-body.change-view-challenges #challenges-view .challenge-week-day.empty .challenge-week-day-points{
+body.change-view-calendar #calendar-premium-view .cal-premium-week-day i.empty{
   color:rgba(244,247,244,.30) !important;
   background:rgba(255,255,255,.16) !important;
+}
+body.change-view-challenges #challenges-view .challenge-week-day.empty .challenge-week-day-points{
+  color:rgba(244,247,244,.45) !important;
 }
 
 [data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-week-day,
@@ -7144,7 +7146,7 @@ body.change-view-challenges #challenges-view .challenge-week-day-points{
   }
   body.change-view-challenges #challenges-view .challenge-week-day-points{
     margin-top:7px !important;
-    font-size:10.5px !important;
+    font-size:13px !important;
     line-height:1.05 !important;
     font-weight:900 !important;
     letter-spacing:0 !important;
@@ -12943,7 +12945,7 @@ html body.change-view-challenges #challenges-view #group-goal-card.change-challe
 }
 html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-overline{
   margin:0!important;
-  color:var(--change-hero227-muted)!important;
+  color:#4ade80!important;
   font-size:11px!important;
   line-height:1.2!important;
   font-weight:780!important;
@@ -13171,11 +13173,11 @@ html body.change-view-challenges #challenges-view #group-goal-card.change-challe
   html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-progress{height:9px!important;}
   html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-illustration{
     position:absolute!important;
-    top:2px!important;
-    right:0!important;
-    width:64px!important;
+    top:28px!important;
+    right:8px!important;
+    width:96px!important;
     height:auto!important;
-    opacity:.45!important;
+    opacity:.55!important;
     pointer-events:none!important;
   }
   html body.change-view-challenges #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stats{

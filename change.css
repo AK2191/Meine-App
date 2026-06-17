@@ -163,7 +163,7 @@ body.change-mobile .challenge-week-grid{grid-template-columns:repeat(7,minmax(0,
 body.change-mobile .challenge-week-day{min-height:62px!important;padding:7px 4px!important;border-radius:12px!important;border:1px solid var(--b1)!important;text-align:left!important}
 body.change-mobile .challenge-week-day-name{font-size:9px!important}
 body.change-mobile .challenge-week-day-date{font-size:11px!important}
-body.change-mobile .challenge-week-day-points{font-size:10.5px!important}
+body.change-mobile .challenge-week-day-points{font-size:13px!important}
 body.change-mobile .challenge-item{flex-wrap:wrap!important;align-items:flex-start!important;padding:12px 14px!important;gap:8px!important}
 body.change-mobile .challenge-body{flex:1 1 calc(100% - 48px)!important;min-width:calc(100% - 48px)!important}
 body.change-mobile .challenge-name{white-space:normal!important}
