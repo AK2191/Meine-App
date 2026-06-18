@@ -13905,3 +13905,27 @@ html body.change-view-settings .change-github-secret input {
     border-radius:22px!important;
   }
 }
+
+
+/* v0.1.0275 · Challenges: kein Abstand zwischen den Personen-Zeilen in der Rangliste
+   Root Cause: features/challenges/challenges-mobile.css setzt an zwei Stellen für sowohl
+   #challenges-list als auch #leaderboard-list gemeinsam display:grid + gap:9px (Zeile ~2792),
+   damit der Abstand zwischen den Einträgen über den Grid-gap erzeugt wird (margin-bottom der
+   einzelnen Zeilen wurde an anderer Stelle bewusst auf 0 gesetzt). Eine ÄLTERE, aber durch ein
+   zusätzliches .leader-card-Klassensegment SPEZIFISCHERE Regel (Zeile ~1636: "body.change-view-
+   challenges #challenges-view .leader-card #leaderboard-list{display:block!important}", Spezifität
+   (2,2,1) statt (2,1,1) der jüngeren grid-Regel) gewinnt unabhängig von der späteren Position in
+   der Datei und wirft #leaderboard-list zurück auf display:block. Bei display:block hat "gap"
+   keine Wirkung — daher rutschen die Personen-Zeilen ohne jeden Abstand aneinander, während
+   #challenges-list (nicht von der Block-Regel betroffen) weiterhin korrekt im Grid mit 9px
+   Abstand dargestellt wird. Per CSSOM-Introspektion über lokalen HTTP-Server verifiziert (file://
+   blockiert in Chrome den Zugriff auf cssRules von <link>-Stylesheets, daher zuerst irreführende
+   leere Scan-Ergebnisse — Lehre: CSS-Cascade-Diagnose per JS immer über http://, nie über file://).
+   Fix: display:grid erneut setzen, mit höherer Spezifität (zusätzliches html-Element) als die
+   blockierende .leader-card-Regel, damit der bestehende gap:9px wieder wirkt. Kein Eingriff in
+   #challenges-list nötig (dort kein Problem). */
+@media (max-width:700px){
+  html body.change-view-challenges #challenges-view .leader-card #leaderboard-list{
+    display:grid!important;
+  }
+}

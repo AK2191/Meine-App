@@ -1,4 +1,10 @@
-## Version 0.1.0274
+## Version 0.1.0275
+- Challenges: kein Abstand zwischen den Personen-Zeilen in der Rangliste (Alex/Svenja stossen direkt aneinander), waehrend zwischen den Eintraegen bei "Heutige Aufgaben" ein klarer Abstand sichtbar war.
+- Ursache: #leaderboard-list und #challenges-list teilen sich eigentlich display:grid + gap:9px fuer den Zeilenabstand. Eine aeltere, aber spezifischere Regel wirft #leaderboard-list zurueck auf display:block, wo gap keine Wirkung hat. #challenges-list ist davon nicht betroffen.
+- Fix: display:grid erneut mit ausreichend hoher Spezifitaet fuer #leaderboard-list gesetzt, damit der vorhandene gap:9px wieder wirkt. Zeilenabstand jetzt 8px, identisch zu den Aufgaben-Eintraegen.
+- Geaendert ausschliesslich styles/appShell.css, eine neue Override-Sektion am Dateiende.
+
+
 - Pollen: HeroCard hing 42px zu weit unten unter der Ueberschrift. Ursache: Scroll-End-Spacer (::after, 42px, order:0) rutschte vor die Hero-Section (order:1) statt ans Ende. Fix: order:3 auf den Spacer, nur Pollen betroffen.
 - Challenges: grosser Leerraum (96px) zwischen Gruppenziel-Karte und Wochenleiste. Gleiches Spacer/order-Muster wie bei Pollen, gleicher Fix (order:3), nur Challenges betroffen.
 - Challenges: Ranglisten-Kachel hatte bis zu 200px Leerraum unter den Personen-Zeilen durch eine alte min-height:420px (Relikt einer fruheren Zwei-Spalten-Architektur). Fix: min-height:0 nur fuer .leader-card, .challenge-card bewusst unveraendert.
