@@ -13824,3 +13824,84 @@ html body.change-view-settings .change-github-secret input {
   /* Dashboard: einziger Block, der wachsen statt schrumpfen muss (193px -> 216px) */
   html body.change-view-dashboard #content #dashboard-view .dashp-hero-insights{margin-top:31px!important;padding-top:20px!important;}
 }
+
+
+/* v0.1.0274 · Pollen: HeroCard-Versatz behoben (rutschte 42px nach unten)
+   Root Cause: Der generische Scroll-End-Spacer (body.change-view-pollen #pollen-view .pollen-neo-shell::after,
+   42px hoch, für Safe-Area unter der Bottom-Nav gedacht) hat keine explizite "order" und bleibt damit beim
+   Flex-Standard order:0. .pollen-neo-shell ist seit der mobilen Pollen-Reihenfolge-Regel (features/pollen/pollenView.css)
+   ein flex-direction:column-Container, dessen Inhalts-Sections explizit order:1 (.pollen-neo-top) und
+   order:2 (.pollen-neo-main-grid) gesetzt bekommen. Da 0 < 1, wird der ::after-Spacer vom Flex-Layout an den
+   ANFANG sortiert statt ans Ende — dadurch entsteht ein 42px hoher Leerraum vor der HeroCard.
+   Fix: order auf einen Wert höher als der höchste verwendete Inhalts-order (2) setzen, nur für Pollen,
+   damit der Spacer wie beabsichtigt am Ende bleibt. Keine Änderung an Dashboard, Kalender, Challenges
+   (deren ::after-Spacer haben kein konkurrierendes order-Pattern und sind nicht betroffen). */
+@media (max-width:700px){
+  html body.change-view-pollen #pollen-view .pollen-neo-shell::after{
+    order:3!important;
+  }
+}
+
+
+/* v0.1.0274 · Challenges: Rangliste-Kachel hatte riesigen Leerraum unter den Personen-Zeilen
+   Root Cause: .leader-card und .challenge-card teilen sich eine min-height:420px!important
+   (features/challenges/challenges-mobile.css, 3 Stellen). Das stammt aus einer früheren
+   Zwei-Spalten-Architektur, in der beide Cards via align-self:stretch nebeneinander standen und
+   gleich hoch wirken sollten. Im aktuellen gestapelten Mobile-Layout (Rangliste oben, Aufgaben
+   darunter, beide volle Breite) ergibt das keinen Sinn mehr: .challenge-card hat genug echten
+   Inhalt (>1300px), daher fällt es dort nicht auf — .leader-card hat bei wenigen Mitspielern
+   (hier 2 Personen, ca. 222px Inhalt) aber bis zu ~200px erzwungenen Leerraum darunter.
+   Fix: min-height nur für .leader-card auf den tatsächlichen Inhalt zurücksetzen (0, mit
+   overflow:visible statt :hidden, damit nichts abgeschnitten wird). .challenge-card bleibt
+   unverändert — dort besteht kein Problem und es soll nichts Funktionierendes angefasst werden.
+   Hinweis: .leader-card ist KEIN direktes Kind von .challenge-layout (sondern von
+   .challenge-leader-block), daher kein Kind-Selektor — live im Browser mit getBoundingClientRect
+   und element.matches() verifiziert (224px statt 420px nach dem Fix, visuell per Screenshot
+   bestätigt). */
+@media (max-width:700px){
+  html body.change-view-challenges #challenges-view .leader-card{
+    min-height:0!important;
+    overflow:visible!important;
+  }
+}
+
+
+/* v0.1.0274 · Challenges: großer Leerraum zwischen HeroCard und Wochenleiste
+   Root Cause: identisches Muster wie beim Pollen-Fix oben. .challenge-layout ist ein
+   flex-direction:column-Container; sein eigenes ::after (generischer 42px Scroll-End-Spacer
+   für die Safe-Area unter der Bottom-Nav, aus dem gemeinsamen Block mit Dashboard/Kalender/Pollen)
+   hat keine explizite order und bleibt damit beim Flex-Standard order:0 — exakt wie die HeroCard
+   (.change-challenge-hero-v227, ebenfalls order:0). Da das Pseudo-Element in der Flex-Neusortierung
+   nach order, aber bei Gleichstand nach Quellreihenfolge einsortiert wird, UND als generiertes
+   Container-Pseudo-Element nach den "echten" Kindern in der Sortierung berücksichtigt wird, landet
+   es zwischen Hero (order 0) und Wochenleiste (order 1) statt am Ende nach Tasks-Block (order 2).
+   Live im Browser verifiziert: Abstand Hero→Wochenleiste sank von 96px auf 36px (= regulärer
+   18px Container-Gap + 18px eigenes margin-top der Wochenleiste, beides normal/gewollt) nach
+   diesem Fix; visuell per Screenshot bestätigt.
+   Fix: order auf einen Wert höher als der höchste verwendete Inhalts-order (2) setzen, nur für
+   Challenges. Keine Änderung an Dashboard, Kalender, Pollen (dort kein vergleichbares
+   order-Pattern, daher nicht betroffen). */
+@media (max-width:700px){
+  html body.change-view-challenges #challenges-view .challenge-layout::after{
+    order:3!important;
+  }
+}
+
+
+/* v0.1.0274 · Challenges: Wochenleiste-Kachel optisch an HeroCard/Sekundär-Card-Stil angeglichen
+   Vorher: rein grauer linearer Verlauf ohne grünen Marken-Akzent, weißer Border-Ton — wirkte
+   dadurch wie eine generische Box statt wie Teil des einheitlichen Card-Systems.
+   Referenzwerte 1:1 von .leader-card und .challenge-card übernommen (per getComputedStyle im
+   Live-Browser ausgelesen), nicht von der größeren .change-challenge-hero-v227-Hauptkarte, da die
+   Wochenleiste wie Rangliste/Aufgaben eine Sekundär-Karte ist, keine Hauptkarte (daher 22px statt
+   26px Radius, dezenterer 0.1-Alpha-Akzent statt 0.16 bei der Hero).
+   Per Nutzer-Bestätigung gewünscht (explizite Rückfrage vor der Umsetzung).
+   Live im Browser visuell bestätigt (grünlicher Akzent oben rechts in der Karte sichtbar,
+   identisch zur Rangliste-Karte direkt darunter). */
+@media (max-width:700px){
+  html body.change-view-challenges #challenges-view .challenge-week-card{
+    background:radial-gradient(circle at 82% 18%, rgba(74,222,128,.1), transparent 34%), linear-gradient(135deg, rgba(12,25,20,.86), rgba(7,12,18,.94))!important;
+    border-color:rgba(255,255,255,.086)!important;
+    border-radius:22px!important;
+  }
+}

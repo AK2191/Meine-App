@@ -1,8 +1,9 @@
-## Version 0.1.0273
-- Bugfix: Lade-/Fortschrittsanzeige bei laufendem GitHub-Update/Rollback sprang ueber die Tabs "Update"/"Verlauf" statt im Update-Tab ueber der ZIP-Karte zu erscheinen.
-- Ursache: actionPanel wurde in githubUpdateBody() fix vor githubTabBar() gerendert statt im Tabpane.
-- Fix: actionPanel jetzt innerhalb von updatePane direkt ueber der Datei-Uebersicht platziert, Tabs bleiben in jedem Zustand an fester Position.
-- Geaendert: features/settings/settingsPanel.js (nur Reihenfolge der HTML-Bausteine in githubUpdateBody()). Keine Aenderung an Worker, Polling, Rollback-Logik, Kalender, Dashboard, Challenges.
+## Version 0.1.0274
+- Pollen: HeroCard hing 42px zu weit unten unter der Ueberschrift. Ursache: Scroll-End-Spacer (::after, 42px, order:0) rutschte vor die Hero-Section (order:1) statt ans Ende. Fix: order:3 auf den Spacer, nur Pollen betroffen.
+- Challenges: grosser Leerraum (96px) zwischen Gruppenziel-Karte und Wochenleiste. Gleiches Spacer/order-Muster wie bei Pollen, gleicher Fix (order:3), nur Challenges betroffen.
+- Challenges: Ranglisten-Kachel hatte bis zu 200px Leerraum unter den Personen-Zeilen durch eine alte min-height:420px (Relikt einer fruheren Zwei-Spalten-Architektur). Fix: min-height:0 nur fuer .leader-card, .challenge-card bewusst unveraendert.
+- Challenges: Wochenleiste-Kachel optisch an den Card-Stil von Rangliste/Aufgaben angeglichen (gruener Akzent-Hintergrund, passender Border-Ton), auf Nutzerwunsch nach Rueckfrage.
+- Alle vier Fixes live an der echten App via Browser-Verbindung diagnostiziert und verifiziert (nicht nur durch Code-Lesen). Geaendert ausschliesslich styles/appShell.css, vier neue Override-Sektionen am Dateiende.
 
 
 - Alle fuenf mobilen HeroCards (Dashboard, Kalender, Challenges, Pollen, Einstellungen) auf exakt 216px Hoehe vereinheitlicht (Referenz: Einstellungen-Profilkarte), explizite Nutzeranforderung.
