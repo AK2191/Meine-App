@@ -5,8 +5,8 @@
   "scope": "./",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
-  "background_color": "#080c18",
-  "theme_color": "#080c18",
+  "background_color": "#163A29",
+  "theme_color": "#163A29",
   "description": "Change Kalender, Feiertage und Challenges mit Live-Kontest und Push-Benachrichtigungen.",
   "orientation": "portrait-primary",
   "icons": [

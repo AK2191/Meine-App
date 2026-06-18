@@ -1,4 +1,9 @@
-## Version 0.1.0275
+## Version 0.1.0276
+- Neues App-Icon "Neuer Tag" (Sonnenaufgang) in allen Groessen und Varianten (192/512px, maskable, Apple Touch, favicon.ico).
+- manifest.json: background_color und theme_color auf #163A29 (Dunkelgruen passend zum Icon) aktualisiert.
+- index.html: favicon.ico-Referenz ergaenzt, Apple Touch Icon auf neue 180px-Datei.
+
+
 - Challenges: kein Abstand zwischen den Personen-Zeilen in der Rangliste (Alex/Svenja stossen direkt aneinander), waehrend zwischen den Eintraegen bei "Heutige Aufgaben" ein klarer Abstand sichtbar war.
 - Ursache: #leaderboard-list und #challenges-list teilen sich eigentlich display:grid + gap:9px fuer den Zeilenabstand. Eine aeltere, aber spezifischere Regel wirft #leaderboard-list zurueck auf display:block, wo gap keine Wirkung hat. #challenges-list ist davon nicht betroffen.
 - Fix: display:grid erneut mit ausreichend hoher Spezifitaet fuer #leaderboard-list gesetzt, damit der vorhandene gap:9px wieder wirkt. Zeilenabstand jetzt 8px, identisch zu den Aufgaben-Eintraegen.
