@@ -1,3 +1,9 @@
+## Version 0.1.0283
+- **Pollen-Symptomkarte mobil am App-Rand ausgerichtet:** Der Bereich `Symptome heute` nutzt mobil jetzt die volle Breite innerhalb des bestehenden App-Shell-Rands, ohne eigene seitliche Einzuege oder asymmetrische Margins. Die Allergieprofil-Klickflaeche und die bestehende v0.1.0282-Groesse bleiben erhalten.
+- Bestehende Icons, Pollen-Icons, Symptom-Icons, aktive Icon-Assets, Pollenwerte, Firebase-Logik, Sync, Login, Kalender, Push und Challenges bleiben unveraendert.
+- Geaendert: `features/pollen/pollenView.css`, `features/pollen/pollenView.js`, `features/settings/settingsPanel.js`, `CLAUDE.md`, `CHANGELOG.md`. Keine neuen Dateien, keine Patch-Dateien, keine Root-Dateien.
+- Geprueft: JavaScript-Syntax, CSS-Klammerbilanz und ZIP-Struktur.
+
 ## Version 0.1.0282
 - **Pollen-Symptomkarte korrigiert:** Die Allergieprofil-Zeile ist jetzt als vollständige Klickfläche erkennbar, der Pfeil sitzt wieder rechts und die mobile Darstellung wird nicht mehr von älteren Kompaktregeln zu klein gezogen.
 - Bestehende Icons, Pollen-Icons, Symptom-Icons, aktive Icon-Assets, Pollenwerte, Firebase-Logik, Sync, Login, Kalender und Challenges bleiben unverändert.
@@ -2203,5 +2209,4 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Die Innenkacheln im Pollen-Allergieprofil wurden farblich an die Kalender-Kacheln angeglichen.
 - Dies gilt lokal/desktop und mobil.
 - Keine Änderung an Logik, Pollenwerten, Kalenderdaten, Firebase, Sync, Login oder Push.
-
 

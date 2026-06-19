@@ -1,3 +1,7 @@
+## Version 0.1.0283
+- Pollen-Symptomkarte mobil: Rand fuer "Symptome heute" stabilisiert, damit die Karte symmetrisch im App-Shell-Rand sitzt.
+- Nur `features/pollen/pollenView.css`, sichtbare Versionsnummern und Release-Notizen aktualisiert. Keine Aenderung an Firebase, Sync, Login, Kalender, Push oder Challenges.
+
 ## Version 0.1.0282
 - Pollen-Symptomkarte: Allergieprofil-Klickfläche und mobile Größe korrigiert.
 - Keine Icon-Änderungen, keine Änderung an Firebase, Sync, Login, Kalender oder Challenges.

@@ -5931,9 +5931,10 @@ body.change-theme-light #pollen-view .pollen-hourly-y text{
 }
 
 
-/* v0.1.0282 · Pollen-Symptome: Allergieprofil-Klickfläche und mobile Größe stabilisiert
+/* v0.1.0283 · Pollen-Symptome: Allergieprofil-Klickfläche, mobile Größe und Rand stabilisiert
    UI-only: bestehende Icons bleiben unverändert. Die Profilzeile ist sichtbar als vollständige
-   Klickfläche erkennbar und wird mobil nicht mehr durch ältere Kompaktregeln zu klein gezogen. */
+   Klickfläche erkennbar, wird mobil nicht mehr durch ältere Kompaktregeln zu klein gezogen
+   und nutzt den App-Shell-Rand symmetrisch ohne eigene seitliche Einzüge. */
 #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry,
 body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry,
 body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry{
@@ -5978,13 +5979,28 @@ body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-
   background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.035))!important;
 }
 @media(max-width:760px){
+  #pollen-view .pollen-neo-symptoms,
+  body.change-view-pollen #pollen-view .pollen-neo-symptoms,
+  body.neo-pollen-shell #pollen-view .pollen-neo-symptoms{
+    width:100%!important;
+    max-width:none!important;
+    align-self:stretch!important;
+    margin-left:0!important;
+    margin-right:0!important;
+    padding-left:0!important;
+    padding-right:0!important;
+    box-sizing:border-box!important;
+  }
   #pollen-view .pollen-neo-symptoms .change-symptom-card,
   body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-card,
   body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-card{
     width:100%!important;
     max-width:none!important;
+    margin-left:0!important;
+    margin-right:0!important;
     padding:16px!important;
     border-radius:22px!important;
+    box-sizing:border-box!important;
   }
   #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry,
   body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry,
