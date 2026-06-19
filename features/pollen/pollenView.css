@@ -5693,3 +5693,43 @@ body.change-theme-light #pollen-view .pollen-hourly-y text{
 #pollen-view .pollen-neo-profile-card.active .pollen-neo-icon-svg {
   opacity: 1!important;
 }
+
+
+/* v0.1.0278 · Pollen-Icon-Set und Statuspunkte aus dem aktuellen Design */
+#pollen-view .pollen-neo-status-icon{
+  display:flex!important;
+  border-radius:12px!important;
+  background:rgba(125,230,171,.12)!important;
+  overflow:hidden;
+}
+#pollen-view .pollen-neo-status-icon.peak{background:rgba(251,191,36,.12)!important;}
+#pollen-view .pollen-neo-status-icon.quiet{background:rgba(125,230,171,.12)!important;}
+#pollen-view .pollen-neo-status-icon::after{content:none!important;}
+#pollen-view .pollen-neo-status-icon svg{
+  width:100%;
+  height:100%;
+  display:block;
+}
+#pollen-view .pollen-neo-forecast-dot{
+  position:relative;
+  border:1.4px solid #7DE6AB!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#pollen-view .pollen-neo-forecast-dot::after{
+  content:"";
+  position:absolute;
+  width:46%;
+  height:46%;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  border-radius:999px;
+  background:#7DE6AB;
+}
+#pollen-view .pollen-neo-forecast-row.medium .pollen-neo-forecast-dot{border-color:#FBBF24!important;}
+#pollen-view .pollen-neo-forecast-row.medium .pollen-neo-forecast-dot::after{background:#FBBF24;}
+#pollen-view .pollen-neo-forecast-row.high .pollen-neo-forecast-dot{border-color:#FF6656!important;}
+#pollen-view .pollen-neo-forecast-row.high .pollen-neo-forecast-dot::after{background:#FF6656;}
+#pollen-view .pollen-neo-forecast-row.missing .pollen-neo-forecast-dot{border-color:rgba(159,184,166,.5)!important;}
+#pollen-view .pollen-neo-forecast-row.missing .pollen-neo-forecast-dot::after{background:rgba(159,184,166,.65);}

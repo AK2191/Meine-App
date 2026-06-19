@@ -1,3 +1,11 @@
+## Version 0.1.0279
+- **Pollen-Icons und Statuspunkte auf das neue Design umgestellt.** Ausschließlich die bestehende Darstellung wurde ausgetauscht: botanische Allergieprofil-Icons (Gräser, Birke, Ambrosia, Beifuß, Erle, Olive), vier Symptom-Icons, die drei Hero-Statuszeichen (aktive Pollenart, Peak, ruhigster Tag) sowie die Punkte im 5-Tages-Ausblick.
+- Große Hero-Illustrationen, Kartenlayout, Texte, Datenmodell, Pollenberechnung, Auswahlverhalten, Firebase-/Sync-Logik und Navigation bleiben unverändert.
+- Die Statuspunkte verwenden nun das neue Ring-plus-Kern-Prinzip; Intensitätsfarben bleiben erhalten (Grün, Gelb, Rot), damit die Bedeutung der Belastungsstufen nicht verloren geht.
+- Geändert: `features/pollen/pollenView.js`, `features/weather/pollenSymptoms.js`, `features/pollen/pollenView.css`, `features/settings/settingsPanel.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprüft: JavaScript-Syntax beider geänderter JS-Dateien, CSS-Klammerbilanz und vollständige Zuordnung aller sechs Pollenarten sowie aller vier Symptome. Keine neuen Dateien, keine Patches, keine Änderungen an Login, Firebase, Datenbank-Sync, Google Kalender, Dashboard oder Challenges.
+
+
 ## Version 0.1.0278
 - **GitHub-Upload läuft jetzt wirklich passiv innerhalb der geöffneten App weiter.** Der bestehende Worker-Status-Polling-Job bleibt aktiv, wenn die GitHub-Einstellungen verlassen werden, und wechselt die Ansicht dabei nicht mehr zurück zu Einstellungen/GitHub.
 - **Ursache behoben:** `pollGithubActionStatus()` hat bei jedem Statuswechsel `refreshSameTab('github')` aufgerufen. Nach einem Wechsel zu Pollen, Kalender, Dashboard oder Challenges wurde dadurch der Settings-Workspace wieder geöffnet. Neu aktualisiert `refreshGithubUpdatePanelIfVisible()` nur dann, wenn der GitHub-Tab bereits sichtbar geöffnet ist. In allen anderen Ansichten läuft der Timer ohne UI-Eingriff weiter.

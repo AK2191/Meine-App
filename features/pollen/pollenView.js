@@ -3,7 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0278';
+  var APP_VERSION = '0.1.0279';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var SELECTED_KEY = 'change_v1_pollen_selected_keys';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
@@ -218,77 +218,16 @@
       + '</svg>';
   }
   function glyphSvg(kind){
-    // Stil: klare, erkennbare Linien — minimalistisch aber botanisch treffend.
-    // Wenige Striche, passend zum App-Design. Stroke-only mit leichten Fill-Akzenten.
+    // Pollen-Icon-Set v0.1.0278: klare botanische Linien aus dem aktuellen Design.
+    // Nur Darstellung; Schlüssel und Auswahl-Logik bleiben unverändert.
     var map = {
-
-      // Gräser: 3 Halme unterschiedlicher Höhe mit gebogenen Ähren-Spitzen
-      grass_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true">'
-        +'<path d="M8 21V10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'
-        +'<path d="M12 21V7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'
-        +'<path d="M16 21V11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'
-        +'<path d="M8 10 Q6.5 7.5 7 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>'
-        +'<path d="M12 7 Q10.5 4.5 11 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>'
-        +'<path d="M16 11 Q14.5 8.5 15 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>'
-        +'</svg></span>',
-
-      // Birke: schlanker Stamm, zwei Äste, runde Krone, Andeutung Kätzchen
-      birch_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true">'
-        +'<path d="M12 21V14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'
-        +'<path d="M12 17 Q9.5 15 7.5 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/>'
-        +'<path d="M12 15 Q14.5 13 16.5 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/>'
-        +'<ellipse cx="12" cy="8.5" rx="5" ry="4.5" stroke="currentColor" stroke-width="1.4" fill="currentColor" fill-opacity=".13"/>'
-        +'<path d="M7.5 12 Q7 14 6.5 16" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" fill="none" opacity=".6"/>'
-        +'<path d="M16.5 10 Q17 12 17.5 14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" fill="none" opacity=".6"/>'
-        +'</svg></span>',
-
-      // Ambrosia: Stängel, 2 Seitentriebe, 3 kleine runde Blütenköpfe
-      ragweed_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true">'
-        +'<path d="M12 21V15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'
-        +'<path d="M12 18 L8.5 14.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>'
-        +'<path d="M12 18 L15.5 14.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>'
-        +'<path d="M12 15 L12 11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>'
-        +'<circle cx="12" cy="9.5" r="2.2" stroke="currentColor" stroke-width="1.4" fill="currentColor" fill-opacity=".16"/>'
-        +'<circle cx="8" cy="13.5" r="1.6" stroke="currentColor" stroke-width="1.2" fill="currentColor" fill-opacity=".13"/>'
-        +'<circle cx="16" cy="13.5" r="1.6" stroke="currentColor" stroke-width="1.2" fill="currentColor" fill-opacity=".13"/>'
-        +'</svg></span>',
-
-      // Beifuss: zentraler Stengel mit symmetrischen Blattpaaren
-      mugwort_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true">'
-        +'<path d="M12 21V5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'
-        +'<path d="M12 17 Q9 15.5 7.5 13.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/>'
-        +'<path d="M12 17 Q15 15.5 16.5 13.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/>'
-        +'<path d="M12 13 Q9 11.5 7.5 9.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/>'
-        +'<path d="M12 13 Q15 11.5 16.5 9.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/>'
-        +'<path d="M12 9 Q10 8 9 6.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" fill="none" opacity=".65"/>'
-        +'<path d="M12 9 Q14 8 15 6.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" fill="none" opacity=".65"/>'
-        +'</svg></span>',
-
-      // Erle: waagrechter Ast mit zwei hängenden Kaetzchen (Ellipsen-Kette)
-      alder_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true">'
-        +'<path d="M4 9 Q9 7 12 9 Q15 11 20 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>'
-        +'<path d="M8.5 9 Q8 13 7.5 17" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" fill="none"/>'
-        +'<path d="M15.5 9 Q16 13 16.5 17" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" fill="none"/>'
-        +'<ellipse cx="8.2" cy="11.5" rx="1.9" ry="1" stroke="currentColor" stroke-width="1.1" fill="currentColor" fill-opacity=".18" transform="rotate(-8 8.2 11.5)"/>'
-        +'<ellipse cx="7.8" cy="14.2" rx="1.9" ry="1" stroke="currentColor" stroke-width="1.1" fill="currentColor" fill-opacity=".15" transform="rotate(-5 7.8 14.2)"/>'
-        +'<ellipse cx="15.8" cy="11.5" rx="1.9" ry="1" stroke="currentColor" stroke-width="1.1" fill="currentColor" fill-opacity=".18" transform="rotate(8 15.8 11.5)"/>'
-        +'<ellipse cx="16.2" cy="14.2" rx="1.9" ry="1" stroke="currentColor" stroke-width="1.1" fill="currentColor" fill-opacity=".15" transform="rotate(5 16.2 14.2)"/>'
-        +'</svg></span>',
-
-      // Olive: runde dichte Krone auf kurzem Stamm, zwei ovale Fruechte darunter
-      olive_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true">'
-        +'<path d="M12 21V15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'
-        +'<circle cx="12" cy="10" r="5.5" stroke="currentColor" stroke-width="1.4" fill="currentColor" fill-opacity=".13"/>'
-        +'<path d="M9.5 11.5 Q11 9.5 12.5 8" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity=".4" fill="none"/>'
-        +'<ellipse cx="9.5" cy="16" rx="1.4" ry="2" stroke="currentColor" stroke-width="1.2" fill="currentColor" fill-opacity=".28"/>'
-        +'<ellipse cx="14.5" cy="16" rx="1.4" ry="2" stroke="currentColor" stroke-width="1.2" fill="currentColor" fill-opacity=".28"/>'
-        +'</svg></span>',
-
-      // Fallback: geschwungenes Blatt mit Mittelrippe
-      leaf:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true">'
-        +'<path d="M17 3C10 3.5 5.5 9 5.5 15c0 2 .5 3.2 1.5 4 1 .7 2.3.7 3.8.1C15.5 17.4 18 12 18 3.2c0-.2-.1-.2-.1-.2Z" stroke="currentColor" stroke-width="1.4" fill="currentColor" fill-opacity=".15"/>'
-        +'<path d="M8.5 18C10 15.5 12.5 13.5 15 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" opacity=".5"/>'
-        +'</svg></span>'
+      grass_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M24 43 C23 34 22 24 18 8" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><path d="M24 43 C24 33 24 22 24 6" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><path d="M24 43 C25 34 26 24 30 9" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><path d="M24 43 C22 35 19 27 13 16" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><path d="M24 43 C26 35 29 27 35 17" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></svg></span>',
+      birch_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M24 42 V20" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><path d="M24 20 C16 19 11 13 11 6 C19 7 24 13 24 20Z" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 13 H22 M14 9 H20" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></svg></span>',
+      ragweed_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M24 42 V22" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><path d="M24 22 C24 16 20 12 20 12 M24 22 C24 16 28 12 28 12" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><path d="M16 28 C12 26 10 22 10 18 M16 28 C16 24 14 20 12 18 M32 28 C36 26 38 22 38 18 M32 28 C32 24 34 20 36 18" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><circle cx="24" cy="9" r="2" stroke="currentColor" stroke-width="2.1"/><circle cx="18" cy="12" r="1.6" stroke="currentColor" stroke-width="2.1"/><circle cx="30" cy="12" r="1.6" stroke="currentColor" stroke-width="2.1"/></svg></span>',
+      mugwort_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M24 42 V8" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><path d="M24 16 C19 15 15 12 14 8 M24 16 C29 15 33 12 34 8 M24 24 C18 23 13 20 12 15 M24 24 C30 23 35 20 36 15 M24 32 C19 31 15 28 14 24 M24 32 C29 31 33 28 34 24" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></svg></span>',
+      alder_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M20 6 C16 12 16 20 19 27 M28 6 C24 11 24 18 26 24" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><path d="M19 27 C18 33 19 38 22 42 M26 24 C26 30 28 36 31 40" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><ellipse cx="20" cy="33" rx="3" ry="5" stroke="currentColor" stroke-width="2.1"/><ellipse cx="28" cy="29" rx="2.6" ry="4.4" stroke="currentColor" stroke-width="2.1"/></svg></span>',
+      olive_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M12 10 C20 14 30 22 38 38" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><path d="M18 15 C14 13 11 14 9 17 C13 19 16 18 18 15Z" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"/><path d="M25 21 C21 19 18 20 16 23 C20 25 23 24 25 21Z" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"/><circle cx="31" cy="30" r="3.4" fill="currentColor" fill-opacity=".22" stroke="currentColor" stroke-width="2.1"/><circle cx="34" cy="36" r="3" fill="currentColor" fill-opacity=".22" stroke="currentColor" stroke-width="2.1"/></svg></span>',
+      leaf:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 28 C8 23 6 13 13 4 C21 11 24 22 16 28Z" fill="currentColor" fill-opacity=".18" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M16 28 C15.5 20 15 12 14.5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M15.2 20 L10.5 17 M15 14 L11.5 11.5 M15.4 20 L20 17 M15.1 14 L19 11.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>'
     };
     return map[kind] || map.leaf;
   }
@@ -514,6 +453,15 @@
     // Fallback: Gräser-SVG
     return illustrations[dominantKey] || illustrations.grass_pollen;
   }
+  function statusIconSvg(kind){
+    var map = {
+      active:'<span class="dot yellow pollen-neo-status-icon active" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="#7DE6AB"></circle><circle cx="12" cy="12" r="9" fill="none" stroke="#7DE6AB" stroke-width="1.4" opacity=".4"></circle></svg></span>',
+      peak:'<span class="mark peak pollen-neo-status-icon peak" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4 25 C11 25 12 7 16 7 C20 7 21 25 28 25" stroke="#FBBF24" stroke-width="2.4"></path><circle cx="16" cy="7" r="2.6" fill="#FBBF24"></circle><path d="M4 25 H28" stroke="#FBBF24" stroke-width="1.6" opacity=".35"></path></svg></span>',
+      quiet:'<span class="mark leaf pollen-neo-status-icon quiet" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="#7DE6AB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 28 C8 23 6 13 13 4 C21 11 24 22 16 28Z" fill="#7DE6AB" fill-opacity=".18"></path><path d="M16 28 C15.5 20 15 12 14.5 5" stroke-width="1.8"></path><path d="M15.2 20 L10.5 17 M15 14 L11.5 11.5 M15.4 20 L20 17 M15.1 14 L19 11.5" stroke-width="1.5"></path></svg></span>'
+    };
+    return map[kind] || map.active;
+  }
+
   function metricCardHtml(type, label, body, tone){
     return '<div class="pollen-neo-card pollen-neo-metric '+esc(tone || 'none')+'"><div class="pollen-neo-label">'+esc(label)+'</div>'+body+'</div>';
   }
@@ -547,9 +495,9 @@
         + '</div>'
         + heroArtSvg(dominantKey)
         + '<div class="pollen-neo-hero-stats pollen-neo-hero-stats-extended pollen-neo-hero-insights">'
-          + '<div class="pollen-hero-insight"><span class="dot yellow"></span><strong>'+esc((topLoadItem && topLoadItem.name) || 'Pollen')+' '+esc(levelLabel(topLoadItem && topLoadItem.level))+'</strong><em>'+esc(topLoadScore)+' %</em></div>'
-          + '<div class="pollen-hero-insight"><span class="mark peak"></span><strong>Peak</strong><em>'+esc(peak ? diffLabel(dayDiff(peak.date)) : '–')+'</em></div>'
-          + '<div class="pollen-hero-insight"><span class="mark leaf"></span><strong>Ruhigster Tag</strong><em>'+esc(quiet ? fmtLongDay(quiet.date).split(',')[0] : '–')+'</em></div>'
+          + '<div class="pollen-hero-insight">'+statusIconSvg('active')+'<strong>'+esc((topLoadItem && topLoadItem.name) || 'Pollen')+' '+esc(levelLabel(topLoadItem && topLoadItem.level))+'</strong><em>'+esc(topLoadScore)+' %</em></div>'
+          + '<div class="pollen-hero-insight">'+statusIconSvg('peak')+'<strong>Peak</strong><em>'+esc(peak ? diffLabel(dayDiff(peak.date)) : '–')+'</em></div>'
+          + '<div class="pollen-hero-insight">'+statusIconSvg('quiet')+'<strong>Ruhigster Tag</strong><em>'+esc(quiet ? fmtLongDay(quiet.date).split(',')[0] : '–')+'</em></div>'
         + '</div>'
       + '</div>'
     + '</section>';

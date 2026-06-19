@@ -1,3 +1,8 @@
+## Version 0.1.0279
+- Pollen: bestehende Icons für Pollenarten und Symptome sowie Hero- und Ausblick-Statuspunkte durch das neue grüne Design-Set ersetzt.
+- Keine Logik- oder Layoutänderung: Auswahl, Daten, Berechnung und Sync bleiben unverändert.
+
+
 ## Version 0.1.0278
 - GitHub-Übertragungen laufen nach dem Start passiv weiter, auch wenn währenddessen zu Pollen, Kalender, Dashboard oder Challenges gewechselt wird.
 - Ursache: Das Status-Polling hat zuvor bei jedem Fortschritt die GitHub-Einstellungen erneut geöffnet. Jetzt wird nur ein bereits sichtbarer GitHub-Tab aktualisiert.
