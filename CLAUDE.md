@@ -1,3 +1,9 @@
+## Version 0.1.0282
+- **Pollen-Symptomkarte korrigiert:** Die Allergieprofil-Zeile ist jetzt als vollständige Klickfläche erkennbar, der Pfeil sitzt wieder rechts und die mobile Darstellung wird nicht mehr von älteren Kompaktregeln zu klein gezogen.
+- Bestehende Icons, Pollen-Icons, Symptom-Icons, aktive Icon-Assets, Pollenwerte, Firebase-Logik, Sync, Login, Kalender und Challenges bleiben unverändert.
+- Geändert: `features/weather/pollenSymptoms.js`, `features/pollen/pollenView.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`. Keine neuen Dateien, keine Patch-Dateien, keine Root-Dateien.
+- Geprüft: JavaScript-Syntax, CSS-Klammerbilanz und ZIP-Struktur.
+
 ## Version 0.1.0281
 - **Pollen-Symptomauswertung neu aufgebaut:** Die Auswertung bleibt in der bestehenden Symptom-/Statistik-Kachel und öffnet per Klick ein Detailpanel „Dein Allergieprofil“ mit Zusammenfassung, erkannten Mustern, beschwerdefreien Tagen trotz erhöhter Pollenbelastung und letzten vollständigen Tagen. Keine zusätzliche Pollen-Kachel.
 - **„Keine“ ist jetzt eine bewusste Eingabe:** Symptomfelder starten unbeantwortet und werden erst nach Auswahl aktiv. „Keine“ wird als echter Wert gespeichert, aber bewusst gräulich statt grün dargestellt. Nur vollständig bewertete Tage werden für die Statistik verwendet.

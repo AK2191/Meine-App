@@ -284,9 +284,9 @@
     var result = strongestCorrelation();
     var count = result.records.length;
     var summary = profileSummary(result);
-    return '<button type="button" class="change-symptom-insight change-symptom-profile-entry'+(count ? ' strong' : ' empty')+'" data-pollen-profile-open="1">'
+    return '<button type="button" class="change-symptom-insight change-symptom-profile-entry'+(count ? ' strong' : ' empty')+'" data-pollen-profile-open="1" aria-label="Dein Allergieprofil öffnen">'
       + '<span class="change-symptom-insight-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 18V9"/><path d="M10 18V5"/><path d="M16 18v-7"/><path d="M22 18v-4"/></svg></span>'
-      + '<span><strong>'+esc(summary.title)+'</strong><span>'+esc(summary.text)+'<br>'+esc(summary.hint)+'</span></span>'
+      + '<span class="change-symptom-profile-copy"><strong>'+esc(summary.title)+'</strong><span>'+esc(summary.text)+'<br>'+esc(summary.hint)+'</span></span>'
       + '<span class="change-symptom-profile-chevron" aria-hidden="true">›</span>'
       + '</button>';
   }

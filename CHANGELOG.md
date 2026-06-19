@@ -1,3 +1,7 @@
+## Version 0.1.0282
+- Pollen-Symptomkarte: Allergieprofil-Klickfläche und mobile Größe korrigiert.
+- Keine Icon-Änderungen, keine Änderung an Firebase, Sync, Login, Kalender oder Challenges.
+
 ## Version 0.1.0281
 - **Pollen-Symptomauswertung neu aufgebaut:** Die Auswertung bleibt in der bestehenden Symptom-/Statistik-Kachel und öffnet per Klick ein Detailpanel „Dein Allergieprofil“ mit Zusammenfassung, erkannten Mustern, beschwerdefreien Tagen trotz erhöhter Pollenbelastung und letzten vollständigen Tagen. Keine zusätzliche Pollen-Kachel.
 - **„Keine“ ist jetzt eine bewusste Eingabe:** Symptomfelder starten unbeantwortet und werden erst nach Auswahl aktiv. „Keine“ wird als echter Wert gespeichert, aber bewusst gräulich statt grün dargestellt. Nur vollständig bewertete Tage werden für die Statistik verwendet.

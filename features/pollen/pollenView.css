@@ -5929,3 +5929,85 @@ body.change-theme-light #pollen-view .pollen-hourly-y text{
   .change-profile-bar{grid-template-columns:74px minmax(0,1fr) 38px;font-size:13px}
   .change-profile-day-row{grid-template-columns:minmax(0,1fr) auto 54px 14px;padding:13px 12px}
 }
+
+
+/* v0.1.0282 · Pollen-Symptome: Allergieprofil-Klickfläche und mobile Größe stabilisiert
+   UI-only: bestehende Icons bleiben unverändert. Die Profilzeile ist sichtbar als vollständige
+   Klickfläche erkennbar und wird mobil nicht mehr durch ältere Kompaktregeln zu klein gezogen. */
+#pollen-view .pollen-neo-symptoms .change-symptom-profile-entry,
+body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry,
+body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry{
+  appearance:none!important;
+  width:100%!important;
+  min-height:98px!important;
+  display:grid!important;
+  grid-template-columns:40px minmax(0,1fr) 24px!important;
+  align-items:center!important;
+  gap:14px!important;
+  padding:18px 20px!important;
+  text-align:left!important;
+  cursor:pointer!important;
+}
+#pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-profile-copy{
+  display:block!important;
+  min-width:0!important;
+  text-align:left!important;
+}
+#pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-profile-copy strong{
+  display:block!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+#pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-profile-copy span{
+  display:block!important;
+}
+#pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-profile-chevron{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  width:24px!important;
+  color:rgba(244,247,244,.72)!important;
+  font-size:26px!important;
+  line-height:1!important;
+  margin:0!important;
+}
+#pollen-view .pollen-neo-symptoms .change-symptom-profile-entry:hover,
+#pollen-view .pollen-neo-symptoms .change-symptom-profile-entry:focus-visible{
+  border-color:rgba(74,222,128,.30)!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.035))!important;
+}
+@media(max-width:760px){
+  #pollen-view .pollen-neo-symptoms .change-symptom-card,
+  body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-card,
+  body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-card{
+    width:100%!important;
+    max-width:none!important;
+    padding:16px!important;
+    border-radius:22px!important;
+  }
+  #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry,
+  body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry,
+  body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry{
+    min-height:102px!important;
+    grid-template-columns:42px minmax(0,1fr) 22px!important;
+    padding:17px 18px!important;
+    border-radius:18px!important;
+  }
+  #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon{
+    width:38px!important;
+    height:38px!important;
+    flex-basis:38px!important;
+  }
+  #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-profile-copy strong{
+    font-size:14px!important;
+    line-height:1.22!important;
+  }
+  #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-profile-copy span{
+    font-size:12px!important;
+    line-height:1.35!important;
+  }
+}
+[data-theme="light"] #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-profile-chevron{
+  color:rgba(18,32,22,.62)!important;
+}
