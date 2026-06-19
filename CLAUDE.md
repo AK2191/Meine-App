@@ -1,3 +1,12 @@
+## Version 0.1.0287
+- **HeroCards nicht nur farblich, sondern geometrisch an PollenView angeglichen:** Der neue finale Block am Ende von `styles/appShell.css` setzt fuer Dashboard, Kalender, Challenges und Einstellungen die spaetere PollenView-Geometrie: Desktop 3-Spalten-Raster `Text / Illustration / Stats`, 238px Mindesthoehe, 28px Radius, Pollen-Padding, 45px Titel und Pollen-nahe Stats-Zeilen.
+- **Mobile Pollen-Anordnung uebernommen:** Mobile HeroCards nutzen jetzt dieselbe sichtbare Struktur wie Pollen: oben `Text + Illustration`, darunter die dreigeteilte Stats-Leiste. Werte fuer 760px und 390px sind aus der PollenView-Cascade nachgezogen.
+- **Root Cause des vorherigen kaum sichtbaren Fixes:** Einige alte Hero-Regeln zielten auf Wrapper wie `.dashp-hero-visual` oder `.cal-premium-hero-visual`, die im aktuellen Markup nicht die tatsaechlichen SVGs sind. v0.1.0287 setzt deshalb gezielt die echten Klassen `dashp-hero-illustration`, `cal-hero-illustration`, `settings-hero-illustration` und `chv227-illustration`.
+- **Bewusst nicht geaendert:** Firebase, Sync, Login, Google Kalender, Push, Pollen-Berechnung, Kalenderdaten und Datenlogik bleiben unveraendert. `AGENTS.md` bleibt entfernt.
+- Geaendert: `styles/appShell.css`, `features/pollen/pollenView.js`, `features/settings/settingsPanel.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax von `features/pollen/pollenView.js` und `features/settings/settingsPanel.js`, neuer v0.1.0287-CSS-Block klammerbalanciert, Root-Dateiliste ohne `AGENTS.md`, Versionsfundstellen auf 0.1.0287 und ZIP-Struktur.
+- Hinweis: Die bekannte Gesamt-Klammerzaehlung von `styles/appShell.css` hat weiterhin die aeltere Altlast (diff -1). Der neue v0.1.0287-Block selbst ist ausgeglichen.
+
 ## Version 0.1.0286
 - **Unerwuenschte Root-Datei entfernt:** `AGENTS.md` wurde aus dem App-Root geloescht, damit Release-ZIPs keine zusaetzliche Codex-/Arbeitsregel-Datei als App-Datei enthalten.
 - **UI-Stand bleibt gleich:** Die HeroCard-Farbangleichung aus v0.1.0285 bleibt unveraendert. Keine Aenderung an `styles/appShell.css` in dieser Version.

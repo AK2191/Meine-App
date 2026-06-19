@@ -1,3 +1,10 @@
+## Version 0.1.0287
+- HeroCards von Dashboard, Kalender, Challenges und Einstellungen jetzt auch geometrisch an PollenView angeglichen: Desktop-Raster, Hoehe, Radius, Padding, Titelgroesse, Statistikzeilen und mobile `Text + Illustration / Stats`-Anordnung.
+- Wichtig: Die echten vorhandenen SVG-Klassen (`dashp-hero-illustration`, `cal-hero-illustration`, `settings-hero-illustration`, `chv227-illustration`) werden jetzt gezielt gesetzt. Dadurch wird die Icon-/Illustrationsposition tatsaechlich getroffen.
+- `AGENTS.md` bleibt entfernt. Keine Aenderung an Firebase, Login, Google Kalender, Push, Sync, Pollen-Berechnung oder Datenlogik.
+- Geaendert: `styles/appShell.css`, `features/pollen/pollenView.js`, `features/settings/settingsPanel.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax, neuer CSS-Block klammerbalanciert, Root-Dateiliste ohne `AGENTS.md`, Versionsfundstellen und ZIP-Struktur.
+
 ## Version 0.1.0286
 - Unerwuenschte Root-Datei `AGENTS.md` aus der App entfernt, damit die ZIP nur App-Dateien enthaelt.
 - HeroCard-Angleichung aus v0.1.0285 bleibt unveraendert. Keine Aenderung an Firebase, Login, Google Kalender, Push, Sync, Pollen-Berechnung oder Datenlogik.
