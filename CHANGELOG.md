@@ -1,3 +1,10 @@
+## Version 0.1.0281
+- **Pollen-Symptomauswertung neu aufgebaut:** Die Auswertung bleibt in der bestehenden Symptom-/Statistik-Kachel und öffnet per Klick ein Detailpanel „Dein Allergieprofil“ mit Zusammenfassung, erkannten Mustern, beschwerdefreien Tagen trotz erhöhter Pollenbelastung und letzten vollständigen Tagen. Keine zusätzliche Pollen-Kachel.
+- **„Keine“ ist jetzt eine bewusste Eingabe:** Symptomfelder starten unbeantwortet und werden erst nach Auswahl aktiv. „Keine“ wird als echter Wert gespeichert, aber bewusst gräulich statt grün dargestellt. Nur vollständig bewertete Tage werden für die Statistik verwendet.
+- **Firebase-Datenmodell erweitert, ohne Auto-Start:** `change_pollen_symptoms` speichert zusätzlich `answered`, `complete` und `symptomScore`. Auswertungen werden weiterhin aus Rohdaten berechnet. Kein automatischer Firebase-Start, kein Login-Auto-Sync, kein Push-Dialog und keine Änderung an Kalender, Dashboard oder Challenges.
+- Geändert: `features/weather/pollenSymptoms.js`, `features/pollen/pollenView.css`, `features/pollen/pollenView.js`, `features/settings/settingsPanel.js`, `CLAUDE.md`, `CHANGELOG.md`. Keine Icons geändert, keine neuen Dateien, keine Patch-Dateien, keine Root-Dateien.
+- Geprüft: `node --check features/weather/pollenSymptoms.js`, `node --check features/pollen/pollenView.js`, `node --check features/settings/settingsPanel.js`, CSS-Klammerbilanz.
+
 ## Version 0.1.0280
 - Pollen-HeroCard-Bilder fuer Graeser, Birke, Ambrosia, Beifuss, Erle und Olive auf das neue gruene Design-Set umgestellt.
 - Keine Aenderung an Pollenlogik, Firebase, Sync, Login, Kalender oder Push.

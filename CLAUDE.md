@@ -1,3 +1,10 @@
+## Version 0.1.0281
+- **Pollen-Symptomauswertung neu aufgebaut:** Die Auswertung bleibt in der bestehenden Symptom-/Statistik-Kachel und öffnet per Klick ein Detailpanel „Dein Allergieprofil“ mit Zusammenfassung, erkannten Mustern, beschwerdefreien Tagen trotz erhöhter Pollenbelastung und letzten vollständigen Tagen. Keine zusätzliche Pollen-Kachel.
+- **„Keine“ ist jetzt eine bewusste Eingabe:** Symptomfelder starten unbeantwortet und werden erst nach Auswahl aktiv. „Keine“ wird als echter Wert gespeichert, aber bewusst gräulich statt grün dargestellt. Nur vollständig bewertete Tage werden für die Statistik verwendet.
+- **Firebase-Datenmodell erweitert, ohne Auto-Start:** `change_pollen_symptoms` speichert zusätzlich `answered`, `complete` und `symptomScore`. Auswertungen werden weiterhin aus Rohdaten berechnet. Kein automatischer Firebase-Start, kein Login-Auto-Sync, kein Push-Dialog und keine Änderung an Kalender, Dashboard oder Challenges.
+- Geändert: `features/weather/pollenSymptoms.js`, `features/pollen/pollenView.css`, `features/pollen/pollenView.js`, `features/settings/settingsPanel.js`, `CLAUDE.md`, `CHANGELOG.md`. Keine Icons geändert, keine neuen Dateien, keine Patch-Dateien, keine Root-Dateien.
+- Geprüft: `node --check features/weather/pollenSymptoms.js`, `node --check features/pollen/pollenView.js`, `node --check features/settings/settingsPanel.js`, CSS-Klammerbilanz.
+
 ## Version 0.1.0280
 - **Pollen-HeroCard-Illustrationen vollständig auf das neue Design-Set umgestellt.** Die großen Hero-Bilder für Gräser, Birke, Ambrosia, Beifuß, Erle und Olive wurden aus dem gelieferten grünen Designkonzept übernommen: gefüllte, geschichtete Silhouetten mit ruhiger Tiefe statt der älteren gelb-grünen Illustrationen.
 - Kleine Pollenarten-Icons, Symptom-Icons und Statuspunkte bleiben aus v0.1.0279 erhalten. Keine Änderung an Pollenwerten, Auswahl, Forecast-Berechnung, 24-Stunden-Ausblick, Firebase, Sync, Login, Kalender oder Push.
@@ -9,7 +16,7 @@
 - **Pollen-Icons und Statuspunkte auf das neue Design umgestellt.** Ausschließlich die bestehende Darstellung wurde ausgetauscht: botanische Allergieprofil-Icons (Gräser, Birke, Ambrosia, Beifuß, Erle, Olive), vier Symptom-Icons, die drei Hero-Statuszeichen (aktive Pollenart, Peak, ruhigster Tag) sowie die Punkte im 5-Tages-Ausblick.
 - Große Hero-Illustrationen, Kartenlayout, Texte, Datenmodell, Pollenberechnung, Auswahlverhalten, Firebase-/Sync-Logik und Navigation bleiben unverändert.
 - Die Statuspunkte verwenden nun das neue Ring-plus-Kern-Prinzip; Intensitätsfarben bleiben erhalten (Grün, Gelb, Rot), damit die Bedeutung der Belastungsstufen nicht verloren geht.
-- Geändert: `features/pollen/pollenView.js`, `features/weather/pollenSymptoms.js`, `features/pollen/pollenView.css`, `features/settings/settingsPanel.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geändert: `features/pollen/pollenView.js`, `features/weather/pollenSymptoms.js`, `features/pollen/pollenView.css`, `features/pollen/pollenView.js`, `features/settings/settingsPanel.js`, `CLAUDE.md`, `CHANGELOG.md`.
 - Geprüft: JavaScript-Syntax beider geänderter JS-Dateien, CSS-Klammerbilanz und vollständige Zuordnung aller sechs Pollenarten sowie aller vier Symptome. Keine neuen Dateien, keine Patches, keine Änderungen an Login, Firebase, Datenbank-Sync, Google Kalender, Dashboard oder Challenges.
 
 

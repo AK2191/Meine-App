@@ -49,7 +49,9 @@
   function blank(date){
     return {
       date: date || todayKey(),
-      symptoms: {sneeze:0, eyes:0, nose:0, breath:0},
+      symptoms: {sneeze:null, eyes:null, nose:null, breath:null},
+      answered: {sneeze:false, eyes:false, nose:false, breath:false},
+      complete: false,
       note: '',
       pollenSnapshot: null,
       updatedAtLocal: ''
@@ -61,23 +63,51 @@
     var base = blank(key);
     if(item && typeof item === 'object'){
       base.symptoms = Object.assign(base.symptoms, item.symptoms || {});
+      if(item.answered && typeof item.answered === 'object'){
+        base.answered = Object.assign(base.answered, item.answered || {});
+      }else{
+        // Alte lokale Standard-Nullen gelten nicht automatisch als bewusst gewähltes "Keine".
+        Object.keys(base.symptoms).forEach(function(k){ base.answered[k] = Number(base.symptoms[k] || 0) > 0; });
+      }
+      base.complete = item.complete === true || isComplete(base);
       base.note = String(item.note || '');
       base.pollenSnapshot = item.pollenSnapshot || null;
       base.updatedAtLocal = item.updatedAtLocal || '';
     }
     return base;
   }
+  function isAnswered(record, key){
+    return !!(record && record.answered && record.answered[key] === true);
+  }
+  function answeredCount(record){
+    return FIELDS.reduce(function(sum, field){ return sum + (isAnswered(record, field.key) ? 1 : 0); }, 0);
+  }
+  function isComplete(record){
+    return answeredCount(record) === FIELDS.length;
+  }
+  function symptomValue(record, key){
+    if(!isAnswered(record, key)) return null;
+    return Math.max(0, Math.min(3, Number(record.symptoms && record.symptoms[key]) || 0));
+  }
   function maxSymptom(record){
-    var values = record && record.symptoms ? Object.values(record.symptoms).map(Number) : [];
+    var values = FIELDS.map(function(field){ return symptomValue(record, field.key); }).filter(function(v){ return v != null; });
     return values.length ? Math.max.apply(Math, values) : 0;
   }
+  function totalSymptomScore(record){
+    return FIELDS.reduce(function(sum, field){ return sum + (symptomValue(record, field.key) || 0); }, 0);
+  }
   function mainSymptom(record){
-    var symptoms = record && record.symptoms ? record.symptoms : {};
     var best = 'sneeze';
-    Object.keys(FIELD_LABELS).forEach(function(key){
-      if(Number(symptoms[key] || 0) > Number(symptoms[best] || 0)) best = key;
+    FIELDS.forEach(function(field){
+      if((symptomValue(record, field.key) || 0) > (symptomValue(record, best) || 0)) best = field.key;
     });
-    return {key: best, label: FIELD_LABELS[best], value: Number(symptoms[best] || 0)};
+    return {key: best, label: FIELD_LABELS[best], value: symptomValue(record, best) || 0};
+  }
+  function completenessText(record){
+    var count = answeredCount(record);
+    if(count >= FIELDS.length) return 'Vollständig bewertet';
+    if(count === 0) return 'Heute noch nicht bewertet';
+    return count + ' von ' + FIELDS.length + ' Bereichen bewertet';
   }
   function setForecast(forecast){
     latestForecast = Array.isArray(forecast) ? forecast : [];
@@ -106,6 +136,7 @@
   }
   function saveLocal(record){
     var data = all();
+    record.complete = isComplete(record);
     record.updatedAtLocal = new Date().toISOString();
     if(!record.pollenSnapshot) record.pollenSnapshot = snapshotFor(record.date);
     data[record.date] = record;
@@ -136,6 +167,9 @@
         userEmail: user.email,
         userName: user.name,
         symptoms: Object.assign({}, record.symptoms || {}),
+        answered: Object.assign({}, record.answered || {}),
+        complete: isComplete(record),
+        symptomScore: totalSymptomScore(record),
         note: String(record.note || '').slice(0, 500),
         pollenSnapshot: record.pollenSnapshot || snapshotFor(record.date || todayKey()),
         updatedAtLocal: record.updatedAtLocal || new Date().toISOString(),
@@ -158,6 +192,8 @@
       var data = doc.data() || {};
       var rec = blank(date || todayKey());
       rec.symptoms = Object.assign(rec.symptoms, data.symptoms || {});
+      rec.answered = Object.assign(rec.answered, data.answered || {});
+      rec.complete = data.complete === true || isComplete(rec);
       rec.note = String(data.note || '');
       rec.pollenSnapshot = data.pollenSnapshot || null;
       rec.updatedAtLocal = data.updatedAtLocal || '';
@@ -168,12 +204,6 @@
       return null;
     }
   }
-  function levelButtons(field, value, date){
-    return LEVELS.map(function(level){
-      var active = Number(value || 0) === level.key ? ' active' : '';
-      return '<button type="button" class="change-symptom-level'+active+'" data-symptom-field="'+esc(field)+'" data-symptom-value="'+level.key+'" data-symptom-date="'+esc(date)+'">'+esc(level.label)+'</button>';
-    }).join('');
-  }
   function statusText(record){
     var max = maxSymptom(record);
     if(max >= 3) return 'Starke Symptome hinterlegt';
@@ -183,51 +213,187 @@
   }
   function relevantRecords(){
     return Object.values(all()).filter(function(rec){
-      return rec && rec.pollenSnapshot && Array.isArray(rec.pollenSnapshot.items) && maxSymptom(rec) >= 1;
+      return rec && isComplete(rec) && rec.pollenSnapshot && Array.isArray(rec.pollenSnapshot.items);
     }).sort(function(a,b){ return String(a.date || '').localeCompare(String(b.date || '')); });
   }
   function strongestCorrelation(){
     var records = relevantRecords();
     var stats = {};
+    var highFreeDays = 0;
+    var highDays = 0;
     records.forEach(function(rec){
       var main = mainSymptom(rec);
       var max = maxSymptom(rec);
+      var score = totalSymptomScore(rec);
+      var dayHadHigh = false;
       (rec.pollenSnapshot.items || []).forEach(function(p){
         var value = Number(p.value || 0);
         var levelHit = p.level === 'medium' || p.level === 'high' || value >= 30;
         if(!levelHit) return;
+        dayHadHigh = true;
         var key = p.key || p.name;
-        if(!stats[key]) stats[key] = {name:p.name || key, hits:0, strongHits:0, totalValue:0, symptomCounts:{}};
-        stats[key].hits += 1;
-        stats[key].totalValue += value;
-        if(max >= 3) stats[key].strongHits += 1;
-        stats[key].symptomCounts[main.key] = (stats[key].symptomCounts[main.key] || 0) + Math.max(1, main.value);
+        if(!stats[key]) stats[key] = {key:key, name:p.name || key, days:0, symptomDays:0, freeDays:0, strongDays:0, totalPollen:0, totalSymptoms:0, symptomCounts:{}};
+        stats[key].days += 1;
+        stats[key].totalPollen += value;
+        stats[key].totalSymptoms += score;
+        if(score === 0) stats[key].freeDays += 1;
+        if(score > 0) stats[key].symptomDays += 1;
+        if(max >= 3) stats[key].strongDays += 1;
+        if(main.value > 0) stats[key].symptomCounts[main.key] = (stats[key].symptomCounts[main.key] || 0) + Math.max(1, main.value);
       });
+      if(dayHadHigh){
+        highDays += 1;
+        if(score === 0) highFreeDays += 1;
+      }
     });
     var best = Object.keys(stats).map(function(key){
       var s = stats[key];
       var symptomKey = Object.keys(s.symptomCounts).sort(function(a,b){ return s.symptomCounts[b] - s.symptomCounts[a]; })[0] || 'nose';
-      s.key = key;
-      s.avg = Math.round(s.totalValue / Math.max(1, s.hits));
+      s.avg = Math.round(s.totalPollen / Math.max(1, s.days));
+      s.correlation = Math.round((s.symptomDays / Math.max(1, s.days)) * 100);
+      s.freeRatio = Math.round((s.freeDays / Math.max(1, s.days)) * 100);
       s.symptomKey = symptomKey;
       s.symptomLabel = FIELD_LABELS[symptomKey] || 'Symptome';
-      s.score = s.hits * 10 + s.strongHits * 7 + s.avg;
+      s.score = s.symptomDays * 18 + s.strongDays * 12 + s.avg - s.freeDays * 5;
       return s;
     }).sort(function(a,b){ return b.score - a.score; })[0] || null;
-    return {records:records, best:best};
+    return {records:records, best:best, highDays:highDays, highFreeDays:highFreeDays};
+  }
+  function formatDate(value){
+    var parts = String(value || '').split('-').map(Number);
+    if(parts.length !== 3) return String(value || '');
+    var d = new Date(parts[0], parts[1]-1, parts[2]);
+    return d.toLocaleDateString('de-DE', {day:'2-digit', month:'short'});
+  }
+  function formatLongDate(value){
+    var parts = String(value || '').split('-').map(Number);
+    if(parts.length !== 3) return String(value || '');
+    var d = new Date(parts[0], parts[1]-1, parts[2]);
+    return d.toLocaleDateString('de-DE', {weekday:'long', day:'2-digit', month:'long', year:'numeric'});
+  }
+  function profileSummary(result){
+    result = result || strongestCorrelation();
+    var count = result.records.length;
+    if(!count) return {title:'Dein Allergieprofil', text:'Noch keine vollständigen Tage erfasst', hint:'Tippe, um deine Auswertungen zu sehen.'};
+    if(!result.best || count < 5) return {title:'Dein Allergieprofil', text:count + ' vollständige Tage erfasst', hint:'Mit mehr Tagen werden deine Hinweise präziser.'};
+    var b = result.best;
+    if(b.symptomDays === 0) return {title:'Dein Allergieprofil', text:count + ' vollständige Tage erfasst', hint:'Bisher keine klare Belastung erkennbar.'};
+    return {title:'Dein Allergieprofil', text:count + ' vollständige Tage erfasst', hint:b.name + ' wahrscheinlichster Auslöser'};
   }
   function insightHtml(){
     var result = strongestCorrelation();
     var count = result.records.length;
-    if(!count){
-      return '<div class="change-symptom-insight empty"><div class="change-symptom-insight-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 18V9"/><path d="M10 18V5"/><path d="M16 18v-7"/><path d="M22 18v-4"/></svg></div><div><strong>Noch keine Auswertung</strong><span>Trage Symptome ein. Ab mehreren Tagen erkennt Change Muster zwischen Pollen und Beschwerden.</span></div></div>';
-    }
-    if(!result.best || count < 3){
-      return '<div class="change-symptom-insight"><div class="change-symptom-insight-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 18V9"/><path d="M10 18V5"/><path d="M16 18v-7"/><path d="M22 18v-4"/></svg></div><div><strong>Auswertung startet</strong><span>'+count+' Symptomtag(e) gespeichert. Ab 3 Tagen werden belastbarere Muster sichtbar.</span></div></div>';
-    }
+    var summary = profileSummary(result);
+    return '<button type="button" class="change-symptom-insight change-symptom-profile-entry'+(count ? ' strong' : ' empty')+'" data-pollen-profile-open="1">'
+      + '<span class="change-symptom-insight-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 18V9"/><path d="M10 18V5"/><path d="M16 18v-7"/><path d="M22 18v-4"/></svg></span>'
+      + '<span><strong>'+esc(summary.title)+'</strong><span>'+esc(summary.text)+'<br>'+esc(summary.hint)+'</span></span>'
+      + '<span class="change-symptom-profile-chevron" aria-hidden="true">›</span>'
+      + '</button>';
+  }
+  function pollenBadge(item){
+    if(!item) return 'Ruhig';
+    if(item.level === 'high') return 'Hoch';
+    if(item.level === 'medium') return 'Mittel';
+    if(item.level === 'low') return 'Niedrig';
+    return 'Ruhig';
+  }
+  function profileBars(result){
+    result = result || strongestCorrelation();
+    var stats = {};
+    result.records.forEach(function(rec){
+      (rec.pollenSnapshot.items || []).forEach(function(p){
+        var key = p.key || p.name;
+        if(!stats[key]) stats[key] = {name:p.name || key, symptomDays:0, days:0};
+        var value = Number(p.value || 0);
+        if(p.level === 'medium' || p.level === 'high' || value >= 30){
+          stats[key].days += 1;
+          if(totalSymptomScore(rec) > 0) stats[key].symptomDays += 1;
+        }
+      });
+    });
+    var list = Object.keys(stats).map(function(key){
+      var s = stats[key];
+      s.percent = Math.round((s.symptomDays / Math.max(1, s.days)) * 100);
+      return s;
+    }).sort(function(a,b){ return b.percent - a.percent; }).slice(0,4);
+    if(!list.length) list = [{name:'Gräser',percent:0},{name:'Birke',percent:0},{name:'Ambrosia',percent:0},{name:'Beifuß',percent:0}];
+    return list.map(function(s){ return '<div class="change-profile-bar"><span>'+esc(s.name)+'</span><i><b style="width:'+Math.max(4, Math.min(100, s.percent))+'%"></b></i><strong>'+s.percent+'%</strong></div>'; }).join('');
+  }
+  function recentRecords(limit){
+    return relevantRecords().slice().sort(function(a,b){ return String(b.date || '').localeCompare(String(a.date || '')); }).slice(0, limit || 6);
+  }
+  function dayDots(rec){
+    return FIELDS.map(function(field){
+      var v = symptomValue(rec, field.key);
+      var cls = v == null ? 'missing' : (v === 0 ? 'none' : (v === 1 ? 'light' : (v === 2 ? 'medium' : 'strong')));
+      return '<span class="change-profile-dot '+cls+'"></span>';
+    }).join('');
+  }
+  function profileViewHtml(tab){
+    var result = strongestCorrelation();
+    var records = result.records;
+    var first = records[0] && formatDate(records[0].date);
+    var last = records[records.length-1] && formatDate(records[records.length-1].date);
     var b = result.best;
-    var strength = b.strongHits ? b.strongHits + 'x stark' : b.hits + 'x auffällig';
-    return '<div class="change-symptom-insight strong"><div class="change-symptom-insight-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M5 8c5 0 7 4 7 8"/><path d="M19 8c-5 0-7 4-7 8"/><path d="M7 17h10"/></svg></div><div><strong>'+esc(b.name)+' auffällig</strong><span>Bei erhöhter Belastung hattest du '+esc(strength)+' vor allem '+esc(b.symptomLabel)+'. Durchschnittlicher Wert: '+esc(b.avg)+'%.</span></div></div>';
+    var freePct = Math.round((result.highFreeDays / Math.max(1, result.highDays)) * 100);
+    var title = b && b.symptomDays ? b.name + ' ist dein wahrscheinlichster Auslöser' : 'Noch kein klarer Auslöser erkennbar';
+    var text = b && b.symptomDays ? 'Bei erhöhter Belastung hattest du an '+b.symptomDays+' von '+b.days+' Tagen Beschwerden, besonders bei '+b.symptomLabel+'.' : 'Erfasse weitere vollständige Tage, damit Change Pollen und Beschwerden sicher vergleichen kann.';
+    var days = recentRecords(8);
+    var dayRows = days.map(function(rec){
+      var items = rec.pollenSnapshot && rec.pollenSnapshot.items || [];
+      var top = items.slice().sort(function(a,b){ return Number(b.value||0)-Number(a.value||0); })[0] || null;
+      return '<button type="button" class="change-profile-day-row" data-pollen-profile-day="'+esc(rec.date)+'"><span>'+esc(formatLongDate(rec.date))+'</span><em>'+dayDots(rec)+'</em><strong>'+esc(pollenBadge(top))+'</strong><i>›</i></button>';
+    }).join('') || '<div class="change-profile-empty">Noch keine vollständigen Tage vorhanden.</div>';
+    var insights = [];
+    if(result.highDays) insights.push('An '+result.highFreeDays+' von '+result.highDays+' Tagen mit erhöhter Pollenbelastung warst du beschwerdefrei.');
+    if(b && b.symptomDays) insights.push(b.symptomLabel+' trat an '+b.symptomDays+' von '+b.days+' Tagen mit erhöhter '+b.name+'-Belastung auf.');
+    if(records.length < 10) insights.push('Noch '+Math.max(1, 10-records.length)+' vollständige Tage, bis deine Auswertung deutlich präziser wird.');
+    if(!insights.length) insights.push('Noch keine belastbare Tendenz. Deine Daten bleiben als Rohdaten gespeichert.');
+    var insightRows = insights.map(function(t){ return '<div class="change-profile-insight-row"><span></span><p>'+esc(t)+'</p></div>'; }).join('');
+    return '<div class="change-profile-overlay" data-pollen-profile-overlay="1">'
+      + '<div class="change-profile-panel" role="dialog" aria-modal="true" aria-label="Dein Allergieprofil">'
+      + '<div class="change-profile-top"><button type="button" data-pollen-profile-close="1">‹</button><strong>Dein Allergieprofil</strong><span></span></div>'
+      + '<div class="change-profile-hero"><div class="change-profile-leaf" aria-hidden="true"></div><div><strong>'+records.length+' vollständige Tage erfasst</strong><span>'+(first && last ? esc(first+' – '+last) : 'Auswertungen starten mit vollständigen Tagen')+'</span><small>Auswertungen basieren auf bewusst bewerteten Symptomen.</small></div></div>'
+      + '<div class="change-profile-section"><h3>Zusammenfassung</h3><div class="change-profile-summary"><strong>'+esc(title)+'</strong><p>'+esc(text)+'</p>'+profileBars(result)+'</div></div>'
+      + '<div class="change-profile-mini-grid"><div><b>'+result.highFreeDays+' / '+Math.max(0,result.highDays)+'</b><span>beschwerdefreie Tage trotz höherer Pollen</span><em>'+freePct+'%</em></div><div><b>'+esc(b && b.symptomLabel || 'Noch offen')+'</b><span>häufigster Beschwerdebereich</span><em>'+records.length+' Tage</em></div></div>'
+      + '<div class="change-profile-section"><h3>Was Change erkennt</h3><div class="change-profile-insights">'+insightRows+'</div></div>'
+      + '<div class="change-profile-section"><h3>Letzte Tage</h3><div class="change-profile-days">'+dayRows+'</div></div>'
+      + '</div></div>';
+  }
+  function dayDetailHtml(date){
+    var rec = get(date);
+    var items = rec.pollenSnapshot && rec.pollenSnapshot.items || [];
+    var topItems = items.slice().sort(function(a,b){ return Number(b.value||0)-Number(a.value||0); }).slice(0,4);
+    var pollen = topItems.map(function(p){ return '<span><b>'+esc(p.name)+'</b><em>'+esc(pollenBadge(p))+'</em></span>'; }).join('') || '<span><b>Pollen</b><em>Keine Daten</em></span>';
+    var symptoms = FIELDS.map(function(field){
+      var v = symptomValue(rec, field.key);
+      var label = v == null ? 'Offen' : LEVELS.filter(function(l){ return l.key === v; })[0].label;
+      return '<div class="change-profile-symptom-line"><span>'+symptomIconSvg(field.key)+' '+esc(field.label)+'</span><strong>'+esc(label)+'</strong></div>';
+    }).join('');
+    var score = totalSymptomScore(rec);
+    var rating = score === 0 ? 'Sehr guter Tag' : (score <= 3 ? 'Guter Tag' : (score <= 7 ? 'Auffälliger Tag' : 'Starker Beschwerdetag'));
+    return '<div class="change-profile-overlay" data-pollen-profile-overlay="1"><div class="change-profile-panel change-profile-detail" role="dialog" aria-modal="true" aria-label="Tagesdetails">'
+      + '<div class="change-profile-top"><button type="button" data-pollen-profile-back="1">‹</button><strong>Tagesdetails</strong><span></span></div>'
+      + '<div class="change-profile-date-card">'+esc(formatLongDate(date))+'</div>'
+      + '<div class="change-profile-section"><h3>Pollenbelastung</h3><div class="change-profile-pollen-list">'+pollen+'</div></div>'
+      + '<div class="change-profile-section"><h3>Meine Symptome</h3><div class="change-profile-symptoms">'+symptoms+'</div></div>'
+      + '<div class="change-profile-section"><h3>Notiz</h3><p class="change-profile-note">'+esc(rec.note || 'Keine Notiz hinterlegt.')+'</p></div>'
+      + '<div class="change-profile-rating"><strong>'+esc(rating)+'</strong><span>'+esc(completenessText(rec))+'</span></div>'
+      + '</div></div>';
+  }
+  function openProfile(){
+    closeProfile();
+    document.body.insertAdjacentHTML('beforeend', profileViewHtml());
+    document.body.classList.add('change-profile-open');
+  }
+  function openDayDetail(date){
+    closeProfile();
+    document.body.insertAdjacentHTML('beforeend', dayDetailHtml(date));
+    document.body.classList.add('change-profile-open');
+  }
+  function closeProfile(){
+    document.querySelectorAll('[data-pollen-profile-overlay]').forEach(function(el){ el.remove(); });
+    document.body.classList.remove('change-profile-open');
   }
   function symptomIconSvg(key){
     // Symptom-Icon-Set v0.1.0278: übernimmt ausschließlich die neue Bildsprache.
@@ -240,9 +406,9 @@
     return map[key] || map.sneeze;
   }
 
-  function levelButtons(field, value, date){
+  function levelButtons(field, value, date, answered){
     return LEVELS.map(function(level){
-      var active = Number(value || 0) === level.key ? ' active' : '';
+      var active = answered === true && Number(value || 0) === level.key ? ' active' : '';
       return '<button type="button" class="change-symptom-level'+active+'" data-level="'+level.key+'" data-symptom-field="'+esc(field)+'" data-symptom-value="'+level.key+'" data-symptom-date="'+esc(date)+'">'+esc(level.label)+'</button>';
     }).join('');
   }
@@ -252,8 +418,9 @@
     var rec = get(key);
     if(!rec.pollenSnapshot) rec.pollenSnapshot = snapshotFor(key);
     var rows = FIELDS.map(function(field){
-      var value = rec.symptoms && rec.symptoms[field.key] != null ? rec.symptoms[field.key] : 0;
-      return '<div class="change-symptom-row" data-symptom-row="'+esc(field.key)+'"><div class="change-symptom-label">'+symptomIconSvg(field.key)+'<strong>'+esc(field.label)+'</strong></div><div class="change-symptom-levels">'+levelButtons(field.key, value, key)+'</div></div>';
+      var answered = isAnswered(rec, field.key);
+      var value = answered ? (rec.symptoms && rec.symptoms[field.key] != null ? rec.symptoms[field.key] : 0) : null;
+      return '<div class="change-symptom-row" data-symptom-row="'+esc(field.key)+'"><div class="change-symptom-label">'+symptomIconSvg(field.key)+'<strong>'+esc(field.label)+'</strong></div><div class="change-symptom-levels">'+levelButtons(field.key, value, key, answered)+'</div></div>';
     }).join('');
     return '<div class="change-symptom-card" data-symptom-card="'+esc(key)+'">'
       + insightHtml()
@@ -274,6 +441,16 @@
     if(window.__changePollenSymptomsInstalled) return;
     window.__changePollenSymptomsInstalled = true;
     document.addEventListener('click', async function(ev){
+      var open = ev.target && ev.target.closest ? ev.target.closest('[data-pollen-profile-open]') : null;
+      if(open){ ev.preventDefault(); openProfile(); return; }
+      var close = ev.target && ev.target.closest ? ev.target.closest('[data-pollen-profile-close]') : null;
+      if(close){ ev.preventDefault(); closeProfile(); return; }
+      var back = ev.target && ev.target.closest ? ev.target.closest('[data-pollen-profile-back]') : null;
+      if(back){ ev.preventDefault(); openProfile(); return; }
+      var day = ev.target && ev.target.closest ? ev.target.closest('[data-pollen-profile-day]') : null;
+      if(day){ ev.preventDefault(); openDayDetail(day.getAttribute('data-pollen-profile-day')); return; }
+      var backdrop = ev.target && ev.target.matches && ev.target.matches('[data-pollen-profile-overlay]') ? ev.target : null;
+      if(backdrop){ ev.preventDefault(); closeProfile(); return; }
       var btn = ev.target && ev.target.closest ? ev.target.closest('[data-symptom-field]') : null;
       if(!btn) return;
       ev.preventDefault();
@@ -282,6 +459,7 @@
       var value = parseInt(btn.getAttribute('data-symptom-value'), 10) || 0;
       var rec = get(date);
       rec.symptoms[field] = value;
+      rec.answered[field] = true;
       rec.pollenSnapshot = snapshotFor(date) || rec.pollenSnapshot;
       saveLocal(rec);
       refreshVisibleCard(date);
@@ -354,6 +532,7 @@
     setForecast: setForecast,
     insightHtml: insightHtml,
     notificationItems: notificationItems,
+    openProfile: openProfile,
     install: install
   };
 
