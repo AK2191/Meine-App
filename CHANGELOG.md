@@ -1,3 +1,9 @@
+## Version 0.1.0288
+- Rangliste in Challenges neu gestaltet: einzeilige Spielerzeilen mit Rang-Kreis, Medaille, Name/Live-Punkt, Heute-offen-/Heute-erledigt-Chips und Punktebox im Trophy-Stil.
+- Mobile und lokale/Desktop-Darstellung nutzen denselben einzeiligen Stil. Auf sehr schmalen Displays darf die Rangliste horizontal scrollen, damit die Zeilen nicht umbrechen.
+- Geaendert: `features/challenges/challenges.js`, `styles/appShell.css`, `features/pollen/pollenView.js`, `features/settings/settingsPanel.js`, `CLAUDE.md`, `CHANGELOG.md`. Keine Aenderung an Firebase, Login, Google Kalender, Push, Sync, Challenge-Speicherung oder Punkteberechnung.
+- Geprueft: JavaScript-Syntax, neuer v0.1.0288-CSS-Block klammerbalanciert, Root-Dateiliste ohne `AGENTS.md`, Versionsfundstellen und ZIP-Struktur.
+
 ## Version 0.1.0287
 - HeroCards von Dashboard, Kalender, Challenges und Einstellungen jetzt auch geometrisch an PollenView angeglichen: Desktop-Raster, Hoehe, Radius, Padding, Titelgroesse, Statistikzeilen und mobile `Text + Illustration / Stats`-Anordnung.
 - Wichtig: Die echten vorhandenen SVG-Klassen (`dashp-hero-illustration`, `cal-hero-illustration`, `settings-hero-illustration`, `chv227-illustration`) werden jetzt gezielt gesetzt. Dadurch wird die Icon-/Illustrationsposition tatsaechlich getroffen.

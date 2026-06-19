@@ -423,6 +423,15 @@
         return pointsForDate(dk,String(b.email||b.id).toLowerCase())
               -pointsForDate(dk,String(a.email||a.id).toLowerCase());
       });
+      var rankMedals=['&#129351;','&#129352;','&#129353;'];
+      var todayAvailable=daily.filter(function(ch){return ch&&ch.active!==false;}).length;
+      function playerCompletionsFor(id,onlyToday){
+        return (window.challengeCompletions||[]).filter(function(c){
+          var owner=String(c.playerId||c.email||c.userEmail||'').toLowerCase();
+          if(owner!==id) return false;
+          return !onlyToday || String(c.date||'').slice(0,10)===dk;
+        });
+      }
       var medals=['🥇','🥈','🥉'];
       board.innerHTML=players.length?players.map(function(p,i){
         var id=String(p.email||p.id||'').toLowerCase(), me=id===myId();
@@ -433,17 +442,24 @@
         var cnt=(window.challengeCompletions||[]).filter(function(c){
           return String(c.playerId||c.email||c.userEmail||'').toLowerCase()===id;
         }).length;
-        var live=p.online?'<span class="live-dot"></span>':'';
+        var todayDone=playerCompletionsFor(id,true).length;
+        var todayOpen=Math.max(0,todayAvailable-todayDone);
+        var medal=rankMedals[i]||'&#127942;';
+        var live=p.online?'<span class="live-dot" title="Online"></span>':'<span class="live-dot off" title="Offline"></span>';
         var smart=null; try{ if(window.ChangePlayerActivity && window.ChangePlayerActivity.smartNudgeFor) smart=window.ChangePlayerActivity.smartNudgeFor(id,p); }catch(e){}
         var smartTitle=smart&&smart.reason?('Anfeuern: '+smart.reason):'Anfeuern';
         var nudge=me?'':'<button class="nudge-btn" onclick="event.stopPropagation();window.sendNudge&&window.sendNudge(\''+esc(id)+'\',\''+esc(p.name||id)+'\')" title="'+esc(smartTitle)+'"><span class="nudge-btn-icon">💪</span><span class="nudge-btn-label">Anfeuern</span></button>';
         return '<div class="leader-row clickable'+(me?' leader-row-self':'')+'" style="pointer-events:auto;cursor:pointer" onclick="window.openPlayerRecentPanel&&window.openPlayerRecentPanel(\''+esc(id)+'\',\''+esc(p.name||p.email||'Mitspieler')+'\')">'
-          +'<div class="leader-rank">'+(medals[i]||String(i+1))+'</div>'
+          +'<div class="leader-place">'+(i+1)+'</div>'
+          +'<div class="leader-rank leader-medal">'+medal+'</div>'
           +'<div class="leader-main">'
             +'<div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(me?'<span class="leader-self-tag">Du</span>':'')+live+'</div>'
             +'<div class="leader-detail">Heute: '+pts+' P · Gesamt: '+tot+' P · '+cnt+' erledigt</div>'
           +'</div>'
-          +'<div class="leader-side">'+nudge+'<strong class="leader-score">'+tot+'</strong></div>'
+          +'<div class="leader-stat leader-open"><span class="leader-stat-icon">&#128197;</span><span class="leader-stat-label">Heute offen</span><strong>'+todayOpen+'</strong></div>'
+          +'<div class="leader-stat leader-done"><span class="leader-stat-icon">&#10003;</span><span class="leader-stat-label">Heute erledigt</span><strong>'+todayDone+'</strong></div>'
+          +'<div class="leader-trophy"><span class="leader-trophy-icon">&#127942;</span><strong class="leader-score">'+tot+'</strong></div>'
+          +(nudge?'<div class="leader-actions">'+nudge+'</div>':'')
         +'</div>';
       }).join(''):'<div class="dash-empty">Noch keine Mitspieler</div>';
     }catch(e){board.innerHTML='<div class="dash-empty">Rangliste wird geladen…</div>';}
