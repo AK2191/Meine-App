@@ -1,3 +1,10 @@
+## Version 0.1.0278
+- GitHub-Übertragungen laufen nach dem Start passiv weiter, auch wenn währenddessen zu Pollen, Kalender, Dashboard oder Challenges gewechselt wird.
+- Ursache: Das Status-Polling hat zuvor bei jedem Fortschritt die GitHub-Einstellungen erneut geöffnet. Jetzt wird nur ein bereits sichtbarer GitHub-Tab aktualisiert.
+- Keine neue Anzeige, Glockenmeldung, Push-Nachricht, Toast oder automatischer Reload. Der Status bleibt ausschließlich im bestehenden GitHub-Bereich sichtbar.
+- Laufende Upload-Jobs werden lokal gespeichert und nach einem Reload nur für die bereits vom Nutzer gestartete Übertragung wieder aufgenommen. Firebase/Sync/Login bleiben unverändert.
+
+
 ## Version 0.1.0277
 - Icon-Wechsel von "Neuer Tag" (Sonnenaufgang) auf "Atem" (konzentrische Ringe, Forest Green). Alle Assets und alle drei In-App-Stellen (Loading, Login, Header) ersetzt.
 

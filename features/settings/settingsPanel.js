@@ -505,7 +505,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0277';
+  var APP_VERSION = '0.1.0278';
 
 
 
@@ -549,6 +549,65 @@
   };
 
   var GITHUB_UPDATE_WORKER_URL = 'https://change-github-update.ak2191.workers.dev';
+  // Ein bewusst gestarteter GitHub-Job bleibt auch ausserhalb der Einstellungen aktiv.
+  // Die Anzeige wird dabei niemals in eine andere App-Ansicht gedrueckt.
+  var GITHUB_UPDATE_SESSION_KEY = 'change_github_update_background_v1';
+  var GITHUB_UPDATE_SESSION_FIELDS = [
+    'fromVersion','toVersion','uploadCommitSha','actionRunUrl','actionStatus','actionConclusion',
+    'actionMessage','actionCheckedAt','actionStartedAt','updateReady','branchCommitSha',
+    'branchVersion','targetCommitted','liveVersion','liveReady','lastRunId','phase',
+    'pagesAvailable','pagesStatus','direction'
+  ];
+  function githubUpdateSessionSnapshot(){
+    var state = githubUpdateState;
+    var snapshot = {version:1};
+    GITHUB_UPDATE_SESSION_FIELDS.forEach(function(field){ snapshot[field] = state[field]; });
+    return snapshot;
+  }
+  function persistGithubUpdateSession(){
+    var state = githubUpdateState;
+    try{
+      if(!state.uploadCommitSha && !state.actionStartedAt){
+        localStorage.removeItem(GITHUB_UPDATE_SESSION_KEY);
+        return;
+      }
+      localStorage.setItem(GITHUB_UPDATE_SESSION_KEY, JSON.stringify(githubUpdateSessionSnapshot()));
+    }catch(e){}
+  }
+  function clearGithubUpdateSession(){
+    try{ localStorage.removeItem(GITHUB_UPDATE_SESSION_KEY); }catch(e){}
+  }
+  function restoreGithubUpdateSession(){
+    var snapshot = null;
+    try{ snapshot = JSON.parse(localStorage.getItem(GITHUB_UPDATE_SESSION_KEY) || 'null'); }catch(e){}
+    if(!snapshot || snapshot.version !== 1 || (!snapshot.uploadCommitSha && !snapshot.actionStartedAt)) return false;
+    // Fehlgeschlagene Alt-Jobs duerfen keinen neuen Upload blockieren.
+    if(snapshot.actionConclusion && snapshot.actionConclusion !== 'success'){
+      clearGithubUpdateSession();
+      return false;
+    }
+    GITHUB_UPDATE_SESSION_FIELDS.forEach(function(field){
+      if(Object.prototype.hasOwnProperty.call(snapshot, field)) githubUpdateState[field] = snapshot[field];
+    });
+    githubUpdateState.direction = githubUpdateState.direction === 'rollback' ? 'rollback' : 'update';
+    githubUpdateState.actionStartedAt = Number(githubUpdateState.actionStartedAt) || 0;
+    githubUpdateState.updateReady = githubUpdateState.updateReady === true;
+    githubUpdateState.liveReady = githubUpdateState.liveReady === true;
+    githubUpdateState.targetCommitted = githubUpdateState.targetCommitted === true;
+    githubUpdateState.pagesAvailable = githubUpdateState.pagesAvailable === true;
+    return true;
+  }
+  function isGithubUpdatePanelVisible(){
+    var view = document.getElementById('settings-view');
+    return !!(
+      document.body && document.body.classList.contains('change-view-settings') &&
+      currentSettingsTab === 'github' && view && view.style.display !== 'none'
+    );
+  }
+  function refreshGithubUpdatePanelIfVisible(){
+    // Kein Routing und kein Overlay: nur die bereits offene GitHub-Ansicht aktualisieren.
+    if(isGithubUpdatePanelVisible()) refreshSameTab('github');
+  }
   function readGithubUpdateSecret(){
     try{ return localStorage.getItem('change_github_update_secret') || ''; }catch(e){ return ''; }
   }
@@ -905,7 +964,8 @@
         : 'Update wurde nicht rechtzeitig live erkannt.';
       state.actionCheckedAt = new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
       stopGithubActionPolling();
-      refreshSameTab('github');
+      persistGithubUpdateSession();
+      refreshGithubUpdatePanelIfVisible();
       return;
     }
     try{
@@ -951,7 +1011,8 @@
                 state.actionConclusion = 'failure';
                 state.actionMessage = pages.error || 'GitHub Pages Build fehlgeschlagen.';
                 stopGithubActionPolling();
-                refreshSameTab('github');
+                persistGithubUpdateSession();
+      refreshGithubUpdatePanelIfVisible();
                 return;
               }
             }else{
@@ -962,7 +1023,8 @@
               state.updateReady = true;
               state.actionMessage = githubPhaseLabel('live', state.direction);
               stopGithubActionPolling();
-              refreshSameTab('github');
+              persistGithubUpdateSession();
+      refreshGithubUpdatePanelIfVisible();
               return;
             }
             state.updateReady = false;
@@ -972,7 +1034,8 @@
             state.liveReady = false;
             state.actionMessage = githubPhaseLabel('error', state.direction);
             stopGithubActionPolling();
-            refreshSameTab('github');
+            persistGithubUpdateSession();
+      refreshGithubUpdatePanelIfVisible();
             return;
           }
         }else{
@@ -994,7 +1057,8 @@
       state.actionConclusion = 'failure';
       state.actionCheckedAt = new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
     }
-    refreshSameTab('github');
+    persistGithubUpdateSession();
+    refreshGithubUpdatePanelIfVisible();
     if(!state.updateReady && !(state.actionConclusion && state.actionConclusion !== 'success')) scheduleGithubActionPoll(5000);
   }
 
@@ -1110,7 +1174,6 @@
       if(result && result.ok){
         githubRollbackState = { running:false, message:'Zurückgesetzt auf '+result.shortSha+' — GitHub Action startet.', error:'' };
         githubCommitHistory = [];
-        if(typeof window.toast === 'function') window.toast('Rollback gestartet', 'ok');
         setTimeout(function(){ loadGithubCommitHistory(); }, 3000);
         // Symmetrisch zum Upload: denselben Status-Flow durchlaufen, nur mit direction='rollback'.
         var state = githubUpdateState;
@@ -1127,13 +1190,13 @@
         state.updateReady = false;
         state.pagesAvailable = false;
         state.pagesStatus = '';
+        persistGithubUpdateSession();
         scheduleGithubActionPoll(4000);
       } else {
         githubRollbackState = { running:false, message:'', error:(result&&result.message)||'Rollback fehlgeschlagen.' };
-        if(typeof window.toast === 'function') window.toast('Rollback fehlgeschlagen', 'err');
       }
     }catch(e){ githubRollbackState = { running:false, message:'', error:'Netzwerkfehler.' }; }
-    refreshSameTab('github');
+    refreshGithubUpdatePanelIfVisible();
   }
 
   function githubTabBar(){
@@ -1193,8 +1256,7 @@
     if(!secret){
       state.status = 'error';
       state.message = 'Bitte den Cloudflare Freigabe-Code eintragen.';
-      if(typeof window.toast === 'function') window.toast('Freigabe-Code fehlt', 'err');
-      refreshSameTab('github');
+      refreshGithubUpdatePanelIfVisible();
       return;
     }
     writeGithubUpdateSecret(secret);
@@ -1245,17 +1307,16 @@
       state.updateReady = false;
       state.pagesAvailable = false;
       state.pagesStatus = '';
-      if(typeof window.toast === 'function') window.toast('Update wird angewendet', 'ok');
+      persistGithubUpdateSession();
       scheduleGithubActionPoll(2500);
     }catch(e){
       state.status = 'error';
       state.message = githubFriendlyError(e && e.message ? e.message : 'Übertragung fehlgeschlagen.');
       state.actionMessage = state.message;
-      if(typeof window.toast === 'function') window.toast('GitHub Übertragung fehlgeschlagen', 'err');
+      persistGithubUpdateSession();
     }
-    refreshSameTab('github');
+    refreshGithubUpdatePanelIfVisible();
   }
-
   async function fetchGithubRepoFiles(){
     try{
       var response = await fetch(GITHUB_UPDATE_WORKER_URL + '/files', {cache:'no-store'});
@@ -1766,6 +1827,7 @@
       githubUpdateState.liveReady = false;
       githubUpdateState.lastRunId = '';
       githubUpdateState.updateReady = false;
+      clearGithubUpdateSession();
       stopGithubActionPolling();
       if(githubUpdateState.file) analyzeGithubZip();
       else refreshSameTab('github');
@@ -1804,7 +1866,14 @@
     var githubHistoryMore = $('github-history-more'); if(githubHistoryMore) githubHistoryMore.addEventListener('click', function(){ githubCommitHistoryVisible += 5; refreshSameTab('github'); });
     var githubTabUpdate = $('github-tab-update'); if(githubTabUpdate) githubTabUpdate.addEventListener('click', function(){ githubUpdateState.panelTab = 'update'; refreshSameTab('github'); });
     var githubTabHistory = $('github-tab-history'); if(githubTabHistory) githubTabHistory.addEventListener('click', function(){ githubUpdateState.panelTab = 'history'; if(!githubCommitHistory.length && !githubCommitHistoryLoading) loadGithubCommitHistory(); else refreshSameTab('github'); });
-    var githubZipClear = $('github-zip-clear'); if(githubZipClear) githubZipClear.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); githubUpdateState.file = null; githubUpdateState.fileBuffer = null; githubUpdateState.status = 'empty'; githubUpdateState.message = ''; githubUpdateState.actionConclusion = ''; githubUpdateState.actionStartedAt = 0; githubUpdateState.actionMessage = ''; githubUpdateState.uploadCommitSha = ''; var inp = $('github-zip-input'); if(inp) inp.value = ''; refreshSameTab('github'); });
+    var githubZipClear = $('github-zip-clear'); if(githubZipClear) githubZipClear.addEventListener('click', function(e){
+      e.preventDefault(); e.stopPropagation();
+      githubUpdateState.file = null; githubUpdateState.fileBuffer = null; githubUpdateState.status = 'empty'; githubUpdateState.message = '';
+      githubUpdateState.actionConclusion = ''; githubUpdateState.actionStartedAt = 0; githubUpdateState.actionMessage = ''; githubUpdateState.uploadCommitSha = '';
+      githubUpdateState.actionStatus = ''; githubUpdateState.actionRunUrl = ''; githubUpdateState.updateReady = false; githubUpdateState.liveReady = false;
+      stopGithubActionPolling(); clearGithubUpdateSession();
+      var inp = $('github-zip-input'); if(inp) inp.value = ''; refreshGithubUpdatePanelIfVisible();
+    });
     document.querySelectorAll('.change-github-rollback-link:not(:disabled)').forEach(function(btn){
       btn.addEventListener('click', function(){
         rollbackToCommit(btn.getAttribute('data-sha') || '', btn.getAttribute('data-msg') || '');
@@ -1873,6 +1942,16 @@
     var url = window.location.href.split('?')[0].split('#')[0];
     window.location.replace(url + '?v=' + Date.now());
   };
+
+  // Nur einen bereits bewusst gestarteten Deploy wieder aufnehmen. Kein Firebase-Login,
+  // kein Datenbank-Sync und keine sichtbare Benachrichtigung werden dadurch ausgeloest.
+  setTimeout(function(){
+    if(!restoreGithubUpdateSession()) return;
+    if(!githubUpdateState.updateReady && !(githubUpdateState.actionConclusion && githubUpdateState.actionConclusion !== 'success')){
+      scheduleGithubActionPoll(1200);
+    }
+    refreshGithubUpdatePanelIfVisible();
+  }, 0);
 
   window.ChangeSettingsPanel = {open: openSettingsPanel, getAutoChallengesEnabled: getAutoChallengesEnabled, setAutoChallengesState: setAutoChallengesState};
   window.openSettingsPanel = openSettingsPanel;

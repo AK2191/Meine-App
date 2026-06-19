@@ -1,3 +1,13 @@
+## Version 0.1.0278
+- **GitHub-Upload läuft jetzt wirklich passiv innerhalb der geöffneten App weiter.** Der bestehende Worker-Status-Polling-Job bleibt aktiv, wenn die GitHub-Einstellungen verlassen werden, und wechselt die Ansicht dabei nicht mehr zurück zu Einstellungen/GitHub.
+- **Ursache behoben:** `pollGithubActionStatus()` hat bei jedem Statuswechsel `refreshSameTab('github')` aufgerufen. Nach einem Wechsel zu Pollen, Kalender, Dashboard oder Challenges wurde dadurch der Settings-Workspace wieder geöffnet. Neu aktualisiert `refreshGithubUpdatePanelIfVisible()` nur dann, wenn der GitHub-Tab bereits sichtbar geöffnet ist. In allen anderen Ansichten läuft der Timer ohne UI-Eingriff weiter.
+- **Status bleibt genau dort, wo er hingehört:** Keine neue Header-Anzeige, keine Glockenmeldung, kein Toast, keine Push-Nachricht und kein automatischer Reload. Beim späteren Öffnen des GitHub-Tabs steht weiterhin der aktuelle bzw. fertige bestehende Status mit dem vorhandenen manuellen Reload-Button.
+- **Wiederaufnahme abgesichert:** Der bewusst gestartete Job (Commit, Zielversion, Phase, Pages-/Workflow-Status) wird unter `change_github_update_background_v1` lokal gespeichert. Nach einem Seitenreload wird nur ein noch laufender, bewusst gestarteter Job wieder gepollt. Fehlerhafte Alt-Jobs werden nicht wiederhergestellt, damit sie keinen neuen Upload blockieren.
+- **Firebase bewusst unverändert:** Firestore startet nicht automatisch, es gibt keinen zusätzlichen Firebase-Listener und keine Auth-/Sync-/Push-Aktivität nach Login. Firebase kann keinen geschlossenen Browser-Tab weiter ausführen; für die gewünschte Navigation innerhalb der geöffneten App ist der zentrale, lokale Polling-Job die stabilere und dokumentationskonforme Lösung.
+- Geändert: `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`. Keine Änderung an Dashboard, Kalender, Challenges, Pollen-Funktion, Login, Firebase, Datenbank-Sync, Google Kalender oder Push.
+- `node --check features/settings/settingsPanel.js` und `node --check features/pollen/pollenView.js` grün. Zusätzlich geprüft: Polling-Funktion enthält keine Navigation/Settings-Aktualisierung mehr, wenn der GitHub-Tab nicht sichtbar ist.
+
+
 ## Version 0.1.0277
 - **Icon-Wechsel: "Neuer Tag" (Sonnenaufgang) → "Atem" (konzentrische Ringe).** Neues Icon aus eigenem Design-Konzept des Nutzers übernommen. Konzentrische Ringe in Forest Green — minimalistisch, ruhig, Fokus.
 - SVG 1:1 aus Design-HTML extrahiert. Kleine Größen (36px Header) erhalten angepasste Strichstärken aus dem Design (3.4px statt 2.3px, 2 Ringe statt 3 für bessere Lesbarkeit bei kleiner Darstellung — so wie im Design vorgesehen).
