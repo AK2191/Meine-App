@@ -103,12 +103,6 @@
     });
     return {key: best, label: FIELD_LABELS[best], value: symptomValue(record, best) || 0};
   }
-  function completenessText(record){
-    var count = answeredCount(record);
-    if(count >= FIELDS.length) return 'Vollständig bewertet';
-    if(count === 0) return 'Heute noch nicht bewertet';
-    return count + ' von ' + FIELDS.length + ' Bereichen bewertet';
-  }
   function setForecast(forecast){
     latestForecast = Array.isArray(forecast) ? forecast : [];
   }
@@ -370,15 +364,12 @@
       var label = v == null ? 'Offen' : LEVELS.filter(function(l){ return l.key === v; })[0].label;
       return '<div class="change-profile-symptom-line"><span>'+symptomIconSvg(field.key)+' '+esc(field.label)+'</span><strong>'+esc(label)+'</strong></div>';
     }).join('');
-    var score = totalSymptomScore(rec);
-    var rating = score === 0 ? 'Sehr guter Tag' : (score <= 3 ? 'Guter Tag' : (score <= 7 ? 'Auffälliger Tag' : 'Starker Beschwerdetag'));
     return '<div class="change-profile-overlay" data-pollen-profile-overlay="1"><div class="change-profile-panel change-profile-detail" role="dialog" aria-modal="true" aria-label="Tagesdetails">'
       + '<div class="change-profile-top"><button type="button" data-pollen-profile-back="1">‹</button><strong>Tagesdetails</strong><span></span></div>'
       + '<div class="change-profile-date-card">'+esc(formatLongDate(date))+'</div>'
       + '<div class="change-profile-section"><h3>Pollenbelastung</h3><div class="change-profile-pollen-list">'+pollen+'</div></div>'
       + '<div class="change-profile-section"><h3>Meine Symptome</h3><div class="change-profile-symptoms">'+symptoms+'</div></div>'
       + '<div class="change-profile-section"><h3>Notiz</h3><p class="change-profile-note">'+esc(rec.note || 'Keine Notiz hinterlegt.')+'</p></div>'
-      + '<div class="change-profile-rating"><strong>'+esc(rating)+'</strong><span>'+esc(completenessText(rec))+'</span></div>'
       + '</div></div>';
   }
   function openProfile(){

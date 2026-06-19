@@ -1,3 +1,8 @@
+## Version 0.1.0289
+- **Tagesdetails bei Pollen gestrafft:** Die Abschlusskarte mit Tagesbewertung (zum Beispiel "Auffälliger Tag") und "Vollständig bewertet" wird nicht mehr angezeigt. Die Ansicht endet nun direkt nach der Notiz und nutzt dadurch die verfügbare Höhe besser.
+- Geändert: `features/weather/pollenSymptoms.js`, `features/pollen/pollenView.css`, `features/pollen/pollenView.js`, `features/settings/settingsPanel.js`, `CLAUDE.md`, `CHANGELOG.md`. Keine Änderung an Pollenwerten, Symptom-Eingaben, Firebase, Sync, Login, Kalender, Dashboard oder Challenges.
+- Geprüft: JavaScript-Syntax für die geänderten Dateien, keine verbliebene Detailansicht mit `change-profile-rating`, Versionsfundstellen und ZIP-Struktur.
+
 ## Version 0.1.0288
 - **Rangliste einzeilig neu aufgebaut:** `features/challenges/challenges.js` liefert fuer jede Spielerzeile jetzt Rang-Kreis, Medaille, Name mit Live-Punkt, Heute-offen-/Heute-erledigt-Werte und Gesamtpunkte als Trophy-Feld. Die bestehenden Punktedaten werden nur gelesen, nicht anders berechnet.
 - **Mobile und lokale/Desktop-Darstellung im gleichen Stil:** Der finale v0.1.0288-Block in `styles/appShell.css` macht aus der Rangliste eine flache, dunkle Karte mit gruenem Akzent, einzeiligen Reihen und horizontalem Scroll auf sehr schmalen Displays.
