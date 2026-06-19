@@ -1,3 +1,19 @@
+## Version 0.1.0286
+- Unerwuenschte Root-Datei `AGENTS.md` aus der App entfernt, damit die ZIP nur App-Dateien enthaelt.
+- HeroCard-Angleichung aus v0.1.0285 bleibt unveraendert. Keine Aenderung an Firebase, Login, Google Kalender, Push, Sync, Pollen-Berechnung oder Datenlogik.
+- Geaendert: `AGENTS.md` entfernt, `features/pollen/pollenView.js`, `features/settings/settingsPanel.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax, Root-Dateiliste, Versionsfundstellen und ZIP-Struktur ohne `AGENTS.md`.
+
+## Version 0.1.0285
+- HeroCards von Dashboard, Kalender, Challenges und Einstellungen an die PollenView-Farbwelt angeglichen: gleiche dunkle Kartenflaeche, Linien, Textfarben und Icon-Akzente; mobil wird die bestehende Pollen-Mobile-Flaeche genutzt.
+- Heller/lokaler Modus nutzt ebenfalls die PollenView-nahe helle Kartenflaeche, damit die grossen Startkarten nicht auseinanderlaufen.
+- Geaendert: `styles/appShell.css`, `features/pollen/pollenView.js`, `features/settings/settingsPanel.js`, `CLAUDE.md`, `CHANGELOG.md`. Keine Aenderung an Firebase, Login, Google Kalender, Push, Sync, Pollen-Berechnung oder Datenlogik.
+- Geprueft: JavaScript-Syntax, neuer CSS-Block klammerbalanciert, Versionsfundstellen und Vergleich gegen v0.1.0284-ZIP.
+
+## Version 0.1.0284
+- `AGENTS.md` im App-Root ergaenzt, damit Codex kuenftig die festen Arbeitsregeln projektbezogen einliest.
+- Sichtbare App-Version auf `0.1.0284` erhoeht. Keine Aenderung an App-Logik, Firebase, Sync, Login, Kalender, Push, Dashboard, Challenges oder Pollen-Berechnung.
+
 ## Version 0.1.0283
 - Pollen-Symptomkarte mobil: Rand fuer "Symptome heute" stabilisiert, damit die Karte symmetrisch im App-Shell-Rand sitzt.
 - Nur `features/pollen/pollenView.css`, sichtbare Versionsnummern und Release-Notizen aktualisiert. Keine Aenderung an Firebase, Sync, Login, Kalender, Push oder Challenges.

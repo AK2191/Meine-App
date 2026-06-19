@@ -13929,3 +13929,305 @@ html body.change-view-settings .change-github-secret input {
     display:grid!important;
   }
 }
+
+
+/* v0.1.0285 - HeroCards: Pollen color surface for all main views.
+   UI-only: no logic, Firebase, login, calendar data, push or sync changes. */
+:root{
+  --change-hero0285-bg:radial-gradient(circle at 16% 0%,rgba(64,143,75,.12),transparent 38%),linear-gradient(90deg,rgba(18,36,27,.78),rgba(8,16,20,.96));
+  --change-hero0285-border:rgba(93,183,92,.14);
+  --change-hero0285-shadow:0 16px 42px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.03);
+  --change-hero0285-line:rgba(255,255,255,.08);
+  --change-hero0285-green:#4ade80;
+  --change-hero0285-text:#fff;
+  --change-hero0285-muted:rgba(244,247,244,.72);
+  --change-hero0285-icon-bg:rgba(255,255,255,.04);
+}
+
+html body.change-view-dashboard #content #dashboard-view .dashp-main-hero-pollen.change-hero-dashboard,
+html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide,
+html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227,
+html body.change-view-settings #content .change-settings-profile-card{
+  background:var(--change-hero0285-bg)!important;
+  border-color:var(--change-hero0285-border)!important;
+  box-shadow:var(--change-hero0285-shadow)!important;
+  color:var(--change-hero0285-text)!important;
+}
+
+html body.change-view-dashboard #content #dashboard-view .dashp-eyebrow,
+html body.change-view-calendar #content #calendar-premium-view .cal-premium-eyebrow,
+html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-overline{
+  color:var(--change-hero0285-green)!important;
+}
+
+html body.change-view-dashboard #content #dashboard-view .dashp-hero-title,
+html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-main h2,
+html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-title,
+html body.change-view-settings #content .change-settings-profile-name{
+  color:var(--change-hero0285-text)!important;
+  text-shadow:none!important;
+}
+
+html body.change-view-dashboard #content #dashboard-view .dashp-next,
+html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-line,
+html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-sub,
+html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-progress-meta,
+html body.change-view-settings #content .change-settings-profile-right{
+  color:var(--change-hero0285-muted)!important;
+}
+
+html body.change-view-dashboard #content #dashboard-view .dashp-next strong,
+html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-line strong,
+html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-progress-meta span{
+  color:var(--change-hero0285-green)!important;
+}
+
+html body.change-view-dashboard #content #dashboard-view .dashp-hero-insights,
+html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-side,
+html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stats,
+html body.change-view-settings #content .change-settings-profile-right{
+  border-color:var(--change-hero0285-line)!important;
+}
+
+html body.change-view-dashboard #content #dashboard-view .dashp-insight-row,
+html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row,
+html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat,
+html body.change-view-settings #content .change-settings-profile-stat{
+  border-color:var(--change-hero0285-line)!important;
+  background:transparent!important;
+}
+
+html body.change-view-dashboard #content #dashboard-view .dashp-insight-dot,
+html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-icon,
+html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat i,
+html body.change-view-settings #content .change-settings-profile-stat-icon{
+  background:var(--change-hero0285-icon-bg)!important;
+  border-color:transparent!important;
+  color:var(--change-hero0285-green)!important;
+  box-shadow:none!important;
+}
+
+html body.change-view-dashboard #content #dashboard-view .dashp-insight-row b,
+html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-body strong,
+html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat span,
+html body.change-view-settings #content .change-settings-profile-stat strong{
+  color:var(--change-hero0285-muted)!important;
+}
+
+html body.change-view-dashboard #content #dashboard-view .dashp-insight-row small,
+html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-body em,
+html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-badge,
+html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat strong,
+html body.change-view-settings #content .change-settings-profile-stat em{
+  color:var(--change-hero0285-text)!important;
+}
+
+@media(max-width:700px){
+  html body.change-view-dashboard #content #dashboard-view .dashp-main-hero-pollen.change-hero-dashboard,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide,
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227,
+  html body.change-view-settings #content .change-settings-profile-card{
+    background:var(--change-mobile-hero-bg,radial-gradient(circle at 12% 0%,rgba(74,222,128,.13),transparent 35%),linear-gradient(115deg,rgba(13,44,28,.88),rgba(7,16,18,.96) 64%,rgba(5,12,14,.98)))!important;
+    border-color:rgba(74,222,128,.18)!important;
+    box-shadow:0 18px 46px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.03)!important;
+    color:var(--change-mobile-hero-text,#fff)!important;
+  }
+
+  html body.change-view-dashboard #content #dashboard-view .dashp-eyebrow,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-eyebrow,
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-overline{
+    color:var(--change-mobile-hero-green,#4ade80)!important;
+  }
+
+  html body.change-view-dashboard #content #dashboard-view .dashp-hero-title,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-main h2,
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-title,
+  html body.change-view-settings #content .change-settings-profile-name{
+    color:var(--change-mobile-hero-text,#fff)!important;
+  }
+
+  html body.change-view-dashboard #content #dashboard-view .dashp-next,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-line,
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-sub,
+  html body.change-view-settings #content .change-settings-profile-right{
+    color:var(--change-mobile-hero-muted,rgba(244,247,244,.68))!important;
+  }
+
+  html body.change-view-dashboard #content #dashboard-view .dashp-hero-insights,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-side,
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stats,
+  html body.change-view-settings #content .change-settings-profile-right{
+    border-top-color:var(--change-mobile-hero-line,rgba(244,247,244,.10))!important;
+    border-left-color:var(--change-mobile-hero-line,rgba(244,247,244,.10))!important;
+  }
+
+  html body.change-view-dashboard #content #dashboard-view .dashp-insight-row,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row,
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat,
+  html body.change-view-settings #content .change-settings-profile-stat{
+    border-right-color:var(--change-mobile-hero-line,rgba(244,247,244,.10))!important;
+    border-bottom-color:var(--change-mobile-hero-line,rgba(244,247,244,.10))!important;
+  }
+
+  html body.change-view-dashboard #content #dashboard-view .dashp-insight-dot,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-icon,
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat i,
+  html body.change-view-settings #content .change-settings-profile-stat-icon{
+    background:rgba(74,222,128,.14)!important;
+    color:var(--change-mobile-hero-green,#4ade80)!important;
+  }
+
+  html body.change-view-dashboard #content #dashboard-view .dashp-insight-row b,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-body strong,
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat span,
+  html body.change-view-settings #content .change-settings-profile-stat strong{
+    color:var(--change-mobile-hero-muted,rgba(244,247,244,.68))!important;
+  }
+
+  html body.change-view-dashboard #content #dashboard-view .dashp-insight-row small,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-body em,
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-badge,
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat strong,
+  html body.change-view-settings #content .change-settings-profile-stat em{
+    color:var(--change-mobile-hero-text,#fff)!important;
+  }
+}
+
+body.theme-light.change-view-dashboard #content #dashboard-view .dashp-main-hero-pollen.change-hero-dashboard,
+body.theme-light.change-view-calendar #content #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide,
+body.theme-light.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227,
+body.theme-light.change-view-settings #content .change-settings-profile-card,
+body.change-theme-light.change-view-dashboard #content #dashboard-view .dashp-main-hero-pollen.change-hero-dashboard,
+body.change-theme-light.change-view-calendar #content #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide,
+body.change-theme-light.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227,
+body.change-theme-light.change-view-settings #content .change-settings-profile-card,
+html[data-theme="light"] body.change-view-dashboard #content #dashboard-view .dashp-main-hero-pollen.change-hero-dashboard,
+html[data-theme="light"] body.change-view-calendar #content #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide,
+html[data-theme="light"] body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227,
+html[data-theme="light"] body.change-view-settings #content .change-settings-profile-card{
+  background:linear-gradient(120deg,rgba(255,246,241,.98),rgba(255,255,252,.98) 56%,rgba(246,251,242,.97))!important;
+  border-color:rgba(255,93,74,.26)!important;
+  color:#0b1712!important;
+  box-shadow:0 16px 34px rgba(37,49,38,.10),inset 0 1px 0 rgba(255,255,255,.88)!important;
+}
+
+body.theme-light.change-view-dashboard #content #dashboard-view .dashp-hero-title,
+body.theme-light.change-view-calendar #content #calendar-premium-view .cal-premium-hero-main h2,
+body.theme-light.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-title,
+body.theme-light.change-view-settings #content .change-settings-profile-name,
+body.change-theme-light.change-view-dashboard #content #dashboard-view .dashp-hero-title,
+body.change-theme-light.change-view-calendar #content #calendar-premium-view .cal-premium-hero-main h2,
+body.change-theme-light.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-title,
+body.change-theme-light.change-view-settings #content .change-settings-profile-name,
+html[data-theme="light"] body.change-view-dashboard #content #dashboard-view .dashp-hero-title,
+html[data-theme="light"] body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-main h2,
+html[data-theme="light"] body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-title,
+html[data-theme="light"] body.change-view-settings #content .change-settings-profile-name{
+  color:#0b1712!important;
+}
+
+body.theme-light.change-view-dashboard #content #dashboard-view .dashp-eyebrow,
+body.theme-light.change-view-calendar #content #calendar-premium-view .cal-premium-eyebrow,
+body.theme-light.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-overline,
+body.change-theme-light.change-view-dashboard #content #dashboard-view .dashp-eyebrow,
+body.change-theme-light.change-view-calendar #content #calendar-premium-view .cal-premium-eyebrow,
+body.change-theme-light.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-overline,
+html[data-theme="light"] body.change-view-dashboard #content #dashboard-view .dashp-eyebrow,
+html[data-theme="light"] body.change-view-calendar #content #calendar-premium-view .cal-premium-eyebrow,
+html[data-theme="light"] body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-overline{
+  color:rgba(9,24,17,.78)!important;
+}
+
+body.theme-light.change-view-dashboard #content #dashboard-view .dashp-next,
+body.theme-light.change-view-calendar #content #calendar-premium-view .cal-premium-hero-line,
+body.theme-light.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-sub,
+body.theme-light.change-view-settings #content .change-settings-profile-right,
+body.change-theme-light.change-view-dashboard #content #dashboard-view .dashp-next,
+body.change-theme-light.change-view-calendar #content #calendar-premium-view .cal-premium-hero-line,
+body.change-theme-light.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-sub,
+body.change-theme-light.change-view-settings #content .change-settings-profile-right,
+html[data-theme="light"] body.change-view-dashboard #content #dashboard-view .dashp-next,
+html[data-theme="light"] body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-line,
+html[data-theme="light"] body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-sub,
+html[data-theme="light"] body.change-view-settings #content .change-settings-profile-right{
+  color:#111c17!important;
+}
+
+body.theme-light.change-view-dashboard #content #dashboard-view .dashp-hero-insights,
+body.theme-light.change-view-calendar #content #calendar-premium-view .cal-premium-hero-side,
+body.theme-light.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stats,
+body.theme-light.change-view-settings #content .change-settings-profile-right,
+body.change-theme-light.change-view-dashboard #content #dashboard-view .dashp-hero-insights,
+body.change-theme-light.change-view-calendar #content #calendar-premium-view .cal-premium-hero-side,
+body.change-theme-light.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stats,
+body.change-theme-light.change-view-settings #content .change-settings-profile-right,
+html[data-theme="light"] body.change-view-dashboard #content #dashboard-view .dashp-hero-insights,
+html[data-theme="light"] body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-side,
+html[data-theme="light"] body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stats,
+html[data-theme="light"] body.change-view-settings #content .change-settings-profile-right{
+  border-color:rgba(15,32,23,.14)!important;
+}
+
+body.theme-light.change-view-dashboard #content #dashboard-view .dashp-insight-row,
+body.theme-light.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row,
+body.theme-light.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat,
+body.theme-light.change-view-settings #content .change-settings-profile-stat,
+body.change-theme-light.change-view-dashboard #content #dashboard-view .dashp-insight-row,
+body.change-theme-light.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row,
+body.change-theme-light.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat,
+body.change-theme-light.change-view-settings #content .change-settings-profile-stat,
+html[data-theme="light"] body.change-view-dashboard #content #dashboard-view .dashp-insight-row,
+html[data-theme="light"] body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row,
+html[data-theme="light"] body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat,
+html[data-theme="light"] body.change-view-settings #content .change-settings-profile-stat{
+  border-color:rgba(15,32,23,.13)!important;
+}
+
+body.theme-light.change-view-dashboard #content #dashboard-view .dashp-insight-dot,
+body.theme-light.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-icon,
+body.theme-light.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat i,
+body.theme-light.change-view-settings #content .change-settings-profile-stat-icon,
+body.change-theme-light.change-view-dashboard #content #dashboard-view .dashp-insight-dot,
+body.change-theme-light.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-icon,
+body.change-theme-light.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat i,
+body.change-theme-light.change-view-settings #content .change-settings-profile-stat-icon,
+html[data-theme="light"] body.change-view-dashboard #content #dashboard-view .dashp-insight-dot,
+html[data-theme="light"] body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-icon,
+html[data-theme="light"] body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat i,
+html[data-theme="light"] body.change-view-settings #content .change-settings-profile-stat-icon{
+  background:rgba(9,24,17,.06)!important;
+  color:rgba(9,24,17,.78)!important;
+}
+
+body.theme-light.change-view-dashboard #content #dashboard-view .dashp-insight-row b,
+body.theme-light.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-body strong,
+body.theme-light.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat span,
+body.theme-light.change-view-settings #content .change-settings-profile-stat strong,
+body.change-theme-light.change-view-dashboard #content #dashboard-view .dashp-insight-row b,
+body.change-theme-light.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-body strong,
+body.change-theme-light.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat span,
+body.change-theme-light.change-view-settings #content .change-settings-profile-stat strong,
+html[data-theme="light"] body.change-view-dashboard #content #dashboard-view .dashp-insight-row b,
+html[data-theme="light"] body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-body strong,
+html[data-theme="light"] body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat span,
+html[data-theme="light"] body.change-view-settings #content .change-settings-profile-stat strong{
+  color:rgba(9,24,17,.68)!important;
+}
+
+body.theme-light.change-view-dashboard #content #dashboard-view .dashp-insight-row small,
+body.theme-light.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-body em,
+body.theme-light.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-badge,
+body.theme-light.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat strong,
+body.theme-light.change-view-settings #content .change-settings-profile-stat em,
+body.change-theme-light.change-view-dashboard #content #dashboard-view .dashp-insight-row small,
+body.change-theme-light.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-body em,
+body.change-theme-light.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-badge,
+body.change-theme-light.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat strong,
+body.change-theme-light.change-view-settings #content .change-settings-profile-stat em,
+html[data-theme="light"] body.change-view-dashboard #content #dashboard-view .dashp-insight-row small,
+html[data-theme="light"] body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-body em,
+html[data-theme="light"] body.change-view-calendar #content #calendar-premium-view .cal-premium-hero-row-badge,
+html[data-theme="light"] body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat strong,
+html[data-theme="light"] body.change-view-settings #content .change-settings-profile-stat em{
+  color:#07140f!important;
+}

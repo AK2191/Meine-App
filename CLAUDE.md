@@ -1,3 +1,24 @@
+## Version 0.1.0286
+- **Unerwuenschte Root-Datei entfernt:** `AGENTS.md` wurde aus dem App-Root geloescht, damit Release-ZIPs keine zusaetzliche Codex-/Arbeitsregel-Datei als App-Datei enthalten.
+- **UI-Stand bleibt gleich:** Die HeroCard-Farbangleichung aus v0.1.0285 bleibt unveraendert. Keine Aenderung an `styles/appShell.css` in dieser Version.
+- **Bewusst nicht geaendert:** Firebase, Sync, Login, Google Kalender, Push, Pollen-Berechnung, Kalenderdaten und Datenlogik bleiben unveraendert.
+- Geaendert: `AGENTS.md` entfernt, `features/pollen/pollenView.js`, `features/settings/settingsPanel.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax von `features/pollen/pollenView.js` und `features/settings/settingsPanel.js`, Root-Dateiliste ohne `AGENTS.md`, Versionsfundstellen auf 0.1.0286 und ZIP-Struktur ohne `AGENTS.md`.
+
+## Version 0.1.0285
+- **HeroCards an PollenView-Farbwelt angeglichen:** Dashboard, Kalender, Challenges und Einstellungen bekommen am Ende von `styles/appShell.css` eine gemeinsame finale Farbregel. Dunkle Ansicht: gleiche Pollen-nahe Kartenflaeche, Border, Shadow, Linien, Textfarben und Icon-Akzente. Mobile Ansicht: gleiche mobile Pollen-Hero-Flaeche (`--change-mobile-hero-bg`) statt eigener Sonderverlaeufe.
+- **Heller/lokaler Modus mitgezogen:** Die grossen Startkarten nutzen im hellen Modus die PollenView-nahe helle Flaeche mit passender Text- und Stat-Farbe, damit Mobile und lokale Darstellung optisch konsistent bleiben.
+- **Bewusst nicht geaendert:** PollenView selbst bleibt Referenz und behaelt die eigenen Belastungsfarben. Keine Aenderung an Firebase, Sync, Login, Google Kalender, Push, Pollen-Berechnung, Kalenderdaten oder Datenlogik.
+- Geaendert: `styles/appShell.css`, `features/pollen/pollenView.js`, `features/settings/settingsPanel.js`, `CLAUDE.md`, `CHANGELOG.md`. Keine neuen Dateien, keine Patch-Dateien.
+- Geprueft: JavaScript-Syntax von `features/pollen/pollenView.js` und `features/settings/settingsPanel.js`, neuer CSS-Block klammerbalanciert, Versionsfundstellen auf 0.1.0285 aktualisiert, Vergleich gegen v0.1.0284-ZIP zeigt nur die erwarteten 5 Dateien.
+- Hinweis: Die Gesamt-Klammerzaehlung von `styles/appShell.css` hat weiterhin eine bereits vor diesem Block vorhandene Altlast (diff -1). Der neue v0.1.0285-Block selbst ist ausgeglichen und bewusst am Dateiende platziert.
+
+## Version 0.1.0284
+- **Codex-Arbeitsregeln als `AGENTS.md` ergaenzt:** Der App-Root enthaelt jetzt eine kurze feste Arbeitsanweisung fuer Codex: `CLAUDE.md` zuerst lesen, bestehende Architektur einhalten, keine Patch-/Workaround-Dateien, nur betroffene Systeme aendern, Version und Pruefungen bei echten Codeaenderungen beachten.
+- **Keine App-Verhaltensaenderung:** Firebase, Sync, Login, Google Kalender, Push, Dashboard, Challenges, Pollen-Berechnung und UI-Verhalten bleiben unveraendert.
+- Geaendert: `AGENTS.md`, `features/pollen/pollenView.js`, `features/settings/settingsPanel.js`, `CLAUDE.md`, `CHANGELOG.md`. Keine Patch-Dateien, keine Workaround-Dateien.
+- Geprueft: JavaScript-Syntax, ZIP-Struktur und Versionsfundstellen.
+
 ## Version 0.1.0283
 - **Pollen-Symptomkarte mobil am App-Rand ausgerichtet:** Der Bereich `Symptome heute` nutzt mobil jetzt die volle Breite innerhalb des bestehenden App-Shell-Rands, ohne eigene seitliche Einzuege oder asymmetrische Margins. Die Allergieprofil-Klickflaeche und die bestehende v0.1.0282-Groesse bleiben erhalten.
 - Bestehende Icons, Pollen-Icons, Symptom-Icons, aktive Icon-Assets, Pollenwerte, Firebase-Logik, Sync, Login, Kalender, Push und Challenges bleiben unveraendert.
@@ -2209,4 +2230,3 @@ Wichtig: keine doppelten Root-Dateien für Icons/Firebase-Konfiguration anlegen.
 - Die Innenkacheln im Pollen-Allergieprofil wurden farblich an die Kalender-Kacheln angeglichen.
 - Dies gilt lokal/desktop und mobil.
 - Keine Änderung an Logik, Pollenwerten, Kalenderdaten, Firebase, Sync, Login oder Push.
-
