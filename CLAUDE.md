@@ -1,3 +1,10 @@
+## Version 0.1.0280
+- **Pollen-HeroCard-Illustrationen vollständig auf das neue Design-Set umgestellt.** Die großen Hero-Bilder für Gräser, Birke, Ambrosia, Beifuß, Erle und Olive wurden aus dem gelieferten grünen Designkonzept übernommen: gefüllte, geschichtete Silhouetten mit ruhiger Tiefe statt der älteren gelb-grünen Illustrationen.
+- Kleine Pollenarten-Icons, Symptom-Icons und Statuspunkte bleiben aus v0.1.0279 erhalten. Keine Änderung an Pollenwerten, Auswahl, Forecast-Berechnung, 24-Stunden-Ausblick, Firebase, Sync, Login, Kalender oder Push.
+- Geändert: `features/pollen/pollenView.js`, `features/settings/settingsPanel.js`, `CLAUDE.md`, `CHANGELOG.md`. Keine neuen Dateien, keine Patch-Dateien, keine Root-Dateien.
+- `node --check features/pollen/pollenView.js`, `node --check features/settings/settingsPanel.js` und CSS-Klammerprüfung grün.
+
+
 ## Version 0.1.0279
 - **Pollen-Icons und Statuspunkte auf das neue Design umgestellt.** Ausschließlich die bestehende Darstellung wurde ausgetauscht: botanische Allergieprofil-Icons (Gräser, Birke, Ambrosia, Beifuß, Erle, Olive), vier Symptom-Icons, die drei Hero-Statuszeichen (aktive Pollenart, Peak, ruhigster Tag) sowie die Punkte im 5-Tages-Ausblick.
 - Große Hero-Illustrationen, Kartenlayout, Texte, Datenmodell, Pollenberechnung, Auswahlverhalten, Firebase-/Sync-Logik und Navigation bleiben unverändert.

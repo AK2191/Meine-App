@@ -3,7 +3,7 @@
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0279';
+  var APP_VERSION = '0.1.0280';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var SELECTED_KEY = 'change_v1_pollen_selected_keys';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
@@ -235,222 +235,56 @@
   /* Große Hero-Illustration — je nach dominantem Pollentyp */
   function heroArtSvg(dominantKey){
     var illustrations = {
-
-      // Gräser: großes Grasfeld mit mehreren Halmen
-      grass_pollen: '<svg class="pollen-neo-hero-illustration" viewBox="0 0 220 220" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">'
-        +'<defs>'
-        +'<linearGradient id="ph-blade" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#1a3a10"/><stop offset="1" stop-color="#7cb832"/></linearGradient>'
-        +'<linearGradient id="ph-blade2" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#1a3a10"/><stop offset="1" stop-color="#9dcc45"/></linearGradient>'
-        +'</defs>'
-        // Hintergrund-Halme (dünn, weiter weg)
-        +'<path d="M55 195C50 160 35 110 30 95" stroke="url(#ph-blade)" stroke-width="3.5" stroke-linecap="round" fill="none" opacity=".45"/>'
-        +'<path d="M55 195C58 155 65 115 62 85" stroke="url(#ph-blade)" stroke-width="3.5" stroke-linecap="round" fill="none" opacity=".4"/>'
-        +'<path d="M165 195C170 160 185 110 190 90" stroke="url(#ph-blade)" stroke-width="3.5" stroke-linecap="round" fill="none" opacity=".4"/>'
-        +'<path d="M165 195C162 155 155 115 158 82" stroke="url(#ph-blade)" stroke-width="3.5" stroke-linecap="round" fill="none" opacity=".38"/>'
-        // Vordergrund-Haupthalme (kräftig)
-        +'<path d="M110 200C98 148 72 96 68 80" stroke="url(#ph-blade2)" stroke-width="7.5" stroke-linecap="round" fill="none"/>'
-        +'<path d="M110 200C114 140 124 72 128 48" stroke="url(#ph-blade2)" stroke-width="7.5" stroke-linecap="round" fill="none"/>'
-        +'<path d="M110 200C128 152 160 102 166 88" stroke="url(#ph-blade2)" stroke-width="7.5" stroke-linecap="round" fill="none"/>'
-        +'<path d="M110 200C94 156 88 118 86 78" stroke="url(#ph-blade2)" stroke-width="6.5" stroke-linecap="round" fill="none" opacity=".8"/>'
-        +'<path d="M110 200C142 158 154 126 158 88" stroke="url(#ph-blade2)" stroke-width="6.5" stroke-linecap="round" fill="none" opacity=".75"/>'
-        +'<path d="M110 200C82 164 56 134 42 115" stroke="url(#ph-blade2)" stroke-width="5.5" stroke-linecap="round" fill="none" opacity=".7"/>'
-        // Pollenkörner (kleine Kreise um die Ähren)
-        +'<circle cx="68" cy="80" r="5" fill="#9dcc45" opacity=".55"/>'
-        +'<circle cx="128" cy="48" r="5" fill="#9dcc45" opacity=".55"/>'
-        +'<circle cx="166" cy="88" r="4.5" fill="#9dcc45" opacity=".5"/>'
-        +'<circle cx="86" cy="78" r="4" fill="#9dcc45" opacity=".45"/>'
-        +'<circle cx="158" cy="88" r="4" fill="#9dcc45" opacity=".45"/>'
-        +'<circle cx="42" cy="115" r="3.5" fill="#9dcc45" opacity=".4"/>'
-        // Pollenwolke
-        +'<circle cx="100" cy="58" r="2.5" fill="#c8e870" opacity=".35"/>'
-        +'<circle cx="118" cy="42" r="2" fill="#c8e870" opacity=".3"/>'
-        +'<circle cx="82" cy="68" r="2" fill="#c8e870" opacity=".28"/>'
-        +'<circle cx="140" cy="72" r="2.2" fill="#c8e870" opacity=".3"/>'
+      grass_pollen: '<svg class="pollen-neo-hero-illustration" viewBox="0 0 130 130" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" stroke-linecap="round" stroke-linejoin="round">'
+        +'<defs><linearGradient id="ph280-blade-grass" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#1F5C40"/><stop offset="1" stop-color="#7DE6AB"/></linearGradient></defs>'
+        +'<g stroke="#3A6B4E" stroke-width="5" opacity=".55"><path d="M62 124 C58 96 52 70 40 36"/><path d="M62 124 C64 94 66 66 70 30"/><path d="M62 124 C68 96 78 70 92 40"/></g>'
+        +'<g fill="url(#ph280-blade-grass)"><path d="M62 126 C60 100 56 74 46 40 C56 64 64 92 66 126Z"/><path d="M62 126 C62 98 62 70 62 34 C66 70 70 98 68 126Z"/><path d="M62 126 C66 100 74 76 88 46 C80 76 74 100 70 126Z"/><path d="M62 126 C56 102 46 80 30 54 C44 80 54 102 60 126Z"/></g>'
+        +'<g fill="#9FE8C0"><circle cx="46" cy="38" r="3"/><circle cx="62" cy="32" r="3"/><circle cx="88" cy="44" r="2.6"/><circle cx="30" cy="52" r="2.4"/></g>'
+        +'<g fill="#7DE6AB" opacity=".6"><circle cx="78" cy="26" r="1.6"/><circle cx="52" cy="22" r="1.4"/><circle cx="98" cy="58" r="1.5"/></g>'
         +'</svg>',
 
-      // Birke: schlanker Baum mit hängenden Kätzchen
-      birch_pollen: '<svg class="pollen-neo-hero-illustration" viewBox="0 0 220 220" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">'
-        +'<defs>'
-        +'<linearGradient id="ph-birch" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8dc43e"/><stop offset="1" stop-color="#3a7a1a"/></linearGradient>'
-        +'</defs>'
-        // Stamm (typisch Birke: schlank, leicht geschwungen)
-        +'<path d="M110 200 q4-30 2-80 q-3-40 4-100" stroke="#e8e8e8" stroke-width="9" stroke-linecap="round" fill="none" opacity=".18"/>'
-        +'<path d="M110 200 q4-30 2-80 q-3-40 4-100" stroke="#5a7a3a" stroke-width="7" stroke-linecap="round" fill="none" opacity=".5"/>'
-        // Markante schwarze Flecken der Birkenrinde (ellipsen)
-        +'<ellipse cx="112" cy="150" rx="4" ry="2.5" fill="rgba(0,0,0,.25)" transform="rotate(-5 112 150)"/>'
-        +'<ellipse cx="109" cy="130" rx="3.5" ry="2" fill="rgba(0,0,0,.2)" transform="rotate(3 109 130)"/>'
-        +'<ellipse cx="113" cy="110" rx="3" ry="1.8" fill="rgba(0,0,0,.18)"/>'
-        // Haupt-Äste
-        +'<path d="M112 80 q-20-8 -40-25" stroke="#5a7a3a" stroke-width="5" stroke-linecap="round" fill="none" opacity=".7"/>'
-        +'<path d="M113 70 q18-10 36-28" stroke="#5a7a3a" stroke-width="5" stroke-linecap="round" fill="none" opacity=".65"/>'
-        +'<path d="M111 95 q-30-5 -45-15" stroke="#5a7a3a" stroke-width="4" stroke-linecap="round" fill="none" opacity=".6"/>'
-        +'<path d="M113 90 q28-2 44-10" stroke="#5a7a3a" stroke-width="4" stroke-linecap="round" fill="none" opacity=".55"/>'
-        // Laubkrone — Birkenblätter (kleine dreieckige Formen)
-        +'<ellipse cx="80" cy="50" rx="28" ry="22" fill="url(#ph-birch)" opacity=".35"/>'
-        +'<ellipse cx="145" cy="44" rx="26" ry="20" fill="url(#ph-birch)" opacity=".32"/>'
-        +'<ellipse cx="72" cy="80" rx="22" ry="17" fill="url(#ph-birch)" opacity=".28"/>'
-        +'<ellipse cx="155" cy="78" rx="22" ry="17" fill="url(#ph-birch)" opacity=".26"/>'
-        +'<ellipse cx="110" cy="38" rx="20" ry="18" fill="url(#ph-birch)" opacity=".3"/>'
-        // Kätzchen hängend (typisches Merkmal!)
-        +'<path d="M75 55 q-2 8 -2 20" stroke="#8dc43e" stroke-width="4" stroke-linecap="round" fill="none" opacity=".6"/>'
-        +'<path d="M80 58 q0 10 1 22" stroke="#8dc43e" stroke-width="4" stroke-linecap="round" fill="none" opacity=".55"/>'
-        +'<path d="M148 50 q2 8 2 20" stroke="#8dc43e" stroke-width="4" stroke-linecap="round" fill="none" opacity=".6"/>'
-        +'<path d="M143 53 q0 10 -1 22" stroke="#8dc43e" stroke-width="4" stroke-linecap="round" fill="none" opacity=".55"/>'
-        // Pollenwolke
-        +'<circle cx="72" cy="76" r="3" fill="#c8e870" opacity=".4"/>'
-        +'<circle cx="60" cy="68" r="2.5" fill="#c8e870" opacity=".35"/>'
-        +'<circle cx="152" cy="72" r="3" fill="#c8e870" opacity=".38"/>'
-        +'<circle cx="164" cy="64" r="2.5" fill="#c8e870" opacity=".32"/>'
-        +'<circle cx="94" cy="34" r="2" fill="#c8e870" opacity=".3"/>'
+      birch_pollen: '<svg class="pollen-neo-hero-illustration" viewBox="0 0 130 130" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" stroke-linecap="round" stroke-linejoin="round">'
+        +'<defs><linearGradient id="ph280-leaf-birch" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#1F5C40"/><stop offset="1" stop-color="#86EFAC"/></linearGradient></defs>'
+        +'<path d="M64 128 C62 104 62 84 62 64" stroke="#3A6B4E" stroke-width="5"/>'
+        +'<g fill="#2F5C44" opacity=".6"><path d="M62 70 C44 68 30 54 28 34 C50 38 62 52 62 70Z"/></g>'
+        +'<g fill="url(#ph280-leaf-birch)"><path d="M62 66 C46 64 33 51 31 32 C50 36 62 50 62 66Z"/><path d="M62 84 C76 82 88 71 90 54 C74 57 64 69 62 84Z"/><path d="M62 100 C50 99 40 90 38 76 C53 79 62 89 62 100Z"/></g>'
+        +'<g stroke="#0C1410" stroke-width="2" opacity=".55"><path d="M62 66 C52 60 44 50 36 38"/><path d="M62 84 C72 78 80 70 86 60"/></g>'
         +'</svg>',
 
-      // Ambrosia/Ragweed: kompakte Blütenstände
-      ragweed_pollen: '<svg class="pollen-neo-hero-illustration" viewBox="0 0 220 220" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">'
-        +'<defs>'
-        +'<linearGradient id="ph-rag" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#2a5a10"/><stop offset="1" stop-color="#8ab830"/></linearGradient>'
-        +'</defs>'
-        // Hauptstängel
-        +'<path d="M110 205 q0-30 2-80 q2-30 -2-80" stroke="url(#ph-rag)" stroke-width="7" stroke-linecap="round" fill="none"/>'
-        // Seitentriebe
-        +'<path d="M110 170 q-25-5 -40-20" stroke="url(#ph-rag)" stroke-width="5" stroke-linecap="round" fill="none" opacity=".8"/>'
-        +'<path d="M110 170 q25-5 40-20" stroke="url(#ph-rag)" stroke-width="5" stroke-linecap="round" fill="none" opacity=".8"/>'
-        +'<path d="M110 140 q-28-3 -45-18" stroke="url(#ph-rag)" stroke-width="4.5" stroke-linecap="round" fill="none" opacity=".7"/>'
-        +'<path d="M110 140 q28-3 45-18" stroke="url(#ph-rag)" stroke-width="4.5" stroke-linecap="round" fill="none" opacity=".7"/>'
-        +'<path d="M111 110 q-22-5 -36-20" stroke="url(#ph-rag)" stroke-width="4" stroke-linecap="round" fill="none" opacity=".6"/>'
-        +'<path d="M111 110 q22-5 36-20" stroke="url(#ph-rag)" stroke-width="4" stroke-linecap="round" fill="none" opacity=".6"/>'
-        // Blütenköpfe: sternförmige Strahlenblüten
-        +'<circle cx="110" cy="45" r="14" fill="rgba(138,184,48,.15)" stroke="#8ab830" stroke-width="1.5"/>'
-        +'<path d="M110 31V25M110 59V65M96 45H90M124 45H130M99.5 34.5 95.5 30.5M120.5 34.5 124.5 30.5M99.5 55.5 95.5 59.5M120.5 55.5 124.5 59.5" stroke="#8ab830" stroke-width="2.5" stroke-linecap="round" opacity=".6"/>'
-        +'<circle cx="110" cy="45" r="7" fill="#8ab830" opacity=".55"/>'
-        +'<circle cx="70" cy="148" r="10" fill="rgba(138,184,48,.18)" stroke="#8ab830" stroke-width="1.2" opacity=".7"/>'
-        +'<circle cx="70" cy="148" r="5" fill="#8ab830" opacity=".4"/>'
-        +'<circle cx="150" cy="148" r="10" fill="rgba(138,184,48,.18)" stroke="#8ab830" stroke-width="1.2" opacity=".7"/>'
-        +'<circle cx="150" cy="148" r="5" fill="#8ab830" opacity=".4"/>'
-        +'<circle cx="65" cy="120" r="8" fill="rgba(138,184,48,.15)" stroke="#8ab830" stroke-width="1.2" opacity=".65"/>'
-        +'<circle cx="65" cy="120" r="4" fill="#8ab830" opacity=".35"/>'
-        +'<circle cx="155" cy="120" r="8" fill="rgba(138,184,48,.15)" stroke="#8ab830" stroke-width="1.2" opacity=".65"/>'
-        +'<circle cx="155" cy="120" r="4" fill="#8ab830" opacity=".35"/>'
-        // Pollenwolke
-        +'<circle cx="92" cy="36" r="2.5" fill="#c8e870" opacity=".4"/>'
-        +'<circle cx="130" cy="32" r="2.5" fill="#c8e870" opacity=".38"/>'
-        +'<circle cx="110" cy="28" r="2" fill="#c8e870" opacity=".35"/>'
+      ragweed_pollen: '<svg class="pollen-neo-hero-illustration" viewBox="0 0 130 130" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" stroke-linecap="round" stroke-linejoin="round">'
+        +'<defs><linearGradient id="ph280-leaf-ragweed" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#1F5C40"/><stop offset="1" stop-color="#86EFAC"/></linearGradient></defs>'
+        +'<path d="M64 128 V44" stroke="#3A6B4E" stroke-width="5"/>'
+        +'<g fill="url(#ph280-leaf-ragweed)" opacity=".95"><path d="M64 92 C50 90 40 80 38 66 C53 69 62 79 64 92Z"/><path d="M64 92 C78 90 88 80 90 66 C75 69 66 79 64 92Z"/><path d="M64 70 C52 68 44 60 42 48 C55 51 62 60 64 70Z"/><path d="M64 70 C76 68 84 60 86 48 C73 51 66 60 64 70Z"/></g>'
+        +'<g stroke="#0C1410" stroke-width="1.8" opacity=".5"><path d="M64 92 C56 86 50 78 44 68"/><path d="M64 92 C72 86 78 78 84 68"/></g>'
+        +'<path d="M64 44 C64 34 60 26 60 22 M64 44 C64 34 68 26 68 22" stroke="#7DE6AB" stroke-width="3"/>'
+        +'<g fill="#9FE8C0"><circle cx="60" cy="20" r="2.4"/><circle cx="68" cy="20" r="2.4"/><circle cx="64" cy="14" r="2.6"/></g>'
         +'</svg>',
 
-      // Beifuß/Mugwort: verzweigter Strauch
-      mugwort_pollen: '<svg class="pollen-neo-hero-illustration" viewBox="0 0 220 220" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">'
-        +'<defs>'
-        +'<linearGradient id="ph-mug" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#2e5a18"/><stop offset="1" stop-color="#7aaa2a"/></linearGradient>'
-        +'</defs>'
-        // Stamm
-        +'<path d="M110 210 q-2-30 0-60 q3-40 0-90" stroke="url(#ph-mug)" stroke-width="7" stroke-linecap="round" fill="none"/>'
-        // Federige Blätter — typisch Beifuß: tief eingeschnitten
-        +'<path d="M110 150 c-18-8 -36-10 -40-8 2 14 14 22 40 18" fill="url(#ph-mug)" opacity=".3"/>'
-        +'<path d="M110 150 c18-8 36-10 40-8-2 14-14 22-40 18" fill="url(#ph-mug)" opacity=".32"/>'
-        +'<path d="M110 125 c-20-6 -38-8 -42-5 1 16 14 24 42 16" fill="url(#ph-mug)" opacity=".28"/>'
-        +'<path d="M110 125 c20-6 38-8 42-5-1 16-14 24-42 16" fill="url(#ph-mug)" opacity=".3"/>'
-        +'<path d="M110 100 c-18-5 -34-6 -38-3 2 14 14 20 38 12" fill="url(#ph-mug)" opacity=".26"/>'
-        +'<path d="M110 100 c18-5 34-6 38-3-2 14-14 20-38 12" fill="url(#ph-mug)" opacity=".28"/>'
-        +'<path d="M110 78 c-15-4 -28-5 -30-2 1 10 10 16 30 10" fill="url(#ph-mug)" opacity=".32"/>'
-        +'<path d="M110 78 c15-4 28-5 30-2-1 10-10 16-30 10" fill="url(#ph-mug)" opacity=".35"/>'
-        // Blütenähre oben
-        +'<path d="M110 60 q-6-10 -8-24 q8 2 8 24Z" fill="#7aaa2a" opacity=".55"/>'
-        +'<path d="M110 60 q6-10 8-24 q-8 2 -8 24Z" fill="#7aaa2a" opacity=".5"/>'
-        +'<ellipse cx="110" cy="38" rx="5" ry="12" fill="#5a8a20" opacity=".45"/>'
-        // Blütenähren-Details (kleine Blattzungen)
-        +'<path d="M106 50 q-5-3 -8-8" stroke="#7aaa2a" stroke-width="1.5" stroke-linecap="round" opacity=".5"/>'
-        +'<path d="M114 50 q5-3 8-8" stroke="#7aaa2a" stroke-width="1.5" stroke-linecap="round" opacity=".5"/>'
-        +'<path d="M105 42 q-4-2 -6-6" stroke="#7aaa2a" stroke-width="1.3" stroke-linecap="round" opacity=".4"/>'
-        +'<path d="M115 42 q4-2 6-6" stroke="#7aaa2a" stroke-width="1.3" stroke-linecap="round" opacity=".4"/>'
-        // Pollenwolke
-        +'<circle cx="95" cy="32" r="2.5" fill="#c0d860" opacity=".38"/>'
-        +'<circle cx="125" cy="30" r="2" fill="#c0d860" opacity=".34"/>'
-        +'<circle cx="82" cy="46" r="2" fill="#c0d860" opacity=".3"/>'
-        +'<circle cx="138" cy="44" r="2" fill="#c0d860" opacity=".3"/>'
+      mugwort_pollen: '<svg class="pollen-neo-hero-illustration" viewBox="0 0 130 130" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" stroke-linecap="round" stroke-linejoin="round">'
+        +'<defs><linearGradient id="ph280-leaf-mugwort" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#1F5C40"/><stop offset="1" stop-color="#86EFAC"/></linearGradient></defs>'
+        +'<path d="M64 128 V20" stroke="#3A6B4E" stroke-width="5"/>'
+        +'<g fill="url(#ph280-leaf-mugwort)" opacity=".9"><path d="M64 100 C54 98 46 90 44 80 C56 82 63 90 64 100Z"/><path d="M64 100 C74 98 82 90 84 80 C72 82 65 90 64 100Z"/><path d="M64 78 C55 76 48 69 46 60 C57 62 63 69 64 78Z"/><path d="M64 78 C73 76 80 69 82 60 C71 62 65 69 64 78Z"/><path d="M64 56 C56 54 50 48 48 40 C58 42 63 48 64 56Z"/><path d="M64 56 C72 54 78 48 80 40 C70 42 65 48 64 56Z"/></g>'
+        +'<g fill="#9FE8C0" opacity=".9"><circle cx="64" cy="30" r="2.6"/><circle cx="58" cy="34" r="2"/><circle cx="70" cy="34" r="2"/><circle cx="62" cy="24" r="1.8"/></g>'
         +'</svg>',
 
-      // Erle/Alder: Baum mit hängenden Kätzchen, Wintersilhouette
-      alder_pollen: '<svg class="pollen-neo-hero-illustration" viewBox="0 0 220 220" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">'
-        +'<defs>'
-        +'<linearGradient id="ph-alder" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7ab82e"/><stop offset="1" stop-color="#2a5a12"/></linearGradient>'
-        +'</defs>'
-        // Stamm
-        +'<path d="M110 210 q2-25 1-55 q-2-35 2-80" stroke="#4a7a22" stroke-width="9" stroke-linecap="round" fill="none"/>'
-        // Äste
-        +'<path d="M111 120 q-22-8 -45-28" stroke="#4a7a22" stroke-width="6" stroke-linecap="round" fill="none" opacity=".8"/>'
-        +'<path d="M112 110 q20-10 42-30" stroke="#4a7a22" stroke-width="6" stroke-linecap="round" fill="none" opacity=".75"/>'
-        +'<path d="M110 90 q-28-5 -50-18" stroke="#4a7a22" stroke-width="5" stroke-linecap="round" fill="none" opacity=".7"/>'
-        +'<path d="M112 85 q26-6 48-20" stroke="#4a7a22" stroke-width="5" stroke-linecap="round" fill="none" opacity=".65"/>'
-        +'<path d="M111 68 q-15-5 -28-20" stroke="#4a7a22" stroke-width="4" stroke-linecap="round" fill="none" opacity=".6"/>'
-        +'<path d="M112 65 q15-6 28-22" stroke="#4a7a22" stroke-width="4" stroke-linecap="round" fill="none" opacity=".55"/>'
-        // Laubkrone
-        +'<ellipse cx="72" cy="90" rx="26" ry="20" fill="url(#ph-alder)" opacity=".3"/>'
-        +'<ellipse cx="150" cy="80" rx="25" ry="19" fill="url(#ph-alder)" opacity=".28"/>'
-        +'<ellipse cx="65" cy="65" rx="22" ry="17" fill="url(#ph-alder)" opacity=".26"/>'
-        +'<ellipse cx="156" cy="60" rx="22" ry="17" fill="url(#ph-alder)" opacity=".24"/>'
-        +'<ellipse cx="85" cy="48" rx="20" ry="16" fill="url(#ph-alder)" opacity=".28"/>'
-        +'<ellipse cx="136" cy="44" rx="20" ry="16" fill="url(#ph-alder)" opacity=".26"/>'
-        // Kätzchen — das Aushängeschild der Erle!
-        +'<path d="M68 96 q-1 12 -2 26" stroke="#7ab82e" stroke-width="5" stroke-linecap="round" fill="none"/>'
-        +'<circle cx="67.5" cy="100" r="3" fill="#5a9820" opacity=".6"/>'
-        +'<circle cx="67" cy="106" r="3.2" fill="#5a9820" opacity=".6"/>'
-        +'<circle cx="66.5" cy="112" r="3.2" fill="#5a9820" opacity=".58"/>'
-        +'<circle cx="66" cy="118" r="3" fill="#5a9820" opacity=".52"/>'
-        +'<path d="M76 100 q0 10 0 22" stroke="#7ab82e" stroke-width="5" stroke-linecap="round" fill="none"/>'
-        +'<circle cx="76" cy="104" r="3" fill="#5a9820" opacity=".58"/>'
-        +'<circle cx="76" cy="110" r="3.2" fill="#5a9820" opacity=".58"/>'
-        +'<circle cx="76" cy="116" r="3" fill="#5a9820" opacity=".5"/>'
-        +'<path d="M148 86 q1 12 2 26" stroke="#7ab82e" stroke-width="5" stroke-linecap="round" fill="none"/>'
-        +'<circle cx="148.5" cy="90" r="3" fill="#5a9820" opacity=".6"/>'
-        +'<circle cx="149" cy="96" r="3.2" fill="#5a9820" opacity=".6"/>'
-        +'<circle cx="149.5" cy="102" r="3.2" fill="#5a9820" opacity=".58"/>'
-        +'<circle cx="150" cy="108" r="3" fill="#5a9820" opacity=".52"/>'
-        // Pollenwolke
-        +'<circle cx="52" cy="90" r="3" fill="#b8d840" opacity=".38"/>'
-        +'<circle cx="44" cy="100" r="2.5" fill="#b8d840" opacity=".34"/>'
-        +'<circle cx="170" cy="86" r="3" fill="#b8d840" opacity=".36"/>'
-        +'<circle cx="178" cy="96" r="2.5" fill="#b8d840" opacity=".32"/>'
+      alder_pollen: '<svg class="pollen-neo-hero-illustration" viewBox="0 0 130 130" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" stroke-linecap="round" stroke-linejoin="round">'
+        +'<defs><linearGradient id="ph280-leaf-alder" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#1F5C40"/><stop offset="1" stop-color="#86EFAC"/></linearGradient></defs>'
+        +'<path d="M48 14 C40 34 44 64 56 92 C60 104 62 116 62 128" stroke="#3A6B4E" stroke-width="5"/>'
+        +'<path d="M52 66 C58 70 64 72 70 74" stroke="#3A6B4E" stroke-width="3"/>'
+        +'<path d="M70 74 C84 70 94 56 92 38 C76 44 66 58 70 74Z" fill="url(#ph280-leaf-alder)"/>'
+        +'<path d="M70 74 C78 64 86 52 90 42" stroke="#0C1410" stroke-width="2" opacity=".5"/>'
+        +'<g fill="url(#ph280-leaf-alder)"><ellipse cx="44" cy="50" rx="6.5" ry="13" transform="rotate(-18 44 50)"/><ellipse cx="58" cy="40" rx="5.5" ry="11" transform="rotate(-12 58 40)"/></g>'
+        +'<g fill="#0C1410" opacity=".35"><ellipse cx="44" cy="50" rx="2.6" ry="8" transform="rotate(-18 44 50)"/></g>'
         +'</svg>',
 
-      // Olive: südlicher Baum mit dichter silbrig-grüner Krone
-      olive_pollen: '<svg class="pollen-neo-hero-illustration" viewBox="0 0 220 220" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">'
-        +'<defs>'
-        +'<linearGradient id="ph-olive" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a0b855"/><stop offset="1" stop-color="#3a6a20"/></linearGradient>'
-        +'<radialGradient id="ph-olive-crown" cx="50%" cy="40%" r="55%"><stop offset="0" stop-color="#8aa840" stop-opacity=".5"/><stop offset="1" stop-color="#2a5a10" stop-opacity=".3"/></radialGradient>'
-        +'</defs>'
-        // Stamm (Olivenbaum: knorrig, gedreht)
-        +'<path d="M108 210 q-4-20 -2-50 q3-20 0-40 q-4-15 4-40" stroke="#5a6830" stroke-width="10" stroke-linecap="round" fill="none"/>'
-        // Knorrigkeit
-        +'<path d="M109 160 q8-5 10-15" stroke="#4a5825" stroke-width="6" stroke-linecap="round" fill="none" opacity=".5"/>'
-        +'<path d="M107 140 q-8-4 -8-12" stroke="#4a5825" stroke-width="5" stroke-linecap="round" fill="none" opacity=".45"/>'
-        // Dichte Krone (Olive: buschig, oval)
-        +'<ellipse cx="110" cy="90" rx="62" ry="55" fill="url(#ph-olive-crown)"/>'
-        +'<ellipse cx="110" cy="80" rx="50" ry="44" fill="url(#ph-olive)" opacity=".18"/>'
-        // Silbrig-grüne Blätter (Olive: schmale Lanzettblätter)
-        +'<path d="M80 70 q8-15 12-25 q4 10 -2 25" fill="#8aa840" opacity=".35"/>'
-        +'<path d="M140 65 q-6-14 -10-23 q-4 9 2 23" fill="#8aa840" opacity=".32"/>'
-        +'<path d="M95 55 q4-16 6-26 q5 10 -1 26" fill="#8aa840" opacity=".3"/>'
-        +'<path d="M128 50 q-3-15 -5-25 q-5 10 1 25" fill="#8aa840" opacity=".28"/>'
-        +'<path d="M110 50 q0-16 0-28 q6 8 0 28" fill="#8aa840" opacity=".32"/>'
-        // Oliven-Früchte (grün-schwarz, sehr charakteristisch)
-        +'<ellipse cx="78" cy="100" rx="5" ry="7" fill="#2a4a18" opacity=".65"/>'
-        +'<ellipse cx="78" cy="100" rx="3" ry="5" fill="#3a6a22" opacity=".5"/>'
-        +'<ellipse cx="142" cy="95" rx="5" ry="7" fill="#2a4a18" opacity=".62"/>'
-        +'<ellipse cx="142" cy="95" rx="3" ry="5" fill="#3a6a22" opacity=".48"/>'
-        +'<ellipse cx="92" cy="112" rx="4.5" ry="6.5" fill="#2a4a18" opacity=".58"/>'
-        +'<ellipse cx="130" cy="108" rx="4.5" ry="6.5" fill="#2a4a18" opacity=".55"/>'
-        +'<ellipse cx="110" cy="118" rx="5" ry="7" fill="#2a4a18" opacity=".6"/>'
-        // Blütenähren (klein, unauffällig bei Olive)
-        +'<path d="M88 72 q-3-8 -2-14" stroke="#c8c840" stroke-width="2" stroke-linecap="round" opacity=".4"/>'
-        +'<path d="M133 68 q3-8 2-14" stroke="#c8c840" stroke-width="2" stroke-linecap="round" opacity=".38"/>'
-        // Pollenwolke
-        +'<circle cx="65" cy="75" r="3" fill="#d0d850" opacity=".35"/>'
-        +'<circle cx="56" cy="85" r="2.5" fill="#d0d850" opacity=".3"/>'
-        +'<circle cx="162" cy="72" r="3" fill="#d0d850" opacity=".33"/>'
-        +'<circle cx="170" cy="82" r="2.5" fill="#d0d850" opacity=".28"/>'
+      olive_pollen: '<svg class="pollen-neo-hero-illustration" viewBox="0 0 130 130" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" stroke-linecap="round" stroke-linejoin="round">'
+        +'<defs><linearGradient id="ph280-leaf-olive" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#1F5C40"/><stop offset="1" stop-color="#86EFAC"/></linearGradient></defs>'
+        +'<path d="M22 30 C44 44 72 66 104 110" stroke="#3A6B4E" stroke-width="5"/>'
+        +'<g fill="url(#ph280-leaf-olive)"><path d="M40 34 C30 28 22 30 18 38 C28 44 37 42 40 34Z"/><path d="M58 50 C48 44 40 46 36 54 C46 60 55 58 58 50Z"/><path d="M76 68 C66 62 58 64 54 72 C64 78 73 76 76 68Z"/></g>'
+        +'<g stroke="#0C1410" stroke-width="1.6" opacity=".45"><path d="M21 37 L39 35"/><path d="M39 53 L57 51"/></g>'
+        +'<ellipse cx="84" cy="86" rx="5" ry="6.5" fill="#5BA37E"/><ellipse cx="92" cy="98" rx="4.5" ry="6" fill="#7DE6AB" opacity=".55"/>'
         +'</svg>'
     };
-
-    // Fallback: Gräser-SVG
     return illustrations[dominantKey] || illustrations.grass_pollen;
   }
   function statusIconSvg(kind){

@@ -1,3 +1,8 @@
+## Version 0.1.0280
+- Pollen-HeroCard-Bilder fuer Graeser, Birke, Ambrosia, Beifuss, Erle und Olive auf das neue gruene Design-Set umgestellt.
+- Keine Aenderung an Pollenlogik, Firebase, Sync, Login, Kalender oder Push.
+
+
 ## Version 0.1.0279
 - Pollen: bestehende Icons für Pollenarten und Symptome sowie Hero- und Ausblick-Statuspunkte durch das neue grüne Design-Set ersetzt.
 - Keine Logik- oder Layoutänderung: Auswahl, Daten, Berechnung und Sync bleiben unverändert.
