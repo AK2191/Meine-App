@@ -1,4 +1,7 @@
-## Version 0.1.0276
+## Version 0.1.0277
+- Icon-Wechsel von "Neuer Tag" (Sonnenaufgang) auf "Atem" (konzentrische Ringe, Forest Green). Alle Assets und alle drei In-App-Stellen (Loading, Login, Header) ersetzt.
+
+
 - Neues App-Icon "Neuer Tag" (Sonnenaufgang) in allen Groessen und Varianten (192/512px, maskable, Apple Touch, favicon.ico).
 - manifest.json: background_color und theme_color auf #163A29 (Dunkelgruen passend zum Icon) aktualisiert.
 - index.html: favicon.ico-Referenz ergaenzt, Apple Touch Icon auf neue 180px-Datei.

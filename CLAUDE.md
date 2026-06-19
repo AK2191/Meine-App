@@ -1,4 +1,18 @@
-## Version 0.1.0276
+## Version 0.1.0277
+- **Icon-Wechsel: "Neuer Tag" (Sonnenaufgang) → "Atem" (konzentrische Ringe).** Neues Icon aus eigenem Design-Konzept des Nutzers übernommen. Konzentrische Ringe in Forest Green — minimalistisch, ruhig, Fokus.
+- SVG 1:1 aus Design-HTML extrahiert. Kleine Größen (36px Header) erhalten angepasste Strichstärken aus dem Design (3.4px statt 2.3px, 2 Ringe statt 3 für bessere Lesbarkeit bei kleiner Darstellung — so wie im Design vorgesehen).
+- Alle Icon-Assets ersetzt: `icons/icon-change-192.png`, `icons/icon-change-512.png`, `icons/icon-maskable-192.png`, `icons/icon-maskable-512.png`, `icons/apple-touch-icon.png`, `icons/icon-change-512.svg`, `icons/icon-change-192.svg`.
+- `index.html`: Atem-Icon an allen 3 Stellen ersetzt: Loading-Screen, Login-Screen, App-Header. Kein alter Icon-Code mehr vorhanden.
+- Keine Änderung an App-Logik, CSS oder Features.
+
+
+- **Neues App-Icon "Neuer Tag"**: Sonnenaufgang-Icon (aus eigenem Design-Konzept des Nutzers) ersetzt das bisherige Icon vollständig — in allen Varianten der PWA-Assets UND in der App selbst.
+- Icon-Assets: `icons/icon-change-192.png`, `icons/icon-change-512.png` (any), `icons/icon-maskable-192.png`, `icons/icon-maskable-512.png` (maskable, 10% Safe Zone), `icons/apple-touch-icon.png` (180px iOS), `icons/icon-change-512.svg` (Browser-Favicon SVG).
+- `index.html`: Altes galaktisches Spiral-SVG an **drei Stellen** durch "Neuer Tag" ersetzt: (1) Loading-Screen (`#loading .ld-icon`), (2) Login-Screen (`.login-logo`), (3) App-Header (`.h-logo-icon`). Alle drei SVGs direkt inline, keine externen Requests nötig.
+- `manifest.json`: `background_color` und `theme_color` auf `#163A29` (Dunkelgrün) geändert.
+- Keine Änderung an App-Logik, CSS, Dashboard, Kalender, Challenges, Pollen oder Settings.
+
+
 - **Neues App-Icon "Neuer Tag"**: Sonnenaufgang-Icon (aus eigenem Design-Konzept des Nutzers) ersetzt das bisherige Icon vollständig in allen Varianten. SVG-Pfade 1:1 aus der Design-HTML-Datei extrahiert und per cairosvg in alle nötigen Größen gerendert.
 - Neue Icon-Dateien: `icons/icon-change-192.png`, `icons/icon-change-512.png` (any/normal), `icons/icon-maskable-192.png`, `icons/icon-maskable-512.png` (maskable mit 10% Safe-Zone-Rand für Android), `icons/apple-touch-icon.png` (180×180 für iOS), `icons/icon-change-512.svg` (Favicon SVG), `favicon.ico` (16/32/48px multi-size, Root-Verzeichnis).
 - `manifest.json`: `background_color` und `theme_color` von `#080c18` auf `#163A29` (Dunkelgrün, passend zum Icon-Hintergrund) geändert.
