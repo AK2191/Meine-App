@@ -472,6 +472,109 @@
       + '</div>';
   }
 
+  function dataAuditStorage(){
+    try{ return window.localStorage || null; }catch(e){ return null; }
+  }
+  function dataAuditReadJson(key, fallback){
+    try{
+      var storage = dataAuditStorage();
+      var raw = storage && storage.getItem ? storage.getItem(key) : null;
+      if(raw == null || raw === '') return fallback;
+      return JSON.parse(raw);
+    }catch(e){ return fallback; }
+  }
+  function dataAuditHasKey(key){
+    try{
+      var storage = dataAuditStorage();
+      return !!(storage && storage.getItem && storage.getItem(key) != null);
+    }catch(e){ return false; }
+  }
+  function dataAuditStorageKeyCount(){
+    try{
+      var storage = dataAuditStorage();
+      return storage && typeof storage.length === 'number' ? storage.length : 0;
+    }catch(e){ return 0; }
+  }
+  function dataAuditCountFromKeys(keys){
+    keys = Array.isArray(keys) ? keys : [keys];
+    var max = 0;
+    for(var i=0;i<keys.length;i++){
+      var value = dataAuditReadJson(keys[i], null);
+      var count = 0;
+      if(Array.isArray(value)) count = value.length;
+      else if(value && typeof value === 'object') count = Object.keys(value).length;
+      if(count > max) max = count;
+    }
+    return max;
+  }
+  function dataAuditReport(){
+    var storage = dataAuditStorage();
+    var audit = null;
+    try{
+      if(window.ChangeDataModel && typeof window.ChangeDataModel.auditStorage === 'function'){
+        audit = window.ChangeDataModel.auditStorage(storage || null);
+      }
+    }catch(e){ audit = null; }
+    var counts = audit && audit.counts ? audit.counts : {};
+    var keys = audit && audit.keys ? audit.keys : {};
+    var snapshot = dataAuditReadJson('change_v1_settings_snapshot', null);
+    var snapshotPresent = dataAuditHasKey('change_v1_settings_snapshot');
+    return {
+      version: audit && audit.version ? audit.version : '',
+      counts: {
+        storageKeys: parseInt(counts.storageKeys, 10) || dataAuditStorageKeyCount(),
+        events: parseInt(counts.events, 10) || dataAuditCountFromKeys(['change_v1_events','events','change_v2_events']),
+        challenges: parseInt(counts.challenges, 10) || dataAuditCountFromKeys(['change_v1_challenges','challenges']),
+        challengeCompletions: parseInt(counts.challengeCompletions, 10) || dataAuditCountFromKeys(['change_v1_challenge_completions','challenge_completions','challengeCompletions']),
+        challengePlayers: parseInt(counts.challengePlayers, 10) || dataAuditCountFromKeys(['change_v1_challenge_players','challenge_players','challengePlayers']),
+        pollenSymptomDays: parseInt(counts.pollenSymptomDays, 10) || dataAuditCountFromKeys('change_v1_pollen_symptoms')
+      },
+      keys: {
+        canonicalPresent: Array.isArray(keys.canonicalPresent) ? keys.canonicalPresent.length : 0,
+        legacyPresent: Array.isArray(keys.legacyPresent) ? keys.legacyPresent.length : 0,
+        cachePresent: Array.isArray(keys.cachePresent) ? keys.cachePresent.length : 0,
+        unknownChangeKeys: Array.isArray(keys.unknownChangeKeys) ? keys.unknownChangeKeys.length : 0
+      },
+      settingsSnapshot: {
+        present: snapshotPresent,
+        updatedAtLocal: snapshot && snapshot.updatedAtLocal ? snapshot.updatedAtLocal : ''
+      }
+    };
+  }
+  function dataAuditChip(label, value){
+    return '<span>'+esc(label)+': '+esc(parseInt(value, 10) || 0)+'</span>';
+  }
+  function dataAuditBody(expanded){
+    if(!expanded){
+      return '<div class="change-feature-note">Liest nur lokale Zaehler und Speicher-Keys. Es wird nichts geloescht, migriert oder synchronisiert.</div>'
+        + '<button class="btn btn-secondary btn-full" id="run-data-audit" type="button">Daten-Audit pruefen</button>';
+    }
+    var report = dataAuditReport();
+    var counts = report.counts;
+    var keys = report.keys;
+    var snapshotLabel = report.settingsSnapshot.present
+      ? 'vorhanden' + (report.settingsSnapshot.updatedAtLocal ? ' · '+report.settingsSnapshot.updatedAtLocal : '')
+      : 'noch nicht geschrieben';
+    var modelLabel = report.version ? 'DataModel '+report.version : 'DataModel nicht geladen';
+    return '<div class="change-feature-chips">'
+      + dataAuditChip('Events', counts.events)
+      + dataAuditChip('Challenges', counts.challenges)
+      + dataAuditChip('Punkte', counts.challengeCompletions)
+      + dataAuditChip('Mitspieler', counts.challengePlayers)
+      + '</div>'
+      + '<div class="change-feature-chips">'
+      + dataAuditChip('Pollen-Tage', counts.pollenSymptomDays)
+      + dataAuditChip('Storage-Keys', counts.storageKeys)
+      + dataAuditChip('Canonical', keys.canonicalPresent)
+      + dataAuditChip('Legacy', keys.legacyPresent)
+      + dataAuditChip('Cache', keys.cachePresent)
+      + dataAuditChip('Unbekannt', keys.unknownChangeKeys)
+      + '</div>'
+      + '<div class="change-feature-note">Settings-Snapshot: '+esc(snapshotLabel)+'</div>'
+      + '<div class="change-feature-note">'+esc(modelLabel)+' · Anzeige ist read-only.</div>'
+      + '<button class="btn btn-secondary btn-full" id="run-data-audit" type="button">Erneut pruefen</button>';
+  }
+
   function syncPane(){
     var dbOn   = readDatabaseSyncEnabled();
     var google = googleStatus();
@@ -514,7 +617,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0298';
+  var APP_VERSION = '0.1.0299';
 
 
 
@@ -1550,6 +1653,15 @@
       + '</div>'
       ;
     var themeCard = settingsFeatureCard('◐','Darstellung',themeLabel,theme === 'dark' ? 'ok' : (theme === 'light' ? 'ok' : 'off'),'','',themeBody);
+    var dataAuditCard = settingsFeatureCard(
+      'DB',
+      'Daten-Audit',
+      dataAuditExpanded ? 'GEPRUEFT' : 'BEREIT',
+      dataAuditExpanded ? 'ok' : 'off',
+      'Lokaler Read-only-Ueberblick ueber Events, Punkte, Challenges und Settings.',
+      '',
+      dataAuditBody(dataAuditExpanded)
+    );
     var health = '';
     if(window.ChangeAppStatus && window.ChangeAppStatus.healthHtml){
       var healthBody = appHealthExpanded
@@ -1557,7 +1669,7 @@
         : '<div class="change-feature-note">Der Check wird erst angezeigt, wenn du ihn bewusst startest.</div><button class="btn btn-secondary btn-full" id="run-app-health" type="button">App-Gesundheitscheck prüfen</button>';
       health = settingsFeatureCard('🩺', 'App-Gesundheitscheck', appHealthExpanded ? 'GEPRÜFT' : 'BEREIT', appHealthExpanded ? 'ok' : 'off', '', '', healthBody);
     }
-    return '<div class="change-settings-stack">' + installCard + themeCard + health + '</div>';
+    return '<div class="change-settings-stack">' + installCard + themeCard + dataAuditCard + health + '</div>';
   }
   function githubPane(){
     if(!isGithubAdmin()){
@@ -1568,6 +1680,7 @@
 
   var currentSettingsTab = 'dashboard';
   var appHealthExpanded = false;
+  var dataAuditExpanded = false;
   var settingsScrollState = null;
   function allowedSettingsTabs(){
     var tabs = ['dashboard','calendar','challenges','sync','app'];
@@ -1879,6 +1992,7 @@
     var syncGoogle = $('set-sync-google'); if(syncGoogle) syncGoogle.addEventListener('click', async function(){ if(window.ChangeGoogleSyncStatus) await window.ChangeGoogleSyncStatus.syncNow(); refreshSameTab(); });
     var clearSyncLog = $('clear-sync-log'); if(clearSyncLog) clearSyncLog.addEventListener('click', function(){ try{ localStorage.removeItem('change_v1_sync_log'); }catch(e){} refreshSameTab('sync'); });
     document.querySelectorAll('[data-change-theme]').forEach(function(btn){ btn.addEventListener('click', function(){ setAppTheme(btn.getAttribute('data-change-theme') || 'system'); refreshSameTab('app'); }); });
+    var runDataAudit = $('run-data-audit'); if(runDataAudit) runDataAudit.addEventListener('click', function(){ dataAuditExpanded = true; refreshSameTab('app'); });
     var runHealth = $('run-app-health'); if(runHealth) runHealth.addEventListener('click', function(){ appHealthExpanded = true; refreshSameTab('app'); });
     function setGithubZipFile(file){
       githubUpdateState.file = file || null;

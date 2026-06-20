@@ -59,6 +59,7 @@ Diese Funktionen duerfen nicht automatisch beim App-Start laufen. Sie sind fuer 
 - Google-Kalender-Cache bleibt davon getrennt: `change_google_events_cache`, `change_v1_google_events_cache` und `window.gEvents` werden nicht migriert oder geloescht.
 - v0.1.0298: Settings wurden als Snapshot-Schicht angebunden. `core/settings/settingsStore.js` schreibt `change_v1_settings_snapshot`, wenn Einstellungen im Panel oder ueber Legacy-Helfer geaendert werden.
 - Einzelne Settings-Keys bleiben weiterhin aktiv und werden nicht geloescht. Sync-Schalter, Push, Theme, Google-Kalender und Dashboard-Optionen behalten ihre bisherigen Schreibwege; der Snapshot ist eine Wartungs- und Audit-Schicht.
+- v0.1.0299: App & Sicherheit zeigt einen read-only Daten-Audit auf Basis von `ChangeDataModel.auditStorage(localStorage)`. Der Audit zeigt nur Summen und Key-Gruppen, keine Rohdaten, keine Loeschung, keine Migration und keinen Sync-Start.
 
 ## Migration Order
 

@@ -1,3 +1,10 @@
+## Version 0.1.0299
+- App-&-Sicherheit um einen read-only Daten-Audit ergaenzt. Der Bereich zeigt lokale Zaehlwerte fuer Events, Challenges, Punkte, Mitspieler, Pollen-Tage sowie Canonical-/Legacy-/Cache-Key-Anzahlen.
+- Der Audit nutzt `window.ChangeDataModel.auditStorage(localStorage)`, wenn verfuegbar, und faellt sonst auf lokale Key-Zaehlungen zurueck. Rohdaten werden nicht angezeigt.
+- Bewusst nicht geaendert: keine Datenloeschung, keine Migration, kein neuer Sync-Start, keine Firebase-, Kalender-, Challenge-, Pollen-, CSS- oder Markup-Umstellung.
+- Geaendert: `features/settings/settingsPanel.js`, `core/data/dataModel.js`, `features/pollen/pollenView.js`, `docs/DATA-MODEL.md`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax und DataModel-Audit im Nur-Lesen-Modus.
+
 ## Version 0.1.0298
 - Settings als Snapshot-Schicht an das Datenmodell angebunden: neues `core/settings/settingsStore.js` sammelt bestehende Einstellungen ueber `window.ChangeDataModel` bzw. `window.getChangeSettings()` und schreibt `change_v1_settings_snapshot`.
 - `index.html` laedt den SettingsStore direkt nach `core/data/dataModel.js`. `features/settings/settingsPanel.js` und `features/settings/settings-logic.js` melden Settings-Aenderungen an den Store.

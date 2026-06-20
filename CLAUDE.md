@@ -5,6 +5,13 @@
 - Versionseintraege in dieser Datei bleiben erhalten, weil der GitHub-Update-Workflow daraus Zielversionen erkennt.
 - Neue Arbeit erfolgt klein und systembezogen: ein Feature oder eine Schicht pro Schritt.
 
+## Version 0.1.0299
+- **Read-only Daten-Audit in Einstellungen:** App & Sicherheit zeigt jetzt bewusst ausklappbare lokale Zaehlwerte fuer Events, Challenges, Punkte, Mitspieler, Pollen-Tage sowie Canonical-/Legacy-/Cache-Key-Anzahlen.
+- **Keine Datenveraenderung:** Der Audit liest `window.ChangeDataModel.auditStorage(localStorage)`, wenn verfuegbar, und zeigt nur Summen. Es wird nichts geloescht, migriert, synchronisiert oder remote geschrieben.
+- **Bewusst nicht geaendert:** Keine Firebase-, Kalender-, Challenge-, Pollen-, CSS-, Markup-, Push-, Google-Kalender- oder automatischer Sync-Start-Aenderung.
+- Geaendert: `features/settings/settingsPanel.js`, `core/data/dataModel.js`, `features/pollen/pollenView.js`, `docs/DATA-MODEL.md`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax und DataModel-Audit im Nur-Lesen-Modus.
+
 ## Version 0.1.0298
 - **Settings-Snapshot auf Datenmodell umgestellt:** Neues `core/settings/settingsStore.js` sammelt bestehende Einstellungen ueber `window.ChangeDataModel` bzw. `window.getChangeSettings()` und schreibt `change_v1_settings_snapshot`.
 - **Bestehende Settings-Keys bleiben aktiv:** Sync-Schalter, Push, Theme, Google-Kalender, Dashboard-Optionen und Legacy-Helfer behalten ihre bisherigen Einzel-Key-Schreibwege. Der Snapshot ist eine Wartungs- und Audit-Schicht, keine Loesch- oder Remote-Migration.
