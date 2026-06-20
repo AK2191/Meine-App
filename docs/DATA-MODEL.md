@@ -51,6 +51,12 @@ Die App darf diese Keys in der Uebergangsphase noch mitschreiben, damit alte Mod
 
 Diese Funktionen duerfen nicht automatisch beim App-Start laufen. Sie sind fuer kontrollierte Wartung, Diagnose und spaetere UI-Schalter gedacht.
 
+## Current Rollout
+
+- v0.1.0294: `ChangeDataModel` wurde als passive, nicht-destruktive Grundlage eingefuehrt.
+- v0.1.0295: Challenges/Punkte wurden als erstes Feature-System angebunden. `core/challenges/challengeStore.js` wird nach `core/data/dataModel.js` geladen, liest Canonical- und Legacy-Keys gemeinsam und schreibt Punkte ueber `change_v1_challenge_completions` plus Legacy-Fallbacks.
+- Kalender/Events und Settings sind noch nicht migriert. Diese Systeme bleiben eigene Schritte, damit keine Termine, Sync-Schalter oder Nutzeroptionen versehentlich veraendert werden.
+
 ## Migration Order
 
 1. Audit ausfuehren und Bericht sichern.

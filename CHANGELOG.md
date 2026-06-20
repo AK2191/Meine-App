@@ -1,3 +1,10 @@
+## Version 0.1.0295
+- Challenges/Punkte als erstes Feature-System an das Datenmodell angebunden: `core/challenges/challengeStore.js` wird jetzt geladen und nutzt `window.ChangeDataModel` fuer Normalisierung und Canonical-/Legacy-Key-Listen.
+- Erledigte Challenges werden aus Canonical- und Alt-Keys zusammen gelesen und bei lokalen Aenderungen nach `change_v1_challenge_completions`, `challenge_completions` und `challengeCompletions` geschrieben.
+- `features/challenges/challenges.js` speichert `Erledigen` und `Rueckgaengig` ueber `ChangeChallengeStore.replaceCompletions(..., {persist:true})`, statt direkt nur einen einzelnen LocalStorage-Key zu schreiben.
+- Geaendert: `index.html`, `core/data/dataModel.js`, `core/challenges/challengeStore.js`, `features/challenges/challenges.js`, `docs/ARCHITECTURE.md`, `docs/DATA-MODEL.md`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`. Keine Aenderung an CSS, Markup, Icons, Firebase-Regeln, Google Kalender, Push oder automatischem Sync-Start.
+- Geprueft: JavaScript-Syntax und DataModel-Audit im Nur-Lesen-Modus.
+
 ## Version 0.1.0294
 - Neue passive Datenschicht: `core/data/dataModel.js` stellt `window.ChangeDataModel` bereit, normalisiert Events, Challenges, Punkte, Mitspieler, Settings und Pollen-Symptome und definiert Canonical-/Legacy-Keys.
 - Nicht-destruktive Migration vorbereitet: Alte Keys werden weiter eingelesen; ein ausdruecklicher Migration-Aufruf schreibt Canonical-Keys und Backup, loescht aber nichts.

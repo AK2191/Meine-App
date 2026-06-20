@@ -5,6 +5,14 @@
 - Versionseintraege in dieser Datei bleiben erhalten, weil der GitHub-Update-Workflow daraus Zielversionen erkennt.
 - Neue Arbeit erfolgt klein und systembezogen: ein Feature oder eine Schicht pro Schritt.
 
+## Version 0.1.0295
+- **Challenges/Punkte auf Datenmodell umgestellt:** `core/challenges/challengeStore.js` wird jetzt in `index.html` nach `core/data/dataModel.js` geladen und nutzt `window.ChangeDataModel` fuer Normalisierung sowie Canonical-/Legacy-Key-Listen.
+- **Legacy-Daten bleiben erhalten:** Punkte werden weiterhin aus `change_v1_challenge_completions`, `challenge_completions` und `challengeCompletions` gelesen. Lokale Aenderungen schreiben Canonical-Key plus Legacy-Fallbacks, loeschen aber nichts.
+- **Aktive Challenge-UI angebunden:** `features/challenges/challenges.js` persistiert `Erledigen` und `Rueckgaengig` ueber `ChangeChallengeStore.replaceCompletions(..., {persist:true})`, damit Punkte und globale Runtime-Liste synchron bleiben.
+- **Bewusst nicht geaendert:** Keine CSS-, Markup-, Icon-, Firebase-Regel-, Login-, Google-Kalender-, Push- oder Auto-Sync-Aenderung. Kalender/Events und Settings bleiben eigene spaetere Migrationsschritte.
+- Geaendert: `index.html`, `core/data/dataModel.js`, `core/challenges/challengeStore.js`, `features/challenges/challenges.js`, `docs/ARCHITECTURE.md`, `docs/DATA-MODEL.md`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax der betroffenen JS-Dateien und DataModel-Audit im Nur-Lesen-Modus.
+
 ## Version 0.1.0294
 - **Neue Datenschicht aufgebaut:** `core/data/dataModel.js` definiert Canonical-Keys, Normalisierung fuer Events, Challenges, Punkte, Mitspieler, Settings und Pollen-Symptome sowie einen passiven `window.ChangeDataModel`-Namespace.
 - **Nicht-destruktive Migration vorbereitet:** `ChangeDataModel.auditStorage()` und `ChangeDataModel.migrateLocalStorage()` lesen alte und neue LocalStorage-Keys zusammen, schreiben bei ausdruecklichem Aufruf Canonical-Keys plus Backup und loeschen keine Alt-Daten.

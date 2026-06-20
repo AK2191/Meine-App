@@ -9,7 +9,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function(){
   'use strict';
 
-  var VERSION = '0.1.0294';
+  var VERSION = '0.1.0295';
   var CANONICAL_KEYS = {
     events: 'change_v1_events',
     challenges: 'change_v1_challenges',

@@ -10,6 +10,7 @@ Diese Datei beschreibt die aktuelle Struktur der Change App und die Regeln fuer 
 - `features/` enthaelt feature-spezifische UI, Panels, Rendering und Feature-CSS.
 - `styles/` enthaelt Design-Tokens, Basis-Styles und die gemeinsame App-Shell.
 - `core/data/dataModel.js` ist die neue passive Datenschicht fuer Canonical-Keys, Normalisierung, Audit und nicht-destruktive Migration.
+- `core/challenges/challengeStore.js` ist die zentrale lokale Datenquelle fuer Challenges, Punkte und Mitspieler; Feature-UI schreibt diese Daten ueber den Store.
 - `change-pre.js`, `change-post.js` und `app.js` sind historische Legacy-Hotspots. Sie duerfen nicht als Muster fuer neue Arbeit dienen.
 
 ## Boundaries

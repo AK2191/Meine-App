@@ -302,6 +302,23 @@
     return 'local-user';
   }
 
+  function challengeStore(){
+    return window.ChangeChallengeStore || null;
+  }
+
+  function persistChallengeCompletions(){
+    var list = Array.isArray(window.challengeCompletions) ? window.challengeCompletions : [];
+    var store = challengeStore();
+    if(store && typeof store.replaceCompletions === 'function'){
+      store.replaceCompletions(list, {persist:true});
+      window.challengeCompletions = store.getCompletions();
+      try{ if(typeof challengeCompletions !== 'undefined') challengeCompletions = window.challengeCompletions; }catch(e){}
+      return true;
+    }
+    try{ if(typeof ls === 'function') ls('challenge_completions', list); }catch(e){}
+    return false;
+  }
+
   /* ─── Spieler-Panel (Klick auf Ranglisten-Eintrag) ─── */
   window.openPlayerRecentPanel = function(playerId, playerName){
     var id = String(playerId||'').toLowerCase();
@@ -409,7 +426,7 @@
       createdAt:new Date().toISOString(), createdAtLocal:Date.now()
     };
     window.challengeCompletions=(window.challengeCompletions||[]).concat(rec);
-    try{if(typeof ls==='function')ls('challenge_completions',window.challengeCompletions);}catch(e){}
+    persistChallengeCompletions();
     // Nur change_completions schreiben — nie change_challenges
     try{
       if(typeof window.publishCompletionToFirestore==='function'){
@@ -446,7 +463,7 @@
                String(c.playerId||c.email||c.userEmail||'').toLowerCase()===me;
       if(hit)removed.push(c); return !hit;
     });
-    try{if(typeof ls==='function')ls('challenge_completions',window.challengeCompletions);}catch(e){}
+    persistChallengeCompletions();
     removed.forEach(function(c){
       try{if(c.id&&typeof firebase!=='undefined'&&firebase.firestore)
         firebase.firestore().collection('change_completions').doc(String(c.id)).delete();}catch(e){}

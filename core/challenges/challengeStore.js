@@ -6,7 +6,17 @@
   'use strict';
 
   var PREFIX = 'change_v1_';
+  var DataModel = window.ChangeDataModel || null;
   var nowIso = function(){ return new Date().toISOString(); };
+  var canonicalKeys = DataModel && DataModel.canonicalKeys ? DataModel.canonicalKeys : {};
+  var legacyKeys = DataModel && DataModel.legacyKeys ? DataModel.legacyKeys : {};
+  var STORAGE_ALIASES = {
+    challenges: [canonicalKeys.challenges || PREFIX + 'challenges'].concat(legacyKeys.challenges || ['challenges']),
+    challenge_completions: [canonicalKeys.challengeCompletions || PREFIX + 'challenge_completions'].concat(legacyKeys.challengeCompletions || ['challenge_completions', 'challengeCompletions'], ['change_v1_challengeCompletions']),
+    challenge_players: [canonicalKeys.challengePlayers || PREFIX + 'challenge_players'].concat(legacyKeys.challengePlayers || ['challenge_players', 'challengePlayers'], ['change_v1_challengePlayers'])
+  };
+  STORAGE_ALIASES.challengeCompletions = STORAGE_ALIASES.challenge_completions;
+  STORAGE_ALIASES.challengePlayers = STORAGE_ALIASES.challenge_players;
   var state = {
     challenges: [],
     completions: [],
@@ -17,8 +27,30 @@
     return String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
   }
 
+  function uniqueKeys(keys){
+    var seen = {};
+    var out = [];
+    (Array.isArray(keys) ? keys : []).forEach(function(key){
+      key = String(key || '').trim();
+      if(!key || seen[key]) return;
+      seen[key] = true;
+      out.push(key);
+    });
+    return out;
+  }
+
+  function storageKeysFor(key){
+    return uniqueKeys(STORAGE_ALIASES[key] || [PREFIX + key, key]);
+  }
+
+  function storageWriteKeysFor(key){
+    return storageKeysFor(key).filter(function(storageKey){
+      return storageKey !== 'change_v1_challengeCompletions' && storageKey !== 'change_v1_challengePlayers';
+    });
+  }
+
   function readJson(key, fallback){
-    var keys = [PREFIX + key, key];
+    var keys = storageKeysFor(key);
     for(var i=0;i<keys.length;i++){
       try{
         var raw = localStorage.getItem(keys[i]);
@@ -33,7 +65,7 @@
 
   function readArrayAll(key){
     var out = [];
-    [PREFIX + key, key].forEach(function(storageKey){
+    storageKeysFor(key).forEach(function(storageKey){
       try{
         var raw = localStorage.getItem(storageKey);
         if(raw == null) return;
@@ -45,12 +77,20 @@
   }
 
   function writeJson(key, value){
-    try{ localStorage.setItem(PREFIX + key, JSON.stringify(value)); }catch(e){}
+    storageWriteKeysFor(key).forEach(function(storageKey){
+      try{
+        if(DataModel && typeof DataModel.writeJsonTo === 'function') DataModel.writeJsonTo(localStorage, storageKey, value);
+        else localStorage.setItem(storageKey, JSON.stringify(value));
+      }catch(e){}
+    });
     // Einige ältere Feature-Dateien lesen noch ohne Prefix. Für Migration konsistent mitschreiben.
-    try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){}
   }
 
   function normalizeChallenge(ch){
+    if(DataModel && typeof DataModel.normalizeChallenge === 'function'){
+      var normalized = DataModel.normalizeChallenge(ch);
+      return normalized ? Object.assign({}, ch, normalized) : null;
+    }
     if(!ch || typeof ch !== 'object') return null;
     var out = Object.assign({}, ch);
     var title = String(out.title || out.name || '').trim();
@@ -110,7 +150,11 @@
     var out = [];
     (Array.isArray(list) ? list : []).forEach(function(item){
       if(!item || typeof item !== 'object') return;
-      var copy = Object.assign({}, item);
+      var copy = DataModel && typeof DataModel.normalizeCompletion === 'function'
+        ? DataModel.normalizeCompletion(item, {})
+        : Object.assign({}, item);
+      if(!copy) return;
+      if(typeof item.createdAtLocal === 'number') copy.createdAtLocal = item.createdAtLocal;
       var key = String(copy.id || [copy.challengeId, copy.playerId || copy.userEmail || copy.email, String(copy.date || '').slice(0,10)].join('|'));
       if(seen.has(key)) return;
       seen.add(key);
@@ -120,6 +164,19 @@
   }
 
   function normalizePlayers(list){
+    if(DataModel && typeof DataModel.normalizePlayer === 'function'){
+      var seen = new Set();
+      var normalized = [];
+      (Array.isArray(list) ? list : []).forEach(function(player){
+        var item = DataModel.normalizePlayer(player);
+        if(!item) return;
+        var key = item.email || item.id;
+        if(!key || seen.has(key)) return;
+        seen.add(key);
+        normalized.push(item);
+      });
+      return normalized;
+    }
     var map = new Map();
     (Array.isArray(list) ? list : []).forEach(function(player){
       if(!player || typeof player !== 'object') return;
@@ -144,7 +201,6 @@
     state.completions = normalizeCompletions(list);
     if(opts && opts.persist){
       writeJson('challenge_completions', state.completions);
-      writeJson('challengeCompletions', state.completions);
     }
     return state.completions;
   }
@@ -153,7 +209,6 @@
     state.players = normalizePlayers(list);
     if(opts && opts.persist){
       writeJson('challenge_players', state.players);
-      writeJson('challengePlayers', state.players);
     }
     return state.players;
   }
@@ -176,9 +231,7 @@
   function persistAll(){
     writeJson('challenges', state.challenges);
     writeJson('challenge_completions', state.completions);
-    writeJson('challengeCompletions', state.completions);
     writeJson('challenge_players', state.players);
-    writeJson('challengePlayers', state.players);
   }
 
   function installAlias(prop, getter, setter){
@@ -197,12 +250,8 @@
   }
 
   state.challenges = mergeChallenges([], readArrayAll('challenges'));
-  state.completions = normalizeCompletions(
-    [].concat(readArrayAll('challenge_completions'), readArrayAll('challengeCompletions'))
-  );
-  state.players = normalizePlayers(
-    [].concat(readArrayAll('challenge_players'), readArrayAll('challengePlayers'))
-  );
+  state.completions = normalizeCompletions(readArrayAll('challenge_completions'));
+  state.players = normalizePlayers(readArrayAll('challenge_players'));
 
   installAlias('challenges', function(){ return state.challenges; }, function(value){ replaceChallenges(value || [], {persist:false}); });
   installAlias('challengeCompletions', function(){ return state.completions; }, function(value){ replaceCompletions(value || [], {persist:false}); });
@@ -218,6 +267,21 @@
     mergeChallenges: mergeChallengeList,
     ensureDefaults: ensureDefaults,
     persistAll: persistAll,
+    audit: function(){
+      return {
+        dataModelVersion: DataModel && DataModel.version || '',
+        counts: {
+          challenges: state.challenges.length,
+          completions: state.completions.length,
+          players: state.players.length
+        },
+        storageKeys: {
+          challenges: storageKeysFor('challenges'),
+          completions: storageKeysFor('challenge_completions'),
+          players: storageKeysFor('challenge_players')
+        }
+      };
+    },
     syncFromGlobals: function(opts){
       replaceChallenges(window.challenges || [], {persist:false});
       replaceCompletions(window.challengeCompletions || [], {persist:false});
