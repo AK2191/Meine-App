@@ -32,6 +32,7 @@
   }
   function readList(name, fallback){
     try{
+      if(name === 'events' && window.ChangeEventStore && typeof window.ChangeEventStore.getEvents === 'function') return window.ChangeEventStore.getEvents();
       if(Array.isArray(window[name])) return window[name];
       if(typeof window.ls === 'function'){
         var lsValue = window.ls(name);
@@ -46,8 +47,14 @@
     return fallback || [];
   }
   function writeEvents(list){
+    var store = window.ChangeEventStore || null;
+    if(store && typeof store.replaceEvents === 'function'){
+      store.replaceEvents(list || [], {persist:true});
+      list = store.getEvents();
+    }
     try{ window.events = list; }catch(e){}
     try{ events = list; }catch(e){}
+    if(store) return;
     try{ if(typeof window.ls === 'function') window.ls('events', list); }catch(e){}
     try{ localStorage.setItem('events', JSON.stringify(list)); }catch(e){}
     try{ localStorage.setItem('change_v1_events', JSON.stringify(list)); }catch(e){}

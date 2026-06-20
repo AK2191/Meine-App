@@ -505,7 +505,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0295';
+  var APP_VERSION = '0.1.0297';
 
 
 
@@ -1378,7 +1378,7 @@
       var seen = {};
       paths.forEach(function(path){ if(seen[path]) duplicates.push(path); seen[path] = true; });
       var allowedRootFiles = {'CHANGELOG.md':1,'CLAUDE.md':1,'app.js':1,'change-pre.js':1,'change-post.js':1,'change.css':1,'firebase-messaging-sw.js':1,'firebase.json':1,'index.html':1,'manifest.json':1};
-      var allowedRootDirs = {'core':1,'features':1,'firebase':1,'icons':1,'styles':1,'public':1,'components':1,'.github':1,'scripts':1,'updates':1};
+      var allowedRootDirs = {'core':1,'features':1,'firebase':1,'icons':1,'styles':1,'public':1,'components':1,'.github':1,'scripts':1,'updates':1,'docs':1};
       var badRoot = paths.filter(function(path){
         var first = path.split('/')[0];
         if(path.indexOf('/') < 0) return !allowedRootFiles[first];

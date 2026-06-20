@@ -1,3 +1,16 @@
+## Version 0.1.0297
+- GitHub-ZIP-Pruefung korrigiert: `docs/` ist jetzt ein erlaubter Root-Ordner, damit `docs/ARCHITECTURE.md`, `docs/DATA-MODEL.md`, `docs/SAFETY-CHECKS.md` und `docs/STYLEGUIDE.md` nicht mehr als unerwuenschte Root-Dateien gemeldet werden.
+- Geaendert: `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`. Keine Aenderung an App-Logik, Datenmodell, CSS, Markup, Firebase, Kalender, Challenges, Push oder Sync.
+- Geprueft: JavaScript-Syntax der geaenderten JS-Dateien und ZIP-Struktur.
+
+## Version 0.1.0296
+- Lokale Kalender/Events als zweites Feature-System an das Datenmodell angebunden: neues `core/calendar/eventStore.js` liest `change_v1_events`, `events` und `change_v2_events` zusammen und normalisiert ueber `window.ChangeDataModel`.
+- `index.html` laedt den EventStore direkt nach `core/data/dataModel.js`, bevor `calendarModel.js`, `app.js` und die Kalender-Features laufen.
+- `core/calendar/calendarModel.js`, `app.js` und der aktive finale Kalender-Speicherpfad in `features/calendar/calendar-logic.js` persistieren lokale Termine ueber den EventStore.
+- Google-Kalender-Cache und Remote-Sync bleiben unveraendert: `window.gEvents`, `change_google_events_cache`, `change_v1_google_events_cache`, OAuth, Firebase-Regeln, Push und UI/CSS wurden nicht umgebaut.
+- Geaendert: `index.html`, `core/data/dataModel.js`, `core/calendar/eventStore.js`, `core/calendar/calendarModel.js`, `app.js`, `features/calendar/calendar-logic.js`, `docs/ARCHITECTURE.md`, `docs/DATA-MODEL.md`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax, DataModel-Audit im Nur-Lesen-Modus und EventStore-Smoke-Test mit Legacy-Event.
+
 ## Version 0.1.0295
 - Challenges/Punkte als erstes Feature-System an das Datenmodell angebunden: `core/challenges/challengeStore.js` wird jetzt geladen und nutzt `window.ChangeDataModel` fuer Normalisierung und Canonical-/Legacy-Key-Listen.
 - Erledigte Challenges werden aus Canonical- und Alt-Keys zusammen gelesen und bei lokalen Aenderungen nach `change_v1_challenge_completions`, `challenge_completions` und `challengeCompletions` geschrieben.

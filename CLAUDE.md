@@ -5,6 +5,21 @@
 - Versionseintraege in dieser Datei bleiben erhalten, weil der GitHub-Update-Workflow daraus Zielversionen erkennt.
 - Neue Arbeit erfolgt klein und systembezogen: ein Feature oder eine Schicht pro Schritt.
 
+## Version 0.1.0297
+- **GitHub-ZIP-Pruefung korrigiert:** `docs/` ist jetzt in `features/settings/settingsPanel.js` als erlaubter Root-Ordner eingetragen.
+- **Wartbarkeitsdoku bleibt Teil der App:** `docs/ARCHITECTURE.md`, `docs/DATA-MODEL.md`, `docs/SAFETY-CHECKS.md` und `docs/STYLEGUIDE.md` duerfen in Update-ZIPs enthalten sein und werden nicht mehr als unerwuenschte Root-Dateien gemeldet.
+- **Bewusst nicht geaendert:** Keine Aenderung an App-Logik, Datenmodell, CSS, Markup, Firebase, Kalender, Challenges, Push, Google-Kalender oder Sync.
+- Geaendert: `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax der geaenderten JS-Dateien und ZIP-Struktur.
+
+## Version 0.1.0296
+- **Lokale Kalender/Events auf Datenmodell umgestellt:** Neues `core/calendar/eventStore.js` liest `change_v1_events`, `events` und `change_v2_events` gemeinsam und normalisiert lokale Termine ueber `window.ChangeDataModel`.
+- **Store vor Kalenderlogik geladen:** `index.html` laedt den EventStore direkt nach `core/data/dataModel.js`, bevor `calendarModel.js`, `app.js` und `features/calendar/*` laufen.
+- **Aktive Speicherwege angebunden:** `core/calendar/calendarModel.js`, `app.js` und der finale Kalender-Speicherpfad in `features/calendar/calendar-logic.js` persistieren lokale Termine ueber den EventStore.
+- **Bewusst nicht geaendert:** Keine Aenderung an Google-Kalender-Cache, `window.gEvents`, OAuth, Firebase-Regeln, Push, CSS, Markup, Kalender-Rendering oder automatischem Sync-Start. Settings bleiben ein eigener spaeterer Migrationsschritt.
+- Geaendert: `index.html`, `core/data/dataModel.js`, `core/calendar/eventStore.js`, `core/calendar/calendarModel.js`, `app.js`, `features/calendar/calendar-logic.js`, `docs/ARCHITECTURE.md`, `docs/DATA-MODEL.md`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax, DataModel-Audit im Nur-Lesen-Modus und EventStore-Smoke-Test mit Legacy-Event.
+
 ## Version 0.1.0295
 - **Challenges/Punkte auf Datenmodell umgestellt:** `core/challenges/challengeStore.js` wird jetzt in `index.html` nach `core/data/dataModel.js` geladen und nutzt `window.ChangeDataModel` fuer Normalisierung sowie Canonical-/Legacy-Key-Listen.
 - **Legacy-Daten bleiben erhalten:** Punkte werden weiterhin aus `change_v1_challenge_completions`, `challenge_completions` und `challengeCompletions` gelesen. Lokale Aenderungen schreiben Canonical-Key plus Legacy-Fallbacks, loeschen aber nichts.

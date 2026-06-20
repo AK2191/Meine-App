@@ -2260,8 +2260,9 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
   function getToken(){try{if(typeof accessToken!=='undefined'&&accessToken)return accessToken;}catch(e){} return window.accessToken||'';}
   function demo(){try{return !!isDemoMode;}catch(e){return !!window.isDemoMode;}}
   function hasGoogle(){var t=getToken();return !!(t&&t!=='firebase-auth'&&!demo());}
-  function allLocalEvents(){var arr=[];try{arr=Array.isArray(window.events)?window.events:(Array.isArray(events)?events:[]);}catch(e){arr=Array.isArray(window.events)?window.events:[]}return arr;}
-  function persistEvents(arr){try{window.events=arr;events=arr;}catch(e){window.events=arr;}try{if(typeof ls==='function')ls('events',arr);else localStorage.setItem('change_v1_events',JSON.stringify(arr));}catch(e){try{localStorage.setItem('change_v1_events',JSON.stringify(arr));}catch(_){}}}
+  function eventStore(){return window.ChangeEventStore||null;}
+  function allLocalEvents(){var store=eventStore();if(store&&typeof store.getEvents==='function')return store.getEvents();var arr=[];try{arr=Array.isArray(window.events)?window.events:(Array.isArray(events)?events:[]);}catch(e){arr=Array.isArray(window.events)?window.events:[]}return arr;}
+  function persistEvents(arr){var store=eventStore();if(store&&typeof store.replaceEvents==='function'){store.replaceEvents(arr||[],{persist:true});arr=store.getEvents();}try{window.events=arr;events=arr;}catch(e){window.events=arr;}if(store)return;try{if(typeof ls==='function')ls('events',arr);else localStorage.setItem('change_v1_events',JSON.stringify(arr));}catch(e){try{localStorage.setItem('change_v1_events',JSON.stringify(arr));}catch(_){}}}
   function refresh(){try{if(typeof renderCalendar==='function')renderCalendar();}catch(e){}try{if(typeof renderUpcoming==='function')renderUpcoming();}catch(e){}try{if(typeof buildDashboard==='function')buildDashboard();}catch(e){}try{if(typeof checkNotifications==='function')checkNotifications();}catch(e){}try{if(typeof saveToDrive==='function')saveToDrive();}catch(e){}}
   function findEvent(id){try{if(typeof getEventById==='function')return getEventById(id);}catch(e){}return allLocalEvents().find(function(e){return String(e.id)===String(id);});}
   function range(ev){
@@ -2363,4 +2364,3 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
     return ev;
   };
 })();
-

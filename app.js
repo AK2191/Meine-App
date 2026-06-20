@@ -114,6 +114,40 @@ function exposeChangeGlobals(){
   }catch(_e){}
 }
 
+/* ==== EVENT STATE BRIDGE ==== */
+function getEventStore(){
+  return (typeof window !== 'undefined' && window.ChangeEventStore) ? window.ChangeEventStore : null;
+}
+function syncEventStateFromStore(){
+  const store = getEventStore();
+  if(!store) return false;
+  try{
+    const storeEvents = store.getEvents();
+    if((!Array.isArray(events) || !events.length) && storeEvents.length) events = storeEvents;
+    else store.replaceEvents(events || [], {persist:false});
+    events = store.getEvents();
+    return true;
+  }catch(e){
+    console.warn('EventStore sync:', e);
+    return false;
+  }
+}
+function persistEventStateToStore(){
+  const store = getEventStore();
+  if(!store) return false;
+  try{
+    const storeEvents = store.getEvents();
+    if((!Array.isArray(events) || !events.length) && storeEvents.length) events = storeEvents;
+    else store.replaceEvents(events || window.events || [], {persist:true});
+    events = store.getEvents();
+    window.events = events;
+    return true;
+  }catch(e){
+    console.warn('EventStore persist:', e);
+    return false;
+  }
+}
+
 /* ==== CHALLENGE STATE BRIDGE ==== */
 function getChallengeStore(){
   return (typeof window !== 'undefined' && window.ChangeChallengeStore) ? window.ChangeChallengeStore : null;
@@ -257,7 +291,7 @@ function updateAvatar(){
 window.updateAvatar = updateAvatar;
 async function persistChangeState(){
   try{
-    ls('events', events);
+    persistEventStateToStore() || ls('events', events);
     if(!persistChallengeStateToStore()){
       ls('challenges', challenges);
       ls('challenge_completions', challengeCompletions);
@@ -364,6 +398,7 @@ window.addEventListener('load', async () => {
 
   // Lokale Daten laden
   events              = ls('events')               || [];
+  syncEventStateFromStore();
   // Google-Kalenderdaten bleiben nach F5 sichtbar. Der OAuth-Token bleibt bewusst nur im RAM.
   gEvents             = readGoogleEventsCache();
   window.events       = events;
@@ -754,7 +789,7 @@ function bootMainApp(){
     var _dIds=new Set(['d1','d2','d3','d4']);
     var _before=events.length;
     events=events.filter(function(e){ return e&&!_dIds.has(e.id)&&e.source!=='demo'; });
-    if(events.length!==_before) ls('events',events);
+    if(events.length!==_before) persistEventStateToStore() || ls('events',events);
   }catch(_){}
 
   updateAvatar();
@@ -1328,7 +1363,7 @@ function saveEvent(existingId){
   };
   if(existingId){const i=events.findIndex(e=>e.id===existingId);if(i>=0)events[i]=ev;else events.push(ev);}
   else events.push(ev);
-  ls('events',events);
+  persistEventStateToStore() || ls('events',events);
   /* no close */
 if(currentMainView==='calendar'){renderCalendar();renderUpcoming();}
   checkNotifications();
@@ -1338,7 +1373,7 @@ if(currentMainView==='calendar'){renderCalendar();renderUpcoming();}
 
 window._execDeleteEvent = function(id){
   events = (events||[]).filter(function(e){ return e.id!==id; });
-  if(typeof ls==='function') ls('events', events);
+  if(typeof ls==='function') persistEventStateToStore() || ls('events', events);
   if(typeof closePanel==='function') /* no close */
 if(currentMainView==='calendar'){
     if(typeof renderCalendar==='function') renderCalendar();
@@ -1350,7 +1385,7 @@ if(currentMainView==='calendar'){
 };
 function _doDelEvent(id){
   events=(events||[]).filter(function(e){return e.id!==id;});
-  ls('events',events);
+  persistEventStateToStore() || ls('events',events);
   closePanel();
   if(currentMainView==='calendar'){renderCalendar();if(typeof renderUpcoming==='function')renderUpcoming();}
   if(typeof checkNotifications==='function')checkNotifications();
@@ -1483,7 +1518,7 @@ async function loadFromDrive(){
 
 async function saveToDrive(){
   // Kompatibilitätsfunktion: alte Aufrufe bleiben gültig, speichern aber nicht mehr in Firebase.
-  ls('events', events);
+  persistEventStateToStore() || ls('events', events);
   if(!persistChallengeStateToStore()){
     ls('challenges', challenges);
     ls('challenge_completions', challengeCompletions);
@@ -1770,7 +1805,7 @@ document.addEventListener('touchend',e=>{
 
 
   async function persistChangeState(){
-    ls('events',events);
+    persistEventStateToStore() || ls('events',events);
     if(!persistChallengeStateToStore()){
       ls('challenges',challenges);
       ls('challenge_completions',challengeCompletions);

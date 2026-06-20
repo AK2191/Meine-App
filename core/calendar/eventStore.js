@@ -1,0 +1,164 @@
+/* Change App - EventStore
+ * Zentrale lokale Datenquelle fuer Kalendertermine.
+ * Liest Canonical- und Legacy-Keys, loescht nichts und fasst Google-Cache nicht an.
+ */
+(function(){
+  'use strict';
+
+  var PREFIX = 'change_v1_';
+  var DataModel = window.ChangeDataModel || null;
+  var canonicalKeys = DataModel && DataModel.canonicalKeys ? DataModel.canonicalKeys : {};
+  var legacyKeys = DataModel && DataModel.legacyKeys ? DataModel.legacyKeys : {};
+  var READ_KEYS = uniqueKeys([canonicalKeys.events || PREFIX + 'events'].concat(legacyKeys.events || ['events', 'change_v2_events']));
+  var WRITE_KEYS = uniqueKeys([canonicalKeys.events || PREFIX + 'events', 'events']);
+  var state = {events: []};
+
+  function uniqueKeys(keys){
+    var seen = {};
+    var out = [];
+    (Array.isArray(keys) ? keys : []).forEach(function(key){
+      key = String(key || '').trim();
+      if(!key || seen[key]) return;
+      seen[key] = true;
+      out.push(key);
+    });
+    return out;
+  }
+
+  function pad2(value){ return String(value).padStart(2, '0'); }
+  function nowIso(){ return new Date().toISOString(); }
+  function dateKey(value){
+    if(!value) return '';
+    if(value instanceof Date && !isNaN(value.getTime())) return value.getFullYear() + '-' + pad2(value.getMonth() + 1) + '-' + pad2(value.getDate());
+    var text = String(value || '').trim();
+    var match = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return match ? match[1] + '-' + match[2] + '-' + match[3] : '';
+  }
+  function text(value){ return String(value == null ? '' : value).trim(); }
+  function stableId(parts){
+    return 'ev_' + parts.map(function(part){
+      return text(part).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+    }).filter(Boolean).join('_').slice(0, 120);
+  }
+
+  function readJson(key, fallback){
+    try{
+      var raw = localStorage.getItem(key);
+      if(raw == null) return fallback;
+      return JSON.parse(raw);
+    }catch(e){ return fallback; }
+  }
+
+  function readArrayAll(){
+    var out = [];
+    READ_KEYS.forEach(function(key){
+      var parsed = readJson(key, null);
+      if(Array.isArray(parsed)) out = out.concat(parsed);
+    });
+    return out;
+  }
+
+  function writeJson(key, value){
+    try{
+      if(DataModel && typeof DataModel.writeJsonTo === 'function') DataModel.writeJsonTo(localStorage, key, value);
+      else localStorage.setItem(key, JSON.stringify(value));
+    }catch(e){}
+  }
+
+  function normalizeEvent(raw){
+    if(DataModel && typeof DataModel.normalizeEvent === 'function'){
+      var normalized = DataModel.normalizeEvent(raw);
+      return normalized ? Object.assign({}, raw, normalized) : null;
+    }
+    if(!raw || typeof raw !== 'object') return null;
+    var title = text(raw.title || raw.summary || raw.name);
+    var start = dateKey(raw.startDate || raw.date || raw.start || raw.dateTime);
+    var end = dateKey(raw.endDate || raw.end || start) || start;
+    if(!title || !start) return null;
+    return Object.assign({}, raw, {
+      id: text(raw.id || raw.eventId || raw.googleEventId) || stableId([title, start, raw.time || raw.startTime || '', end]),
+      title: title,
+      date: start,
+      startDate: start,
+      endDate: end < start ? start : end,
+      time: text(raw.time || raw.startTime),
+      endTime: text(raw.endTime),
+      color: text(raw.color || 'blue'),
+      source: text(raw.source || (raw.googleEventId ? 'google' : 'local')),
+      updatedAtLocal: text(raw.updatedAtLocal || raw.updatedAt || '')
+    });
+  }
+
+  function eventKey(event){
+    if(!event) return '';
+    return String(event.id || '') || [event.title, event.date || event.startDate, event.endDate, event.time, event.endTime].join('|');
+  }
+
+  function normalizeEvents(list){
+    var seen = new Set();
+    var out = [];
+    (Array.isArray(list) ? list : []).forEach(function(item){
+      var event = normalizeEvent(item);
+      if(!event) return;
+      var key = eventKey(event);
+      if(!key || seen.has(key)) return;
+      seen.add(key);
+      out.push(event);
+    });
+    return out;
+  }
+
+  function replaceEvents(list, opts){
+    state.events = normalizeEvents(list);
+    if(opts && opts.persist) persistAll();
+    return state.events;
+  }
+
+  function mergeEvents(list, opts){
+    state.events = normalizeEvents(state.events.concat(Array.isArray(list) ? list : []));
+    if(opts && opts.persist) persistAll();
+    return state.events;
+  }
+
+  function persistAll(){
+    WRITE_KEYS.forEach(function(key){ writeJson(key, state.events); });
+  }
+
+  function installAlias(){
+    var current = window.events;
+    try{
+      Object.defineProperty(window, 'events', {
+        configurable: true,
+        enumerable: true,
+        get: function(){ return state.events; },
+        set: function(value){ replaceEvents(value || [], {persist:false}); }
+      });
+      if(Array.isArray(current) && current.length) replaceEvents(current, {persist:false});
+    }catch(e){
+      window.events = state.events;
+    }
+  }
+
+  state.events = normalizeEvents(readArrayAll());
+  installAlias();
+
+  window.ChangeEventStore = {
+    getEvents: function(){ return state.events; },
+    replaceEvents: replaceEvents,
+    mergeEvents: mergeEvents,
+    persistAll: persistAll,
+    syncFromGlobals: function(opts){
+      replaceEvents(window.events || [], {persist:false});
+      if(opts && opts.persist) persistAll();
+      return state.events;
+    },
+    audit: function(){
+      return {
+        dataModelVersion: DataModel && DataModel.version || '',
+        counts: {events: state.events.length},
+        storageKeys: {read: READ_KEYS.slice(), write: WRITE_KEYS.slice()},
+        generatedAt: nowIso()
+      };
+    }
+  };
+})();
