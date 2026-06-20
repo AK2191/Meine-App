@@ -239,6 +239,16 @@
     }).join('');
   }
   function calHeroArtSvg(){
+    return '<svg class="cal-hero-illustration" viewBox="0 0 160 160" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" stroke-linecap="round" stroke-linejoin="round">'
+      + '<circle cx="74" cy="84" r="46" fill="none" stroke="#2F5C44" stroke-width="9"/>'
+      + '<circle cx="74" cy="84" r="46" fill="none" stroke="#7DE6AB" stroke-width="4" stroke-dasharray="3 14" opacity=".7"/>'
+      + '<path d="M74 84 V56" stroke="#7DE6AB" stroke-width="5"/>'
+      + '<path d="M74 84 L95 93" stroke="#7DE6AB" stroke-width="5"/>'
+      + '<circle cx="74" cy="84" r="4.5" fill="#7DE6AB"/>'
+      + '<rect x="104" y="44" width="40" height="30" rx="9" fill="#13251A" stroke="#7DE6AB" stroke-width="3"/>'
+      + '<path d="M114 74 L114 82 L122 74 Z" fill="#13251A" stroke="#7DE6AB" stroke-width="3" stroke-linejoin="round"/>'
+      + '<g fill="#7DE6AB"><circle cx="116" cy="59" r="2.2"/><circle cx="124" cy="59" r="2.2"/><circle cx="132" cy="59" r="2.2"/></g>'
+      + '</svg>';
     return '<svg class="cal-hero-illustration" viewBox="0 0 220 220" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">'
       + '<defs>'
       + '<linearGradient id="cal-arc-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4ade80" stop-opacity="0.9"/><stop offset="1" stop-color="#166534" stop-opacity="0.4"/></linearGradient>'

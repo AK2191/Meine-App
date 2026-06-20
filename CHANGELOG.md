@@ -1,7 +1,9 @@
-## Version 0.1.0289
-- Tagesdetails im Pollenbereich gestrafft: Die Abschlusskarte mit "Auffälliger Tag" und "Vollständig bewertet" entfällt. Nach der Notiz endet die Ansicht direkt, damit unten kein unnötiger Platz belegt wird.
-- Geändert: `features/weather/pollenSymptoms.js`, `features/pollen/pollenView.css`, `features/pollen/pollenView.js`, `features/settings/settingsPanel.js`, `CLAUDE.md`, `CHANGELOG.md`. Keine Änderung an Pollenwerten, Symptom-Eingaben, Firebase, Sync, Login, Kalender, Dashboard oder Challenges.
-- Geprüft: JavaScript-Syntax, entfernte Detailkarten-Referenzen, Versionsfundstellen und ZIP-Struktur.
+## Version 0.1.0290
+- HeroCards von Dashboard, Kalender, Challenges und Einstellungen nach den gelieferten Dark-Designs neu aufgebaut: dunkler Verlauf, 24px Radius, gruener Akzent, Desktop-Raster `Text / Illustration / Stats` und mobile `Text + Illustration / Stats`-Anordnung.
+- Dashboard, Kalender, Settings und Gruppenziel haben neue SVG-Illustrationen; die alte Challenge-Trophy bleibt im Markup als Fallback, wird aber ausgeblendet. Pollen bleibt unveraendert.
+- Light-Theme-Altregeln werden fuer diese HeroCards gezielt ueberstimmt, damit der dunkle Mockup-Look auch in der lokalen/hellen Systemansicht erhalten bleibt.
+- Geaendert: `features/dashboard/dashboard-logic.js`, `features/calendar/calendarPanels.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `core/misc.js`, `styles/appShell.css`, `CLAUDE.md`, `CHANGELOG.md`. Keine Aenderung an Firebase, Login, Google Kalender, Push, Sync, Pollen-Berechnung, Challenge-Speicherung oder Punkteberechnung.
+- Geprueft: JavaScript-Syntax, Headless-Chrome-Smoke-Test fuer alle vier HeroCards auf Desktop und Mobile, kein horizontaler Overflow, Versionsfundstellen und ZIP-Root-Struktur.
 
 ## Version 0.1.0288
 - Rangliste in Challenges neu gestaltet: einzeilige Spielerzeilen mit Rang-Kreis, Medaille, Name/Live-Punkt, Heute-offen-/Heute-erledigt-Chips und Punktebox im Trophy-Stil.

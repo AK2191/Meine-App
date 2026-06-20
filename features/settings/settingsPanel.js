@@ -505,7 +505,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0289';
+  var APP_VERSION = '0.1.0290';
 
 
 
@@ -1416,6 +1416,15 @@
   }
 
   function settingsHeroArtSvg(){
+    return '<svg class="settings-hero-illustration" viewBox="0 0 160 160" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" stroke-linecap="round" stroke-linejoin="round">'
+      + '<circle cx="74" cy="80" r="40" stroke="#2F5C44" stroke-width="3" opacity=".55"/>'
+      + '<circle cx="74" cy="80" r="28" stroke="#7DE6AB" stroke-width="3" opacity=".7"/>'
+      + '<g stroke="#7DE6AB" stroke-width="3"><circle cx="74" cy="80" r="13"/><path d="M74 60 V67 M74 93 V100 M54 80 H61 M87 80 H94 M60 66 l5 5 M83 89 l5 5 M88 66 l-5 5 M65 89 l-5 5"/></g>'
+      + '<circle cx="74" cy="80" r="4.5" fill="#7DE6AB"/>'
+      + '<circle cx="116" cy="48" r="9" stroke="#7DE6AB" stroke-width="2.6" opacity=".8"/>'
+      + '<circle cx="116" cy="48" r="2.4" fill="#7DE6AB"/>'
+      + '<g fill="#9FE8C0" opacity=".7"><circle cx="40" cy="116" r="2.2"/><circle cx="120" cy="118" r="1.8"/><circle cx="36" cy="56" r="1.6"/></g>'
+      + '</svg>';
     return '<svg class="settings-hero-illustration" viewBox="0 0 220 220" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">'
       + '<defs>'
       + '<linearGradient id="set-cog-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4ade80" stop-opacity="0.85"/><stop offset="1" stop-color="#166534" stop-opacity="0.35"/></linearGradient>'
@@ -1686,7 +1695,7 @@
     var html = '<div class="change-settings-premium">'
       + '<div class="change-settings-page-head"><div class="change-settings-page-title"><span>⚙︎</span><strong>Einstellungen</strong></div></div>'
       + '<section class="change-settings-profile-card">'
-      + '<div class="change-settings-profile-left"><div class="change-settings-profile-avatar">'+picture+'<i></i></div><div class="change-settings-profile-copy"><div class="change-settings-profile-name">'+esc(name)+'</div></div></div>'
+      + '<div class="change-settings-profile-left"><div class="change-settings-profile-avatar">'+picture+'<i></i></div><div class="change-settings-profile-copy"><div class="change-settings-profile-kicker">Profil</div><div class="change-settings-profile-name">'+esc(name)+'</div><div class="change-settings-profile-subline">Einstellungen</div></div></div>'
       + '<div class="change-settings-profile-center" aria-hidden="true">'+settingsHeroArtSvg()+'</div>'
       + '<div class="change-settings-profile-right">'+settingsHeroStatusRows(google)+'</div>'
       + '</section>'

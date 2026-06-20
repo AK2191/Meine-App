@@ -327,7 +327,23 @@ window.renderGroupGoal = function(){
         <div class="chv227-progress" aria-label="Gruppenziel Fortschritt"><i style="width:${pct}%"></i></div>
         ${done ? '<div class="chv227-done">Ziel erreicht</div>' : ''}
       </div>
-      <svg class="chv227-illustration" viewBox="40 18 142 164" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+      <svg class="chv227-illustration chv227-illustration-redesign" viewBox="0 0 160 160" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <defs>
+          <linearGradient id="chv-cup-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E2C173"/><stop offset="1" stop-color="#B08B3C"/></linearGradient>
+        </defs>
+        <g fill="#7A5A1C" opacity=".3"><path d="M48 38 H112 V58 C112 81 99 96 80 96 C61 96 48 81 48 58 Z"/></g>
+        <path d="M50 46 C28 46 26 80 54 86" stroke="#9A7320" stroke-width="7"/>
+        <path d="M110 46 C132 46 134 80 106 86" stroke="#9A7320" stroke-width="7"/>
+        <path d="M50 38 H110 V58 C110 80 98 94 80 94 C62 94 50 80 50 58 Z" fill="url(#chv-cup-fill)"/>
+        <g stroke="#7A5A1C" stroke-width="2.4" opacity=".5"><path d="M64 44 C63 60 66 78 76 90"/><path d="M88 44 C90 60 88 76 80 90"/></g>
+        <path d="M58 44 C58 62 62 80 73 90" stroke="#FDE9A8" stroke-width="2.6" opacity=".55"/>
+        <path d="M80 94 V112" stroke="#9A7320" stroke-width="7"/>
+        <path d="M62 122 C62 116 70 112 80 112 C90 112 98 116 98 122 Z" fill="url(#chv-cup-fill)"/>
+        <rect x="58" y="121" width="44" height="9" rx="3" fill="#9A7320"/>
+        <path d="M80 16 l5 10 11 1.6 -8 7.7 1.9 10.9 -9.9 -5.2 -9.9 5.2 1.9 -10.9 -8 -7.7 11 -1.6 Z" fill="#FBD24B" stroke="#0B120E" stroke-width="1.4"/>
+        <g fill="#7DE6AB" opacity=".7"><circle cx="120" cy="34" r="2.6"/><circle cx="38" cy="100" r="2.2"/></g>
+      </svg>
+      <svg class="chv227-illustration chv227-illustration-legacy" viewBox="40 18 142 164" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="chv-cup-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f9a825" stop-opacity="0.9"/><stop offset="1" stop-color="#c67c00" stop-opacity="0.4"/></linearGradient>
           <linearGradient id="chv-shine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4ade80" stop-opacity="0.0"/><stop offset="0.5" stop-color="#4ade80" stop-opacity="0.18"/><stop offset="1" stop-color="#4ade80" stop-opacity="0.0"/></linearGradient>

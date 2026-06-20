@@ -417,6 +417,14 @@
     document.head.appendChild(st);
   }
   function dashHeroArtSvg(){
+    return '<svg class="dashp-hero-illustration" viewBox="0 0 160 130" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" stroke-linecap="round" stroke-linejoin="round">'
+      + '<defs><linearGradient id="dash-bar-grad" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#1F5C40"/><stop offset="1" stop-color="#7DE6AB"/></linearGradient></defs>'
+      + '<line x1="24" y1="108" x2="136" y2="108" stroke="#2F5C44" stroke-width="3" opacity=".6"/>'
+      + '<g fill="#2F5C44" opacity=".5"><rect x="34" y="74" width="20" height="34" rx="5"/><rect x="64" y="58" width="20" height="50" rx="5"/><rect x="94" y="40" width="20" height="68" rx="5"/></g>'
+      + '<g fill="url(#dash-bar-grad)"><rect x="40" y="80" width="20" height="28" rx="5"/><rect x="70" y="60" width="20" height="48" rx="5"/><rect x="100" y="36" width="20" height="72" rx="5"/></g>'
+      + '<path d="M50 74 L80 54 L110 30" stroke="#9FE8C0" stroke-width="2.6" opacity=".55"/>'
+      + '<g fill="#9FE8C0"><circle cx="50" cy="74" r="3"/><circle cx="80" cy="54" r="3"/><circle cx="110" cy="30" r="3.4"/></g>'
+      + '</svg>';
     return '<svg class="dashp-hero-illustration" viewBox="0 0 220 220" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">'
       + '<defs>'
       + '<linearGradient id="dash-grid-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4ade80" stop-opacity="0.8"/><stop offset="1" stop-color="#166534" stop-opacity="0.3"/></linearGradient>'
@@ -462,7 +470,7 @@
     grid.innerHTML = ''+
       '<div class="dashp-hero">'
         + '<section class="dashp-card dashp-main-hero dashp-main-hero-pollen change-hero-card change-hero-dashboard">'
-          + '<div class="dashp-hero-copy"><div class="dashp-eyebrow">Heute auf einen Blick</div><div class="dashp-hero-title">'+esc(greeting())+'</div></div>'
+          + '<div class="dashp-hero-copy"><div class="dashp-eyebrow">Heute auf einen Blick</div><div class="dashp-hero-title">'+esc(greeting())+'</div><div class="dashp-hero-subline">'+today.length+' Termine heute &middot; '+open.length+' Challenges offen</div></div>'
           + dashHeroArtSvg()
           + overviewRows(today.length, next, w, p, f, v)
         + '</section>'

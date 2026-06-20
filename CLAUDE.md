@@ -1,7 +1,9 @@
-## Version 0.1.0289
-- **Tagesdetails bei Pollen gestrafft:** Die Abschlusskarte mit Tagesbewertung (zum Beispiel "Auffälliger Tag") und "Vollständig bewertet" wird nicht mehr angezeigt. Die Ansicht endet nun direkt nach der Notiz und nutzt dadurch die verfügbare Höhe besser.
-- Geändert: `features/weather/pollenSymptoms.js`, `features/pollen/pollenView.css`, `features/pollen/pollenView.js`, `features/settings/settingsPanel.js`, `CLAUDE.md`, `CHANGELOG.md`. Keine Änderung an Pollenwerten, Symptom-Eingaben, Firebase, Sync, Login, Kalender, Dashboard oder Challenges.
-- Geprüft: JavaScript-Syntax für die geänderten Dateien, keine verbliebene Detailansicht mit `change-profile-rating`, Versionsfundstellen und ZIP-Struktur.
+## Version 0.1.0290
+- **HeroCards nach den gelieferten Dark-Designs neu aufgebaut:** Dashboard, Kalender, Challenges und Einstellungen nutzen jetzt die dunkle Kartenflaeche mit 3-Spalten-Desktoplayout, eigener Illustration und rechter Statistikleiste. Mobile nutzt die kompakte `Text + Illustration / Stats`-Anordnung aus dem Mobil-Mockup.
+- **Neue Illustrationen und bessere Lesbarkeit:** Dashboard, Kalender, Settings und Gruppenziel haben neue SVG-Illustrationen; die Challenge-Karte blendet die alte Trophy-Illustration aus. Light-Theme-Altregeln werden gezielt ueberstimmt, damit die dunklen HeroCards auch lokal sichtbar bleiben.
+- **Bewusst nicht geaendert:** Pollen bleibt unveraendert. Firebase, Sync, Login, Google Kalender, Push, Pollen-Berechnung, Kalenderdaten, Challenge-Speicherung und Punkteberechnung bleiben unveraendert.
+- Geaendert: `features/dashboard/dashboard-logic.js`, `features/calendar/calendarPanels.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `core/misc.js`, `styles/appShell.css`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax der geaenderten JS-Dateien, Headless-Chrome-Smoke-Test fuer Dashboard/Kalender/Challenges/Settings auf Desktop und Mobile, kein horizontaler Overflow, Versionsfundstellen auf 0.1.0290 und ZIP-Root-Struktur.
 
 ## Version 0.1.0288
 - **Rangliste einzeilig neu aufgebaut:** `features/challenges/challenges.js` liefert fuer jede Spielerzeile jetzt Rang-Kreis, Medaille, Name mit Live-Punkt, Heute-offen-/Heute-erledigt-Werte und Gesamtpunkte als Trophy-Feld. Die bestehenden Punktedaten werden nur gelesen, nicht anders berechnet.
