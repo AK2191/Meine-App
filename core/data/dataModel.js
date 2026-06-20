@@ -9,7 +9,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function(){
   'use strict';
 
-  var VERSION = '0.1.0299';
+  var VERSION = '0.1.0300';
   var CANONICAL_KEYS = {
     events: 'change_v1_events',
     challenges: 'change_v1_challenges',
@@ -24,7 +24,7 @@
     challenges: ['challenges'],
     challengeCompletions: ['challenge_completions', 'challengeCompletions'],
     challengePlayers: ['challenge_players', 'challengePlayers'],
-    pollenSymptoms: []
+    pollenSymptoms: ['pollen_symptoms', 'change_pollen_symptoms']
   };
   var CACHE_KEYS = [
     'change_google_events_cache',
@@ -78,6 +78,15 @@
       var value = readJsonFrom(storage, key, null);
       if(Array.isArray(value)) out = out.concat(value);
       else if(value && typeof value === 'object') out.push(value);
+    });
+    return out;
+  }
+  function objectFromKeys(storage, keys){
+    var out = {};
+    keys.forEach(function(key){
+      var value = readJsonFrom(storage, key, null);
+      if(!value || typeof value !== 'object' || Array.isArray(value)) return;
+      Object.keys(value).forEach(function(itemKey){ out[itemKey] = value[itemKey]; });
     });
     return out;
   }
@@ -259,6 +268,7 @@
     var challengeKeys = [CANONICAL_KEYS.challenges].concat(LEGACY_KEYS.challenges);
     var completionKeys = [CANONICAL_KEYS.challengeCompletions].concat(LEGACY_KEYS.challengeCompletions);
     var playerKeys = [CANONICAL_KEYS.challengePlayers].concat(LEGACY_KEYS.challengePlayers);
+    var pollenKeys = LEGACY_KEYS.pollenSymptoms.concat([CANONICAL_KEYS.pollenSymptoms]);
     return {
       schema: 1,
       exportedAt: nowIso(),
@@ -267,7 +277,7 @@
       challengeCompletions: uniqueBy(valuesFromKeys(storage, completionKeys).map(function(item){ return normalizeCompletion(item, {fallbackEmail:fallbackEmail}); }).filter(Boolean), function(item){ return item.id; }),
       challengePlayers: uniqueBy(valuesFromKeys(storage, playerKeys).map(normalizePlayer).filter(Boolean), function(item){ return item.email || item.id; }),
       settings: collectSettings(storage),
-      pollenSymptoms: normalizePollenSymptoms(readJsonFrom(storage, CANONICAL_KEYS.pollenSymptoms, {}))
+      pollenSymptoms: normalizePollenSymptoms(objectFromKeys(storage, pollenKeys))
     };
   }
 
@@ -350,6 +360,7 @@
     dateKey: dateKey,
     readJsonFrom: readJsonFrom,
     writeJsonTo: writeJsonTo,
+    objectFromKeys: objectFromKeys,
     normalizeEvent: normalizeEvent,
     normalizeChallenge: normalizeChallenge,
     normalizeCompletion: normalizeCompletion,

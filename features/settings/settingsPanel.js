@@ -527,7 +527,7 @@
         challenges: parseInt(counts.challenges, 10) || dataAuditCountFromKeys(['change_v1_challenges','challenges']),
         challengeCompletions: parseInt(counts.challengeCompletions, 10) || dataAuditCountFromKeys(['change_v1_challenge_completions','challenge_completions','challengeCompletions']),
         challengePlayers: parseInt(counts.challengePlayers, 10) || dataAuditCountFromKeys(['change_v1_challenge_players','challenge_players','challengePlayers']),
-        pollenSymptomDays: parseInt(counts.pollenSymptomDays, 10) || dataAuditCountFromKeys('change_v1_pollen_symptoms')
+        pollenSymptomDays: parseInt(counts.pollenSymptomDays, 10) || dataAuditCountFromKeys(['change_v1_pollen_symptoms','pollen_symptoms','change_pollen_symptoms'])
       },
       keys: {
         canonicalPresent: Array.isArray(keys.canonicalPresent) ? keys.canonicalPresent.length : 0,
@@ -617,7 +617,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0299';
+  var APP_VERSION = '0.1.0300';
 
 
 

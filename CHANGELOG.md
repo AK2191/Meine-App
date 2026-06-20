@@ -1,3 +1,11 @@
+## Version 0.1.0300
+- Pollen-Symptome als naechstes Feature-System an das Datenmodell angebunden: neues `core/pollen/pollenStore.js` liest `change_v1_pollen_symptoms` plus bekannte Legacy-Aliasen und schreibt nur den Canonical-Key.
+- `features/weather/pollenSymptoms.js` nutzt den Store fuer lokale Lese-/Schreibwege. Profil-Auswertung, Symptom-UI, Notizen, Forecast-Snapshots und der bewusst manuelle Firebase-Publish bleiben fachlich unveraendert.
+- `core/data/dataModel.js` liest Pollen-Symptom-Legacy-Maps jetzt im Canonical-Read mit und meldet sie im Audit als Legacy-Keys.
+- Bewusst nicht geaendert: keine Datenloeschung, keine Startmigration, kein automatischer Sync-Start, keine Firebase-Regeln, keine CSS-/Markup-/Icon-Aenderung, keine Pollen-Berechnungsumstellung.
+- Geaendert: `index.html`, `core/data/dataModel.js`, `core/pollen/pollenStore.js`, `features/weather/pollenSymptoms.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `docs/ARCHITECTURE.md`, `docs/DATA-MODEL.md`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax, DataModel-Audit im Nur-Lesen-Modus und PollenStore-Smoke-Test mit Legacy- und Canonical-Symptomtagen.
+
 ## Version 0.1.0299
 - App-&-Sicherheit um einen read-only Daten-Audit ergaenzt. Der Bereich zeigt lokale Zaehlwerte fuer Events, Challenges, Punkte, Mitspieler, Pollen-Tage sowie Canonical-/Legacy-/Cache-Key-Anzahlen.
 - Der Audit nutzt `window.ChangeDataModel.auditStorage(localStorage)`, wenn verfuegbar, und faellt sonst auf lokale Key-Zaehlungen zurueck. Rohdaten werden nicht angezeigt.

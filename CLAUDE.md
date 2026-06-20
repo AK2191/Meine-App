@@ -5,6 +5,14 @@
 - Versionseintraege in dieser Datei bleiben erhalten, weil der GitHub-Update-Workflow daraus Zielversionen erkennt.
 - Neue Arbeit erfolgt klein und systembezogen: ein Feature oder eine Schicht pro Schritt.
 
+## Version 0.1.0300
+- **Pollen-Symptome auf Datenmodell umgestellt:** Neues `core/pollen/pollenStore.js` ist die lokale Datenquelle fuer Pollen-Symptomtage und wird in `index.html` nach `core/data/dataModel.js` geladen.
+- **Legacy bleibt lesbar:** Der Store liest `change_v1_pollen_symptoms`, `pollen_symptoms` und `change_pollen_symptoms`, schreibt aber nur `change_v1_pollen_symptoms`. `core/data/dataModel.js` zaehlt und normalisiert diese Legacy-Maps jetzt ebenfalls.
+- **Feature angebunden:** `features/weather/pollenSymptoms.js` verwendet den Store fuer `all()` und `saveLocal()`. Symptom-UI, Allergieprofil, Forecast-Snapshots, Notizen und manuell aktivierter Firebase-Publish bleiben unveraendert.
+- **Bewusst nicht geaendert:** Keine Datenloeschung, keine Startmigration, kein automatischer Sync-Start, keine Firebase-Regel-, CSS-, Markup-, Icon-, Kalender-, Challenge-, Push- oder Google-Kalender-Aenderung.
+- Geaendert: `index.html`, `core/data/dataModel.js`, `core/pollen/pollenStore.js`, `features/weather/pollenSymptoms.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `docs/ARCHITECTURE.md`, `docs/DATA-MODEL.md`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax, DataModel-Audit im Nur-Lesen-Modus und PollenStore-Smoke-Test mit Legacy- und Canonical-Symptomtagen.
+
 ## Version 0.1.0299
 - **Read-only Daten-Audit in Einstellungen:** App & Sicherheit zeigt jetzt bewusst ausklappbare lokale Zaehlwerte fuer Events, Challenges, Punkte, Mitspieler, Pollen-Tage sowie Canonical-/Legacy-/Cache-Key-Anzahlen.
 - **Keine Datenveraenderung:** Der Audit liest `window.ChangeDataModel.auditStorage(localStorage)`, wenn verfuegbar, und zeigt nur Summen. Es wird nichts geloescht, migriert, synchronisiert oder remote geschrieben.

@@ -11,6 +11,7 @@ Diese Datei beschreibt die aktuelle Struktur der Change App und die Regeln fuer 
 - `styles/` enthaelt Design-Tokens, Basis-Styles und die gemeinsame App-Shell.
 - `core/data/dataModel.js` ist die neue passive Datenschicht fuer Canonical-Keys, Normalisierung, Audit und nicht-destruktive Migration.
 - `core/settings/settingsStore.js` schreibt den Canonical-Snapshot fuer Einstellungen; bestehende Einzel-Keys bleiben fuer die UI und Legacy-Module erhalten.
+- `core/pollen/pollenStore.js` ist die zentrale lokale Datenquelle fuer Pollen-Symptomtage; Feature-UI schreibt lokale Symptome ueber den Store.
 - `core/calendar/eventStore.js` ist die zentrale lokale Datenquelle fuer Kalendertermine; Feature-UI schreibt lokale Events ueber Store/CalendarModel, nicht direkt in einzelne Storage-Keys.
 - `core/challenges/challengeStore.js` ist die zentrale lokale Datenquelle fuer Challenges, Punkte und Mitspieler; Feature-UI schreibt diese Daten ueber den Store.
 - `change-pre.js`, `change-post.js` und `app.js` sind historische Legacy-Hotspots. Sie duerfen nicht als Muster fuer neue Arbeit dienen.

@@ -39,10 +39,18 @@
   function writeJson(key, value){
     try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){}
   }
+  function pollenStore(){
+    return window.ChangePollenStore || null;
+  }
   function databaseSyncEnabled(){
     return readJson('change_v1_database_sync_enabled', readJson('database_sync_enabled', false)) === true;
   }
   function all(){
+    var store = pollenStore();
+    if(store && typeof store.getAll === 'function'){
+      var stored = store.getAll();
+      return stored && typeof stored === 'object' ? stored : {};
+    }
     var data = readJson(STORE_KEY, {});
     return data && typeof data === 'object' ? data : {};
   }
@@ -135,10 +143,15 @@
     return Math.round(Math.min(100, total / Math.max(1, items.length) * 1.6));
   }
   function saveLocal(record){
-    var data = all();
     record.complete = isComplete(record);
     record.updatedAtLocal = new Date().toISOString();
     if(!record.pollenSnapshot) record.pollenSnapshot = snapshotFor(record.date);
+    var store = pollenStore();
+    if(store && typeof store.upsert === 'function'){
+      store.upsert(record, {persist:true, touch:false});
+      return;
+    }
+    var data = all();
     data[record.date] = record;
     writeJson(STORE_KEY, data);
   }
