@@ -1,3 +1,11 @@
+## Version 0.1.0292
+- **Challenges nach `Challenges Icons.dc.html` ueberarbeitet:** Aufgabenzeilen nutzen jetzt ein durchgaengiges gruenes Linien-SVG-Set statt Emoji-Icons. Die Zeilen, Punkte-Pillen, Difficulty-Badges und Mobile-Abstaende sind an den dunklen Pollen-Stil angepasst.
+- **HeroCard innen bereinigt:** Die Gruppenziel-Karte hat SVG-Statusicons fuer Abzeichen, Heute und Offen, eine Fortschrittsleiste mit integrierten Prozent-/Punkte-Labels und den Pokal ohne den alten Stern oben.
+- **Rangliste neu ikonisiert:** Platz-Medaillen, offene/erledigte Tageswerte, Trophy-Punkte und Anfeuern nutzen SVG-Icons und ruhige Datenpillen. Mobile bleibt kompakt und vermeidet Umbrueche/Clipping.
+- **Bewusst nicht geaendert:** Firebase, Login, Google Kalender, Push, Sync, Challenge-Speicherung, Punkteberechnung, Kalenderdaten und Pollen-Berechnung bleiben unveraendert.
+- Geaendert: `features/challenges/challenges.js`, `core/misc.js`, `styles/appShell.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax und Browser-Screenshots fuer Challenges auf Desktop und Mobile werden fuer diese Version neu erstellt.
+
 ## Version 0.1.0291
 - **Sicherheits-Haertung umgesetzt:** Change ist clientseitig und in Firestore auf die Konten `ak2191@gmx.de` und `svenja.streit@googlemail.com` begrenzt. Nicht freigegebene Google-/Firebase-Konten werden vor dem App-Start abgewiesen.
 - **Firestore geschlossen:** `firebase/firestore.rules` erlaubt Reads/Writes nur noch fuer die Allowlist. Private Settings, Pollen-Symptome und Push-Tokens sind eigene Nutzerdaten; Challenge-Vorlagen sind Admin-only; Nudges funktionieren nur zwischen freigegebenen Nutzern.

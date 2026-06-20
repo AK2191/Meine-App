@@ -1,3 +1,10 @@
+## Version 0.1.0292
+- Challenges an das gelieferte `Challenges Icons.dc.html`-Design angenaehert: Aufgabenzeilen nutzen jetzt gruene Linien-SVGs statt Emoji-Icons, mit dunklen Zeilen, ruhigen Punkte-Pillen und kompakter mobiler Darstellung.
+- Gruppenziel-HeroCard verfeinert: innere Statusicons fuer Abzeichen/Heute/Offen als SVG, Fortschrittsleiste mit eingebetteten Prozent-/Punkte-Labels und Pokal ohne falschen Stern oben.
+- Rangliste ueberarbeitet: Medaillen, Heute-offen, Heute-erledigt, Trophy-Punkte und Anfeuern-Button nutzen SVG-Icons und Datenpillen im dunklen Pollen-Stil.
+- Geaendert: `features/challenges/challenges.js`, `core/misc.js`, `styles/appShell.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`. Keine Aenderung an Firebase, Login, Google Kalender, Push, Sync, Challenge-Speicherung oder Punkteberechnung.
+- Geprueft: JavaScript-Syntax und Browser-Screenshots fuer Challenges auf Desktop und Mobile werden fuer diese Version neu erstellt.
+
 ## Version 0.1.0291
 - Sicherheits-Haertung: App-Zugriff auf `ak2191@gmx.de` und `svenja.streit@googlemail.com` begrenzt; fremde Google-/Firebase-Konten werden vor dem App-Start abgewiesen.
 - Firestore-Regeln geschlossen: keine offenen Reads/Writes mehr, private Settings/Pollen/Push-Daten nur fuer den eigenen Nutzer, Challenge-Vorlagen nur fuer Admin `ak2191@gmx.de`.

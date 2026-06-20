@@ -150,6 +150,107 @@
     try{ var x=new URL(u); return (x.protocol==='https:'||x.protocol==='http:') ? u : ''; }catch(e){ return ''; }
   }
 
+  var CHALLENGE_ICON_PATHS = {
+    squat:'<circle cx="24" cy="9" r="3.3"></circle><path d="M24 12.5 V22"></path><path d="M24 22 L17 26 V40 M24 22 L31 26 V40"></path><path d="M24 15 L17 19 M24 15 L31 19"></path><path d="M12 41 H36"></path>',
+    pushup:'<circle cx="11" cy="21" r="3"></circle><path d="M14 22.5 L35 29 L44 33"></path><path d="M18 24 V36 M30 27 V36"></path><path d="M9 38 H46"></path>',
+    lunge:'<circle cx="22" cy="8" r="3.2"></circle><path d="M22 11.5 V23"></path><path d="M22 23 L31 30 V40"></path><path d="M22 23 L14 31 L17 40"></path><path d="M22 15 L29 19"></path><path d="M10 41 H38"></path>',
+    calf:'<path d="M22 10 V32"></path><path d="M22 32 L31 38"></path><path d="M14 38 L22 35"></path><path d="M11 40 H35"></path><path d="M31 24 V15 M27.5 18.5 L31 15 L34.5 18.5" stroke-width="1.8"></path>',
+    plank:'<circle cx="11" cy="22" r="3"></circle><path d="M14 23.5 L41 31 L46 35"></path><path d="M15 25 L13 36 H21"></path><path d="M9 38 H47"></path>',
+    situp:'<circle cx="31" cy="16" r="3.1"></circle><path d="M31 19 L23 28 L15 30 V38"></path><path d="M23 28 L20 33"></path><path d="M11 39 H37"></path>',
+    bridge:'<circle cx="10" cy="34" r="2.8"></circle><path d="M13 35 L24 24 L30 34 V40"></path><path d="M9 40 H40"></path>',
+    wallsit:'<path d="M13 6 V42"></path><circle cx="18" cy="12" r="3"></circle><path d="M18 15 V26 H31 V40"></path><path d="M18 19 H27"></path><path d="M13 42 H39"></path>',
+    dips:'<circle cx="24" cy="11" r="3"></circle><path d="M24 14 V28"></path><path d="M24 18 L13 22 M24 18 L35 22"></path><path d="M24 28 L20 40 M24 28 L28 40"></path><path d="M10 22 V40 M38 22 V40"></path>',
+    burpee:'<circle cx="24" cy="8" r="3"></circle><path d="M24 11 V26"></path><path d="M24 14 L19 6 M24 14 L29 6"></path><path d="M24 26 L21 38 M24 26 L27 38"></path><path d="M14 41 H34" opacity=".35"></path>',
+    mountain:'<circle cx="11" cy="20" r="2.8"></circle><path d="M14 21.5 L36 28 L44 33"></path><path d="M17 23 V35"></path><path d="M30 27 L25 33 L29 38"></path><path d="M9 38 H46"></path>',
+    run:'<circle cx="28" cy="9" r="3.2"></circle><path d="M28 12.5 L23 23"></path><path d="M26 16 L33 19 M26 16 L19 19"></path><path d="M23 23 L29 31 L26 40 M23 23 L16 30 L19 39"></path><path d="M9 16 H15 M8 22 H13" opacity=".4" stroke-width="1.6"></path>',
+    walk:'<circle cx="24" cy="9" r="3.2"></circle><path d="M24 12.5 V26"></path><path d="M24 16 L29 22 M24 16 L19 22"></path><path d="M24 26 L29 34 L31 41 M24 26 L19 34 L17 41"></path>',
+    bike:'<circle cx="13" cy="32" r="7"></circle><circle cx="35" cy="32" r="7"></circle><path d="M13 32 L21 18 H28"></path><path d="M21 32 L27 22 L35 32"></path><path d="M18 18 H24"></path>',
+    jump:'<circle cx="24" cy="9" r="3.2"></circle><path d="M24 12.5 V25"></path><path d="M24 15 L15 9 M24 15 L33 9"></path><path d="M24 25 L17 38 M24 25 L31 38"></path>',
+    stairs:'<path d="M8 40 H16 V32 H24 V24 H32 V16 H40"></path><path d="M36 12 V6 M33 9 L36 6 L39 9" stroke-width="1.8"></path>',
+    balance:'<circle cx="24" cy="9" r="3.2"></circle><path d="M24 12.5 V28"></path><path d="M24 16 L13 13 M24 16 L35 13"></path><path d="M24 28 V41"></path><path d="M24 29 L31 23"></path><path d="M16 41 H32"></path>',
+    catcow:'<path d="M10 39 C11 27 16 22 24 22 C32 22 37 27 38 39"></path><path d="M14 32 V40 M34 32 V40"></path><path d="M10 32 L7 26 L11 28 L13 24 L15 29" stroke-width="1.8"></path><path d="M38 32 C43 29 43 23 40 23" stroke-width="1.8"></path><path d="M8 41 H40"></path>',
+    stretch:'<circle cx="27" cy="11" r="3"></circle><path d="M27 14 C22 18 21 23 22 27"></path><path d="M25 17 L20 38"></path><path d="M22 27 L20 41 M22 27 L26 41"></path>',
+    dog:'<path d="M8 39 L24 15 L40 39"></path><circle cx="13" cy="35" r="2.4"></circle><path d="M7 41 H41"></path>',
+    shoulder:'<circle cx="20" cy="23" r="3"></circle><path d="M20 26 V36"></path><path d="M32 18 A11 11 0 1 1 16 14" stroke-width="1.8"></path><path d="M32 18 L33 12 M32 18 L26 19" stroke-width="1.8"></path>',
+    hip:'<circle cx="24" cy="9" r="3"></circle><path d="M24 12 V24"></path><path d="M24 16 L18 22 M24 16 L30 22"></path><path d="M24 24 L21 38 M24 24 L27 38"></path><path d="M34 25 A11 11 0 0 1 14 25" stroke-width="1.6"></path><path d="M34 25 L35 20 M34 25 L29 26" stroke-width="1.6"></path>',
+    neck:'<circle cx="22" cy="14" r="5"></circle><path d="M13 39 C13 31 17 27 22 27 C27 27 31 31 31 39"></path><path d="M29 8 A8 8 0 0 1 33 16" stroke-width="1.7"></path><path d="M33 16 L34 12 M33 16 L29 16" stroke-width="1.7"></path>',
+    mobility:'<circle cx="24" cy="9" r="3"></circle><path d="M24 12 V25"></path><path d="M13 18 H35"></path><path d="M24 25 L19 38 M24 25 L29 38"></path><path d="M37 14 A7 7 0 0 1 37 26" stroke-width="1.5"></path>',
+    dumbbell:'<path d="M16 24 H32"></path><path d="M16 18 V30 M12 20.5 V27.5 M32 18 V30 M36 20.5 V27.5"></path>',
+    timer:'<circle cx="24" cy="26" r="13"></circle><path d="M24 26 V18 M24 26 L30 29"></path><path d="M19 8 H29 M24 8 V13" stroke-width="1.9"></path>',
+    back:'<circle cx="24" cy="11" r="3"></circle><path d="M24 14 V25"></path><path d="M24 25 L17 35 M24 25 L31 35"></path><path d="M17 35 H31"></path><path d="M16 19 C20 16 28 16 32 19" stroke-width="1.7"></path>'
+  };
+
+  function challengeIconKey(ch){
+    var id = String(ch && ch.id || '').toLowerCase();
+    var text = String((ch && (ch.title || ch.name) || '') + ' ' + (ch && ch.desc || '')).toLowerCase();
+    if(/squat/.test(id) || /kniebeug/.test(text)) return 'squat';
+    if(/push|shoulder_tap/.test(id) || /liegest/.test(text)) return 'pushup';
+    if(/plank/.test(id) || /unterarm/.test(text)) return 'plank';
+    if(/lunge/.test(id) || /ausfallschritt/.test(text)) return 'lunge';
+    if(/crunch/.test(id) || /sit.?up|crunch/.test(text)) return 'situp';
+    if(/superman|back_ext/.test(id) || /ruecken|rucken|superman/.test(text)) return 'back';
+    if(/glute/.test(id) || /bruecke|brucke|gesaess/.test(text)) return 'bridge';
+    if(/calf/.test(id) || /waden/.test(text)) return 'calf';
+    if(/wallsit/.test(id) || /wandsitz/.test(text)) return 'wallsit';
+    if(/step/.test(id) || /treppen/.test(text)) return 'stairs';
+    if(/shoulder|arm_circle/.test(id) || /schulter|armkreis/.test(text)) return 'shoulder';
+    if(/neck/.test(id) || /nacken/.test(text)) return 'neck';
+    if(/stretch|hamstring/.test(id) || /dehn|oberschenkel/.test(text)) return 'stretch';
+    if(/hip/.test(id) || /hueft|huft/.test(text)) return 'hip';
+    if(/ankle/.test(id) || /fuss|fuß|gelenk/.test(text)) return 'mobility';
+    if(/balance/.test(id) || /balance|gleichgewicht/.test(text)) return 'balance';
+    if(/jump/.test(id) || /hampel/.test(text)) return 'jump';
+    if(/march|walk/.test(id) || /gehen|spazier|marsch/.test(text)) return 'walk';
+    if(/tricep/.test(id) || /dips/.test(text)) return 'dips';
+    if(/cat_cow/.test(id) || /cat.?cow/.test(text)) return 'catcow';
+    if(/bird_dog/.test(id) || /bird.?dog/.test(text)) return 'dog';
+    if(/burpee/.test(id)) return 'burpee';
+    if(/mountain/.test(id)) return 'mountain';
+    if(/bike|fahrrad/.test(id) || /fahrrad|radfahren|bike/.test(text)) return 'bike';
+    if(/jog|run/.test(id) || /joggen|laufen/.test(text)) return 'run';
+    if(/fitness|hantel/.test(id) || /fitness|hantel/.test(text)) return 'dumbbell';
+    return 'timer';
+  }
+
+  function lineSvg(body, size, className, viewBox){
+    size = size || 26;
+    return '<svg class="'+(className || 'challenge-line-icon')+'" viewBox="'+(viewBox || '0 0 48 48')+'" width="'+size+'" height="'+size+'" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+body+'</svg>';
+  }
+
+  function challengeLineIcon(ch, size){
+    var key = challengeIconKey(ch);
+    return lineSvg(CHALLENGE_ICON_PATHS[key] || CHALLENGE_ICON_PATHS.timer, size || 26, 'challenge-line-icon');
+  }
+
+  function challengeUiIcon(name){
+    var body = {
+      calendar:'<rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>',
+      check:'<polyline points="20 6 9 17 4 12"></polyline>',
+      trophy:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"></path><path d="M7 7H4a3 3 0 0 0 3 3M17 7h3a3 3 0 0 1-3 3"></path>',
+      nudge:'<path d="M7 21 V4"></path><path d="M7 5 C11 3 14 7 19 5 V16 C14 18 11 14 7 16"></path>',
+      star:'<polygon points="12 2 15 9 22 9 16.5 14 18.5 21 12 17 5.5 21 7.5 14 2 9 9 9"></polygon>'
+    }[name] || '<circle cx="12" cy="12" r="9"></circle>';
+    return '<svg class="challenge-ui-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+body+'</svg>';
+  }
+
+  function leaderMedalSvg(rank){
+    var gold = rank === 1;
+    var grad = 'leader-medal-grad-' + rank;
+    var fillTop = gold ? '#FBD24B' : '#D6DEE2';
+    var fillBottom = gold ? '#C8932A' : '#8A949C';
+    var ribbon = gold ? '#5B86C9' : '#3E6B4E';
+    var inner = gold
+      ? '<path d="M20 19 l1.6 3.3 3.6 .5 -2.6 2.5 .6 3.6 -3.2 -1.7 -3.2 1.7 .6 -3.6 -2.6 -2.5 3.6 -.5 Z" fill="#0B120E" opacity=".30"></path>'
+      : '<text x="20" y="29.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" font-weight="700" fill="#0B120E" opacity=".45">'+rank+'</text>';
+    return '<svg class="leader-medal-svg" viewBox="0 0 40 40" width="42" height="42" aria-hidden="true">'
+      +'<defs><linearGradient id="'+grad+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+fillTop+'"></stop><stop offset="100%" stop-color="'+fillBottom+'"></stop></linearGradient></defs>'
+      +'<path d="M13 4 L20 16 L27 4" fill="none" stroke="'+ribbon+'" stroke-width="3" stroke-linecap="round"></path>'
+      +'<circle cx="20" cy="25" r="12" fill="url(#'+grad+')"></circle>'
+      +'<circle cx="20" cy="25" r="8.5" fill="none" stroke="#0B120E" stroke-width="1" opacity="'+(gold ? '.25' : '.18')+'"></circle>'
+      +inner
+      +'</svg>';
+  }
+
   /* Dynamisch deterministisch per Datum, Schwierigkeit und eingestelltem Tagesumfang */
   function getDailyPool(dk){
     dk=dk||todayStr();
@@ -230,7 +331,7 @@
     function chIcon(c){
       var pool = getDailyPool(todayStr()).concat(OPTIONAL);
       var found = pool.find(function(x){return x.id===String(c.challengeId||'');});
-      return (found&&found.icon)||c.icon||'✅';
+      return challengeLineIcon(found || c, 24);
     }
     function fmtDate(c){
       var d = c.date||'';
@@ -243,7 +344,7 @@
         ? items.map(function(c){
             var pts=parseInt(c.points,10)||0;
             return '<div class="change-player-row">'
-              +'<div class="change-player-row-icon">'+esc(chIcon(c))+'</div>'
+              +'<div class="change-player-row-icon">'+chIcon(c)+'</div>'
               +'<div class="change-player-row-main"><div class="change-player-row-title">'+esc(chName(c))+'</div>'
               +'<div class="change-player-row-meta">'+fmtDate(c)+(pts?' · +'+pts+' P':'')+'</div></div>'
               +'</div>';
@@ -252,7 +353,7 @@
     }
 
     var highlight = last5[0]
-      ? '<div class="change-player-highlight"><div class="change-player-highlight-icon">'+esc(chIcon(last5[0]))+'</div><div><strong>'+esc(chName(last5[0]))+'</strong><span>'+fmtDate(last5[0])+(parseInt(last5[0].points,10)?' · +'+parseInt(last5[0].points,10)+' P':'')+'</span></div></div>'
+      ? '<div class="change-player-highlight"><div class="change-player-highlight-icon">'+chIcon(last5[0])+'</div><div><strong>'+esc(chName(last5[0]))+'</strong><span>'+fmtDate(last5[0])+(parseInt(last5[0].points,10)?' · +'+parseInt(last5[0].points,10)+' P':'')+'</span></div></div>'
       : '';
 
     var html = '<div class="change-player-panel">'
@@ -394,7 +495,7 @@
       // Struktur:
       // [Icon] [Body: Zeile1(Name + Pts) / Zeile2(Desc) / Zeile3(Link + Button)]
       return '<div class="challenge-item'+(done?' challenge-done':'')+'">'
-        +'<div class="challenge-icon">'+esc(ch.icon||'🏆')+'</div>'
+        +'<div class="challenge-icon" data-icon-key="'+esc(challengeIconKey(ch))+'">'+challengeLineIcon(ch, 26)+'</div>'
         +'<div class="challenge-body">'
           +'<div class="ch-top-row">'
             +'<span class="challenge-name">'+esc(ch.title||'Challenge')+(ch.difficultyLabel&&!ch.optional?' <span class="ch-difficulty-badge">'+esc(ch.difficultyLabel)+'</span>':'')+'</span>'
@@ -423,7 +524,6 @@
         return pointsForDate(dk,String(b.email||b.id).toLowerCase())
               -pointsForDate(dk,String(a.email||a.id).toLowerCase());
       });
-      var rankMedals=['&#129351;','&#129352;','&#129353;'];
       var todayAvailable=daily.filter(function(ch){return ch&&ch.active!==false;}).length;
       function playerCompletionsFor(id,onlyToday){
         return (window.challengeCompletions||[]).filter(function(c){
@@ -432,7 +532,6 @@
           return !onlyToday || String(c.date||'').slice(0,10)===dk;
         });
       }
-      var medals=['🥇','🥈','🥉'];
       board.innerHTML=players.length?players.map(function(p,i){
         var id=String(p.email||p.id||'').toLowerCase(), me=id===myId();
         var pts=pointsForDate(dk,id);
@@ -444,11 +543,11 @@
         }).length;
         var todayDone=playerCompletionsFor(id,true).length;
         var todayOpen=Math.max(0,todayAvailable-todayDone);
-        var medal=rankMedals[i]||'&#127942;';
+        var medal=leaderMedalSvg(i+1);
         var live=p.online?'<span class="live-dot" title="Online"></span>':'<span class="live-dot off" title="Offline"></span>';
         var smart=null; try{ if(window.ChangePlayerActivity && window.ChangePlayerActivity.smartNudgeFor) smart=window.ChangePlayerActivity.smartNudgeFor(id,p); }catch(e){}
         var smartTitle=smart&&smart.reason?('Anfeuern: '+smart.reason):'Anfeuern';
-        var nudge=me?'':'<button class="nudge-btn" onclick="event.stopPropagation();window.sendNudge&&window.sendNudge(\''+esc(id)+'\',\''+esc(p.name||id)+'\')" title="'+esc(smartTitle)+'"><span class="nudge-btn-icon">💪</span><span class="nudge-btn-label">Anfeuern</span></button>';
+        var nudge=me?'':'<button class="nudge-btn" onclick="event.stopPropagation();window.sendNudge&&window.sendNudge(\''+esc(id)+'\',\''+esc(p.name||id)+'\')" title="'+esc(smartTitle)+'"><span class="nudge-btn-icon">'+challengeUiIcon('nudge')+'</span><span class="nudge-btn-label">Anfeuern</span></button>';
         return '<div class="leader-row clickable'+(me?' leader-row-self':'')+'" style="pointer-events:auto;cursor:pointer" onclick="window.openPlayerRecentPanel&&window.openPlayerRecentPanel(\''+esc(id)+'\',\''+esc(p.name||p.email||'Mitspieler')+'\')">'
           +'<div class="leader-place">'+(i+1)+'</div>'
           +'<div class="leader-rank leader-medal">'+medal+'</div>'
@@ -456,9 +555,9 @@
             +'<div class="leader-name">'+esc(p.name||p.email||'Mitspieler')+(me?'<span class="leader-self-tag">Du</span>':'')+live+'</div>'
             +'<div class="leader-detail">Heute: '+pts+' P · Gesamt: '+tot+' P · '+cnt+' erledigt</div>'
           +'</div>'
-          +'<div class="leader-stat leader-open"><span class="leader-stat-icon">&#128197;</span><span class="leader-stat-label">Heute offen</span><strong>'+todayOpen+'</strong></div>'
-          +'<div class="leader-stat leader-done"><span class="leader-stat-icon">&#10003;</span><span class="leader-stat-label">Heute erledigt</span><strong>'+todayDone+'</strong></div>'
-          +'<div class="leader-trophy"><span class="leader-trophy-icon">&#127942;</span><strong class="leader-score">'+tot+'</strong></div>'
+          +'<div class="leader-stat leader-open"><span class="leader-stat-icon">'+challengeUiIcon('calendar')+'</span><span class="leader-stat-label">Heute offen</span><strong>'+todayOpen+'</strong></div>'
+          +'<div class="leader-stat leader-done"><span class="leader-stat-icon">'+challengeUiIcon('check')+'</span><span class="leader-stat-label">Heute erledigt</span><strong>'+todayDone+'</strong></div>'
+          +'<div class="leader-trophy"><span class="leader-trophy-icon">'+challengeUiIcon('trophy')+'</span><strong class="leader-score">'+tot+'</strong></div>'
           +(nudge?'<div class="leader-actions">'+nudge+'</div>':'')
         +'</div>';
       }).join(''):'<div class="dash-empty">Noch keine Mitspieler</div>';

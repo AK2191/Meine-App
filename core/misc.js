@@ -315,6 +315,15 @@ window.renderGroupGoal = function(){
   totalBadgeCount = Math.max(37, totalBadgeCount || 0, earnedBadges.length || 0);
   var badgeLabel = earnedBadges.length + ' von ' + totalBadgeCount;
   var badgeSub = 'gesamt';
+  var visualPct = Math.max(6, pct);
+  function heroStatIcon(name){
+    var body = {
+      star:'<polygon points="12 2 15 9 22 9 16.5 14 18.5 21 12 17 5.5 21 7.5 14 2 9 9 9"></polygon>',
+      clock:'<circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15 14"></polyline>',
+      plus:'<circle cx="12" cy="12" r="9"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line>'
+    }[name] || '<circle cx="12" cy="12" r="9"></circle>';
+    return '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+body+'</svg>';
+  }
 
   card.className = 'change-challenge-hero-v227';
   card.innerHTML = `
@@ -324,7 +333,7 @@ window.renderGroupGoal = function(){
         <div class="chv227-title">Gruppenziel</div>
         <div class="chv227-sub">Kalenderwoche ${getWeekNumber()}</div>
         <div class="chv227-progress-meta"><span>${pct}% erreicht</span><strong>${points} von ${goal.target} P</strong></div>
-        <div class="chv227-progress" aria-label="Gruppenziel Fortschritt"><i style="width:${pct}%"></i></div>
+        <div class="chv227-progress" aria-label="Gruppenziel Fortschritt"><i style="width:${visualPct}%"></i><span class="chv227-progress-label"><span>${pct} %</span><span>${points} / ${goal.target} P</span></span></div>
         ${done ? '<div class="chv227-done">Ziel erreicht</div>' : ''}
       </div>
       <svg class="chv227-illustration chv227-illustration-redesign" viewBox="0 0 160 160" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -340,8 +349,8 @@ window.renderGroupGoal = function(){
         <path d="M80 94 V112" stroke="#9A7320" stroke-width="7"/>
         <path d="M62 122 C62 116 70 112 80 112 C90 112 98 116 98 122 Z" fill="url(#chv-cup-fill)"/>
         <rect x="58" y="121" width="44" height="9" rx="3" fill="#9A7320"/>
-        <path d="M80 16 l5 10 11 1.6 -8 7.7 1.9 10.9 -9.9 -5.2 -9.9 5.2 1.9 -10.9 -8 -7.7 11 -1.6 Z" fill="#FBD24B" stroke="#0B120E" stroke-width="1.4"/>
-        <g fill="#7DE6AB" opacity=".7"><circle cx="120" cy="34" r="2.6"/><circle cx="38" cy="100" r="2.2"/></g>
+        <g fill="#7DE6AB" opacity=".7"><circle cx="120" cy="34" r="2.2"/><circle cx="38" cy="100" r="1.8"/></g>
+        <g fill="#D9BC6E" opacity=".6"><circle cx="44" cy="28" r="1.5"/><circle cx="114" cy="122" r="1.5"/></g>
       </svg>
       <svg class="chv227-illustration chv227-illustration-legacy" viewBox="40 18 142 164" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -370,10 +379,10 @@ window.renderGroupGoal = function(){
       </svg>
       <div class="chv227-stats">
         <button type="button" class="chv227-stat chv227-stat-button" onclick="event.stopPropagation();window.openBadgePanel&&window.openBadgePanel()" title="Abzeichen öffnen">
-          <i class="chv227-stat-icon">★</i><span>Abzeichen</span><strong>${badgeLabel}</strong>
+          <i class="chv227-stat-icon">${heroStatIcon('star')}</i><span>Abzeichen</span><strong>${badgeLabel}</strong>
         </button>
-        <div class="chv227-stat"><i class="chv227-stat-icon">•</i><span>Heute</span><strong>${myTodayPoints} P</strong></div>
-        <div class="chv227-stat"><i class="chv227-stat-icon">＋</i><span>Offen</span><strong>${openTodayCount}</strong></div>
+        <div class="chv227-stat"><i class="chv227-stat-icon">${heroStatIcon('clock')}</i><span>Heute</span><strong>${myTodayPoints} P</strong></div>
+        <div class="chv227-stat chv227-stat-open"><i class="chv227-stat-icon">${heroStatIcon('plus')}</i><span>Offen</span><strong>${openTodayCount}</strong></div>
       </div>
     </div>
   `;
