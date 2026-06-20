@@ -1,0 +1,77 @@
+(function(){
+  'use strict';
+
+  var ALLOWED_USERS = ['ak2191@gmx.de', 'svenja.streit@googlemail.com'];
+  var ADMIN_USERS = ['ak2191@gmx.de'];
+
+  function normalizeEmail(value){
+    return String(value || '').trim().toLowerCase();
+  }
+
+  function safeDocId(value){
+    return normalizeEmail(value).replace(/[^a-z0-9._-]/g, '_') || 'unknown';
+  }
+
+  function contains(list, email){
+    email = normalizeEmail(email);
+    return list.indexOf(email) >= 0;
+  }
+
+  function isAllowedEmail(email){
+    return contains(ALLOWED_USERS, email);
+  }
+
+  function isAdminEmail(email){
+    return contains(ADMIN_USERS, email);
+  }
+
+  function storedJson(key){
+    try{
+      var raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : null;
+    }catch(e){ return null; }
+  }
+
+  function currentEmail(){
+    try{
+      if(window.firebase && firebase.auth && firebase.auth().currentUser && firebase.auth().currentUser.email){
+        return normalizeEmail(firebase.auth().currentUser.email);
+      }
+    }catch(e){}
+    try{
+      if(window.userInfo && window.userInfo.email) return normalizeEmail(window.userInfo.email);
+    }catch(e){}
+    var sources = [
+      storedJson('change_v1_user_info'),
+      storedJson('user_info_safe'),
+      storedJson('user_info')
+    ];
+    for(var i = 0; i < sources.length; i++){
+      var item = sources[i] || {};
+      if(item.email || item.mail) return normalizeEmail(item.email || item.mail);
+    }
+    try{
+      return normalizeEmail(localStorage.getItem('change_v1_user_email') || localStorage.getItem('user_email') || '');
+    }catch(e){ return ''; }
+  }
+
+  function isCurrentUserAllowed(){
+    return isAllowedEmail(currentEmail());
+  }
+
+  function isCurrentUserAdmin(){
+    return isAdminEmail(currentEmail());
+  }
+
+  window.ChangeAccessControl = {
+    allowedUsers: ALLOWED_USERS.slice(),
+    adminUsers: ADMIN_USERS.slice(),
+    normalizeEmail: normalizeEmail,
+    safeDocId: safeDocId,
+    isAllowedEmail: isAllowedEmail,
+    isAdminEmail: isAdminEmail,
+    currentEmail: currentEmail,
+    isCurrentUserAllowed: isCurrentUserAllowed,
+    isCurrentUserAdmin: isCurrentUserAdmin
+  };
+})();

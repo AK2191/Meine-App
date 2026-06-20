@@ -18,6 +18,38 @@
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
   }
 
+  function acl(){
+    return window.ChangeAccessControl || null;
+  }
+
+  function normalizeEmail(value){
+    var access = acl();
+    if(access && typeof access.normalizeEmail === 'function') return access.normalizeEmail(value);
+    return String(value || '').trim().toLowerCase();
+  }
+
+  function isAllowedEmail(value){
+    var access = acl();
+    if(access && typeof access.isAllowedEmail === 'function') return access.isAllowedEmail(value);
+    return ['ak2191@gmx.de', 'svenja.streit@googlemail.com'].indexOf(normalizeEmail(value)) >= 0;
+  }
+
+  function isAllowedFirebaseUser(user){
+    return !!(user && isAllowedEmail(user.email || ''));
+  }
+
+  async function rejectDisallowedUser(auth, user){
+    var email = normalizeEmail(user && user.email);
+    try{ if(auth && auth.currentUser) await auth.signOut(); }catch(e){}
+    try{ if(window.SecureTokenStore && typeof window.SecureTokenStore.clear === 'function') window.SecureTokenStore.clear(); }catch(e){}
+    try{ localStorage.removeItem('was_logged_in'); }catch(e){}
+    try{ localStorage.removeItem('change_v1_user_email'); localStorage.removeItem('user_email'); }catch(e){}
+    try{
+      if(typeof toast === 'function') toast('Dieses Konto ist nicht fuer Change freigegeben: ' + (email || 'unbekannt'), 'err');
+    }catch(e){}
+    return false;
+  }
+
   function safeJsonRead(key){
     try{
       var raw = localStorage.getItem(key);
@@ -56,7 +88,6 @@
   function writeToken(token){
     if(!token) return;
     try{ if(window.SecureTokenStore && typeof window.SecureTokenStore.setToken === 'function') window.SecureTokenStore.setToken(token, 3600); }catch(e){}
-    try{ if(typeof ls === 'function') ls('access_token', token); else localStorage.setItem('access_token', JSON.stringify(token)); }catch(e){}
     try{ window.accessToken = token; }catch(e){}
     try{ if(typeof accessToken !== 'undefined') accessToken = token; }catch(e){}
   }
@@ -80,6 +111,10 @@
 
   function applyAuthResult(result){
     if(!result || !result.user) return null;
+    if(!isAllowedFirebaseUser(result.user)){
+      try{ rejectDisallowedUser(firebase.auth(), result.user); }catch(e){}
+      return null;
+    }
     writeUser(result.user);
     var oauthToken = '';
     try{
@@ -144,6 +179,7 @@
     if(!initFirebase()) throw new Error('Firebase ist nicht bereit');
     var auth = firebase.auth();
     if(auth.currentUser && sameUserOrNoEmail(auth.currentUser)){
+      if(!isAllowedFirebaseUser(auth.currentUser)) return rejectDisallowedUser(auth, auth.currentUser);
       writeUser(auth.currentUser);
       return { user: auth.currentUser, accessToken: '', reused: true };
     }
@@ -153,7 +189,9 @@
     }
     try{
       var result = await auth.signInWithPopup(provider());
-      return applyAuthResult(result) || { user: auth.currentUser, accessToken: '' };
+      var applied = applyAuthResult(result);
+      if(!applied) return { user: null, accessToken: '', blocked: true };
+      return applied;
     }catch(e){
       if(e && (e.code === 'auth/popup-blocked' || e.code === 'auth/cancelled-popup-request')){
         // Kein automatischer Redirect-Fallback auf GitHub Pages; der kann Login-Schleifen erzeugen.
@@ -173,6 +211,7 @@
         var auth = firebase.auth();
         var current = auth.currentUser || await waitForAuthState(options.waitMs || 1500);
         if(current && (sameUserOrNoEmail(current) || options.silent)){
+          if(!isAllowedFirebaseUser(current)) return rejectDisallowedUser(auth, current);
           // Bei silent=true: jede gültige Firebase-Session akzeptieren.
           // Firestore Rules prüfen nur request.auth != null – die E-Mail spielt serverseitig keine Rolle.
           writeUser(current);

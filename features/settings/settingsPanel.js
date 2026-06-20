@@ -505,7 +505,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0290';
+  var APP_VERSION = '0.1.0291';
 
 
 
@@ -549,6 +549,7 @@
   };
 
   var GITHUB_UPDATE_WORKER_URL = 'https://change-github-update.ak2191.workers.dev';
+  var githubUpdateSecretMemory = '';
   // Ein bewusst gestarteter GitHub-Job bleibt auch ausserhalb der Einstellungen aktiv.
   // Die Anzeige wird dabei niemals in eine andere App-Ansicht gedrueckt.
   var GITHUB_UPDATE_SESSION_KEY = 'change_github_update_background_v1';
@@ -608,11 +609,39 @@
     // Kein Routing und kein Overlay: nur die bereits offene GitHub-Ansicht aktualisieren.
     if(isGithubUpdatePanelVisible()) refreshSameTab('github');
   }
+  function githubAdminEmail(email){
+    var access = window.ChangeAccessControl || null;
+    if(access && typeof access.isAdminEmail === 'function') return access.isAdminEmail(email);
+    return String(email || '').trim().toLowerCase() === 'ak2191@gmx.de';
+  }
+  function isGithubAdmin(){
+    var access = window.ChangeAccessControl || null;
+    if(access && typeof access.isCurrentUserAdmin === 'function') return access.isCurrentUserAdmin();
+    var email = '';
+    try{ email = (window.userInfo && window.userInfo.email) || ''; }catch(e){}
+    try{ if(!email && window.firebase && firebase.auth && firebase.auth().currentUser) email = firebase.auth().currentUser.email || ''; }catch(e){}
+    return githubAdminEmail(email);
+  }
+  async function githubAdminAuthHeaders(interactive){
+    if(!isGithubAdmin()) throw new Error('GitHub-Updates sind nur fuer Admins freigegeben.');
+    if(window.ensureChangeFirebaseAuth){
+      var ok = await window.ensureChangeFirebaseAuth({silent: interactive !== true, interactive: interactive === true, waitMs: interactive === true ? 2500 : 1500});
+      if(!ok) throw new Error('Firebase-Admin-Anmeldung fehlt.');
+    }
+    var user = null;
+    try{ user = window.firebase && firebase.auth ? firebase.auth().currentUser : null; }catch(e){}
+    if(!user || !githubAdminEmail(user.email || '')) throw new Error('Firebase-Admin-Anmeldung fehlt.');
+    var token = await user.getIdToken(true);
+    return {'Authorization':'Bearer ' + token};
+  }
   function readGithubUpdateSecret(){
-    try{ return localStorage.getItem('change_github_update_secret') || ''; }catch(e){ return ''; }
+    try{ localStorage.removeItem('change_github_update_secret'); }catch(e){}
+    try{ return githubUpdateSecretMemory || sessionStorage.getItem('change_github_update_secret') || ''; }catch(e){ return githubUpdateSecretMemory || ''; }
   }
   function writeGithubUpdateSecret(value){
-    try{ localStorage.setItem('change_github_update_secret', String(value || '').trim()); }catch(e){}
+    githubUpdateSecretMemory = String(value || '').trim();
+    try{ localStorage.removeItem('change_github_update_secret'); }catch(e){}
+    try{ sessionStorage.setItem('change_github_update_secret', githubUpdateSecretMemory); }catch(e){}
   }
   function arrayBufferToBase64(buffer){
     var bytes = new Uint8Array(buffer);
@@ -974,7 +1003,7 @@
       if(state.uploadCommitSha) params.push('commitSha=' + encodeURIComponent(state.uploadCommitSha));
       if(target) params.push('targetVersion=' + encodeURIComponent(target));
       if(params.length) url += '?' + params.join('&');
-      var response = await fetch(url, {cache:'no-store'});
+      var response = await fetch(url, {cache:'no-store', headers: await githubAdminAuthHeaders(false)});
       var result = null;
       try{ result = await response.json(); }catch(parseErr){}
       if(!response.ok || !result || !result.ok) throw new Error((result && result.message) || ('Status Fehler '+response.status));
@@ -1140,7 +1169,7 @@
     githubCommitHistory = [];
     refreshSameTab('github');
     try{
-      var response = await fetch(GITHUB_UPDATE_WORKER_URL + '/commits?count=10', {cache:'no-store'});
+      var response = await fetch(GITHUB_UPDATE_WORKER_URL + '/commits?count=10', {cache:'no-store', headers: await githubAdminAuthHeaders(false)});
       var result = await response.json();
       githubCommitHistory = (result && result.ok && Array.isArray(result.commits)) ? result.commits : [];
     }catch(e){ githubCommitHistory = []; }
@@ -1167,7 +1196,7 @@
     refreshSameTab('github');
     try{
       var response = await fetch(GITHUB_UPDATE_WORKER_URL + '/rollback', {
-        method:'POST', headers:{'Content-Type':'application/json'},
+        method:'POST', headers:Object.assign({'Content-Type':'application/json'}, await githubAdminAuthHeaders(true)),
         body:JSON.stringify({ secret:secret, sha:sha })
       });
       var result = await response.json();
@@ -1280,7 +1309,7 @@
       };
       var response = await fetch(GITHUB_UPDATE_WORKER_URL + '/upload', {
         method: 'POST',
-        headers: {'Content-Type':'application/json'},
+        headers: Object.assign({'Content-Type':'application/json'}, await githubAdminAuthHeaders(true)),
         body: JSON.stringify(payload)
       });
       var result = null;
@@ -1319,7 +1348,7 @@
   }
   async function fetchGithubRepoFiles(){
     try{
-      var response = await fetch(GITHUB_UPDATE_WORKER_URL + '/files', {cache:'no-store'});
+      var response = await fetch(GITHUB_UPDATE_WORKER_URL + '/files', {cache:'no-store', headers: await githubAdminAuthHeaders(false)});
       if(!response.ok) throw new Error('Worker Dateien '+response.status);
       var data = await response.json();
       if(!data || !data.ok || !Array.isArray(data.files)) throw new Error((data && data.message) || 'GitHub-Dateiliste nicht verfügbar');
@@ -1522,12 +1551,23 @@
     return '<div class="change-settings-stack">' + installCard + themeCard + health + '</div>';
   }
   function githubPane(){
+    if(!isGithubAdmin()){
+      return '<div class="change-settings-stack"><div class="change-feature-note">GitHub-Updates sind nur fuer Admins freigegeben.</div></div>';
+    }
     return '<div class="change-settings-stack">' + githubUpdateCard() + '</div>';
   }
 
   var currentSettingsTab = 'dashboard';
   var appHealthExpanded = false;
   var settingsScrollState = null;
+  function allowedSettingsTabs(){
+    var tabs = ['dashboard','calendar','challenges','sync','app'];
+    if(isGithubAdmin()) tabs.push('github');
+    return tabs;
+  }
+  function settingsTabAllowed(tab){
+    return allowedSettingsTabs().indexOf(tab) >= 0;
+  }
   function settingsScrollSelectors(){
     return ['.change-settings-premium', '.change-settings-nav-grid', '.change-settings-detail-card', '.change-settings-tabs'];
   }
@@ -1672,7 +1712,7 @@
     }
   }
   function openSettingsPanel(startTab){
-    startTab = ['dashboard','calendar','challenges','sync','app','github'].indexOf(startTab) >= 0 ? startTab : (currentSettingsTab || 'dashboard');
+    startTab = settingsTabAllowed(startTab) ? startTab : (settingsTabAllowed(currentSettingsTab) ? currentSettingsTab : 'dashboard');
     currentSettingsTab = startTab;
     var scrollBeforeRender = captureSettingsScrollState();
     ensurePremiumSettingsCloseBridge();
@@ -1691,7 +1731,7 @@
       + settingsNavCard('challenges','🏆','Challenges',String(getAutoChallengeCount())+' Tagesaufgaben',startTab)
       + settingsNavCard('sync','↻','Daten & Sync','Manuell · keine Auto-Starts',startTab)
       + settingsNavCard('app','🛡','App & Sicherheit','Darstellung · Version '+APP_VERSION,startTab)
-      + settingsNavCard('github',githubIcon(),'GitHub','',startTab);
+      + (isGithubAdmin() ? settingsNavCard('github',githubIcon(),'GitHub','Admin',startTab) : '');
     var html = '<div class="change-settings-premium">'
       + '<div class="change-settings-page-head"><div class="change-settings-page-title"><span>⚙︎</span><strong>Einstellungen</strong></div></div>'
       + '<section class="change-settings-profile-card">'
@@ -1710,17 +1750,17 @@
       + '<div class="change-settings-pane '+(startTab==='challenges'?'active':'')+'" data-pane="challenges">'+challengesPane()+'</div>'
       + '<div class="change-settings-pane '+(startTab==='sync'?'active':'')+'" data-pane="sync">'+syncPane()+'</div>'
       + '<div class="change-settings-pane '+(startTab==='app'?'active':'')+'" data-pane="app">'+appPane()+'</div>'
-      + '<div class="change-settings-pane '+(startTab==='github'?'active':'')+'" data-pane="github">'+githubPane()+'</div>'
+      + (isGithubAdmin() ? '<div class="change-settings-pane '+(startTab==='github'?'active':'')+'" data-pane="github">'+githubPane()+'</div>' : '')
       + '</div></div></div>';
     activateSettingsView(html);
     restoreSettingsScrollState(scrollBeforeRender);
     setTimeout(bindSettings, 30);
   }
   function refreshSameTab(tab){
-    if(tab && ['dashboard','calendar','challenges','sync','app','github'].indexOf(tab) >= 0) currentSettingsTab = tab;
+    if(tab && settingsTabAllowed(tab)) currentSettingsTab = tab;
     var active = document.querySelector('.change-settings-tab.active');
     var next = active ? active.getAttribute('data-settings-tab') : currentSettingsTab;
-    openSettingsPanel(next || 'dashboard');
+    openSettingsPanel(settingsTabAllowed(next) ? next : 'dashboard');
   }
   function bindSettingsTabScroller(){
     var scroller = document.querySelector('[data-settings-tabs-scroll]');
@@ -1743,7 +1783,12 @@
   function bindSettings(){
     bindSettingsTabScroller();
     document.querySelectorAll('[data-settings-tab]').forEach(function(btn){
-      btn.addEventListener('click', function(ev){ if(ev) ev.preventDefault(); currentSettingsTab = btn.getAttribute('data-settings-tab') || currentSettingsTab; openSettingsPanel(currentSettingsTab); });
+      btn.addEventListener('click', function(ev){
+        if(ev) ev.preventDefault();
+        var nextTab = btn.getAttribute('data-settings-tab') || currentSettingsTab;
+        currentSettingsTab = settingsTabAllowed(nextTab) ? nextTab : 'dashboard';
+        openSettingsPanel(currentSettingsTab);
+      });
     });
     var saveCal = function(){
       var options = {

@@ -5,15 +5,44 @@
 const REPOSITORY = 'AK2191/Meine-App';
 const BRANCH = 'main';
 const MAX_ZIP_BYTES = 8 * 1024 * 1024;
+const FIREBASE_PROJECT_ID = 'meine-app-4ea9e';
+const FIREBASE_ISSUER = 'https://securetoken.google.com/' + FIREBASE_PROJECT_ID;
+const FIREBASE_JWKS_URL = 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com';
+const ADMIN_EMAILS = ['ak2191@gmx.de'];
+const ALLOWED_ORIGINS = [
+  'https://ak2191.github.io',
+  'https://meine-app-4ea9e.web.app',
+  'https://meine-app-4ea9e.firebaseapp.com',
+  'http://localhost:5000',
+  'http://localhost:5173',
+  'http://127.0.0.1:5000',
+  'http://127.0.0.1:5173'
+];
 
-function json(data, status = 200){
+class HttpError extends Error {
+  constructor(status, message){
+    super(message);
+    this.status = status;
+  }
+}
+
+function corsHeaders(request){
+  const origin = request && request.headers ? request.headers.get('origin') : '';
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    'access-control-allow-origin': allowedOrigin,
+    'access-control-allow-methods': 'GET, POST, OPTIONS',
+    'access-control-allow-headers': 'content-type, authorization',
+    'vary': 'Origin'
+  };
+}
+
+function json(data, status = 200, request){
   return new Response(JSON.stringify(data), {
     status,
     headers: {
       'content-type': 'application/json; charset=utf-8',
-      'access-control-allow-origin': '*',
-      'access-control-allow-methods': 'GET, POST, OPTIONS',
-      'access-control-allow-headers': 'content-type'
+      ...corsHeaders(request)
     }
   });
 }
@@ -25,6 +54,59 @@ function base64Url(input){
   let binary = '';
   for(let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+function base64UrlToBytes(input){
+  const clean = String(input || '').replace(/-/g, '+').replace(/_/g, '/');
+  const padded = clean + '='.repeat((4 - clean.length % 4) % 4);
+  const binary = atob(padded);
+  const bytes = new Uint8Array(binary.length);
+  for(let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+function decodeJwtJson(part){
+  return JSON.parse(new TextDecoder('utf-8').decode(base64UrlToBytes(part)));
+}
+async function verifyFirebaseIdToken(idToken){
+  const parts = String(idToken || '').split('.');
+  if(parts.length !== 3) throw new HttpError(401, 'Firebase-ID-Token fehlt oder ist ungueltig.');
+  const header = decodeJwtJson(parts[0]);
+  const payload = decodeJwtJson(parts[1]);
+  if(header.alg !== 'RS256' || !header.kid) throw new HttpError(401, 'Firebase-ID-Token hat eine ungueltige Signatur.');
+
+  const jwksResponse = await fetch(FIREBASE_JWKS_URL, {cache: 'reload'});
+  if(!jwksResponse.ok) throw new HttpError(503, 'Firebase-Schluessel konnten nicht geladen werden.');
+  const jwks = await jwksResponse.json();
+  const key = Array.isArray(jwks.keys) ? jwks.keys.find((item) => item.kid === header.kid) : null;
+  if(!key) throw new HttpError(401, 'Firebase-ID-Token-Schluessel ist unbekannt.');
+  const cryptoKey = await crypto.subtle.importKey(
+    'jwk',
+    key,
+    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+    false,
+    ['verify']
+  );
+  const ok = await crypto.subtle.verify(
+    'RSASSA-PKCS1-v1_5',
+    cryptoKey,
+    base64UrlToBytes(parts[2]),
+    new TextEncoder().encode(parts[0] + '.' + parts[1])
+  );
+  if(!ok) throw new HttpError(401, 'Firebase-ID-Token-Signatur ist ungueltig.');
+
+  const now = Math.floor(Date.now() / 1000);
+  if(payload.aud !== FIREBASE_PROJECT_ID || payload.iss !== FIREBASE_ISSUER) throw new HttpError(401, 'Firebase-ID-Token gehoert nicht zu diesem Projekt.');
+  if(!payload.exp || payload.exp < now) throw new HttpError(401, 'Firebase-ID-Token ist abgelaufen.');
+  if(!payload.email) throw new HttpError(401, 'Firebase-ID-Token enthaelt keine E-Mail.');
+  return payload;
+}
+async function requireAdmin(request){
+  const header = request.headers.get('authorization') || '';
+  const match = header.match(/^Bearer\s+(.+)$/i);
+  if(!match) throw new HttpError(401, 'Firebase-Admin-Anmeldung fehlt.');
+  const payload = await verifyFirebaseIdToken(match[1]);
+  const email = String(payload.email || '').trim().toLowerCase();
+  if(!ADMIN_EMAILS.includes(email)) throw new HttpError(403, 'GitHub-Updates sind nur fuer Admins freigegeben.');
+  return payload;
 }
 function pemToDer(pem){
   const clean = String(pem || '')
@@ -171,16 +253,18 @@ async function getBranchStatus(token, targetVersion){
   };
 }
 
-async function getRepositoryFiles(env){
+async function getRepositoryFiles(env, request){
+  await requireAdmin(request);
   const token = await getInstallationToken(env);
   const body = await githubFetch(`/repos/${REPOSITORY}/git/trees/${BRANCH}?recursive=1`, { method: 'GET' }, token);
   const files = Array.isArray(body && body.tree)
     ? body.tree.filter((item) => item && item.type === 'blob' && item.path).map((item) => String(item.path).replace(/\\/g, '/')).sort()
     : [];
-  return json({ ok: true, files, count: files.length });
+  return json({ ok: true, files, count: files.length }, 200, request);
 }
 
-async function getLatestWorkflowStatus(env, commitSha, targetVersion){
+async function getLatestWorkflowStatus(env, commitSha, targetVersion, request){
+  await requireAdmin(request);
   const token = await getInstallationToken(env);
   const qs = new URLSearchParams({ per_page: '10', branch: BRANCH });
   if(commitSha) qs.set('head_sha', String(commitSha));
@@ -203,11 +287,12 @@ async function getLatestWorkflowStatus(env, commitSha, targetVersion){
     } : null,
     branch,
     pages
-  });
+  }, 200, request);
 }
 
 /* NEU: Letzte N Commits mit Version auslesen */
-async function getCommitHistory(env, count){
+async function getCommitHistory(env, count, request){
+  await requireAdmin(request);
   const token = await getInstallationToken(env);
   const n = Math.min(Math.max(parseInt(count) || 20, 1), 50); // Mehr laden um genug ZIP-Commits zu finden
   const body = await githubFetch(
@@ -251,17 +336,18 @@ async function getCommitHistory(env, count){
     seen.add(key);
     return true;
   });
-  return json({ ok: true, commits: unique });
+  return json({ ok: true, commits: unique }, 200, request);
 }
 
 /* NEU: Branch auf bestimmten Commit zuruecksetzen (force push) */
-async function rollbackToCommit(env, payload){
+async function rollbackToCommit(env, payload, request){
+  await requireAdmin(request);
   if(String(payload.secret || '') !== String(env.CHANGE_UPDATE_SECRET || '')){
-    return json({ ok:false, message:'Freigabe-Code ist falsch.' }, 401);
+    return json({ ok:false, message:'Freigabe-Code ist falsch.' }, 401, request);
   }
   const targetSha = String(payload.sha || '').trim();
   if(!targetSha || targetSha.length < 7){
-    return json({ ok:false, message:'Kein gueltiger Commit-SHA angegeben.' }, 400);
+    return json({ ok:false, message:'Kein gueltiger Commit-SHA angegeben.' }, 400, request);
   }
   const token = await getInstallationToken(env);
   // Verifiziere dass der Commit existiert
@@ -269,7 +355,7 @@ async function rollbackToCommit(env, payload){
   try {
     commitInfo = await githubFetch(`/repos/${REPOSITORY}/commits/${targetSha}`, { method: 'GET' }, token);
   } catch(e) {
-    return json({ ok:false, message:'Commit nicht gefunden: ' + targetSha }, 404);
+    return json({ ok:false, message:'Commit nicht gefunden: ' + targetSha }, 404, request);
   }
   // Version des Ziel-Commits lesen, damit das Frontend weiss ob es ein Update oder Downgrade ist
   let targetVersion = '';
@@ -297,18 +383,19 @@ async function rollbackToCommit(env, payload){
     targetVersion,
     direction: 'rollback',
     commitMessage: commitInfo.commit && commitInfo.commit.message ? commitInfo.commit.message.split('\n')[0] : ''
-  });
+  }, 200, request);
 }
 
-async function uploadZipToGitHub(env, payload){
+async function uploadZipToGitHub(env, payload, request){
+  await requireAdmin(request);
   if(String(payload.secret || '') !== String(env.CHANGE_UPDATE_SECRET || '')){
-    return json({ ok:false, message:'Freigabe-Code ist falsch.' }, 401);
+    return json({ ok:false, message:'Freigabe-Code ist falsch.' }, 401, request);
   }
   const fileName = safeZipName(payload.fileName, payload.targetVersion);
   const contentBase64 = String(payload.contentBase64 || '').replace(/^data:.*?;base64,/, '');
-  if(!contentBase64) return json({ ok:false, message:'ZIP-Inhalt fehlt.' }, 400);
+  if(!contentBase64) return json({ ok:false, message:'ZIP-Inhalt fehlt.' }, 400, request);
   const byteLength = Math.floor(contentBase64.length * 3 / 4);
-  if(byteLength > MAX_ZIP_BYTES) return json({ ok:false, message:'ZIP ist zu gross. Limit: 8 MB.' }, 413);
+  if(byteLength > MAX_ZIP_BYTES) return json({ ok:false, message:'ZIP ist zu gross. Limit: 8 MB.' }, 413, request);
   const token = await getInstallationToken(env);
   const path = `updates/${fileName}`;
   const result = await githubFetch(`/repos/${REPOSITORY}/contents/${encodeURIComponent(path).replace(/%2F/g, '/')}`, {
@@ -326,34 +413,34 @@ async function uploadZipToGitHub(env, payload){
     path,
     commitSha: result && result.commit ? result.commit.sha : '',
     actionsUrl: `https://github.com/${REPOSITORY}/actions`
-  });
+  }, 200, request);
 }
 
 export default {
   async fetch(request, env){
-    if(request.method === 'OPTIONS') return json({ ok:true });
+    if(request.method === 'OPTIONS') return json({ ok:true }, 200, request);
     try{
       const url = new URL(request.url);
       if(request.method === 'GET' && url.pathname === '/files'){
-        return await getRepositoryFiles(env);
+        return await getRepositoryFiles(env, request);
       }
       if(request.method === 'GET' && url.pathname === '/status'){
-        return await getLatestWorkflowStatus(env, url.searchParams.get('commitSha') || '', url.searchParams.get('targetVersion') || '');
+        return await getLatestWorkflowStatus(env, url.searchParams.get('commitSha') || '', url.searchParams.get('targetVersion') || '', request);
       }
       if(request.method === 'GET' && url.pathname === '/commits'){
-        return await getCommitHistory(env, url.searchParams.get('count') || '10');
+        return await getCommitHistory(env, url.searchParams.get('count') || '10', request);
       }
       if(request.method === 'POST' && url.pathname === '/rollback'){
         const payload = await request.json();
-        return await rollbackToCommit(env, payload);
+        return await rollbackToCommit(env, payload, request);
       }
       if(request.method !== 'POST' || url.pathname !== '/upload'){
-        return json({ ok:false, message:'Nur POST /upload, POST /rollback, GET /status, GET /commits oder GET /files ist erlaubt.' }, 404);
+        return json({ ok:false, message:'Nur POST /upload, POST /rollback, GET /status, GET /commits oder GET /files ist erlaubt.' }, 404, request);
       }
       const payload = await request.json();
-      return await uploadZipToGitHub(env, payload);
+      return await uploadZipToGitHub(env, payload, request);
     }catch(error){
-      return json({ ok:false, message:error && error.message ? error.message : 'Worker Fehler.' }, 500);
+      return json({ ok:false, message:error && error.message ? error.message : 'Worker Fehler.' }, error && error.status ? error.status : 500, request);
     }
   }
 };

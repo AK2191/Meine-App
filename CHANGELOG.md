@@ -1,3 +1,11 @@
+## Version 0.1.0291
+- Sicherheits-Haertung: App-Zugriff auf `ak2191@gmx.de` und `svenja.streit@googlemail.com` begrenzt; fremde Google-/Firebase-Konten werden vor dem App-Start abgewiesen.
+- Firestore-Regeln geschlossen: keine offenen Reads/Writes mehr, private Settings/Pollen/Push-Daten nur fuer den eigenen Nutzer, Challenge-Vorlagen nur fuer Admin `ak2191@gmx.de`.
+- Push-Tokens werden nicht mehr im oeffentlichen Spielerprofil gespeichert, sondern in `change_push_tokens/{safeEmail}`; alte `fcmToken`-Felder werden beim naechsten Push-Update geloescht.
+- GitHub-Update/Rollback ist nur noch fuer Admin sichtbar und der Worker verlangt zusaetzlich zum Freigabe-Code ein Firebase-ID-Token von `ak2191@gmx.de`; Worker-CORS ist auf erlaubte Origins begrenzt.
+- Geaendert: `core/security/accessControl.js`, `index.html`, `app.js`, `core/integrations/firebaseAuthBridge.js`, `core/integrations/googleSyncStatus.js`, `features/settings/settingsPanel.js`, `firebase/firestore.rules`, `scripts/changeGithubUpdateWorker.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax der geaenderten JS-Dateien inklusive Worker-Modul, Suche nach offenen Firestore-Regeln, persistiertem Freigabe-Code, oeffentlicher Token-Speicherung und Worker-CORS `*`.
+
 ## Version 0.1.0290
 - HeroCards von Dashboard, Kalender, Challenges und Einstellungen nach den gelieferten Dark-Designs neu aufgebaut: dunkler Verlauf, 24px Radius, gruener Akzent, Desktop-Raster `Text / Illustration / Stats` und mobile `Text + Illustration / Stats`-Anordnung.
 - Dashboard, Kalender, Settings und Gruppenziel haben neue SVG-Illustrationen; die alte Challenge-Trophy bleibt im Markup als Fallback, wird aber ausgeblendet. Pollen bleibt unveraendert.

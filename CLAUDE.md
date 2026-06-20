@@ -1,3 +1,11 @@
+## Version 0.1.0291
+- **Sicherheits-Haertung umgesetzt:** Change ist clientseitig und in Firestore auf die Konten `ak2191@gmx.de` und `svenja.streit@googlemail.com` begrenzt. Nicht freigegebene Google-/Firebase-Konten werden vor dem App-Start abgewiesen.
+- **Firestore geschlossen:** `firebase/firestore.rules` erlaubt Reads/Writes nur noch fuer die Allowlist. Private Settings, Pollen-Symptome und Push-Tokens sind eigene Nutzerdaten; Challenge-Vorlagen sind Admin-only; Nudges funktionieren nur zwischen freigegebenen Nutzern.
+- **Push-Tokens privatisiert:** FCM-Tokens werden in `change_push_tokens/{safeEmail}` geschrieben und alte `change_players.fcmToken`-Felder beim naechsten Push-Update geloescht.
+- **GitHub-Update abgesichert:** Der Settings-GitHub-Bereich ist nur fuer Admin `ak2191@gmx.de` sichtbar. Der Worker akzeptiert Upload/Rollback/Status/Files/Commits nur noch mit Firebase-ID-Token dieses Admins plus Freigabe-Code; CORS ist nicht mehr `*`.
+- Geaendert: `core/security/accessControl.js`, `index.html`, `app.js`, `core/integrations/firebaseAuthBridge.js`, `core/integrations/googleSyncStatus.js`, `features/settings/settingsPanel.js`, `firebase/firestore.rules`, `scripts/changeGithubUpdateWorker.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax von `app.js`, `core/security/accessControl.js`, `core/integrations/firebaseAuthBridge.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js` und Worker-Modul; Suche nach offenen Firestore-Regeln, persistiertem Freigabe-Code, oeffentlicher FCM-Token-Speicherung und Worker-CORS `*`.
+
 ## Version 0.1.0290
 - **HeroCards nach den gelieferten Dark-Designs neu aufgebaut:** Dashboard, Kalender, Challenges und Einstellungen nutzen jetzt die dunkle Kartenflaeche mit 3-Spalten-Desktoplayout, eigener Illustration und rechter Statistikleiste. Mobile nutzt die kompakte `Text + Illustration / Stats`-Anordnung aus dem Mobil-Mockup.
 - **Neue Illustrationen und bessere Lesbarkeit:** Dashboard, Kalender, Settings und Gruppenziel haben neue SVG-Illustrationen; die Challenge-Karte blendet die alte Trophy-Illustration aus. Light-Theme-Altregeln werden gezielt ueberstimmt, damit die dunklen HeroCards auch lokal sichtbar bleiben.

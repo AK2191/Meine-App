@@ -291,6 +291,7 @@ const SecureTokenStore = (() => {
   let _tok = null, _exp = 0, _usr = null;
   // Alte unsichere Tokens sofort aus localStorage löschen
   try { localStorage.removeItem(LSK+'_access_token'); } catch(_e) {}
+  try { localStorage.removeItem('access_token'); } catch(_e) {}
   return {
     setToken(t, expiresIn = 3600) { _tok = t; _exp = Date.now() + expiresIn * 1000; },
     getToken() { return (_tok && Date.now() < _exp) ? _tok : null; },
@@ -300,6 +301,42 @@ const SecureTokenStore = (() => {
     clear() { _tok = null; _exp = 0; _usr = null; }
   };
 })();
+try{ window.SecureTokenStore = SecureTokenStore; }catch(_e){}
+
+function changeAccess(){
+  return window.ChangeAccessControl || null;
+}
+function normalizeChangeEmail(value){
+  const access = changeAccess();
+  return access && access.normalizeEmail ? access.normalizeEmail(value) : String(value || '').trim().toLowerCase();
+}
+function isAllowedChangeEmail(value){
+  const access = changeAccess();
+  if(access && access.isAllowedEmail) return access.isAllowedEmail(value);
+  return ['ak2191@gmx.de','svenja.streit@googlemail.com'].includes(normalizeChangeEmail(value));
+}
+function isAllowedCurrentChangeUser(info){
+  const email = normalizeChangeEmail(info && (info.email || info.mail));
+  return !!email && isAllowedChangeEmail(email);
+}
+async function rejectUnauthorizedChangeAccount(email){
+  const normalized = normalizeChangeEmail(email);
+  try{
+    if(accessToken && window.google && google.accounts && google.accounts.oauth2){
+      google.accounts.oauth2.revoke(accessToken, function(){});
+    }
+  }catch(e){}
+  try{ if(window.firebase && firebase.auth && firebase.auth().currentUser) await firebase.auth().signOut(); }catch(e){}
+  try{ SecureTokenStore.clear(); }catch(e){}
+  try{ ['access_token','change_v1_access_token','was_logged_in','user_info','user_info_safe','change_v1_user_info','change_v1_user_email','user_email'].forEach(k => localStorage.removeItem(k)); }catch(e){}
+  accessToken = '';
+  userInfo = {};
+  isDemoMode = false;
+  try{ window.userInfo = {}; window.accessToken = ''; }catch(e){}
+  try{ toast('Dieses Konto ist nicht fuer Change freigegeben: ' + (normalized || 'unbekannt'), 'err'); }catch(e){}
+  try{ showLogin(); }catch(e){}
+  return false;
+}
 
 // [FIX PERSISTENZ] Stille Google-Neuanmeldung nach F5 (kein Popup)
 function trySilentGoogleTokenRefresh(){
@@ -348,6 +385,11 @@ window.addEventListener('load', async () => {
   if(wasPreviouslyLoggedIn){
     // Nutzerdaten aus sicherem localStorage-Cache wiederherstellen
     const cached = ls('user_info_safe');
+    if(!isAllowedCurrentChangeUser(cached)){
+      await rejectUnauthorizedChangeAccount(cached && cached.email);
+      initPWA(); scheduleNotifCheck();
+      return;
+    }
     userInfo = saveUserProfileInfo({ 
       name:    cached.name    || cached.email || '', 
       email:   cached.email   || '', 
@@ -362,6 +404,10 @@ window.addEventListener('load', async () => {
     if(window.firebase && firebase.auth && firebase.apps.length){
       firebase.auth().onAuthStateChanged(async (fbUser) => {
         if(fbUser){
+          if(!isAllowedChangeEmail(fbUser.email || '')){
+            await rejectUnauthorizedChangeAccount(fbUser.email);
+            return;
+          }
           // Session bestätigt — Bild nur aktualisieren, nicht mit leerem Wert überschreiben
           saveUserProfileInfo({
             name: fbUser.displayName || userInfo.name || fbUser.email || '',
@@ -384,6 +430,11 @@ window.addEventListener('load', async () => {
   if(window.firebase && firebase.auth && firebase.apps.length){
     firebase.auth().onAuthStateChanged(async (fbUser) => {
       if(fbUser && !isDemoMode){
+        if(!isAllowedChangeEmail(fbUser.email || '')){
+          await rejectUnauthorizedChangeAccount(fbUser.email);
+          initPWA(); scheduleNotifCheck();
+          return;
+        }
         // ✅ Noch eingeloggt — Session aus Firebase Auth wiederherstellen
         userInfo = {
           name:    fbUser.displayName || fbUser.email || '',
@@ -425,9 +476,11 @@ window.addEventListener('load', async () => {
 
   // Fallback: kein Firebase → klassischer Pfad
   lsDel('demo_mode'); isDemoMode = false;
-  if(accessToken && userInfo.email){
+  if(accessToken && userInfo.email && isAllowedCurrentChangeUser(userInfo)){
     bootMainApp();
     loadGoogleData();
+  } else if(accessToken && userInfo.email){
+    await rejectUnauthorizedChangeAccount(userInfo.email);
   } else if(CLIENT_ID){
     showLogin();
   } else {
@@ -548,9 +601,13 @@ async function handleGoogleLogin(){
       callback: async resp => {
         if(resp.error){toast('Anmeldung fehlgeschlagen: '+resp.error,'err');return;}
         accessToken=resp.access_token;
-        try{ if(typeof SecureTokenStore !== 'undefined') SecureTokenStore.setToken(accessToken, 3600); else ls('access_token',accessToken); }catch(e){ try{ ls('access_token', accessToken); }catch(_e){} }
+        try{ if(typeof SecureTokenStore !== 'undefined') SecureTokenStore.setToken(accessToken, 3600); }catch(e){}
         isDemoMode=false; try{ lsDel('demo_mode'); }catch(e){}
         await fetchUserInfo();
+        if(!isAllowedCurrentChangeUser(userInfo)){
+          await rejectUnauthorizedChangeAccount(userInfo && userInfo.email);
+          return;
+        }
         try{ if(typeof SecureTokenStore !== 'undefined') SecureTokenStore.setUser(userInfo); }catch(e){}
         try{ ls('user_info_safe', {name:userInfo.name||'',email:userInfo.email||'',picture:userInfo.picture||''}); ls('was_logged_in', true); }catch(e){}
         try{ if(typeof startTokenAutoRefresh === 'function') startTokenAutoRefresh(); }catch(e){}
@@ -591,6 +648,10 @@ async function handleFirebaseRedirectLogin(){
       else {
         const u=result.user;
         saveUserProfileInfo({name:u.displayName||u.email,email:u.email,picture:u.photoURL||''});
+      }
+      if(!isAllowedChangeEmail(result.user.email || '')){
+        await rejectUnauthorizedChangeAccount(result.user.email);
+        return;
       }
       isDemoMode=false; lsDel('demo_mode');
       bootMainApp();
@@ -1955,6 +2016,10 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   function getVapidKey(){ return window.FIREBASE_VAPID_KEY||''; }
   function currentEmail(){ return (userInfo.email||'demo@example.com').toLowerCase(); }
   function safeDocId(id){ return String(id||'unknown').toLowerCase().replace(/[^a-z0-9._-]/g,'_'); }
+  function privatePushTokenDoc(){
+    if(!db || !userInfo.email) return null;
+    return db.collection('change_push_tokens').doc(safeDocId(currentEmail()));
+  }
   function publicPlayer(){
     return {
       id: currentEmail(),
@@ -2117,8 +2182,21 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
       ls('fcm_token', token);
       ls('push_enabled', true);
       try{ localStorage.setItem('change_push_enabled','1'); }catch(_e){}
+      const tokenRef = privatePushTokenDoc();
+      if(tokenRef){
+        await tokenRef.set({
+          email: currentEmail(),
+          token: token,
+          pushEnabled: true,
+          platform: navigator.userAgent || '',
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, {merge:true});
+      }
       await db.collection('change_players').doc(safeDocId(currentEmail())).set({
-        ...publicPlayer(), fcmToken:token, pushEnabled:true, tokenUpdatedAt:firebase.firestore.FieldValue.serverTimestamp()
+        ...publicPlayer(),
+        fcmToken: firebase.firestore.FieldValue.delete(),
+        pushEnabled:true,
+        tokenUpdatedAt:firebase.firestore.FieldValue.serverTimestamp()
       },{merge:true});
       if(typeof toast === 'function') toast('Push-Benachrichtigungen aktiviert ✓','ok');
       return true;
@@ -2196,7 +2274,20 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
       lsDel('fcm_token');
       ls('push_enabled',false);
       if(db && userInfo.email){
-        await db.collection('change_players').doc(safeDocId(currentEmail())).set({pushEnabled:false,fcmToken:'',tokenUpdatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+        const tokenRef = privatePushTokenDoc();
+        if(tokenRef){
+          await tokenRef.set({
+            email: currentEmail(),
+            token: '',
+            pushEnabled: false,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, {merge:true});
+        }
+        await db.collection('change_players').doc(safeDocId(currentEmail())).set({
+          pushEnabled:false,
+          fcmToken: firebase.firestore.FieldValue.delete(),
+          tokenUpdatedAt:firebase.firestore.FieldValue.serverTimestamp()
+        },{merge:true});
       }
       if(!options.silent && typeof toast === 'function') toast('Push-Benachrichtigungen deaktiviert','ok');
       if(!options.keepPanel && window.ChangeNotificationBell && typeof window.ChangeNotificationBell.render === 'function') window.ChangeNotificationBell.render();

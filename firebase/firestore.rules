@@ -1,100 +1,120 @@
 rules_version = '2';
 
-// ═══════════════════════════════════════════════════════════════
-// CHANGE APP — Firestore Rules v6
-// Firestore-Zugriff nur mit Firebase Auth.
-// Die App meldet sich nach dem Google-Login zusätzlich per Firebase Auth an.
-// Wichtig: Keine offenen Schreibrechte ohne request.auth.
-// ═══════════════════════════════════════════════════════════════
-
 service cloud.firestore {
   match /databases/{database}/documents {
 
     function isAuth() {
-      return request.auth != null;
+      return request.auth != null && request.auth.token.email is string;
     }
+
     function signedInEmail() {
       return request.auth.token.email;
     }
 
-    function isSignedInEmail(value) {
-      return value is string && request.auth.token.email is string && value == signedInEmail();
+    function isAllowedEmail(email) {
+      return email in ['ak2191@gmx.de', 'svenja.streit@googlemail.com'];
+    }
+
+    function isAllowedUser() {
+      return isAuth() && isAllowedEmail(signedInEmail());
+    }
+
+    function isAdmin() {
+      return isAllowedUser() && signedInEmail() == 'ak2191@gmx.de';
+    }
+
+    function ownDocId(docId) {
+      return (signedInEmail() == 'ak2191@gmx.de' && docId == 'ak2191_gmx.de')
+        || (signedInEmail() == 'svenja.streit@googlemail.com' && docId == 'svenja.streit_googlemail.com');
+    }
+
+    function ownEmail(value) {
+      return value is string && value == signedInEmail();
+    }
+
+    function ownCompletion(data) {
+      return (('email' in data) && ownEmail(data.email))
+        || (('userEmail' in data) && ownEmail(data.userEmail))
+        || (('playerId' in data) && ownEmail(data.playerId));
+    }
+
+    function noPublicPushToken(data) {
+      return !data.keys().hasAny(['fcmToken']);
     }
 
     function isNudgeParticipant(data) {
       return data.from == signedInEmail() || data.to == signedInEmail();
     }
 
-
-    // Spieler-Profile
-    // Lesen: offen (Rangliste)
-    // Schreiben: nur eingeloggte Nutzer
     match /change_players/{docId} {
-      allow read: if true;
-      allow write: if isAuth();
+      allow read: if isAllowedUser();
+      allow create, update: if isAllowedUser()
+        && ownDocId(docId)
+        && ownEmail(request.resource.data.email)
+        && noPublicPushToken(request.resource.data);
+      allow delete: if false;
     }
 
-    // Challenge-Completions (Punkte)
-    // Lesen: offen (Rangliste/Punkte)
-    // Schreiben: nur eingeloggte Nutzer
     match /change_completions/{docId} {
-      allow read: if true;
-      allow write: if isAuth();
+      allow read: if isAllowedUser();
+      allow create, update: if isAllowedUser()
+        && ownCompletion(request.resource.data);
+      allow delete: if isAllowedUser()
+        && ownCompletion(resource.data);
     }
 
-    // Challenges (Aufgaben)
-    // Lesen: offen
-    // Schreiben: nur eingeloggte Nutzer
     match /change_challenges/{challengeId} {
-      allow read: if true;
-      allow write: if isAuth();
+      allow read: if isAllowedUser();
+      allow create, update, delete: if isAdmin();
     }
 
-    // Settings (Einstellungen)
-    // Nur eingeloggte Nutzer
     match /change_settings/{docId} {
-      allow read, write: if isAuth();
+      allow read, delete: if isAllowedUser() && ownDocId(docId);
+      allow create, update: if isAllowedUser()
+        && ownDocId(docId)
+        && (!('owner' in request.resource.data) || ownEmail(request.resource.data.owner.email));
     }
 
-    // FCM Push Tokens
     match /change_push_tokens/{docId} {
-      allow read, write: if isAuth();
+      allow read, delete: if isAllowedUser() && ownDocId(docId);
+      allow create, update: if isAllowedUser()
+        && ownDocId(docId)
+        && ownEmail(request.resource.data.email);
+
+      match /devices/{deviceId} {
+        allow read, delete: if isAllowedUser() && ownDocId(docId);
+        allow create, update: if isAllowedUser()
+          && ownDocId(docId)
+          && ownEmail(request.resource.data.email);
+      }
     }
 
-
-    // Anfeuern / Nudges
-    // Schreiben: nur eingeloggte Nutzer als eigener Absender.
-    // Lesen: nur Absender oder Empfänger.
-    // Update: nur Empfänger darf die Nachricht als gesehen markieren.
     match /change_nudges/{nudgeId} {
-      allow create: if isAuth()
+      allow create: if isAllowedUser()
         && request.resource.data.keys().hasOnly(['from','fromName','to','toName','message','reason','sentAt','seen','createdAt'])
         && request.resource.data.keys().hasAll(['from','to','message','sentAt','seen'])
-        && isSignedInEmail(request.resource.data.from)
+        && ownEmail(request.resource.data.from)
         && request.resource.data.to is string
+        && isAllowedEmail(request.resource.data.to)
         && request.resource.data.to != request.resource.data.from
         && request.resource.data.message is string
         && request.resource.data.sentAt is string
         && request.resource.data.seen == false;
-      allow read: if isAuth() && isNudgeParticipant(resource.data);
-      allow update: if isAuth()
+      allow read: if isAllowedUser() && isNudgeParticipant(resource.data);
+      allow update: if isAllowedUser()
         && resource.data.to == signedInEmail()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['seen','seenAt'])
         && request.resource.data.seen == true;
-      allow delete: if isAuth() && resource.data.from == signedInEmail();
+      allow delete: if isAllowedUser() && resource.data.from == signedInEmail();
     }
 
-    // Pollen-Symptome
-    // Nutzer dürfen nur eigene Tages-Symptome lesen und schreiben.
     match /change_pollen_symptoms/{docId} {
-      allow create, update: if isAuth()
-        && request.resource.data.userEmail == signedInEmail();
-      allow read, delete: if isAuth()
-        && resource.data.userEmail == signedInEmail();
+      allow create, update: if isAllowedUser()
+        && ownEmail(request.resource.data.userEmail);
+      allow read, delete: if isAllowedUser()
+        && ownEmail(resource.data.userEmail);
     }
 
-
-    // Fallback: alles andere sperren
     match /{document=**} {
       allow read, write: if false;
     }

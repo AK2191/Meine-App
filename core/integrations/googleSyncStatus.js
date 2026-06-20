@@ -10,7 +10,7 @@
   function remove(key){ try{ localStorage.removeItem(key); }catch(e){} }
   function getToken(){
     try{ if(typeof accessToken !== 'undefined' && accessToken) return accessToken; }catch(e){}
-    return window.accessToken || read('access_token') || '';
+    return window.accessToken || '';
   }
   function isDemo(){ try{ return !!isDemoMode || !!window.isDemoMode; }catch(e){ return !!window.isDemoMode; } }
   function loggedIn(){ var token = getToken(); return !!(token && token !== 'firebase-auth' && !isDemo()); }
