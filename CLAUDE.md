@@ -1,3 +1,26 @@
+## Start Here - Wartbarkeit
+- Vor jeder Aenderung zuerst lesen: `docs/ARCHITECTURE.md`, `docs/DATA-MODEL.md`, `docs/STYLEGUIDE.md`, `docs/SAFETY-CHECKS.md`.
+- Bestehende Funktionen und das aktuelle Bild von v0.1.0292 nicht ohne passende Syntax- und Screenshot-Pruefung veraendern.
+- Runtime-Dateien bei reiner Doku-Arbeit nicht anfassen: `index.html`, `app.js`, `change-pre.js`, `change-post.js`, `styles/`, `core/`, `features/`, `firebase/`, `icons/`, `public/`.
+- Versionseintraege in dieser Datei bleiben erhalten, weil der GitHub-Update-Workflow daraus Zielversionen erkennt.
+- Neue Arbeit erfolgt klein und systembezogen: ein Feature oder eine Schicht pro Schritt.
+
+## Version 0.1.0294
+- **Neue Datenschicht aufgebaut:** `core/data/dataModel.js` definiert Canonical-Keys, Normalisierung fuer Events, Challenges, Punkte, Mitspieler, Settings und Pollen-Symptome sowie einen passiven `window.ChangeDataModel`-Namespace.
+- **Nicht-destruktive Migration vorbereitet:** `ChangeDataModel.auditStorage()` und `ChangeDataModel.migrateLocalStorage()` lesen alte und neue LocalStorage-Keys zusammen, schreiben bei ausdruecklichem Aufruf Canonical-Keys plus Backup und loeschen keine Alt-Daten.
+- **Audit-Werkzeug ergaenzt:** `scripts/auditDataModel.mjs` listet Storage-Keys, Firestore-Collections und optional einen LocalStorage-Export, ohne Daten zu veraendern.
+- **Datenmodell dokumentiert:** `docs/DATA-MODEL.md` beschreibt Zielmodell, Firestore-Collections, Legacy-Keys, Migrationsreihenfolge und Never-Delete-Regeln.
+- **Bewusst nicht geaendert:** Keine automatische Migration, keine Loeschung, keine Aenderung an Firebase-Regeln, Login, Google Kalender, Push, Challenge-Berechnung, Pollen-Berechnung oder UI-Layout.
+- Geaendert: `index.html`, `core/data/dataModel.js`, `scripts/auditDataModel.mjs`, `docs/DATA-MODEL.md`, `docs/ARCHITECTURE.md`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax der neuen Datenschicht und der zentralen bestehenden JS-Dateien; Audit-Script im Nur-Lesen-Modus.
+
+## Version 0.1.0293
+- **Wartbarkeitsfundament dokumentiert:** `CLAUDE.md` hat jetzt einen kurzen Einstieg fuer kuenftige Agenten; die verbindlichen Architektur-, Style- und Sicherheitsregeln liegen in `docs/ARCHITECTURE.md`, `docs/STYLEGUIDE.md` und `docs/SAFETY-CHECKS.md`.
+- **Keine App-Verhaltensaenderung:** Markup, Runtime-JavaScript, CSS, Icons, Firebase, Login, Google Kalender, Push, Sync, Challenge-Speicherung, Punkteberechnung und Pollen-Berechnung bleiben unveraendert.
+- **Arbeitsweise fixiert:** Kuenftige Aenderungen sollen zuerst die Systemgrenzen klaeren, Designwerte ueber Tokens/Variablen fuehren und Layouts per lokalem HTTP-Server statt `file://` pruefen.
+- Geaendert: `CLAUDE.md`, `CHANGELOG.md`, `docs/ARCHITECTURE.md`, `docs/STYLEGUIDE.md`, `docs/SAFETY-CHECKS.md`.
+- Geprueft: Dokumentationsstruktur und Versionsfundstellen; JavaScript-Syntaxbaseline der zentralen bestehenden JS-Dateien bleibt gruen.
+
 ## Version 0.1.0292
 - **Challenges nach `Challenges Icons.dc.html` ueberarbeitet:** Aufgabenzeilen nutzen jetzt ein durchgaengiges gruenes Linien-SVG-Set statt Emoji-Icons. Die Zeilen, Punkte-Pillen, Difficulty-Badges und Mobile-Abstaende sind an den dunklen Pollen-Stil angepasst.
 - **HeroCard innen bereinigt:** Die Gruppenziel-Karte hat SVG-Statusicons fuer Abzeichen, Heute und Offen, eine Fortschrittsleiste mit integrierten Prozent-/Punkte-Labels und den Pokal ohne den alten Stern oben.

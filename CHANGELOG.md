@@ -1,3 +1,17 @@
+## Version 0.1.0294
+- Neue passive Datenschicht: `core/data/dataModel.js` stellt `window.ChangeDataModel` bereit, normalisiert Events, Challenges, Punkte, Mitspieler, Settings und Pollen-Symptome und definiert Canonical-/Legacy-Keys.
+- Nicht-destruktive Migration vorbereitet: Alte Keys werden weiter eingelesen; ein ausdruecklicher Migration-Aufruf schreibt Canonical-Keys und Backup, loescht aber nichts.
+- Neues Audit-Werkzeug: `scripts/auditDataModel.mjs` prueft Storage-Key- und Firestore-Collection-Referenzen im Code und optional einen LocalStorage-Export.
+- Datenmodell dokumentiert in `docs/DATA-MODEL.md`; `CLAUDE.md` verweist jetzt auch auf diese Datei.
+- Geaendert: `index.html`, `core/data/dataModel.js`, `scripts/auditDataModel.mjs`, `docs/DATA-MODEL.md`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`. Keine automatische Datenmigration, keine Loeschung, keine Aenderung an UI, Firebase-Regeln, Login, Google Kalender, Push, Sync-Start oder Berechnungen.
+- Geprueft: JavaScript-Syntax und Audit-Script im Nur-Lesen-Modus.
+
+## Version 0.1.0293
+- Wartbarkeitsfundament ergaenzt: `CLAUDE.md` startet jetzt mit einem kurzen Agenten-Einstieg und verweist auf `docs/ARCHITECTURE.md`, `docs/STYLEGUIDE.md` und `docs/SAFETY-CHECKS.md`.
+- Neue Doku regelt Architekturgrenzen, Styling-Konventionen, Runtime-Sicherheitschecks, lokale HTTP-Layoutpruefung und die vollstaendige Update-ZIP-Regel.
+- Geaendert: `CLAUDE.md`, `CHANGELOG.md`, `docs/ARCHITECTURE.md`, `docs/STYLEGUIDE.md`, `docs/SAFETY-CHECKS.md`. Keine Aenderung an App-Logik, CSS, Markup, Icons, Firebase, Login, Google Kalender, Push, Sync, Challenge-Speicherung oder Punkteberechnung.
+- Geprueft: Dokumentationsstruktur, Versionsfundstellen und JavaScript-Syntaxbaseline der zentralen bestehenden JS-Dateien.
+
 ## Version 0.1.0292
 - Challenges an das gelieferte `Challenges Icons.dc.html`-Design angenaehert: Aufgabenzeilen nutzen jetzt gruene Linien-SVGs statt Emoji-Icons, mit dunklen Zeilen, ruhigen Punkte-Pillen und kompakter mobiler Darstellung.
 - Gruppenziel-HeroCard verfeinert: innere Statusicons fuer Abzeichen/Heute/Offen als SVG, Fortschrittsleiste mit eingebetteten Prozent-/Punkte-Labels und Pokal ohne falschen Stern oben.
