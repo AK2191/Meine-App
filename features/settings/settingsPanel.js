@@ -15,6 +15,15 @@
   function githubIcon(){
     return '<img class="change-github-mark" src="./icons/github-mark.png" alt="" aria-hidden="true">';
   }
+  function settingsStore(){
+    return window.ChangeSettingsStore || null;
+  }
+  function markSettingsSnapshotChanged(source){
+    try{
+      var store = settingsStore();
+      if(store && typeof store.scheduleSnapshot === 'function') store.scheduleSnapshot({source:source || 'settings-panel'});
+    }catch(e){}
+  }
   function readBool(key, fallback){
     try{
       if(typeof window.ls === 'function'){
@@ -505,7 +514,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0297';
+  var APP_VERSION = '0.1.0298';
 
 
 
@@ -1782,6 +1791,20 @@
   }
   function bindSettings(){
     bindSettingsTabScroller();
+    if(!window.__changeSettingsSnapshotPanelHook){
+      window.__changeSettingsSnapshotPanelHook = true;
+      document.addEventListener('change', function(event){
+        var target = event && event.target;
+        if(!target || !target.id) return;
+        if(/^set-/.test(target.id)) markSettingsSnapshotChanged('settings-panel');
+      }, true);
+      document.addEventListener('click', function(event){
+        var target = event && event.target;
+        if(!target) return;
+        var inSettings = target.closest && target.closest('#settings-view');
+        if(inSettings && (target.hasAttribute('data-remove-half') || target.getAttribute('data-change-theme'))) markSettingsSnapshotChanged('settings-panel');
+      }, true);
+    }
     document.querySelectorAll('[data-settings-tab]').forEach(function(btn){
       btn.addEventListener('click', function(ev){
         if(ev) ev.preventDefault();

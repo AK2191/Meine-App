@@ -787,6 +787,7 @@
   function markSettingsChanged(){
     if(isApplyingRemote) return;
     writeRaw(STAMP_KEY, nowIso());
+    try{ if(window.ChangeSettingsStore && typeof window.ChangeSettingsStore.scheduleSnapshot === 'function') window.ChangeSettingsStore.scheduleSnapshot({source:'settings-logic'}); }catch(e){}
     scheduleSettingsSave();
   }
   function scheduleSettingsSave(){
@@ -928,4 +929,3 @@
   else boot();
   window.addEventListener('load', boot);
 })();
-

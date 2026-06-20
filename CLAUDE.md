@@ -5,6 +5,14 @@
 - Versionseintraege in dieser Datei bleiben erhalten, weil der GitHub-Update-Workflow daraus Zielversionen erkennt.
 - Neue Arbeit erfolgt klein und systembezogen: ein Feature oder eine Schicht pro Schritt.
 
+## Version 0.1.0298
+- **Settings-Snapshot auf Datenmodell umgestellt:** Neues `core/settings/settingsStore.js` sammelt bestehende Einstellungen ueber `window.ChangeDataModel` bzw. `window.getChangeSettings()` und schreibt `change_v1_settings_snapshot`.
+- **Bestehende Settings-Keys bleiben aktiv:** Sync-Schalter, Push, Theme, Google-Kalender, Dashboard-Optionen und Legacy-Helfer behalten ihre bisherigen Einzel-Key-Schreibwege. Der Snapshot ist eine Wartungs- und Audit-Schicht, keine Loesch- oder Remote-Migration.
+- **UI/Legacy angebunden:** `features/settings/settingsPanel.js` meldet Aenderungen im Settings-Panel an den Store; `features/settings/settings-logic.js` meldet Legacy-Helfer-Aenderungen ebenfalls an den Store.
+- **Bewusst nicht geaendert:** Keine CSS-, Markup-, Firebase-Regel-, Push-, Google-Kalender-, Challenge-, Kalender-Event- oder automatischer Sync-Start-Aenderung.
+- Geaendert: `index.html`, `core/data/dataModel.js`, `core/settings/settingsStore.js`, `features/settings/settingsPanel.js`, `features/settings/settings-logic.js`, `docs/ARCHITECTURE.md`, `docs/DATA-MODEL.md`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax, DataModel-Audit im Nur-Lesen-Modus und SettingsStore-Smoke-Test mit Legacy-Settings.
+
 ## Version 0.1.0297
 - **GitHub-ZIP-Pruefung korrigiert:** `docs/` ist jetzt in `features/settings/settingsPanel.js` als erlaubter Root-Ordner eingetragen.
 - **Wartbarkeitsdoku bleibt Teil der App:** `docs/ARCHITECTURE.md`, `docs/DATA-MODEL.md`, `docs/SAFETY-CHECKS.md` und `docs/STYLEGUIDE.md` duerfen in Update-ZIPs enthalten sein und werden nicht mehr als unerwuenschte Root-Dateien gemeldet.

@@ -57,7 +57,8 @@ Diese Funktionen duerfen nicht automatisch beim App-Start laufen. Sie sind fuer 
 - v0.1.0295: Challenges/Punkte wurden als erstes Feature-System angebunden. `core/challenges/challengeStore.js` wird nach `core/data/dataModel.js` geladen, liest Canonical- und Legacy-Keys gemeinsam und schreibt Punkte ueber `change_v1_challenge_completions` plus Legacy-Fallbacks.
 - v0.1.0296: Lokale Kalender/Events wurden als zweites Feature-System angebunden. `core/calendar/eventStore.js` wird nach `core/data/dataModel.js` geladen, liest `change_v1_events`, `events` und `change_v2_events` gemeinsam und schreibt lokale Termine ueber `change_v1_events` plus Legacy-Fallback `events`.
 - Google-Kalender-Cache bleibt davon getrennt: `change_google_events_cache`, `change_v1_google_events_cache` und `window.gEvents` werden nicht migriert oder geloescht.
-- Settings sind noch nicht migriert. Dieses System bleibt ein eigener Schritt, damit Sync-Schalter, Push, Theme und Nutzeroptionen nicht versehentlich veraendert werden.
+- v0.1.0298: Settings wurden als Snapshot-Schicht angebunden. `core/settings/settingsStore.js` schreibt `change_v1_settings_snapshot`, wenn Einstellungen im Panel oder ueber Legacy-Helfer geaendert werden.
+- Einzelne Settings-Keys bleiben weiterhin aktiv und werden nicht geloescht. Sync-Schalter, Push, Theme, Google-Kalender und Dashboard-Optionen behalten ihre bisherigen Schreibwege; der Snapshot ist eine Wartungs- und Audit-Schicht.
 
 ## Migration Order
 

@@ -1,3 +1,10 @@
+## Version 0.1.0298
+- Settings als Snapshot-Schicht an das Datenmodell angebunden: neues `core/settings/settingsStore.js` sammelt bestehende Einstellungen ueber `window.ChangeDataModel` bzw. `window.getChangeSettings()` und schreibt `change_v1_settings_snapshot`.
+- `index.html` laedt den SettingsStore direkt nach `core/data/dataModel.js`. `features/settings/settingsPanel.js` und `features/settings/settings-logic.js` melden Settings-Aenderungen an den Store.
+- Bestehende Einzel-Keys bleiben unveraendert aktiv. Sync-Schalter, Push, Theme, Google-Kalender, Dashboard-Optionen und Legacy-Helfer behalten ihre bisherigen Schreibwege; es wird nichts geloescht und keine Remote-Synchronisation neu gestartet.
+- Geaendert: `index.html`, `core/data/dataModel.js`, `core/settings/settingsStore.js`, `features/settings/settingsPanel.js`, `features/settings/settings-logic.js`, `docs/ARCHITECTURE.md`, `docs/DATA-MODEL.md`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax, DataModel-Audit im Nur-Lesen-Modus und SettingsStore-Smoke-Test mit Legacy-Settings.
+
 ## Version 0.1.0297
 - GitHub-ZIP-Pruefung korrigiert: `docs/` ist jetzt ein erlaubter Root-Ordner, damit `docs/ARCHITECTURE.md`, `docs/DATA-MODEL.md`, `docs/SAFETY-CHECKS.md` und `docs/STYLEGUIDE.md` nicht mehr als unerwuenschte Root-Dateien gemeldet werden.
 - Geaendert: `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`. Keine Aenderung an App-Logik, Datenmodell, CSS, Markup, Firebase, Kalender, Challenges, Push oder Sync.
