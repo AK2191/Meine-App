@@ -617,7 +617,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0302';
+  var APP_VERSION = '0.1.0303';
 
 
 

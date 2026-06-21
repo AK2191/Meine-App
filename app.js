@@ -118,15 +118,27 @@ function exposeChangeGlobals(){
 function getEventStore(){
   return (typeof window !== 'undefined' && window.ChangeEventStore) ? window.ChangeEventStore : null;
 }
+function mirrorEventStateFromStore(){
+  const store = getEventStore();
+  if(!store) return false;
+  try{
+    events = store.getEvents();
+    window.events = events;
+    return true;
+  }catch(e){
+    console.warn('EventStore mirror:', e);
+    return false;
+  }
+}
 function syncEventStateFromStore(){
   const store = getEventStore();
   if(!store) return false;
   try{
     const storeEvents = store.getEvents();
-    if((!Array.isArray(events) || !events.length) && storeEvents.length) events = storeEvents;
-    else store.replaceEvents(events || [], {persist:false});
-    events = store.getEvents();
-    return true;
+    if(Array.isArray(storeEvents) && storeEvents.length) events = storeEvents;
+    else if(Array.isArray(events) && events.length) store.replaceEvents(events, {persist:false});
+    else if(Array.isArray(window.events) && window.events.length) store.replaceEvents(window.events, {persist:false});
+    return mirrorEventStateFromStore();
   }catch(e){
     console.warn('EventStore sync:', e);
     return false;
@@ -137,11 +149,10 @@ function persistEventStateToStore(){
   if(!store) return false;
   try{
     const storeEvents = store.getEvents();
-    if((!Array.isArray(events) || !events.length) && storeEvents.length) events = storeEvents;
-    else store.replaceEvents(events || window.events || [], {persist:true});
-    events = store.getEvents();
-    window.events = events;
-    return true;
+    const windowEvents = Array.isArray(window.events) ? window.events : [];
+    const nextEvents = (Array.isArray(events) && events.length) ? events : (windowEvents.length ? windowEvents : storeEvents);
+    store.replaceEvents(nextEvents || [], {persist:true});
+    return mirrorEventStateFromStore();
   }catch(e){
     console.warn('EventStore persist:', e);
     return false;
@@ -2644,18 +2655,18 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     if(!accessToken||isDemoMode||!ev||ev.source==='google')return false;
     const tz=Intl.DateTimeFormat().resolvedOptions().timeZone; const endTime=ev.endTime||addOneHour(ev.date,ev.time);
     const body={summary:ev.title,description:ev.desc||'',start:ev.time?{dateTime:ev.date+'T'+ev.time+':00',timeZone:tz}:{date:ev.date},end:ev.time?{dateTime:ev.date+'T'+endTime+':00',timeZone:tz}:{date:nextDate(ev.date)}};
-    try{const url=ev.googleEventId?'https://www.googleapis.com/calendar/v3/calendars/primary/events/'+encodeURIComponent(ev.googleEventId):'https://www.googleapis.com/calendar/v3/calendars/primary/events'; const r=await fetch(url,{method:ev.googleEventId?'PATCH':'POST',headers:{'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify(body)}); if(r.status===401){toast('Google-Anmeldung abgelaufen. Bitte neu anmelden.','err'); return false;} if(!r.ok){const txt=await r.text().catch(()=>String(r.status)); throw new Error('Google Kalender '+r.status+' '+txt.substring(0,80));} const saved=await r.json(); const i=events.findIndex(e=>e.id===ev.id); if(i>=0){events[i].googleEventId=saved.id; events[i].googleSyncedAt=new Date().toISOString(); ls('events',events);} loadGoogleEvents(); toast('Mit Google Kalender synchronisiert ✓','ok'); return true;}catch(e){console.warn('Google Calendar Sync:',e); toast('Kalender-Sync fehlgeschlagen: '+(e.message||e),'err'); return false;}
+    try{const url=ev.googleEventId?'https://www.googleapis.com/calendar/v3/calendars/primary/events/'+encodeURIComponent(ev.googleEventId):'https://www.googleapis.com/calendar/v3/calendars/primary/events'; const r=await fetch(url,{method:ev.googleEventId?'PATCH':'POST',headers:{'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify(body)}); if(r.status===401){toast('Google-Anmeldung abgelaufen. Bitte neu anmelden.','err'); return false;} if(!r.ok){const txt=await r.text().catch(()=>String(r.status)); throw new Error('Google Kalender '+r.status+' '+txt.substring(0,80));} const saved=await r.json(); const i=events.findIndex(e=>e.id===ev.id); if(i>=0){events[i].googleEventId=saved.id; events[i].googleSyncedAt=new Date().toISOString(); persistEventStateToStore() || ls('events',events);} loadGoogleEvents(); toast('Mit Google Kalender synchronisiert ✓','ok'); return true;}catch(e){console.warn('Google Calendar Sync:',e); toast('Kalender-Sync fehlgeschlagen: '+(e.message||e),'err'); return false;}
   };
   window.saveEvent=function(existingId){
     const old=existingId?events.find(e=>e.id===existingId):null; const title=document.getElementById('ev-title')?.value.trim(); const date=document.getElementById('ev-date')?.value; if(!title){toast('Bitte einen Titel eingeben','err');return;} if(!date){toast('Bitte ein Datum wählen','err');return;}
     const ev={id:existingId||'ev_'+uid(),title,date,time:document.getElementById('ev-time')?.value||'',endTime:document.getElementById('ev-end')?.value||'',type:document.getElementById('ev-type')?.value||'meeting',color:document.getElementById('ev-color')?.value||'blue',desc:document.getElementById('ev-desc')?.value.trim()||'',notifDaysBefore:parseInt(document.getElementById('ev-notif')?.value||'1'),allDay:!document.getElementById('ev-time')?.value,source:'local',googleEventId:old?.googleEventId||'',createdAt:old?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
-    const i=events.findIndex(e=>e.id===ev.id); if(i>=0)events[i]=ev; else events.push(ev); ls('events',events); /* no close */
+    const i=events.findIndex(e=>e.id===ev.id); if(i>=0)events[i]=ev; else events.push(ev); persistEventStateToStore() || ls('events',events); /* no close */
 if(currentMainView==='calendar'){renderCalendar();renderUpcoming();} checkNotifications(); if(currentMainView==='dashboard')buildDashboard(); if(typeof saveToDrive==='function') saveToDrive(); toast(existingId?'Termin aktualisiert ✓':'Termin erstellt ✓','ok'); if(accessToken&&!isDemoMode) syncEventToGoogleReliable(ev);
   };
   window.saveToGoogleCal=function(existingId){
     const title=document.getElementById('ev-title')?.value.trim(); const date=document.getElementById('ev-date')?.value; if(!title||!date){toast('Bitte Titel und Datum eingeben','err');return;}
     const old=existingId?events.find(e=>e.id===existingId):null; const ev={id:existingId||'ev_'+uid(),title,date,time:document.getElementById('ev-time')?.value||'',endTime:document.getElementById('ev-end')?.value||'',type:document.getElementById('ev-type')?.value||'meeting',color:document.getElementById('ev-color')?.value||'blue',desc:document.getElementById('ev-desc')?.value.trim()||'',notifDaysBefore:parseInt(document.getElementById('ev-notif')?.value||'1'),allDay:!document.getElementById('ev-time')?.value,source:'local',googleEventId:old?.googleEventId||'',createdAt:old?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};
-    const i=events.findIndex(e=>e.id===ev.id); if(i>=0)events[i]=ev; else events.push(ev); ls('events',events); /* no close */
+    const i=events.findIndex(e=>e.id===ev.id); if(i>=0)events[i]=ev; else events.push(ev); persistEventStateToStore() || ls('events',events); /* no close */
 if(currentMainView==='calendar'){renderCalendar();renderUpcoming();} syncEventToGoogleReliable(ev);
   };
   setTimeout(()=>{normalizeSportChallenges(); if(typeof renderChallenges==='function') renderChallenges();},500);
@@ -2784,7 +2795,7 @@ if(currentMainView==='calendar'){renderCalendar();renderUpcoming();} syncEventTo
       const r=await fetch(url,{method:ev.googleEventId?'PATCH':'POST',headers:{'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify(body)});
       if(r.status===401){lsDel('access_token'); accessToken=''; toast('Google-Anmeldung abgelaufen. Bitte neu anmelden.','err'); return false;}
       if(!r.ok){const txt=await r.text().catch(()=>String(r.status)); throw new Error(calendar403Help(r.status,txt));}
-      const saved=await r.json(); const i=events.findIndex(e=>e.id===ev.id); if(i>=0){events[i].googleEventId=saved.id; events[i].googleSyncedAt=new Date().toISOString(); ls('events',events);} loadGoogleEvents(); toast('Mit Google Kalender synchronisiert ✓','ok'); return true;
+      const saved=await r.json(); const i=events.findIndex(e=>e.id===ev.id); if(i>=0){events[i].googleEventId=saved.id; events[i].googleSyncedAt=new Date().toISOString(); persistEventStateToStore() || ls('events',events);} loadGoogleEvents(); toast('Mit Google Kalender synchronisiert ✓','ok'); return true;
     }catch(e){console.warn('Google Calendar Sync:',e); toast(e.message||'Kalender-Sync fehlgeschlagen','err'); return false;}
   };
   setTimeout(()=>{stripNonSport(); if(typeof renderChallenges==='function')renderChallenges(); if(typeof buildDashboard==='function')buildDashboard();},600);
@@ -3065,7 +3076,7 @@ window.renderYear=function(y){let g=$('month-grid');if(!g)return;g.className='ye
 window.renderCalendar=function(){let y=curDate.getFullYear(),m=curDate.getMonth(),ml=$('month-label'),g=$('month-grid'),a=$('agenda-view'),w=$('wday-row');if(ml)ml.textContent=currentCalView==='year'?String(y):(currentCalView==='workweek'?'Arbeitswoche · '+DE_MONTHS[m]+' '+y:DE_MONTHS[m]+' '+y);['year','month','workweek','today'].forEach(v=>$('vbtn-'+v)?.classList.toggle('active',currentCalView===v));if(currentCalView==='year'){a.style.display='none';w.style.display='none';renderYear(y)}else if(currentCalView==='workweek'){a.style.display='none';w.style.display='none';window.renderWorkweek&&window.renderWorkweek()}else{a.style.display='none';w.style.display='grid';renderMonth(y,m)}if(currentCalView!=='today')g.style.display='grid';try{renderUpcoming()}catch(e){}};
 window.setCalView=v=>{currentCalView=v;renderCalendar()};window.navigate=dir=>{if(currentCalView==='year')curDate=new Date(curDate.getFullYear()+dir,0,1);else if(currentCalView==='workweek')curDate=AD(curDate,dir*7);else curDate=new Date(curDate.getFullYear(),curDate.getMonth()+dir,1);renderCalendar()};window.goToday=()=>{curDate=new Date();currentCalView='month';renderCalendar()};
 window.openEventPanel=function(id,pre){let ev=id?getEventById(id):null;if(ev&&ev.source==='google'){let r=rng(ev);openPanel(ev.title,'<div class="google-detail"><span class="gmark big">G</span><div><div class="challenge-title"></div><div class="settings-hint">'+E(r.start===r.end?fmtDate(r.start):fmtDate(r.start)+' – '+fmtDate(r.end))+'</div></div></div><button class="btn btn-ghost btn-full" onclick="closePanel()">Schließen</button>');return}let dv=ev?.startDate||ev?.date||(pre?D(pre):D(new Date())),ed=ev?.endDate||ev?.date||dv;let html='<div class="fg"><label class="flabel">Titel *</label><input class="finput" id="ev-title" value="'+E(ev?.title||'')+'"></div><div class="fr"><div class="fg"><label class="flabel">Von-Datum *</label><input type="date" class="finput" id="ev-date" value="'+dv+'"></div><div class="fg"><label class="flabel">Bis-Datum</label><input type="date" class="finput" id="ev-end-date" value="'+ed+'"></div></div><div class="fr"><div class="fg"><label class="flabel">Von Uhrzeit</label><input type="time" class="finput" id="ev-time" value="'+(ev?.time||'')+'"></div><div class="fg"><label class="flabel">Bis Uhrzeit</label><input type="time" class="finput" id="ev-end" value="'+(ev?.endTime||'')+'"></div></div><div class="fg"><label class="flabel">Farbe</label><select class="finput" id="ev-color">'+[['blue','Blau','#3b82f6'],['green','Grün','#22c55e'],['amber','Gelb','#f59e0b'],['red','Rot','#ef4444'],['purple','Lila','#a855f7']].map(function(x){return '<option value="'+x[0]+'" style="background:'+x[2]+'20;font-weight:600" '+((ev?.color||'blue')===x[0]?'selected':'')+'>'+x[1]+'</option>';}).join('')+'</select></div><div class="fg"><label class="flabel">Beschreibung</label><textarea class="finput" id="ev-desc" rows="4">'+E(ev?.desc||'')+'</textarea></div><button class="btn btn-primary btn-full" onclick="saveEvent(\''+(ev?.id||'')+'\')">Speichern</button>';openPanel(ev?'Termin bearbeiten':'Neuer Termin',html)};
-window.saveEvent=function(id){let title=$('ev-title')?.value.trim(),date=$('ev-date')?.value,end=$('ev-end-date')?.value||date;if(!title||!date){toast('Titel und Von-Datum fehlen','err');return}if(end<date)end=date;let old=id?getEventById(id):{},ev={id:id||'ev_'+uid(),title,date,startDate:date,endDate:end,time:$('ev-time')?.value||'',endTime:$('ev-end')?.value||'',color:$('ev-color')?.value||'blue',type:old?.type||'meeting',desc:$('ev-desc')?.value.trim()||'',source:'local',createdAt:old?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};let arr=window.events||events,i=arr.findIndex(e=>e.id===ev.id);if(i>=0)arr[i]=Object.assign({},arr[i],ev);else arr.push(ev);try{events=arr;window.events=arr}catch(e){}ls('events',arr);/* no close */
+window.saveEvent=function(id){let title=$('ev-title')?.value.trim(),date=$('ev-date')?.value,end=$('ev-end-date')?.value||date;if(!title||!date){toast('Titel und Von-Datum fehlen','err');return}if(end<date)end=date;let old=id?getEventById(id):{},ev={id:id||'ev_'+uid(),title,date,startDate:date,endDate:end,time:$('ev-time')?.value||'',endTime:$('ev-end')?.value||'',color:$('ev-color')?.value||'blue',type:old?.type||'meeting',desc:$('ev-desc')?.value.trim()||'',source:'local',createdAt:old?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};let arr=window.events||events,i=arr.findIndex(e=>e.id===ev.id);if(i>=0)arr[i]=Object.assign({},arr[i],ev);else arr.push(ev);try{events=arr;window.events=arr}catch(e){}persistEventStateToStore() || ls('events',arr);/* no close */
 renderCalendar();try{buildDashboard()}catch(e){}toast('Termin gespeichert ✓','ok')};
 window.openCalendarSettings=function(){let o=opt(),st=(window.calendarSettings?.state)||localStorage.getItem('holiday_state')||'ALL',opts=Object.entries(window.STATE_OPTIONS||STATE_OPTIONS||{}).map(([k,v])=>'<option value="'+k+'" '+(k===st?'selected':'')+'>'+v+'</option>').join('');openPanel('Kalender-Einstellungen','<div class="fg"><label class="flabel">Bundesland</label><select class="finput" id="holiday-state">'+opts+'</select></div>'+['Feiertage anzeigen|toggle-holidays|showHolidays','Challenge-Punkte|toggle-dots|showChallengeDots','Kalenderwochen|toggle-kw|showWeekNumbers'].map(x=>{let [t,id,k]=x.split('|');return '<div class="toggle-row"><div class="toggle-copy"><div class="toggle-title">'+t+'</div></div><label class="switch"><input type="checkbox" id="'+id+'" '+(o[k]?'checked':'')+'><span class="slider"></span></label></div>'}).join('')+'<button class="btn btn-primary btn-full" onclick="saveCalSettings()">Speichern</button>')};
 window.saveCalSettings=function(){let o={showHolidays:!!$('toggle-holidays')?.checked,showChallengeDots:!!$('toggle-dots')?.checked,showWeekNumbers:!!$('toggle-kw')?.checked};localStorage.setItem('change_v1_calendar_view_options',JSON.stringify(o));localStorage.setItem('calendar_settings',JSON.stringify(o));try{calendarSettings.state=$('holiday-state')?.value||'ALL';ls('holiday_state',calendarSettings.state)}catch(e){}/* no close */

@@ -5,6 +5,14 @@
 - Versionseintraege in dieser Datei bleiben erhalten, weil der GitHub-Update-Workflow daraus Zielversionen erkennt.
 - Neue Arbeit erfolgt klein und systembezogen: ein Feature oder eine Schicht pro Schritt.
 
+## Version 0.1.0303
+- **Kalender-Events stabiler ueber Store:** `app.js` spiegelt lokale Termine beim Start aus `ChangeEventStore`, wenn der Store bereits Daten aus Canonical- und Legacy-Keys zusammengefuehrt hat.
+- **Alte Speicherpfade abgesichert:** Lokales Speichern und Google-Sync-Erfolgsrueckschreibungen in aelteren `app.js`-Kalenderpfaden laufen zuerst ueber `persistEventStateToStore()`; `events` bleibt als Legacy-Fallback erhalten.
+- **Google-Cache bleibt getrennt:** `gEvents`, `change_google_events_cache` und `change_v1_google_events_cache` wurden nicht veraendert, migriert oder geloescht.
+- **Bewusst nicht geaendert:** Keine Datenloeschung, keine Startmigration, kein automatischer Sync-Start, keine Firebase-Regel-, CSS-, Markup-, Icon-, Challenge-, Pollen-, Push- oder Kalender-UI-Aenderung.
+- Geaendert: `app.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `docs/DATA-MODEL.md`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax, DataModel-Audit im Nur-Lesen-Modus, EventStore-Smoke-Test und statischer Check der alten Event-Schreibpfade in `app.js`.
+
 ## Version 0.1.0302
 - **Firebase-Eingang ueber Stores:** Die Live-Listener in `app.js` fuer `change_players`, `change_completions` und `change_challenges` schreiben eingehende Remote-Daten zuerst in `ChangeChallengeStore`.
 - **Legacy bleibt gespiegelt:** `challenges`, `challengeCompletions` und `challengePlayers` werden danach aus dem Store gespiegelt, damit vorhandene UI-, Dashboard- und Kalenderpfade weiter unveraendert laufen.
