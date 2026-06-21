@@ -203,8 +203,39 @@
       }
     }catch(e){}
   }
+  function themeThumb(value){
+    if(value === 'system'){
+      return '<div class="change-theme-thumb split"><div class="ttp light"><i></i><b></b></div><div class="ttp dark"><i></i><b></b></div></div>';
+    }
+    return '<div class="change-theme-thumb single '+(value === 'light' ? 'light' : 'dark')+'"><i></i><b></b><b class="s"></b></div>';
+  }
   function themeOptionButton(value, title, subtitle, active){
-    return '<button type="button" class="change-theme-option '+(active===value?'active':'')+'" data-change-theme="'+esc(value)+'"><strong>'+esc(title)+'</strong><span>'+esc(subtitle)+'</span></button>';
+    var on = active === value;
+    var check = on ? '<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="#06140F" stroke-width="3.6"><polyline points="20 6 9 17 4 12"></polyline></svg>' : '';
+    return '<button type="button" class="change-theme-option '+(on ? 'active' : '')+'" data-change-theme="'+esc(value)+'">'
+      + themeThumb(value)
+      + '<div class="change-theme-option-row"><span class="change-theme-option-name">'+esc(title)+'</span><span class="change-theme-radio '+(on ? 'on' : '')+'">'+check+'</span></div>'
+      + '<div class="change-theme-option-sub">'+esc(subtitle)+'</div>'
+      + '</button>';
+  }
+  var ACCENT_DEFS = [
+    ['green','Grün','#34D399','#10B981'],
+    ['blue','Blau','#60A5FA','#3B82F6'],
+    ['amber','Bernstein','#FBBF24','#F59E0B'],
+    ['violet','Violett','#A78BFA','#8B5CF6'],
+    ['red','Rot','#F87171','#EF4444']
+  ];
+  function currentAccent(){
+    try{ if(window.ChangeAccent && window.ChangeAccent.get) return window.ChangeAccent.get(); }catch(e){}
+    try{ return document.documentElement.getAttribute('data-accent') || 'green'; }catch(e){ return 'green'; }
+  }
+  function accentSwatch(def, active){
+    var on = def[0] === active;
+    var check = on ? '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#06140F" stroke-width="3.2"><polyline points="20 6 9 17 4 12"></polyline></svg>' : '';
+    return '<button type="button" class="change-accent-swatch '+(on ? 'active' : '')+'" data-change-accent="'+esc(def[0])+'">'
+      + '<span class="change-accent-dot" style="background:radial-gradient(circle at 32% 28%,'+def[2]+','+def[3]+' 70%)">'+check+'</span>'
+      + '<span class="change-accent-name">'+esc(def[1])+'</span>'
+      + '</button>';
   }
   function weatherHealthStatus(){
     var store = window.ChangeWeatherStore;
@@ -274,7 +305,7 @@
         + '</div>';
     }).join('');
     var playersCard = settingsFeatureCard(
-      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2"><circle cx="9" cy="8" r="3.2"></circle><path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"></path><circle cx="17" cy="8" r="2.6"></circle><path d="M16 14c2.5.2 4.5 2.2 4.5 5"></path></svg>',
+      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"></circle><path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"></path><circle cx="17" cy="8" r="2.6"></circle><path d="M16 14c2.5.2 4.5 2.2 4.5 5"></path></svg>',
       'Mitspieler',
       activeCount + ' AKTIV',
       'ok',
@@ -287,14 +318,29 @@
   function darstellungPane(){
     var theme = appThemePreference();
     var themeLabel = theme === 'system' ? 'SYSTEM' : (theme === 'light' ? 'HELL' : 'DUNKEL');
-    var themeBody = '<div class="change-theme-options">'
+    var themeGrid = '<div class="change-theme-options">'
       + themeOptionButton('system','System','Folgt deinem Gerät', theme)
       + themeOptionButton('light','Hell','Ruhiger heller Look', theme)
       + themeOptionButton('dark','Dunkel','Aktueller Darkmode', theme)
       + '</div>';
+    var accent = currentAccent();
+    var accentGrid = '<div class="change-accent-grid">'
+      + ACCENT_DEFS.map(function(d){ return accentSwatch(d, accent); }).join('')
+      + '</div>';
+    var preview = '<div class="change-appearance-preview">'
+      + '<span class="change-appearance-preview-bar"></span>'
+      + '<span class="change-appearance-preview-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"></rect><path d="M3.5 9.5H20.5M8 3v4M16 3v4"></path></svg></span>'
+      + '<div class="change-appearance-preview-main"><div class="change-appearance-preview-title">Zahnarzt-Termin</div><div class="change-appearance-preview-sub">Morgen · 14:30</div></div>'
+      + '<button class="change-appearance-preview-btn" type="button">Öffnen</button>'
+      + '</div>';
+    var body = themeGrid
+      + '<div class="flabel" style="margin:18px 0 11px">Akzentfarbe</div>'
+      + accentGrid
+      + '<div class="flabel" style="margin:18px 0 10px">Vorschau</div>'
+      + preview;
     var themeCard = settingsFeatureCard(
-      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 3 a9 9 0 0 1 0 18 z" fill="#34d399" stroke="none"></path></svg>',
-      'Darstellung', themeLabel, theme === 'system' ? 'off' : 'ok', 'Hell, dunkel oder nach System.', '', themeBody
+      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 3 a9 9 0 0 1 0 18 z" fill="currentColor" stroke="none"></path></svg>',
+      'Darstellung', themeLabel, theme === 'system' ? 'off' : 'ok', 'Hell, dunkel oder nach System.', '', body
     );
     return '<div class="change-settings-stack">' + themeCard + '</div>';
   }
@@ -305,7 +351,7 @@
     var push = pushStatus();
     var pushBody = '<button class="btn btn-secondary btn-full" id="set-push-test" type="button">Test-Benachrichtigung senden</button>';
     var masterCard = settingsFeatureCard(
-      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg>',
+      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg>',
       'Push-Benachrichtigungen',
       push.active ? 'ERLAUBT' : 'INAKTIV',
       push.active ? 'ok' : 'off',
@@ -320,13 +366,13 @@
     var rainHours = weatherAlertHours('change_v1_rain_alert_hours', 2);
     var pollenHours = weatherAlertHours('change_v1_pollen_alert_hours', 2);
     var rainCard = settingsFeatureCard(
-      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17a4 4 0 0 1 0-8 5.5 5.5 0 0 1 10.6-1.3A3.8 3.8 0 0 1 18 17z"></path><path d="M8 20l-1 2M12 20l-1 2M16 20l-1 2"></path></svg>',
+      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17a4 4 0 0 1 0-8 5.5 5.5 0 0 1 10.6-1.3A3.8 3.8 0 0 1 18 17z"></path><path d="M8 20l-1 2M12 20l-1 2M16 20l-1 2"></path></svg>',
       'Regenwarnung', 'WETTER', 'ok', 'Warnt, wenn Regen erwartet wird.',
       '<label class="switch"><input type="checkbox" id="set-rain-alerts" '+(rainOn ? 'checked' : '')+'><span class="slider"></span></label>',
       rainOn ? hoursSelect('set-rain-hours', rainHours) : ''
     );
     var pollenCard = settingsFeatureCard(
-      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9"></path><path d="M12 13c-4 0-7-2-7-6 4 0 7 2 7 6z"></path><path d="M12 11c1-3 4-5 7-5 0 4-3 6-7 6"></path></svg>',
+      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9"></path><path d="M12 13c-4 0-7-2-7-6 4 0 7 2 7 6z"></path><path d="M12 11c1-3 4-5 7-5 0 4-3 6-7 6"></path></svg>',
       'Pollenwarnung', 'POLLEN', 'ok', 'Benachrichtigt nur bei starker Belastung.',
       '<label class="switch"><input type="checkbox" id="set-pollen-alerts" '+(pollenWarnOn ? 'checked' : '')+'><span class="slider"></span></label>',
       pollenWarnOn ? hoursSelect('set-pollen-hours', pollenHours) : ''
@@ -335,19 +381,19 @@
     var friseurWeeks = dashboardNumber('getFriseurWeeks', ['change_v1_friseur_weeks','friseur_weeks'], 3);
     var friseurBody = featureField('Erinnerung nach', '<select class="finput" id="set-friseur-weeks">'+[2,3,4,5,6,8].map(function(n){ return '<option value="'+n+'" '+(n === friseurWeeks ? 'selected' : '')+'>'+n+' Wochen</option>'; }).join('')+'</select>', '');
     var friseurCard = settingsFeatureCard(
-      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6.5" cy="6.5" r="2.8"></circle><circle cx="6.5" cy="17.5" r="2.8"></circle><path d="M8.7 8.4 L20 16.5M8.7 15.6 L20 7.5"></path></svg>',
+      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6.5" cy="6.5" r="2.8"></circle><circle cx="6.5" cy="17.5" r="2.8"></circle><path d="M8.7 8.4 L20 16.5M8.7 15.6 L20 7.5"></path></svg>',
       'Friseur-Erinnerung', 'FRISEUR', 'ok', 'Erinnert an den nächsten Termin.', '', friseurBody
     );
 
     var birthdayDays = Math.max(0, Math.min(365, parseInt(dashboardNumber('getBirthdayNotificationDays', ['change_v1_birthday_notification_days','birthday_notification_days'], 1), 10) || 0));
     var birthdayCard = settingsFeatureCard(
-      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16v-7H4z"></path><path d="M4 13c0-2 1.6-3 4-3s4 1 4 3M12 13c0-2 1.6-3 4-3s4 1 4 3"></path><path d="M12 10V7"></path><circle cx="12" cy="5" r="1.4"></circle></svg>',
+      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16v-7H4z"></path><path d="M4 13c0-2 1.6-3 4-3s4 1 4 3M12 13c0-2 1.6-3 4-3s4 1 4 3"></path><path d="M12 10V7"></path><circle cx="12" cy="5" r="1.4"></circle></svg>',
       'Geburtstags-Erinnerung', '', 'ok', '', '', birthdayDaysSelect('set-birthday-notification-days', birthdayDays)
     );
 
     var holidayOn = holidayNotificationsEnabled();
     var holidayCard = settingsFeatureCard(
-      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"></path></svg>',
+      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"></path></svg>',
       'Feiertags-Benachrichtigungen', holidayOn ? 'AKTIV' : 'AUS', holidayOn ? 'ok' : 'off', '',
       '<label class="switch"><input type="checkbox" id="set-holiday-notifications" '+(holidayOn ? 'checked' : '')+'><span class="slider"></span></label>',
       ''
@@ -757,7 +803,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0306';
+  var APP_VERSION = '0.1.0307';
 
 
 
@@ -2022,7 +2068,7 @@
     ensurePremiumSettingsCloseBridge();
     installSettingsRouteGuard();
     try{ document.body && document.body.classList.add('change-settings-premium-open'); }catch(e){}
-    var gearIcon = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>';
+    var gearIcon = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>';
     var html = '<div class="change-settings-premium">'
       + '<div class="change-settings-page-head"><div class="change-settings-page-title">'+gearIcon+'<strong>Einstellungen</strong><span class="change-settings-version">v'+esc(APP_VERSION)+'</span></div></div>'
       + '<div class="change-settings-shell">'
@@ -2150,6 +2196,7 @@
     var syncGoogle = $('set-sync-google'); if(syncGoogle) syncGoogle.addEventListener('click', async function(){ if(window.ChangeGoogleSyncStatus) await window.ChangeGoogleSyncStatus.syncNow(); refreshSameTab(); });
     var clearSyncLog = $('clear-sync-log'); if(clearSyncLog) clearSyncLog.addEventListener('click', function(){ try{ localStorage.removeItem('change_v1_sync_log'); }catch(e){} refreshSameTab('sync'); });
     document.querySelectorAll('[data-change-theme]').forEach(function(btn){ btn.addEventListener('click', function(){ setAppTheme(btn.getAttribute('data-change-theme') || 'system'); refreshSameTab('darstellung'); }); });
+    document.querySelectorAll('[data-change-accent]').forEach(function(btn){ btn.addEventListener('click', function(){ try{ if(window.ChangeAccent && window.ChangeAccent.set) window.ChangeAccent.set(btn.getAttribute('data-change-accent') || 'green'); }catch(e){} markSettingsSnapshotChanged('settings-panel'); refreshSameTab('darstellung'); }); });
     var signout = $('set-signout'); if(signout) signout.addEventListener('click', function(){ try{ if(typeof window.logout === 'function') window.logout(); }catch(e){} });
     var pushMaster = $('set-push'); if(pushMaster) pushMaster.addEventListener('change', async function(){
       try{ if(typeof window.togglePushFromBell === 'function') await window.togglePushFromBell(pushMaster.checked); }catch(e){}

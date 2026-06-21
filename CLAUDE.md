@@ -5,6 +5,14 @@
 - Versionseintraege in dieser Datei bleiben erhalten, weil der GitHub-Update-Workflow daraus Zielversionen erkennt.
 - Neue Arbeit erfolgt klein und systembezogen: ein Feature oder eine Schicht pro Schritt.
 
+## Version 0.1.0307
+- **Darstellung vollständig wie Referenz:** Theme-Auswahl jetzt als Vorschau-Karten mit Mini-Thumbnail + Radio-Punkt (System/Hell/Dunkel), darunter **Akzentfarbe** (Grün/Blau/Bernstein/Violett/Rot) und eine **Vorschau**-Karte (Beispiel-Termin).
+- **Akzentfarbe ist funktional (app-weit):** Neues Modul `window.ChangeAccent` (in `app.js`) setzt `data-accent` auf `<html>` und persistiert `change_v1_accent`; Anwendung beim Start. In `styles/tokens.css` überschreiben `[data-accent="…"]`-Sets die `--acc`-Familie (+ `--acc-rgb`) für Light und Dark. Dadurch folgen alle 133 `var(--acc)`-Nutzungen der App automatisch der gewählten Farbe.
+- **Einstellungs-Oberfläche folgt dem Accent:** `settingsPanel.css` nutzt jetzt `--st-accent:var(--acc)`, `--st-accent2:var(--acc-h)`, `--st-accent-rgb:var(--acc-rgb)` und `--st-accent-ink` (heller Accent-Ton). Alle bisher hart codierten Emerald-Werte (Schalter, Punkte, Ränder, weiche Tints, aktiver Rail-Eintrag, Icons via `currentColor`) folgen der Akzentfarbe.
+- **Lesbarkeit in jedem Theme:** Karten-/Flächenhintergründe der Einstellungen sind jetzt opak (kein Auswaschen mehr, wenn das App-Theme auf Hell steht). Die Einstellungen bleiben bewusst die dunkle, in sich geschlossene Referenz-Oberfläche.
+- Geaendert: `app.js`, `styles/tokens.css`, `features/settings/settingsPanel.js`, `features/settings/settingsPanel.css`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check` auf `app.js`, `settingsPanel.js`, `pollenView.js`; reale Markup-Ausgabe der Darstellung via jsdom + Chromium-Screenshots in Grün und Blau (Accent folgt korrekt); Live-Gegencheck im Browser (Rail/Panel, Versionsanzeige, Theme-Umschaltung).
+
 ## Version 0.1.0306
 - **Einstellungen im Stil „Einstellungen Komplett" (DC):** Linke Navigations-Schiene (Rail) + Detail-Panel statt Karten-Grid. Dunkle Emerald-Oberflaeche, Plus Jakarta Sans / JetBrains Mono. Stil strikt auf `#settings-view` begrenzt, damit Dashboard, Kalender und Challenges unveraendert bleiben.
 - **Drei neue Kategorien:** „Profil" (Name, Abmelden, Mitspieler-Liste), „Darstellung" (vorhandene Theme-Umschaltung System/Hell/Dunkel aus „App & Sicherheit" hierher verschoben) und „Benachrichtigungen" als zentrale Push-Steuerung.

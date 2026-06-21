@@ -3554,12 +3554,30 @@ window.toggleDarkMode = function(){
   applyThemePreference(next, true);
 };
 
+// ── Akzentfarbe (app-weit über --acc in tokens.css) ──────────────────────
+var ACCENT_KEY = 'change_v1_accent';
+var ACCENT_VALUES = ['green','blue','amber','violet','red'];
+function normalizedAccent(value){ return ACCENT_VALUES.indexOf(String(value)) >= 0 ? String(value) : 'green'; }
+function storedAccent(){ try{ var v = localStorage.getItem(ACCENT_KEY); if(v) return normalizedAccent(v); }catch(e){} return 'green'; }
+function applyAccent(value, persist){
+  var acc = normalizedAccent(value);
+  try{ document.documentElement.setAttribute('data-accent', acc); }catch(e){}
+  if(persist){ try{ localStorage.setItem(ACCENT_KEY, acc); }catch(e){} }
+  return acc;
+}
+window.ChangeAccent = {
+  get:function(){ return storedAccent(); },
+  set:function(value){ return applyAccent(value, true); },
+  apply:function(value){ return applyAccent(value || storedAccent(), false); }
+};
+
 // Init on load
 (function initDark(){
   bindSystemThemeListener();
   applyThemePreference(storedThemePreference(), false);
+  applyAccent(storedAccent(), false);
   if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', function(){ applyThemePreference(storedThemePreference(), false); }, {once:true});
+    document.addEventListener('DOMContentLoaded', function(){ applyThemePreference(storedThemePreference(), false); applyAccent(storedAccent(), false); }, {once:true});
   }
 })();
 

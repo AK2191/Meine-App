@@ -1,3 +1,10 @@
+## Version 0.1.0307
+- Darstellung vervollständigt: Theme-Auswahl als Vorschau-Karten mit Mini-Thumbnail und Radio-Punkt, neue Akzentfarbe-Auswahl (Grün/Blau/Bernstein/Violett/Rot) und eine Vorschau-Karte.
+- Akzentfarbe funktioniert jetzt app-weit: `ChangeAccent` setzt `data-accent` auf `<html>`, `tokens.css` definiert je Farbe die `--acc`-Familie (Light und Dark). Alle Komponenten, die `var(--acc)` nutzen, folgen automatisch.
+- Einstellungs-Oberfläche folgt dem Accent (Schalter, Ränder, Punkte, Tints, aktiver Rail-Eintrag, Icons) und bleibt in jedem App-Theme dunkel und lesbar (opake Flächen, kein Auswaschen mehr).
+- Geaendert: `app.js`, `styles/tokens.css`, `features/settings/settingsPanel.js`, `features/settings/settingsPanel.css`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check` auf alle JS-Dateien; jsdom-Render + Chromium-Screenshots der Darstellung in Grün und Blau; Live-Browser-Gegencheck.
+
 ## Version 0.1.0306
 - Einstellungen komplett neu gestaltet im Stil der Referenz „Einstellungen Komplett": linke Navigations-Schiene (Rail) plus Detail-Panel, dunkle Emerald-Oberflaeche, Plus Jakarta Sans / JetBrains Mono. Der Stil ist auf `#settings-view` begrenzt; Dashboard, Kalender und Challenges bleiben unveraendert.
 - Drei neue Kategorien: „Profil" (Name, Abmelden, Mitspieler-Liste), „Darstellung" (Theme-Umschaltung System/Hell/Dunkel, verschoben aus „App & Sicherheit") und „Benachrichtigungen" als zentrale Push-Steuerung.
