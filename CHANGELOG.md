@@ -1,3 +1,14 @@
+## Version 0.1.0307
+- **Einstellungen vollständig nach Design-Vorlage** (Einstellungen_Komplett_dc.html) umgesetzt.
+- Nav-Rail: 9 Tabs mit korrekten SVG-Icons — Profil, Darstellung, Benachrichtigungen (oben), Trennlinie, Dashboard, Kalender, Challenges, Daten & Sync, App & Sicherheit, GitHub (Admin).
+- Neue Pane **Profil**: Profilkarte mit Avatar, Name, E-Mail, Google-Badge, Abmelden-Button; Mitspieler-Karte mit Avatar-Initialen und Punkten.
+- Neue Pane **Darstellung**: Theme-Picker (System/Hell/Dunkel mit Vorschau-Thumbnails) + Akzentfarben-Grid + Live-Vorschau — standalone, nicht mehr unter App & Sicherheit.
+- Neue Pane **Benachrichtigungen**: Push-Master mit Switch und Test-Button, Section-Label MODULE, Karten für Regenwarnung, Pollenwarnung, Friseur-Erinnerung, Termin-Erinnerung, Geburtstags-Erinnerung, Feiertags-Benachrichtigungen.
+- **Daten-Audit** neu: 3 große Zähler-Kacheln (Challenges, Mitspieler, Pollen-Tage) + Events/Punkte-Zeile + Storage-Diagnose-Grid (Canonical/Cache/Legacy/Unbekannt) nach Vorlage.
+- **App & Sicherheit**: nur noch PWA-Install + Daten-Audit + Gesundheitscheck — kein doppelter Darstellungs-Block.
+- Akzentfarben-Grid mobil: 3 Spalten statt 5 (wie Vorlage `accentgrid: repeat(3,1fr)`).
+- Keine Änderung an Firebase, Login, Google Kalender, Push-Logik, Sync, Challenges oder Pollen.
+
 ## Version 0.1.0306
 - **Einstellungen komplett neu gestaltet** nach Design-Vorlage (Einstellungen_Komplett_dc.html).
 - Neues Layout: Nav-Rail links (sticky, dunkelgrün) + Detail-Panel rechts mit grünem Radial-Glow. Keine HeroCard mehr auf der Einstellungen-Seite.

@@ -395,6 +395,8 @@ body.change-view-settings {
   outline: none;
   cursor: pointer;
   -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
 }
 .cs-sel-native svg { flex-shrink: 0; color: #7E8A80; }
 
@@ -1014,10 +1016,10 @@ body.change-view-settings #pollen-view { display: none !important; }
   .change-settings-ptitle { font-size: 19px; margin-bottom: 13px; }
   .cs-mod { padding: 15px 16px; }
   .cs-theme-grid { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-  .cs-accent-grid { gap: 7px; }
-  .cs-accent-option { padding: 10px 4px 9px; border-radius: 12px; }
+  .cs-accent-grid { grid-template-columns: repeat(3, minmax(0,1fr)) !important; gap: 8px; }
+  .cs-accent-option { padding: 11px 8px 10px; border-radius: 13px; }
   .cs-accent-dot { width: 30px; height: 30px; }
-  .cs-accent-name { font-size: 10.5px; }
+  .cs-accent-name { font-size: 11px; }
   .cs-audit-grid { grid-template-columns: 1fr 1fr; }
   .cs-count-grid { gap: 7px; }
 }

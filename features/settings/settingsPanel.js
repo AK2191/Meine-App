@@ -300,6 +300,183 @@
   function featureField(label, inner, hint){
     return '<div class="cs-feature-field" style="display:grid;gap:7px"><label class="flabel">'+esc(label)+'</label>'+inner+(hint ? '<div class="cs-feature-row-sub" style="font-size:11.5px;color:#7E8A80;margin-top:3px">'+esc(hint)+'</div>' : '')+'</div>';
   }
+  // ── Profil-Pane ───────────────────────────────────────────────────────────
+  function profilPane(){
+    var profile = window.userInfo || {};
+    var name = profile.name || profile.email || 'Change';
+    var first = String(name).slice(0,2).toUpperCase();
+    var google = googleStatus();
+    var googleBadge = google.loggedIn
+      ? '<div class="cs-profile-badge"><div class="cs-profile-badge-dot"></div><span>Mit Google angemeldet</span></div>'
+      : '<div class="cs-profile-badge" style="background:rgba(248,113,113,.08);border-color:rgba(248,113,113,.2)"><div class="cs-profile-badge-dot" style="background:#f87171;box-shadow:0 0 0 3px rgba(248,113,113,.2)"></div><span style="color:#FCA5A5">Nicht angemeldet</span></div>';
+    var avatarHtml = profile.picture
+      ? '<img src="'+esc(profile.picture)+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:18px">'
+      : '<span style="font-size:20px;font-weight:800;color:#06140F">'+esc(first)+'</span>';
+
+    // Mitspieler
+    var players = [];
+    try{
+      var ps = window.ChangeChallengePlayers && window.ChangeChallengePlayers.getAll ? window.ChangeChallengePlayers.getAll() : null;
+      if(!ps) ps = JSON.parse(localStorage.getItem('change_v1_challenge_players') || localStorage.getItem('challenge_players') || '[]');
+      players = Array.isArray(ps) ? ps : Object.values(ps || {});
+    }catch(e){}
+
+    var myEmail = String((window.userInfo && window.userInfo.email) || '').toLowerCase();
+    var playerRows = '';
+    players.forEach(function(p){
+      var pName = esc(p.name || p.email || '?');
+      var pEmail = esc(p.email || '');
+      var isMe = myEmail && pEmail.toLowerCase() === myEmail;
+      var initials = String(p.name || p.email || '?').slice(0,2).toUpperCase();
+      var avatarStyle = isMe
+        ? 'background:radial-gradient(circle at 32% 28%,#86efac,#10b981 75%);color:#06140F'
+        : 'background:radial-gradient(circle at 32% 28%,#C4B5FD,#7C5CD6 75%);color:#fff';
+      var pts = (p.points !== undefined ? p.points : (p.totalPoints !== undefined ? p.totalPoints : '')) + ' P';
+      playerRows += '<div class="cs-player-row">'
+        + '<div class="cs-player-avatar" style="'+avatarStyle+'">'+initials+'</div>'
+        + '<div class="cs-player-copy">'
+        + '<div class="cs-player-name">'+pName+(isMe ? '<span class="cs-player-you">DU</span>' : '')+'</div>'
+        + '<div class="cs-player-email">'+pEmail+'</div>'
+        + '</div>'
+        + '<span class="cs-player-pts">'+esc(String(pts))+'</span>'
+        + '</div>';
+    });
+    if(players.length > 1){
+      // Trennlinien zwischen Spielern
+      playerRows = playerRows.split('</div><div class="cs-player-row">').join('</div><div class="cs-player-sep"></div><div class="cs-player-row">');
+    }
+    var playerCount = players.length ? String(players.length)+' AKTIV' : '0 AKTIV';
+
+    return '<div style="display:flex;flex-direction:column;gap:14px">'
+      // Profilkarte
+      + '<div class="cs-profile-card">'
+      + '<div class="cs-profile-card-glow"></div>'
+      + '<div class="cs-profile-avatar" style="position:relative;flex:none">'+avatarHtml+'</div>'
+      + '<div class="cs-profile-copy">'
+      + '<div class="cs-profile-name">'+esc(name)+'</div>'
+      + '<div class="cs-profile-email">'+esc(profile.email || '')+'</div>'
+      + googleBadge
+      + '</div>'
+      + '<button class="cs-profile-btn" id="btn-profile-signout" type="button">Abmelden</button>'
+      + '</div>'
+      // Mitspieler-Karte
+      + '<div class="cs-mod">'
+      + '<div class="cs-modhead">'
+      + '<div class="cs-ava"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><circle cx="17" cy="8" r="2.6"/><path d="M16 14c2.5.2 4.5 2.2 4.5 5"/></svg></div>'
+      + '<div class="cs-mod-copy"><div style="display:flex;align-items:center;gap:8px"><span class="cs-mod-title">Mitspieler</span><span class="cs-chip-a">'+esc(playerCount)+'</span></div><div class="cs-mod-sub">Automatisch über Google-Login erkannt.</div></div>'
+      + '</div>'
+      + (playerRows ? '<div class="cs-sep"></div>'+playerRows : '<div class="cs-sep"></div><div class="cs-mod-sub">Noch keine Mitspieler geladen.</div>')
+      + '</div>'
+      + '</div>';
+  }
+
+  // ── Darstellung-Pane ───────────────────────────────────────────────────────
+  function darstellungPane(){
+    var theme = appThemePreference();
+    var themeLabel = theme === 'system' ? 'SYSTEM' : (theme === 'light' ? 'HELL' : 'DUNKEL');
+    var themeGrid = '<div class="cs-theme-grid">'
+      + themeOptionButton('system','System','Folgt deinem Gerät', theme)
+      + themeOptionButton('light','Hell','Ruhiger heller Look', theme)
+      + themeOptionButton('dark','Dunkel','Aktueller Darkmode', theme)
+      + '</div>';
+    return '<div class="cs-mod">'
+      + '<div class="cs-modhead">'
+      + '<div class="cs-ava"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3 a9 9 0 0 1 0 18 z" fill="#34d399" stroke="none"/></svg></div>'
+      + '<div class="cs-mod-copy"><div style="display:flex;align-items:center;gap:8px"><span class="cs-mod-title">Darstellung</span><span class="cs-chip-a">'+esc(themeLabel)+'</span></div></div>'
+      + '</div>'
+      + '<div style="margin-top:15px">'+themeGrid+'</div>'
+      + accentSectionHtml()
+      + '</div>';
+  }
+
+  // ── Benachrichtigungen-Pane ─────────────────────────────────────────────────
+  function pushPane(){
+    var push = pushStatus();
+    var rainOn = readBool('change_v1_rain_alerts_enabled', false);
+    var pollenWarnOn = readBool('change_v1_pollen_alerts_enabled', false);
+    var friseurOn = dashboardBool('getFriseurEnabled', 'change_v1_friseur_enabled', true);
+    var rainHours = weatherAlertHours('change_v1_rain_alert_hours', 2);
+    var pollenHours = weatherAlertHours('change_v1_pollen_alert_hours', 2);
+    var holidayPush = readBool('change_v1_holiday_notifications', false);
+
+    function selHours(id, current){
+      return '<div class="cs-sel-native" style="margin-top:10px"><select id="'+id+'">'
+        + [1,2,3,6,12,24].map(function(h){ return '<option value="'+h+'" '+(h===current?'selected':'')+'>'+h+' Std. vorher</option>'; }).join('')
+        + '</select><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#7E8A80" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg></div>';
+    }
+    function sw(id, on){ return '<label class="switch"><input type="checkbox" id="'+id+'" '+(on?'checked':'')+'><span class="slider"></span></label>'; }
+
+    return '<div style="display:flex;flex-direction:column;gap:14px">'
+      // Master Push
+      + '<div class="cs-mod">'
+      + '<div class="cs-modhead">'
+      + '<div class="cs-ava"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></div>'
+      + '<div class="cs-mod-copy"><div style="display:flex;align-items:center;gap:8px"><span class="cs-mod-title">Push-Benachrichtigungen</span><span class="'+(push.active?'cs-chip-a':'cs-chip-n')+'">'+esc(push.label)+'</span></div></div>'
+      + '<div class="cs-mod-right">'+sw('set-push', push.active)+'</div>'
+      + '</div>'
+      + '<div class="cs-sep"></div>'
+      + '<button class="cs-btn" id="btn-push-test" type="button">Test-Benachrichtigung senden</button>'
+      + '</div>'
+      // Section Label
+      + '<div class="cs-secl" style="margin:2px 2px -4px">MODULE</div>'
+      // Regenwarnung
+      + '<div class="cs-mod">'
+      + '<div class="cs-modhead">'
+      + '<div class="cs-ava"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17a4 4 0 0 1 0-8 5.5 5.5 0 0 1 10.6-1.3A3.8 3.8 0 0 1 18 17"/><path d="M8 20l-1 2M12 20l-1 2M16 20l-1 2"/></svg></div>'
+      + '<div class="cs-mod-copy"><div style="display:flex;align-items:center;gap:8px"><span class="cs-mod-title">Regenwarnung</span><span class="cs-chip-a">WETTER</span></div><div class="cs-mod-sub">Warnt, wenn Regen erwartet wird.</div></div>'
+      + '<div class="cs-mod-right">'+sw('set-rain-alerts', rainOn)+'</div>'
+      + '</div>'
+      + (rainOn ? '<div class="cs-sep"></div><div class="cs-secl" style="margin-bottom:8px">Erinnerung</div><div class="cs-sel-native"><select id="set-rain-hours">'
+        + [1,2,3,6,12,24].map(function(h){ return '<option value="'+h+'" '+(h===rainHours?'selected':'')+'>'+h+' Std. vorher</option>'; }).join('')
+        + '</select><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#7E8A80" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg></div>' : '')
+      + '</div>'
+      // Pollenwarnung
+      + '<div class="cs-mod">'
+      + '<div class="cs-modhead">'
+      + '<div class="cs-ava"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9"/><path d="M12 13c-4 0-7-2-7-6 4 0 7 2 7 6z"/><path d="M12 11c1-3 4-5 7-5 0 4-3 6-7 6"/></svg></div>'
+      + '<div class="cs-mod-copy"><div style="display:flex;align-items:center;gap:8px"><span class="cs-mod-title">Pollenwarnung</span><span class="cs-chip-a">POLLEN</span></div><div class="cs-mod-sub">Benachrichtigt nur bei starker Belastung.</div></div>'
+      + '<div class="cs-mod-right">'+sw('set-pollen-alerts', pollenWarnOn)+'</div>'
+      + '</div>'
+      + (pollenWarnOn ? '<div class="cs-sep"></div><div class="cs-secl" style="margin-bottom:8px">Erinnerung</div><div class="cs-sel-native"><select id="set-pollen-hours">'
+        + [1,2,3,6,12,24].map(function(h){ return '<option value="'+h+'" '+(h===pollenHours?'selected':'')+'>'+h+' Std. vorher</option>'; }).join('')
+        + '</select><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#7E8A80" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg></div>' : '')
+      + '</div>'
+      // Friseur-Erinnerung
+      + (friseurOn ? '<div class="cs-mod">'
+      + '<div class="cs-modhead">'
+      + '<div class="cs-ava"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6.5" cy="6.5" r="2.8"/><circle cx="6.5" cy="17.5" r="2.8"/><path d="M8.7 8.4 L20 16.5M8.7 15.6 L20 7.5"/></svg></div>'
+      + '<div class="cs-mod-copy"><div style="display:flex;align-items:center;gap:8px"><span class="cs-mod-title">Friseur-Erinnerung</span><span class="cs-chip-a">FRISEUR</span></div><div class="cs-mod-sub">Erinnert an den nächsten Termin.</div></div>'
+      + '</div>'
+      + '</div>' : '')
+      // Termin-Erinnerung
+      + '<div class="cs-mod">'
+      + '<div class="cs-modhead">'
+      + '<div class="cs-ava"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v4M16 3v4"/><circle cx="12" cy="15" r="2.6"/><path d="M12 13.6v1.4l1 .7"/></svg></div>'
+      + '<div class="cs-mod-copy"><span class="cs-mod-title">Termin-Erinnerung</span></div>'
+      + '</div>'
+      + '<div class="cs-sep"></div>'
+      + '<div class="cs-sel-native"><select id="set-event-reminder"><option value="1440" selected>1 Tag vorher</option><option value="60">1 Std. vorher</option><option value="30">30 Min. vorher</option></select><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#7E8A80" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg></div>'
+      + '</div>'
+      // Geburtstags-Erinnerung
+      + '<div class="cs-mod">'
+      + '<div class="cs-modhead">'
+      + '<div class="cs-ava"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16v-7H4z"/><path d="M4 13c0-2 1.6-3 4-3s4 1 4 3M12 13c0-2 1.6-3 4-3s4 1 4 3"/><path d="M12 10V7"/><circle cx="12" cy="5" r="1.4"/></svg></div>'
+      + '<div class="cs-mod-copy"><span class="cs-mod-title">Geburtstags-Erinnerung</span></div>'
+      + '</div>'
+      + '<div class="cs-sep"></div>'
+      + '<div class="cs-sel-native"><select id="set-birthday-push"><option value="1" selected>1 Tag vorher</option><option value="2">2 Tage vorher</option><option value="7">1 Woche vorher</option></select><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#7E8A80" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg></div>'
+      + '</div>'
+      // Feiertags-Benachrichtigungen
+      + '<div class="cs-mod">'
+      + '<div class="cs-modhead">'
+      + '<div class="cs-ava"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg></div>'
+      + '<div class="cs-mod-copy"><span class="cs-mod-title">Feiertags-Benachrichtigungen</span></div>'
+      + '<div class="cs-mod-right">'+sw('set-holiday-push', holidayPush)+'</div>'
+      + '</div>'
+      + '</div>'
+      + '</div>';
+  }
+
   function calendarPane(){
     var options = calendarOptions();
     var holidaysBody = featureField(
@@ -639,27 +816,29 @@
     var report = dataAuditReport();
     var counts = report.counts;
     var keys = report.keys;
-    var snapshotLabel = report.settingsSnapshot.present
-      ? 'vorhanden' + (report.settingsSnapshot.updatedAtLocal ? ' · '+report.settingsSnapshot.updatedAtLocal : '')
-      : 'noch nicht geschrieben';
-    var modelLabel = report.version ? 'DataModel '+report.version : 'DataModel nicht geladen';
-    return '<div class="cs-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">'
-      + dataAuditChip('Events', counts.events)
-      + dataAuditChip('Challenges', counts.challenges)
-      + dataAuditChip('Punkte', counts.challengeCompletions)
-      + dataAuditChip('Mitspieler', counts.challengePlayers)
-      + '</div>'
-      + '<div class="cs-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">'
-      + dataAuditChip('Pollen-Tage', counts.pollenSymptomDays)
-      + dataAuditChip('Storage-Keys', counts.storageKeys)
-      + dataAuditChip('Canonical', keys.canonicalPresent)
-      + dataAuditChip('Legacy', keys.legacyPresent)
-      + dataAuditChip('Cache', keys.cachePresent)
-      + dataAuditChip('Unbekannt', keys.unknownChangeKeys)
-      + '</div>'
-      + '<div class="cs-note">Settings-Snapshot: '+esc(snapshotLabel)+'</div>'
-      + '<div class="cs-note">'+esc(modelLabel)+' · Anzeige ist read-only.</div>'
-      + '<button class="cs-btn" id="run-data-audit" type="button">Erneut pruefen</button>';
+    var totalKeys = counts.storageKeys || 0;
+    // Drei große Zähler-Kacheln
+    var counters = '<div style="display:flex;gap:9px;margin-top:14px">'
+      + '<div style="flex:1;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.16);border-radius:13px;padding:12px 14px"><div style="font-family:var(--mono);font-size:24px;font-weight:600;color:#9CEFBE;letter-spacing:-1px;line-height:1">'+esc(String(counts.challenges||0))+'</div><div style="font-size:11px;font-weight:700;color:#7E8A80;margin-top:5px">Challenges</div></div>'
+      + '<div style="flex:1;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:13px;padding:12px 14px"><div style="font-family:var(--mono);font-size:24px;font-weight:600;color:#F2F5F1;letter-spacing:-1px;line-height:1">'+esc(String(counts.challengePlayers||0))+'</div><div style="font-size:11px;font-weight:700;color:#7E8A80;margin-top:5px">Mitspieler</div></div>'
+      + '<div style="flex:1;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:13px;padding:12px 14px"><div style="font-family:var(--mono);font-size:24px;font-weight:600;color:#F2F5F1;letter-spacing:-1px;line-height:1">'+esc(String(counts.pollenSymptomDays||0))+'</div><div style="font-size:11px;font-weight:700;color:#7E8A80;margin-top:5px">Pollen-Tage</div></div>'
+      + '</div>';
+    // Events + Punkte Zeile
+    var eventsRow = '<div style="display:flex;align-items:center;gap:18px;margin-top:10px;padding:11px 16px;background:rgba(255,255,255,.02);border:1px dashed rgba(255,255,255,.09);border-radius:12px">'
+      + '<div style="display:flex;align-items:baseline;gap:7px"><span style="font-family:var(--mono);font-size:15px;font-weight:600;color:#5E6A60">'+esc(String(counts.events||0))+'</span><span style="font-size:12px;color:#7E8A80;font-weight:600">Events</span></div>'
+      + '<div style="width:1px;height:14px;background:rgba(255,255,255,.1)"></div>'
+      + '<div style="display:flex;align-items:baseline;gap:7px"><span style="font-family:var(--mono);font-size:15px;font-weight:600;color:#5E6A60">'+esc(String(counts.challengeCompletions||0))+'</span><span style="font-size:12px;color:#7E8A80;font-weight:600">Punkte</span></div>'
+      + '</div>';
+    // Storage-Diagnose-Grid
+    var diagGrid = '<div class="cs-secl" style="margin:14px 0 9px">Storage-Diagnose · '+esc(String(totalKeys))+' Keys</div>'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.14);border-radius:10px;padding:9px 13px"><span style="font-size:12px;font-weight:700;color:#9CEFBE">Canonical</span><span style="font-family:var(--mono);font-size:14px;font-weight:600;color:#9CEFBE">'+esc(String(keys.canonicalPresent||0))+'</span></div>'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;background:rgba(91,134,201,.06);border:1px solid rgba(91,134,201,.16);border-radius:10px;padding:9px 13px"><span style="font-size:12px;font-weight:700;color:#8FB0E0">Cache</span><span style="font-family:var(--mono);font-size:14px;font-weight:600;color:#8FB0E0">'+esc(String(keys.cachePresent||0))+'</span></div>'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:9px 13px"><span style="font-size:12px;font-weight:700;color:#C7D0C7">Legacy</span><span style="font-family:var(--mono);font-size:14px;font-weight:600;color:#C7D0C7">'+esc(String(keys.legacyPresent||0))+'</span></div>'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:9px 13px"><span style="font-size:12px;font-weight:700;color:#7E8A80">Unbekannt</span><span style="font-family:var(--mono);font-size:14px;font-weight:600;color:#7E8A80">'+esc(String(keys.unknownChangeKeys||0))+'</span></div>'
+      + '</div>';
+    return counters + eventsRow + diagGrid
+      + '<button class="cs-btn" id="run-data-audit" type="button" style="margin-top:14px">Erneut pruefen</button>';
   }
 
   function syncPane(){
@@ -704,7 +883,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0306';
+  var APP_VERSION = '0.1.0307';
 
 
 
@@ -1754,16 +1933,7 @@
       + '<strong style="font-size:12.5px;font-weight:800;color:#F2F5F1">'+esc(installed)+'</strong>'
       + '</div>'
       + '</div>';
-    var theme = appThemePreference();
-    var themeLabel = theme === 'system' ? 'SYSTEM' : (theme === 'light' ? 'HELL' : 'DUNKEL');
-    var themeBody = '<div class="cs-theme-grid">'
-      + themeOptionButton('system','System','Folgt deinem Gerät', theme)
-      + themeOptionButton('light','Hell','Ruhiger heller Look', theme)
-      + themeOptionButton('dark','Dunkel','Aktueller Darkmode', theme)
-      + '</div>'
-      + accentSectionHtml()
-      ;
-    var themeCard = settingsFeatureCard('◐','Darstellung',themeLabel,theme === 'dark' ? 'ok' : (theme === 'light' ? 'ok' : 'off'),'','',themeBody);
+    // Darstellung hat eigenen Tab — kein doppelter Block in appPane
     var dataAuditCard = settingsFeatureCard(
       'DB',
       'Daten-Audit',
@@ -1780,7 +1950,7 @@
         : '<div class="cs-note">Der Check wird erst angezeigt, wenn du ihn bewusst startest.</div><button class="cs-btn" id="run-app-health" type="button">App-Gesundheitscheck prüfen</button>';
       health = settingsFeatureCard('🩺', 'App-Gesundheitscheck', appHealthExpanded ? 'GEPRÜFT' : 'BEREIT', appHealthExpanded ? 'ok' : 'off', '', '', healthBody);
     }
-    return '<div class="cs-stack">' + installCard + themeCard + dataAuditCard + health + '</div>';
+    return '<div class="cs-stack">' + installCard + dataAuditCard + health + '</div>';
   }
   function githubPane(){
     if(!isGithubAdmin()){
@@ -1794,7 +1964,7 @@
   var dataAuditExpanded = false;
   var settingsScrollState = null;
   function allowedSettingsTabs(){
-    var tabs = ['dashboard','calendar','challenges','sync','app'];
+    var tabs = ['profil','darstellung','push','dashboard','calendar','challenges','sync','app'];
     if(isGithubAdmin()) tabs.push('github');
     return tabs;
   }
@@ -1966,20 +2136,19 @@
       + settingsNavCard('sync','↻','Daten & Sync','Manuell · keine Auto-Starts',startTab)
       + settingsNavCard('app','🛡','App & Sicherheit','Darstellung · Version '+APP_VERSION,startTab)
       + (isGithubAdmin() ? settingsNavCard('github',githubIcon(),'GitHub','Admin',startTab) : '');
-    var navSvgs = {
-      dashboard: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="10" width="8" height="11" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/></svg>',
-      calendar:  '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>',
-      challenges:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3"/><path d="M9 20h6M12 14v6"/></svg>',
-      sync:      '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>',
-      app:       '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/></svg>',
-      github:    githubIcon()
-    };
-    function navItem(id, label){
+    function navItem(id, svgPath, label){
       return '<button class="change-settings-navitem '+(startTab===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'
-        + (navSvgs[id] || '') + esc(label)
+        + svgPath + esc(label)
         + '</button>';
     }
-    var paneTitle = {dashboard:'Dashboard',calendar:'Kalender',challenges:'Challenges',sync:'Daten & Sync',app:'App & Sicherheit',github:'GitHub'};
+    var svgProfil   = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>';
+    var svgDarst    = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3 a9 9 0 0 1 0 18 z" fill="currentColor" stroke="none"/></svg>';
+    var svgPush     = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>';
+    var svgDash     = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="10" width="8" height="11" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/></svg>';
+    var svgCal      = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>';
+    var svgCh       = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3"/><path d="M9 20h6M12 14v6"/></svg>';
+    var svgSync     = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>';
+    var svgApp      = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/></svg>';
     var html = '<div class="change-settings-premium">'
       + '<div class="change-settings-page-head">'
       + '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'
@@ -1988,17 +2157,23 @@
       + '</div>'
       + '<div class="change-settings-shell">'
       + '<nav class="change-settings-rail">'
-      + navItem('dashboard','Dashboard')
-      + navItem('calendar','Kalender')
-      + navItem('challenges','Challenges')
+      + navItem('profil', svgProfil, 'Profil')
+      + navItem('darstellung', svgDarst, 'Darstellung')
+      + navItem('push', svgPush, 'Benachrichtigungen')
       + '<div class="change-settings-rail-sep"></div>'
-      + navItem('sync','Daten &amp; Sync')
-      + navItem('app','App &amp; Sicherheit')
-      + (isGithubAdmin() ? navItem('github','GitHub') : '')
+      + navItem('dashboard', svgDash, 'Dashboard')
+      + navItem('calendar', svgCal, 'Kalender')
+      + navItem('challenges', svgCh, 'Challenges')
+      + navItem('sync', svgSync, 'Daten &amp; Sync')
+      + navItem('app', svgApp, 'App &amp; Sicherheit')
+      + (isGithubAdmin() ? navItem('github', githubIcon(), 'GitHub') : '')
       + '</nav>'
       + '<div class="change-settings-panel">'
       + '<div class="change-settings-panel-glow"></div>'
       + '<div class="change-settings-panel-inner">'
+      + '<div class="change-settings-pane '+(startTab==='profil'?'active':'')+'" data-pane="profil"><div class="change-settings-ptitle">Profil</div>'+profilPane()+'</div>'
+      + '<div class="change-settings-pane '+(startTab==='darstellung'?'active':'')+'" data-pane="darstellung"><div class="change-settings-ptitle">Darstellung</div>'+darstellungPane()+'</div>'
+      + '<div class="change-settings-pane '+(startTab==='push'?'active':'')+'" data-pane="push"><div class="change-settings-ptitle">Benachrichtigungen</div>'+pushPane()+'</div>'
       + '<div class="change-settings-pane '+(startTab==='dashboard'?'active':'')+'" data-pane="dashboard"><div class="change-settings-ptitle">Dashboard</div>'+dashboardPane()+'</div>'
       + '<div class="change-settings-pane '+(startTab==='calendar'?'active':'')+'" data-pane="calendar"><div class="change-settings-ptitle">Kalender</div>'+calendarPane()+'</div>'
       + '<div class="change-settings-pane '+(startTab==='challenges'?'active':'')+'" data-pane="challenges"><div class="change-settings-ptitle">Challenges</div>'+challengesPane()+'</div>'
@@ -2123,8 +2298,16 @@
     var google = $('set-google'); if(google) google.addEventListener('change', async function(){ if(window.ChangeGoogleSyncStatus){ if(google.checked) await window.ChangeGoogleSyncStatus.syncNow(); else window.ChangeGoogleSyncStatus.disconnect(); } refreshSameTab(); });
     var syncGoogle = $('set-sync-google'); if(syncGoogle) syncGoogle.addEventListener('click', async function(){ if(window.ChangeGoogleSyncStatus) await window.ChangeGoogleSyncStatus.syncNow(); refreshSameTab(); });
     var clearSyncLog = $('clear-sync-log'); if(clearSyncLog) clearSyncLog.addEventListener('click', function(){ try{ localStorage.removeItem('change_v1_sync_log'); }catch(e){} refreshSameTab('sync'); });
-    document.querySelectorAll('[data-change-theme]').forEach(function(btn){ btn.addEventListener('click', function(){ setAppTheme(btn.getAttribute('data-change-theme') || 'system'); refreshSameTab('app'); }); });
-    document.querySelectorAll('[data-change-accent]').forEach(function(btn){ btn.addEventListener('click', function(){ setAppAccent(btn.getAttribute('data-change-accent') || 'green'); refreshSameTab('app'); }); });
+    document.querySelectorAll('[data-change-theme]').forEach(function(btn){ btn.addEventListener('click', function(){ setAppTheme(btn.getAttribute('data-change-theme') || 'system'); refreshSameTab('darstellung'); }); });
+    document.querySelectorAll('[data-change-accent]').forEach(function(btn){ btn.addEventListener('click', function(){ setAppAccent(btn.getAttribute('data-change-accent') || 'green'); refreshSameTab('darstellung'); }); });
+    var btnSignout = document.getElementById('btn-profile-signout');
+    if(btnSignout) btnSignout.addEventListener('click', function(){ try{ if(typeof signOut==='function') signOut(); else if(window.firebase&&firebase.auth) firebase.auth().signOut(); }catch(e){} });
+    var btnPushTest = document.getElementById('btn-push-test');
+    if(btnPushTest) btnPushTest.addEventListener('click', function(){ try{ if(window.ChangeNotificationStore&&window.ChangeNotificationStore.sendTest) window.ChangeNotificationStore.sendTest(); }catch(e){} });
+    var setHolidayPush = document.getElementById('set-holiday-push');
+    if(setHolidayPush) setHolidayPush.addEventListener('change', function(){ writeBool('change_v1_holiday_notifications', setHolidayPush.checked); markSettingsSnapshotChanged('settings-panel'); });
+    var setPushMaster = document.getElementById('set-push');
+    if(setPushMaster) setPushMaster.addEventListener('change', function(){ try{ if(window.ChangeNotificationStore&&window.ChangeNotificationStore.toggle) window.ChangeNotificationStore.toggle(setPushMaster.checked); }catch(e){} });
     var runDataAudit = $('run-data-audit'); if(runDataAudit) runDataAudit.addEventListener('click', function(){ dataAuditExpanded = true; refreshSameTab('app'); });
     var runHealth = $('run-app-health'); if(runHealth) runHealth.addEventListener('click', function(){ appHealthExpanded = true; refreshSameTab('app'); });
     function setGithubZipFile(file){
