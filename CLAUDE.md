@@ -5,7 +5,33 @@
 - Versionseintraege in dieser Datei bleiben erhalten, weil der GitHub-Update-Workflow daraus Zielversionen erkennt.
 - Neue Arbeit erfolgt klein und systembezogen: ein Feature oder eine Schicht pro Schritt.
 
-## Version 0.1.0307
+## Version 0.1.0306
+- **Einstellungen im Stil „Einstellungen Komplett" (DC):** Linke Navigations-Schiene (Rail) + Detail-Panel statt Karten-Grid. Dunkle Emerald-Oberflaeche, Plus Jakarta Sans / JetBrains Mono. Stil strikt auf `#settings-view` begrenzt, damit Dashboard, Kalender und Challenges unveraendert bleiben.
+- **Drei neue Kategorien:** „Profil" (Name, Abmelden, Mitspieler-Liste), „Darstellung" (vorhandene Theme-Umschaltung System/Hell/Dunkel aus „App & Sicherheit" hierher verschoben) und „Benachrichtigungen" als zentrale Push-Steuerung.
+- **Push zentralisiert (eine Steuerung):** Regen-/Pollenwarnung, Friseur- und Geburtstags-Erinnerung sowie Feiertags-Benachrichtigungen liegen jetzt ausschliesslich unter „Benachrichtigungen". Dashboard zeigt nur noch Modul an/aus + Urlaubs-Konfiguration. Keine doppelten Schalter oder doppelten Element-IDs.
+- **GitHub vollstaendig gestylt:** Leerzustand, 4-Phasen-Fortschritt (queued/workflow_running/pages_building/live), Live-Zustand und Verlauf mit Rollback im neuen Stil.
+- **Akzentfarbe bewusst nicht gebaut:** Es existiert keine funktionale Akzent-Logik im Code; weggelassen statt tote Buttons (moeglicher Folgeschritt, app-weit ueber `styles/tokens.css`).
+- **Nur Einstellungen angefasst:** Reine Markup-Huelle + neues `settingsPanel.css`; bestehende Settings-Logik, Toggle-IDs und Bindings unveraendert. Wetter-/Pollen-/Friseur-/Geburtstags-Handler wurden nur verschoben, nicht neu geschrieben.
+- Geaendert: `features/settings/settingsPanel.js`, `features/settings/settingsPanel.css`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check` auf beide JS-Dateien; reale Markup-Ausgabe aller Panes via jsdom + Chromium-Screenshots (Profil, Benachrichtigungen, Dashboard, Daten & Sync, App & Sicherheit, GitHub-Zustaende) gegen die Referenz.
+
+## Version 0.1.0305
+- **Settings-Audit erweitert:** `core/settings/settingsStore.js` kennt jetzt gruppierte lokale Settings-Keys fuer Kalender, Dashboard, Challenges, Sync, Wetter und Darstellung.
+- **Read-only Anzeige in App & Sicherheit:** Der Daten-Audit zeigt zusaetzlich die Anzahl vorhandener bekannter Settings-Keys. Der Audit bleibt lesend; er loescht, migriert, synchronisiert und schreibt keine Remote-Daten.
+- **Snapshot bleibt Wartungsschicht:** Einzelne Settings-Keys bleiben weiterhin aktive Laufzeit-Schreibwege. `change_v1_settings_snapshot` dient weiterhin als zusammenfassende Wartungs- und Audit-Ansicht.
+- **Bewusst nicht geaendert:** Keine App-Logik ausser Audit-Zaehlung, keine Datenloeschung, keine Startmigration, kein automatischer Sync-Start, keine Firebase-Regel-, CSS-, Markup-, Icon-, Kalender-, Challenge-, Pollen- oder Push-Aenderung.
+- Geaendert: `core/settings/settingsStore.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `docs/DATA-MODEL.md`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax, DataModel-Audit im Nur-Lesen-Modus, SettingsStore-Smoke-Test und statischer Check der read-only Audit-Anzeige.
+
+## Version 0.1.0304
+- **Challenge-Persistenz store-first:** `persistChallengeStateToStore()` persistiert den aktuellen `ChangeChallengeStore` und spiegelt danach `challenges`, `challengeCompletions` und `challengePlayers` zurueck. Dadurch koennen stale Legacy-Globals den Store nicht mehr ungewollt ueberschreiben.
+- **Explizite lokale Store-Replace-Helfer:** `ChangeChallengeStoreBridge` kapselt `replaceChallenges`, `replaceCompletions`, `replacePlayers` und `replaceState`. App-interne Filter- und Bereinigungspfade nutzen diese Helfer, wenn Arrays per `filter()` neu zugewiesen werden.
+- **Aeltere Completion-Pfade angebunden:** Kalender-Komfortpfade fuer Challenge-Erledigen/Zuruecksetzen und das Auto-Challenge-Ausschalten im Settings-Panel schreiben bei vorhandenem Store ueber die Bridge. Legacy-Keys bleiben Fallback.
+- **Bewusst nicht geaendert:** Keine Datenloeschung, keine Startmigration, kein automatischer Sync-Start, keine Firebase-Regel-, CSS-, Markup-, Icon-, Kalender-, Pollen-, Push- oder Challenge-UI-Aenderung.
+- Geaendert: `app.js`, `features/calendar/calendar-logic.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `docs/DATA-MODEL.md`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax, DataModel-Audit im Nur-Lesen-Modus, ChallengeStore-Smoke-Test und statischer Check der neuen Bridge-Pfade.
+
+## Version 0.1.0303
 - **Kalender-Events stabiler ueber Store:** `app.js` spiegelt lokale Termine beim Start aus `ChangeEventStore`, wenn der Store bereits Daten aus Canonical- und Legacy-Keys zusammengefuehrt hat.
 - **Alte Speicherpfade abgesichert:** Lokales Speichern und Google-Sync-Erfolgsrueckschreibungen in aelteren `app.js`-Kalenderpfaden laufen zuerst ueber `persistEventStateToStore()`; `events` bleibt als Legacy-Fallback erhalten.
 - **Google-Cache bleibt getrennt:** `gEvents`, `change_google_events_cache` und `change_v1_google_events_cache` wurden nicht veraendert, migriert oder geloescht.

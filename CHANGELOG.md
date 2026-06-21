@@ -1,38 +1,28 @@
-## Version 0.1.0307
-- **Einstellungen vollständig nach Design-Vorlage** (Einstellungen_Komplett_dc.html) umgesetzt.
-- Nav-Rail: 9 Tabs mit korrekten SVG-Icons — Profil, Darstellung, Benachrichtigungen (oben), Trennlinie, Dashboard, Kalender, Challenges, Daten & Sync, App & Sicherheit, GitHub (Admin).
-- Neue Pane **Profil**: Profilkarte mit Avatar, Name, E-Mail, Google-Badge, Abmelden-Button; Mitspieler-Karte mit Avatar-Initialen und Punkten.
-- Neue Pane **Darstellung**: Theme-Picker (System/Hell/Dunkel mit Vorschau-Thumbnails) + Akzentfarben-Grid + Live-Vorschau — standalone, nicht mehr unter App & Sicherheit.
-- Neue Pane **Benachrichtigungen**: Push-Master mit Switch und Test-Button, Section-Label MODULE, Karten für Regenwarnung, Pollenwarnung, Friseur-Erinnerung, Termin-Erinnerung, Geburtstags-Erinnerung, Feiertags-Benachrichtigungen.
-- **Daten-Audit** neu: 3 große Zähler-Kacheln (Challenges, Mitspieler, Pollen-Tage) + Events/Punkte-Zeile + Storage-Diagnose-Grid (Canonical/Cache/Legacy/Unbekannt) nach Vorlage.
-- **App & Sicherheit**: nur noch PWA-Install + Daten-Audit + Gesundheitscheck — kein doppelter Darstellungs-Block.
-- Akzentfarben-Grid mobil: 3 Spalten statt 5 (wie Vorlage `accentgrid: repeat(3,1fr)`).
-- Keine Änderung an Firebase, Login, Google Kalender, Push-Logik, Sync, Challenges oder Pollen.
-
 ## Version 0.1.0306
-- **Einstellungen komplett neu gestaltet** nach Design-Vorlage (Einstellungen_Komplett_dc.html).
-- Neues Layout: Nav-Rail links (sticky, dunkelgrün) + Detail-Panel rechts mit grünem Radial-Glow. Keine HeroCard mehr auf der Einstellungen-Seite.
-- Neue Karten-Sprache: `.cs-mod` (dunkelgrüner Gradient, runde 18px Ecken), `.cs-ava` (grün umrandetes Icon-Avatar), `.cs-chip-a/n/e` (kleine Status-Chips), `.cs-sw` (Custom-Switch grün), `.cs-btn` / `.cs-btn-p` (ghost / primär grün).
-- Theme-Picker: Vorschau-Thumbnails für System/Hell/Dunkel mit Checkmark-Radio.
-- Akzentfarben-Grid: 5 Farben (Grün, Blau, Amber, Violett, Rot) mit Farbdot und Vorschau-Karte.
-- Profil-Pane: Profilkarte mit Avatar, Google-Badge, Mitspieler-Liste.
-- Mobile: Rail wird horizontale Scrollbar, Panel flach, kompaktere Abstände.
-- Keine Änderung an Firebase, Login, Google Kalender, Push, Sync, Challenge-Logik oder Pollen.
-- Geändert: `features/settings/settingsPanel.css` (Neufassung), `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Einstellungen komplett neu gestaltet im Stil der Referenz „Einstellungen Komplett": linke Navigations-Schiene (Rail) plus Detail-Panel, dunkle Emerald-Oberflaeche, Plus Jakarta Sans / JetBrains Mono. Der Stil ist auf `#settings-view` begrenzt; Dashboard, Kalender und Challenges bleiben unveraendert.
+- Drei neue Kategorien: „Profil" (Name, Abmelden, Mitspieler-Liste), „Darstellung" (Theme-Umschaltung System/Hell/Dunkel, verschoben aus „App & Sicherheit") und „Benachrichtigungen" als zentrale Push-Steuerung.
+- Push zentralisiert: Regen-/Pollenwarnung, Friseur- und Geburtstags-Erinnerung sowie Feiertags-Benachrichtigungen liegen jetzt ausschliesslich unter „Benachrichtigungen". Dashboard zeigt nur noch Modul an/aus plus Urlaubs-Konfiguration. Keine doppelten Schalter oder IDs.
+- GitHub-Update-Ansicht vollstaendig im neuen Stil: Leerzustand, 4-Phasen-Fortschritt, Live-Zustand und Verlauf mit Rollback.
+- Akzentfarbe bewusst nicht gebaut, da im Code keine funktionale Akzent-Logik existiert (vermeidet tote Buttons).
+- Bewusst nicht geaendert: bestehende Settings-Logik, Toggle-IDs und Bindings; keine Aenderung an Kalender-, Challenge-, Sync-, Firebase- oder Push-Logik ausser dem Verschieben vorhandener Schalter.
+- Geaendert: `features/settings/settingsPanel.js`, `features/settings/settingsPanel.css`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check` auf beide JS-Dateien; reale Markup-Ausgabe aller Panes via jsdom plus Chromium-Screenshots gegen die Referenz.
 
 ## Version 0.1.0305
-- GitHub-Upload: `githubAdminAuthHeaders` nutzt Firebase Auth direkt, ohne `ensureChangeFirebaseAuth` als Abhängigkeit. Damit funktioniert der Upload auch wenn `firebase.firestore` oder `firebase-messaging` nicht vollständig geladen sind (z.B. bei Service-Worker-Netzwerkfehlern).
-- Kein User im Auth-Cache: kurzes Warten auf `onAuthStateChanged` (max 2,5s) statt sofortigem Fehler.
-- Fehlermeldungen bei Token-Problemen präziser: zeigt jetzt den Firebase-Fehlercode an.
-- Keine Änderung an Upload-Logik, Worker, Sync, Kalender, Challenges, Push oder Pollen.
+- Settings-Audit wurde erweitert: `core/settings/settingsStore.js` gruppiert bekannte lokale Settings-Keys fuer Kalender, Dashboard, Challenges, Sync, Wetter und Darstellung.
+- App & Sicherheit zeigt im read-only Daten-Audit jetzt auch die Anzahl vorhandener bekannter Settings-Keys. Es wird dabei nichts geloescht, migriert, synchronisiert oder remote geschrieben.
+- Der Settings-Snapshot bleibt eine Wartungs- und Audit-Schicht; einzelne aktive Settings-Keys bleiben weiterhin die kompatiblen Laufzeit-Schreibwege.
+- Bewusst nicht geaendert: keine App-Logik ausser Audit-Zaehlung, keine Datenloeschung, keine Startmigration, kein automatischer Sync-Start, keine Firebase-Regel-, CSS-, Markup-, Icon-, Kalender-, Challenge-, Pollen- oder Push-Aenderung.
+- Geaendert: `core/settings/settingsStore.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `docs/DATA-MODEL.md`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax, DataModel-Audit im Nur-Lesen-Modus, SettingsStore-Smoke-Test und statischer Check der read-only Audit-Anzeige.
 
 ## Version 0.1.0304
-- **Akzentfarben-System**: Die Einstellungen → Darstellung bieten jetzt ein Akzentfarben-Grid mit 5 Farben: Grün (Standard), Blau, Amber, Violett, Rot. Die Auswahl wird in `change_v1_accent` gespeichert und beim App-Start als `data-accent` auf `<html>` angewendet.
-- **Neue CSS-Variablen**: `styles/tokens.css` definiert `[data-accent="blue|amber|violet|red"]`-Overrides für `--acc`, `--acc-h`, `--acc-d`, `--acc-d2`, `--sh-acc` in Light und Dark Mode.
-- **Theme-Options mit Vorschau**: Die drei Darstellungs-Buttons (System / Hell / Dunkel) zeigen jetzt Mini-Previews statt reinem Text.
-- **Mobile Optimierung**: Das Akzentfarben-Grid skaliert auf allen Bildschirmgrößen (5 Spalten, kompaktere Abstände ab 760px / 440px).
-- Geändert: `styles/tokens.css`, `features/settings/settingsPanel.css`, `features/settings/settingsPanel.js`, `app.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
-- Keine Änderung an Firebase, Login, Google Kalender, Push, Sync, Challenge-Speicherung, Punkteberechnung oder Kalenderlogik.
+- Challenge-Persistenz ist robuster store-first: `persistChallengeStateToStore()` schreibt den aktuellen `ChangeChallengeStore` und spiegelt danach die Legacy-Globals, statt stale Globals blind zurueck in den Store zu kopieren.
+- Neue `ChangeChallengeStoreBridge` stellt klare lokale Replace-Helfer fuer Challenges, Completions und Players bereit. App-interne Filter-/Bereinigungspfade nutzen diese Helfer jetzt explizit.
+- Aeltere Completion-Komfortpfade in `features/calendar/calendar-logic.js` und das Auto-Challenge-Ausschalten im Settings-Panel schreiben bei vorhandenem Store ueber die Bridge; Legacy-Keys bleiben Fallback.
+- Bewusst nicht geaendert: keine Datenloeschung, keine Startmigration, kein automatischer Sync-Start, keine Firebase-Regel-, CSS-, Markup-, Icon-, Kalender-, Pollen-, Push- oder Challenge-UI-Aenderung.
+- Geaendert: `app.js`, `features/calendar/calendar-logic.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `docs/DATA-MODEL.md`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax, DataModel-Audit im Nur-Lesen-Modus, ChallengeStore-Smoke-Test und statischer Check der neuen Bridge-Pfade.
 
 ## Version 0.1.0303
 - Lokale Kalender-/Event-Daten werden beim App-Start robuster aus `ChangeEventStore` gespiegelt. Der Store bleibt die bevorzugte Quelle, weil er `change_v1_events`, `events` und `change_v2_events` bereits zusammenliest.
