@@ -202,8 +202,80 @@
       }
     }catch(e){}
   }
+  // ── Akzentfarbe ──────────────────────────────────────────────────────────
+  var ACCENT_OPTIONS = [
+    { value: 'green',  label: 'Grün',    dark: ['86efac','34d399'], light: ['2D6A4F','245C43'] },
+    { value: 'blue',   label: 'Blau',    dark: ['7DA9F5','3B82F6'], light: ['2563EB','1D4ED8'] },
+    { value: 'amber',  label: 'Amber',   dark: ['FCD34D','F59E0B'], light: ['D97706','B45309'] },
+    { value: 'violet', label: 'Violett', dark: ['C4B5FD','A78BFA'], light: ['7C3AED','6D28D9'] },
+    { value: 'red',    label: 'Rot',     dark: ['FCA5A5','EF4444'], light: ['DC2626','B91C1C'] }
+  ];
+  function appAccentPreference(){
+    try{ var v = localStorage.getItem('change_v1_accent'); if(v) return v; }catch(e){}
+    return 'green';
+  }
+  function setAppAccent(value){
+    value = ACCENT_OPTIONS.some(function(o){ return o.value === value; }) ? value : 'green';
+    try{ localStorage.setItem('change_v1_accent', value); }catch(e){}
+    try{
+      if(value === 'green'){ document.documentElement.removeAttribute('data-accent'); }
+      else { document.documentElement.setAttribute('data-accent', value); }
+    }catch(e){}
+  }
+  // Beim Start Akzent wiederherstellen
+  (function(){ try{ var a = localStorage.getItem('change_v1_accent'); if(a && a !== 'green') document.documentElement.setAttribute('data-accent', a); }catch(e){} })();
+
+  function themePreviewHtml(mode){
+    if(mode === 'system'){
+      return '<div class="change-theme-preview-system">'
+        + '<div class="left"><div class="change-theme-preview-bar" style="background:#10b981;width:55%"></div><div class="change-theme-preview-bar secondary" style="width:78%"></div></div>'
+        + '<div class="right"><div class="change-theme-preview-bar" style="background:#34d399;width:55%"></div><div class="change-theme-preview-bar secondary" style="width:78%"></div></div>'
+        + '</div>';
+    }
+    var cls = mode === 'dark' ? 'dark' : 'light';
+    return '<div class="change-theme-preview ' + cls + '">'
+      + '<div class="change-theme-preview-bar" style="width:55%"></div>'
+      + '<div class="change-theme-preview-bar secondary" style="width:78%"></div>'
+      + '<div class="change-theme-preview-bar secondary" style="width:62%"></div>'
+      + '</div>';
+  }
+
   function themeOptionButton(value, title, subtitle, active){
-    return '<button type="button" class="change-theme-option '+(active===value?'active':'')+'" data-change-theme="'+esc(value)+'"><strong>'+esc(title)+'</strong><span>'+esc(subtitle)+'</span></button>';
+    return '<button type="button" class="change-theme-option '+(active===value?'active':'')+'" data-change-theme="'+esc(value)+'">'
+      + themePreviewHtml(value)
+      + '<strong>'+esc(title)+'</strong>'
+      + '<span>'+esc(subtitle)+'</span>'
+      + '</button>';
+  }
+
+  function accentOptionButton(opt, current){
+    var isActive = current === opt.value;
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    var colors = isDark ? opt.dark : opt.light;
+    var c1 = colors[0], c2 = colors[1];
+    var checkSvg = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#fff" stroke-width="3.2"><polyline points="20 6 9 17 4 12"/></svg>';
+    var dotHtml = isActive
+      ? '<div class="change-accent-dot active" style="background:radial-gradient(circle at 32% 28%,#'+c1+',#'+c2+' 70%)">'+checkSvg+'</div>'
+      : '<div class="change-accent-dot" style="background:radial-gradient(circle at 32% 28%,#'+c1+',#'+c2+' 70%)"></div>';
+    return '<button type="button" class="change-accent-option'+(isActive?' active':'')+'" data-change-accent="'+esc(opt.value)+'">'
+      + dotHtml
+      + '<span class="change-accent-name">'+esc(opt.label)+'</span>'
+      + '</button>';
+  }
+
+  function accentSectionHtml(){
+    var current = appAccentPreference();
+    var buttons = ACCENT_OPTIONS.map(function(o){ return accentOptionButton(o, current); }).join('');
+    return '<div class="change-accent-section">'
+      + '<div class="change-accent-label">Akzentfarbe</div>'
+      + '<div class="change-accent-grid">'+buttons+'</div>'
+      + '<div class="change-accent-preview">'
+      + '<div class="change-accent-preview-bar"></div>'
+      + '<div class="change-accent-preview-icon"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 9.5H20.5M8 3v4M16 3v4"/></svg></div>'
+      + '<div class="change-accent-preview-text"><div class="change-accent-preview-title">Zahnarzt-Termin</div><div class="change-accent-preview-sub">Morgen · 14:30</div></div>'
+      + '<button class="change-accent-preview-btn" type="button" tabindex="-1">Öffnen</button>'
+      + '</div>'
+      + '</div>';
   }
   function weatherHealthStatus(){
     var store = window.ChangeWeatherStore;
@@ -617,7 +689,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0303';
+  var APP_VERSION = '0.1.0305';
 
 
 
@@ -736,14 +808,30 @@
   }
   async function githubAdminAuthHeaders(interactive){
     if(!isGithubAdmin()) throw new Error('GitHub-Updates sind nur fuer Admins freigegeben.');
-    if(window.ensureChangeFirebaseAuth){
-      var ok = await window.ensureChangeFirebaseAuth({silent: interactive !== true, interactive: interactive === true, waitMs: interactive === true ? 2500 : 1500});
-      if(!ok) throw new Error('Firebase-Admin-Anmeldung fehlt.');
-    }
+
+    // Firebase Auth direkt prüfen – unabhängig von Firestore/Messaging SDK-Zustand.
+    // ensureChangeFirebaseAuth schlägt fehl wenn firebase.firestore nicht geladen ist;
+    // für den GitHub-Upload brauchen wir nur ein Auth-Token, nicht Firestore.
     var user = null;
     try{ user = window.firebase && firebase.auth ? firebase.auth().currentUser : null; }catch(e){}
-    if(!user || !githubAdminEmail(user.email || '')) throw new Error('Firebase-Admin-Anmeldung fehlt.');
-    var token = await user.getIdToken(true);
+
+    // Kein User im Cache → kurz auf Auth-State warten (max 2,5s)
+    if(!user){
+      user = await new Promise(function(resolve){
+        var done = false;
+        var timer = setTimeout(function(){ if(!done){ done=true; resolve(null); } }, 2500);
+        try{
+          var unsub = firebase.auth().onAuthStateChanged(function(u){
+            if(!done){ done=true; clearTimeout(timer); try{ unsub(); }catch(e){} resolve(u); }
+          });
+        }catch(e){ clearTimeout(timer); resolve(null); }
+      });
+    }
+
+    if(!user || !githubAdminEmail(user.email || '')) throw new Error('Firebase-Admin-Anmeldung fehlt. Bitte neu mit Google einloggen.');
+    var token = null;
+    try{ token = await user.getIdToken(true); }catch(e){ throw new Error('Firebase-Token konnte nicht erneuert werden: ' + (e && e.message ? e.message : e)); }
+    if(!token) throw new Error('Firebase-Token ist leer.');
     return {'Authorization':'Bearer ' + token};
   }
   function readGithubUpdateSecret(){
@@ -1651,6 +1739,7 @@
       + themeOptionButton('light','Hell','Ruhiger heller Look', theme)
       + themeOptionButton('dark','Dunkel','Aktueller Darkmode', theme)
       + '</div>'
+      + accentSectionHtml()
       ;
     var themeCard = settingsFeatureCard('◐','Darstellung',themeLabel,theme === 'dark' ? 'ok' : (theme === 'light' ? 'ok' : 'off'),'','',themeBody);
     var dataAuditCard = settingsFeatureCard(
@@ -1992,6 +2081,7 @@
     var syncGoogle = $('set-sync-google'); if(syncGoogle) syncGoogle.addEventListener('click', async function(){ if(window.ChangeGoogleSyncStatus) await window.ChangeGoogleSyncStatus.syncNow(); refreshSameTab(); });
     var clearSyncLog = $('clear-sync-log'); if(clearSyncLog) clearSyncLog.addEventListener('click', function(){ try{ localStorage.removeItem('change_v1_sync_log'); }catch(e){} refreshSameTab('sync'); });
     document.querySelectorAll('[data-change-theme]').forEach(function(btn){ btn.addEventListener('click', function(){ setAppTheme(btn.getAttribute('data-change-theme') || 'system'); refreshSameTab('app'); }); });
+    document.querySelectorAll('[data-change-accent]').forEach(function(btn){ btn.addEventListener('click', function(){ setAppAccent(btn.getAttribute('data-change-accent') || 'green'); refreshSameTab('app'); }); });
     var runDataAudit = $('run-data-audit'); if(runDataAudit) runDataAudit.addEventListener('click', function(){ dataAuditExpanded = true; refreshSameTab('app'); });
     var runHealth = $('run-app-health'); if(runHealth) runHealth.addEventListener('click', function(){ appHealthExpanded = true; refreshSameTab('app'); });
     function setGithubZipFile(file){

@@ -3540,6 +3540,15 @@ window.toggleDarkMode = function(){
   }
 })();
 
+// v0.1.0304 · Akzentfarbe beim Start wiederherstellen
+(function initAccent(){
+  try{
+    var a = localStorage.getItem('change_v1_accent');
+    if(a && a !== 'green'){ document.documentElement.setAttribute('data-accent', a); }
+    else { document.documentElement.removeAttribute('data-accent'); }
+  }catch(e){}
+})();
+
 /* ====
    STREAK BERECHNUNG
 ==== */

@@ -117,3 +117,60 @@
   --sh:        0 1px 3px rgba(0,0,0,.30), 0 4px 12px rgba(0,0,0,.40);
   --sh-lg:     0 2px 8px rgba(0,0,0,.30), 0 16px 40px rgba(0,0,0,.50);
 }
+
+/* ── Akzentfarben-Override · v0.1.0304 ────────────────────────────────────
+   Wird per JS als [data-accent="blue|amber|violet|red"] auf <html> gesetzt.
+   Ohne Attribut gilt der Standard: Grün (dark: #4ADE80 / light: #2D6A4F).
+   ──────────────────────────────────────────────────────────────────────── */
+
+/* Blau */
+[data-accent="blue"] {
+  --acc:    #3B82F6; --acc-h: #2563EB;
+  --acc-d:  rgba(59,130,246,.09); --acc-d2: rgba(59,130,246,.05);
+  --sh-acc: 0 4px 16px rgba(59,130,246,.30);
+}
+[data-accent="blue"][data-theme="dark"],
+[data-theme="dark"][data-accent="blue"] {
+  --acc:    #60A5FA; --acc-h: #3B82F6;
+  --acc-d:  rgba(96,165,250,.12); --acc-d2: rgba(96,165,250,.06);
+  --sh-acc: 0 4px 16px rgba(96,165,250,.30);
+}
+
+/* Bernstein */
+[data-accent="amber"] {
+  --acc:    #D97706; --acc-h: #B45309;
+  --acc-d:  rgba(217,119,6,.09); --acc-d2: rgba(217,119,6,.05);
+  --sh-acc: 0 4px 16px rgba(217,119,6,.30);
+}
+[data-accent="amber"][data-theme="dark"],
+[data-theme="dark"][data-accent="amber"] {
+  --acc:    #FCD34D; --acc-h: #F59E0B;
+  --acc-d:  rgba(252,211,77,.12); --acc-d2: rgba(252,211,77,.06);
+  --sh-acc: 0 4px 16px rgba(252,211,77,.30);
+}
+
+/* Violett */
+[data-accent="violet"] {
+  --acc:    #7C3AED; --acc-h: #6D28D9;
+  --acc-d:  rgba(124,58,237,.09); --acc-d2: rgba(124,58,237,.05);
+  --sh-acc: 0 4px 16px rgba(124,58,237,.30);
+}
+[data-accent="violet"][data-theme="dark"],
+[data-theme="dark"][data-accent="violet"] {
+  --acc:    #A78BFA; --acc-h: #8B5CF6;
+  --acc-d:  rgba(167,139,250,.12); --acc-d2: rgba(167,139,250,.06);
+  --sh-acc: 0 4px 16px rgba(167,139,250,.30);
+}
+
+/* Rot */
+[data-accent="red"] {
+  --acc:    #DC2626; --acc-h: #B91C1C;
+  --acc-d:  rgba(220,38,38,.09); --acc-d2: rgba(220,38,38,.05);
+  --sh-acc: 0 4px 16px rgba(220,38,38,.30);
+}
+[data-accent="red"][data-theme="dark"],
+[data-theme="dark"][data-accent="red"] {
+  --acc:    #F87171; --acc-h: #EF4444;
+  --acc-d:  rgba(248,113,113,.12); --acc-d2: rgba(248,113,113,.06);
+  --sh-acc: 0 4px 16px rgba(248,113,113,.30);
+}

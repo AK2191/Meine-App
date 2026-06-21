@@ -1,3 +1,17 @@
+## Version 0.1.0305
+- GitHub-Upload: `githubAdminAuthHeaders` nutzt Firebase Auth direkt, ohne `ensureChangeFirebaseAuth` als Abhängigkeit. Damit funktioniert der Upload auch wenn `firebase.firestore` oder `firebase-messaging` nicht vollständig geladen sind (z.B. bei Service-Worker-Netzwerkfehlern).
+- Kein User im Auth-Cache: kurzes Warten auf `onAuthStateChanged` (max 2,5s) statt sofortigem Fehler.
+- Fehlermeldungen bei Token-Problemen präziser: zeigt jetzt den Firebase-Fehlercode an.
+- Keine Änderung an Upload-Logik, Worker, Sync, Kalender, Challenges, Push oder Pollen.
+
+## Version 0.1.0304
+- **Akzentfarben-System**: Die Einstellungen → Darstellung bieten jetzt ein Akzentfarben-Grid mit 5 Farben: Grün (Standard), Blau, Amber, Violett, Rot. Die Auswahl wird in `change_v1_accent` gespeichert und beim App-Start als `data-accent` auf `<html>` angewendet.
+- **Neue CSS-Variablen**: `styles/tokens.css` definiert `[data-accent="blue|amber|violet|red"]`-Overrides für `--acc`, `--acc-h`, `--acc-d`, `--acc-d2`, `--sh-acc` in Light und Dark Mode.
+- **Theme-Options mit Vorschau**: Die drei Darstellungs-Buttons (System / Hell / Dunkel) zeigen jetzt Mini-Previews statt reinem Text.
+- **Mobile Optimierung**: Das Akzentfarben-Grid skaliert auf allen Bildschirmgrößen (5 Spalten, kompaktere Abstände ab 760px / 440px).
+- Geändert: `styles/tokens.css`, `features/settings/settingsPanel.css`, `features/settings/settingsPanel.js`, `app.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Keine Änderung an Firebase, Login, Google Kalender, Push, Sync, Challenge-Speicherung, Punkteberechnung oder Kalenderlogik.
+
 ## Version 0.1.0303
 - Lokale Kalender-/Event-Daten werden beim App-Start robuster aus `ChangeEventStore` gespiegelt. Der Store bleibt die bevorzugte Quelle, weil er `change_v1_events`, `events` und `change_v2_events` bereits zusammenliest.
 - Aeltere Event-Speicherpfade in `app.js` schreiben nach lokalem Speichern oder Google-Sync-Erfolg zuerst ueber `persistEventStateToStore()`; der Legacy-Key `events` bleibt nur Fallback.
