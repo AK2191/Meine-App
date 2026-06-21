@@ -189,6 +189,57 @@ function persistChallengeStateToStore(){
     return false;
   }
 }
+function mirrorChallengeStateFromStore(){
+  const store = getChallengeStore();
+  if(!store) return false;
+  try{
+    challenges = store.getChallenges();
+    challengeCompletions = store.getCompletions();
+    challengePlayers = store.getPlayers();
+    window.challenges = challenges;
+    window.challengeCompletions = challengeCompletions;
+    window.challengePlayers = challengePlayers;
+    return true;
+  }catch(e){
+    console.warn('ChallengeStore mirror:', e);
+    return false;
+  }
+}
+function replaceRemoteChallengesInStore(list){
+  const store = getChallengeStore();
+  if(!store || typeof store.replaceChallenges !== 'function') return false;
+  try{
+    store.replaceChallenges(Array.isArray(list) ? list : [], {persist:true});
+    return mirrorChallengeStateFromStore();
+  }catch(e){
+    console.warn('ChallengeStore remote challenge replace:', e);
+    return false;
+  }
+}
+function mergeRemoteCompletionsIntoStore(incoming){
+  const store = getChallengeStore();
+  if(!store || typeof store.replaceCompletions !== 'function') return false;
+  try{
+    const base = Array.isArray(store.getCompletions()) ? store.getCompletions().slice() : [];
+    store.replaceCompletions((Array.isArray(incoming) ? incoming : []).concat(base), {persist:true});
+    return mirrorChallengeStateFromStore();
+  }catch(e){
+    console.warn('ChallengeStore remote completions:', e);
+    return false;
+  }
+}
+function mergeRemotePlayersIntoStore(incoming){
+  const store = getChallengeStore();
+  if(!store || typeof store.replacePlayers !== 'function') return false;
+  try{
+    const base = Array.isArray(store.getPlayers()) ? store.getPlayers().slice() : [];
+    store.replacePlayers(base.concat(Array.isArray(incoming) ? incoming : []), {persist:true});
+    return mirrorChallengeStateFromStore();
+  }catch(e){
+    console.warn('ChallengeStore remote players:', e);
+    return false;
+  }
+}
 
 
 // Filter state
@@ -2113,20 +2164,31 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     }catch(e){ console.warn('Player sync:',e); }
   };
 
-  function mergePlayer(p){
-    if(!p || !p.id) return;
+  function normalizeRemotePlayer(p){
+    if(!p || !p.id) return null;
     const id=(p.email||p.id).toLowerCase();
-    const entry={id:id,name:p.name||p.email||'Mitspieler',email:p.email||id,picture:p.picture||'',online:!!p.online,lastSeen:p.lastSeen||null,createdAt:p.createdAt||new Date().toISOString()};
+    return {id:id,name:p.name||p.email||'Mitspieler',email:p.email||id,picture:p.picture||'',online:!!p.online,lastSeen:p.lastSeen||null,createdAt:p.createdAt||new Date().toISOString()};
+  }
+
+  function mergePlayer(p){
+    const entry = normalizeRemotePlayer(p);
+    if(!entry) return null;
+    const id = entry.id;
     const i=challengePlayers.findIndex(x=>(x.id||x.email||'').toLowerCase()===id);
     if(i>=0) challengePlayers[i]={...challengePlayers[i],...entry}; else challengePlayers.push(entry);
+    return entry;
   }
 
   function startLivePlayersListener(){
     if(ls('live_sync_enabled')!==true) return;
     if(!db || unsubscribePlayers) return;
     unsubscribePlayers=db.collection('change_players').onSnapshot(snap=>{
-      snap.forEach(doc=>mergePlayer({id:doc.id,...doc.data()}));
-      persistChallengeStateToStore() || ls('challenge_players',challengePlayers);
+      const incoming=[];
+      snap.forEach(doc=>{const entry=normalizeRemotePlayer({id:doc.id,...doc.data()}); if(entry) incoming.push(entry);});
+      if(!mergeRemotePlayersIntoStore(incoming)){
+        incoming.forEach(mergePlayer);
+        persistChallengeStateToStore() || ls('challenge_players',challengePlayers);
+      }
       if(currentMainView==='challenges') renderChallenges();
       if(currentMainView==='dashboard') buildDashboard();
     },err=>console.warn('Players listener:',err));
@@ -2136,17 +2198,21 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     if(ls('live_sync_enabled')!==true) return;
     if(!db || unsubscribeCompletions) return;
     unsubscribeCompletions=db.collection('change_completions').orderBy('createdAt','desc').limit(500).onSnapshot(snap=>{
+      const incoming=[];
       snap.forEach(doc=>{
         const d={id:doc.id,...doc.data()};
-        if(!challengeCompletions.some(c=>c.id===d.id)){
-          challengeCompletions.push({
-            id:d.id, challengeId:d.challengeId, playerId:(d.playerId||d.email||'').toLowerCase(),
-            playerName:d.playerName||d.email||'Mitspieler', date:d.date, points:parseInt(d.points)||0,
-            createdAt:d.createdAtLocal||new Date().toISOString()
-          });
-        }
+        incoming.push({
+          id:d.id, challengeId:d.challengeId, playerId:(d.playerId||d.email||'').toLowerCase(),
+          playerName:d.playerName||d.email||'Mitspieler', date:d.date, points:parseInt(d.points)||0,
+          createdAt:d.createdAtLocal||new Date().toISOString()
+        });
       });
-      persistChallengeStateToStore() || ls('challenge_completions',challengeCompletions);
+      if(!mergeRemoteCompletionsIntoStore(incoming)){
+        incoming.forEach(function(item){
+          if(!challengeCompletions.some(c=>c.id===item.id)) challengeCompletions.push(item);
+        });
+        persistChallengeStateToStore() || ls('challenge_completions',challengeCompletions);
+      }
       if(currentMainView==='challenges') renderChallenges();
       if(currentMainView==='dashboard') buildDashboard();
       if(currentMainView==='calendar') renderCalendar();
@@ -2473,15 +2539,21 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     if(window._changeLiveChallengesListener || !hasCfg()) return;
     const db=getDb(); if(!db) return;
     window._changeLiveChallengesListener=db.collection('change_challenges').where('active','==',true).onSnapshot(snap=>{
-      snap.forEach(doc=>{const ch={id:doc.id,...doc.data()}; const i=(challenges||[]).findIndex(x=>x.id===ch.id); if(i>=0) challenges[i]={...challenges[i],...ch}; else challenges.push(ch);});
+      const incoming=[];
+      snap.forEach(doc=>incoming.push({id:doc.id,...doc.data()}));
+      let nextChallenges = (getChallengeStore() ? getChallengeStore().getChallenges() : (challenges||[])).slice();
+      incoming.forEach(ch=>{const i=(nextChallenges||[]).findIndex(x=>x.id===ch.id); if(i>=0) nextChallenges[i]={...nextChallenges[i],...ch}; else nextChallenges.push(ch);});
       try{
         if(window.ChangeChallengeDifficulty && typeof window.ChangeChallengeDifficulty.reconcileChallenges === 'function'){
           const dk = dateKey(new Date());
           const daily = window.ChangeChallengeDifficulty.buildDailyChallenges(dk);
-          challenges = window.ChangeChallengeDifficulty.reconcileChallenges(challenges, daily, dk);
+          nextChallenges = window.ChangeChallengeDifficulty.reconcileChallenges(nextChallenges, daily, dk);
         }
       }catch(e){}
-      persistChallengeStateToStore() || ls('challenges',challenges);
+      if(!replaceRemoteChallengesInStore(nextChallenges)){
+        challenges = nextChallenges;
+        persistChallengeStateToStore() || ls('challenges',challenges);
+      }
       if(currentMainView==='challenges') renderChallenges();
       if(currentMainView==='calendar') renderCalendar();
       if(currentMainView==='dashboard') buildDashboard();

@@ -61,6 +61,8 @@ Diese Funktionen duerfen nicht automatisch beim App-Start laufen. Sie sind fuer 
 - Einzelne Settings-Keys bleiben weiterhin aktiv und werden nicht geloescht. Sync-Schalter, Push, Theme, Google-Kalender und Dashboard-Optionen behalten ihre bisherigen Schreibwege; der Snapshot ist eine Wartungs- und Audit-Schicht.
 - v0.1.0299: App & Sicherheit zeigt einen read-only Daten-Audit auf Basis von `ChangeDataModel.auditStorage(localStorage)`. Der Audit zeigt nur Summen und Key-Gruppen, keine Rohdaten, keine Loeschung, keine Migration und keinen Sync-Start.
 - v0.1.0300: Pollen-Symptome wurden an `core/pollen/pollenStore.js` angebunden. Der Store liest Canonical- und Legacy-Maps, schreibt nur `change_v1_pollen_symptoms` und startet keine Migration oder Remote-Synchronisation.
+- v0.1.0301: Der manuelle Firebase-Sync-Controller nutzt `ChangeChallengeStore` und `ChangeSettingsStore` als bevorzugte Datenquellen fuer Challenges, Punkte, Mitspieler und Settings-Fallbacks. Das aendert keinen Auto-Start und fuehrt keine Migration aus.
+- v0.1.0302: Eingehende Firebase-Live-Daten fuer `change_players`, `change_completions` und `change_challenges` werden in `ChangeChallengeStore` uebernommen und danach nur noch in Legacy-Globals gespiegelt.
 
 ## Migration Order
 

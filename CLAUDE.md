@@ -5,6 +5,22 @@
 - Versionseintraege in dieser Datei bleiben erhalten, weil der GitHub-Update-Workflow daraus Zielversionen erkennt.
 - Neue Arbeit erfolgt klein und systembezogen: ein Feature oder eine Schicht pro Schritt.
 
+## Version 0.1.0302
+- **Firebase-Eingang ueber Stores:** Die Live-Listener in `app.js` fuer `change_players`, `change_completions` und `change_challenges` schreiben eingehende Remote-Daten zuerst in `ChangeChallengeStore`.
+- **Legacy bleibt gespiegelt:** `challenges`, `challengeCompletions` und `challengePlayers` werden danach aus dem Store gespiegelt, damit vorhandene UI-, Dashboard- und Kalenderpfade weiter unveraendert laufen.
+- **Punkte-Updates robuster:** Remote-Completions mit gleicher ID duerfen lokale Store-Daten aktualisieren; alte Legacy-Keys bleiben weiterhin lesbar und als Fallback aktiv.
+- **Bewusst nicht geaendert:** Kein automatischer Sync-Start, keine Datenloeschung, keine Startmigration, keine Firebase-Regel-, CSS-, Markup-, Icon-, Kalender-, Pollen-, Push-, Google-Kalender- oder Challenge-UI-Aenderung.
+- Geaendert: `app.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `docs/DATA-MODEL.md`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax, DataModel-Audit im Nur-Lesen-Modus und statischer Listener-Check fuer die drei Store-basierten Firebase-Eingangspfade.
+
+## Version 0.1.0301
+- **Firebase-Sync nutzt Stores als Quelle:** Der manuell gestartete `core/integrations/firebaseSyncController.js` liest Challenges, Punkte und Mitspieler zuerst ueber `ChangeChallengeStore`, bevor er auf Legacy-Globals oder Storage-Keys zurueckfaellt.
+- **Mitspieler lokal sauber zurueckgeschrieben:** Nach `ensurePlayer()` wird der lokale Spieler ueber `ChangeChallengeStore.replacePlayers(..., {persist:true})` persistiert, wenn der Store verfuegbar ist.
+- **Settings-Fallback store-basiert:** Wenn `saveChangeSettings(true)` nicht greift, wird der Payload aus `ChangeSettingsStore.collectSnapshot()` bzw. `readSnapshot()` aufgebaut.
+- **Bewusst nicht geaendert:** Kein automatischer Sync-Start, keine Datenloeschung, keine Startmigration, keine Firebase-Regel-, CSS-, Markup-, Icon-, Kalender-, Pollen-, Push-, Google-Kalender- oder Challenge-UI-Aenderung.
+- Geaendert: `core/integrations/firebaseSyncController.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `docs/DATA-MODEL.md`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax, DataModel-Audit im Nur-Lesen-Modus und FirebaseSyncController-Smoke-Test mit Store-basierten Challenges/Punkten/Mitspielern.
+
 ## Version 0.1.0300
 - **Pollen-Symptome auf Datenmodell umgestellt:** Neues `core/pollen/pollenStore.js` ist die lokale Datenquelle fuer Pollen-Symptomtage und wird in `index.html` nach `core/data/dataModel.js` geladen.
 - **Legacy bleibt lesbar:** Der Store liest `change_v1_pollen_symptoms`, `pollen_symptoms` und `change_pollen_symptoms`, schreibt aber nur `change_v1_pollen_symptoms`. `core/data/dataModel.js` zaehlt und normalisiert diese Legacy-Maps jetzt ebenfalls.

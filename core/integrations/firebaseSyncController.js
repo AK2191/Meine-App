@@ -36,6 +36,32 @@
     try{ if(window.ChangeChallengeDifficulty && window.ChangeChallengeDifficulty.getDailyCount) return window.ChangeChallengeDifficulty.getDailyCount(); }catch(e){}
     return parseInt(readJson('change_v1_auto_challenge_count', readJson('auto_challenge_count', 7)), 10) || 7;
   }
+  function challengeStore(){
+    return window.ChangeChallengeStore || null;
+  }
+  function settingsStore(){
+    return window.ChangeSettingsStore || null;
+  }
+  function storeList(method){
+    try{
+      var store = challengeStore();
+      if(store && typeof store[method] === 'function'){
+        var list = store[method]();
+        return Array.isArray(list) ? list.slice() : [];
+      }
+    }catch(e){}
+    return [];
+  }
+  function persistPlayersToStore(players){
+    try{
+      var store = challengeStore();
+      if(store && typeof store.replacePlayers === 'function'){
+        store.replacePlayers(players || [], {persist:true});
+        return storeList('getPlayers');
+      }
+    }catch(e){}
+    return players || [];
+  }
   function writeDatabaseSyncState(enabled){
     writeJson('database_sync_enabled', !!enabled);
     writeJson('change_v1_database_sync_enabled', !!enabled);
@@ -111,6 +137,8 @@
     }
   }
   function currentChallenges(){
+    var fromStore = storeList('getChallenges');
+    if(fromStore.length) return fromStore;
     try{ if(Array.isArray(window.challenges)) return window.challenges; }catch(e){}
     try{ if(typeof challenges !== 'undefined' && Array.isArray(challenges)) return challenges; }catch(e){}
     return readJson('change_v1_challenges', readJson('challenges', [])) || [];
@@ -127,6 +155,8 @@
     }catch(e){ console.warn('Auto-Challenge Tagesplan:', e); }
   }
   function currentCompletions(){
+    var fromStore = storeList('getCompletions');
+    if(fromStore.length) return fromStore;
     var list = [];
     try{ if(Array.isArray(window.challengeCompletions)) list = list.concat(window.challengeCompletions); }catch(e){}
     try{ if(typeof challengeCompletions !== 'undefined' && Array.isArray(challengeCompletions)) list = list.concat(challengeCompletions); }catch(e){}
@@ -177,13 +207,16 @@
     try{
       await database.collection('change_players').doc(safeDocId(me.email)).set(payload, {merge:true});
       try{
-        window.challengePlayers = Array.isArray(window.challengePlayers) ? window.challengePlayers : [];
-        var idx = window.challengePlayers.findIndex(function(p){ return String(p.email || p.id || '').toLowerCase() === me.email; });
+        var players = storeList('getPlayers');
+        if(!players.length) players = Array.isArray(window.challengePlayers) ? window.challengePlayers.slice() : [];
+        var idx = players.findIndex(function(p){ return String(p.email || p.id || '').toLowerCase() === me.email; });
         var local = {id:me.email,email:me.email,name:payload.name,picture:payload.picture,online:true};
-        if(idx >= 0) window.challengePlayers[idx] = Object.assign({}, window.challengePlayers[idx], local);
-        else window.challengePlayers.push(local);
-        if(typeof challengePlayers !== 'undefined') challengePlayers = window.challengePlayers;
-        if(typeof ls === 'function') ls('challenge_players', window.challengePlayers);
+        if(idx >= 0) players[idx] = Object.assign({}, players[idx], local);
+        else players.push(local);
+        players = persistPlayersToStore(players);
+        window.challengePlayers = players;
+        if(typeof challengePlayers !== 'undefined') challengePlayers = players;
+        if(typeof ls === 'function' && !challengeStore()) ls('challenge_players', players);
       }catch(e){}
       return true;
     }catch(e){
@@ -199,7 +232,32 @@
     if(direct === true || direct === false) return direct;
     return readJson('live_sync_enabled', false) === true || readJson('change_v1_live_sync_enabled', false) === true;
   }
+  function settingsSnapshotPayload(){
+    try{
+      var store = settingsStore();
+      if(!store) return null;
+      var snapshot = null;
+      if(typeof store.collectSnapshot === 'function') snapshot = store.collectSnapshot();
+      else if(typeof store.readSnapshot === 'function') snapshot = store.readSnapshot();
+      if(!snapshot || typeof snapshot !== 'object') return null;
+      var me = account();
+      var payload = Object.assign({}, snapshot);
+      payload.schema = parseInt(payload.schema, 10) || 1;
+      payload.owner = {email: me.email, uid: me.uid || '', name: me.name || ''};
+      payload.sync = Object.assign({}, payload.sync || {}, {
+        databaseSyncEnabled: true,
+        liveSyncEnabled: true,
+        autoChallengeCount: readAutoChallengeCount(),
+        challengeDifficulty: readChallengeDifficulty()
+      });
+      payload.updatedAtLocal = new Date().toISOString();
+      payload.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+      return payload;
+    }catch(e){ return null; }
+  }
   function fallbackSettingsPayload(){
+    var fromStore = settingsSnapshotPayload();
+    if(fromStore) return fromStore;
     var me = account();
     var weatherSettings = readJson('change_v1_weather_settings', {}) || {};
     var calendarOptions = readJson('change_v1_calendar_view_options', readJson('calendar_settings', {})) || {};
