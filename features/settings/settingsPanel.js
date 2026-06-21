@@ -227,24 +227,30 @@
 
   function themePreviewHtml(mode){
     if(mode === 'system'){
-      return '<div class="change-theme-preview-system">'
-        + '<div class="left"><div class="change-theme-preview-bar" style="background:#10b981;width:55%"></div><div class="change-theme-preview-bar secondary" style="width:78%"></div></div>'
-        + '<div class="right"><div class="change-theme-preview-bar" style="background:#34d399;width:55%"></div><div class="change-theme-preview-bar secondary" style="width:78%"></div></div>'
+      return '<div class="cs-theme-preview-system">'
+        + '<div class="half l"><div class="cs-theme-bar" style="width:55%;background:#10b981"></div><div class="cs-theme-bar sub-l" style="width:78%"></div></div>'
+        + '<div class="half d"><div class="cs-theme-bar" style="width:55%"></div><div class="cs-theme-bar sub" style="width:78%"></div></div>'
         + '</div>';
     }
     var cls = mode === 'dark' ? 'dark' : 'light';
-    return '<div class="change-theme-preview ' + cls + '">'
-      + '<div class="change-theme-preview-bar" style="width:55%"></div>'
-      + '<div class="change-theme-preview-bar secondary" style="width:78%"></div>'
-      + '<div class="change-theme-preview-bar secondary" style="width:62%"></div>'
+    var barSub = cls === 'light' ? 'sub-l' : 'sub';
+    var accentBar = cls === 'light' ? 'background:#10b981;' : '';
+    return '<div class="cs-theme-preview '+cls+'">'
+      + '<div class="cs-theme-bar" style="width:55%;'+accentBar+'"></div>'
+      + '<div class="cs-theme-bar '+barSub+'" style="width:78%"></div>'
+      + '<div class="cs-theme-bar '+barSub+'" style="width:62%"></div>'
       + '</div>';
   }
 
   function themeOptionButton(value, title, subtitle, active){
-    return '<button type="button" class="change-theme-option '+(active===value?'active':'')+'" data-change-theme="'+esc(value)+'">'
+    var isActive = active === value;
+    var radioHtml = isActive
+      ? '<span class="cs-theme-radio" style="background:#34d399;border-color:transparent;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="#06140F" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg></span>'
+      : '<span class="cs-theme-radio"></span>';
+    return '<button type="button" class="cs-theme-option '+(isActive?'active':'')+'" data-change-theme="'+esc(value)+'">'  
       + themePreviewHtml(value)
-      + '<strong>'+esc(title)+'</strong>'
-      + '<span>'+esc(subtitle)+'</span>'
+      + '<div class="cs-theme-label"><span>'+esc(title)+'</span>'+radioHtml+'</div>'
+      + '<div class="cs-theme-sub">'+esc(subtitle)+'</div>'
       + '</button>';
   }
 
@@ -253,27 +259,27 @@
     var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     var colors = isDark ? opt.dark : opt.light;
     var c1 = colors[0], c2 = colors[1];
-    var checkSvg = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#fff" stroke-width="3.2"><polyline points="20 6 9 17 4 12"/></svg>';
+    var checkSvg = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#06140F" stroke-width="3.2"><polyline points="20 6 9 17 4 12"/></svg>';
     var dotHtml = isActive
-      ? '<div class="change-accent-dot active" style="background:radial-gradient(circle at 32% 28%,#'+c1+',#'+c2+' 70%)">'+checkSvg+'</div>'
-      : '<div class="change-accent-dot" style="background:radial-gradient(circle at 32% 28%,#'+c1+',#'+c2+' 70%)"></div>';
-    return '<button type="button" class="change-accent-option'+(isActive?' active':'')+'" data-change-accent="'+esc(opt.value)+'">'
+      ? '<div class="cs-accent-dot" style="background:radial-gradient(circle at 32% 28%,#'+c1+',#'+c2+' 70%);box-shadow:0 6px 16px rgba(0,0,0,.32)">'+checkSvg+'</div>'
+      : '<div class="cs-accent-dot" style="background:radial-gradient(circle at 32% 28%,#'+c1+',#'+c2+' 70%)"></div>';
+    return '<button type="button" class="cs-accent-option'+(isActive?' active':'')+'" data-change-accent="'+esc(opt.value)+'">'  
       + dotHtml
-      + '<span class="change-accent-name">'+esc(opt.label)+'</span>'
+      + '<span class="cs-accent-name">'+esc(opt.label)+'</span>'
       + '</button>';
   }
 
   function accentSectionHtml(){
     var current = appAccentPreference();
     var buttons = ACCENT_OPTIONS.map(function(o){ return accentOptionButton(o, current); }).join('');
-    return '<div class="change-accent-section">'
-      + '<div class="change-accent-label">Akzentfarbe</div>'
-      + '<div class="change-accent-grid">'+buttons+'</div>'
-      + '<div class="change-accent-preview">'
-      + '<div class="change-accent-preview-bar"></div>'
-      + '<div class="change-accent-preview-icon"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 9.5H20.5M8 3v4M16 3v4"/></svg></div>'
-      + '<div class="change-accent-preview-text"><div class="change-accent-preview-title">Zahnarzt-Termin</div><div class="change-accent-preview-sub">Morgen · 14:30</div></div>'
-      + '<button class="change-accent-preview-btn" type="button" tabindex="-1">Öffnen</button>'
+    return '<div class="cs-accent-section" style="margin-top:16px;border-top:1px solid rgba(255,255,255,.07);padding-top:14px">'
+      + '<div class="cs-secl" style="margin-bottom:10px">Akzentfarbe</div>'
+      + '<div class="cs-accent-grid">'+buttons+'</div>'
+      + '<div class="cs-accent-preview">'
+      + '<div class="cs-accent-preview-bar"></div>'
+      + '<div class="cs-accent-preview-icon"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 9.5H20.5M8 3v4M16 3v4"/></svg></div>'
+      + '<div style="flex:1;min-width:0"><div class="cs-accent-preview-title">Zahnarzt-Termin</div><div class="cs-accent-preview-sub">Morgen · 14:30</div></div>'
+      + '<button class="cs-accent-preview-btn" type="button" tabindex="-1">Öffnen</button>'
       + '</div>'
       + '</div>';
   }
@@ -289,10 +295,10 @@
   }
   function featureSwitch(title, subtitle, id, checked, disabled){
     var control = '<label class="switch"><input type="checkbox" id="'+id+'" '+(checked ? 'checked' : '')+' '+(disabled ? 'disabled' : '')+'><span class="slider"></span></label>';
-    return '<div class="change-feature-row"><div><div class="change-feature-row-title">'+title+'</div>'+(subtitle ? '<div class="change-feature-row-sub">'+subtitle+'</div>' : '')+'</div>'+control+'</div>';
+    return '<div class="cs-feature-row" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><div class="cs-feature-row-title" style="font-size:13px;font-weight:800;color:#F2F5F1">'+title+'</div>'+(subtitle ? '<div class="cs-feature-row-sub" style="font-size:11.5px;color:#7E8A80;margin-top:3px">'+subtitle+'</div>' : '')+'</div>'+control+'</div>';
   }
   function featureField(label, inner, hint){
-    return '<div class="change-feature-field"><label class="flabel">'+esc(label)+'</label>'+inner+(hint ? '<div class="change-feature-row-sub">'+esc(hint)+'</div>' : '')+'</div>';
+    return '<div class="cs-feature-field" style="display:grid;gap:7px"><label class="flabel">'+esc(label)+'</label>'+inner+(hint ? '<div class="cs-feature-row-sub" style="font-size:11.5px;color:#7E8A80;margin-top:3px">'+esc(hint)+'</div>' : '')+'</div>';
   }
   function calendarPane(){
     var options = calendarOptions();
@@ -301,7 +307,7 @@
       '<select class="finput" id="set-holiday-state">'+stateOptions(options.holidayState)+'</select>',
       ''
     );
-    return '<div class="change-settings-stack">'
+    return '<div class="cs-stack">'
       + settingsFeatureCard(
         '🗓️',
         'Feiertage',
@@ -388,8 +394,8 @@
   function halfDayChips(){
     var list = halfDays();
     if(!list.length) return '<div class="change-settings-sub" data-half-list>Keine halben Urlaubstage hinterlegt.</div>';
-    return '<div data-half-list class="change-halfday-list">'+list.map(function(day){
-      return '<span class="change-halfday-chip">'+esc(halfDayLabel(day))+'<button type="button" data-remove-half="'+esc(day)+'" aria-label="Halben Urlaubstag entfernen">×</button></span>';
+    return '<div data-half-list class="cs-halfday-list">'+list.map(function(day){
+      return '<span class="cs-halfday-chip">'+esc(halfDayLabel(day))+'<button type="button" data-remove-half="'+esc(day)+'" aria-label="Halben Urlaubstag entfernen">×</button></span>';
     }).join('')+'</div>';
   }
 
@@ -432,7 +438,7 @@
       if(rainOn) wetterBody += hoursSelect('set-rain-hours', rainHours);
     }else{
     }
-    wetterBody += '<button class="btn btn-secondary btn-full" id="set-weather-location" type="button">Standort aktualisieren</button>';
+    wetterBody += '<button class="cs-btn" id="set-weather-location" type="button">Standort aktualisieren</button>';
 
     var pollenBody = '';
     if(pollenOn){
@@ -481,7 +487,7 @@
       ? featureField('Jahresurlaub', '<input type="number" class="finput" id="set-urlaub-days" min="1" max="365" value="'+urlaubDays+'">', '')
         + featureField('Halbe Urlaubstage', '<div class="change-halfday-controls"><select class="finput" id="set-half-month">'+monthOptions+'</select><select class="finput" id="set-half-day">'+dayOptions+'</select><button class="btn btn-secondary btn-sm" id="set-add-half" type="button">+ Hinzufügen</button></div>'+halfDayChips(), ''): ''
 
-    return '<div class="change-settings-stack">'
+    return '<div class="cs-stack">'
       + weatherHealthCard()
       + settingsFeatureCard(
         '✂️',
@@ -531,16 +537,25 @@
     return {ok:cfgOk, label:'AUS', tone:'off', detail: cfgOk ? 'Startet nur über diesen Schalter.' : 'Firebase-Konfiguration nicht geladen.'};
   }
 
+  function chipHtml(text, tone){
+    var cls = (tone === 'ok') ? 'cs-chip-a' : (tone === 'error' ? 'cs-chip-e' : 'cs-chip-n');
+    return text ? '<span class="'+cls+'">'+esc(text)+'</span>' : '';
+  }
   function settingsFeatureCard(icon, title, badgeText, badgeTone, subtitle, controlHtml, bodyHtml){
-    return '<div class="change-settings-feature-card">'
-      + '<div class="change-feature-head">'
-      + '<div class="change-feature-left"><div class="change-feature-icon">'+iconMarkup(icon)+'</div><div>'
-      + '<div class="change-feature-title">'+esc(title)+' '+pill(badgeText, badgeTone)+'</div>'
-      + (subtitle ? '<div class="change-feature-sub">'+esc(subtitle)+'</div>' : '')
-      + '</div></div>'
-      + (controlHtml ? '<div class="change-feature-control">'+controlHtml+'</div>' : '')
+    var iconHtml = iconMarkup(icon);
+    var ava = (iconHtml.indexOf('<img') === 0 || iconHtml.indexOf('<svg') === 0)
+      ? '<div class="cs-ava-plain">'+iconHtml+'</div>'
+      : '<div class="cs-ava">'+iconHtml+'</div>';
+    return '<div class="cs-mod">'
+      + '<div class="cs-modhead">'
+      + ava
+      + '<div class="cs-mod-copy">'
+      + '<div style="display:flex;align-items:center;gap:8px"><span class="cs-mod-title">'+esc(title)+'</span>'+chipHtml(badgeText, badgeTone)+'</div>'
+      + (subtitle ? '<div class="cs-mod-sub">'+esc(subtitle)+'</div>' : '')
       + '</div>'
-      + (bodyHtml ? '<div class="change-feature-body">'+bodyHtml+'</div>' : '')
+      + (controlHtml ? '<div class="cs-mod-right">'+controlHtml+'</div>' : '')
+      + '</div>'
+      + (bodyHtml ? '<div style="margin-top:14px">'+bodyHtml+'</div>' : '')
       + '</div>';
   }
 
@@ -618,8 +633,8 @@
   }
   function dataAuditBody(expanded){
     if(!expanded){
-      return '<div class="change-feature-note">Liest nur lokale Zaehler und Speicher-Keys. Es wird nichts geloescht, migriert oder synchronisiert.</div>'
-        + '<button class="btn btn-secondary btn-full" id="run-data-audit" type="button">Daten-Audit pruefen</button>';
+      return '<div class="cs-note">Liest nur lokale Zaehler und Speicher-Keys. Es wird nichts geloescht, migriert oder synchronisiert.</div>'
+        + '<button class="cs-btn" id="run-data-audit" type="button">Daten-Audit pruefen</button>';
     }
     var report = dataAuditReport();
     var counts = report.counts;
@@ -628,13 +643,13 @@
       ? 'vorhanden' + (report.settingsSnapshot.updatedAtLocal ? ' · '+report.settingsSnapshot.updatedAtLocal : '')
       : 'noch nicht geschrieben';
     var modelLabel = report.version ? 'DataModel '+report.version : 'DataModel nicht geladen';
-    return '<div class="change-feature-chips">'
+    return '<div class="cs-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">'
       + dataAuditChip('Events', counts.events)
       + dataAuditChip('Challenges', counts.challenges)
       + dataAuditChip('Punkte', counts.challengeCompletions)
       + dataAuditChip('Mitspieler', counts.challengePlayers)
       + '</div>'
-      + '<div class="change-feature-chips">'
+      + '<div class="cs-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">'
       + dataAuditChip('Pollen-Tage', counts.pollenSymptomDays)
       + dataAuditChip('Storage-Keys', counts.storageKeys)
       + dataAuditChip('Canonical', keys.canonicalPresent)
@@ -642,9 +657,9 @@
       + dataAuditChip('Cache', keys.cachePresent)
       + dataAuditChip('Unbekannt', keys.unknownChangeKeys)
       + '</div>'
-      + '<div class="change-feature-note">Settings-Snapshot: '+esc(snapshotLabel)+'</div>'
-      + '<div class="change-feature-note">'+esc(modelLabel)+' · Anzeige ist read-only.</div>'
-      + '<button class="btn btn-secondary btn-full" id="run-data-audit" type="button">Erneut pruefen</button>';
+      + '<div class="cs-note">Settings-Snapshot: '+esc(snapshotLabel)+'</div>'
+      + '<div class="cs-note">'+esc(modelLabel)+' · Anzeige ist read-only.</div>'
+      + '<button class="cs-btn" id="run-data-audit" type="button">Erneut pruefen</button>';
   }
 
   function syncPane(){
@@ -653,20 +668,20 @@
     var fb     = firebaseStatus();
 
     var dbSwitch = '<label class="switch"><input type="checkbox" id="set-database-sync" '+(dbOn?'checked':'')+' '+(!fb.ok?'disabled':'')+'><span class="slider"></span></label>';
-    var dbBody = '<div class="change-feature-chips"><span>Mitspieler</span><span>Einstellungen</span><span>Challenges</span><span>Punkte</span></div>'
-      + '<button class="btn btn-secondary btn-full" id="set-database-sync-now" type="button" '+(!fb.ok?'disabled':'')+'>Jetzt in Firebase speichern</button>';
+    var dbBody = '<div class="cs-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"><span>Mitspieler</span><span>Einstellungen</span><span>Challenges</span><span>Punkte</span></div>'
+      + '<button class="cs-btn" id="set-database-sync-now" type="button" '+(!fb.ok?'disabled':'')+'>Jetzt in Firebase speichern</button>';
 
     var googleCanToggle = !!(google.loggedIn || google.cached);
     var googleControl = googleCanToggle
       ? '<label class="switch"><input type="checkbox" id="set-google" '+(google.enabled?'checked':'')+'><span class="slider"></span></label>'
-      : '<button class="btn btn-secondary btn-compact" id="btn-google-connect" type="button">Verbinden</button>';
+      : '<button class="cs-btn-sm" id="btn-google-connect" type="button">Verbinden</button>';
     var googleSub = google.detail || (google.loggedIn ? 'Importiert Kalendertermine. Getrennt vom Datenbank-Sync.' : 'Nur für Kalendertermine. Startet keinen Datenbank-Sync.');
     var googleBody = googleCanToggle
-      ? '<button class="btn btn-secondary btn-full" id="set-sync-google" type="button">Google Kalender '+(google.loggedIn?'neu synchronisieren':'aktualisieren')+'</button>': ''
+      ? '<button class="cs-btn" id="set-sync-google" type="button">Google Kalender '+(google.loggedIn?'neu synchronisieren':'aktualisieren')+'</button>': ''
 
     var statusBody = (window.ChangeAppStatus && window.ChangeAppStatus.syncStatusHtml) ? window.ChangeAppStatus.syncStatusHtml(): ''
-    var logBody = (window.ChangeAppStatus && window.ChangeAppStatus.logHtml) ? window.ChangeAppStatus.logHtml(6) + '<button class="btn btn-secondary btn-full" id="clear-sync-log" type="button">Protokoll leeren</button>': ''
-    return '<div class="change-settings-stack">'
+    var logBody = (window.ChangeAppStatus && window.ChangeAppStatus.logHtml) ? window.ChangeAppStatus.logHtml(6) + '<button class="cs-btn" id="clear-sync-log" type="button">Protokoll leeren</button>': ''
+    return '<div class="cs-stack">'
       + settingsFeatureCard('☁️', 'Datenbank-Sync', fb.label, fb.tone, fb.detail, dbSwitch, dbBody)
       + settingsFeatureCard('📅', 'Google Kalender', google.label, google.tone, googleSub, googleControl, googleBody)
       + settingsFeatureCard('🟢', 'Sync-Status', 'LIVE', 'ok', 'Zeigt, ob Datenbank und Google Kalender aktuell sind.', '', statusBody)
@@ -677,7 +692,7 @@
     var auto = getAutoChallengesEnabled();
     var body = auto
       ? autoChallengeCountSelect('set-auto-count') + challengeDifficultySelect('set-challenge-difficulty'): ''
-    return '<div class="change-settings-stack">'
+    return '<div class="cs-stack">'
       + settingsFeatureCard(
         '🏆',
         'Auto-Challenges',
@@ -689,7 +704,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0305';
+  var APP_VERSION = '0.1.0306';
 
 
 
@@ -1113,7 +1128,7 @@
     var isRollback = state.direction === 'rollback';
     var buttonLabel = isRollback ? 'App vollständig neu laden (Rückstufung)' : 'App vollständig neu laden';
     var button = state.updateReady && state.liveReady && githubUpdateNeedsReload()
-      ? '<button class="btn btn-primary btn-full" id="github-update-reload" type="button">'+esc(buttonLabel)+'</button>'
+      ? '<button class="cs-btn-p" id="github-update-reload" type="button">'+esc(buttonLabel)+'</button>'
       : '';
     var loaded = state.updateReady && state.liveReady && !githubUpdateNeedsReload()
       ? '<div class="change-github-loaded-note">Version '+esc(latestGithubUpdateVersion())+' ist bereits geladen.</div>'
@@ -1452,7 +1467,7 @@
       + statusLine
       + (actionPanel ? '' : checks)
       + githubFileOverview()
-      + ((!state.actionStartedAt && !state.actionMessage && !state.uploadCommitSha && !state.actionConclusion) ? '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' && !state.updateReady ? '' : 'disabled')+'>Auf GitHub übertragen</button>' : '')
+      + ((!state.actionStartedAt && !state.actionMessage && !state.uploadCommitSha && !state.actionConclusion) ? '<button class="cs-btn-p" id="github-zip-commit" type="button" '+(state.status === 'ok' && !state.updateReady ? '' : 'disabled')+'>Auf GitHub übertragen</button>' : '')
       + '</div>';
 
     var historyPane = !readGithubUpdateSecret()
@@ -1461,7 +1476,7 @@
         + githubCommitHistoryPanel();
 
     return '<div class="change-github-update">'
-      + '<label class="change-github-secret"><span>Freigabe-Code</span><input type="text" id="github-update-secret" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Freigabe-Code eingeben" value="'+esc(readGithubUpdateSecret())+'"></label>'
+      + '<label class="cs-secret"><span>Freigabe-Code</span><input type="text" id="github-update-secret" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Freigabe-Code eingeben" value="'+esc(readGithubUpdateSecret())+'"></label>'
       + (actionPanel || '')
       + githubTabBar()
       + '<div class="change-github-tabpane">'
@@ -1641,7 +1656,7 @@
         return '<div class="change-health-pill is-static '+tone+'"><span>♡</span><strong>'+esc(label)+'</strong></div>';
       }
     }catch(e){}
-    return '<div class="change-health-pill is-static off"><span>♡</span><strong>Status offen</strong></div>';
+    return '<div class="cs-chip-n"><span>♡</span><strong>Status offen</strong></div>';
   }
 
   function settingsHeroArtSvg(){
@@ -1726,15 +1741,22 @@
       installed === 'Installiert' ? 'ok' : 'off',
       '',
       '',
-      '<button class="btn btn-secondary btn-full" onclick="window.installChangeApp&&window.installChangeApp()">Change als App installieren</button>'
+      '<button class="cs-btn" onclick="window.installChangeApp&&window.installChangeApp()">Change als App installieren</button>'
     );
-    var versionCard = '<div class="change-settings-feature-card change-version-simple-card">'
-      + '<div class="change-version-simple-head"><div><div class="change-version-simple-label">Version</div><div class="change-version-simple-title">Change</div><div class="change-version-simple-sub">Kalender, Challenges und Sync</div></div><strong>'+esc(APP_VERSION)+'</strong></div>'
-      + '<div class="change-version-simple-meta"><span>Installationsstatus</span><strong>'+esc(installed)+'</strong></div>'
+    var versionCard = '<div class="cs-mod">'
+      + '<div class="cs-modhead">'
+      + '<div class="cs-ava"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/></svg></div>'
+      + '<div class="cs-mod-copy"><span class="cs-mod-title">Change</span><div class="cs-mod-sub">Kalender, Challenges und Sync</div></div>'
+      + '<span style="font-family:var(--mono);font-size:13px;font-weight:700;color:#9CEFBE">'+esc(APP_VERSION)+'</span>'
+      + '</div>'
+      + '<div style="margin-top:13px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:11px 14px">'
+      + '<span class="cs-secl" style="margin:0">Installationsstatus</span>'
+      + '<strong style="font-size:12.5px;font-weight:800;color:#F2F5F1">'+esc(installed)+'</strong>'
+      + '</div>'
       + '</div>';
     var theme = appThemePreference();
     var themeLabel = theme === 'system' ? 'SYSTEM' : (theme === 'light' ? 'HELL' : 'DUNKEL');
-    var themeBody = '<div class="change-theme-options">'
+    var themeBody = '<div class="cs-theme-grid">'
       + themeOptionButton('system','System','Folgt deinem Gerät', theme)
       + themeOptionButton('light','Hell','Ruhiger heller Look', theme)
       + themeOptionButton('dark','Dunkel','Aktueller Darkmode', theme)
@@ -1754,17 +1776,17 @@
     var health = '';
     if(window.ChangeAppStatus && window.ChangeAppStatus.healthHtml){
       var healthBody = appHealthExpanded
-        ? window.ChangeAppStatus.healthHtml() + '<button class="btn btn-secondary btn-full" id="run-app-health" type="button">Erneut prüfen</button>'
-        : '<div class="change-feature-note">Der Check wird erst angezeigt, wenn du ihn bewusst startest.</div><button class="btn btn-secondary btn-full" id="run-app-health" type="button">App-Gesundheitscheck prüfen</button>';
+        ? window.ChangeAppStatus.healthHtml() + '<button class="cs-btn" id="run-app-health" type="button">Erneut prüfen</button>'
+        : '<div class="cs-note">Der Check wird erst angezeigt, wenn du ihn bewusst startest.</div><button class="cs-btn" id="run-app-health" type="button">App-Gesundheitscheck prüfen</button>';
       health = settingsFeatureCard('🩺', 'App-Gesundheitscheck', appHealthExpanded ? 'GEPRÜFT' : 'BEREIT', appHealthExpanded ? 'ok' : 'off', '', '', healthBody);
     }
-    return '<div class="change-settings-stack">' + installCard + themeCard + dataAuditCard + health + '</div>';
+    return '<div class="cs-stack">' + installCard + themeCard + dataAuditCard + health + '</div>';
   }
   function githubPane(){
     if(!isGithubAdmin()){
-      return '<div class="change-settings-stack"><div class="change-feature-note">GitHub-Updates sind nur fuer Admins freigegeben.</div></div>';
+      return '<div class="cs-stack"><div class="cs-note">GitHub-Updates sind nur fuer Admins freigegeben.</div></div>';
     }
-    return '<div class="change-settings-stack">' + githubUpdateCard() + '</div>';
+    return '<div class="cs-stack">' + githubUpdateCard() + '</div>';
   }
 
   var currentSettingsTab = 'dashboard';
@@ -1815,10 +1837,11 @@
   }
   function tabButton(id, label, active){ return '<button class="change-settings-tab '+(active===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'+label+'</button>'; }
   function settingsNavCard(id, icon, title, sub, active){
-    return '<button class="change-settings-nav-card '+(active===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'
-      + '<span class="change-settings-nav-icon">'+iconMarkup(icon)+'</span>'
-      + '<span class="change-settings-nav-copy"><strong>'+esc(title)+'</strong><small>'+esc(sub)+'</small></span>'
-      + '<span class="change-settings-nav-arrow">›</span>'
+    var iconHtml = iconMarkup(icon);
+    var isImg = iconHtml.indexOf('<img') === 0;
+    return '<button class="change-settings-navitem '+(active===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'
+      + (isImg ? '<span style="display:flex;align-items:center;width:18px;height:18px">'+iconHtml+'</span>' : '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"></svg>')
+      + esc(title)
       + '</button>';
   }
   function ensurePremiumSettingsCloseBridge(){
@@ -1943,26 +1966,46 @@
       + settingsNavCard('sync','↻','Daten & Sync','Manuell · keine Auto-Starts',startTab)
       + settingsNavCard('app','🛡','App & Sicherheit','Darstellung · Version '+APP_VERSION,startTab)
       + (isGithubAdmin() ? settingsNavCard('github',githubIcon(),'GitHub','Admin',startTab) : '');
+    var navSvgs = {
+      dashboard: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="10" width="8" height="11" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/></svg>',
+      calendar:  '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>',
+      challenges:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3"/><path d="M9 20h6M12 14v6"/></svg>',
+      sync:      '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>',
+      app:       '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/></svg>',
+      github:    githubIcon()
+    };
+    function navItem(id, label){
+      return '<button class="change-settings-navitem '+(startTab===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'
+        + (navSvgs[id] || '') + esc(label)
+        + '</button>';
+    }
+    var paneTitle = {dashboard:'Dashboard',calendar:'Kalender',challenges:'Challenges',sync:'Daten & Sync',app:'App & Sicherheit',github:'GitHub'};
     var html = '<div class="change-settings-premium">'
-      + '<div class="change-settings-page-head"><div class="change-settings-page-title"><span>⚙︎</span><strong>Einstellungen</strong></div></div>'
-      + '<section class="change-settings-profile-card">'
-      + '<div class="change-settings-profile-left"><div class="change-settings-profile-avatar">'+picture+'<i></i></div><div class="change-settings-profile-copy"><div class="change-settings-profile-kicker">Profil</div><div class="change-settings-profile-name">'+esc(name)+'</div><div class="change-settings-profile-subline">Einstellungen</div></div></div>'
-      + '<div class="change-settings-profile-center" aria-hidden="true">'+settingsHeroArtSvg()+'</div>'
-      + '<div class="change-settings-profile-right">'+settingsHeroStatusRows(google)+'</div>'
-      + '</section>'
-      + '<div class="change-settings-workspace">'
-      + '<div class="change-settings-nav-grid">'
-      + nav
+      + '<div class="change-settings-page-head">'
+      + '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'
+      + '<span class="change-settings-page-title">Einstellungen</span>'
+      + '<span class="change-settings-page-version">v'+esc(APP_VERSION)+'</span>'
       + '</div>'
-      + '<div class="change-settings-detail-card">'
-      + '<div class="change-settings-detail-head"><div><div class="change-settings-detail-title">'+(startTab==='dashboard'?'Dashboard':startTab==='calendar'?'Kalender':startTab==='challenges'?'Challenges':startTab==='sync'?'Daten & Sync':startTab==='github'?'GitHub':'App & Sicherheit')+'</div></div></div>'
-      + '<div class="change-settings-pane '+(startTab==='dashboard'?'active':'')+'" data-pane="dashboard">'+dashboardPane()+'</div>'
-      + '<div class="change-settings-pane '+(startTab==='calendar'?'active':'')+'" data-pane="calendar">'+calendarPane()+'</div>'
-      + '<div class="change-settings-pane '+(startTab==='challenges'?'active':'')+'" data-pane="challenges">'+challengesPane()+'</div>'
-      + '<div class="change-settings-pane '+(startTab==='sync'?'active':'')+'" data-pane="sync">'+syncPane()+'</div>'
-      + '<div class="change-settings-pane '+(startTab==='app'?'active':'')+'" data-pane="app">'+appPane()+'</div>'
-      + (isGithubAdmin() ? '<div class="change-settings-pane '+(startTab==='github'?'active':'')+'" data-pane="github">'+githubPane()+'</div>' : '')
-      + '</div></div></div>';
+      + '<div class="change-settings-shell">'
+      + '<nav class="change-settings-rail">'
+      + navItem('dashboard','Dashboard')
+      + navItem('calendar','Kalender')
+      + navItem('challenges','Challenges')
+      + '<div class="change-settings-rail-sep"></div>'
+      + navItem('sync','Daten &amp; Sync')
+      + navItem('app','App &amp; Sicherheit')
+      + (isGithubAdmin() ? navItem('github','GitHub') : '')
+      + '</nav>'
+      + '<div class="change-settings-panel">'
+      + '<div class="change-settings-panel-glow"></div>'
+      + '<div class="change-settings-panel-inner">'
+      + '<div class="change-settings-pane '+(startTab==='dashboard'?'active':'')+'" data-pane="dashboard"><div class="change-settings-ptitle">Dashboard</div>'+dashboardPane()+'</div>'
+      + '<div class="change-settings-pane '+(startTab==='calendar'?'active':'')+'" data-pane="calendar"><div class="change-settings-ptitle">Kalender</div>'+calendarPane()+'</div>'
+      + '<div class="change-settings-pane '+(startTab==='challenges'?'active':'')+'" data-pane="challenges"><div class="change-settings-ptitle">Challenges</div>'+challengesPane()+'</div>'
+      + '<div class="change-settings-pane '+(startTab==='sync'?'active':'')+'" data-pane="sync"><div class="change-settings-ptitle">Daten &amp; Sync</div>'+syncPane()+'</div>'
+      + '<div class="change-settings-pane '+(startTab==='app'?'active':'')+'" data-pane="app"><div class="change-settings-ptitle">App &amp; Sicherheit</div>'+appPane()+'</div>'
+      + (isGithubAdmin() ? '<div class="change-settings-pane '+(startTab==='github'?'active':'')+'" data-pane="github"><div class="change-settings-ptitle">GitHub</div>'+githubPane()+'</div>' : '')
+      + '</div></div></div></div>';
     activateSettingsView(html);
     restoreSettingsScrollState(scrollBeforeRender);
     setTimeout(bindSettings, 30);

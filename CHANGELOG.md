@@ -1,3 +1,14 @@
+## Version 0.1.0306
+- **Einstellungen komplett neu gestaltet** nach Design-Vorlage (Einstellungen_Komplett_dc.html).
+- Neues Layout: Nav-Rail links (sticky, dunkelgrün) + Detail-Panel rechts mit grünem Radial-Glow. Keine HeroCard mehr auf der Einstellungen-Seite.
+- Neue Karten-Sprache: `.cs-mod` (dunkelgrüner Gradient, runde 18px Ecken), `.cs-ava` (grün umrandetes Icon-Avatar), `.cs-chip-a/n/e` (kleine Status-Chips), `.cs-sw` (Custom-Switch grün), `.cs-btn` / `.cs-btn-p` (ghost / primär grün).
+- Theme-Picker: Vorschau-Thumbnails für System/Hell/Dunkel mit Checkmark-Radio.
+- Akzentfarben-Grid: 5 Farben (Grün, Blau, Amber, Violett, Rot) mit Farbdot und Vorschau-Karte.
+- Profil-Pane: Profilkarte mit Avatar, Google-Badge, Mitspieler-Liste.
+- Mobile: Rail wird horizontale Scrollbar, Panel flach, kompaktere Abstände.
+- Keine Änderung an Firebase, Login, Google Kalender, Push, Sync, Challenge-Logik oder Pollen.
+- Geändert: `features/settings/settingsPanel.css` (Neufassung), `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0305
 - GitHub-Upload: `githubAdminAuthHeaders` nutzt Firebase Auth direkt, ohne `ensureChangeFirebaseAuth` als Abhängigkeit. Damit funktioniert der Upload auch wenn `firebase.firestore` oder `firebase-messaging` nicht vollständig geladen sind (z.B. bei Service-Worker-Netzwerkfehlern).
 - Kein User im Auth-Cache: kurzes Warten auf `onAuthStateChanged` (max 2,5s) statt sofortigem Fehler.

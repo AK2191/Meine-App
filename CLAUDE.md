@@ -5,7 +5,7 @@
 - Versionseintraege in dieser Datei bleiben erhalten, weil der GitHub-Update-Workflow daraus Zielversionen erkennt.
 - Neue Arbeit erfolgt klein und systembezogen: ein Feature oder eine Schicht pro Schritt.
 
-## Version 0.1.0305
+## Version 0.1.0306
 - **Kalender-Events stabiler ueber Store:** `app.js` spiegelt lokale Termine beim Start aus `ChangeEventStore`, wenn der Store bereits Daten aus Canonical- und Legacy-Keys zusammengefuehrt hat.
 - **Alte Speicherpfade abgesichert:** Lokales Speichern und Google-Sync-Erfolgsrueckschreibungen in aelteren `app.js`-Kalenderpfaden laufen zuerst ueber `persistEventStateToStore()`; `events` bleibt als Legacy-Fallback erhalten.
 - **Google-Cache bleibt getrennt:** `gEvents`, `change_google_events_cache` und `change_v1_google_events_cache` wurden nicht veraendert, migriert oder geloescht.
