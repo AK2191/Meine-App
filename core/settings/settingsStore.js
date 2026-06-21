@@ -8,40 +8,6 @@
   var DataModel = window.ChangeDataModel || null;
   var canonicalKeys = DataModel && DataModel.canonicalKeys ? DataModel.canonicalKeys : {};
   var SNAPSHOT_KEY = canonicalKeys.settingsSnapshot || 'change_v1_settings_snapshot';
-  var SETTINGS_KEY_GROUPS = {
-    calendar: [
-      'change_v1_calendar_view_options', 'calendar_settings',
-      'change_v1_holiday_state', 'holiday_state',
-      'change_v1_holiday_notifications', 'holiday_notifications',
-      'change_v1_google_calendar_sync', 'change_google_sync_enabled', 'google_sync_enabled',
-      'change_v1_client_id', 'client_id'
-    ],
-    dashboard: [
-      'change_v1_friseur_enabled', 'change_v1_friseur_weeks',
-      'change_v1_birthdays_enabled', 'birthdays_enabled',
-      'change_v1_birthday_notification_days', 'birthday_notification_days',
-      'urlaub_tracker_on', 'urlaub_tracker_days', 'urlaub_half_days'
-    ],
-    challenges: [
-      'change_v1_auto_challenges_enabled', 'auto_challenges_enabled',
-      'change_v1_auto_challenge_count', 'auto_challenge_count',
-      'change_v1_challenge_difficulty', 'challenge_difficulty'
-    ],
-    sync: [
-      'change_v1_database_sync_enabled', 'database_sync_enabled',
-      'change_v1_live_sync_enabled', 'live_sync_enabled',
-      'change_v1_push_enabled', 'change_push_enabled', 'change_v2_push_enabled', 'push_enabled'
-    ],
-    weather: [
-      'change_v1_weather_settings',
-      'change_v1_rain_alert_hours',
-      'change_v1_pollen_alert_hours'
-    ],
-    appearance: [
-      'change_v1_theme',
-      'change_v1_dark_mode'
-    ]
-  };
   var timer = null;
 
   function nowIso(){ return new Date().toISOString(); }
@@ -107,33 +73,6 @@
     timer = setTimeout(function(){ persistSnapshot(options); }, options.delay || 120);
   }
 
-  function storageHasKey(key){
-    try{ return localStorage.getItem(key) != null; }catch(e){ return false; }
-  }
-
-  function auditSettingsKeys(){
-    var groups = {};
-    var presentTotal = 0;
-    var knownTotal = 0;
-    Object.keys(SETTINGS_KEY_GROUPS).forEach(function(group){
-      var keys = SETTINGS_KEY_GROUPS[group].slice();
-      var present = keys.filter(storageHasKey);
-      groups[group] = {
-        present: present.length,
-        known: keys.length,
-        keys: present
-      };
-      presentTotal += present.length;
-      knownTotal += keys.length;
-    });
-    return {
-      presentTotal: presentTotal,
-      knownTotal: knownTotal,
-      groupsPresent: Object.keys(groups).filter(function(group){ return groups[group].present > 0; }).length,
-      groups: groups
-    };
-  }
-
   window.ChangeSettingsStore = {
     snapshotKey: SNAPSHOT_KEY,
     collectSnapshot: collectSnapshot,
@@ -141,17 +80,14 @@
     persistSnapshot: persistSnapshot,
     scheduleSnapshot: scheduleSnapshot,
     markChanged: scheduleSnapshot,
-    auditSettingsKeys: auditSettingsKeys,
     audit: function(){
       var snapshot = readSnapshot();
-      var keyAudit = auditSettingsKeys();
       return {
         dataModelVersion: DataModel && DataModel.version || '',
         snapshotKey: SNAPSHOT_KEY,
         hasSnapshot: !!localStorage.getItem(SNAPSHOT_KEY),
         sections: Object.keys(snapshot).filter(function(key){ return snapshot[key] && typeof snapshot[key] === 'object'; }),
-        updatedAtLocal: snapshot.updatedAtLocal || '',
-        keyAudit: keyAudit
+        updatedAtLocal: snapshot.updatedAtLocal || ''
       };
     }
   };

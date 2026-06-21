@@ -1648,7 +1648,7 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
       createdAt:new Date().toISOString()
     };
     window.challengeCompletions=(window.challengeCompletions||[]).concat(rec);
-    try{if(window.ChangeChallengeStoreBridge&&typeof window.ChangeChallengeStoreBridge.replaceCompletions==='function')window.ChangeChallengeStoreBridge.replaceCompletions(window.challengeCompletions);else if(typeof ls==='function')ls('challenge_completions',window.challengeCompletions);}catch(e){}
+    try{if(typeof ls==='function')ls('challenge_completions',window.challengeCompletions);}catch(e){}
     // Sync to Firestore if available
     try{if(typeof window.publishCompletionToFirestore==='function')window.publishCompletionToFirestore(rec);}catch(e){}
     // Refresh all views
@@ -1668,7 +1668,7 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
       if(hit)removed.push(c);
       return !hit;
     });
-    try{if(window.ChangeChallengeStoreBridge&&typeof window.ChangeChallengeStoreBridge.replaceCompletions==='function')window.ChangeChallengeStoreBridge.replaceCompletions(window.challengeCompletions);else if(typeof ls==='function')ls('challenge_completions',window.challengeCompletions);}catch(e){}
+    try{if(typeof ls==='function')ls('challenge_completions',window.challengeCompletions);}catch(e){}
     // Delete from Firestore
     try{
       if(typeof firebase!=='undefined'&&firebase.firestore){
@@ -1687,8 +1687,7 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
       const me2=myId(), td2=todayStr();
       window.challengeCompletions=(window.challengeCompletions||[]).filter(c=>
         !(String(c.date||'').slice(0,10)===td2&&String(c.playerId||c.email||c.userEmail||'').toLowerCase()===me2));
-      if(window.ChangeChallengeStoreBridge&&typeof window.ChangeChallengeStoreBridge.replaceCompletions==='function') window.ChangeChallengeStoreBridge.replaceCompletions(window.challengeCompletions);
-      else if(typeof ls==='function') ls('challenge_completions',window.challengeCompletions);
+      if(typeof ls==='function') ls('challenge_completions',window.challengeCompletions);
       if(typeof renderChallenges==='function') renderChallenges();
       if(typeof window.buildDashboard==='function') window.buildDashboard();
       if(typeof renderWeekBar==='function') renderWeekBar();
