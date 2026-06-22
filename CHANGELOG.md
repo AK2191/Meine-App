@@ -1,3 +1,10 @@
+## Version 0.1.0311
+- Cache-Busting: alle lokalen CSS/JS in index.html tragen jetzt `?v=<version>`. Behebt, dass neue Designs nach Deploy nicht erschienen (altes CSS aus Browser-Cache).
+- Versions-Pille per `!important` zuverlässig grau (#5E6A60).
+- Inhalt wie 0.1.0310 (Design-Schalter, Theme 3-spaltig nebeneinander, Dashboard-SVG-Icons) – jetzt durch Cache-Busting sichtbar.
+- Geaendert: `index.html`, `features/settings/settingsPanel.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check`; 13 CSS + 44 JS versioniert, externe Quellen unangetastet.
+
 ## Version 0.1.0310
 - Schalter exakt wie Design-`.sw` (46×27, Knopf 20, AN→links 22, Accent-Verlauf) – behebt falsch sitzende weiße Knöpfe.
 - Versions-Pille gedämpft grau (#5E6A60) wie im Design (explizite, höher spezifische Regel; live verifiziert).

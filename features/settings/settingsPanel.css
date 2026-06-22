@@ -601,4 +601,4 @@
 #settings-view .switch input:disabled + .slider{opacity:.5;cursor:not-allowed}
 
 /* Versions-Pille: gedämpftes Grau wie im Design (höhere Spezifität, explizit) */
-#settings-view .change-settings-page-head .change-settings-version{color:#5E6A60}
+#settings-view .change-settings-page-head .change-settings-version{color:#5E6A60 !important}

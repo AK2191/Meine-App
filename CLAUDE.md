@@ -5,6 +5,13 @@
 - Versionseintraege in dieser Datei bleiben erhalten, weil der GitHub-Update-Workflow daraus Zielversionen erkennt.
 - Neue Arbeit erfolgt klein und systembezogen: ein Feature oder eine Schicht pro Schritt.
 
+## Version 0.1.0311
+- **Cache-Busting (Kernproblem gelöst):** Bisher hatten die lokalen CSS/JS-Einbindungen in `index.html` keine Versionsabfrage. Nach einem Deploy lud der Browser CSS/JS weiter aus dem Cache — die JS-Version aktualisierte (frisch), aber das CSS blieb alt (z. B. grüne Versions-Pille, alte Schalter). Jetzt tragen alle lokalen `./…css`/`./…js`-Links `?v=<APP_VERSION>`; jeder neue Build erzwingt frische Dateien. **Wichtig für künftige Releases:** Bei jeder Versionserhöhung müssen die `?v=`-Werte in `index.html` neu gestempelt werden (Skript: lokale `href/src` mit `?v=<version>` versehen, externe `https://`-Quellen auslassen).
+- Versions-Pille mit `!important` abgesichert (#5E6A60), damit die graue Farbe unabhängig von der Laufzeit-Auflösung von `var(--st-faint)` sicher gewinnt.
+- Inhaltlich identisch zu 0.1.0310 (Design-Schalter, Theme 3-spaltig, Dashboard-SVG-Icons) — diese Korrekturen werden mit 0.1.0311 durch das Cache-Busting endlich sichtbar.
+- Geaendert: `index.html` (Cache-Busting), `features/settings/settingsPanel.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check` auf alle JS; 13 CSS + 44 JS lokale Assets mit `?v=0.1.0311` versioniert, externe Quellen unangetastet.
+
 ## Version 0.1.0310
 - **Schalter wie im Design:** Die Toggles in den Einstellungen nutzen jetzt exakt die Design-`.sw`-Optik (Spur 46×27, Knopf 20, AUS-Knopf grau links, AN-Knopf weiß bei links 22 mit Accent-Verlauf) — scoped unter `#settings-view`, überschreibt den globalen App-Switch nur dort. Behebt die falsch sitzenden weißen Knöpfe.
 - **Versions-Pille gedämpft grau (#5E6A60) wie im Design:** Eine Laufzeit-Auflösung färbte `var(--st-faint)` an der Pille grün; höher spezifische, explizite Regel `#settings-view .change-settings-page-head .change-settings-version{color:#5E6A60}` (live verifiziert).
