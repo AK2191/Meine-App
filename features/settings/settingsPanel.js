@@ -543,7 +543,7 @@
     var pollenBody = '';
 
     return settingsFeatureCard(
-        '🌦️',
+        '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17a4 4 0 0 1 0-8 5.5 5.5 0 0 1 10.6-1.3A3.8 3.8 0 0 1 18 17z"></path><path d="M8 20l-1 2M12 20l-1 2M16 20l-1 2"></path></svg>',
         'Wetter',
         wetterOn ? 'AKTIV' : 'AUS',
         wetterOn ? 'ok' : 'off',
@@ -552,7 +552,7 @@
         wetterBody
       )
       + settingsFeatureCard(
-        '🌿',
+        '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9"></path><path d="M12 13c-4 0-7-2-7-6 4 0 7 2 7 6z"></path><path d="M12 11c1-3 4-5 7-5 0 4-3 6-7 6"></path></svg>',
         'Pollen',
         pollenOn ? 'AKTIV' : 'AUS',
         pollenOn ? 'ok' : 'off',
@@ -584,7 +584,7 @@
     return '<div class="change-settings-stack">'
       + weatherHealthCard()
       + settingsFeatureCard(
-        '✂️',
+        '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6.5" cy="6.5" r="2.8"></circle><circle cx="6.5" cy="17.5" r="2.8"></circle><path d="M8.7 8.4 L20 16.5M8.7 15.6 L20 7.5"></path></svg>',
         'Friseur',
         friseurOn ? 'AKTIV' : 'AUS',
         friseurOn ? 'ok' : 'off',
@@ -593,7 +593,7 @@
         friseurBody
       )
       + settingsFeatureCard(
-        '🎂',
+        '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16v-7H4z"></path><path d="M4 13c0-2 1.6-3 4-3s4 1 4 3M12 13c0-2 1.6-3 4-3s4 1 4 3"></path><path d="M12 10V7"></path><circle cx="12" cy="5" r="1.4"></circle></svg>',
         'Geburtstage',
         birthdaysOn ? 'AKTIV' : 'AUS',
         birthdaysOn ? 'ok' : 'off',
@@ -602,7 +602,7 @@
         birthdaysBody
       )
       + settingsFeatureCard(
-        '🏖️',
+        '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="3.4"></circle><path d="M12 2.5V4M12 14v1.5M5 9H6.5M17.5 9H19M7.2 4.2l1 1M16.8 4.2l-1 1"></path><path d="M3 19q2.4-2 4.8 0t4.8 0t4.8 0M3 22q2.4-2 4.8 0t4.8 0t4.8 0"></path></svg>',
         'Urlaub',
         urlaubOn ? 'AKTIV' : 'AUS',
         urlaubOn ? 'ok' : 'off',
@@ -803,7 +803,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0309';
+  var APP_VERSION = '0.1.0310';
 
 
 

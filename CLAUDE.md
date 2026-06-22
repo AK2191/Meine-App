@@ -5,6 +5,15 @@
 - Versionseintraege in dieser Datei bleiben erhalten, weil der GitHub-Update-Workflow daraus Zielversionen erkennt.
 - Neue Arbeit erfolgt klein und systembezogen: ein Feature oder eine Schicht pro Schritt.
 
+## Version 0.1.0310
+- **Schalter wie im Design:** Die Toggles in den Einstellungen nutzen jetzt exakt die Design-`.sw`-Optik (Spur 46×27, Knopf 20, AUS-Knopf grau links, AN-Knopf weiß bei links 22 mit Accent-Verlauf) — scoped unter `#settings-view`, überschreibt den globalen App-Switch nur dort. Behebt die falsch sitzenden weißen Knöpfe.
+- **Versions-Pille gedämpft grau (#5E6A60) wie im Design:** Eine Laufzeit-Auflösung färbte `var(--st-faint)` an der Pille grün; höher spezifische, explizite Regel `#settings-view .change-settings-page-head .change-settings-version{color:#5E6A60}` (live verifiziert).
+- **Darstellung – Theme nebeneinander:** System/Hell/Dunkel stehen auf Mobil wieder 3-spaltig (kleiner) statt gestapelt; Akzent-Raster 3-spaltig. Kein „Rand rechts" mehr.
+- **Dashboard-Modul-Icons sind jetzt Design-SVGs** (Wetter/Pollen/Friseur/Geburtstage/Urlaub) statt Emojis — `currentColor`, folgen dem Accent. Push-Pane war bereits SVG.
+- Geaendert: `features/settings/settingsPanel.js`, `features/settings/settingsPanel.css`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check` auf alle JS; jsdom-Render + Chromium-Screenshots (Dashboard mit SVG-Icons + Schaltern, Darstellung 3-spaltig); Versions-Fix live im Browser bestätigt.
+- Hinweis: Deploy weiterhin über `updates/`-Notweg, solange der Cloudflare-Worker (500 auf /files,/upload) nicht repariert ist.
+
 ## Version 0.1.0309
 - **Mobile Drilldown-Navigation:** Auf Mobil sind die Einstellungen jetzt ein echtes Master/Detail-Muster. Erster Screen = das Kachel-Raster; beim Antippen einer Kachel öffnet der Bereich als **Vollbild-Screen** mit **„Zurück"-Button oben links** (Raster und Kopfzeile werden ausgeblendet). „Zurück" führt zum Raster.
 - Status `settingsMobileDetail` steuert den Detail-Modus. Kachel-Klick öffnet Detail, „Zurück" schließt. Interne Refreshes (z. B. ein Schalter umlegen) bleiben im Detail; frisches Öffnen (`ChangeSettingsPanel.open`) startet auf dem Raster; Deep-Links (`openCalendarSettings`, `openPushSettingsPanel`) öffnen den Bereich direkt.

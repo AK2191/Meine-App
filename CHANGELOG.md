@@ -1,3 +1,11 @@
+## Version 0.1.0310
+- Schalter exakt wie Design-`.sw` (46×27, Knopf 20, AN→links 22, Accent-Verlauf) – behebt falsch sitzende weiße Knöpfe.
+- Versions-Pille gedämpft grau (#5E6A60) wie im Design (explizite, höher spezifische Regel; live verifiziert).
+- Darstellung: System/Hell/Dunkel auf Mobil 3-spaltig nebeneinander (kleiner) statt gestapelt; Akzent 3-spaltig; kein Rand rechts.
+- Dashboard-Modul-Icons als Design-SVGs (Wetter/Pollen/Friseur/Geburtstage/Urlaub) statt Emojis.
+- Geaendert: `features/settings/settingsPanel.js`, `features/settings/settingsPanel.css`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check`; Render-Screenshots Dashboard/Darstellung; Versions-Fix live.
+
 ## Version 0.1.0309
 - Mobile Drilldown: Kachel-Raster als erster Screen; Antippen öffnet den Bereich als Vollbild mit „Zurück"-Button oben links. Desktop unverändert (zweispaltig, kein Zurück).
 - Status `settingsMobileDetail`; frisches Öffnen startet am Raster, interne Refreshes bleiben im Detail, Deep-Links öffnen den Bereich direkt.

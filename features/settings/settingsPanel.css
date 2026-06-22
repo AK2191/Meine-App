@@ -529,7 +529,15 @@
   #settings-view .change-settings-premium.change-settings-detail .change-settings-back{display:inline-flex}
   #settings-view .change-settings-pane-title{font-size:20px;margin-bottom:14px}
   #settings-view .change-settings-feature-card{padding:16px}
-  #settings-view .change-theme-options{grid-template-columns:1fr}
+  #settings-view .change-theme-options{grid-template-columns:repeat(3,1fr);gap:8px}
+  #settings-view .change-theme-option{padding:8px}
+  #settings-view .change-theme-thumb{height:38px;border-radius:8px}
+  #settings-view .change-theme-thumb.split .ttp,
+  #settings-view .change-theme-thumb.single{padding:6px;gap:3px}
+  #settings-view .change-theme-option-row{margin-top:8px}
+  #settings-view .change-theme-option-name{font-size:11.5px}
+  #settings-view .change-theme-radio{width:15px;height:15px}
+  #settings-view .change-theme-option-sub{font-size:9.5px;line-height:1.2}
   #settings-view .change-sync-status-grid{grid-template-columns:1fr}
   #settings-view .change-settings-profile-hero{flex-wrap:wrap}
 }
@@ -582,3 +590,15 @@
 /* Icons folgen dem Accent (currentColor) */
 #settings-view .change-settings-page-title > svg{color:var(--st-accent)}
 #settings-view .change-feature-icon{color:var(--st-accent)}
+
+/* ===== Schalter exakt wie Design (.sw): 46×27, Knopf 20, an→links 22 ===== */
+#settings-view .switch{position:relative;display:inline-block;width:46px;height:27px;flex:none}
+#settings-view .switch input{position:absolute;opacity:0;width:0;height:0;margin:0}
+#settings-view .switch .slider{position:absolute;inset:0;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.13);transition:.18s;cursor:pointer}
+#settings-view .switch .slider:before{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:999px;background:#8A948A;transition:.18s;box-shadow:none}
+#settings-view .switch input:checked + .slider{background:linear-gradient(135deg,var(--st-accent),var(--st-accent2));border-color:transparent}
+#settings-view .switch input:checked + .slider:before{left:22px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+#settings-view .switch input:disabled + .slider{opacity:.5;cursor:not-allowed}
+
+/* Versions-Pille: gedämpftes Grau wie im Design (höhere Spezifität, explizit) */
+#settings-view .change-settings-page-head .change-settings-version{color:#5E6A60}
