@@ -5,15 +5,55 @@
 - Versionseintraege in dieser Datei bleiben erhalten, weil der GitHub-Update-Workflow daraus Zielversionen erkennt.
 - Neue Arbeit erfolgt klein und systembezogen: ein Feature oder eine Schicht pro Schritt.
 
+## Version 0.1.0309
+- **Mobile Drilldown-Navigation:** Auf Mobil sind die Einstellungen jetzt ein echtes Master/Detail-Muster. Erster Screen = das Kachel-Raster; beim Antippen einer Kachel öffnet der Bereich als **Vollbild-Screen** mit **„Zurück"-Button oben links** (Raster und Kopfzeile werden ausgeblendet). „Zurück" führt zum Raster.
+- Status `settingsMobileDetail` steuert den Detail-Modus. Kachel-Klick öffnet Detail, „Zurück" schließt. Interne Refreshes (z. B. ein Schalter umlegen) bleiben im Detail; frisches Öffnen (`ChangeSettingsPanel.open`) startet auf dem Raster; Deep-Links (`openCalendarSettings`, `openPushSettingsPanel`) öffnen den Bereich direkt.
+- Reiner Mobil-Effekt über `@media (max-width:760px)` + `.change-settings-detail`. **Desktop unverändert** (zweispaltig Rail + Panel, kein Zurück-Button — per Render geprüft: back `display:none`, Rail+Panel sichtbar).
+- Geaendert: `features/settings/settingsPanel.js`, `features/settings/settingsPanel.css`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check` auf alle JS-Dateien; jsdom-Render + Chromium-Screenshots (390px) für Raster- und Detail-Screen, Desktop-Regressionscheck (1000px).
+
 ## Version 0.1.0308
-- **Einstellungen an die Referenz angeglichen:** Desktop-Geometrie und Typografie entsprechen jetzt der gelieferten `Einstellungen Komplett.html`: zentrierter 1180px-Wrapper, Header-Abstaende, 236px-Navigation, Panel-Padding sowie Profil- und Mitspieler-Proportionen.
-- **Referenzstart wiederhergestellt:** Einstellungen oeffnen mit `Profil`; Navigation und alle bestehenden Bereiche bleiben erhalten.
-- **Push-Einstieg korrigiert:** `openPushSettingsPanel()` oeffnet wieder Benachrichtigungen statt Daten & Sync. Kein Push-Dialog, keine Firebase-Anmeldung und kein Sync werden dadurch gestartet.
-- **Bewusst nicht geaendert:** Keine Datenmodell-, Firebase-, Login-, Google-Kalender-, Push-, Kalender-, Challenge- oder Sync-Logik. Keine Auto-Starts und keine blockierenden Overlays.
-- Geaendert: `features/settings/settingsPanel.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
-- Geprueft: JavaScript-Syntax der geaenderten Dateien, CSS-Parse-Check, Versionsfundstellen und ZIP-Struktur. Browser-Sichtpruefung war in dieser Umgebung nicht moeglich, weil lokale Browser-URLs durch die Ausfuehrungsrichtlinie blockiert werden.
+- **Mobile Navigation neu (alltagstauglich):** Die Einstellungs-Rail ist auf Mobil kein horizontaler Scroll-Streifen mehr, sondern ein **Kachel-Raster** (3 Spalten): Icon-Tile oben, Label darunter, aktive Kachel in Akzentfarbe. Alle Bereiche sind ohne Scrollen sichtbar, große Tap-Flächen. Desktop unverändert (vertikale Liste). Nur in `features/settings/settingsPanel.css` (Mobile-`@media`).
+- Akzent-Raster auf Mobil an das Design angeglichen (3 Spalten statt 5).
+- Abgeglichen mit der vollständigen Design-Datei `Einstellungen_Komplett.html`: Rail-Icons und Pane-Aufbau sind 1:1 identisch (gleiche SVG-Pfade). Keine Änderung an Logik, anderen Views, Firebase, Sync oder Push.
+- Geaendert: `features/settings/settingsPanel.js` (Versionsanzeige), `features/settings/settingsPanel.css`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check` auf alle JS-Dateien; jsdom-Render + Chromium-Screenshot der Mobil-Ansicht (390px) bestätigt das Kachel-Raster.
 
 ## Version 0.1.0307
+- **Darstellung vollständig wie Referenz:** Theme-Auswahl jetzt als Vorschau-Karten mit Mini-Thumbnail + Radio-Punkt (System/Hell/Dunkel), darunter **Akzentfarbe** (Grün/Blau/Bernstein/Violett/Rot) und eine **Vorschau**-Karte (Beispiel-Termin).
+- **Akzentfarbe ist funktional (app-weit):** Neues Modul `window.ChangeAccent` (in `app.js`) setzt `data-accent` auf `<html>` und persistiert `change_v1_accent`; Anwendung beim Start. In `styles/tokens.css` überschreiben `[data-accent="…"]`-Sets die `--acc`-Familie (+ `--acc-rgb`) für Light und Dark. Dadurch folgen alle 133 `var(--acc)`-Nutzungen der App automatisch der gewählten Farbe.
+- **Einstellungs-Oberfläche folgt dem Accent:** `settingsPanel.css` nutzt jetzt `--st-accent:var(--acc)`, `--st-accent2:var(--acc-h)`, `--st-accent-rgb:var(--acc-rgb)` und `--st-accent-ink` (heller Accent-Ton). Alle bisher hart codierten Emerald-Werte (Schalter, Punkte, Ränder, weiche Tints, aktiver Rail-Eintrag, Icons via `currentColor`) folgen der Akzentfarbe.
+- **Lesbarkeit in jedem Theme:** Karten-/Flächenhintergründe der Einstellungen sind jetzt opak (kein Auswaschen mehr, wenn das App-Theme auf Hell steht). Die Einstellungen bleiben bewusst die dunkle, in sich geschlossene Referenz-Oberfläche.
+- Geaendert: `app.js`, `styles/tokens.css`, `features/settings/settingsPanel.js`, `features/settings/settingsPanel.css`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check` auf `app.js`, `settingsPanel.js`, `pollenView.js`; reale Markup-Ausgabe der Darstellung via jsdom + Chromium-Screenshots in Grün und Blau (Accent folgt korrekt); Live-Gegencheck im Browser (Rail/Panel, Versionsanzeige, Theme-Umschaltung).
+
+## Version 0.1.0306
+- **Einstellungen im Stil „Einstellungen Komplett" (DC):** Linke Navigations-Schiene (Rail) + Detail-Panel statt Karten-Grid. Dunkle Emerald-Oberflaeche, Plus Jakarta Sans / JetBrains Mono. Stil strikt auf `#settings-view` begrenzt, damit Dashboard, Kalender und Challenges unveraendert bleiben.
+- **Drei neue Kategorien:** „Profil" (Name, Abmelden, Mitspieler-Liste), „Darstellung" (vorhandene Theme-Umschaltung System/Hell/Dunkel aus „App & Sicherheit" hierher verschoben) und „Benachrichtigungen" als zentrale Push-Steuerung.
+- **Push zentralisiert (eine Steuerung):** Regen-/Pollenwarnung, Friseur- und Geburtstags-Erinnerung sowie Feiertags-Benachrichtigungen liegen jetzt ausschliesslich unter „Benachrichtigungen". Dashboard zeigt nur noch Modul an/aus + Urlaubs-Konfiguration. Keine doppelten Schalter oder doppelten Element-IDs.
+- **GitHub vollstaendig gestylt:** Leerzustand, 4-Phasen-Fortschritt (queued/workflow_running/pages_building/live), Live-Zustand und Verlauf mit Rollback im neuen Stil.
+- **Akzentfarbe bewusst nicht gebaut:** Es existiert keine funktionale Akzent-Logik im Code; weggelassen statt tote Buttons (moeglicher Folgeschritt, app-weit ueber `styles/tokens.css`).
+- **Nur Einstellungen angefasst:** Reine Markup-Huelle + neues `settingsPanel.css`; bestehende Settings-Logik, Toggle-IDs und Bindings unveraendert. Wetter-/Pollen-/Friseur-/Geburtstags-Handler wurden nur verschoben, nicht neu geschrieben.
+- Geaendert: `features/settings/settingsPanel.js`, `features/settings/settingsPanel.css`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check` auf beide JS-Dateien; reale Markup-Ausgabe aller Panes via jsdom + Chromium-Screenshots (Profil, Benachrichtigungen, Dashboard, Daten & Sync, App & Sicherheit, GitHub-Zustaende) gegen die Referenz.
+
+## Version 0.1.0305
+- **Settings-Audit erweitert:** `core/settings/settingsStore.js` kennt jetzt gruppierte lokale Settings-Keys fuer Kalender, Dashboard, Challenges, Sync, Wetter und Darstellung.
+- **Read-only Anzeige in App & Sicherheit:** Der Daten-Audit zeigt zusaetzlich die Anzahl vorhandener bekannter Settings-Keys. Der Audit bleibt lesend; er loescht, migriert, synchronisiert und schreibt keine Remote-Daten.
+- **Snapshot bleibt Wartungsschicht:** Einzelne Settings-Keys bleiben weiterhin aktive Laufzeit-Schreibwege. `change_v1_settings_snapshot` dient weiterhin als zusammenfassende Wartungs- und Audit-Ansicht.
+- **Bewusst nicht geaendert:** Keine App-Logik ausser Audit-Zaehlung, keine Datenloeschung, keine Startmigration, kein automatischer Sync-Start, keine Firebase-Regel-, CSS-, Markup-, Icon-, Kalender-, Challenge-, Pollen- oder Push-Aenderung.
+- Geaendert: `core/settings/settingsStore.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `docs/DATA-MODEL.md`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax, DataModel-Audit im Nur-Lesen-Modus, SettingsStore-Smoke-Test und statischer Check der read-only Audit-Anzeige.
+
+## Version 0.1.0304
+- **Challenge-Persistenz store-first:** `persistChallengeStateToStore()` persistiert den aktuellen `ChangeChallengeStore` und spiegelt danach `challenges`, `challengeCompletions` und `challengePlayers` zurueck. Dadurch koennen stale Legacy-Globals den Store nicht mehr ungewollt ueberschreiben.
+- **Explizite lokale Store-Replace-Helfer:** `ChangeChallengeStoreBridge` kapselt `replaceChallenges`, `replaceCompletions`, `replacePlayers` und `replaceState`. App-interne Filter- und Bereinigungspfade nutzen diese Helfer, wenn Arrays per `filter()` neu zugewiesen werden.
+- **Aeltere Completion-Pfade angebunden:** Kalender-Komfortpfade fuer Challenge-Erledigen/Zuruecksetzen und das Auto-Challenge-Ausschalten im Settings-Panel schreiben bei vorhandenem Store ueber die Bridge. Legacy-Keys bleiben Fallback.
+- **Bewusst nicht geaendert:** Keine Datenloeschung, keine Startmigration, kein automatischer Sync-Start, keine Firebase-Regel-, CSS-, Markup-, Icon-, Kalender-, Pollen-, Push- oder Challenge-UI-Aenderung.
+- Geaendert: `app.js`, `features/calendar/calendar-logic.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `docs/DATA-MODEL.md`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: JavaScript-Syntax, DataModel-Audit im Nur-Lesen-Modus, ChallengeStore-Smoke-Test und statischer Check der neuen Bridge-Pfade.
+
+## Version 0.1.0303
 - **Kalender-Events stabiler ueber Store:** `app.js` spiegelt lokale Termine beim Start aus `ChangeEventStore`, wenn der Store bereits Daten aus Canonical- und Legacy-Keys zusammengefuehrt hat.
 - **Alte Speicherpfade abgesichert:** Lokales Speichern und Google-Sync-Erfolgsrueckschreibungen in aelteren `app.js`-Kalenderpfaden laufen zuerst ueber `persistEventStateToStore()`; `events` bleibt als Legacy-Fallback erhalten.
 - **Google-Cache bleibt getrennt:** `gEvents`, `change_google_events_cache` und `change_v1_google_events_cache` wurden nicht veraendert, migriert oder geloescht.

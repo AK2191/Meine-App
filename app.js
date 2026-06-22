@@ -181,20 +181,8 @@ function persistChallengeStateToStore(){
   const store = getChallengeStore();
   if(!store) return false;
   try{
-    const storeChallenges = store.getChallenges();
-    const storeCompletions = store.getCompletions();
-    const storePlayers = store.getPlayers();
-    if((!Array.isArray(challenges) || !challenges.length) && storeChallenges.length) challenges = storeChallenges;
-    else store.replaceChallenges(challenges || [], {persist:false});
-    if((!Array.isArray(challengeCompletions) || !challengeCompletions.length) && storeCompletions.length) challengeCompletions = storeCompletions;
-    else store.replaceCompletions(challengeCompletions || [], {persist:false});
-    if((!Array.isArray(challengePlayers) || !challengePlayers.length) && storePlayers.length) challengePlayers = storePlayers;
-    else store.replacePlayers(challengePlayers || [], {persist:false});
     store.persistAll();
-    challenges = store.getChallenges();
-    challengeCompletions = store.getCompletions();
-    challengePlayers = store.getPlayers();
-    return true;
+    return mirrorChallengeStateFromStore();
   }catch(e){
     console.warn('ChallengeStore persist:', e);
     return false;
@@ -216,6 +204,41 @@ function mirrorChallengeStateFromStore(){
     return false;
   }
 }
+function replaceLocalChallengeStateInStore(nextState){
+  const store = getChallengeStore();
+  if(!store) return false;
+  try{
+    const state = nextState || {};
+    if(Object.prototype.hasOwnProperty.call(state, 'challenges')) store.replaceChallenges(Array.isArray(state.challenges) ? state.challenges : [], {persist:false});
+    if(Object.prototype.hasOwnProperty.call(state, 'completions')) store.replaceCompletions(Array.isArray(state.completions) ? state.completions : [], {persist:false});
+    if(Object.prototype.hasOwnProperty.call(state, 'players')) store.replacePlayers(Array.isArray(state.players) ? state.players : [], {persist:false});
+    store.persistAll();
+    return mirrorChallengeStateFromStore();
+  }catch(e){
+    console.warn('ChallengeStore local replace:', e);
+    return false;
+  }
+}
+function replaceLocalChallengesInStore(list){
+  return replaceLocalChallengeStateInStore({challenges: list});
+}
+function replaceLocalCompletionsInStore(list){
+  return replaceLocalChallengeStateInStore({completions: list});
+}
+function replaceLocalPlayersInStore(list){
+  return replaceLocalChallengeStateInStore({players: list});
+}
+try{
+  window.ChangeChallengeStoreBridge = {
+    sync: syncChallengeStateFromStore,
+    persist: persistChallengeStateToStore,
+    mirror: mirrorChallengeStateFromStore,
+    replaceState: replaceLocalChallengeStateInStore,
+    replaceChallenges: replaceLocalChallengesInStore,
+    replaceCompletions: replaceLocalCompletionsInStore,
+    replacePlayers: replaceLocalPlayersInStore
+  };
+}catch(_e){}
 function replaceRemoteChallengesInStore(list){
   const store = getChallengeStore();
   if(!store || typeof store.replaceChallenges !== 'function') return false;
@@ -2077,7 +2100,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     ls(AUTO_KEY,on);
     try{localStorage.setItem('change_v1_auto_challenges_enabled', JSON.stringify(on)); localStorage.setItem('auto_challenges_enabled', JSON.stringify(on));}catch(e){}
     if(on) ensureDailyAutoChallenges();
-    else{ try{ if(Array.isArray(challenges)){ challenges=challenges.filter(ch=>!(ch&&ch.auto===true)); persistChallengeStateToStore() || ls('challenges', challenges); } }catch(e){} }
+    else{ try{ if(Array.isArray(challenges)){ challenges=challenges.filter(ch=>!(ch&&ch.auto===true)); replaceLocalChallengesInStore(challenges) || ls('challenges', challenges); } }catch(e){} }
     if(typeof renderChallenges==='function') renderChallenges();
     if(typeof renderCalendar==='function') renderCalendar();
     if(typeof buildDashboard==='function') buildDashboard();
@@ -2607,7 +2630,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     });
     SPORT_POOL.forEach(sp=>{ if(!keep.some(c=>c.id===sp.id)) keep.push({...sp,active:true,type:'Sport',createdAt:new Date().toISOString()}); });
     challenges=keep;
-    persistChallengeStateToStore() || (ls('challenges',challenges), ls('challenge_players',challengePlayers));
+    replaceLocalChallengeStateInStore({challenges:challenges, players:challengePlayers}) || (ls('challenges',challenges), ls('challenge_players',challengePlayers));
   }
   const oldBoot=window.bootMainApp;
   window.bootMainApp=function(){ oldBoot.apply(this,arguments); setTimeout(()=>{normalizeSportChallenges(); if(typeof renderChallenges==='function')renderChallenges(); if(typeof buildDashboard==='function')buildDashboard(); if(typeof renderCalendar==='function')renderCalendar();},150); };
@@ -2619,7 +2642,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     let changed=false;
     challenges=(challenges||[]).filter(c=>!c.auto || String(c.id||'').startsWith('auto_'+dk+'_sport_'));
     daily.forEach(ch=>{ if(!challenges.some(x=>x.id===ch.id)){challenges.push(ch); changed=true;} });
-    if(changed){persistChallengeStateToStore() || ls('challenges',challenges); if(typeof publishChallengesToFirestore==='function') publishChallengesToFirestore();}
+    if(changed){replaceLocalChallengesInStore(challenges) || ls('challenges',challenges); if(typeof publishChallengesToFirestore==='function') publishChallengesToFirestore();}
     return daily;
   };
   window.getPlayerPointSummary=function(playerId){
@@ -2693,7 +2716,7 @@ if(currentMainView==='calendar'){renderCalendar();renderUpcoming();} syncEventTo
     if(!isDemoMode){
       challengePlayers=(challengePlayers||[]).filter(p=>!isDemo(p));
       challengeCompletions=(challengeCompletions||[]).filter(c=>!DEMO_IDS.some(x=>String(c.playerId||'').toLowerCase().includes(x) || String(c.playerName||'').toLowerCase().includes(x)));
-      persistChallengeStateToStore() || (ls('challenge_players',challengePlayers), ls('challenge_completions',challengeCompletions));
+      replaceLocalChallengeStateInStore({players:challengePlayers, completions:challengeCompletions}) || (ls('challenge_players',challengePlayers), ls('challenge_completions',challengeCompletions));
       try{
         if(window.firebase && firebase.apps.length && firebase.firestore){
           const db=firebase.firestore();
@@ -2718,7 +2741,7 @@ if(currentMainView==='calendar'){renderCalendar();renderUpcoming();} syncEventTo
       else existing.push({...sp,active:true,type:'Sport',createdAt:new Date().toISOString()});
     });
     challenges=existing;
-    persistChallengeStateToStore() || ls('challenges',challenges);
+    replaceLocalChallengesInStore(challenges) || ls('challenges',challenges);
   }
   window.buildDefaultChallenges=function(){return SPORTS_ONLY_POOL.slice(0,4).map(x=>({...x,active:true,type:'Sport',createdAt:new Date().toISOString()}));};
   window.ensureDailyAutoChallenges=function(dk=dateKey(new Date())){
@@ -2730,7 +2753,7 @@ if(currentMainView==='calendar'){renderCalendar();renderUpcoming();} syncEventTo
     const daily=picks.map((base,i)=>({id:'auto_'+dk+'_sport_'+i,title:base.title,desc:base.desc,points:base.points,icon:base.icon,url:base.url,level:base.level,date:dk,recurrence:'once',active:true,auto:true,type:'Sport',createdAt:dk+'T00:00:00.000Z'}));
     challenges=(challenges||[]).filter(c=>!c.auto || String(c.id||'').startsWith('auto_'+dk+'_sport_'));
     daily.forEach(ch=>{ if(!challenges.some(x=>x.id===ch.id)) challenges.push(ch); });
-    persistChallengeStateToStore() || ls('challenges',challenges);
+    replaceLocalChallengesInStore(challenges) || ls('challenges',challenges);
     if(typeof publishChallengesToFirestore==='function') setTimeout(()=>publishChallengesToFirestore(),50);
     return daily;
   };
@@ -3531,22 +3554,31 @@ window.toggleDarkMode = function(){
   applyThemePreference(next, true);
 };
 
+// ── Akzentfarbe (app-weit über --acc in tokens.css) ──────────────────────
+var ACCENT_KEY = 'change_v1_accent';
+var ACCENT_VALUES = ['green','blue','amber','violet','red'];
+function normalizedAccent(value){ return ACCENT_VALUES.indexOf(String(value)) >= 0 ? String(value) : 'green'; }
+function storedAccent(){ try{ var v = localStorage.getItem(ACCENT_KEY); if(v) return normalizedAccent(v); }catch(e){} return 'green'; }
+function applyAccent(value, persist){
+  var acc = normalizedAccent(value);
+  try{ document.documentElement.setAttribute('data-accent', acc); }catch(e){}
+  if(persist){ try{ localStorage.setItem(ACCENT_KEY, acc); }catch(e){} }
+  return acc;
+}
+window.ChangeAccent = {
+  get:function(){ return storedAccent(); },
+  set:function(value){ return applyAccent(value, true); },
+  apply:function(value){ return applyAccent(value || storedAccent(), false); }
+};
+
 // Init on load
 (function initDark(){
   bindSystemThemeListener();
   applyThemePreference(storedThemePreference(), false);
+  applyAccent(storedAccent(), false);
   if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', function(){ applyThemePreference(storedThemePreference(), false); }, {once:true});
+    document.addEventListener('DOMContentLoaded', function(){ applyThemePreference(storedThemePreference(), false); applyAccent(storedAccent(), false); }, {once:true});
   }
-})();
-
-// v0.1.0304 · Akzentfarbe beim Start wiederherstellen
-(function initAccent(){
-  try{
-    var a = localStorage.getItem('change_v1_accent');
-    if(a && a !== 'green'){ document.documentElement.setAttribute('data-accent', a); }
-    else { document.documentElement.removeAttribute('data-accent'); }
-  }catch(e){}
 })();
 
 /* ====

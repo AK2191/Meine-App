@@ -64,6 +64,8 @@ Diese Funktionen duerfen nicht automatisch beim App-Start laufen. Sie sind fuer 
 - v0.1.0301: Der manuelle Firebase-Sync-Controller nutzt `ChangeChallengeStore` und `ChangeSettingsStore` als bevorzugte Datenquellen fuer Challenges, Punkte, Mitspieler und Settings-Fallbacks. Das aendert keinen Auto-Start und fuehrt keine Migration aus.
 - v0.1.0302: Eingehende Firebase-Live-Daten fuer `change_players`, `change_completions` und `change_challenges` werden in `ChangeChallengeStore` uebernommen und danach nur noch in Legacy-Globals gespiegelt.
 - v0.1.0303: Lokale Kalender-/Event-Start- und Alt-Speicherpfade in `app.js` spiegeln konsequenter ueber `ChangeEventStore`. Canonical- und Legacy-Event-Keys bleiben lesbar, der Google-Kalender-Cache bleibt getrennt.
+- v0.1.0304: Lokale Challenge-Persistenz ist store-first. `ChangeChallengeStoreBridge` kapselt bewusste lokale Replace-Schreibungen fuer Challenges, Completions und Players; Legacy-Keys bleiben Fallback und werden nicht geloescht.
+- v0.1.0305: Settings-Audit zaehlt bekannte lokale Settings-Keys gruppiert ueber `ChangeSettingsStore.audit()`. App & Sicherheit zeigt diese Zahl read-only; aktive Einzel-Keys bleiben bestehen.
 
 ## Migration Order
 

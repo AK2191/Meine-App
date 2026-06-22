@@ -126,7 +126,8 @@
       try{
         if(Array.isArray(window.challenges)){
           window.challenges = window.challenges.filter(function(ch){ return !(ch && ch.auto === true); });
-          if(typeof window.ls === 'function') window.ls('challenges', window.challenges);
+          if(window.ChangeChallengeStoreBridge && typeof window.ChangeChallengeStoreBridge.replaceChallenges === 'function') window.ChangeChallengeStoreBridge.replaceChallenges(window.challenges);
+          else if(typeof window.ls === 'function') window.ls('challenges', window.challenges);
         }
       }catch(e){}
     }
@@ -202,86 +203,39 @@
       }
     }catch(e){}
   }
-  // ── Akzentfarbe ──────────────────────────────────────────────────────────
-  var ACCENT_OPTIONS = [
-    { value: 'green',  label: 'Grün',    dark: ['86efac','34d399'], light: ['2D6A4F','245C43'] },
-    { value: 'blue',   label: 'Blau',    dark: ['7DA9F5','3B82F6'], light: ['2563EB','1D4ED8'] },
-    { value: 'amber',  label: 'Amber',   dark: ['FCD34D','F59E0B'], light: ['D97706','B45309'] },
-    { value: 'violet', label: 'Violett', dark: ['C4B5FD','A78BFA'], light: ['7C3AED','6D28D9'] },
-    { value: 'red',    label: 'Rot',     dark: ['FCA5A5','EF4444'], light: ['DC2626','B91C1C'] }
-  ];
-  function appAccentPreference(){
-    try{ var v = localStorage.getItem('change_v1_accent'); if(v) return v; }catch(e){}
-    return 'green';
-  }
-  function setAppAccent(value){
-    value = ACCENT_OPTIONS.some(function(o){ return o.value === value; }) ? value : 'green';
-    try{ localStorage.setItem('change_v1_accent', value); }catch(e){}
-    try{
-      if(value === 'green'){ document.documentElement.removeAttribute('data-accent'); }
-      else { document.documentElement.setAttribute('data-accent', value); }
-    }catch(e){}
-  }
-  // Beim Start Akzent wiederherstellen
-  (function(){ try{ var a = localStorage.getItem('change_v1_accent'); if(a && a !== 'green') document.documentElement.setAttribute('data-accent', a); }catch(e){} })();
-
-  function themePreviewHtml(mode){
-    if(mode === 'system'){
-      return '<div class="cs-theme-preview-system">'
-        + '<div class="half l"><div class="cs-theme-bar" style="width:55%;background:#10b981"></div><div class="cs-theme-bar sub-l" style="width:78%"></div></div>'
-        + '<div class="half d"><div class="cs-theme-bar" style="width:55%"></div><div class="cs-theme-bar sub" style="width:78%"></div></div>'
-        + '</div>';
+  function themeThumb(value){
+    if(value === 'system'){
+      return '<div class="change-theme-thumb split"><div class="ttp light"><i></i><b></b></div><div class="ttp dark"><i></i><b></b></div></div>';
     }
-    var cls = mode === 'dark' ? 'dark' : 'light';
-    var barSub = cls === 'light' ? 'sub-l' : 'sub';
-    var accentBar = cls === 'light' ? 'background:#10b981;' : '';
-    return '<div class="cs-theme-preview '+cls+'">'
-      + '<div class="cs-theme-bar" style="width:55%;'+accentBar+'"></div>'
-      + '<div class="cs-theme-bar '+barSub+'" style="width:78%"></div>'
-      + '<div class="cs-theme-bar '+barSub+'" style="width:62%"></div>'
-      + '</div>';
+    return '<div class="change-theme-thumb single '+(value === 'light' ? 'light' : 'dark')+'"><i></i><b></b><b class="s"></b></div>';
   }
-
   function themeOptionButton(value, title, subtitle, active){
-    var isActive = active === value;
-    var radioHtml = isActive
-      ? '<span class="cs-theme-radio" style="background:#34d399;border-color:transparent;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="#06140F" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg></span>'
-      : '<span class="cs-theme-radio"></span>';
-    return '<button type="button" class="cs-theme-option '+(isActive?'active':'')+'" data-change-theme="'+esc(value)+'">'  
-      + themePreviewHtml(value)
-      + '<div class="cs-theme-label"><span>'+esc(title)+'</span>'+radioHtml+'</div>'
-      + '<div class="cs-theme-sub">'+esc(subtitle)+'</div>'
+    var on = active === value;
+    var check = on ? '<svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="#06140F" stroke-width="3.6"><polyline points="20 6 9 17 4 12"></polyline></svg>' : '';
+    return '<button type="button" class="change-theme-option '+(on ? 'active' : '')+'" data-change-theme="'+esc(value)+'">'
+      + themeThumb(value)
+      + '<div class="change-theme-option-row"><span class="change-theme-option-name">'+esc(title)+'</span><span class="change-theme-radio '+(on ? 'on' : '')+'">'+check+'</span></div>'
+      + '<div class="change-theme-option-sub">'+esc(subtitle)+'</div>'
       + '</button>';
   }
-
-  function accentOptionButton(opt, current){
-    var isActive = current === opt.value;
-    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    var colors = isDark ? opt.dark : opt.light;
-    var c1 = colors[0], c2 = colors[1];
-    var checkSvg = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#06140F" stroke-width="3.2"><polyline points="20 6 9 17 4 12"/></svg>';
-    var dotHtml = isActive
-      ? '<div class="cs-accent-dot" style="background:radial-gradient(circle at 32% 28%,#'+c1+',#'+c2+' 70%);box-shadow:0 6px 16px rgba(0,0,0,.32)">'+checkSvg+'</div>'
-      : '<div class="cs-accent-dot" style="background:radial-gradient(circle at 32% 28%,#'+c1+',#'+c2+' 70%)"></div>';
-    return '<button type="button" class="cs-accent-option'+(isActive?' active':'')+'" data-change-accent="'+esc(opt.value)+'">'  
-      + dotHtml
-      + '<span class="cs-accent-name">'+esc(opt.label)+'</span>'
-      + '</button>';
+  var ACCENT_DEFS = [
+    ['green','Grün','#34D399','#10B981'],
+    ['blue','Blau','#60A5FA','#3B82F6'],
+    ['amber','Bernstein','#FBBF24','#F59E0B'],
+    ['violet','Violett','#A78BFA','#8B5CF6'],
+    ['red','Rot','#F87171','#EF4444']
+  ];
+  function currentAccent(){
+    try{ if(window.ChangeAccent && window.ChangeAccent.get) return window.ChangeAccent.get(); }catch(e){}
+    try{ return document.documentElement.getAttribute('data-accent') || 'green'; }catch(e){ return 'green'; }
   }
-
-  function accentSectionHtml(){
-    var current = appAccentPreference();
-    var buttons = ACCENT_OPTIONS.map(function(o){ return accentOptionButton(o, current); }).join('');
-    return '<div class="cs-accent-section" style="margin-top:16px;border-top:1px solid rgba(255,255,255,.07);padding-top:14px">'
-      + '<div class="cs-secl" style="margin-bottom:10px">Akzentfarbe</div>'
-      + '<div class="cs-accent-grid">'+buttons+'</div>'
-      + '<div class="cs-accent-preview">'
-      + '<div class="cs-accent-preview-bar"></div>'
-      + '<div class="cs-accent-preview-icon"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 9.5H20.5M8 3v4M16 3v4"/></svg></div>'
-      + '<div style="flex:1;min-width:0"><div class="cs-accent-preview-title">Zahnarzt-Termin</div><div class="cs-accent-preview-sub">Morgen · 14:30</div></div>'
-      + '<button class="cs-accent-preview-btn" type="button" tabindex="-1">Öffnen</button>'
-      + '</div>'
-      + '</div>';
+  function accentSwatch(def, active){
+    var on = def[0] === active;
+    var check = on ? '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#06140F" stroke-width="3.2"><polyline points="20 6 9 17 4 12"></polyline></svg>' : '';
+    return '<button type="button" class="change-accent-swatch '+(on ? 'active' : '')+'" data-change-accent="'+esc(def[0])+'">'
+      + '<span class="change-accent-dot" style="background:radial-gradient(circle at 32% 28%,'+def[2]+','+def[3]+' 70%)">'+check+'</span>'
+      + '<span class="change-accent-name">'+esc(def[1])+'</span>'
+      + '</button>';
   }
   function weatherHealthStatus(){
     var store = window.ChangeWeatherStore;
@@ -295,188 +249,162 @@
   }
   function featureSwitch(title, subtitle, id, checked, disabled){
     var control = '<label class="switch"><input type="checkbox" id="'+id+'" '+(checked ? 'checked' : '')+' '+(disabled ? 'disabled' : '')+'><span class="slider"></span></label>';
-    return '<div class="cs-feature-row" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><div class="cs-feature-row-title" style="font-size:13px;font-weight:800;color:#F2F5F1">'+title+'</div>'+(subtitle ? '<div class="cs-feature-row-sub" style="font-size:11.5px;color:#7E8A80;margin-top:3px">'+subtitle+'</div>' : '')+'</div>'+control+'</div>';
+    return '<div class="change-feature-row"><div><div class="change-feature-row-title">'+title+'</div>'+(subtitle ? '<div class="change-feature-row-sub">'+subtitle+'</div>' : '')+'</div>'+control+'</div>';
   }
   function featureField(label, inner, hint){
-    return '<div class="cs-feature-field" style="display:grid;gap:7px"><label class="flabel">'+esc(label)+'</label>'+inner+(hint ? '<div class="cs-feature-row-sub" style="font-size:11.5px;color:#7E8A80;margin-top:3px">'+esc(hint)+'</div>' : '')+'</div>';
+    return '<div class="change-feature-field"><label class="flabel">'+esc(label)+'</label>'+inner+(hint ? '<div class="change-feature-row-sub">'+esc(hint)+'</div>' : '')+'</div>';
   }
-  // ── Profil-Pane ───────────────────────────────────────────────────────────
-  function profilPane(){
+  function settingsPlayers(){
+    try{ if(typeof window.getVisibleContestPlayers === 'function'){ var list = window.getVisibleContestPlayers(); if(Array.isArray(list) && list.length) return list; } }catch(e){}
+    var me = window.userInfo || {};
+    return [{name:me.name || me.email || 'Ich', email:me.email || '', id:me.email || 'me'}];
+  }
+  function playerInitials(value){
+    var parts = String(value || '').trim().split(/\s+/).filter(Boolean);
+    if(!parts.length) return '··';
+    if(parts.length === 1) return parts[0].slice(0,2).toUpperCase();
+    return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+  }
+  function playerPoints(p){
+    if(!p) return null;
+    var raw = p.points != null ? p.points : (p.score != null ? p.score : (p.total != null ? p.total : null));
+    var n = parseFloat(raw);
+    return Number.isFinite(n) ? n : null;
+  }
+  function profilePane(){
     var profile = window.userInfo || {};
     var name = profile.name || profile.email || 'Change';
-    var first = String(name).slice(0,2).toUpperCase();
+    var email = profile.email || '';
     var google = googleStatus();
-    var googleBadge = google.loggedIn
-      ? '<div class="cs-profile-badge"><div class="cs-profile-badge-dot"></div><span>Mit Google angemeldet</span></div>'
-      : '<div class="cs-profile-badge" style="background:rgba(248,113,113,.08);border-color:rgba(248,113,113,.2)"><div class="cs-profile-badge-dot" style="background:#f87171;box-shadow:0 0 0 3px rgba(248,113,113,.2)"></div><span style="color:#FCA5A5">Nicht angemeldet</span></div>';
-    var avatarHtml = profile.picture
-      ? '<img src="'+esc(profile.picture)+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:18px">'
-      : '<span style="font-size:20px;font-weight:800;color:#06140F">'+esc(first)+'</span>';
-
-    // Mitspieler
-    var players = [];
-    try{
-      var ps = window.ChangeChallengePlayers && window.ChangeChallengePlayers.getAll ? window.ChangeChallengePlayers.getAll() : null;
-      if(!ps) ps = JSON.parse(localStorage.getItem('change_v1_challenge_players') || localStorage.getItem('challenge_players') || '[]');
-      players = Array.isArray(ps) ? ps : Object.values(ps || {});
-    }catch(e){}
-
-    var myEmail = String((window.userInfo && window.userInfo.email) || '').toLowerCase();
-    var playerRows = '';
-    players.forEach(function(p){
-      var pName = esc(p.name || p.email || '?');
-      var pEmail = esc(p.email || '');
-      var isMe = myEmail && pEmail.toLowerCase() === myEmail;
-      var initials = String(p.name || p.email || '?').slice(0,2).toUpperCase();
-      var avatarStyle = isMe
-        ? 'background:radial-gradient(circle at 32% 28%,#86efac,#10b981 75%);color:#06140F'
-        : 'background:radial-gradient(circle at 32% 28%,#C4B5FD,#7C5CD6 75%);color:#fff';
-      var pts = (p.points !== undefined ? p.points : (p.totalPoints !== undefined ? p.totalPoints : '')) + ' P';
-      playerRows += '<div class="cs-player-row">'
-        + '<div class="cs-player-avatar" style="'+avatarStyle+'">'+initials+'</div>'
-        + '<div class="cs-player-copy">'
-        + '<div class="cs-player-name">'+pName+(isMe ? '<span class="cs-player-you">DU</span>' : '')+'</div>'
-        + '<div class="cs-player-email">'+pEmail+'</div>'
-        + '</div>'
-        + '<span class="cs-player-pts">'+esc(String(pts))+'</span>'
-        + '</div>';
-    });
-    if(players.length > 1){
-      // Trennlinien zwischen Spielern
-      playerRows = playerRows.split('</div><div class="cs-player-row">').join('</div><div class="cs-player-sep"></div><div class="cs-player-row">');
-    }
-    var playerCount = players.length ? String(players.length)+' AKTIV' : '0 AKTIV';
-
-    return '<div style="display:flex;flex-direction:column;gap:14px">'
-      // Profilkarte
-      + '<div class="cs-profile-card">'
-      + '<div class="cs-profile-card-glow"></div>'
-      + '<div class="cs-profile-avatar" style="position:relative;flex:none">'+avatarHtml+'</div>'
-      + '<div class="cs-profile-copy">'
-      + '<div class="cs-profile-name">'+esc(name)+'</div>'
-      + '<div class="cs-profile-email">'+esc(profile.email || '')+'</div>'
-      + googleBadge
-      + '</div>'
-      + '<button class="cs-profile-btn" id="btn-profile-signout" type="button">Abmelden</button>'
-      + '</div>'
-      // Mitspieler-Karte
-      + '<div class="cs-mod">'
-      + '<div class="cs-modhead">'
-      + '<div class="cs-ava"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><circle cx="17" cy="8" r="2.6"/><path d="M16 14c2.5.2 4.5 2.2 4.5 5"/></svg></div>'
-      + '<div class="cs-mod-copy"><div style="display:flex;align-items:center;gap:8px"><span class="cs-mod-title">Mitspieler</span><span class="cs-chip-a">'+esc(playerCount)+'</span></div><div class="cs-mod-sub">Automatisch über Google-Login erkannt.</div></div>'
-      + '</div>'
-      + (playerRows ? '<div class="cs-sep"></div>'+playerRows : '<div class="cs-sep"></div><div class="cs-mod-sub">Noch keine Mitspieler geladen.</div>')
-      + '</div>'
+    var avatar = profile.picture ? '<img src="'+esc(profile.picture)+'" alt="">' : esc(playerInitials(name));
+    var badge = google.loggedIn
+      ? '<div class="change-settings-profile-badge"><i></i><span>Mit Google angemeldet</span></div>'
+      : '';
+    var hero = '<div class="change-settings-profile-hero">'
+      + '<div class="change-settings-profile-avatar">'+avatar+'</div>'
+      + '<div class="change-settings-profile-main"><div class="change-settings-profile-name">'+esc(name)+'</div>'
+      + (email ? '<div class="change-settings-profile-mail">'+esc(email)+'</div>' : '')
+      + badge + '</div>'
+      + '<button class="change-settings-profile-signout" id="set-signout" type="button">Abmelden</button>'
       + '</div>';
-  }
 
-  // ── Darstellung-Pane ───────────────────────────────────────────────────────
+    var players = settingsPlayers();
+    var myEmail = String((profile.email || '')).toLowerCase();
+    var activeCount = players.length;
+    var rows = players.map(function(p, i){
+      var pName = p.name || p.displayName || p.email || 'Mitspieler';
+      var pMail = p.email || '';
+      var isMe = myEmail && String(pMail).toLowerCase() === myEmail;
+      var pts = playerPoints(p);
+      var ptsHtml = pts != null ? '<span class="change-player-points">'+esc(String(pts))+' P</span>' : '';
+      return '<div class="change-player-row">'
+        + '<div class="change-player-avatar'+(i % 2 ? ' alt' : '')+'">'+esc(playerInitials(pName))+'</div>'
+        + '<div class="change-player-info"><div class="change-player-name">'+esc(pName)+(isMe ? '<span class="change-player-you">DU</span>' : '')+'</div>'
+        + (pMail ? '<div class="change-player-mail">'+esc(pMail)+'</div>' : '')+'</div>'
+        + ptsHtml
+        + '</div>';
+    }).join('');
+    var playersCard = settingsFeatureCard(
+      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"></circle><path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"></path><circle cx="17" cy="8" r="2.6"></circle><path d="M16 14c2.5.2 4.5 2.2 4.5 5"></path></svg>',
+      'Mitspieler',
+      activeCount + ' AKTIV',
+      'ok',
+      'Automatisch über Google-Login erkannt.',
+      '',
+      rows
+    );
+    return '<div class="change-settings-stack">' + hero + playersCard + '</div>';
+  }
   function darstellungPane(){
     var theme = appThemePreference();
     var themeLabel = theme === 'system' ? 'SYSTEM' : (theme === 'light' ? 'HELL' : 'DUNKEL');
-    var themeGrid = '<div class="cs-theme-grid">'
+    var themeGrid = '<div class="change-theme-options">'
       + themeOptionButton('system','System','Folgt deinem Gerät', theme)
       + themeOptionButton('light','Hell','Ruhiger heller Look', theme)
       + themeOptionButton('dark','Dunkel','Aktueller Darkmode', theme)
       + '</div>';
-    return '<div class="cs-mod">'
-      + '<div class="cs-modhead">'
-      + '<div class="cs-ava"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3 a9 9 0 0 1 0 18 z" fill="#34d399" stroke="none"/></svg></div>'
-      + '<div class="cs-mod-copy"><div style="display:flex;align-items:center;gap:8px"><span class="cs-mod-title">Darstellung</span><span class="cs-chip-a">'+esc(themeLabel)+'</span></div></div>'
-      + '</div>'
-      + '<div style="margin-top:15px">'+themeGrid+'</div>'
-      + accentSectionHtml()
+    var accent = currentAccent();
+    var accentGrid = '<div class="change-accent-grid">'
+      + ACCENT_DEFS.map(function(d){ return accentSwatch(d, accent); }).join('')
       + '</div>';
+    var preview = '<div class="change-appearance-preview">'
+      + '<span class="change-appearance-preview-bar"></span>'
+      + '<span class="change-appearance-preview-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"></rect><path d="M3.5 9.5H20.5M8 3v4M16 3v4"></path></svg></span>'
+      + '<div class="change-appearance-preview-main"><div class="change-appearance-preview-title">Zahnarzt-Termin</div><div class="change-appearance-preview-sub">Morgen · 14:30</div></div>'
+      + '<button class="change-appearance-preview-btn" type="button">Öffnen</button>'
+      + '</div>';
+    var body = themeGrid
+      + '<div class="flabel" style="margin:18px 0 11px">Akzentfarbe</div>'
+      + accentGrid
+      + '<div class="flabel" style="margin:18px 0 10px">Vorschau</div>'
+      + preview;
+    var themeCard = settingsFeatureCard(
+      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 3 a9 9 0 0 1 0 18 z" fill="currentColor" stroke="none"></path></svg>',
+      'Darstellung', themeLabel, theme === 'system' ? 'off' : 'ok', 'Hell, dunkel oder nach System.', '', body
+    );
+    return '<div class="change-settings-stack">' + themeCard + '</div>';
   }
-
-  // ── Benachrichtigungen-Pane ─────────────────────────────────────────────────
+  function holidayNotificationsEnabled(){
+    return readBoolMulti(['change_v1_holiday_notifications','holiday_notifications'], true);
+  }
   function pushPane(){
     var push = pushStatus();
-    var rainOn = readBool('change_v1_rain_alerts_enabled', false);
-    var pollenWarnOn = readBool('change_v1_pollen_alerts_enabled', false);
-    var friseurOn = dashboardBool('getFriseurEnabled', 'change_v1_friseur_enabled', true);
+    var pushBody = '<button class="btn btn-secondary btn-full" id="set-push-test" type="button">Test-Benachrichtigung senden</button>';
+    var masterCard = settingsFeatureCard(
+      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg>',
+      'Push-Benachrichtigungen',
+      push.active ? 'ERLAUBT' : 'INAKTIV',
+      push.active ? 'ok' : 'off',
+      push.detail || 'Zentrale Steuerung – wie über die Glocke.',
+      '<label class="switch"><input type="checkbox" id="set-push" '+(push.active ? 'checked' : '')+'><span class="slider"></span></label>',
+      pushBody
+    );
+
+    var ws = (weatherHealthStatus().settings) || {};
+    var rainOn = !!ws.rainAlertsEnabled;
+    var pollenWarnOn = !!ws.pollenAlertsEnabled;
     var rainHours = weatherAlertHours('change_v1_rain_alert_hours', 2);
     var pollenHours = weatherAlertHours('change_v1_pollen_alert_hours', 2);
-    var holidayPush = readBool('change_v1_holiday_notifications', false);
+    var rainCard = settingsFeatureCard(
+      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17a4 4 0 0 1 0-8 5.5 5.5 0 0 1 10.6-1.3A3.8 3.8 0 0 1 18 17z"></path><path d="M8 20l-1 2M12 20l-1 2M16 20l-1 2"></path></svg>',
+      'Regenwarnung', 'WETTER', 'ok', 'Warnt, wenn Regen erwartet wird.',
+      '<label class="switch"><input type="checkbox" id="set-rain-alerts" '+(rainOn ? 'checked' : '')+'><span class="slider"></span></label>',
+      rainOn ? hoursSelect('set-rain-hours', rainHours) : ''
+    );
+    var pollenCard = settingsFeatureCard(
+      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9"></path><path d="M12 13c-4 0-7-2-7-6 4 0 7 2 7 6z"></path><path d="M12 11c1-3 4-5 7-5 0 4-3 6-7 6"></path></svg>',
+      'Pollenwarnung', 'POLLEN', 'ok', 'Benachrichtigt nur bei starker Belastung.',
+      '<label class="switch"><input type="checkbox" id="set-pollen-alerts" '+(pollenWarnOn ? 'checked' : '')+'><span class="slider"></span></label>',
+      pollenWarnOn ? hoursSelect('set-pollen-hours', pollenHours) : ''
+    );
 
-    function selHours(id, current){
-      return '<div class="cs-sel-native" style="margin-top:10px"><select id="'+id+'">'
-        + [1,2,3,6,12,24].map(function(h){ return '<option value="'+h+'" '+(h===current?'selected':'')+'>'+h+' Std. vorher</option>'; }).join('')
-        + '</select><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#7E8A80" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg></div>';
-    }
-    function sw(id, on){ return '<label class="switch"><input type="checkbox" id="'+id+'" '+(on?'checked':'')+'><span class="slider"></span></label>'; }
+    var friseurWeeks = dashboardNumber('getFriseurWeeks', ['change_v1_friseur_weeks','friseur_weeks'], 3);
+    var friseurBody = featureField('Erinnerung nach', '<select class="finput" id="set-friseur-weeks">'+[2,3,4,5,6,8].map(function(n){ return '<option value="'+n+'" '+(n === friseurWeeks ? 'selected' : '')+'>'+n+' Wochen</option>'; }).join('')+'</select>', '');
+    var friseurCard = settingsFeatureCard(
+      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6.5" cy="6.5" r="2.8"></circle><circle cx="6.5" cy="17.5" r="2.8"></circle><path d="M8.7 8.4 L20 16.5M8.7 15.6 L20 7.5"></path></svg>',
+      'Friseur-Erinnerung', 'FRISEUR', 'ok', 'Erinnert an den nächsten Termin.', '', friseurBody
+    );
 
-    return '<div style="display:flex;flex-direction:column;gap:14px">'
-      // Master Push
-      + '<div class="cs-mod">'
-      + '<div class="cs-modhead">'
-      + '<div class="cs-ava"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></div>'
-      + '<div class="cs-mod-copy"><div style="display:flex;align-items:center;gap:8px"><span class="cs-mod-title">Push-Benachrichtigungen</span><span class="'+(push.active?'cs-chip-a':'cs-chip-n')+'">'+esc(push.label)+'</span></div></div>'
-      + '<div class="cs-mod-right">'+sw('set-push', push.active)+'</div>'
-      + '</div>'
-      + '<div class="cs-sep"></div>'
-      + '<button class="cs-btn" id="btn-push-test" type="button">Test-Benachrichtigung senden</button>'
-      + '</div>'
-      // Section Label
-      + '<div class="cs-secl" style="margin:2px 2px -4px">MODULE</div>'
-      // Regenwarnung
-      + '<div class="cs-mod">'
-      + '<div class="cs-modhead">'
-      + '<div class="cs-ava"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17a4 4 0 0 1 0-8 5.5 5.5 0 0 1 10.6-1.3A3.8 3.8 0 0 1 18 17"/><path d="M8 20l-1 2M12 20l-1 2M16 20l-1 2"/></svg></div>'
-      + '<div class="cs-mod-copy"><div style="display:flex;align-items:center;gap:8px"><span class="cs-mod-title">Regenwarnung</span><span class="cs-chip-a">WETTER</span></div><div class="cs-mod-sub">Warnt, wenn Regen erwartet wird.</div></div>'
-      + '<div class="cs-mod-right">'+sw('set-rain-alerts', rainOn)+'</div>'
-      + '</div>'
-      + (rainOn ? '<div class="cs-sep"></div><div class="cs-secl" style="margin-bottom:8px">Erinnerung</div><div class="cs-sel-native"><select id="set-rain-hours">'
-        + [1,2,3,6,12,24].map(function(h){ return '<option value="'+h+'" '+(h===rainHours?'selected':'')+'>'+h+' Std. vorher</option>'; }).join('')
-        + '</select><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#7E8A80" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg></div>' : '')
-      + '</div>'
-      // Pollenwarnung
-      + '<div class="cs-mod">'
-      + '<div class="cs-modhead">'
-      + '<div class="cs-ava"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9"/><path d="M12 13c-4 0-7-2-7-6 4 0 7 2 7 6z"/><path d="M12 11c1-3 4-5 7-5 0 4-3 6-7 6"/></svg></div>'
-      + '<div class="cs-mod-copy"><div style="display:flex;align-items:center;gap:8px"><span class="cs-mod-title">Pollenwarnung</span><span class="cs-chip-a">POLLEN</span></div><div class="cs-mod-sub">Benachrichtigt nur bei starker Belastung.</div></div>'
-      + '<div class="cs-mod-right">'+sw('set-pollen-alerts', pollenWarnOn)+'</div>'
-      + '</div>'
-      + (pollenWarnOn ? '<div class="cs-sep"></div><div class="cs-secl" style="margin-bottom:8px">Erinnerung</div><div class="cs-sel-native"><select id="set-pollen-hours">'
-        + [1,2,3,6,12,24].map(function(h){ return '<option value="'+h+'" '+(h===pollenHours?'selected':'')+'>'+h+' Std. vorher</option>'; }).join('')
-        + '</select><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#7E8A80" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg></div>' : '')
-      + '</div>'
-      // Friseur-Erinnerung
-      + (friseurOn ? '<div class="cs-mod">'
-      + '<div class="cs-modhead">'
-      + '<div class="cs-ava"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6.5" cy="6.5" r="2.8"/><circle cx="6.5" cy="17.5" r="2.8"/><path d="M8.7 8.4 L20 16.5M8.7 15.6 L20 7.5"/></svg></div>'
-      + '<div class="cs-mod-copy"><div style="display:flex;align-items:center;gap:8px"><span class="cs-mod-title">Friseur-Erinnerung</span><span class="cs-chip-a">FRISEUR</span></div><div class="cs-mod-sub">Erinnert an den nächsten Termin.</div></div>'
-      + '</div>'
-      + '</div>' : '')
-      // Termin-Erinnerung
-      + '<div class="cs-mod">'
-      + '<div class="cs-modhead">'
-      + '<div class="cs-ava"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v4M16 3v4"/><circle cx="12" cy="15" r="2.6"/><path d="M12 13.6v1.4l1 .7"/></svg></div>'
-      + '<div class="cs-mod-copy"><span class="cs-mod-title">Termin-Erinnerung</span></div>'
-      + '</div>'
-      + '<div class="cs-sep"></div>'
-      + '<div class="cs-sel-native"><select id="set-event-reminder"><option value="1440" selected>1 Tag vorher</option><option value="60">1 Std. vorher</option><option value="30">30 Min. vorher</option></select><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#7E8A80" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg></div>'
-      + '</div>'
-      // Geburtstags-Erinnerung
-      + '<div class="cs-mod">'
-      + '<div class="cs-modhead">'
-      + '<div class="cs-ava"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16v-7H4z"/><path d="M4 13c0-2 1.6-3 4-3s4 1 4 3M12 13c0-2 1.6-3 4-3s4 1 4 3"/><path d="M12 10V7"/><circle cx="12" cy="5" r="1.4"/></svg></div>'
-      + '<div class="cs-mod-copy"><span class="cs-mod-title">Geburtstags-Erinnerung</span></div>'
-      + '</div>'
-      + '<div class="cs-sep"></div>'
-      + '<div class="cs-sel-native"><select id="set-birthday-push"><option value="1" selected>1 Tag vorher</option><option value="2">2 Tage vorher</option><option value="7">1 Woche vorher</option></select><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#7E8A80" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg></div>'
-      + '</div>'
-      // Feiertags-Benachrichtigungen
-      + '<div class="cs-mod">'
-      + '<div class="cs-modhead">'
-      + '<div class="cs-ava"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg></div>'
-      + '<div class="cs-mod-copy"><span class="cs-mod-title">Feiertags-Benachrichtigungen</span></div>'
-      + '<div class="cs-mod-right">'+sw('set-holiday-push', holidayPush)+'</div>'
-      + '</div>'
-      + '</div>'
+    var birthdayDays = Math.max(0, Math.min(365, parseInt(dashboardNumber('getBirthdayNotificationDays', ['change_v1_birthday_notification_days','birthday_notification_days'], 1), 10) || 0));
+    var birthdayCard = settingsFeatureCard(
+      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16v-7H4z"></path><path d="M4 13c0-2 1.6-3 4-3s4 1 4 3M12 13c0-2 1.6-3 4-3s4 1 4 3"></path><path d="M12 10V7"></path><circle cx="12" cy="5" r="1.4"></circle></svg>',
+      'Geburtstags-Erinnerung', '', 'ok', '', '', birthdayDaysSelect('set-birthday-notification-days', birthdayDays)
+    );
+
+    var holidayOn = holidayNotificationsEnabled();
+    var holidayCard = settingsFeatureCard(
+      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"></path></svg>',
+      'Feiertags-Benachrichtigungen', holidayOn ? 'AKTIV' : 'AUS', holidayOn ? 'ok' : 'off', '',
+      '<label class="switch"><input type="checkbox" id="set-holiday-notifications" '+(holidayOn ? 'checked' : '')+'><span class="slider"></span></label>',
+      ''
+    );
+
+    return '<div class="change-settings-stack">'
+      + masterCard
+      + '<div class="flabel" style="margin:4px 2px -4px">Module</div>'
+      + rainCard + pollenCard + friseurCard + birthdayCard + holidayCard
       + '</div>';
   }
-
   function calendarPane(){
     var options = calendarOptions();
     var holidaysBody = featureField(
@@ -484,7 +412,7 @@
       '<select class="finput" id="set-holiday-state">'+stateOptions(options.holidayState)+'</select>',
       ''
     );
-    return '<div class="cs-stack">'
+    return '<div class="change-settings-stack">'
       + settingsFeatureCard(
         '🗓️',
         'Feiertage',
@@ -571,8 +499,8 @@
   function halfDayChips(){
     var list = halfDays();
     if(!list.length) return '<div class="change-settings-sub" data-half-list>Keine halben Urlaubstage hinterlegt.</div>';
-    return '<div data-half-list class="cs-halfday-list">'+list.map(function(day){
-      return '<span class="cs-halfday-chip">'+esc(halfDayLabel(day))+'<button type="button" data-remove-half="'+esc(day)+'" aria-label="Halben Urlaubstag entfernen">×</button></span>';
+    return '<div data-half-list class="change-halfday-list">'+list.map(function(day){
+      return '<span class="change-halfday-chip">'+esc(halfDayLabel(day))+'<button type="button" data-remove-half="'+esc(day)+'" aria-label="Halben Urlaubstag entfernen">×</button></span>';
     }).join('')+'</div>';
   }
 
@@ -609,20 +537,10 @@
     var rainHours   = weatherAlertHours('change_v1_rain_alert_hours', 2);
     var pollenHours = weatherAlertHours('change_v1_pollen_alert_hours', 2);
 
-    var wetterBody = '';
-    if(wetterOn){
-      wetterBody += featureSwitch('Regenwarnung', '', 'set-rain-alerts', rainOn);
-      if(rainOn) wetterBody += hoursSelect('set-rain-hours', rainHours);
-    }else{
-    }
-    wetterBody += '<button class="cs-btn" id="set-weather-location" type="button">Standort aktualisieren</button>';
-
+    // Regen-/Pollenwarnung leben jetzt zentral unter "Benachrichtigungen".
+    // Im Dashboard bleibt nur das Modul an/aus + Standort.
+    var wetterBody = '<button class="btn btn-secondary btn-full" id="set-weather-location" type="button">Standort aktualisieren</button>';
     var pollenBody = '';
-    if(pollenOn){
-      pollenBody += featureSwitch('Pollenwarnung', 'Benachrichtigt nur bei starker Belastung.', 'set-pollen-alerts', pollWarnOn);
-      if(pollWarnOn) pollenBody += hoursSelect('set-pollen-hours', pollenHours);
-    }else{
-          }
 
     return settingsFeatureCard(
         '🌦️',
@@ -654,17 +572,16 @@
     var monthOptions = months.map(function(item){ return '<option value="'+item[0]+'">'+item[1]+'</option>'; }).join('');
     var dayOptions = Array.from({length:31}, function(_, i){ var d = String(i+1).padStart(2,'0'); return '<option value="'+d+'">'+d+'.</option>'; }).join('');
 
-    var friseurBody = friseurOn
-      ? featureField('Erinnerung nach', '<select class="finput" id="set-friseur-weeks">'+[2,3,4,5,6,8].map(function(n){ return '<option value="'+n+'" '+(n === friseurWeeks ? 'selected' : '')+'>'+n+' Wochen</option>'; }).join('')+'</select>', ''): ''
+    // Friseur-/Geburtstags-Erinnerung leben jetzt zentral unter "Benachrichtigungen".
+    var friseurBody = ''
 
-    var birthdaysBody = birthdaysOn
-      ? birthdayDaysSelect('set-birthday-notification-days', birthdayNotificationDays): ''
+    var birthdaysBody = ''
 
     var urlaubBody = urlaubOn
       ? featureField('Jahresurlaub', '<input type="number" class="finput" id="set-urlaub-days" min="1" max="365" value="'+urlaubDays+'">', '')
         + featureField('Halbe Urlaubstage', '<div class="change-halfday-controls"><select class="finput" id="set-half-month">'+monthOptions+'</select><select class="finput" id="set-half-day">'+dayOptions+'</select><button class="btn btn-secondary btn-sm" id="set-add-half" type="button">+ Hinzufügen</button></div>'+halfDayChips(), ''): ''
 
-    return '<div class="cs-stack">'
+    return '<div class="change-settings-stack">'
       + weatherHealthCard()
       + settingsFeatureCard(
         '✂️',
@@ -714,25 +631,16 @@
     return {ok:cfgOk, label:'AUS', tone:'off', detail: cfgOk ? 'Startet nur über diesen Schalter.' : 'Firebase-Konfiguration nicht geladen.'};
   }
 
-  function chipHtml(text, tone){
-    var cls = (tone === 'ok') ? 'cs-chip-a' : (tone === 'error' ? 'cs-chip-e' : 'cs-chip-n');
-    return text ? '<span class="'+cls+'">'+esc(text)+'</span>' : '';
-  }
   function settingsFeatureCard(icon, title, badgeText, badgeTone, subtitle, controlHtml, bodyHtml){
-    var iconHtml = iconMarkup(icon);
-    var ava = (iconHtml.indexOf('<img') === 0 || iconHtml.indexOf('<svg') === 0)
-      ? '<div class="cs-ava-plain">'+iconHtml+'</div>'
-      : '<div class="cs-ava">'+iconHtml+'</div>';
-    return '<div class="cs-mod">'
-      + '<div class="cs-modhead">'
-      + ava
-      + '<div class="cs-mod-copy">'
-      + '<div style="display:flex;align-items:center;gap:8px"><span class="cs-mod-title">'+esc(title)+'</span>'+chipHtml(badgeText, badgeTone)+'</div>'
-      + (subtitle ? '<div class="cs-mod-sub">'+esc(subtitle)+'</div>' : '')
+    return '<div class="change-settings-feature-card">'
+      + '<div class="change-feature-head">'
+      + '<div class="change-feature-left"><div class="change-feature-icon">'+iconMarkup(icon)+'</div><div>'
+      + '<div class="change-feature-title">'+esc(title)+(badgeText ? ' '+pill(badgeText, badgeTone) : '')+'</div>'
+      + (subtitle ? '<div class="change-feature-sub">'+esc(subtitle)+'</div>' : '')
+      + '</div></div>'
+      + (controlHtml ? '<div class="change-feature-control">'+controlHtml+'</div>' : '')
       + '</div>'
-      + (controlHtml ? '<div class="cs-mod-right">'+controlHtml+'</div>' : '')
-      + '</div>'
-      + (bodyHtml ? '<div style="margin-top:14px">'+bodyHtml+'</div>' : '')
+      + (bodyHtml ? '<div class="change-feature-body">'+bodyHtml+'</div>' : '')
       + '</div>';
   }
 
@@ -774,15 +682,22 @@
   function dataAuditReport(){
     var storage = dataAuditStorage();
     var audit = null;
+    var settingsAudit = null;
     try{
       if(window.ChangeDataModel && typeof window.ChangeDataModel.auditStorage === 'function'){
         audit = window.ChangeDataModel.auditStorage(storage || null);
       }
     }catch(e){ audit = null; }
+    try{
+      if(window.ChangeSettingsStore && typeof window.ChangeSettingsStore.audit === 'function'){
+        settingsAudit = window.ChangeSettingsStore.audit();
+      }
+    }catch(e){ settingsAudit = null; }
     var counts = audit && audit.counts ? audit.counts : {};
     var keys = audit && audit.keys ? audit.keys : {};
     var snapshot = dataAuditReadJson('change_v1_settings_snapshot', null);
     var snapshotPresent = dataAuditHasKey('change_v1_settings_snapshot');
+    var settingsKeyAudit = settingsAudit && settingsAudit.keyAudit ? settingsAudit.keyAudit : {};
     return {
       version: audit && audit.version ? audit.version : '',
       counts: {
@@ -800,8 +715,13 @@
         unknownChangeKeys: Array.isArray(keys.unknownChangeKeys) ? keys.unknownChangeKeys.length : 0
       },
       settingsSnapshot: {
-        present: snapshotPresent,
-        updatedAtLocal: snapshot && snapshot.updatedAtLocal ? snapshot.updatedAtLocal : ''
+        present: snapshotPresent || !!(settingsAudit && settingsAudit.hasSnapshot),
+        updatedAtLocal: (snapshot && snapshot.updatedAtLocal) || (settingsAudit && settingsAudit.updatedAtLocal) || ''
+      },
+      settingsKeys: {
+        present: parseInt(settingsKeyAudit.presentTotal, 10) || 0,
+        known: parseInt(settingsKeyAudit.knownTotal, 10) || 0,
+        groups: parseInt(settingsKeyAudit.groupsPresent, 10) || 0
       }
     };
   }
@@ -810,35 +730,35 @@
   }
   function dataAuditBody(expanded){
     if(!expanded){
-      return '<div class="cs-note">Liest nur lokale Zaehler und Speicher-Keys. Es wird nichts geloescht, migriert oder synchronisiert.</div>'
-        + '<button class="cs-btn" id="run-data-audit" type="button">Daten-Audit pruefen</button>';
+      return '<div class="change-feature-note">Liest nur lokale Zaehler und Speicher-Keys. Es wird nichts geloescht, migriert oder synchronisiert.</div>'
+        + '<button class="btn btn-secondary btn-full" id="run-data-audit" type="button">Daten-Audit pruefen</button>';
     }
     var report = dataAuditReport();
     var counts = report.counts;
     var keys = report.keys;
-    var totalKeys = counts.storageKeys || 0;
-    // Drei große Zähler-Kacheln
-    var counters = '<div style="display:flex;gap:9px;margin-top:14px">'
-      + '<div style="flex:1;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.16);border-radius:13px;padding:12px 14px"><div style="font-family:var(--mono);font-size:24px;font-weight:600;color:#9CEFBE;letter-spacing:-1px;line-height:1">'+esc(String(counts.challenges||0))+'</div><div style="font-size:11px;font-weight:700;color:#7E8A80;margin-top:5px">Challenges</div></div>'
-      + '<div style="flex:1;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:13px;padding:12px 14px"><div style="font-family:var(--mono);font-size:24px;font-weight:600;color:#F2F5F1;letter-spacing:-1px;line-height:1">'+esc(String(counts.challengePlayers||0))+'</div><div style="font-size:11px;font-weight:700;color:#7E8A80;margin-top:5px">Mitspieler</div></div>'
-      + '<div style="flex:1;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:13px;padding:12px 14px"><div style="font-family:var(--mono);font-size:24px;font-weight:600;color:#F2F5F1;letter-spacing:-1px;line-height:1">'+esc(String(counts.pollenSymptomDays||0))+'</div><div style="font-size:11px;font-weight:700;color:#7E8A80;margin-top:5px">Pollen-Tage</div></div>'
-      + '</div>';
-    // Events + Punkte Zeile
-    var eventsRow = '<div style="display:flex;align-items:center;gap:18px;margin-top:10px;padding:11px 16px;background:rgba(255,255,255,.02);border:1px dashed rgba(255,255,255,.09);border-radius:12px">'
-      + '<div style="display:flex;align-items:baseline;gap:7px"><span style="font-family:var(--mono);font-size:15px;font-weight:600;color:#5E6A60">'+esc(String(counts.events||0))+'</span><span style="font-size:12px;color:#7E8A80;font-weight:600">Events</span></div>'
-      + '<div style="width:1px;height:14px;background:rgba(255,255,255,.1)"></div>'
-      + '<div style="display:flex;align-items:baseline;gap:7px"><span style="font-family:var(--mono);font-size:15px;font-weight:600;color:#5E6A60">'+esc(String(counts.challengeCompletions||0))+'</span><span style="font-size:12px;color:#7E8A80;font-weight:600">Punkte</span></div>'
-      + '</div>';
-    // Storage-Diagnose-Grid
-    var diagGrid = '<div class="cs-secl" style="margin:14px 0 9px">Storage-Diagnose · '+esc(String(totalKeys))+' Keys</div>'
-      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
-      + '<div style="display:flex;align-items:center;justify-content:space-between;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.14);border-radius:10px;padding:9px 13px"><span style="font-size:12px;font-weight:700;color:#9CEFBE">Canonical</span><span style="font-family:var(--mono);font-size:14px;font-weight:600;color:#9CEFBE">'+esc(String(keys.canonicalPresent||0))+'</span></div>'
-      + '<div style="display:flex;align-items:center;justify-content:space-between;background:rgba(91,134,201,.06);border:1px solid rgba(91,134,201,.16);border-radius:10px;padding:9px 13px"><span style="font-size:12px;font-weight:700;color:#8FB0E0">Cache</span><span style="font-family:var(--mono);font-size:14px;font-weight:600;color:#8FB0E0">'+esc(String(keys.cachePresent||0))+'</span></div>'
-      + '<div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:9px 13px"><span style="font-size:12px;font-weight:700;color:#C7D0C7">Legacy</span><span style="font-family:var(--mono);font-size:14px;font-weight:600;color:#C7D0C7">'+esc(String(keys.legacyPresent||0))+'</span></div>'
-      + '<div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:9px 13px"><span style="font-size:12px;font-weight:700;color:#7E8A80">Unbekannt</span><span style="font-family:var(--mono);font-size:14px;font-weight:600;color:#7E8A80">'+esc(String(keys.unknownChangeKeys||0))+'</span></div>'
-      + '</div>';
-    return counters + eventsRow + diagGrid
-      + '<button class="cs-btn" id="run-data-audit" type="button" style="margin-top:14px">Erneut pruefen</button>';
+    var settingsKeys = report.settingsKeys || {};
+    var snapshotLabel = report.settingsSnapshot.present
+      ? 'vorhanden' + (report.settingsSnapshot.updatedAtLocal ? ' · '+report.settingsSnapshot.updatedAtLocal : '')
+      : 'noch nicht geschrieben';
+    var modelLabel = report.version ? 'DataModel '+report.version : 'DataModel nicht geladen';
+    return '<div class="change-feature-chips">'
+      + dataAuditChip('Events', counts.events)
+      + dataAuditChip('Challenges', counts.challenges)
+      + dataAuditChip('Punkte', counts.challengeCompletions)
+      + dataAuditChip('Mitspieler', counts.challengePlayers)
+      + '</div>'
+      + '<div class="change-feature-chips">'
+      + dataAuditChip('Pollen-Tage', counts.pollenSymptomDays)
+      + dataAuditChip('Storage-Keys', counts.storageKeys)
+      + dataAuditChip('Canonical', keys.canonicalPresent)
+      + dataAuditChip('Legacy', keys.legacyPresent)
+      + dataAuditChip('Settings-Keys', settingsKeys.present)
+      + dataAuditChip('Cache', keys.cachePresent)
+      + dataAuditChip('Unbekannt', keys.unknownChangeKeys)
+      + '</div>'
+      + '<div class="change-feature-note">Settings-Snapshot: '+esc(snapshotLabel)+'</div>'
+      + '<div class="change-feature-note">'+esc(modelLabel)+' · Anzeige ist read-only.</div>'
+      + '<button class="btn btn-secondary btn-full" id="run-data-audit" type="button">Erneut pruefen</button>';
   }
 
   function syncPane(){
@@ -847,20 +767,20 @@
     var fb     = firebaseStatus();
 
     var dbSwitch = '<label class="switch"><input type="checkbox" id="set-database-sync" '+(dbOn?'checked':'')+' '+(!fb.ok?'disabled':'')+'><span class="slider"></span></label>';
-    var dbBody = '<div class="cs-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"><span>Mitspieler</span><span>Einstellungen</span><span>Challenges</span><span>Punkte</span></div>'
-      + '<button class="cs-btn" id="set-database-sync-now" type="button" '+(!fb.ok?'disabled':'')+'>Jetzt in Firebase speichern</button>';
+    var dbBody = '<div class="change-feature-chips"><span>Mitspieler</span><span>Einstellungen</span><span>Challenges</span><span>Punkte</span></div>'
+      + '<button class="btn btn-secondary btn-full" id="set-database-sync-now" type="button" '+(!fb.ok?'disabled':'')+'>Jetzt in Firebase speichern</button>';
 
     var googleCanToggle = !!(google.loggedIn || google.cached);
     var googleControl = googleCanToggle
       ? '<label class="switch"><input type="checkbox" id="set-google" '+(google.enabled?'checked':'')+'><span class="slider"></span></label>'
-      : '<button class="cs-btn-sm" id="btn-google-connect" type="button">Verbinden</button>';
+      : '<button class="btn btn-secondary btn-compact" id="btn-google-connect" type="button">Verbinden</button>';
     var googleSub = google.detail || (google.loggedIn ? 'Importiert Kalendertermine. Getrennt vom Datenbank-Sync.' : 'Nur für Kalendertermine. Startet keinen Datenbank-Sync.');
     var googleBody = googleCanToggle
-      ? '<button class="cs-btn" id="set-sync-google" type="button">Google Kalender '+(google.loggedIn?'neu synchronisieren':'aktualisieren')+'</button>': ''
+      ? '<button class="btn btn-secondary btn-full" id="set-sync-google" type="button">Google Kalender '+(google.loggedIn?'neu synchronisieren':'aktualisieren')+'</button>': ''
 
     var statusBody = (window.ChangeAppStatus && window.ChangeAppStatus.syncStatusHtml) ? window.ChangeAppStatus.syncStatusHtml(): ''
-    var logBody = (window.ChangeAppStatus && window.ChangeAppStatus.logHtml) ? window.ChangeAppStatus.logHtml(6) + '<button class="cs-btn" id="clear-sync-log" type="button">Protokoll leeren</button>': ''
-    return '<div class="cs-stack">'
+    var logBody = (window.ChangeAppStatus && window.ChangeAppStatus.logHtml) ? window.ChangeAppStatus.logHtml(6) + '<button class="btn btn-secondary btn-full" id="clear-sync-log" type="button">Protokoll leeren</button>': ''
+    return '<div class="change-settings-stack">'
       + settingsFeatureCard('☁️', 'Datenbank-Sync', fb.label, fb.tone, fb.detail, dbSwitch, dbBody)
       + settingsFeatureCard('📅', 'Google Kalender', google.label, google.tone, googleSub, googleControl, googleBody)
       + settingsFeatureCard('🟢', 'Sync-Status', 'LIVE', 'ok', 'Zeigt, ob Datenbank und Google Kalender aktuell sind.', '', statusBody)
@@ -871,7 +791,7 @@
     var auto = getAutoChallengesEnabled();
     var body = auto
       ? autoChallengeCountSelect('set-auto-count') + challengeDifficultySelect('set-challenge-difficulty'): ''
-    return '<div class="cs-stack">'
+    return '<div class="change-settings-stack">'
       + settingsFeatureCard(
         '🏆',
         'Auto-Challenges',
@@ -883,7 +803,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0308';
+  var APP_VERSION = '0.1.0309';
 
 
 
@@ -1002,30 +922,14 @@
   }
   async function githubAdminAuthHeaders(interactive){
     if(!isGithubAdmin()) throw new Error('GitHub-Updates sind nur fuer Admins freigegeben.');
-
-    // Firebase Auth direkt prüfen – unabhängig von Firestore/Messaging SDK-Zustand.
-    // ensureChangeFirebaseAuth schlägt fehl wenn firebase.firestore nicht geladen ist;
-    // für den GitHub-Upload brauchen wir nur ein Auth-Token, nicht Firestore.
+    if(window.ensureChangeFirebaseAuth){
+      var ok = await window.ensureChangeFirebaseAuth({silent: interactive !== true, interactive: interactive === true, waitMs: interactive === true ? 2500 : 1500});
+      if(!ok) throw new Error('Firebase-Admin-Anmeldung fehlt.');
+    }
     var user = null;
     try{ user = window.firebase && firebase.auth ? firebase.auth().currentUser : null; }catch(e){}
-
-    // Kein User im Cache → kurz auf Auth-State warten (max 2,5s)
-    if(!user){
-      user = await new Promise(function(resolve){
-        var done = false;
-        var timer = setTimeout(function(){ if(!done){ done=true; resolve(null); } }, 2500);
-        try{
-          var unsub = firebase.auth().onAuthStateChanged(function(u){
-            if(!done){ done=true; clearTimeout(timer); try{ unsub(); }catch(e){} resolve(u); }
-          });
-        }catch(e){ clearTimeout(timer); resolve(null); }
-      });
-    }
-
-    if(!user || !githubAdminEmail(user.email || '')) throw new Error('Firebase-Admin-Anmeldung fehlt. Bitte neu mit Google einloggen.');
-    var token = null;
-    try{ token = await user.getIdToken(true); }catch(e){ throw new Error('Firebase-Token konnte nicht erneuert werden: ' + (e && e.message ? e.message : e)); }
-    if(!token) throw new Error('Firebase-Token ist leer.');
+    if(!user || !githubAdminEmail(user.email || '')) throw new Error('Firebase-Admin-Anmeldung fehlt.');
+    var token = await user.getIdToken(true);
     return {'Authorization':'Bearer ' + token};
   }
   function readGithubUpdateSecret(){
@@ -1307,7 +1211,7 @@
     var isRollback = state.direction === 'rollback';
     var buttonLabel = isRollback ? 'App vollständig neu laden (Rückstufung)' : 'App vollständig neu laden';
     var button = state.updateReady && state.liveReady && githubUpdateNeedsReload()
-      ? '<button class="cs-btn-p" id="github-update-reload" type="button">'+esc(buttonLabel)+'</button>'
+      ? '<button class="btn btn-primary btn-full" id="github-update-reload" type="button">'+esc(buttonLabel)+'</button>'
       : '';
     var loaded = state.updateReady && state.liveReady && !githubUpdateNeedsReload()
       ? '<div class="change-github-loaded-note">Version '+esc(latestGithubUpdateVersion())+' ist bereits geladen.</div>'
@@ -1646,7 +1550,7 @@
       + statusLine
       + (actionPanel ? '' : checks)
       + githubFileOverview()
-      + ((!state.actionStartedAt && !state.actionMessage && !state.uploadCommitSha && !state.actionConclusion) ? '<button class="cs-btn-p" id="github-zip-commit" type="button" '+(state.status === 'ok' && !state.updateReady ? '' : 'disabled')+'>Auf GitHub übertragen</button>' : '')
+      + ((!state.actionStartedAt && !state.actionMessage && !state.uploadCommitSha && !state.actionConclusion) ? '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(state.status === 'ok' && !state.updateReady ? '' : 'disabled')+'>Auf GitHub übertragen</button>' : '')
       + '</div>';
 
     var historyPane = !readGithubUpdateSecret()
@@ -1655,7 +1559,7 @@
         + githubCommitHistoryPanel();
 
     return '<div class="change-github-update">'
-      + '<label class="cs-secret"><span>Freigabe-Code</span><input type="text" id="github-update-secret" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Freigabe-Code eingeben" value="'+esc(readGithubUpdateSecret())+'"></label>'
+      + '<label class="change-github-secret"><span>Freigabe-Code</span><input type="text" id="github-update-secret" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Freigabe-Code eingeben" value="'+esc(readGithubUpdateSecret())+'"></label>'
       + (actionPanel || '')
       + githubTabBar()
       + '<div class="change-github-tabpane">'
@@ -1835,7 +1739,7 @@
         return '<div class="change-health-pill is-static '+tone+'"><span>♡</span><strong>'+esc(label)+'</strong></div>';
       }
     }catch(e){}
-    return '<div class="cs-chip-n"><span>♡</span><strong>Status offen</strong></div>';
+    return '<div class="change-health-pill is-static off"><span>♡</span><strong>Status offen</strong></div>';
   }
 
   function settingsHeroArtSvg(){
@@ -1920,20 +1824,13 @@
       installed === 'Installiert' ? 'ok' : 'off',
       '',
       '',
-      '<button class="cs-btn" onclick="window.installChangeApp&&window.installChangeApp()">Change als App installieren</button>'
+      '<button class="btn btn-secondary btn-full" onclick="window.installChangeApp&&window.installChangeApp()">Change als App installieren</button>'
     );
-    var versionCard = '<div class="cs-mod">'
-      + '<div class="cs-modhead">'
-      + '<div class="cs-ava"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/></svg></div>'
-      + '<div class="cs-mod-copy"><span class="cs-mod-title">Change</span><div class="cs-mod-sub">Kalender, Challenges und Sync</div></div>'
-      + '<span style="font-family:var(--mono);font-size:13px;font-weight:700;color:#9CEFBE">'+esc(APP_VERSION)+'</span>'
-      + '</div>'
-      + '<div style="margin-top:13px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:11px 14px">'
-      + '<span class="cs-secl" style="margin:0">Installationsstatus</span>'
-      + '<strong style="font-size:12.5px;font-weight:800;color:#F2F5F1">'+esc(installed)+'</strong>'
-      + '</div>'
+    var versionCard = '<div class="change-settings-feature-card change-version-simple-card">'
+      + '<div class="change-version-simple-head"><div><div class="change-version-simple-label">Version</div><div class="change-version-simple-title">Change</div><div class="change-version-simple-sub">Kalender, Challenges und Sync</div></div><strong>'+esc(APP_VERSION)+'</strong></div>'
+      + '<div class="change-version-simple-meta"><span>Installationsstatus</span><strong>'+esc(installed)+'</strong></div>'
       + '</div>';
-    // Darstellung hat eigenen Tab — kein doppelter Block in appPane
+    // Theme/Darstellung lebt im eigenen Tab "Darstellung" (siehe darstellungPane).
     var dataAuditCard = settingsFeatureCard(
       'DB',
       'Daten-Audit',
@@ -1946,20 +1843,22 @@
     var health = '';
     if(window.ChangeAppStatus && window.ChangeAppStatus.healthHtml){
       var healthBody = appHealthExpanded
-        ? window.ChangeAppStatus.healthHtml() + '<button class="cs-btn" id="run-app-health" type="button">Erneut prüfen</button>'
-        : '<div class="cs-note">Der Check wird erst angezeigt, wenn du ihn bewusst startest.</div><button class="cs-btn" id="run-app-health" type="button">App-Gesundheitscheck prüfen</button>';
+        ? window.ChangeAppStatus.healthHtml() + '<button class="btn btn-secondary btn-full" id="run-app-health" type="button">Erneut prüfen</button>'
+        : '<div class="change-feature-note">Der Check wird erst angezeigt, wenn du ihn bewusst startest.</div><button class="btn btn-secondary btn-full" id="run-app-health" type="button">App-Gesundheitscheck prüfen</button>';
       health = settingsFeatureCard('🩺', 'App-Gesundheitscheck', appHealthExpanded ? 'GEPRÜFT' : 'BEREIT', appHealthExpanded ? 'ok' : 'off', '', '', healthBody);
     }
-    return '<div class="cs-stack">' + installCard + dataAuditCard + health + '</div>';
+    // Darstellung/Theme ist in den eigenen Tab "Darstellung" verschoben.
+    return '<div class="change-settings-stack">' + installCard + dataAuditCard + health + '</div>';
   }
   function githubPane(){
     if(!isGithubAdmin()){
-      return '<div class="cs-stack"><div class="cs-note">GitHub-Updates sind nur fuer Admins freigegeben.</div></div>';
+      return '<div class="change-settings-stack"><div class="change-feature-note">GitHub-Updates sind nur fuer Admins freigegeben.</div></div>';
     }
-    return '<div class="cs-stack">' + githubUpdateCard() + '</div>';
+    return '<div class="change-settings-stack">' + githubUpdateCard() + '</div>';
   }
 
   var currentSettingsTab = 'profil';
+  var settingsMobileDetail = false;
   var appHealthExpanded = false;
   var dataAuditExpanded = false;
   var settingsScrollState = null;
@@ -2006,12 +1905,60 @@
     requestAnimationFrame(function(){ apply(); requestAnimationFrame(apply); });
   }
   function tabButton(id, label, active){ return '<button class="change-settings-tab '+(active===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'+label+'</button>'; }
+  var SETTINGS_RAIL_ICONS = {
+    profil:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"></circle><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"></path></svg>',
+    darstellung:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 3 a9 9 0 0 1 0 18 z" fill="currentColor" stroke="none"></path></svg>',
+    push:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg>',
+    dashboard:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1.5"></rect><rect x="13" y="3" width="8" height="5" rx="1.5"></rect><rect x="13" y="10" width="8" height="11" rx="1.5"></rect><rect x="3" y="13" width="8" height="8" rx="1.5"></rect></svg>',
+    calendar:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 9h18M8 3v4M16 3v4"></path></svg>',
+    challenges:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 4h10v4a5 5 0 0 1-10 0z"></path><path d="M7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3"></path><path d="M9 20h6M12 14v6"></path></svg>',
+    sync:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"></path></svg>',
+    app:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"></path></svg>',
+    github:'<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" stroke="none"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49l-.01-1.9c-2.78.62-3.37-1.21-3.37-1.21-.46-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.36-2.22-.26-4.55-1.14-4.55-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.27 2.75 1.05a9.4 9.4 0 0 1 5 0c1.91-1.32 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9l-.01 2.81c0 .27.18.6.69.49A10.26 10.26 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"></path></svg>'
+  };
+  function railItem(id, label, active){
+    return '<button class="change-settings-rail-item '+(active===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'
+      + (SETTINGS_RAIL_ICONS[id] || '')
+      + '<span>'+esc(label)+'</span>'
+      + '</button>';
+  }
+  function settingsRail(active){
+    return '<div class="change-settings-rail">'
+      + railItem('profil','Profil',active)
+      + railItem('darstellung','Darstellung',active)
+      + railItem('push','Benachrichtigungen',active)
+      + '<div class="change-settings-rail-divider"></div>'
+      + railItem('dashboard','Dashboard',active)
+      + railItem('calendar','Kalender',active)
+      + railItem('challenges','Challenges',active)
+      + railItem('sync','Daten & Sync',active)
+      + railItem('app','App & Sicherheit',active)
+      + (isGithubAdmin() ? railItem('github','GitHub',active) : '')
+      + '</div>';
+  }
+  function settingsPaneTitle(tab){
+    var map = {profil:'Profil',darstellung:'Darstellung',push:'Benachrichtigungen',dashboard:'Dashboard',calendar:'Kalender',challenges:'Challenges',sync:'Daten & Sync',app:'App & Sicherheit',github:'GitHub'};
+    return map[tab] || 'Einstellungen';
+  }
+  function settingsPaneHtml(tab){
+    switch(tab){
+      case 'profil': return profilePane();
+      case 'darstellung': return darstellungPane();
+      case 'push': return pushPane();
+      case 'calendar': return calendarPane();
+      case 'challenges': return challengesPane();
+      case 'sync': return syncPane();
+      case 'app': return appPane();
+      case 'github': return githubPane();
+      case 'dashboard':
+      default: return dashboardPane();
+    }
+  }
   function settingsNavCard(id, icon, title, sub, active){
-    var iconHtml = iconMarkup(icon);
-    var isImg = iconHtml.indexOf('<img') === 0;
-    return '<button class="change-settings-navitem '+(active===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'
-      + (isImg ? '<span style="display:flex;align-items:center;width:18px;height:18px">'+iconHtml+'</span>' : '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"></svg>')
-      + esc(title)
+    return '<button class="change-settings-nav-card '+(active===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'
+      + '<span class="change-settings-nav-icon">'+iconMarkup(icon)+'</span>'
+      + '<span class="change-settings-nav-copy"><strong>'+esc(title)+'</strong><small>'+esc(sub)+'</small></span>'
+      + '<span class="change-settings-nav-arrow">›</span>'
       + '</button>';
   }
   function ensurePremiumSettingsCloseBridge(){
@@ -2122,65 +2069,17 @@
     ensurePremiumSettingsCloseBridge();
     installSettingsRouteGuard();
     try{ document.body && document.body.classList.add('change-settings-premium-open'); }catch(e){}
-    var profile = window.userInfo || {};
-    var name = profile.name || profile.email || 'Change';
-    var first = String(name || 'Change').split(' ')[0] || 'Change';
-    var picture = profile.picture ? '<img src="'+esc(profile.picture)+'" alt="">' : '<span>'+esc(String(first).slice(0,1).toUpperCase())+'</span>';
-    var google = googleStatus();
-    var weather = weatherHealthStatus();
-    var calendarSummary = calendarOptions().showHolidays ? 'Woche · Feiertage an' : 'Woche · Feiertage aus';
-    var dashboardModules = dashboardModuleCount();
-    var nav = settingsNavCard('dashboard','▦','Dashboard',dashboardModules+' Module aktiv',startTab)
-      + settingsNavCard('calendar','□','Kalender',calendarSummary,startTab)
-      + settingsNavCard('challenges','🏆','Challenges',String(getAutoChallengeCount())+' Tagesaufgaben',startTab)
-      + settingsNavCard('sync','↻','Daten & Sync','Manuell · keine Auto-Starts',startTab)
-      + settingsNavCard('app','🛡','App & Sicherheit','Darstellung · Version '+APP_VERSION,startTab)
-      + (isGithubAdmin() ? settingsNavCard('github',githubIcon(),'GitHub','Admin',startTab) : '');
-    function navItem(id, svgPath, label){
-      return '<button class="change-settings-navitem '+(startTab===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'
-        + svgPath + esc(label)
-        + '</button>';
-    }
-    var svgProfil   = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>';
-    var svgDarst    = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3 a9 9 0 0 1 0 18 z" fill="currentColor" stroke="none"/></svg>';
-    var svgPush     = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>';
-    var svgDash     = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="10" width="8" height="11" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/></svg>';
-    var svgCal      = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>';
-    var svgCh       = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3"/><path d="M9 20h6M12 14v6"/></svg>';
-    var svgSync     = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>';
-    var svgApp      = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/></svg>';
-    var html = '<div class="change-settings-premium">'
-      + '<div class="change-settings-page-head">'
-      + '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#34d399" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'
-      + '<span class="change-settings-page-title">Einstellungen</span>'
-      + '<span class="change-settings-page-version">v'+esc(APP_VERSION)+'</span>'
-      + '</div>'
+    var gearIcon = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>';
+    var html = '<div class="change-settings-premium'+(settingsMobileDetail ? ' change-settings-detail' : '')+'">'
+      + '<div class="change-settings-page-head"><div class="change-settings-page-title">'+gearIcon+'<strong>Einstellungen</strong><span class="change-settings-version">v'+esc(APP_VERSION)+'</span></div></div>'
       + '<div class="change-settings-shell">'
-      + '<nav class="change-settings-rail">'
-      + navItem('profil', svgProfil, 'Profil')
-      + navItem('darstellung', svgDarst, 'Darstellung')
-      + navItem('push', svgPush, 'Benachrichtigungen')
-      + '<div class="change-settings-rail-sep"></div>'
-      + navItem('dashboard', svgDash, 'Dashboard')
-      + navItem('calendar', svgCal, 'Kalender')
-      + navItem('challenges', svgCh, 'Challenges')
-      + navItem('sync', svgSync, 'Daten &amp; Sync')
-      + navItem('app', svgApp, 'App &amp; Sicherheit')
-      + (isGithubAdmin() ? navItem('github', githubIcon(), 'GitHub') : '')
-      + '</nav>'
-      + '<div class="change-settings-panel">'
-      + '<div class="change-settings-panel-glow"></div>'
-      + '<div class="change-settings-panel-inner">'
-      + '<div class="change-settings-pane '+(startTab==='profil'?'active':'')+'" data-pane="profil"><div class="change-settings-ptitle">Profil</div>'+profilPane()+'</div>'
-      + '<div class="change-settings-pane '+(startTab==='darstellung'?'active':'')+'" data-pane="darstellung"><div class="change-settings-ptitle">Darstellung</div>'+darstellungPane()+'</div>'
-      + '<div class="change-settings-pane '+(startTab==='push'?'active':'')+'" data-pane="push"><div class="change-settings-ptitle">Benachrichtigungen</div>'+pushPane()+'</div>'
-      + '<div class="change-settings-pane '+(startTab==='dashboard'?'active':'')+'" data-pane="dashboard"><div class="change-settings-ptitle">Dashboard</div>'+dashboardPane()+'</div>'
-      + '<div class="change-settings-pane '+(startTab==='calendar'?'active':'')+'" data-pane="calendar"><div class="change-settings-ptitle">Kalender</div>'+calendarPane()+'</div>'
-      + '<div class="change-settings-pane '+(startTab==='challenges'?'active':'')+'" data-pane="challenges"><div class="change-settings-ptitle">Challenges</div>'+challengesPane()+'</div>'
-      + '<div class="change-settings-pane '+(startTab==='sync'?'active':'')+'" data-pane="sync"><div class="change-settings-ptitle">Daten &amp; Sync</div>'+syncPane()+'</div>'
-      + '<div class="change-settings-pane '+(startTab==='app'?'active':'')+'" data-pane="app"><div class="change-settings-ptitle">App &amp; Sicherheit</div>'+appPane()+'</div>'
-      + (isGithubAdmin() ? '<div class="change-settings-pane '+(startTab==='github'?'active':'')+'" data-pane="github"><div class="change-settings-ptitle">GitHub</div>'+githubPane()+'</div>' : '')
-      + '</div></div></div></div>';
+      + settingsRail(startTab)
+      + '<div class="change-settings-panel"><div class="change-settings-panel-inner">'
+      + '<button class="change-settings-back" type="button" data-settings-back><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>Zurück</button>'
+      + '<div class="change-settings-pane-title">'+esc(settingsPaneTitle(startTab))+'</div>'
+      + '<div class="change-settings-pane active" data-pane="'+esc(startTab)+'">'+settingsPaneHtml(startTab)+'</div>'
+      + '</div></div>'
+      + '</div></div>';
     activateSettingsView(html);
     restoreSettingsScrollState(scrollBeforeRender);
     setTimeout(bindSettings, 30);
@@ -2189,7 +2088,7 @@
     if(tab && settingsTabAllowed(tab)) currentSettingsTab = tab;
     var active = document.querySelector('.change-settings-tab.active');
     var next = active ? active.getAttribute('data-settings-tab') : currentSettingsTab;
-    openSettingsPanel(settingsTabAllowed(next) ? next : 'profil');
+    openSettingsPanel(settingsTabAllowed(next) ? next : 'dashboard');
   }
   function bindSettingsTabScroller(){
     var scroller = document.querySelector('[data-settings-tabs-scroll]');
@@ -2229,8 +2128,17 @@
       btn.addEventListener('click', function(ev){
         if(ev) ev.preventDefault();
         var nextTab = btn.getAttribute('data-settings-tab') || currentSettingsTab;
-        currentSettingsTab = settingsTabAllowed(nextTab) ? nextTab : 'profil';
+        currentSettingsTab = settingsTabAllowed(nextTab) ? nextTab : 'dashboard';
+        settingsMobileDetail = true;
         openSettingsPanel(currentSettingsTab);
+      });
+    });
+    document.querySelectorAll('[data-settings-back]').forEach(function(btn){
+      btn.addEventListener('click', function(ev){
+        if(ev) ev.preventDefault();
+        settingsMobileDetail = false;
+        var prem = document.querySelector('.change-settings-premium');
+        if(prem) prem.classList.remove('change-settings-detail');
       });
     });
     var saveCal = function(){
@@ -2299,15 +2207,25 @@
     var syncGoogle = $('set-sync-google'); if(syncGoogle) syncGoogle.addEventListener('click', async function(){ if(window.ChangeGoogleSyncStatus) await window.ChangeGoogleSyncStatus.syncNow(); refreshSameTab(); });
     var clearSyncLog = $('clear-sync-log'); if(clearSyncLog) clearSyncLog.addEventListener('click', function(){ try{ localStorage.removeItem('change_v1_sync_log'); }catch(e){} refreshSameTab('sync'); });
     document.querySelectorAll('[data-change-theme]').forEach(function(btn){ btn.addEventListener('click', function(){ setAppTheme(btn.getAttribute('data-change-theme') || 'system'); refreshSameTab('darstellung'); }); });
-    document.querySelectorAll('[data-change-accent]').forEach(function(btn){ btn.addEventListener('click', function(){ setAppAccent(btn.getAttribute('data-change-accent') || 'green'); refreshSameTab('darstellung'); }); });
-    var btnSignout = document.getElementById('btn-profile-signout');
-    if(btnSignout) btnSignout.addEventListener('click', function(){ try{ if(typeof signOut==='function') signOut(); else if(window.firebase&&firebase.auth) firebase.auth().signOut(); }catch(e){} });
-    var btnPushTest = document.getElementById('btn-push-test');
-    if(btnPushTest) btnPushTest.addEventListener('click', function(){ try{ if(window.ChangeNotificationStore&&window.ChangeNotificationStore.sendTest) window.ChangeNotificationStore.sendTest(); }catch(e){} });
-    var setHolidayPush = document.getElementById('set-holiday-push');
-    if(setHolidayPush) setHolidayPush.addEventListener('change', function(){ writeBool('change_v1_holiday_notifications', setHolidayPush.checked); markSettingsSnapshotChanged('settings-panel'); });
-    var setPushMaster = document.getElementById('set-push');
-    if(setPushMaster) setPushMaster.addEventListener('change', function(){ try{ if(window.ChangeNotificationStore&&window.ChangeNotificationStore.toggle) window.ChangeNotificationStore.toggle(setPushMaster.checked); }catch(e){} });
+    document.querySelectorAll('[data-change-accent]').forEach(function(btn){ btn.addEventListener('click', function(){ try{ if(window.ChangeAccent && window.ChangeAccent.set) window.ChangeAccent.set(btn.getAttribute('data-change-accent') || 'green'); }catch(e){} markSettingsSnapshotChanged('settings-panel'); refreshSameTab('darstellung'); }); });
+    var signout = $('set-signout'); if(signout) signout.addEventListener('click', function(){ try{ if(typeof window.logout === 'function') window.logout(); }catch(e){} });
+    var pushMaster = $('set-push'); if(pushMaster) pushMaster.addEventListener('change', async function(){
+      try{ if(typeof window.togglePushFromBell === 'function') await window.togglePushFromBell(pushMaster.checked); }catch(e){}
+      try{ if(window.ChangeNotificationBell && typeof window.ChangeNotificationBell.render === 'function') window.ChangeNotificationBell.render(); }catch(e){}
+      refreshSameTab('push');
+    });
+    var pushTest = $('set-push-test'); if(pushTest) pushTest.addEventListener('click', function(){
+      try{ if(typeof window.sendTestBellNotification === 'function') return window.sendTestBellNotification(); }catch(e){}
+      try{ if(window.ChangePushController && typeof window.ChangePushController.test === 'function') window.ChangePushController.test(); }catch(e){}
+    });
+    var holidayNotif = $('set-holiday-notifications'); if(holidayNotif) holidayNotif.addEventListener('change', function(){
+      var on = !!holidayNotif.checked;
+      writeBoolMulti(['change_v1_holiday_notifications','holiday_notifications'], on);
+      try{ if(window.calendarSettings) window.calendarSettings.holidayNotifications = on; }catch(e){}
+      try{ if(typeof window.saveChangeSettings === 'function' && readDatabaseSyncEnabled()) window.saveChangeSettings(true); }catch(e){}
+      try{ if(typeof window.checkNotifications === 'function') window.checkNotifications(); }catch(e){}
+      refreshSameTab('push');
+    });
     var runDataAudit = $('run-data-audit'); if(runDataAudit) runDataAudit.addEventListener('click', function(){ dataAuditExpanded = true; refreshSameTab('app'); });
     var runHealth = $('run-app-health'); if(runHealth) runHealth.addEventListener('click', function(){ appHealthExpanded = true; refreshSameTab('app'); });
     function setGithubZipFile(file){
@@ -2460,12 +2378,14 @@
     refreshGithubUpdatePanelIfVisible();
   }, 0);
 
-  window.ChangeSettingsPanel = {open: openSettingsPanel, getAutoChallengesEnabled: getAutoChallengesEnabled, setAutoChallengesState: setAutoChallengesState};
-  window.openSettingsPanel = openSettingsPanel;
+  function openSettingsFresh(tab){ settingsMobileDetail = false; return openSettingsPanel(tab); }
+  function openSettingsSection(tab){ settingsMobileDetail = true; return openSettingsPanel(tab); }
+  window.ChangeSettingsPanel = {open: openSettingsFresh, getAutoChallengesEnabled: getAutoChallengesEnabled, setAutoChallengesState: setAutoChallengesState};
+  window.openSettingsPanel = openSettingsFresh;
   window.hideSettingsWorkspace = hideSettingsWorkspace;
   window.resetSettingsWorkspaceShell = resetSettingsWorkspaceShell;
-  window.openCalendarSettings = function(){ return openSettingsPanel('calendar'); };
-  window.openPushSettingsPanel = function(){ return openSettingsPanel('push'); };
+  window.openCalendarSettings = function(){ return openSettingsSection('calendar'); };
+  window.openPushSettingsPanel = function(){ return openSettingsSection('sync'); };
 
 
   // connectToGoogle: sicherer Google-TokenClient ohne Firebase-Redirect.
