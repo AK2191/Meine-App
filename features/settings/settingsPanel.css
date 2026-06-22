@@ -45,7 +45,7 @@
 #settings-view{background:var(--st-bg);overflow-y:auto}
 
 /* ---- Header ---------------------------------------------------------- */
-#settings-view .change-settings-page-head{margin-bottom:26px}
+#settings-view .change-settings-page-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:26px}
 #settings-view .change-settings-page-title{
   display:flex;align-items:center;gap:13px;
 }
@@ -500,15 +500,15 @@
   #settings-view .change-settings-shell{flex-direction:column;gap:14px}
   #settings-view .change-settings-rail{
     width:auto;position:static;display:grid;grid-template-columns:repeat(3,1fr);
-    gap:8px;padding:10px;border-radius:16px;
+    gap:11px;padding:13px;border-radius:18px;
   }
   #settings-view .change-settings-rail-item{
-    flex-direction:column;align-items:center;justify-content:flex-start;
-    text-align:center;gap:8px;padding:13px 6px 11px;border-radius:15px;
-    font-size:11.5px;line-height:1.15;font-weight:700;min-height:78px;
+    flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;gap:11px;padding:20px 8px 17px;border-radius:16px;
+    font-size:12px;line-height:1.18;font-weight:700;min-height:104px;
   }
   #settings-view .change-settings-rail-item svg{
-    box-sizing:content-box;width:20px;height:20px;padding:9px;border-radius:12px;
+    box-sizing:content-box;width:23px;height:23px;padding:11px;border-radius:13px;
     background:rgba(255,255,255,.05);transition:.15s;
   }
   #settings-view .change-settings-rail-item:hover svg{background:rgba(255,255,255,.08)}
@@ -595,9 +595,9 @@
 #settings-view .switch{position:relative;display:inline-block;width:46px;height:27px;flex:none}
 #settings-view .switch input{position:absolute;opacity:0;width:0;height:0;margin:0}
 #settings-view .switch .slider{position:absolute;inset:0;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.13);transition:.18s;cursor:pointer}
-#settings-view .switch .slider:before{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:999px;background:#8A948A;transition:.18s;box-shadow:none}
+#settings-view .switch .slider:before{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:999px;background:#8A948A;transition:.18s;box-shadow:none;transform:none}
 #settings-view .switch input:checked + .slider{background:linear-gradient(135deg,var(--st-accent),var(--st-accent2));border-color:transparent}
-#settings-view .switch input:checked + .slider:before{left:22px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+#settings-view .switch input:checked + .slider:before{left:22px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transform:none}
 #settings-view .switch input:disabled + .slider{opacity:.5;cursor:not-allowed}
 
 /* Versions-Pille: gedämpftes Grau wie im Design (höhere Spezifität, explizit) */

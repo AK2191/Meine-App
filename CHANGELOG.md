@@ -1,3 +1,18 @@
+## Version 0.1.0313
+- Schalter-Knopf korrigiert (globaler translateX neutralisiert) – sitzt sauber im Track.
+- Version oben rechts angeheftet (Kopfzeile space-between).
+- Mobile Kacheln größer (Fläche besser genutzt).
+- Alle Karten-Icons als Design-SVGs statt Emojis (Trophäe, DB-Zylinder, Google-G, Live-Punkt, Dokument, Handy, Kalender, GitHub-Octocat).
+- Cache-Busting ?v=0.1.0313.
+- Geaendert: `features/settings/settingsPanel.js`, `features/settings/settingsPanel.css`, `index.html`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+
+## Version 0.1.0312
+- GitHub-Sektion: „Dateien"-Kästchen entfernt; kein Festhängen mehr im Fehlermodus (vergessener Code → Toast+Fokus statt Sperre; Upload-Fehler bleibt wiederholbar, Button aktiv).
+- Cache-Busting auf ?v=0.1.0312 neu gestempelt.
+- Hinweis: 500 auf /files und /upload kommen weiter vom Cloudflare-Worker (separater Server-Fix).
+- Geaendert: `features/settings/settingsPanel.js`, `index.html`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check`; 57 Assets versioniert.
+
 ## Version 0.1.0311
 - Cache-Busting: alle lokalen CSS/JS in index.html tragen jetzt `?v=<version>`. Behebt, dass neue Designs nach Deploy nicht erschienen (altes CSS aus Browser-Cache).
 - Versions-Pille per `!important` zuverlässig grau (#5E6A60).

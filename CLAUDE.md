@@ -5,6 +5,25 @@
 - Versionseintraege in dieser Datei bleiben erhalten, weil der GitHub-Update-Workflow daraus Zielversionen erkennt.
 - Neue Arbeit erfolgt klein und systembezogen: ein Feature oder eine Schicht pro Schritt.
 
+## Version 0.1.0313
+- **Schalter-Knopf korrigiert:** Der globale `.slider:before{transform:translateX(20px)}` aus app.css addierte sich zu meinem `left:22px` — der weiße Knopf flog rechts raus. Jetzt `transform:none` in den scoped Switch-Regeln → Knopf sitzt sauber im Track.
+- **Version oben rechts angeheftet:** Die Pille ist aus der Titel-Gruppe heraus in die Kopfzeile gewandert; `change-settings-page-head` ist jetzt `display:flex; justify-content:space-between` → Titel links, Version immer rechts oben.
+- **Mobile-Fläche besser genutzt:** Kachel-Raster mit größeren Kacheln (min-height 104, mehr Padding/Icon, größerer Abstand).
+- **Alle Karten-Icons = Design-SVGs statt Emojis:** Auto-Challenges/Challengepunkte (Trophäe), Datenbank-Sync (DB-Zylinder), Google Kalender (Google-„G", Markenfarben), Sync-Status (Live-Punkt), Sync-Protokoll (Dokument), Change als App (Handy), Feiertage/Kalenderwochen (Kalender-Varianten), GitHub-Karte (Octocat-SVG in Accent). Daten-Audit bleibt „DB" wie im Design.
+- Offen/zu klären: Inhalt des Daten-Audit-Protokolls (Body) — bitte sagen, was genau anders soll als aktuell.
+- Cache-Busting auf ?v=0.1.0313 neu gestempelt.
+- Geaendert: `features/settings/settingsPanel.js`, `features/settings/settingsPanel.css`, `index.html`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check`; Render Daten & Sync (Icons + Schalter korrekt).
+
+## Version 0.1.0312
+- **GitHub-Sektion UX repariert (App-seitig):**
+  - „Dateien"-Inline-Kästchen in der Update-bereit-Zeile entfernt (das stray `change-github-check-inline-link` in `githubCheckSummary`).
+  - **Kein Festhängen im Fehlermodus mehr:** Bei vergessenem Freigabe-Code wird kein `status='error'` mehr gesetzt — stattdessen Toast + Fokus aufs Code-Feld, Button bleibt aktiv. Bei einem echten Upload-Fehler werden die Action-Sperrfelder (`actionMessage/actionStartedAt/uploadCommitSha/actionConclusion/actionRunUrl/updateReady`) zurückgesetzt, sodass „Auf GitHub übertragen" sichtbar und aktiv bleibt. `commitGithubZip` erlaubt jetzt einen erneuten Versuch aus dem Fehlerzustand (`status==='error'`).
+- **Hinweis:** Die `500`-Fehler auf `/files` und `/upload` stammen weiterhin vom Cloudflare-Worker (Server, vermutlich abgelaufenes GitHub-Token) — das ist ein separater Fix. Deploy bis dahin über den `updates/`-Notweg.
+- Cache-Busting auf `?v=0.1.0312` neu gestempelt (Pflicht bei jedem Release, da sich `settingsPanel.js` geändert hat).
+- Geaendert: `features/settings/settingsPanel.js`, `index.html`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check`; 57 lokale Assets mit `?v=0.1.0312`.
+
 ## Version 0.1.0311
 - **Cache-Busting (Kernproblem gelöst):** Bisher hatten die lokalen CSS/JS-Einbindungen in `index.html` keine Versionsabfrage. Nach einem Deploy lud der Browser CSS/JS weiter aus dem Cache — die JS-Version aktualisierte (frisch), aber das CSS blieb alt (z. B. grüne Versions-Pille, alte Schalter). Jetzt tragen alle lokalen `./…css`/`./…js`-Links `?v=<APP_VERSION>`; jeder neue Build erzwingt frische Dateien. **Wichtig für künftige Releases:** Bei jeder Versionserhöhung müssen die `?v=`-Werte in `index.html` neu gestempelt werden (Skript: lokale `href/src` mit `?v=<version>` versehen, externe `https://`-Quellen auslassen).
 - Versions-Pille mit `!important` abgesichert (#5E6A60), damit die graue Farbe unabhängig von der Laufzeit-Auflösung von `var(--st-faint)` sicher gewinnt.
