@@ -1,3 +1,8 @@
+## Version 0.1.0319
+- „Unsupported cache mode: reload" behoben: getIdToken(true)-Fallback auf Cache-Token; cache:'reload' → 'no-store'. Dadurch wird die echte Worker-Antwort (500) sichtbar.
+- Enthält 0.1.0317 + 0.1.0318.
+- Cache-Busting ?v=0.1.0319.
+
 ## Version 0.1.0318
 - Kalender-Konsolidierung: alle toten renderMonth-Blöcke per AST entfernt — nur noch EIN aktiver renderMonth übrig (calendar-logic.js FINAL). app.js, core/misc.js, calendar-logic.js bereinigt. Null Laufzeit-Effekt, node --check OK.
 - Enthält 0.1.0317 (max 2 + „+X mehr").

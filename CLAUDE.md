@@ -24,6 +24,16 @@
 
 **Verboten:** bestehende Funktionen ohne Prüfung überschreiben · doppelte Komponenten · Workarounds statt sauberer Lösungen.
 
+## Version 0.1.0319
+- **Fehler „Unsupported cache mode: reload" behoben** (App-seitig). Zwei Ursachen entschärft:
+  1. `githubAdminAuthHeaders`: erzwungener Token-Refresh `getIdToken(true)` fällt bei Fehler auf das zwischengespeicherte Token (`getIdToken()`) zurück — der Browser lehnte den Refresh-Fetch mit „reload" ab und blockierte so /files und /upload.
+  2. `reloadChangeUpdateVersion`: das einzige App-seitige `cache:'reload'` auf `cache:'no-store'` umgestellt (kompatibel).
+- Effekt: ZIP-Ablegen und Upload brechen nicht mehr mit dem Cache-Fehler ab; dadurch wird jetzt die **echte** Worker-Antwort sichtbar (die 500-Ursache des GitHub-App-Tokens).
+- Hinweis: Die 500er auf /files,/upload kommen weiterhin vom Cloudflare-Worker (GitHub-App). Deploy bis dahin über updates/.
+- Cache-Busting ?v=0.1.0319. Enthält 0.1.0317 (max 2 + „+X mehr") und 0.1.0318 (Kalender-Konsolidierung).
+- Geaendert: `features/settings/settingsPanel.js`, `index.html`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check`.
+
 ## Version 0.1.0318
 - **Kalender-Konsolidierung abgeschlossen (renderMonth):** Mit echtem JS-Parser (acorn, AST) alle toten `window.renderMonth`-Zuweisungen exakt entfernt — `calendar-logic.js` (5 von 6), `app.js` (Rest), `core/misc.js` (1). **Es existiert jetzt nur noch EIN `window.renderMonth`** = der aktive „RENDERMONTH (FINAL)" in `calendar-logic.js` (Z. ~890). Damit ist „kein doppelter Kalender-Code" für den Monatsrenderer erfüllt.
 - Entfernt wurde ausschließlich toter, ohnehin überschriebener Code (Null Laufzeit-Effekt); Hilfsfunktionen unangetastet; aktiver Renderer + max-2-Regel verifiziert (`node --check` + Marker-Grep). `calendar-logic.js` 2367 → 2252 Zeilen.

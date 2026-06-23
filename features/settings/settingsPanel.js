@@ -803,7 +803,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0318';
+  var APP_VERSION = '0.1.0319';
 
 
 
@@ -929,7 +929,9 @@
     var user = null;
     try{ user = window.firebase && firebase.auth ? firebase.auth().currentUser : null; }catch(e){}
     if(!user || !githubAdminEmail(user.email || '')) throw new Error('Firebase-Admin-Anmeldung fehlt.');
-    var token = await user.getIdToken(true);
+    var token;
+    try{ token = await user.getIdToken(true); }
+    catch(tokenErr){ token = await user.getIdToken(); } // Fallback: zwischengespeichertes Token, falls erzwungener Refresh scheitert (z. B. "Unsupported cache mode: reload")
     return {'Authorization':'Bearer ' + token};
   }
   function readGithubUpdateSecret(){
@@ -1262,7 +1264,7 @@
     url.searchParams.set('t', String(Date.now()));
     url.searchParams.set('hard', '1');
     try{
-      await fetch(url.toString(), {cache:'reload', credentials:'same-origin'});
+      await fetch(url.toString(), {cache:'no-store', credentials:'same-origin'});
     }catch(e){}
     window.location.replace(url.toString());
   }
