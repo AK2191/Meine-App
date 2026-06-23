@@ -5,6 +5,43 @@
 - Versionseintraege in dieser Datei bleiben erhalten, weil der GitHub-Update-Workflow daraus Zielversionen erkennt.
 - Neue Arbeit erfolgt klein und systembezogen: ein Feature oder eine Schicht pro Schritt.
 
+## Projekt-Charta (VERBINDLICH — einzige Wahrheit)
+„Change" ist eine stabile, skalierbare, wartbare Web-App. Diese Regeln haben Vorrang; bei Änderungen wird diese Datei mitgepflegt.
+
+**Features:** Dashboard (Mitspieler, Punkte, Übersicht) · Kalender (Monat/Jahr/Tagesdetail) · Challenges (Aufgaben + Punkte) · Push-Benachrichtigungen · Live-Sync zwischen Nutzern · Google-Kalender-Integration. **Code anpassen statt patchen — keine Workarounds.**
+
+**Architektur (strikt getrennt):** Logik → `core/` · UI → `features/` · wiederverwendbare Bausteine → `components/`. Modular bauen, neue Features leicht ergänzbar. **Keine doppelte Logik** (kein mehrfacher Sync, kein doppelter Kalender-Code).
+
+**Kalender:** Jeder Tag: Datum oben links · Feiertag klein daneben · Termine darunter (max. 2 sichtbar + „+X mehr") · Challengepunkte klein unten rechts. Zeiträume als **durchgehender Balken** in der **obersten Zeile** (kein Text „Zeitraum"); Einzeltermine immer darunter. **Keine überlappenden Elemente.**
+
+**Challenges:** Punkte nur bei erledigten Aufgaben. Im Kalender nur als kleines Badge unten rechts. Keine großen visuellen Elemente.
+
+**Push / Sync:** Push nur über eine zentrale Steuerung (Glocke). Live-Sync eigener Schalter. Google-Sync eigener Schalter (bei Aktivierung → neu synchronisieren). **Keine doppelten Buttons oder versteckten Funktionen.**
+
+**UI / Design:** minimalistisch (Apple/Notion), klare Hierarchie, viel Weißraum, keine unnötigen Texte/Buttons, keine visuellen Konflikte oder Flackern.
+
+**Arbeitsweise:** kleine, kontrollierte Schritte · nie mehrere Systeme gleichzeitig ändern · nach jeder Änderung Kalender, Dashboard, Challenges prüfen · bei Unsicherheit erst erklären, dann ändern.
+
+**Verboten:** bestehende Funktionen ohne Prüfung überschreiben · doppelte Komponenten · Workarounds statt sauberer Lösungen.
+
+## Version 0.1.0316
+- **Projekt-Charta verbindlich in CLAUDE.md verankert** (Features, strikte Architektur core/features/components, Kalender-/Challenges-/Push-/Sync-/UI-Regeln, Arbeitsweise, Verbote) — als oberste Wahrheit nach „Start Here". Enthält außerdem die GitHub-Diagnose aus 0.1.0315.
+- Cache-Busting ?v=0.1.0316.
+- Geaendert: `CLAUDE.md`, `index.html`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CHANGELOG.md`.
+
+## Version 0.1.0315
+- **GitHub-Diagnose:** `fetchGithubRepoFiles` verschluckt die Worker-Fehlermeldung nicht mehr — die echte Ursache (z. B. „GitHub API Fehler 401", „Not Found") wird in `githubUpdateState.filesError` gespeichert und in der Prüfzeile „Anzahl der Dateien" angezeigt, sobald eine ZIP abgelegt wird. So ist die 500-Ursache des Cloudflare-Workers ohne DevTools sichtbar.
+- Worker-Architektur dokumentiert: GitHub **App** (nicht PAT) mit Secrets `GITHUB_APP_ID`, `GITHUB_PRIVATE_KEY`, `GITHUB_INSTALLATION_ID`, `CHANGE_UPDATE_SECRET`. 500 = Admin-Auth ok, aber App-Token-Erzeugung scheitert (privater Schlüssel rotiert, Installation entfernt oder Secret leer).
+- Cache-Busting ?v=0.1.0315.
+- Geaendert: `features/settings/settingsPanel.js`, `index.html`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check`.
+
+## Version 0.1.0314
+- App-Gesundheitscheck-Icon = Design-EKG/Puls-SVG (statt Stethoskop-Emoji `🩺`), folgt dem Accent. Damit sind alle Karten-Icons der Einstellungen 1:1 Design-SVGs (kein Emoji-Icon mehr).
+- Cache-Busting auf ?v=0.1.0314.
+- Geaendert: `features/settings/settingsPanel.js`, `index.html`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check`; vollständiger Emoji-Sweep (nur typografische Glyphen ↺ ↻ ✓ ♡ verbleiben, keine Icon-Emojis).
+
 ## Version 0.1.0313
 - **Schalter-Knopf korrigiert:** Der globale `.slider:before{transform:translateX(20px)}` aus app.css addierte sich zu meinem `left:22px` — der weiße Knopf flog rechts raus. Jetzt `transform:none` in den scoped Switch-Regeln → Knopf sitzt sauber im Track.
 - **Version oben rechts angeheftet:** Die Pille ist aus der Titel-Gruppe heraus in die Kopfzeile gewandert; `change-settings-page-head` ist jetzt `display:flex; justify-content:space-between` → Titel links, Version immer rechts oben.

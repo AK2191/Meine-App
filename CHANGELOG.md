@@ -1,3 +1,15 @@
+## Version 0.1.0316
+- Projekt-Charta als verbindliche Regeln in CLAUDE.md verankert (oberste Wahrheit). Enthält die GitHub-Diagnose aus 0.1.0315.
+- Cache-Busting ?v=0.1.0316.
+
+## Version 0.1.0315
+- GitHub-Diagnose: echte Worker-Fehlermeldung wird in der Prüfzeile angezeigt (statt verschluckt), um die 500-Ursache sichtbar zu machen.
+- Cache-Busting ?v=0.1.0315.
+
+## Version 0.1.0314
+- App-Gesundheitscheck-Icon als Design-EKG-SVG (statt Emoji). Alle Karten-Icons jetzt Design-SVGs.
+- Cache-Busting ?v=0.1.0314.
+
 ## Version 0.1.0313
 - Schalter-Knopf korrigiert (globaler translateX neutralisiert) – sitzt sauber im Track.
 - Version oben rechts angeheftet (Kopfzeile space-between).

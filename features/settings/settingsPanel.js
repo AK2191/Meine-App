@@ -803,7 +803,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0313';
+  var APP_VERSION = '0.1.0316';
 
 
 
@@ -1654,11 +1654,16 @@
   async function fetchGithubRepoFiles(){
     try{
       var response = await fetch(GITHUB_UPDATE_WORKER_URL + '/files', {cache:'no-store', headers: await githubAdminAuthHeaders(false)});
-      if(!response.ok) throw new Error('Worker Dateien '+response.status);
-      var data = await response.json();
-      if(!data || !data.ok || !Array.isArray(data.files)) throw new Error((data && data.message) || 'GitHub-Dateiliste nicht verfügbar');
+      var data = null;
+      try{ data = await response.json(); }catch(parseErr){}
+      if(!response.ok || !data || !data.ok){
+        throw new Error((data && data.message) ? data.message : ('HTTP '+response.status));
+      }
+      if(!Array.isArray(data.files)) throw new Error(data.message || 'GitHub-Dateiliste nicht verfügbar');
+      githubUpdateState.filesError = '';
       return data.files.map(function(file){ return String(file || '').replace(/\\/g, '/'); }).filter(Boolean).sort();
     }catch(e){
+      githubUpdateState.filesError = (e && e.message) ? String(e.message) : 'GitHub-Abruf fehlgeschlagen';
       return [];
     }
   }
@@ -1709,7 +1714,7 @@
       var newFiles = paths.filter(function(path){ return !githubSet[path]; });
       var fileDetail = githubFiles.length
         ? 'GitHub aktuell: '+githubFiles.length+' · ZIP: '+paths.length+' · Neu: '+newFiles.length
-        : 'ZIP: '+paths.length+' · GitHub aktuell nicht gelesen';
+        : 'ZIP: '+paths.length+' · GitHub-Abruf fehlgeschlagen'+(githubUpdateState.filesError ? ': '+githubUpdateState.filesError : '');
       var checks = [
         {ok: !!versionHigher, label:'Zielversion', detail: nextVersion ? nextVersion : 'Keine Zielversion erkannt.'},
         {ok: claudeUpdated, label:'CLAUDE.md aktualisiert', detail: claudeUpdated ? 'Eintrag zur Zielversion gefunden.' : 'Kein passender Versionseintrag gefunden.'},
@@ -1852,7 +1857,7 @@
       var healthBody = appHealthExpanded
         ? window.ChangeAppStatus.healthHtml() + '<button class="btn btn-secondary btn-full" id="run-app-health" type="button">Erneut prüfen</button>'
         : '<div class="change-feature-note">Der Check wird erst angezeigt, wenn du ihn bewusst startest.</div><button class="btn btn-secondary btn-full" id="run-app-health" type="button">App-Gesundheitscheck prüfen</button>';
-      health = settingsFeatureCard('🩺', 'App-Gesundheitscheck', appHealthExpanded ? 'GEPRÜFT' : 'BEREIT', appHealthExpanded ? 'ok' : 'off', '', '', healthBody);
+      health = settingsFeatureCard('<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2 6 4-14 2 8h6"></path></svg>', 'App-Gesundheitscheck', appHealthExpanded ? 'GEPRÜFT' : 'BEREIT', appHealthExpanded ? 'ok' : 'off', '', '', healthBody);
     }
     // Darstellung/Theme ist in den eigenen Tab "Darstellung" verschoben.
     return '<div class="change-settings-stack">' + installCard + dataAuditCard + health + '</div>';
