@@ -1,3 +1,14 @@
+## Version 0.1.0318
+- Kalender-Konsolidierung: alle toten renderMonth-Blöcke per AST entfernt — nur noch EIN aktiver renderMonth übrig (calendar-logic.js FINAL). app.js, core/misc.js, calendar-logic.js bereinigt. Null Laufzeit-Effekt, node --check OK.
+- Enthält 0.1.0317 (max 2 + „+X mehr").
+- Cache-Busting ?v=0.1.0318.
+- Noch nicht live getestet.
+
+## Version 0.1.0317
+- Kalender-Konsolidierung gestartet: aktiver Renderer bestimmt (calendar-logic.js „FINAL"), zwei tote renderMonth-Blöcke aus app.js entfernt (kein Laufzeit-Effekt).
+- Kalender: max 2 Termine sichtbar + „+X mehr" (Charta).
+- Cache-Busting ?v=0.1.0317.
+
 ## Version 0.1.0316
 - Projekt-Charta als verbindliche Regeln in CLAUDE.md verankert (oberste Wahrheit). Enthält die GitHub-Diagnose aus 0.1.0315.
 - Cache-Busting ?v=0.1.0316.

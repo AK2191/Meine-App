@@ -24,6 +24,22 @@
 
 **Verboten:** bestehende Funktionen ohne Prüfung überschreiben · doppelte Komponenten · Workarounds statt sauberer Lösungen.
 
+## Version 0.1.0318
+- **Kalender-Konsolidierung abgeschlossen (renderMonth):** Mit echtem JS-Parser (acorn, AST) alle toten `window.renderMonth`-Zuweisungen exakt entfernt — `calendar-logic.js` (5 von 6), `app.js` (Rest), `core/misc.js` (1). **Es existiert jetzt nur noch EIN `window.renderMonth`** = der aktive „RENDERMONTH (FINAL)" in `calendar-logic.js` (Z. ~890). Damit ist „kein doppelter Kalender-Code" für den Monatsrenderer erfüllt.
+- Entfernt wurde ausschließlich toter, ohnehin überschriebener Code (Null Laufzeit-Effekt); Hilfsfunktionen unangetastet; aktiver Renderer + max-2-Regel verifiziert (`node --check` + Marker-Grep). `calendar-logic.js` 2367 → 2252 Zeilen.
+- Bewusst belassen: bare `function renderMonth`-Deklaration in `app.js` (wird via `renderMonth(...)` aufgerufen; global ohnehin = aktiver Renderer). Offen für nächste Batches: doppelte `layoutWeek`-Definition (2×), `renderCalendar`-Duplikate, Kalender-Logik aus `app.js` nach `core/calendar/`.
+- Cache-Busting ?v=0.1.0318. Enthält auch 0.1.0317 (max 2 + „+X mehr").
+- **Noch nicht live geprüft** (Nutzer unterwegs) — bei Auffälligkeiten am Kalender auf Vorversion zurückrollen.
+- Geaendert: `features/calendar/calendar-logic.js`, `app.js`, `core/misc.js`, `index.html`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+
+## Version 0.1.0317
+- **Kalender-Konsolidierung, Schritt 1+2 (Start):** Aktiver Monats-Renderer zweifelsfrei bestimmt = `features/calendar/calendar-logic.js` Zeile ~1005 (im Code als „RENDERMONTH (FINAL)" markiert; setzt `grid.className='cfx-month-grid'`, nutzt `cfx-*`-Klassen). Beweis: Ladereihenfolge (app.js Pos. 28 → calendar-logic.js Pos. 31), letzte `window.renderMonth`-Zuweisung gewinnt, kein später geladenes Skript überschreibt.
+- **Toter Code entfernt (Batch 1):** zwei eindeutig überschriebene `window.renderMonth`-Zuweisungen aus `app.js` (vormals Z. 3097, 3132) gelöscht — Null Laufzeit-Effekt, da ohnehin von 1005 überschrieben. Noch offen (nächste Batches): app.js Z. 2871 (mehrzeilig) + Deklaration Z. 1200; calendar-logic.js Z. 67, 227, 486, 670, 835; core/misc.js.
+- **Charta-Regel im aktiven Renderer umgesetzt:** Termine pro Tag jetzt **max 2 sichtbar + „+X mehr"** (vorher max 3; `layoutWeek` Lane-Limit `lane>2` → `lane>1`).
+- Cache-Busting ?v=0.1.0317.
+- Geaendert: `app.js`, `features/calendar/calendar-logic.js`, `index.html`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check` (app.js, calendar-logic.js, settingsPanel.js, pollenView.js). Live-Prüfung Kalender durch Nutzer.
+
 ## Version 0.1.0316
 - **Projekt-Charta verbindlich in CLAUDE.md verankert** (Features, strikte Architektur core/features/components, Kalender-/Challenges-/Push-/Sync-/UI-Regeln, Arbeitsweise, Verbote) — als oberste Wahrheit nach „Start Here". Enthält außerdem die GitHub-Diagnose aus 0.1.0315.
 - Cache-Busting ?v=0.1.0316.

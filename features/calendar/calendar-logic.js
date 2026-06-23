@@ -64,24 +64,7 @@
     const rows=[];
     return candidates.slice(0,12).map(ev=>{const s=startOf(ev), e=endOf(ev); const startIdx=Math.max(0,weekDates.indexOf(s)); const endIdx=weekDates.indexOf(e)===-1?(e>to?6:0):weekDates.indexOf(e); const span=Math.max(1,endIdx-startIdx+1); let lane=0; for(;lane<4;lane++){if(!rows[lane])rows[lane]=Array(7).fill(false); let ok=true; for(let i=startIdx;i<=endIdx;i++)if(rows[lane][i])ok=false; if(ok)break;} if(lane>=4)return null; for(let i=startIdx;i<=endIdx;i++)rows[lane][i]=true; return {ev,startIdx,endIdx,span,lane,continuesLeft:s<from,continuesRight:e>to};}).filter(Boolean);
   }
-  window.renderMonth=function(y,m){
-    applyCleanCalendarStyle(); const grid=$('month-grid'); if(!grid)return; grid.innerHTML=''; grid.style.display='grid'; const cells=buildMonthCells(y,m);
-    for(let w=0;w<6;w++){
-      const row=document.createElement('div'); row.className='week-row'; const weekDates=[];
-      for(let d=0;d<7;d++){
-        const c=cells[w*7+d], dt=new Date(c.y,c.m,c.d), day=dkey(dt); weekDates.push(day);
-        const dayEvs=allEvents().filter(ev=>startOf(ev)<=day&&endOf(ev)>=day);
-        const cell=document.createElement('div'); cell.className='day-cell'+(c.other?' other':'')+(d>=5?' weekend':'')+((typeof isToday==='function'&&isToday(dt))?' today':''); cell.onclick=()=>{ if(typeof onDayClick==='function')onDayClick(dt,dayEvs); else if(dayEvs[0])openEventPanel(dayEvs[0].id); else openEventPanel(null,dt); };
-        let html='<div class="day-num-wrap"><div class="day-num">'+c.d+'</div></div>';
-        try{ if(opt().showHolidays&&typeof getHolidaysForDate==='function') html+=(getHolidaysForDate(day)||[]).slice(0,1).map(h=>'<div class="holiday-line">'+esc(h.name)+'</div>').join(''); if(opt().showChallengeDots&&typeof getChallengeDayStatus==='function'){const ch=getChallengeDayStatus(day); if(ch)html+='<span class="challenge-day-dot '+(ch.allDone?'done':'')+'"></span>';}}
-        catch(e){}
-        cell.innerHTML=html; row.appendChild(cell);
-      }
-      const layer=document.createElement('div'); layer.className='week-event-layer';
-      layoutWeekEvents(weekDates).forEach(seg=>{const ev=seg.ev, single=startOf(ev)===endOf(ev); const bar=document.createElement('div'); bar.className='range-bar '+colorOf(ev)+(single?' single':'')+(seg.continuesLeft?' continues-left':'')+(seg.continuesRight?' continues-right':''); bar.style.gridColumn=(seg.startIdx+1)+' / span '+seg.span; bar.style.gridRow=(seg.lane+1); bar.title=titleOf(ev)+' · '+fmt(startOf(ev))+(endOf(ev)!==startOf(ev)?' – '+fmt(endOf(ev)):'')+(timeOf(ev)?' · '+timeOf(ev):''); bar.onclick=(e)=>{e.stopPropagation(); openEventPanel(ev.id)}; const label=(seg.continuesLeft?'':titleOf(ev)); bar.innerHTML='<span style="overflow:hidden;text-overflow:ellipsis">'+esc(label||titleOf(ev))+'</span>'+gIcon(ev); layer.appendChild(bar);});
-      row.appendChild(layer); grid.appendChild(row);
-    }
-  };
+  
 
   const oldRenderCalendar=window.renderCalendar;
   window.renderCalendar=function(){
@@ -224,67 +207,7 @@ renderCalendar(); if(typeof buildDashboard==='function')buildDashboard(); if(typ
   function colorB(ev){ return ['blue','green','amber','red','purple'].includes(ev.color) ? ev.color : 'green'; }
   function isTodayB(dt){ try{ return typeof window.isToday === 'function' ? window.isToday(dt) : toKeyB(dt) === toKeyB(new Date()); }catch(e){ return toKeyB(dt) === toKeyB(new Date()); } }
 
-  window.renderMonth = function(y,m){
-    const grid = $('month-grid'); if(!grid) return;
-    const o = optsB();
-    grid.className = 'month-grid-option-b';
-    grid.style.display = 'grid';
-    grid.style.gridTemplateRows = 'repeat(6, minmax(118px, 1fr))';
-    grid.innerHTML = '';
-    let first = new Date(y,m,1).getDay(); first = first === 0 ? 6 : first - 1;
-    const dim = new Date(y,m+1,0).getDate();
-    const prevDim = new Date(y,m,0).getDate();
-    const cells = [];
-    for(let i=0;i<first;i++) cells.push({d:prevDim-first+1+i, m:m===0?11:m-1, y:m===0?y-1:y, other:true});
-    for(let d=1; d<=dim; d++) cells.push({d,m,y,other:false});
-    while(cells.length < 42){ const n = cells.length - first - dim + 1; cells.push({d:n, m:m===11?0:m+1, y:m===11?y+1:y, other:true}); }
-
-    for(let w=0; w<6; w++){
-      const week = cells.slice(w*7,w*7+7);
-      const row = document.createElement('div'); row.className='cal-week-b';
-      const startKey = toKeyB(new Date(week[0].y, week[0].m, week[0].d));
-      const endKey = toKeyB(new Date(week[6].y, week[6].m, week[6].d));
-      week.forEach((c,i) => {
-        const dt = new Date(c.y,c.m,c.d); const k = toKeyB(dt);
-        const hs = holidaysB(k); const ch = challengeB(k);
-        const cell = document.createElement('div');
-        cell.className = 'cal-day-b' + (c.other?' other':'') + (i>4?' weekend':'') + (isTodayB(dt)?' today':'');
-        cell.style.gridColumn = String(i+1);
-        cell.onclick = () => { if(typeof window.onDayClick === 'function') window.onDayClick(dt, eventsOnB(k)); };
-        cell.innerHTML = '<div class="cal-day-head"><span class="cal-day-num">'+c.d+'</span>' +
-          (o.showHolidays && hs.length ? '<span class="cal-holiday-name" title="'+escB(hs[0].name)+'">'+escB(hs[0].name)+'</span>' : '') +
-          '</div>' +
-          (o.showChallengeDots && ch ? '<span class="cal-points-badge '+(ch.allDone?'done':'')+'" title="Challenge-Punkte">+'+ch.points+'P</span>' : '') +
-          (i===0 && o.showWeekNumbers ? '<span class="cal-kw-badge">KW '+isoWeekB(dt)+'</span>' : '');
-        row.appendChild(cell);
-      });
-      const lanes = [];
-      allEventsB().filter(ev => { const r=rangeB(ev); return r.start <= endKey && r.end >= startKey; })
-        .sort((a,b) => rangeB(a).start.localeCompare(rangeB(b).start) || rangeB(b).end.localeCompare(rangeB(a).end) || String(a.title).localeCompare(String(b.title)))
-        .forEach(ev => {
-          const r = rangeB(ev);
-          const ss = r.start < startKey ? startKey : r.start;
-          const ee = r.end > endKey ? endKey : r.end;
-          const sc = daysB(startKey, ss) + 1;
-          const ec = daysB(startKey, ee) + 1;
-          let lane = 0;
-          while(lanes[lane] && lanes[lane] >= sc) lane++;
-          lanes[lane] = ec;
-          if(lane > 2) return;
-          const bar = document.createElement('button');
-          bar.type = 'button';
-          bar.className = 'cal-range-b '+colorB(ev)+(r.start===ss?' start':'')+(r.end===ee?' end':'')+(r.start<startKey?' cont-left':'')+(r.end>endKey?' cont-right':'');
-          bar.style.gridColumn = sc + ' / ' + (ec+1);
-          bar.style.setProperty('--lane', lane);
-          bar.title = (ev.title||'Termin') + ' · ' + fmtB(r.start) + (r.end!==r.start ? ' – ' + fmtB(r.end) : '');
-          bar.onclick = (e) => { e.stopPropagation(); if(typeof window.openEventPanel === 'function') window.openEventPanel(ev.id); };
-          const dateText = r.start !== r.end && r.start === ss ? '<span class="cal-range-date">'+fmtB(r.start).replace(/\.20\d\d$/,'')+'–'+fmtB(r.end).replace(/\.20\d\d$/,'')+'</span>' : '';
-          bar.innerHTML = '<span class="cal-range-title">'+escB(ev.title||'Termin')+'</span>'+dateText+googleMarkB(ev);
-          row.appendChild(bar);
-        });
-      grid.appendChild(row);
-    }
-  };
+  
 
   window.renderYear = function(y){
     const grid=$('month-grid'); if(!grid) return;
@@ -483,19 +406,7 @@ function googleMark(ev){return ev.source==='google'||ev.googleEventId?'<span cla
 function cells(y,m){let first=new Date(y,m,1).getDay(); first=first===0?6:first-1; const dim=new Date(y,m+1,0).getDate(), pdim=new Date(y,m,0).getDate(), a=[]; for(let i=0;i<first;i++)a.push({d:pdim-first+1+i,m:m===0?11:m-1,y:m===0?y-1:y,other:true}); for(let d=1;d<=dim;d++)a.push({d,m,y,other:false}); while(a.length<42){const n=a.length-first-dim+1; a.push({d:n,m:m===11?0:m+1,y:m===11?y+1:y,other:true});} return a;}
 function onDay(dt){try{ if(typeof onDayClick==='function') return onDayClick(dt,eventsOn(key(dt))); }catch(e){} }
 function openEv(ev){try{ if(typeof openEventPanel==='function') return openEventPanel(ev.id); }catch(e){} }
-window.renderMonth=function(y,m){
-  const grid=$('month-grid'), o=opts(); if(!grid)return;
-  grid.className='fx-month'; grid.style.display='grid'; grid.innerHTML='';
-  const all=cells(y,m);
-  for(let w=0;w<6;w++){
-    const week=all.slice(w*7,w*7+7), row=document.createElement('div'); row.className='fx-week';
-    const wkStart=parse(key(new Date(week[0].y,week[0].m,week[0].d))), wkEnd=parse(key(new Date(week[6].y,week[6].m,week[6].d)));
-    week.forEach((c,i)=>{const dt=new Date(c.y,c.m,c.d), k=key(dt), hs=holidays(k), pts=points(k); const cell=document.createElement('div'); cell.className='fx-day'+(c.other?' other':'')+(i>4?' weekend':'')+(today(dt)?' is-today':''); cell.style.gridColumn=String(i+1); cell.onclick=()=>onDay(dt); cell.innerHTML='<div class="fx-day-head"><span class="fx-num">'+c.d+'</span>'+(o.showHolidays&&hs.length?'<span class="fx-holiday" title="'+esc(hs[0].name)+'">'+esc(hs[0].name)+'</span>':'')+'</div>'+(o.showChallengeDots&&pts>0?'<span class="fx-points">+'+pts+'P</span>':'')+(i===0&&o.showWeekNumbers?'<span class="fx-kw">KW '+weekNo(dt)+'</span>':''); row.appendChild(cell);});
-    const lanes=[];
-    allEvents().filter(ev=>{const r=evRange(ev);return r.s<=wkEnd&&r.e>=wkStart;}).sort((a,b)=>evRange(a).sk.localeCompare(evRange(b).sk)||String(a.title).localeCompare(String(b.title))).forEach(ev=>{const r=evRange(ev); const s=r.s<wkStart?wkStart:r.s, e=r.e>wkEnd?wkEnd:r.e; const sc=Math.round((s-wkStart)/86400000)+1, ec=Math.round((e-wkStart)/86400000)+1; let lane=0; while(lanes[lane]&&lanes[lane]>=sc)lane++; lanes[lane]=ec; if(lane>2)return; const bar=document.createElement('button'); bar.type='button'; bar.className='fx-event '+colorClass(ev)+(key(s)===r.sk?' start':'')+(key(e)===r.ek?' end':''); bar.style.gridColumn=sc+' / '+(ec+1); bar.style.setProperty('--lane',lane); bar.onclick=(e)=>{e.stopPropagation();openEv(ev)}; const multi=r.sk!==r.ek; bar.innerHTML='<span class="fx-title">'+esc(ev.title||'Termin')+'</span>'+(multi&&key(s)===r.sk?'<span class="fx-range">'+esc((typeof fmtDate==='function'?fmtDate(r.sk):r.sk)+'–'+(typeof fmtDate==='function'?fmtDate(r.ek):r.ek))+'</span>':'')+googleMark(ev); row.appendChild(bar);});
-    grid.appendChild(row);
-  }
-};
+
 window.renderYear=function(y){const grid=$('month-grid'),o=opts(); if(!grid)return; grid.className='fx-year'; grid.style.display='grid'; grid.innerHTML=''; for(let m=0;m<12;m++){const card=document.createElement('button'); card.type='button'; card.className='fx-year-card'; card.onclick=()=>{window.curDate=curDate=new Date(y,m,1); window.currentCalView=currentCalView='month'; window.renderCalendar();}; let html='<div class="fx-year-title">'+monthNames[m]+'</div><div class="fx-year-days">'; ['M','D','M','D','F','S','S'].forEach(x=>html+='<b>'+x+'</b>'); let first=new Date(y,m,1).getDay(); first=first===0?6:first-1; for(let i=0;i<first;i++)html+='<span></span>'; const dim=new Date(y,m+1,0).getDate(); for(let d=1;d<=dim;d++){const k=key(new Date(y,m,d)), hasE=eventsOn(k).length, hasH=holidays(k).length; html+='<span class="'+(today(new Date(y,m,d))?'today ':'')+(hasE?'ev ':'')+(hasH&&o.showHolidays?'hol ':'')+'">'+d+((hasE||(hasH&&o.showHolidays))?'<i></i>':'')+'</span>'; } card.innerHTML=html+'</div>'; grid.appendChild(card);} };
 window.renderCalendar=function(){const y=curDate.getFullYear(),m=curDate.getMonth(); const ml=$('month-label'), grid=$('month-grid'), ag=$('agenda-view'), wd=$('wday-row'); if(ml)ml.textContent=(currentCalView==='year'?String(y):monthNames[m]+' '+y); ['year','month','workweek','today'].forEach(v=>$('vbtn-'+v)?.classList.toggle('active',currentCalView===v)); if(ag)ag.style.display='none'; if(wd)wd.style.display=currentCalView==='year'?'none':'grid'; if(currentCalView==='year')window.renderYear(y); else window.renderMonth(y,m); if(grid)grid.style.display='grid';};
 window.setCalView=function(v){currentCalView=(v==='today')?'month':v; if(v==='today')curDate=new Date(); window.renderCalendar();};
@@ -667,33 +578,7 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
   function googleMark(e){return e.source==='google'?'<span class="cal-g" title="von Google">G</span>':((e.googleEventId||e.syncedToGoogle)?'<span class="cal-g ok" title="an Google übertragen">✓</span>':'');}
   function rangeText(e,k){if(e.startDate!==e.endDate && k===e.startDate){return '<span class="cal-range-text">'+esc((typeof fmtDate==='function'?fmtDate(e.startDate):e.startDate).replace(/\.20\d\d$/,''))+'–'+esc((typeof fmtDate==='function'?fmtDate(e.endDate):e.endDate).replace(/\.20\d\d$/,''))+'</span>'}return '';}
 
-  window.renderMonth=function(y,m){
-    const grid=$('month-grid'), o=loadOpts(); if(!grid)return;
-    grid.className='month-grid-stacked'; grid.style.display='grid'; grid.style.gridTemplateRows='repeat(6,minmax(118px,1fr))'; grid.innerHTML='';
-    let first=new Date(y,m,1).getDay(); first=first===0?6:first-1;
-    const dim=new Date(y,m+1,0).getDate(), pdim=new Date(y,m,0).getDate(), cells=[];
-    for(let i=0;i<first;i++)cells.push({d:pdim-first+1+i,m:m?m-1:11,y:m?y:y-1,other:true});
-    for(let d=1;d<=dim;d++)cells.push({d,m,y,other:false});
-    while(cells.length<42){let d=cells.length-first-dim+1;cells.push({d,m:m===11?0:m+1,y:m===11?y+1:y,other:true});}
-    for(let w=0;w<6;w++){
-      const row=document.createElement('div'); row.className='cal-week-stacked';
-      cells.slice(w*7,w*7+7).forEach((c,i)=>{
-        const dt=new Date(c.y,c.m,c.d), k=key(dt), hs=holidays(k), pts=pointsOn(k), evs=eventsOn(k);
-        const cell=document.createElement('div');
-        cell.className='cal-day-stacked'+(c.other?' other':'')+(i>4?' weekend':'')+((typeof isToday==='function'&&isToday(dt))?' today':'');
-        cell.onclick=()=>{try{onDayClick(dt,evs)}catch(e){if(typeof openEventPanel==='function')openEventPanel('',dt)}};
-        let html='<div class="cal-day-head"><span class="cal-day-num">'+c.d+'</span>'+(o.showHolidays&&hs.length?'<span class="cal-holiday-inline" title="'+esc(hs[0].name)+'">'+esc(hs[0].name)+'</span>':'')+'</div>';
-        if(i===0&&o.showWeekNumbers) html+='<span class="cal-kw">KW '+weekNo(dt)+'</span>';
-        html+='<div class="cal-event-stack">';
-        evs.slice(0,3).forEach(e=>{html+='<button type="button" class="cal-event-chip '+esc(e.color||'blue')+'" onclick="event.stopPropagation();openEventPanel(\''+esc(e.id||'')+'\')"><span class="cal-event-title">'+esc(e.title)+'</span>'+rangeText(e,k)+googleMark(e)+'</button>';});
-        if(evs.length>3) html+='<div class="cal-more">+'+(evs.length-3)+' weitere</div>';
-        html+='</div>';
-        if(o.showChallengeDots&&pts>0) html+='<span class="cal-points">+'+pts+'P</span>';
-        cell.innerHTML=html; row.appendChild(cell);
-      });
-      grid.appendChild(row);
-    }
-  };
+  
 
   window.renderYear=function(y){const grid=$('month-grid'),o=loadOpts(); if(!grid)return; grid.className='year-grid-stacked'; grid.style.display='grid'; grid.style.gridTemplateRows='none'; grid.innerHTML=''; for(let m=0;m<12;m++){const card=document.createElement('button'); card.type='button'; card.className='year-card-stacked'; card.onclick=()=>{window.curDate=curDate=new Date(y,m,1); window.currentCalView=currentCalView='month'; window.renderCalendar();}; let first=new Date(y,m,1).getDay(); first=first===0?6:first-1; let html='<div class="year-title-stacked">'+monthNames[m]+'</div><div class="year-days-stacked">'; ['M','D','M','D','F','S','S'].forEach(x=>html+='<b>'+x+'</b>'); for(let i=0;i<first;i++)html+='<span></span>'; const dim=new Date(y,m+1,0).getDate(); for(let d=1;d<=dim;d++){const dt=new Date(y,m,d),k=key(dt),hasE=eventsOn(k).length>0,hasH=o.showHolidays&&holidays(k).length>0; html+='<span class="'+((typeof isToday==='function'&&isToday(dt))?'today ':'')+(hasE?'has-event ':'')+(hasH?'has-holiday ':'')+'">'+d+((hasE||hasH)?'<i></i>':'')+'</span>'; } card.innerHTML=html+'</div>'; grid.appendChild(card);}};
 
@@ -832,7 +717,7 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
   function monthName(m){return (window.DE_MONTHS||window.monthNames||['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'])[m]}
   function rangeLabel(ev,k,dow){const r=rangeOf(ev);if(!r.isRange)return esc(titleOf(ev));const showTitle=(k===r.start||dow===0);return showTitle?(esc(titleOf(ev))+(k===r.start?' <span class="cal-range-text">'+esc(fmt(r.start).replace(/\.20\d\d$/,'')+'–'+fmt(r.end).replace(/\.20\d\d$/,''))+'</span>':'')):'&nbsp;'}
   function rangeClass(ev,k,dow){const r=rangeOf(ev);if(!r.isRange)return '';const start=(k===r.start||dow===0),end=(k===r.end||dow===6);return ' is-range '+(start?'range-start ':'range-mid ')+(end?'range-end ':'')}
-  window.renderMonth=function(y,m){const grid=$('month-grid'),o=loadOpts();if(!grid)return;grid.className='month-grid-stacked month-grid-polished';grid.style.display='grid';grid.style.gridTemplateRows='repeat(6,1fr)';grid.innerHTML='';let first=new Date(y,m,1).getDay();first=first===0?6:first-1;const dim=new Date(y,m+1,0).getDate(),prevDim=new Date(y,m,0).getDate(),cells=[];for(let i=0;i<first;i++)cells.push({d:prevDim-first+1+i,m:m?m-1:11,y:m?y:y-1,other:true});for(let i=1;i<=dim;i++)cells.push({d:i,m,y,other:false});while(cells.length<42){const n=cells.length-first-dim+1;cells.push({d:n,m:m===11?0:m+1,y:m===11?y+1:y,other:true})}for(let w=0;w<6;w++){const row=document.createElement('div');row.className='cal-week-stacked cal-week-polished';cells.slice(w*7,w*7+7).forEach((c,i)=>{const dt=new Date(c.y,c.m,c.d),k=key(dt),hs=holidays(k),evs=eventsOn(k),pts=challengePoints(k);const ranges=evs.filter(e=>rangeOf(e).isRange),singles=evs.filter(e=>!rangeOf(e).isRange);const ordered=[...ranges,...singles];const cell=document.createElement('div');cell.className='cal-day-stacked cal-day-polished'+(c.other?' other':'')+(i>4?' weekend':'')+((typeof isToday==='function'&&isToday(dt))?' today':'');cell.onclick=()=>{try{if(typeof onDayClick==='function')onDayClick(dt,evs)}catch(e){}};let html='<div class="cal-day-head"><span class="cal-day-num">'+c.d+'</span>'+(o.showHolidays&&hs.length?'<span class="cal-holiday-inline" title="'+esc(hs[0].name)+'">'+esc(hs[0].name)+'</span>':'')+'</div>';if(i===0&&o.showWeekNumbers)html+='<span class="cal-kw">KW '+weekNo(dt)+'</span>';html+='<div class="cal-event-stack">';ordered.slice(0,4).forEach(e=>{const cls='cal-event-chip '+esc(e.color||'blue')+rangeClass(e,k,i);html+='<button type="button" class="'+cls+'" onclick="event.stopPropagation();openEventPanel(\''+esc(e.id||'')+'\')"><span class="cal-event-title">'+rangeLabel(e,k,i)+'</span>'+googleMark(e)+'</button>'});if(ordered.length>4)html+='<div class="cal-more">+'+(ordered.length-4)+' weitere</div>';html+='</div>';if(o.showChallengeDots&&pts&&pts.points>0)html+='<span class="cal-points '+(pts.done?'done':'')+'">+'+pts.points+'P</span>';cell.innerHTML=html;row.appendChild(cell)});grid.appendChild(row)}};
+  
   const oldOpenDay=window.openDayPanel;
   if(typeof oldOpenDay==='function'){
     window.openDayPanel=function(dt,dayEvs){oldOpenDay(dt,dayEvs);setTimeout(()=>{document.querySelectorAll('.day-detail-sub').forEach(el=>{el.textContent=el.textContent.replace(' · Zeitraum','')})},0)};
@@ -982,7 +867,7 @@ renderCalendar(); if(typeof toast==='function')toast('Kalender-Einstellungen ges
       if (sIdx === -1) continue;
       let lane = 0;
       while (lanes[lane] !== undefined && lanes[lane] >= sIdx) lane++;
-      if (lane > 2) continue; // max 3 Zeilen
+      if (lane > 1) continue; // max 2 Zeilen sichtbar (Charta) — Rest wird als „+X mehr" gezählt
       lanes[lane] = eIdx;
       result.push({ ev, sIdx, eIdx, span: eIdx - sIdx + 1, lane,
         contLeft: r.start < wStart, contRight: r.end > wEnd,
