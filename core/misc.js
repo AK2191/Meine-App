@@ -77,7 +77,7 @@ if(window.location.hostname !== 'localhost' && window.location.hostname !== '127
     window.currentCalView=v;
     try{currentCalView=v;}catch(e){}
   }
-  window.renderCalendar=function(){if(window.currentCalView==='year')window.currentCalView='month';const d=getSafeCurDate();const y=d.getFullYear(),m=d.getMonth();const ml=$('month-label'),ag=$('agenda-view'),wd=$('wday-row'),grid=$('month-grid');if(ml){ml.textContent=monthNames[m]+' '+y;ml.onclick=window.openMonthYearPicker;ml.setAttribute('role','button');ml.title='Monat wechseln'}$('vbtn-year')?.remove();['month','workweek','today'].forEach(v=>$('vbtn-'+v)?.classList.toggle('active',v==='month'));if(ag)ag.style.display='none';if(wd)wd.style.display='grid';if(grid)grid.style.display='grid';window.renderMonth(y,m);try{if(typeof renderUpcoming==='function')renderUpcoming()}catch(e){}};
+  
   window.setCalView=function(v){if(v==='year'||v==='today'||v==='workweek')v='month';setSafeCalView(v);window.renderCalendar()};
   window.navigate=function(dir){const d=getSafeCurDate();setSafeCurDate(new Date(d.getFullYear(),d.getMonth()+dir,1));window.renderCalendar();try{if(typeof loadGoogleEvents==='function')loadGoogleEvents()}catch(e){}};
   window.goToday=function(){setSafeCurDate(new Date());setSafeCalView('month');window.renderCalendar()};

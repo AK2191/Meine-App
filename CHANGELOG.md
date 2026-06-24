@@ -1,3 +1,7 @@
+## Version 0.1.0320
+- Kalender-Konsolidierung Teil 2: alle toten renderCalendar-Zuweisungen per AST entfernt (16 → 1 aktiv). app.js, calendarPanels.js, core/misc.js, change-post.js, calendar-logic.js bereinigt. Null Laufzeit-Effekt, node --check OK.
+- Cache-Busting ?v=0.1.0320. Enthält 0.1.0317–0.1.0319.
+
 ## Version 0.1.0319
 - „Unsupported cache mode: reload" behoben: getIdToken(true)-Fallback auf Cache-Token; cache:'reload' → 'no-store'. Dadurch wird die echte Worker-Antwort (500) sichtbar.
 - Enthält 0.1.0317 + 0.1.0318.

@@ -412,7 +412,7 @@
     originalRenderCalendar = window.renderCalendar;
     originalSetCalView = window.setCalView;
     originalNavigate = window.navigate;
-    window.renderCalendar = function(){ renderPremium(); try{ if(typeof window.renderUpcoming === 'function') window.renderUpcoming(); }catch(e){} };
+    
     window.setCalView = function(view){ if(view === 'today'){ selectedKey = M.todayKey(); setCurrentDate(dateObj(selectedKey)); setViewSafe('month'); } else if(view === 'week' || view === 'month'){ setViewSafe('month'); } else { setViewSafe(view); }
       if(view === 'year' || view === 'workweek'){ if(originalSetCalView) return originalSetCalView(view); }
       renderPremium(); };

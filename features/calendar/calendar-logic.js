@@ -67,12 +67,7 @@
   
 
   const oldRenderCalendar=window.renderCalendar;
-  window.renderCalendar=function(){
-    const y=window.curDate?curDate.getFullYear():new Date().getFullYear(), m=window.curDate?curDate.getMonth():new Date().getMonth();
-    const ml=$('month-label'); if(ml&&typeof DE_MONTHS!=='undefined')ml.textContent=DE_MONTHS[m]+' '+y;
-    if(window.currentCalView==='agenda'){ if(typeof renderAgenda==='function')renderAgenda(); if($('month-grid'))$('month-grid').style.display='none'; if($('agenda-view'))$('agenda-view').style.display='block'; if($('wday-row'))$('wday-row').style.display='none'; return; }
-    window.renderMonth(y,m); if($('month-grid'))$('month-grid').style.display='grid'; if($('agenda-view'))$('agenda-view').style.display='none'; if($('wday-row'))$('wday-row').style.display='grid';
-  };
+  
 
   window.openEventPanel=function(id,preDate){
     const ev=id?window.getEventById(id):null;
@@ -231,25 +226,7 @@ renderCalendar(); if(typeof buildDashboard==='function')buildDashboard(); if(typ
     }
   };
 
-  window.renderCalendar = function(){
-    const y=curDate.getFullYear(), m=curDate.getMonth();
-    const label=$('month-label'); if(label) label.textContent = currentCalView === 'year' ? String(y) : (currentCalView === 'workweek' ? 'Arbeitswoche · '+monthsB[m]+' '+y : monthsB[m]+' '+y);
-    ['year','month','workweek','today'].forEach(v => $('vbtn-'+v)?.classList.toggle('active', currentCalView===v));
-    const grid=$('month-grid'), agenda=$('agenda-view'), wday=$('wday-row');
-    if(agenda) agenda.style.display='none';
-    if(currentCalView === 'year'){
-      if(wday) wday.style.display='none';
-      window.renderYear(y);
-    } else if(currentCalView === 'workweek' && typeof window.renderWorkweek === 'function'){
-      if(wday) wday.style.display='none';
-      window.renderWorkweek();
-    } else {
-      if(wday) wday.style.display='grid';
-      window.renderMonth(y,m);
-    }
-    if(grid) grid.style.display='grid';
-    try{ if(typeof window.renderUpcoming === 'function') window.renderUpcoming(); }catch(e){}
-  };
+  
   window.setCalView = function(v){ currentCalView = v === 'today' ? 'month' : v; if(v === 'today') curDate = new Date(); window.renderCalendar(); };
   window.navigate = function(dir){
     if(currentCalView === 'year') curDate = new Date(curDate.getFullYear()+dir,0,1);
@@ -408,7 +385,7 @@ function onDay(dt){try{ if(typeof onDayClick==='function') return onDayClick(dt,
 function openEv(ev){try{ if(typeof openEventPanel==='function') return openEventPanel(ev.id); }catch(e){} }
 
 window.renderYear=function(y){const grid=$('month-grid'),o=opts(); if(!grid)return; grid.className='fx-year'; grid.style.display='grid'; grid.innerHTML=''; for(let m=0;m<12;m++){const card=document.createElement('button'); card.type='button'; card.className='fx-year-card'; card.onclick=()=>{window.curDate=curDate=new Date(y,m,1); window.currentCalView=currentCalView='month'; window.renderCalendar();}; let html='<div class="fx-year-title">'+monthNames[m]+'</div><div class="fx-year-days">'; ['M','D','M','D','F','S','S'].forEach(x=>html+='<b>'+x+'</b>'); let first=new Date(y,m,1).getDay(); first=first===0?6:first-1; for(let i=0;i<first;i++)html+='<span></span>'; const dim=new Date(y,m+1,0).getDate(); for(let d=1;d<=dim;d++){const k=key(new Date(y,m,d)), hasE=eventsOn(k).length, hasH=holidays(k).length; html+='<span class="'+(today(new Date(y,m,d))?'today ':'')+(hasE?'ev ':'')+(hasH&&o.showHolidays?'hol ':'')+'">'+d+((hasE||(hasH&&o.showHolidays))?'<i></i>':'')+'</span>'; } card.innerHTML=html+'</div>'; grid.appendChild(card);} };
-window.renderCalendar=function(){const y=curDate.getFullYear(),m=curDate.getMonth(); const ml=$('month-label'), grid=$('month-grid'), ag=$('agenda-view'), wd=$('wday-row'); if(ml)ml.textContent=(currentCalView==='year'?String(y):monthNames[m]+' '+y); ['year','month','workweek','today'].forEach(v=>$('vbtn-'+v)?.classList.toggle('active',currentCalView===v)); if(ag)ag.style.display='none'; if(wd)wd.style.display=currentCalView==='year'?'none':'grid'; if(currentCalView==='year')window.renderYear(y); else window.renderMonth(y,m); if(grid)grid.style.display='grid';};
+
 window.setCalView=function(v){currentCalView=(v==='today')?'month':v; if(v==='today')curDate=new Date(); window.renderCalendar();};
 window.goToday=function(){curDate=new Date(); currentCalView='month'; window.renderCalendar();};
 window.navigate=function(dir){ if(currentCalView==='year')curDate=new Date(curDate.getFullYear()+dir,0,1); else curDate=new Date(curDate.getFullYear(),curDate.getMonth()+dir,1); window.renderCalendar();};
@@ -530,7 +507,7 @@ setTimeout(()=>{try{window.renderCalendar()}catch(e){console.warn('final calenda
   const oldBuild=window.buildDashCards;
   window.buildDashCards=function(){if(typeof oldBuild==='function')oldBuild();setTimeout(()=>{document.querySelectorAll('.dash-row').forEach(row=>{const title=row.querySelector('.dash-row-title')?.textContent||'';const ev=getAllEvents().find(e=>e.title===title);if(ev){const t=row.querySelector('.dash-row-title'); if(t&&!t.querySelector('.source-pill,.range-pill'))t.insertAdjacentHTML('beforeend',badge(ev));}});},0);};
   const oldRenderCal=window.renderCalendar;
-  window.renderCalendar=function(){if(typeof oldRenderCal==='function')oldRenderCal.apply(this,arguments);setTimeout(()=>{document.querySelectorAll('.ev-chip,.ag-card').forEach(el=>{const text=(el.textContent||'').trim();const ev=getAllEvents().find(e=>text.includes(e.title));if(ev){if(ev.source==='google')el.classList.add('google-source');if(ev.googleEventId||ev.syncedToGoogle)el.classList.add('synced-source');if(!el.querySelector('.source-pill,.range-pill'))el.insertAdjacentHTML('beforeend',badge(ev));}});},0);};
+  
   const oldSave=window.saveEvent;
   window.saveEvent=function(existingId){if(typeof oldSave==='function')oldSave(existingId);try{const id=existingId||((window.events||[]).at(-1)||{}).id;const ev=(window.events||[]).find(e=>e.id===id);if(ev){ev.startDate=ev.date||ev.startDate;ev.endDate=(ev.endDate&&ev.endDate>=ev.startDate)?ev.endDate:ev.startDate;if(ev.googleEventId)ev.syncedToGoogle=true;ls('events',window.events);}}catch(e){}};
 

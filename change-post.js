@@ -70,7 +70,7 @@
     const oldRender=window.renderCalendar;
     if(typeof oldRender==='function'&&!oldRender.__criticalFixed){
       const fixed=function(){const res=oldRender.apply(this,arguments);injectCriticalCss();setTimeout(addLeftWeekNumbers,0);return res;};
-      fixed.__criticalFixed=true;window.renderCalendar=fixed;
+      fixed.__criticalFixed=true;
     }
     ['navigate','goToday','setCalView'].forEach(name=>{
       const old=window[name];
@@ -241,12 +241,7 @@
   window.navigate=function(dir){if(currentCalView==='workweek'||currentCalView==='today')currentCalView='month';if(typeof prevNavigate==='function')prevNavigate(dir);else{curDate=new Date(curDate.getFullYear(),curDate.getMonth()+dir,1);renderCalendar();}try{window.loadGoogleEvents();}catch(e){}};
 
   const prevRender=window.renderCalendar;
-  window.renderCalendar=function(){
-    hideUnwantedControls();
-    if(currentCalView==='workweek'||currentCalView==='today')currentCalView='month';
-    if(typeof prevRender==='function')prevRender.apply(this,arguments);
-    try{['year','month'].forEach(x=>document.getElementById('vbtn-'+x)?.classList.toggle('active',currentCalView===x));}catch(e){}
-  };
+  
 
   window.addEventListener('load',function(){hideUnwantedControls();try{if(hasCalendarToken())setTimeout(window.loadGoogleEvents,350);}catch(e){}});
   setTimeout(hideUnwantedControls,500);
@@ -350,7 +345,7 @@
   const oldBuildDashboard=window.buildDashboard;
   window.buildDashboard=function(){if(typeof oldBuildDashboard==='function'){try{oldBuildDashboard.apply(this,arguments);}catch(e){}}try{if(typeof window.buildKPIs==='function')window.buildKPIs();}catch(e){}window.buildDashCards();setTimeout(polishDom,0);};
   const oldRenderCalendarC=window.renderCalendar;
-  window.renderCalendar=function(){if(typeof oldRenderCalendarC==='function')oldRenderCalendarC.apply(this,arguments);setTimeout(polishDom,0);};
+  
   document.addEventListener('DOMContentLoaded',()=>{injectCss();setTimeout(()=>{try{refreshViews();polishDom();}catch(e){}},500);});
   window.addEventListener('load',()=>{injectCss();setTimeout(()=>{try{refreshViews();polishDom();}catch(e){}},900);});
   if(document.body)new MutationObserver(()=>polishDom()).observe(document.body,{childList:true,subtree:true});
@@ -542,7 +537,7 @@
   window.saveCalSettings=function(){onToggle();try{toast('Kalender-Einstellungen gespeichert ✓','ok');}catch(e){}try{closePanel();}catch(e){}};
 
   const _renderCalFinal=window.renderCalendar;
-  window.renderCalendar=function(){if(typeof _renderCalFinal==='function')_renderCalFinal.apply(this,arguments);applyCSS();};
+  
 
   /* ── CHALLENGE UNDO ── */
   function myId(){try{let fu=null;try{fu=firebase&&firebase.auth&&firebase.auth().currentUser;}catch(e){}const info=window.userInfo||{};const email=String((fu&&fu.email)||info.email||info.mail||'').trim().toLowerCase();const uid=(fu&&fu.uid)||info.uid||'';return email||uid||'local-user';}catch(e){return 'local-user';}}
@@ -885,7 +880,7 @@
       return res;
     };
     fixed.__continuousRangeBars = true;
-    window.renderCalendar = fixed;
+    
   }
 
   window.addEventListener('load', () => setTimeout(renderBars, 500));

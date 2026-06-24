@@ -24,6 +24,14 @@
 
 **Verboten:** bestehende Funktionen ohne Prüfung überschreiben · doppelte Komponenten · Workarounds statt sauberer Lösungen.
 
+## Version 0.1.0320
+- **Kalender-Konsolidierung Teil 2 (renderCalendar):** Mit AST alle toten `window.renderCalendar`-Zuweisungen entfernt — `calendar-logic.js` (4 von 5), `app.js` (4), `calendarPanels.js` (1), `core/misc.js` (1), `change-post.js` (5). **Es bleibt genau EIN `renderCalendar`** = der aktive Vollersatz in `calendar-logic.js` (Z. ~562), der je nach Ansicht `renderMonth`/`renderYear` aufruft. Von 16 auf 1.
+- Nur Zuweisungen entfernt (Null Laufzeit-Effekt, da von 562 überschrieben); CSS-Injektionen/Setup der IIFEs (inkl. `setCalView`/`navigate`/`goToday`/`openCalendarSettings`, Style-Injektion, Initial-Render) unangetastet. `node --check` auf allen 5 Dateien grün; `renderMonth` FINAL (cfx) intakt.
+- Hinweis: `setCalView`/`navigate`/`goToday` sind noch je 2× definiert (vorbestehend, nicht von renderCalendar) — Kandidaten für einen späteren Batch. Ebenso: Kalender-Logik aus `app.js`/`change-post.js` nach `core/calendar/` ziehen.
+- Cache-Busting ?v=0.1.0320. Enthält 0.1.0317–0.1.0319.
+- **Noch nicht live geprüft** — bei Auffälligkeiten am Kalender auf Vorversion zurückrollen (Backups in /tmp/rcbak vorhanden).
+- Geaendert: `features/calendar/calendar-logic.js`, `app.js`, `features/calendar/calendarPanels.js`, `core/misc.js`, `change-post.js`, `index.html`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0319
 - **Fehler „Unsupported cache mode: reload" behoben** (App-seitig). Zwei Ursachen entschärft:
   1. `githubAdminAuthHeaders`: erzwungener Token-Refresh `getIdToken(true)` fällt bei Fehler auf das zwischengespeicherte Token (`getIdToken()`) zurück — der Browser lehnte den Refresh-Fetch mit „reload" ab und blockierte so /files und /upload.
