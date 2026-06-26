@@ -24,6 +24,16 @@
 
 **Verboten:** bestehende Funktionen ohne Prüfung überschreiben · doppelte Komponenten · Workarounds statt sauberer Lösungen.
 
+## Version 0.1.0326 — Freigabe-Code nur einmal eingeben
+- **Freigabe-Code wird jetzt dauerhaft gemerkt** (localStorage statt nur Session). Effekt: einmal eingeben, danach nie wieder — auch nach App-Neustart.
+- UI: Solange kein Code gespeichert ist, erscheint das Eingabefeld. Sobald gespeichert, zeigt das Panel „Freigabe-Code gespeichert ✓" + einen kleinen **„Ändern"**-Knopf (löscht den gespeicherten Code, Feld erscheint wieder). Beim „Auf GitHub übertragen" wird der gemerkte Code automatisch verwendet — keine erneute Eingabe.
+- `readGithubUpdateSecret`/`writeGithubUpdateSecret` lesen/schreiben jetzt zusätzlich localStorage; `commitGithubZip` nutzt bei verstecktem Feld automatisch den gespeicherten Code (Fallback war schon vorhanden).
+- Hinweis (bewusster Trade-off, vom Nutzer gewünscht): Der Code liegt damit lokal auf dem Gerät gespeichert.
+- Enthält die Benachrichtigungs-Schalter aus 0.1.0325 (Friseur-/Geburtstags-Erinnerung).
+- Cache-Busting ?v=0.1.0326.
+- Geaendert: `features/settings/settingsPanel.js`, `index.html`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check`.
+
 ## Version 0.1.0325 — Zwei fehlende Benachrichtigungs-Schalter ergänzt
 - **Friseur-Erinnerung** und **Geburtstags-Erinnerung** im Benachrichtigungs-Bereich hatten keinen An/Aus-Schalter (anders als Pollen/Regen/Feiertage). Beide ergänzt — funktionsfähig, nicht nur sichtbar:
   - Je ein eigenes Benachrichtigungs-Flag (Standard: an), bewusst getrennt vom Friseur-*Tracker* (`friseurEnabled`), damit kein Doppel-Schalter entsteht: `change_v1_friseur_notifications`, `change_v1_birthday_notifications`.

@@ -1,3 +1,7 @@
+## Version 0.1.0326 — Freigabe-Code merken
+- Freigabe-Code wird dauerhaft gemerkt (localStorage): einmal eingeben, nie wieder. „Ändern"-Knopf zum Zurücksetzen. Übertragen nutzt den gespeicherten Code automatisch.
+- Cache-Busting ?v=0.1.0326.
+
 ## Version 0.1.0325 — Benachrichtigungs-Schalter
 - Friseur-Erinnerung und Geburtstags-Erinnerung haben jetzt An/Aus-Schalter (eigene Flags, Standard an), funktionsfähig an die Benachrichtigungs-Logik gekoppelt.
 - Restliche Untertexte im Benachrichtigungs-Bereich entfernt.
