@@ -367,28 +367,34 @@
     var pollenHours = weatherAlertHours('change_v1_pollen_alert_hours', 2);
     var rainCard = settingsFeatureCard(
       '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17a4 4 0 0 1 0-8 5.5 5.5 0 0 1 10.6-1.3A3.8 3.8 0 0 1 18 17z"></path><path d="M8 20l-1 2M12 20l-1 2M16 20l-1 2"></path></svg>',
-      'Regenwarnung', 'WETTER', 'ok', 'Warnt, wenn Regen erwartet wird.',
+      'Regenwarnung', 'WETTER', 'ok', '',
       '<label class="switch"><input type="checkbox" id="set-rain-alerts" '+(rainOn ? 'checked' : '')+'><span class="slider"></span></label>',
       rainOn ? hoursSelect('set-rain-hours', rainHours) : ''
     );
     var pollenCard = settingsFeatureCard(
       '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9"></path><path d="M12 13c-4 0-7-2-7-6 4 0 7 2 7 6z"></path><path d="M12 11c1-3 4-5 7-5 0 4-3 6-7 6"></path></svg>',
-      'Pollenwarnung', 'POLLEN', 'ok', 'Benachrichtigt nur bei starker Belastung.',
+      'Pollenwarnung', 'POLLEN', 'ok', '',
       '<label class="switch"><input type="checkbox" id="set-pollen-alerts" '+(pollenWarnOn ? 'checked' : '')+'><span class="slider"></span></label>',
       pollenWarnOn ? hoursSelect('set-pollen-hours', pollenHours) : ''
     );
 
     var friseurWeeks = dashboardNumber('getFriseurWeeks', ['change_v1_friseur_weeks','friseur_weeks'], 3);
     var friseurBody = featureField('Erinnerung nach', '<select class="finput" id="set-friseur-weeks">'+[2,3,4,5,6,8].map(function(n){ return '<option value="'+n+'" '+(n === friseurWeeks ? 'selected' : '')+'>'+n+' Wochen</option>'; }).join('')+'</select>', '');
+    var friseurNotifOn = readBoolMulti(['change_v1_friseur_notifications'], true);
     var friseurCard = settingsFeatureCard(
       '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6.5" cy="6.5" r="2.8"></circle><circle cx="6.5" cy="17.5" r="2.8"></circle><path d="M8.7 8.4 L20 16.5M8.7 15.6 L20 7.5"></path></svg>',
-      'Friseur-Erinnerung', 'FRISEUR', 'ok', 'Erinnert an den nächsten Termin.', '', friseurBody
+      'Friseur-Erinnerung', 'FRISEUR', 'ok', '',
+      '<label class="switch"><input type="checkbox" id="set-friseur-notif" '+(friseurNotifOn ? 'checked' : '')+'><span class="slider"></span></label>',
+      friseurBody
     );
 
     var birthdayDays = Math.max(0, Math.min(365, parseInt(dashboardNumber('getBirthdayNotificationDays', ['change_v1_birthday_notification_days','birthday_notification_days'], 1), 10) || 0));
+    var birthdayNotifOn = readBoolMulti(['change_v1_birthday_notifications','birthday_notifications'], true);
     var birthdayCard = settingsFeatureCard(
       '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16v-7H4z"></path><path d="M4 13c0-2 1.6-3 4-3s4 1 4 3M12 13c0-2 1.6-3 4-3s4 1 4 3"></path><path d="M12 10V7"></path><circle cx="12" cy="5" r="1.4"></circle></svg>',
-      'Geburtstags-Erinnerung', '', 'ok', '', '', birthdayDaysSelect('set-birthday-notification-days', birthdayDays)
+      'Geburtstags-Erinnerung', '', 'ok', '',
+      '<label class="switch"><input type="checkbox" id="set-birthday-notif" '+(birthdayNotifOn ? 'checked' : '')+'><span class="slider"></span></label>',
+      birthdayDaysSelect('set-birthday-notification-days', birthdayDays)
     );
 
     var holidayOn = holidayNotificationsEnabled();
@@ -803,7 +809,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0324';
+  var APP_VERSION = '0.1.0325';
 
 
 
@@ -2238,6 +2244,20 @@
       try{ if(window.calendarSettings) window.calendarSettings.holidayNotifications = on; }catch(e){}
       try{ if(typeof window.saveChangeSettings === 'function' && readDatabaseSyncEnabled()) window.saveChangeSettings(true); }catch(e){}
       try{ if(typeof window.checkNotifications === 'function') window.checkNotifications(); }catch(e){}
+      refreshSameTab('push');
+    });
+    var friseurNotif = $('set-friseur-notif'); if(friseurNotif) friseurNotif.addEventListener('change', function(){
+      writeBoolMulti(['change_v1_friseur_notifications'], !!friseurNotif.checked);
+      try{ if(typeof window.saveChangeSettings === 'function' && readDatabaseSyncEnabled()) window.saveChangeSettings(true); }catch(e){}
+      try{ if(typeof window.checkNotifications === 'function') window.checkNotifications(); }catch(e){}
+      try{ if(window.ChangeNotificationBell && typeof window.ChangeNotificationBell.render === 'function') window.ChangeNotificationBell.render(); }catch(e){}
+      refreshSameTab('push');
+    });
+    var birthdayNotif = $('set-birthday-notif'); if(birthdayNotif) birthdayNotif.addEventListener('change', function(){
+      writeBoolMulti(['change_v1_birthday_notifications','birthday_notifications'], !!birthdayNotif.checked);
+      try{ if(typeof window.saveChangeSettings === 'function' && readDatabaseSyncEnabled()) window.saveChangeSettings(true); }catch(e){}
+      try{ if(typeof window.checkNotifications === 'function') window.checkNotifications(); }catch(e){}
+      try{ if(window.ChangeNotificationBell && typeof window.ChangeNotificationBell.render === 'function') window.ChangeNotificationBell.render(); }catch(e){}
       refreshSameTab('push');
     });
     var runDataAudit = $('run-data-audit'); if(runDataAudit) runDataAudit.addEventListener('click', function(){ dataAuditExpanded = true; refreshSameTab('app'); });

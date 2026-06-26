@@ -1,3 +1,8 @@
+## Version 0.1.0325 — Benachrichtigungs-Schalter
+- Friseur-Erinnerung und Geburtstags-Erinnerung haben jetzt An/Aus-Schalter (eigene Flags, Standard an), funktionsfähig an die Benachrichtigungs-Logik gekoppelt.
+- Restliche Untertexte im Benachrichtigungs-Bereich entfernt.
+- Cache-Busting ?v=0.1.0325.
+
 ## Version 0.1.0324 — Untertexte + Architektur-Doku
 - Einstellungen: 8 erklärende Untertexte entfernt (Charta: keine Untertexte).
 - Kalender-Architektur am Live-Code dokumentiert: angezeigte Ansicht = neue `cal-month-block`-Schicht; `window.renderMonth/renderCalendar` = Legacy/Brücken. Regel: keine Massen-Löschung, nur einzeln + live verifiziert.

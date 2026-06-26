@@ -24,6 +24,16 @@
 
 **Verboten:** bestehende Funktionen ohne Prüfung überschreiben · doppelte Komponenten · Workarounds statt sauberer Lösungen.
 
+## Version 0.1.0325 — Zwei fehlende Benachrichtigungs-Schalter ergänzt
+- **Friseur-Erinnerung** und **Geburtstags-Erinnerung** im Benachrichtigungs-Bereich hatten keinen An/Aus-Schalter (anders als Pollen/Regen/Feiertage). Beide ergänzt — funktionsfähig, nicht nur sichtbar:
+  - Je ein eigenes Benachrichtigungs-Flag (Standard: an), bewusst getrennt vom Friseur-*Tracker* (`friseurEnabled`), damit kein Doppel-Schalter entsteht: `change_v1_friseur_notifications`, `change_v1_birthday_notifications`.
+  - Kopplung: `features/friseur/friseur.js` → `checkFriseurNotif()` respektiert `change_v1_friseur_notifications`. `core/notifications/notificationCenter.js` → `buildBirthdayNotifications()` respektiert `change_v1_birthday_notifications`.
+  - UI: Schalter in den beiden Karten (`set-friseur-notif`, `set-birthday-notif`) + Change-Listener (speichern, Sync, `checkNotifications`, Glocke neu rendern) nach dem Muster des Feiertags-Schalters.
+- Konsistenz: restliche Untertexte im Benachrichtigungs-Bereich (Pollen/Regen/Friseur) entfernt (Charta: keine Untertexte; ergänzt 0.1.0324).
+- Cache-Busting ?v=0.1.0325.
+- Geaendert: `features/settings/settingsPanel.js`, `features/friseur/friseur.js`, `core/notifications/notificationCenter.js`, `index.html`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check` (alle 3). Live-Verifikation: Schalter sichtbar + schalten Benachrichtigungen wirklich.
+
 ## Version 0.1.0324 — Untertexte entfernt + Kalender-Architektur dokumentiert
 - **Charta-Bereinigung (UI):** Alle erklärenden Untertexte aus den Einstellungs-Schaltern entfernt (Profil, Feiertage, Challengepunkte, Kalenderwochen, Wetter, Urlaub, Auto-Challenges, Daten-Audit) — 8 Stück, je auf `''` gesetzt. Titel sind selbsterklärend (Charta: „keine Untertexte"). `settingsFeatureCard` rendert leeren Untertext sauber als nichts.
 - **WICHTIG — Kalender-Architektur am Live-Code verifiziert (Wartbarkeit):** Eine Live-Inspektion (`window.renderMonth/renderCalendar.toString()` + DOM-Klassen) zeigt:

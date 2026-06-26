@@ -213,8 +213,10 @@
     if(typeof window.buildDashCards === 'function') window.buildDashCards();
     else if(typeof window.buildDashboard === 'function') window.buildDashboard();
   }
+  function friseurNotifOn(){ try{ var r = readRaw('change_v1_friseur_notifications'); return (r == null || r === '') ? true : (r !== 'false' && r !== '0' && r !== false); }catch(e){ return true; } }
   function checkFriseurNotif(){
     if(!isEnabled()) return;
+    if(!friseurNotifOn()) return;
     const lastDate = findLastFriseur();
     if(!lastDate) return;
     const days  = daysSince(lastDate);

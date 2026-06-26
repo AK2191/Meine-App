@@ -225,8 +225,10 @@
     }catch(e){ return []; }
   }
 
+  function birthdayNotifOn(){ try{ var r = localStorage.getItem('change_v1_birthday_notifications'); if(r==null) r = localStorage.getItem('birthday_notifications'); return (r==null||r==='') ? true : (r !== 'false' && r !== '0'); }catch(e){ return true; } }
   function buildBirthdayNotifications(){
     try{
+      if(!birthdayNotifOn()) return [];
       if(!window.ChangeBirthdays || typeof window.ChangeBirthdays.notificationItems !== 'function') return [];
       return window.ChangeBirthdays.notificationItems() || [];
     }catch(e){ return []; }
