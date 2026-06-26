@@ -24,6 +24,18 @@
 
 **Verboten:** bestehende Funktionen ohne Prüfung überschreiben · doppelte Komponenten · Workarounds statt sauberer Lösungen.
 
+## Version 0.1.0324 — Untertexte entfernt + Kalender-Architektur dokumentiert
+- **Charta-Bereinigung (UI):** Alle erklärenden Untertexte aus den Einstellungs-Schaltern entfernt (Profil, Feiertage, Challengepunkte, Kalenderwochen, Wetter, Urlaub, Auto-Challenges, Daten-Audit) — 8 Stück, je auf `''` gesetzt. Titel sind selbsterklärend (Charta: „keine Untertexte"). `settingsFeatureCard` rendert leeren Untertext sauber als nichts.
+- **WICHTIG — Kalender-Architektur am Live-Code verifiziert (Wartbarkeit):** Eine Live-Inspektion (`window.renderMonth/renderCalendar.toString()` + DOM-Klassen) zeigt:
+  - Die **angezeigte** Monats-/Wochenansicht nutzt die Klasse `cal-month-block` — eine **neuere Kalender-Schicht**.
+  - `window.renderMonth` ist der **Legacy-cfx-Renderer** (~4054 Zeichen, erzeugt `cfx-month-grid`) — dessen Ausgabe ist NICHT die sichtbare Ansicht.
+  - `window.renderCalendar` ist nur ein **~118-Zeichen-Brücken-Stub** (zur Laufzeit gesetzt), nicht der große 562-Zeilen-Block in calendar-logic.js.
+  - **Erkenntnis zum 0.1.0318–0321-Crash:** Das Massen-Entfernen „toter" `window.renderMonth/renderCalendar/setCalView/navigate/goToday`-Zuweisungen hat die App lahmgelegt, weil einige davon **zur Laufzeit gesetzte Brücken** zur neuen Kalender-Schicht sind — keine harmlosen Lade-Duplikate. `node --check` erkennt das nicht.
+  - **VERBINDLICHE REGEL:** Kalender-`window.X`-„Duplikate" NIEMALS im Block entfernen. Falls konsolidiert wird: **eine** Zuweisung pro Version, deployen, und **live im Browser verifizieren** (Renderer-Fingerprint + Kalender rendert + Konsole sauber), bevor die nächste kommt. Die Legacy-Schicht bleibt vorerst stehen (harmlos, aber tragend).
+- Cache-Busting ?v=0.1.0324.
+- Geaendert: `features/settings/settingsPanel.js`, `index.html`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check`. Untertext-Entfernung live zu verifizieren.
+
 ## Version 0.1.0323 — Worker repariert + Doku
 - **Cloudflare-Worker repariert (Kernursache gefunden):** Die HTTP-500 auf `/files` und `/upload` kamen NICHT vom GitHub-App-Token (frühere Fehlannahme), sondern von einer einzigen Zeile im Worker: `fetch(FIREBASE_JWKS_URL, {cache: 'reload'})`. Cloudflare Workers unterstützen `cache:'reload'` nicht → jede authentifizierte Anfrage stürzte schon beim Laden der Firebase-Schlüssel ab. Fix: `cache: 'no-store'`.
 - **Verifiziert (Live):** Nach dem Worker-Deploy liefert `GET /files` jetzt `200 / ok:true / 88 Dateien`. Damit ist bewiesen, dass Token-Prüfung, GitHub-App-Token-Erzeugung und GitHub-Abfrage alle funktionieren. **Der In-App-Upload ist wieder nutzbar** — der updates/-Notweg wird nicht mehr gebraucht.

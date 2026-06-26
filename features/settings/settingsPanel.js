@@ -309,7 +309,7 @@
       'Mitspieler',
       activeCount + ' AKTIV',
       'ok',
-      'Automatisch über Google-Login erkannt.',
+      '',
       '',
       rows
     );
@@ -418,7 +418,7 @@
         'Feiertage',
         options.showHolidays ? 'AKTIV' : 'AUS',
         options.showHolidays ? 'ok' : 'off',
-        'Kleine Feiertags-Hinweise direkt am Tag.',
+        '',
         '<label class="switch"><input type="checkbox" id="set-show-holidays" '+(options.showHolidays ? 'checked' : '')+'><span class="slider"></span></label>',
         holidaysBody
       )
@@ -427,7 +427,7 @@
         'Challengepunkte',
         options.showChallengeDots ? 'AKTIV' : 'AUS',
         options.showChallengeDots ? 'ok' : 'off',
-        'Zeigt erledigte Punkte nur als kleines Badge unten rechts.',
+        '',
         '<label class="switch"><input type="checkbox" id="set-show-points" '+(options.showChallengeDots ? 'checked' : '')+'><span class="slider"></span></label>',
       )
       + settingsFeatureCard(
@@ -435,7 +435,7 @@
         'Kalenderwochen',
         options.showWeekNumbers ? 'AKTIV' : 'AUS',
         options.showWeekNumbers ? 'ok' : 'off',
-        'Zeigt KW dezent für Monats- und Jahresplanung.',
+        '',
         '<label class="switch"><input type="checkbox" id="set-show-kw" '+(options.showWeekNumbers ? 'checked' : '')+'><span class="slider"></span></label>',
         ''
       )
@@ -547,7 +547,7 @@
         'Wetter',
         wetterOn ? 'AKTIV' : 'AUS',
         wetterOn ? 'ok' : 'off',
-        'Zeigt Wetter kompakt im Dashboard.',
+        '',
         '<label class="switch"><input type="checkbox" id="set-weather" '+(wetterOn ? 'checked' : '')+'><span class="slider"></span></label>',
         wetterBody
       )
@@ -606,7 +606,7 @@
         'Urlaub',
         urlaubOn ? 'AKTIV' : 'AUS',
         urlaubOn ? 'ok' : 'off',
-        'Zeigt geplante Urlaubstage und Resturlaub.',
+        '',
         '<label class="switch"><input type="checkbox" id="set-urlaub" '+(urlaubOn ? 'checked' : '')+'><span class="slider"></span></label>',
         urlaubBody
       )
@@ -797,13 +797,13 @@
         'Auto-Challenges',
         auto ? 'AKTIV' : 'AUS',
         auto ? 'ok' : 'off',
-        'Erstellt jeden Tag genau einen sauberen Aufgaben-Satz.',
+        '',
         '<label class="switch"><input type="checkbox" id="set-auto" '+(auto ? 'checked' : '')+'><span class="slider"></span></label>',
         body
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0323';
+  var APP_VERSION = '0.1.0324';
 
 
 
@@ -1850,7 +1850,7 @@
       'Daten-Audit',
       dataAuditExpanded ? 'GEPRUEFT' : 'BEREIT',
       dataAuditExpanded ? 'ok' : 'off',
-      'Lokaler Read-only-Ueberblick ueber Events, Punkte, Challenges und Settings.',
+      '',
       '',
       dataAuditBody(dataAuditExpanded)
     );

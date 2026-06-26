@@ -1,3 +1,8 @@
+## Version 0.1.0324 — Untertexte + Architektur-Doku
+- Einstellungen: 8 erklärende Untertexte entfernt (Charta: keine Untertexte).
+- Kalender-Architektur am Live-Code dokumentiert: angezeigte Ansicht = neue `cal-month-block`-Schicht; `window.renderMonth/renderCalendar` = Legacy/Brücken. Regel: keine Massen-Löschung, nur einzeln + live verifiziert.
+- Cache-Busting ?v=0.1.0324.
+
 ## Version 0.1.0323 — Worker repariert
 - Cloudflare-Worker-500 behoben: Ursache war `cache:'reload'` im JWKS-Fetch (von Cloudflare nicht unterstützt) → `no-store`. Live verifiziert: GET /files = 200, 88 Dateien. In-App-Upload wieder nutzbar.
 - Repo-Worker-Quelle an Live angeglichen. Keine Kalender-/App-Code-Änderungen.
