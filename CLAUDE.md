@@ -24,6 +24,15 @@
 
 **Verboten:** bestehende Funktionen ohne Prüfung überschreiben · doppelte Komponenten · Workarounds statt sauberer Lösungen.
 
+## Version 0.1.0323 — Worker repariert + Doku
+- **Cloudflare-Worker repariert (Kernursache gefunden):** Die HTTP-500 auf `/files` und `/upload` kamen NICHT vom GitHub-App-Token (frühere Fehlannahme), sondern von einer einzigen Zeile im Worker: `fetch(FIREBASE_JWKS_URL, {cache: 'reload'})`. Cloudflare Workers unterstützen `cache:'reload'` nicht → jede authentifizierte Anfrage stürzte schon beim Laden der Firebase-Schlüssel ab. Fix: `cache: 'no-store'`.
+- **Verifiziert (Live):** Nach dem Worker-Deploy liefert `GET /files` jetzt `200 / ok:true / 88 Dateien`. Damit ist bewiesen, dass Token-Prüfung, GitHub-App-Token-Erzeugung und GitHub-Abfrage alle funktionieren. **Der In-App-Upload ist wieder nutzbar** — der updates/-Notweg wird nicht mehr gebraucht.
+- Repo-Worker-Quelle `scripts/changeGithubUpdateWorker.js` enthält jetzt den Fix (Zeile 76, `no-store`), passt also zum Live-Worker. Hinweis: Der Worker läuft auf Cloudflare und wird dort separat deployed (nicht über die App/GitHub Pages).
+- Lehre (Worker): In Cloudflare Workers sind nur `cache:'no-store'`/`'no-cache'`/default erlaubt — niemals `'reload'`.
+- Keine Code-Änderungen an Kalender/App in dieser Version (nach der 0.1.0318–0321-Regression bewusst nur Sicheres). Re-Konsolidierung künftig nur einzeln + mit Live-Browser-Verifikation.
+- Cache-Busting ?v=0.1.0323.
+- Geaendert: `scripts/changeGithubUpdateWorker.js`, `index.html`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0322 — WIEDERHERSTELLUNG (Regression behoben)
 - **Notfall-Rollback:** Die Kalender-Konsolidierung (0.1.0318/0320/0321) hatte die Live-App lahmgelegt („nichts mehr zu öffnen"). Ursache: Beim Entfernen toter Zuweisungen aus teils minifiziertem Code entstand an mindestens einer Stelle ein Laufzeit-Fehler durch fehlendes Semikolon (ASI) — beim Laden bricht dann das ganze Skript ab. `node --check` (nur Syntax) erkennt das nicht.
 - **Maßnahme:** `app.js`, `features/calendar/calendar-logic.js`, `core/misc.js`, `features/calendar/calendarPanels.js`, `change-post.js` aus Backups auf den funktionierenden Vor-Konsolidierungs-Stand zurückgesetzt. Behalten: harmlose Kalender-Regel „max 2 + +X mehr" und der 0.1.0319-Cache-Fix in `settingsPanel.js`.

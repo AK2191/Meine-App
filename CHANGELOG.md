@@ -1,3 +1,8 @@
+## Version 0.1.0323 — Worker repariert
+- Cloudflare-Worker-500 behoben: Ursache war `cache:'reload'` im JWKS-Fetch (von Cloudflare nicht unterstützt) → `no-store`. Live verifiziert: GET /files = 200, 88 Dateien. In-App-Upload wieder nutzbar.
+- Repo-Worker-Quelle an Live angeglichen. Keine Kalender-/App-Code-Änderungen.
+- Cache-Busting ?v=0.1.0323.
+
 ## Version 0.1.0322 — Wiederherstellung
 - Regression behoben: App startete nach Kalender-Konsolidierung nicht mehr (ASI-Laufzeitfehler durch ersatzloses Entfernen toter Zuweisungen). Betroffene Dateien auf funktionierenden Stand zurückgesetzt. max-2-Regel und 0319-Cache-Fix behalten.
 - Cache-Busting ?v=0.1.0322.

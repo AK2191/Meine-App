@@ -73,7 +73,7 @@ async function verifyFirebaseIdToken(idToken){
   const payload = decodeJwtJson(parts[1]);
   if(header.alg !== 'RS256' || !header.kid) throw new HttpError(401, 'Firebase-ID-Token hat eine ungueltige Signatur.');
 
-  const jwksResponse = await fetch(FIREBASE_JWKS_URL, {cache: 'reload'});
+  const jwksResponse = await fetch(FIREBASE_JWKS_URL, {cache: 'no-store'});
   if(!jwksResponse.ok) throw new HttpError(503, 'Firebase-Schluessel konnten nicht geladen werden.');
   const jwks = await jwksResponse.json();
   const key = Array.isArray(jwks.keys) ? jwks.keys.find((item) => item.kid === header.kid) : null;
