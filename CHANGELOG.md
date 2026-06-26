@@ -1,3 +1,7 @@
+## Version 0.1.0327 — Untertexte komplett entfernt
+- Restliche erklärende Untertexte entfernt (Geburtstag, Sync-Status, Push-Fallback). UI-Untertext-Bereinigung abgeschlossen.
+- Cache-Busting ?v=0.1.0327.
+
 ## Version 0.1.0326 — Freigabe-Code merken
 - Freigabe-Code wird dauerhaft gemerkt (localStorage): einmal eingeben, nie wieder. „Ändern"-Knopf zum Zurücksetzen. Übertragen nutzt den gespeicherten Code automatisch.
 - Cache-Busting ?v=0.1.0326.

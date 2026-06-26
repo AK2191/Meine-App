@@ -24,6 +24,13 @@
 
 **Verboten:** bestehende Funktionen ohne Prüfung überschreiben · doppelte Komponenten · Workarounds statt sauberer Lösungen.
 
+## Version 0.1.0327 — Untertext-Bereinigung abgeschlossen
+- Letzte erklärende Untertexte in den Einstellungen entfernt (Charta: keine Untertexte): Geburtstags-Dropdown-Beschreibung, Sync-Status-Karte, statischer Push-Fallback-Text. Dynamische Zustands-Infos (z. B. Push-`detail`, Sync-„verbindet…") bleiben erhalten — das sind Status, keine Untertexte.
+- Damit ist die UI-Untertext-Bereinigung (begonnen 0.1.0324/0325) vollständig.
+- Cache-Busting ?v=0.1.0327.
+- Geaendert: `features/settings/settingsPanel.js`, `index.html`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check`.
+
 ## Version 0.1.0326 — Freigabe-Code nur einmal eingeben
 - **Freigabe-Code wird jetzt dauerhaft gemerkt** (localStorage statt nur Session). Effekt: einmal eingeben, danach nie wieder — auch nach App-Neustart.
 - UI: Solange kein Code gespeichert ist, erscheint das Eingabefeld. Sobald gespeichert, zeigt das Panel „Freigabe-Code gespeichert ✓" + einen kleinen **„Ändern"**-Knopf (löscht den gespeicherten Code, Feld erscheint wieder). Beim „Auf GitHub übertragen" wird der gemerkte Code automatisch verwendet — keine erneute Eingabe.
