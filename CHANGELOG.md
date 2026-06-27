@@ -1,3 +1,11 @@
+## Version 0.1.0338 - Daten-Audit: Unbekannt aufklappbar
+- "Unbekannt"-Kachel im Daten-Audit ist jetzt anklickbar (Chevron) und zeigt darunter die echten Schluesselnamen als Liste (mono, scrollbar). Nur sichtbar, wenn Anzahl > 0.
+- Quelle der Liste sind die `unknownChangeKeys` aus `ChangeDataModel.auditStorage` (gleiche Klassifizierung wie die Zahl, keine doppelte Logik). Report reicht die Namen jetzt durch (`unknownKeys`).
+- Reine Anzeige, read-only: nichts wird gelesen ausser localStorage-Keys, nichts geloescht/migriert/synchronisiert.
+- Neuer State `dataAuditUnknownExpanded`; Toggle ueber `refreshSameTab('app')` wie der Audit-Button.
+- Keine Kalender-, Dashboard-, Challenge-, Sync- oder Firebase-Logik beruehrt.
+- Cache-Busting ?v=0.1.0338.
+
 ## Version 0.1.0337 - Daten-Audit im Entwurfs-Stil
 - Daten-Audit (Einstellungen -> App & Sicherheit) auf das Layout aus "Einstellungen Komplett" umgebaut: drei Stat-Karten (Challenges, Mitspieler, Pollen-Tage), Events/Punkte-Leiste mit "noch leer"-Hinweis, Storage-Diagnose-Grid mit Farbcodes (Canonical/Cache/Legacy/Unbekannt) sowie Snapshot- und DataModel-Zeile.
 - Reine Darstellung: alle Werte kommen unveraendert aus `dataAuditReport()`. Keine neue Datenlogik, keine Migration, kein Schreibzugriff - das Audit bleibt read-only.

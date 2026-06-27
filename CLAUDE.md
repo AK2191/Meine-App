@@ -24,6 +24,17 @@
 
 **Verboten:** bestehende Funktionen ohne Prüfung überschreiben · doppelte Komponenten · Workarounds statt sauberer Lösungen.
 
+## Version 0.1.0338 - Daten-Audit: Unbekannt aufklappbar
+- "Unbekannt"-Kachel anklickbar (Chevron) -> klappt darunter die echten Schluesselnamen als Liste auf (mono, scrollbar, max-height). Nur wenn Anzahl > 0.
+- Liste kommt aus `unknownChangeKeys` von `ChangeDataModel.auditStorage` (gleiche Klassifizierung wie die Zahl, keine Doppel-Logik). `dataAuditReport()` reicht die Namen als `unknownKeys` (sortiert) durch.
+- Read-only: nur localStorage-Keys gelesen, nichts geloescht/migriert/synchronisiert.
+- Neuer State `dataAuditUnknownExpanded`; Toggle-Handler `audit-unknown-toggle` via `refreshSameTab('app')`.
+- Helfer: `auditUnknownTile`, `auditUnknownPanel`, `auditChevron`. Styling in `features/settings/settingsPanel.css`.
+- Keine Kalender-, Dashboard-, Challenge-, Sync- oder Firebase-Logik beruehrt.
+- Cache-Busting ?v=0.1.0338.
+- Geaendert: `features/settings/settingsPanel.js`, `features/settings/settingsPanel.css`, `features/pollen/pollenView.js`, `index.html`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check` (settingsPanel.js, pollenView.js).
+
 ## Version 0.1.0337 - Daten-Audit im Entwurfs-Stil
 - Daten-Audit (Einstellungen -> App & Sicherheit) auf das Layout aus "Einstellungen Komplett" umgebaut: drei Stat-Karten (Challenges, Mitspieler, Pollen-Tage), Events/Punkte-Leiste mit "noch leer"-Hinweis, Storage-Diagnose-Grid mit Farbcodes (Canonical/Cache/Legacy/Unbekannt) sowie Snapshot- und DataModel-Zeile.
 - Reine Darstellung: alle Werte stammen unveraendert aus `dataAuditReport()`. Keine neue Datenlogik, keine Migration, kein Schreibzugriff - read-only.

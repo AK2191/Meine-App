@@ -720,6 +720,7 @@
         cachePresent: Array.isArray(keys.cachePresent) ? keys.cachePresent.length : 0,
         unknownChangeKeys: Array.isArray(keys.unknownChangeKeys) ? keys.unknownChangeKeys.length : 0
       },
+      unknownKeys: Array.isArray(keys.unknownChangeKeys) ? keys.unknownChangeKeys.slice().sort() : [],
       settingsSnapshot: {
         present: snapshotPresent || !!(settingsAudit && settingsAudit.hasSnapshot),
         updatedAtLocal: (snapshot && snapshot.updatedAtLocal) || (settingsAudit && settingsAudit.updatedAtLocal) || ''
@@ -747,6 +748,27 @@
   function auditInfoIcon(){
     return '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--st-faint)" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 8h.01M11 12h1v4h1"></path></svg>';
   }
+  function auditChevron(){
+    return '<svg class="change-audit-diag-chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+  }
+  function auditUnknownTile(count, open){
+    count = parseInt(count, 10) || 0;
+    if(count <= 0) return auditDiag('Unbekannt', count, 'unknown');
+    return '<button type="button" id="audit-unknown-toggle" class="change-audit-diag-item change-audit-diag-btn tone-unknown'+(open ? ' is-open' : '')+'" aria-expanded="'+(open ? 'true' : 'false')+'">'
+      + '<span class="change-audit-diag-name">Unbekannt</span>'
+      + '<span class="change-audit-diag-right"><span class="change-audit-diag-val">'+esc(count)+'</span>'+auditChevron()+'</span>'
+      + '</button>';
+  }
+  function auditUnknownPanel(list, open){
+    if(!open) return '';
+    list = Array.isArray(list) ? list : [];
+    if(!list.length){
+      return '<div class="change-audit-unknown-panel"><div class="change-audit-unknown-empty">Keine Schluessel auflistbar (DataModel nicht geladen).</div></div>';
+    }
+    var rows = '';
+    for(var i=0;i<list.length;i++){ rows += '<div class="change-audit-unknown-item">'+esc(list[i])+'</div>'; }
+    return '<div class="change-audit-unknown-panel">'+rows+'</div>';
+  }
   function dataAuditBody(expanded){
     if(!expanded){
       return '<div class="change-feature-note">Liest nur lokale Zaehler und Speicher-Keys. Es wird nichts geloescht, migriert oder synchronisiert.</div>'
@@ -758,6 +780,8 @@
     var snap = report.settingsSnapshot || {};
     var events = parseInt(counts.events, 10) || 0;
     var points = parseInt(counts.challengeCompletions, 10) || 0;
+    var unknownCount = parseInt(keys.unknownChangeKeys, 10) || 0;
+    var unknownOpen = dataAuditUnknownExpanded && unknownCount > 0;
     var emptyFlag = (events + points) > 0 ? '' : '<span class="change-audit-meta-flag">noch leer</span>';
     var snapRow = snap.present
       ? '<div class="change-audit-info-row">'+auditTickIcon()+'Settings-Snapshot vorhanden'+(snap.updatedAtLocal ? ' · <span class="change-audit-mono">'+esc(snap.updatedAtLocal)+'</span>' : '')+'</div>'
@@ -781,8 +805,9 @@
       +   auditDiag('Canonical', keys.canonicalPresent, 'canonical')
       +   auditDiag('Cache', keys.cachePresent, 'cache')
       +   auditDiag('Legacy', keys.legacyPresent, 'legacy')
-      +   auditDiag('Unbekannt', keys.unknownChangeKeys, 'unknown')
+      +   auditUnknownTile(unknownCount, unknownOpen)
       + '</div>'
+      + auditUnknownPanel(report.unknownKeys, unknownOpen)
       + '<div class="change-audit-info">'+snapRow+modelRow+'</div>'
       + '<button class="btn btn-secondary btn-full" id="run-data-audit" type="button">Erneut prüfen</button>';
   }
@@ -829,7 +854,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0337';
+  var APP_VERSION = '0.1.0338';
 
 
 
@@ -1942,6 +1967,7 @@
   var settingsMobileDetail = false;
   var appHealthExpanded = false;
   var dataAuditExpanded = false;
+  var dataAuditUnknownExpanded = false;
   var settingsScrollState = null;
   function allowedSettingsTabs(){
     var tabs = ['profil','darstellung','push','dashboard','calendar','challenges','sync','app'];
@@ -2322,6 +2348,7 @@
       refreshSameTab('push');
     });
     var runDataAudit = $('run-data-audit'); if(runDataAudit) runDataAudit.addEventListener('click', function(){ dataAuditExpanded = true; refreshSameTab('app'); });
+    var auditUnknownToggle = $('audit-unknown-toggle'); if(auditUnknownToggle) auditUnknownToggle.addEventListener('click', function(){ dataAuditUnknownExpanded = !dataAuditUnknownExpanded; refreshSameTab('app'); });
     var runHealth = $('run-app-health'); if(runHealth) runHealth.addEventListener('click', function(){ appHealthExpanded = true; refreshSameTab('app'); });
     function setGithubZipFile(file){
       githubUpdateState.file = file || null;
