@@ -1,3 +1,12 @@
+## Version 0.1.0342 - Tagespush Phase 1: stille Token-Auffrischung
+- Vorbereitung fuer taegliche Pushes bei geschlossener App. NUR App-Seite, kein Server, kein Versand.
+- Neue Funktion `refreshPushTokenIfEnabled()` in app.js: frischt beim Start den FCM-Token still auf und schreibt ihn nach `change_push_tokens`, falls FCM rotiert hat.
+- Sicher: fragt NIE nach Erlaubnis (nur wenn bereits erteilt und Push vorher aktiv), zeigt NIE Fehler, max. 1x pro Seitenaufruf, nicht-blockierend.
+- Quota-schonend: Firestore-Write NUR bei tatsaechlich geaendertem Token.
+- Aufruf in `initFirebaseLive` nach `installForegroundPushHandler()`.
+- Nichts an Push-Empfang, Kalender, Dashboard, Challenges, Sync, Google oder Upload geaendert.
+- Cache-Busting ?v=0.1.0342.
+
 ## Version 0.1.0341 - Daten-Audit in Alltagssprache
 - Diagnose-Kacheln umbenannt (nur sichtbare Labels): Canonical -> "Aktuelle Daten", Cache -> "Zwischenspeicher", Legacy -> "Alte Daten", Unbekannt -> "Sonstiges".
 - Weitere Begriffe entschaerft: "Storage-Diagnose · X Keys" -> "Gespeicherte Daten · X Eintraege"; "DataModel ... read-only" -> "Datenformat ... nur Anzeige"; "Settings-Snapshot vorhanden/noch nicht geschrieben" -> "Einstellungen gesichert / noch nicht gesichert".

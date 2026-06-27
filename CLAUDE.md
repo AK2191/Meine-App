@@ -24,6 +24,25 @@
 
 **Verboten:** bestehende Funktionen ohne Prüfung überschreiben · doppelte Komponenten · Workarounds statt sauberer Lösungen.
 
+## Version 0.1.0342 - Tagespush Phase 1: stille Token-Auffrischung
+- Vorbereitung fuer taegliche Pushes bei geschlossener App. NUR App-Seite, kein Server, kein Versand.
+- Neue Funktion `refreshPushTokenIfEnabled()` in app.js: frischt beim Start den FCM-Token still auf und schreibt ihn nach `change_push_tokens`, falls FCM rotiert hat. Damit zeigt Firestore immer den gueltigen Token, an den der spaetere Worker sendet.
+- Sicher gebaut: fragt NIE nach Erlaubnis (nur wenn `Notification.permission==='granted'` UND Push vorher aktiv), zeigt NIE Fehler, laeuft hoechstens 1x pro Seitenaufruf, nicht-blockierend.
+- Quota-schonend: Firestore-Write NUR wenn sich der Token gegenueber `ls('fcm_token')` geaendert hat.
+- Aufruf in `initFirebaseLive` direkt nach `installForegroundPushHandler()` (db/Auth/messaging dort bereit).
+- Nichts an Push-Empfang, Kalender, Dashboard, Challenges, Sync, Google oder Upload geaendert.
+- Cache-Busting ?v=0.1.0342.
+- Geaendert: `app.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check` (app.js, pollenView.js).
+
+### Tagespush - Gesamtplan (Spark-tauglich, ohne Cloud Functions)
+- Ziel: 1 Benachrichtigung/Tag, die auch bei GESCHLOSSENER App ankommt.
+- Architektur: separater Cloudflare-Worker `change-push-worker` (getrennt vom Deploy-Worker) mit Cron 1x/Tag. Signiert via Google-Service-Account ein JWT -> Access-Token -> ruft FCM HTTP v1. Service-Account-Schluessel NUR als Worker-Secret, nie im Repo. Liest Tokens read-only aus `change_push_tokens` (nur pushEnabled), sendet, entfernt tote Tokens (FCM-Fehler "UNREGISTERED").
+- Kosten: FCM-Versand auf allen Tarifen gratis; Firestore-Lesezugriffe minimal -> bleibt im Spark-Gratisrahmen. KEIN Blaze noetig (Blaze nur bei Firebase Cloud Functions - bewusst vermieden).
+- Phasen: [1] App-Token-Auffrischung = DIESE Version (erledigt). [2] Worker-Geruest JWT->Access-Token + secret-geschuetzter Testendpunkt an EIN Geraet. [3] Verteilung an alle aktiven Tokens + Pruning. [4] Cron taeglich. [5 optional] dynamischer Inhalt / mehrere Geraete pro Person.
+- OFFENE Entscheidungen vor Phase 2: (a) Uhrzeit lokal, (b) Inhalt v1 fest vs. heutige Challenge, (c) 1 Geraet pro Person oder Handy+PC (dann Token-Doc pro Geraet statt pro E-Mail), (d) eigener Push-Worker bestaetigt.
+- Stolpersteine: iOS nur als installierte PWA (>=16.4); Android-Akkusparmodi; Cron laeuft UTC (DST-Versatz +-1h); Token-Doc aktuell 1 pro E-Mail -> zweites Geraet ueberschreibt.
+
 ## Version 0.1.0341 - Daten-Audit in Alltagssprache
 - Diagnose-Kacheln umbenannt (nur sichtbare Labels): Canonical -> "Aktuelle Daten", Cache -> "Zwischenspeicher", Legacy -> "Alte Daten", Unbekannt -> "Sonstiges".
 - Weitere Begriffe entschaerft: "Storage-Diagnose · X Keys" -> "Gespeicherte Daten · X Eintraege"; "DataModel ... read-only" -> "Datenformat ... nur Anzeige"; "Settings-Snapshot vorhanden/noch nicht geschrieben" -> "Einstellungen gesichert / noch nicht gesichert".

@@ -2165,6 +2165,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
       if(firebase.messaging && 'serviceWorker' in navigator && 'Notification' in window){ messaging=firebase.messaging(); }
       ls(FIREBASE_READY_KEY,true);
       installForegroundPushHandler();
+      try{ refreshPushTokenIfEnabled(); }catch(_e){}
       startChallengeReminderLoop();
       const startLiveFeatures = options.live === true || (options.live !== false && ls('live_sync_enabled') === true);
       if(!startLiveFeatures){
@@ -2352,6 +2353,43 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
         reg.showNotification(title,{body,icon:'./icons/icon-change-192.png',badge:'./icons/icon-change-192.png'});
       }).catch(()=>{});
     }
+  }
+  // Phase 1 (Tagespush-Vorbereitung): Frischt den FCM-Token beim Start still auf,
+  // damit der spaetere Server-Versand nicht an einem rotierten Token scheitert.
+  // Niemals nachfragen, niemals Fehler anzeigen; Firestore-Schreibzugriff NUR bei
+  // tatsaechlich geaendertem Token (Quota schonen). Laeuft hoechstens 1x pro Seitenaufruf.
+  async function refreshPushTokenIfEnabled(){
+    if(window.__changePushTokenRefreshed) return;
+    try{
+      let enabled=false;
+      try{ enabled = localStorage.getItem('change_push_enabled')==='1'; }catch(_e){}
+      try{ if(!enabled && ls('push_enabled')) enabled=true; }catch(_e){}
+      if(!enabled) return;
+      if(!('Notification' in window) || Notification.permission!=='granted') return;
+      if(!('serviceWorker' in navigator)) return;
+      if(!messaging){ if(window.firebase && firebase.messaging) messaging=firebase.messaging(); }
+      if(!messaging) return;
+      const vapid=getVapidKey();
+      if(!vapid || vapid.includes('HIER_')) return;
+      const reg=await navigator.serviceWorker.ready;
+      const token=await messaging.getToken({vapidKey:vapid, serviceWorkerRegistration:reg});
+      if(!token) return;
+      window.__changePushTokenRefreshed=true;
+      let stored='';
+      try{ stored=ls('fcm_token')||''; }catch(_e){}
+      if(token===stored) return; // unveraendert -> kein Schreibzugriff
+      ls('fcm_token', token);
+      const tokenRef=privatePushTokenDoc();
+      if(tokenRef){
+        await tokenRef.set({
+          email: currentEmail(),
+          token: token,
+          pushEnabled: true,
+          platform: navigator.userAgent || '',
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, {merge:true});
+      }
+    }catch(_e){ /* Auffrischung ist optional und darf den Start nie stoeren */ }
   }
   function startChallengeReminderLoop(){
     if(window._changeReminderLoop) return;
