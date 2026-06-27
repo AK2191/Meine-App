@@ -13,7 +13,7 @@ Diese Datei beschreibt die aktuelle Struktur der Change App und die Regeln fuer 
 - `core/settings/settingsStore.js` schreibt den Canonical-Snapshot fuer Einstellungen; bestehende Einzel-Keys bleiben fuer die UI und Legacy-Module erhalten.
 - `core/pollen/pollenStore.js` ist die zentrale lokale Datenquelle fuer Pollen-Symptomtage; Feature-UI schreibt lokale Symptome ueber den Store.
 - `core/calendar/eventStore.js` ist die zentrale lokale Datenquelle fuer Kalendertermine; Feature-UI schreibt lokale Events ueber Store/CalendarModel, nicht direkt in einzelne Storage-Keys.
-- `core/calendar/calendarOwnerAudit.js` ist ein passiver Runtime-Recorder fuer Kalender-Globals. Er dient nur der Analyse von Load-Order und finalen Ownern; er ersetzt keine Kalenderfunktion.
+- `core/calendar/calendarOwnerAudit.js` ist ein passiver Snapshot-Recorder fuer Kalender-Globals. Er dient nur der Analyse von Load-Order und finalen Aenderungspunkten; er ersetzt keine Kalenderfunktion.
 - `core/challenges/challengeStore.js` ist die zentrale lokale Datenquelle fuer Challenges, Punkte und Mitspieler; Feature-UI schreibt diese Daten ueber den Store.
 - `change-pre.js`, `change-post.js` und `app.js` sind historische Legacy-Hotspots. Sie duerfen nicht als Muster fuer neue Arbeit dienen.
 
@@ -33,10 +33,11 @@ Die aktuelle Script-Reihenfolge ist Teil der App-Architektur. Aenderungen daran 
 1. Externe Provider: Google, Firebase, Confetti.
 2. Firebase-Konfiguration.
 3. Passive Daten- und Core-Module.
-4. Legacy-Bruecken: `change-pre.js`, `change-post.js`, `app.js`.
-5. Passives Kalender-Owner-Audit nach `app.js`, vor den Kalender-Feature-Dateien.
-6. `features/`-Module.
-7. Spaete Guards: Firebase-Sync, Firestore-Guard, Interaction-Guard.
+4. Passives Kalender-Owner-Audit nach den Core-Kalenderdaten, vor `core/misc.js`.
+5. Legacy-Bruecken: `change-pre.js`, `change-post.js`, `app.js`.
+6. Kalender-Snapshot-Messpunkte nach `core/misc.js`, `change-pre.js`, `change-post.js`, `app.js`, `calendarPanels.js` und `calendar-logic.js`.
+7. `features/`-Module.
+8. Spaete Guards: Firebase-Sync, Firestore-Guard, Interaction-Guard.
 
 ## Change Rules
 

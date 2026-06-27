@@ -24,6 +24,16 @@
 
 **Verboten:** bestehende Funktionen ohne Prüfung überschreiben · doppelte Komponenten · Workarounds statt sauberer Lösungen.
 
+## Version 0.1.0330 - Kalender-Snapshot-Audit
+- Kalender-Owner-Audit aus 0.1.0329 korrigiert: die Live-Konsole zeigte `blocked:true`/`pre-audit-current`, weil die Globals beim spaeten Laden schon nicht mehr per Setter beobachtbar waren.
+- `core/calendar/calendarOwnerAudit.js` ist jetzt ein reiner Snapshot-Recorder. Er ueberschreibt keine Kalenderfunktion und installiert keine Setter mehr.
+- `index.html` laedt das Audit frueher und setzt Messpunkte nach `core/misc.js`, `change-pre.js`, `change-post.js`, `app.js`, `features/calendar/calendarPanels.js` und `features/calendar/calendar-logic.js`.
+- Nutzung: `window.ChangeCalendarOwnerAudit.print()` fuer den letzten Aenderungspunkt je Funktion, `window.ChangeCalendarOwnerAudit.printTimeline()` fuer alle Snapshots.
+- Keine Kalender-Konsolidierung, keine Funktionsloeschung, keine Layout-Aenderung.
+- Cache-Busting ?v=0.1.0330.
+- Geaendert: `core/calendar/calendarOwnerAudit.js`, `index.html`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `docs/ARCHITECTURE.md`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check`, isolierter Runtime-Smoke fuer Snapshot-Audit, `scripts/auditDataModel.mjs`, Asset-/Versionspruefung.
+
 ## Version 0.1.0329 - Kalender-Owner-Audit
 - Passives Kalender-Runtime-Audit ergaenzt: `core/calendar/calendarOwnerAudit.js` installiert nach `app.js` und vor den Kalender-Feature-Dateien einen Recorder fuer `window.renderCalendar`, `window.renderMonth`, `window.setCalView`, `window.navigate` und `window.goToday`.
 - Zweck: vor jeder spaeteren Kalender-Bereinigung zuerst sichtbar machen, welche Datei zur Laufzeit den finalen Owner stellt. Keine Konsolidierung, keine Loeschung, keine Layout-Aenderung.

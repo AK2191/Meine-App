@@ -1,3 +1,10 @@
+## Version 0.1.0330 - Kalender-Snapshot-Audit
+- Kalender-Owner-Audit korrigiert: statt `Object.defineProperty`/Setter-Recorder nutzt `window.ChangeCalendarOwnerAudit` jetzt passive Snapshots. Grund: die Live-Konsole zeigte bei 0.1.0329 `blocked:true` und `pre-audit-current`, weil die Kalender-Globals zu diesem Zeitpunkt schon nicht mehr abfangbar waren.
+- Audit wird frueher geladen und misst explizit nach `core/misc.js`, `change-pre.js`, `change-post.js`, `app.js`, `calendarPanels.js` und `calendar-logic.js`.
+- Nutzung: `window.ChangeCalendarOwnerAudit.print()` zeigt den letzten Aenderungspunkt je Kalender-Global; `window.ChangeCalendarOwnerAudit.printTimeline()` zeigt die komplette Messreihe.
+- Keine Kalender-Konsolidierung, keine Funktionsloeschung, keine Layout-Aenderung.
+- Cache-Busting ?v=0.1.0330.
+
 ## Version 0.1.0329 - Kalender-Owner-Audit
 - Passives Runtime-Audit fuer Kalender-Globals ergaenzt: `window.ChangeCalendarOwnerAudit` beobachtet `renderCalendar`, `renderMonth`, `setCalView`, `navigate` und `goToday`.
 - Keine Kalender-Konsolidierung, keine Funktionsloeschung, keine Layout-Aenderung. Das Audit protokolliert nur Zuweisungen und macht den finalen Runtime-Owner pruefbar.
