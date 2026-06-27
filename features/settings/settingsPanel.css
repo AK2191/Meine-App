@@ -1,7 +1,7 @@
 /* =====================================================================
    Change · Einstellungen — Stil nach "Einstellungen Komplett" (DC)
    Selbst-enthaltene, dunkle Emerald-Oberfläche. Scope: #settings-view
-   Version 0.1.0334
+   Version 0.1.0337
    Alle Regeln gezielt unter #settings-view, damit nichts in andere
    Ansichten (Dashboard/Kalender/Challenges) ausläuft.
    ===================================================================== */
@@ -232,6 +232,63 @@
   background:rgba(255,255,255,.02);border:1px solid var(--st-line2);
   border-radius:12px;padding:14px 16px;
 }
+
+/* ---- Daten-Audit ---------------------------------------------------- */
+#settings-view .change-audit-stats{display:flex;gap:10px}
+#settings-view .change-audit-stat{
+  flex:1;min-width:0;border-radius:13px;padding:13px 15px;
+  background:rgba(255,255,255,.03);border:1px solid var(--st-line);
+}
+#settings-view .change-audit-stat.is-accent{
+  background:rgba(var(--st-accent-rgb),.06);border-color:rgba(var(--st-accent-rgb),.16);
+}
+#settings-view .change-audit-stat-num{
+  font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:600;
+  letter-spacing:-1px;line-height:1;color:var(--st-ink);
+}
+#settings-view .change-audit-stat.is-accent .change-audit-stat-num{color:var(--st-accent-ink)}
+#settings-view .change-audit-stat-label{font-size:11px;font-weight:700;color:var(--st-muted2);margin-top:5px}
+
+#settings-view .change-audit-meta{
+  display:flex;align-items:center;gap:18px;margin-top:10px;padding:11px 16px;
+  background:rgba(255,255,255,.02);border:1px dashed rgba(255,255,255,.09);border-radius:12px;
+}
+#settings-view .change-audit-meta-item{display:flex;align-items:baseline;gap:7px}
+#settings-view .change-audit-meta-num{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;color:var(--st-faint)}
+#settings-view .change-audit-meta-label{font-size:12px;color:var(--st-muted2);font-weight:600}
+#settings-view .change-audit-meta-sep{width:1px;height:14px;background:rgba(255,255,255,.1);flex:none}
+#settings-view .change-audit-meta-flag{margin-left:auto;font-size:11px;color:var(--st-faint);font-weight:600}
+
+#settings-view .change-audit-seclabel{
+  font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--st-faint);margin:15px 0 9px;
+}
+#settings-view .change-audit-diag{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#settings-view .change-audit-diag-item{
+  display:flex;align-items:center;justify-content:space-between;
+  border-radius:10px;padding:9px 13px;
+  background:rgba(255,255,255,.03);border:1px solid var(--st-line);
+}
+#settings-view .change-audit-diag-name{font-size:12px;font-weight:700;color:var(--st-ink3)}
+#settings-view .change-audit-diag-val{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:var(--st-ink3)}
+#settings-view .change-audit-diag-item.tone-canonical{background:rgba(var(--st-accent-rgb),.06);border-color:rgba(var(--st-accent-rgb),.14)}
+#settings-view .change-audit-diag-item.tone-canonical .change-audit-diag-name,
+#settings-view .change-audit-diag-item.tone-canonical .change-audit-diag-val{color:var(--st-accent-ink)}
+#settings-view .change-audit-diag-item.tone-cache{background:rgba(91,134,201,.06);border-color:rgba(91,134,201,.16)}
+#settings-view .change-audit-diag-item.tone-cache .change-audit-diag-name,
+#settings-view .change-audit-diag-item.tone-cache .change-audit-diag-val{color:#8FB0E0}
+#settings-view .change-audit-diag-item.tone-legacy{background:rgba(245,158,11,.06);border-color:rgba(245,158,11,.16)}
+#settings-view .change-audit-diag-item.tone-legacy .change-audit-diag-name,
+#settings-view .change-audit-diag-item.tone-legacy .change-audit-diag-val{color:#E0A86A}
+#settings-view .change-audit-diag-item.tone-unknown{background:rgba(224,120,106,.07);border-color:rgba(224,120,106,.18)}
+#settings-view .change-audit-diag-item.tone-unknown .change-audit-diag-name,
+#settings-view .change-audit-diag-item.tone-unknown .change-audit-diag-val{color:#E08A7E}
+
+#settings-view .change-audit-info{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+#settings-view .change-audit-info-row{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--st-muted);font-weight:500}
+#settings-view .change-audit-info-row svg{flex:none}
+#settings-view .change-audit-mono{font-family:'JetBrains Mono',monospace;color:var(--st-faint)}
+#settings-view .change-audit-info + .btn{margin-top:14px}
 
 /* ---- Theme options (Darstellung) ------------------------------------ */
 #settings-view .change-theme-options{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}

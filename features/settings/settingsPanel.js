@@ -731,8 +731,21 @@
       }
     };
   }
-  function dataAuditChip(label, value){
-    return '<span>'+esc(label)+': '+esc(parseInt(value, 10) || 0)+'</span>';
+  function auditStat(value, label, accent){
+    return '<div class="change-audit-stat'+(accent ? ' is-accent' : '')+'">'
+      + '<div class="change-audit-stat-num">'+esc(parseInt(value, 10) || 0)+'</div>'
+      + '<div class="change-audit-stat-label">'+esc(label)+'</div></div>';
+  }
+  function auditDiag(label, value, tone){
+    return '<div class="change-audit-diag-item tone-'+tone+'">'
+      + '<span class="change-audit-diag-name">'+esc(label)+'</span>'
+      + '<span class="change-audit-diag-val">'+esc(parseInt(value, 10) || 0)+'</span></div>';
+  }
+  function auditTickIcon(){
+    return '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--st-accent)" stroke-width="2.4"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+  }
+  function auditInfoIcon(){
+    return '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--st-faint)" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 8h.01M11 12h1v4h1"></path></svg>';
   }
   function dataAuditBody(expanded){
     if(!expanded){
@@ -742,29 +755,36 @@
     var report = dataAuditReport();
     var counts = report.counts;
     var keys = report.keys;
-    var settingsKeys = report.settingsKeys || {};
-    var snapshotLabel = report.settingsSnapshot.present
-      ? 'vorhanden' + (report.settingsSnapshot.updatedAtLocal ? ' · '+report.settingsSnapshot.updatedAtLocal : '')
-      : 'noch nicht geschrieben';
-    var modelLabel = report.version ? 'DataModel '+report.version : 'DataModel nicht geladen';
-    return '<div class="change-feature-chips">'
-      + dataAuditChip('Events', counts.events)
-      + dataAuditChip('Challenges', counts.challenges)
-      + dataAuditChip('Punkte', counts.challengeCompletions)
-      + dataAuditChip('Mitspieler', counts.challengePlayers)
+    var snap = report.settingsSnapshot || {};
+    var events = parseInt(counts.events, 10) || 0;
+    var points = parseInt(counts.challengeCompletions, 10) || 0;
+    var emptyFlag = (events + points) > 0 ? '' : '<span class="change-audit-meta-flag">noch leer</span>';
+    var snapRow = snap.present
+      ? '<div class="change-audit-info-row">'+auditTickIcon()+'Settings-Snapshot vorhanden'+(snap.updatedAtLocal ? ' · <span class="change-audit-mono">'+esc(snap.updatedAtLocal)+'</span>' : '')+'</div>'
+      : '<div class="change-audit-info-row">'+auditInfoIcon()+'Settings-Snapshot noch nicht geschrieben</div>';
+    var modelRow = report.version
+      ? '<div class="change-audit-info-row">'+auditInfoIcon()+'DataModel <span class="change-audit-mono">'+esc(report.version)+'</span> · read-only</div>'
+      : '<div class="change-audit-info-row">'+auditInfoIcon()+'DataModel nicht geladen · read-only</div>';
+    return '<div class="change-audit-stats">'
+      + auditStat(counts.challenges, 'Challenges', true)
+      + auditStat(counts.challengePlayers, 'Mitspieler', false)
+      + auditStat(counts.pollenSymptomDays, 'Pollen-Tage', false)
       + '</div>'
-      + '<div class="change-feature-chips">'
-      + dataAuditChip('Pollen-Tage', counts.pollenSymptomDays)
-      + dataAuditChip('Storage-Keys', counts.storageKeys)
-      + dataAuditChip('Canonical', keys.canonicalPresent)
-      + dataAuditChip('Legacy', keys.legacyPresent)
-      + dataAuditChip('Settings-Keys', settingsKeys.present)
-      + dataAuditChip('Cache', keys.cachePresent)
-      + dataAuditChip('Unbekannt', keys.unknownChangeKeys)
+      + '<div class="change-audit-meta">'
+      +   '<div class="change-audit-meta-item"><span class="change-audit-meta-num">'+esc(events)+'</span><span class="change-audit-meta-label">Events</span></div>'
+      +   '<div class="change-audit-meta-sep"></div>'
+      +   '<div class="change-audit-meta-item"><span class="change-audit-meta-num">'+esc(points)+'</span><span class="change-audit-meta-label">Punkte</span></div>'
+      +   emptyFlag
       + '</div>'
-      + '<div class="change-feature-note">Settings-Snapshot: '+esc(snapshotLabel)+'</div>'
-      + '<div class="change-feature-note">'+esc(modelLabel)+' · Anzeige ist read-only.</div>'
-      + '<button class="btn btn-secondary btn-full" id="run-data-audit" type="button">Erneut pruefen</button>';
+      + '<div class="change-audit-seclabel">Storage-Diagnose · '+esc(parseInt(counts.storageKeys, 10) || 0)+' Keys</div>'
+      + '<div class="change-audit-diag">'
+      +   auditDiag('Canonical', keys.canonicalPresent, 'canonical')
+      +   auditDiag('Cache', keys.cachePresent, 'cache')
+      +   auditDiag('Legacy', keys.legacyPresent, 'legacy')
+      +   auditDiag('Unbekannt', keys.unknownChangeKeys, 'unknown')
+      + '</div>'
+      + '<div class="change-audit-info">'+snapRow+modelRow+'</div>'
+      + '<button class="btn btn-secondary btn-full" id="run-data-audit" type="button">Erneut prüfen</button>';
   }
 
   function syncPane(){
@@ -809,7 +829,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0336';
+  var APP_VERSION = '0.1.0337';
 
 
 
@@ -1895,7 +1915,7 @@
     var dataAuditCard = settingsFeatureCard(
       'DB',
       'Daten-Audit',
-      dataAuditExpanded ? 'GEPRUEFT' : 'BEREIT',
+      dataAuditExpanded ? 'GEPRÜFT' : 'BEREIT',
       dataAuditExpanded ? 'ok' : 'off',
       '',
       '',

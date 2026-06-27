@@ -1,3 +1,11 @@
+## Version 0.1.0337 - Daten-Audit im Entwurfs-Stil
+- Daten-Audit (Einstellungen -> App & Sicherheit) auf das Layout aus "Einstellungen Komplett" umgebaut: drei Stat-Karten (Challenges, Mitspieler, Pollen-Tage), Events/Punkte-Leiste mit "noch leer"-Hinweis, Storage-Diagnose-Grid mit Farbcodes (Canonical/Cache/Legacy/Unbekannt) sowie Snapshot- und DataModel-Zeile.
+- Reine Darstellung: alle Werte kommen unveraendert aus `dataAuditReport()`. Keine neue Datenlogik, keine Migration, kein Schreibzugriff - das Audit bleibt read-only.
+- Toter Helfer `dataAuditChip` entfernt; neue Render-Helfer `auditStat`/`auditDiag` plus Icons. Styling modular in `features/settings/settingsPanel.css` ueber `--st-*`-Tokens (scope `#settings-view`, theme-fest).
+- "Settings-Keys" wird im Entwurf nicht mehr als Chip gezeigt (Charta: minimalistisch); der Wert wird im Report weiterhin berechnet.
+- Keine Kalender-, Dashboard-, Challenge-, Sync- oder Firebase-Logik beruehrt.
+- Cache-Busting ?v=0.1.0337.
+
 ## Version 0.1.0336 - GitHub-Upload Ruecksprung nach Code
 - Nach Eingabe des Freigabe-Codes und Klick auf `Bestaetigen & uebertragen` schliesst der Dialog sofort und der GitHub-Tab zeigt den Status `Freigabe-Code geprueft. Upload wird vorbereitet...`.
 - Vor dem eigentlichen Upload bekommt der Browser einen kurzen Paint-Tick, damit der Ruecksprung ins Panel sichtbar ist.
