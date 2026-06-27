@@ -1,3 +1,11 @@
+## Version 0.1.0339 - Daten-Audit: alle Diagnose-Kacheln aufklappbar
+- Alle vier Storage-Diagnose-Kacheln (Canonical, Cache, Legacy, Unbekannt) sind jetzt anklickbar und klappen ihre echten Schluesselnamen als Liste auf (Akkordeon: eine offen zur Zeit). Kacheln mit Anzahl 0 bleiben statisch.
+- Klick laeuft jetzt ueber einen einmaligen Delegations-Listener (`[data-audit-toggle]`) statt ueber pro-Element-Bindung nach jedem Render. Das behebt das "nicht klickbar"-Problem zuverlaessig (kein Timing-/Rebind-Loch mehr).
+- Report reicht fuer alle vier Kategorien die sortierten Schluesselnamen durch (`canonicalKeys`, `cacheKeys`, `legacyKeys`, `unknownKeys`), Quelle bleibt `ChangeDataModel.auditStorage` (keine Doppel-Logik).
+- State `dataAuditUnknownExpanded` -> `dataAuditOpenCat`. Helfer vereinheitlicht: `auditDiagTile`, `auditKeyPanel`. Toter `auditDiag` entfernt.
+- Read-only, keine Kalender-/Dashboard-/Challenge-/Sync-/Firebase-Logik beruehrt.
+- Cache-Busting ?v=0.1.0339.
+
 ## Version 0.1.0338 - Daten-Audit: Unbekannt aufklappbar
 - "Unbekannt"-Kachel im Daten-Audit ist jetzt anklickbar (Chevron) und zeigt darunter die echten Schluesselnamen als Liste (mono, scrollbar). Nur sichtbar, wenn Anzahl > 0.
 - Quelle der Liste sind die `unknownChangeKeys` aus `ChangeDataModel.auditStorage` (gleiche Klassifizierung wie die Zahl, keine doppelte Logik). Report reicht die Namen jetzt durch (`unknownKeys`).

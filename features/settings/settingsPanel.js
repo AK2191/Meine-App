@@ -721,6 +721,9 @@
         unknownChangeKeys: Array.isArray(keys.unknownChangeKeys) ? keys.unknownChangeKeys.length : 0
       },
       unknownKeys: Array.isArray(keys.unknownChangeKeys) ? keys.unknownChangeKeys.slice().sort() : [],
+      canonicalKeys: Array.isArray(keys.canonicalPresent) ? keys.canonicalPresent.slice().sort() : [],
+      legacyKeys: Array.isArray(keys.legacyPresent) ? keys.legacyPresent.slice().sort() : [],
+      cacheKeys: Array.isArray(keys.cachePresent) ? keys.cachePresent.slice().sort() : [],
       settingsSnapshot: {
         present: snapshotPresent || !!(settingsAudit && settingsAudit.hasSnapshot),
         updatedAtLocal: (snapshot && snapshot.updatedAtLocal) || (settingsAudit && settingsAudit.updatedAtLocal) || ''
@@ -737,11 +740,6 @@
       + '<div class="change-audit-stat-num">'+esc(parseInt(value, 10) || 0)+'</div>'
       + '<div class="change-audit-stat-label">'+esc(label)+'</div></div>';
   }
-  function auditDiag(label, value, tone){
-    return '<div class="change-audit-diag-item tone-'+tone+'">'
-      + '<span class="change-audit-diag-name">'+esc(label)+'</span>'
-      + '<span class="change-audit-diag-val">'+esc(parseInt(value, 10) || 0)+'</span></div>';
-  }
   function auditTickIcon(){
     return '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--st-accent)" stroke-width="2.4"><polyline points="20 6 9 17 4 12"></polyline></svg>';
   }
@@ -751,23 +749,27 @@
   function auditChevron(){
     return '<svg class="change-audit-diag-chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"></polyline></svg>';
   }
-  function auditUnknownTile(count, open){
+  function auditDiagTile(label, count, tone, cat, openCat){
     count = parseInt(count, 10) || 0;
-    if(count <= 0) return auditDiag('Unbekannt', count, 'unknown');
-    return '<button type="button" id="audit-unknown-toggle" class="change-audit-diag-item change-audit-diag-btn tone-unknown'+(open ? ' is-open' : '')+'" aria-expanded="'+(open ? 'true' : 'false')+'">'
-      + '<span class="change-audit-diag-name">Unbekannt</span>'
+    if(count <= 0){
+      return '<div class="change-audit-diag-item tone-'+tone+'"><span class="change-audit-diag-name">'+esc(label)+'</span><span class="change-audit-diag-val">'+esc(count)+'</span></div>';
+    }
+    var open = (openCat === cat);
+    return '<button type="button" class="change-audit-diag-item change-audit-diag-btn tone-'+tone+(open ? ' is-open' : '')+'" data-audit-toggle="'+esc(cat)+'" aria-expanded="'+(open ? 'true' : 'false')+'">'
+      + '<span class="change-audit-diag-name">'+esc(label)+'</span>'
       + '<span class="change-audit-diag-right"><span class="change-audit-diag-val">'+esc(count)+'</span>'+auditChevron()+'</span>'
       + '</button>';
   }
-  function auditUnknownPanel(list, open){
-    if(!open) return '';
-    list = Array.isArray(list) ? list : [];
+  function auditKeyPanel(report, openCat){
+    if(!openCat) return '';
+    var map = { canonical: report.canonicalKeys, cache: report.cacheKeys, legacy: report.legacyKeys, unknown: report.unknownKeys };
+    var list = map[openCat] || [];
     if(!list.length){
       return '<div class="change-audit-unknown-panel"><div class="change-audit-unknown-empty">Keine Schluessel auflistbar (DataModel nicht geladen).</div></div>';
     }
     var rows = '';
     for(var i=0;i<list.length;i++){ rows += '<div class="change-audit-unknown-item">'+esc(list[i])+'</div>'; }
-    return '<div class="change-audit-unknown-panel">'+rows+'</div>';
+    return '<div class="change-audit-unknown-panel" data-audit-panel="'+esc(openCat)+'">'+rows+'</div>';
   }
   function dataAuditBody(expanded){
     if(!expanded){
@@ -780,8 +782,6 @@
     var snap = report.settingsSnapshot || {};
     var events = parseInt(counts.events, 10) || 0;
     var points = parseInt(counts.challengeCompletions, 10) || 0;
-    var unknownCount = parseInt(keys.unknownChangeKeys, 10) || 0;
-    var unknownOpen = dataAuditUnknownExpanded && unknownCount > 0;
     var emptyFlag = (events + points) > 0 ? '' : '<span class="change-audit-meta-flag">noch leer</span>';
     var snapRow = snap.present
       ? '<div class="change-audit-info-row">'+auditTickIcon()+'Settings-Snapshot vorhanden'+(snap.updatedAtLocal ? ' · <span class="change-audit-mono">'+esc(snap.updatedAtLocal)+'</span>' : '')+'</div>'
@@ -802,12 +802,12 @@
       + '</div>'
       + '<div class="change-audit-seclabel">Storage-Diagnose · '+esc(parseInt(counts.storageKeys, 10) || 0)+' Keys</div>'
       + '<div class="change-audit-diag">'
-      +   auditDiag('Canonical', keys.canonicalPresent, 'canonical')
-      +   auditDiag('Cache', keys.cachePresent, 'cache')
-      +   auditDiag('Legacy', keys.legacyPresent, 'legacy')
-      +   auditUnknownTile(unknownCount, unknownOpen)
+      +   auditDiagTile('Canonical', keys.canonicalPresent, 'canonical', 'canonical', dataAuditOpenCat)
+      +   auditDiagTile('Cache', keys.cachePresent, 'cache', 'cache', dataAuditOpenCat)
+      +   auditDiagTile('Legacy', keys.legacyPresent, 'legacy', 'legacy', dataAuditOpenCat)
+      +   auditDiagTile('Unbekannt', keys.unknownChangeKeys, 'unknown', 'unknown', dataAuditOpenCat)
       + '</div>'
-      + auditUnknownPanel(report.unknownKeys, unknownOpen)
+      + auditKeyPanel(report, dataAuditOpenCat)
       + '<div class="change-audit-info">'+snapRow+modelRow+'</div>'
       + '<button class="btn btn-secondary btn-full" id="run-data-audit" type="button">Erneut prüfen</button>';
   }
@@ -854,7 +854,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0338';
+  var APP_VERSION = '0.1.0339';
 
 
 
@@ -1967,7 +1967,7 @@
   var settingsMobileDetail = false;
   var appHealthExpanded = false;
   var dataAuditExpanded = false;
-  var dataAuditUnknownExpanded = false;
+  var dataAuditOpenCat = '';
   var settingsScrollState = null;
   function allowedSettingsTabs(){
     var tabs = ['profil','darstellung','push','dashboard','calendar','challenges','sync','app'];
@@ -2230,6 +2230,14 @@
         var inSettings = target.closest && target.closest('#settings-view');
         if(inSettings && (target.hasAttribute('data-remove-half') || target.getAttribute('data-change-theme'))) markSettingsSnapshotChanged('settings-panel');
       }, true);
+      document.addEventListener('click', function(event){
+        var target = event && event.target;
+        var btn = target && target.closest ? target.closest('[data-audit-toggle]') : null;
+        if(!btn || !btn.closest('#settings-view')) return;
+        var cat = btn.getAttribute('data-audit-toggle') || '';
+        dataAuditOpenCat = (dataAuditOpenCat === cat) ? '' : cat;
+        refreshSameTab('app');
+      }, false);
     }
     document.querySelectorAll('[data-settings-tab]').forEach(function(btn){
       btn.addEventListener('click', function(ev){
@@ -2348,7 +2356,6 @@
       refreshSameTab('push');
     });
     var runDataAudit = $('run-data-audit'); if(runDataAudit) runDataAudit.addEventListener('click', function(){ dataAuditExpanded = true; refreshSameTab('app'); });
-    var auditUnknownToggle = $('audit-unknown-toggle'); if(auditUnknownToggle) auditUnknownToggle.addEventListener('click', function(){ dataAuditUnknownExpanded = !dataAuditUnknownExpanded; refreshSameTab('app'); });
     var runHealth = $('run-app-health'); if(runHealth) runHealth.addEventListener('click', function(){ appHealthExpanded = true; refreshSameTab('app'); });
     function setGithubZipFile(file){
       githubUpdateState.file = file || null;

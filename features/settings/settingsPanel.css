@@ -1,7 +1,7 @@
 /* =====================================================================
    Change · Einstellungen — Stil nach "Einstellungen Komplett" (DC)
    Selbst-enthaltene, dunkle Emerald-Oberfläche. Scope: #settings-view
-   Version 0.1.0338
+   Version 0.1.0339
    Alle Regeln gezielt unter #settings-view, damit nichts in andere
    Ansichten (Dashboard/Kalender/Challenges) ausläuft.
    ===================================================================== */
@@ -290,6 +290,9 @@
 #settings-view .change-audit-mono{font-family:'JetBrains Mono',monospace;color:var(--st-faint)}
 #settings-view .change-audit-info + .btn{margin-top:14px}
 
+#settings-view .change-audit-diag-item.tone-canonical{color:var(--st-accent-ink)}
+#settings-view .change-audit-diag-item.tone-cache{color:#8FB0E0}
+#settings-view .change-audit-diag-item.tone-legacy{color:#E0A86A}
 #settings-view .change-audit-diag-item.tone-unknown{color:#E08A7E}
 #settings-view button.change-audit-diag-btn{
   width:100%;font-family:inherit;cursor:pointer;text-align:left;

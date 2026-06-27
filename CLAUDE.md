@@ -24,6 +24,17 @@
 
 **Verboten:** bestehende Funktionen ohne Prüfung überschreiben · doppelte Komponenten · Workarounds statt sauberer Lösungen.
 
+## Version 0.1.0339 - Daten-Audit: alle Diagnose-Kacheln aufklappbar
+- Alle vier Storage-Diagnose-Kacheln (Canonical, Cache, Legacy, Unbekannt) anklickbar -> klappen ihre echten Schluesselnamen als Liste auf. Akkordeon (eine offen zur Zeit), Zustand `dataAuditOpenCat`. Kacheln mit Anzahl 0 bleiben statisch.
+- WICHTIG (Fix "nicht klickbar"): Toggle laeuft jetzt ueber EINEN einmaligen Delegations-Listener auf `[data-audit-toggle]` (install-once, guarded), nicht mehr ueber pro-Element-`addEventListener` nach jedem `refreshSameTab`. Robust gegen Rebind-/Timing-Probleme.
+- `dataAuditReport()` reicht alle vier Schlussel-Arrays sortiert durch (`canonicalKeys`, `cacheKeys`, `legacyKeys`, `unknownKeys`); Quelle bleibt `ChangeDataModel.auditStorage` (eine Klassifizierung, keine Doppel-Logik).
+- Helfer vereinheitlicht: `auditDiagTile`, `auditKeyPanel`, `auditChevron`; toter `auditDiag` entfernt.
+- Read-only: nur localStorage-Keys gelesen, nichts geloescht/migriert/synchronisiert.
+- Keine Kalender-, Dashboard-, Challenge-, Sync- oder Firebase-Logik beruehrt.
+- Cache-Busting ?v=0.1.0339.
+- Geaendert: `features/settings/settingsPanel.js`, `features/settings/settingsPanel.css`, `features/pollen/pollenView.js`, `index.html`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check` (settingsPanel.js, pollenView.js); Render-Vorschau der Kacheln.
+
 ## Version 0.1.0338 - Daten-Audit: Unbekannt aufklappbar
 - "Unbekannt"-Kachel anklickbar (Chevron) -> klappt darunter die echten Schluesselnamen als Liste auf (mono, scrollbar, max-height). Nur wenn Anzahl > 0.
 - Liste kommt aus `unknownChangeKeys` von `ChangeDataModel.auditStorage` (gleiche Klassifizierung wie die Zahl, keine Doppel-Logik). `dataAuditReport()` reicht die Namen als `unknownKeys` (sortiert) durch.
