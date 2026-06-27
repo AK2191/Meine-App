@@ -24,6 +24,14 @@
 
 **Verboten:** bestehende Funktionen ohne Prüfung überschreiben · doppelte Komponenten · Workarounds statt sauberer Lösungen.
 
+## Version 0.1.0331 - Kalender-Cleanup Schritt 1
+- Erster echter Mini-Cleanup auf Basis des Snapshot-Audits: eine fruehe `window.goToday`-Zuweisung im alten `app.js`-Legacy-Block entfernt. Diese Zuweisung wurde spaeter in `app.js` und final von der Kalender-Schicht ueberschrieben.
+- Keine Massenbereinigung: keine Renderfunktionen entfernt, keine Kalender-UI veraendert, keine Daten-/Sync-/Firebase-Aenderung.
+- Nach Upload pruefen: Kalender oeffnen und `window.ChangeCalendarOwnerAudit.print()` ausfuehren. `goToday` muss weiterhin final aus der spaeten Kalender-Schicht kommen; bei Abweichung keine weitere Bereinigung.
+- Cache-Busting ?v=0.1.0331.
+- Geaendert: `app.js`, `index.html`, `core/calendar/calendarOwnerAudit.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check`, `scripts/auditDataModel.mjs`, Asset-/Versionspruefung.
+
 ## Version 0.1.0330 - Kalender-Snapshot-Audit
 - Kalender-Owner-Audit aus 0.1.0329 korrigiert: die Live-Konsole zeigte `blocked:true`/`pre-audit-current`, weil die Globals beim spaeten Laden schon nicht mehr per Setter beobachtbar waren.
 - `core/calendar/calendarOwnerAudit.js` ist jetzt ein reiner Snapshot-Recorder. Er ueberschreibt keine Kalenderfunktion und installiert keine Setter mehr.

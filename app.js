@@ -1993,7 +1993,6 @@ document.addEventListener('touchend',e=>{
     else curDate=new Date(curDate.getFullYear(),curDate.getMonth()+dir,1);
     renderCalendar();
   };
-  window.goToday=function(){curDate=new Date();window.curDate=curDate;currentCalView='today';renderCalendar();};
   window.openCalendarSettings=function(){
     const state=calendarSettings.state||'ALL';
     const opts=Object.entries(STATE_OPTIONS).map(([k,v])=>'<option value="'+k+'" '+(k===state?'selected':'')+'>'+v+'</option>').join('');

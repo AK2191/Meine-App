@@ -2,7 +2,7 @@
   'use strict';
   if(!root || root.ChangeCalendarOwnerAudit) return;
 
-  var VERSION = '0.1.0330';
+  var VERSION = '0.1.0331';
   var TARGETS = ['renderCalendar', 'renderMonth', 'setCalView', 'navigate', 'goToday'];
   var state = {
     version: VERSION,

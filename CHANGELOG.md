@@ -1,3 +1,9 @@
+## Version 0.1.0331 - Kalender-Cleanup Schritt 1
+- Erster minimaler Kalender-Cleanup: eine fruehe, spaeter ueberschriebene `window.goToday`-Zuweisung im Legacy-Block von `app.js` entfernt.
+- Keine Kalender-Renderlogik, kein Layout, keine Datenlogik, kein Sync und keine Firebase-Regeln geaendert.
+- Erwartung nach Upload: `window.ChangeCalendarOwnerAudit.print()` zeigt fuer `goToday` weiterhin den finalen Owner aus der spaeten Kalender-Schicht (`after calendar-logic.js`).
+- Cache-Busting ?v=0.1.0331.
+
 ## Version 0.1.0330 - Kalender-Snapshot-Audit
 - Kalender-Owner-Audit korrigiert: statt `Object.defineProperty`/Setter-Recorder nutzt `window.ChangeCalendarOwnerAudit` jetzt passive Snapshots. Grund: die Live-Konsole zeigte bei 0.1.0329 `blocked:true` und `pre-audit-current`, weil die Kalender-Globals zu diesem Zeitpunkt schon nicht mehr abfangbar waren.
 - Audit wird frueher geladen und misst explizit nach `core/misc.js`, `change-pre.js`, `change-post.js`, `app.js`, `calendarPanels.js` und `calendar-logic.js`.
