@@ -1986,13 +1986,6 @@ document.addEventListener('touchend',e=>{
     renderUpcoming();
   };
   window.setCalView=function(v){currentCalView=v; renderCalendar();};
-  window.navigate=function(dir){
-    if(currentCalView==='year') curDate=new Date(curDate.getFullYear()+dir,0,1);
-    else if(currentCalView==='workweek') curDate=addDays(curDate,dir*7);
-    else if(currentCalView==='today') curDate=addDays(curDate,dir);
-    else curDate=new Date(curDate.getFullYear(),curDate.getMonth()+dir,1);
-    renderCalendar();
-  };
   window.openCalendarSettings=function(){
     const state=calendarSettings.state||'ALL';
     const opts=Object.entries(STATE_OPTIONS).map(([k,v])=>'<option value="'+k+'" '+(k===state?'selected':'')+'>'+v+'</option>').join('');

@@ -1,3 +1,9 @@
+## Version 0.1.0333 - Kalender-Cleanup Schritt 2
+- Zweiter minimaler Kalender-Cleanup: eine fruehe, spaeter ueberschriebene `window.navigate`-Zuweisung im Legacy-Block von `app.js` entfernt.
+- Keine Kalender-Renderlogik, kein Layout, keine Datenlogik, kein Sync und keine Firebase-Regeln geaendert.
+- Erwartung nach Upload: `window.ChangeCalendarOwnerAudit.print()` zeigt fuer `navigate` weiterhin den finalen Owner aus der spaeten Kalender-Schicht (`after calendar-logic.js`).
+- Cache-Busting ?v=0.1.0333.
+
 ## Version 0.1.0332 - GitHub-Upload mit Code-Bestaetigung
 - GitHub-Upload fragt den Freigabe-Code beim Klick auf "Auf GitHub uebertragen" immer frisch in einem Bestaetigungsdialog ab.
 - Der Upload nutzt keinen gespeicherten Session-Code mehr automatisch. Nach Bestaetigung, Abbruch, Erfolg oder Fehler wird der Code aus Memory/sessionStorage und sichtbaren Eingaben entfernt.

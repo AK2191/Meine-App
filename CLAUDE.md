@@ -24,6 +24,14 @@
 
 **Verboten:** bestehende Funktionen ohne Prüfung überschreiben · doppelte Komponenten · Workarounds statt sauberer Lösungen.
 
+## Version 0.1.0333 - Kalender-Cleanup Schritt 2
+- Zweiter echter Mini-Cleanup auf Basis des Snapshot-Audits: eine fruehe `window.navigate`-Zuweisung im alten `app.js`-Legacy-Block entfernt. Diese Zuweisung wurde spaeter in `app.js` und final von der Kalender-Schicht ueberschrieben.
+- Keine Renderfunktionen entfernt, keine Kalender-UI veraendert, keine Daten-/Sync-/Firebase-Aenderung.
+- Nach Upload pruefen: Kalender oeffnen und `window.ChangeCalendarOwnerAudit.print()` ausfuehren. `navigate` muss weiterhin final aus der spaeten Kalender-Schicht kommen; bei Abweichung keine weitere Bereinigung.
+- Cache-Busting ?v=0.1.0333.
+- Geaendert: `app.js`, `index.html`, `core/calendar/calendarOwnerAudit.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check`, `scripts/auditDataModel.mjs`, Asset-/Versionspruefung.
+
 ## Version 0.1.0332 - GitHub-Upload mit Code-Bestaetigung
 - Sicherheits-Zwischenschritt im GitHub-Bereich: Beim Klick auf `Auf GitHub uebertragen` wird der Freigabe-Code immer frisch in einem Dialog abgefragt und erst mit `Bestaetigen & uebertragen` an den Worker gesendet.
 - `commitGithubZip()` liest den Code nicht mehr automatisch aus dem sichtbaren Feld oder aus sessionStorage. Nach Abbruch, Erfolg oder Fehler wird `change_github_update_secret` aus Memory/sessionStorage sowie sichtbaren Eingaben entfernt.
