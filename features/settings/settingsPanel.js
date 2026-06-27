@@ -765,7 +765,7 @@
     var map = { canonical: report.canonicalKeys, cache: report.cacheKeys, legacy: report.legacyKeys, unknown: report.unknownKeys };
     var list = map[openCat] || [];
     if(!list.length){
-      return '<div class="change-audit-unknown-panel"><div class="change-audit-unknown-empty">Keine Schluessel auflistbar (DataModel nicht geladen).</div></div>';
+      return '<div class="change-audit-unknown-panel"><div class="change-audit-unknown-empty">Keine Einträge auflistbar.</div></div>';
     }
     var rows = '';
     for(var i=0;i<list.length;i++){ rows += '<div class="change-audit-unknown-item">'+esc(list[i])+'</div>'; }
@@ -784,11 +784,11 @@
     var points = parseInt(counts.challengeCompletions, 10) || 0;
     var emptyFlag = (events + points) > 0 ? '' : '<span class="change-audit-meta-flag">noch leer</span>';
     var snapRow = snap.present
-      ? '<div class="change-audit-info-row">'+auditTickIcon()+'Settings-Snapshot vorhanden'+(snap.updatedAtLocal ? ' · <span class="change-audit-mono">'+esc(snap.updatedAtLocal)+'</span>' : '')+'</div>'
-      : '<div class="change-audit-info-row">'+auditInfoIcon()+'Settings-Snapshot noch nicht geschrieben</div>';
+      ? '<div class="change-audit-info-row">'+auditTickIcon()+'Einstellungen gesichert'+(snap.updatedAtLocal ? ' · <span class="change-audit-mono">'+esc(snap.updatedAtLocal)+'</span>' : '')+'</div>'
+      : '<div class="change-audit-info-row">'+auditInfoIcon()+'Einstellungen noch nicht gesichert</div>';
     var modelRow = report.version
-      ? '<div class="change-audit-info-row">'+auditInfoIcon()+'DataModel <span class="change-audit-mono">'+esc(report.version)+'</span> · read-only</div>'
-      : '<div class="change-audit-info-row">'+auditInfoIcon()+'DataModel nicht geladen · read-only</div>';
+      ? '<div class="change-audit-info-row">'+auditInfoIcon()+'Datenformat <span class="change-audit-mono">'+esc(report.version)+'</span> · nur Anzeige</div>'
+      : '<div class="change-audit-info-row">'+auditInfoIcon()+'Datenformat nicht geladen · nur Anzeige</div>';
     return '<div class="change-audit-stats">'
       + auditStat(counts.challenges, 'Challenges', true)
       + auditStat(counts.challengePlayers, 'Mitspieler', false)
@@ -800,12 +800,12 @@
       +   '<div class="change-audit-meta-item"><span class="change-audit-meta-num">'+esc(points)+'</span><span class="change-audit-meta-label">Punkte</span></div>'
       +   emptyFlag
       + '</div>'
-      + '<div class="change-audit-seclabel">Storage-Diagnose · '+esc(parseInt(counts.storageKeys, 10) || 0)+' Keys</div>'
+      + '<div class="change-audit-seclabel">Gespeicherte Daten · '+esc(parseInt(counts.storageKeys, 10) || 0)+' Einträge</div>'
       + '<div class="change-audit-diag">'
-      +   auditDiagTile('Canonical', keys.canonicalPresent, 'canonical', 'canonical', dataAuditOpenCat)
-      +   auditDiagTile('Cache', keys.cachePresent, 'cache', 'cache', dataAuditOpenCat)
-      +   auditDiagTile('Legacy', keys.legacyPresent, 'legacy', 'legacy', dataAuditOpenCat)
-      +   auditDiagTile('Unbekannt', keys.unknownChangeKeys, 'unknown', 'unknown', dataAuditOpenCat)
+      +   auditDiagTile('Aktuelle Daten', keys.canonicalPresent, 'canonical', 'canonical', dataAuditOpenCat)
+      +   auditDiagTile('Zwischenspeicher', keys.cachePresent, 'cache', 'cache', dataAuditOpenCat)
+      +   auditDiagTile('Alte Daten', keys.legacyPresent, 'legacy', 'legacy', dataAuditOpenCat)
+      +   auditDiagTile('Sonstiges', keys.unknownChangeKeys, 'unknown', 'unknown', dataAuditOpenCat)
       + '</div>'
       + auditKeyPanel(report, dataAuditOpenCat)
       + '<div class="change-audit-info">'+snapRow+modelRow+'</div>'
@@ -854,7 +854,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0340';
+  var APP_VERSION = '0.1.0341';
 
 
 

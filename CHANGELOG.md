@@ -1,3 +1,10 @@
+## Version 0.1.0341 - Daten-Audit in Alltagssprache
+- Diagnose-Kacheln umbenannt (nur sichtbare Labels): Canonical -> "Aktuelle Daten", Cache -> "Zwischenspeicher", Legacy -> "Alte Daten", Unbekannt -> "Sonstiges".
+- Weitere Begriffe entschaerft: "Storage-Diagnose · X Keys" -> "Gespeicherte Daten · X Eintraege"; "DataModel ... read-only" -> "Datenformat ... nur Anzeige"; "Settings-Snapshot vorhanden/noch nicht geschrieben" -> "Einstellungen gesichert / noch nicht gesichert".
+- Rein kosmetisch: interne Kategorie-IDs (canonical/cache/legacy/unknown), data-audit-toggle, tone-Klassen und die Report-/Audit-Logik unveraendert. Aufklappbare Schlussellisten bleiben technisch (echte Keys).
+- Keine Funktionalitaet, kein Verhalten geaendert; keine Kalender-/Dashboard-/Challenge-/Sync-/Firebase-/Upload-Logik beruehrt.
+- Cache-Busting ?v=0.1.0341.
+
 ## Version 0.1.0340 - GitHub-Upload Dialog schliesst zuverlaessig
 - Fix: Nach Eingabe des Freigabe-Codes blieb der Upload-Dialog teils offen. Ursache: der Dialog konnte doppelt geoeffnet (gestapelt) werden; das Schliessen entfernte nur den obersten.
 - requestGithubActionSecret entfernt jetzt vorhandene Upload-Dialoge, bevor ein neuer geoeffnet wird (immer nur EIN Dialog).
