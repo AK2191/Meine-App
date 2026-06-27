@@ -1,3 +1,14 @@
+## Version 0.1.0329 - Kalender-Owner-Audit
+- Passives Runtime-Audit fuer Kalender-Globals ergaenzt: `window.ChangeCalendarOwnerAudit` beobachtet `renderCalendar`, `renderMonth`, `setCalView`, `navigate` und `goToday`.
+- Keine Kalender-Konsolidierung, keine Funktionsloeschung, keine Layout-Aenderung. Das Audit protokolliert nur Zuweisungen und macht den finalen Runtime-Owner pruefbar.
+- Nutzung: in der Browser-Konsole `window.ChangeCalendarOwnerAudit.getReport()` oder `window.ChangeCalendarOwnerAudit.print()` ausfuehren. Automatische Konsolen-Ausgabe nur mit `?calendarAudit=1` oder `localStorage.change_calendar_owner_audit='true'`.
+- Cache-Busting ?v=0.1.0329.
+
+## Version 0.1.0328 - Freigabe-Code nur noch Sitzung
+- GitHub-Freigabe-Code wird nicht mehr dauerhaft in localStorage gespeichert oder daraus gelesen.
+- Bestehende localStorage-Altlast `change_github_update_secret` wird beim Lesen/Schreiben entfernt; aktive Eingaben bleiben nur in Memory/sessionStorage fuer die aktuelle Browser-Sitzung.
+- Cache-Busting ?v=0.1.0328.
+
 ## Version 0.1.0327 — Untertexte komplett entfernt
 - Restliche erklärende Untertexte entfernt (Geburtstag, Sync-Status, Push-Fallback). UI-Untertext-Bereinigung abgeschlossen.
 - Cache-Busting ?v=0.1.0327.

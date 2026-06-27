@@ -809,7 +809,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0327';
+  var APP_VERSION = '0.1.0329';
 
 
 
@@ -940,13 +940,20 @@
     catch(tokenErr){ token = await user.getIdToken(); } // Fallback: zwischengespeichertes Token, falls erzwungener Refresh scheitert (z. B. "Unsupported cache mode: reload")
     return {'Authorization':'Bearer ' + token};
   }
+  function clearLegacyGithubUpdateSecret(){
+    try{ localStorage.removeItem('change_github_update_secret'); }catch(e){}
+  }
   function readGithubUpdateSecret(){
-    try{ return githubUpdateSecretMemory || sessionStorage.getItem('change_github_update_secret') || localStorage.getItem('change_github_update_secret') || ''; }catch(e){ return githubUpdateSecretMemory || ''; }
+    clearLegacyGithubUpdateSecret();
+    try{ return githubUpdateSecretMemory || sessionStorage.getItem('change_github_update_secret') || ''; }catch(e){ return githubUpdateSecretMemory || ''; }
   }
   function writeGithubUpdateSecret(value){
     githubUpdateSecretMemory = String(value || '').trim();
-    try{ sessionStorage.setItem('change_github_update_secret', githubUpdateSecretMemory); }catch(e){}
-    try{ if(githubUpdateSecretMemory){ localStorage.setItem('change_github_update_secret', githubUpdateSecretMemory); } else { localStorage.removeItem('change_github_update_secret'); } }catch(e){}
+    clearLegacyGithubUpdateSecret();
+    try{
+      if(githubUpdateSecretMemory) sessionStorage.setItem('change_github_update_secret', githubUpdateSecretMemory);
+      else sessionStorage.removeItem('change_github_update_secret');
+    }catch(e){}
   }
   function arrayBufferToBase64(buffer){
     var bytes = new Uint8Array(buffer);
@@ -1567,7 +1574,7 @@
 
     return '<div class="change-github-update">'
       + (readGithubUpdateSecret()
-          ? '<div class="change-github-secret" style="display:flex;align-items:center;justify-content:space-between;gap:10px"><span>Freigabe-Code gespeichert &#10003;</span><button type="button" id="github-secret-change" style="background:none;border:1px solid var(--st-line,#2a352e);color:var(--st-accent,#4ADE80);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer">Ändern</button></div>'
+          ? '<div class="change-github-secret" style="display:flex;align-items:center;justify-content:space-between;gap:10px"><span>Freigabe-Code fuer diese Sitzung gespeichert &#10003;</span><button type="button" id="github-secret-change" style="background:none;border:1px solid var(--st-line,#2a352e);color:var(--st-accent,#4ADE80);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer">&Auml;ndern</button></div>'
           : '<label class="change-github-secret"><span>Freigabe-Code</span><input type="text" id="github-update-secret" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Freigabe-Code eingeben" value=""></label>')
       + (actionPanel || '')
       + githubTabBar()
@@ -2321,7 +2328,7 @@
       refreshSameTab('github');
     });
     var githubZipCommit = $('github-zip-commit'); if(githubZipCommit) githubZipCommit.addEventListener('click', function(){ commitGithubZip(); });
-    var githubSecretChange = $('github-secret-change'); if(githubSecretChange) githubSecretChange.addEventListener('click', function(){ githubUpdateSecretMemory=''; try{ sessionStorage.removeItem('change_github_update_secret'); localStorage.removeItem('change_github_update_secret'); }catch(e){} refreshSameTab('github'); });
+    var githubSecretChange = $('github-secret-change'); if(githubSecretChange) githubSecretChange.addEventListener('click', function(){ githubUpdateSecretMemory=''; clearLegacyGithubUpdateSecret(); try{ sessionStorage.removeItem('change_github_update_secret'); }catch(e){} refreshSameTab('github'); });
     var githubUpdateReload = $('github-update-reload'); if(githubUpdateReload) githubUpdateReload.addEventListener('click', function(){ reloadChangeUpdateVersion(); });
     var githubHistoryRefresh = $('github-history-refresh'); if(githubHistoryRefresh) githubHistoryRefresh.addEventListener('click', function(){ loadGithubCommitHistory(); });
     var githubHistoryMore = $('github-history-more'); if(githubHistoryMore) githubHistoryMore.addEventListener('click', function(){ githubCommitHistoryVisible += 5; refreshSameTab('github'); });

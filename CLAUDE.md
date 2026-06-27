@@ -24,6 +24,22 @@
 
 **Verboten:** bestehende Funktionen ohne Prüfung überschreiben · doppelte Komponenten · Workarounds statt sauberer Lösungen.
 
+## Version 0.1.0329 - Kalender-Owner-Audit
+- Passives Kalender-Runtime-Audit ergaenzt: `core/calendar/calendarOwnerAudit.js` installiert nach `app.js` und vor den Kalender-Feature-Dateien einen Recorder fuer `window.renderCalendar`, `window.renderMonth`, `window.setCalView`, `window.navigate` und `window.goToday`.
+- Zweck: vor jeder spaeteren Kalender-Bereinigung zuerst sichtbar machen, welche Datei zur Laufzeit den finalen Owner stellt. Keine Konsolidierung, keine Loeschung, keine Layout-Aenderung.
+- Nutzung: `window.ChangeCalendarOwnerAudit.getReport()` oder `window.ChangeCalendarOwnerAudit.print()` in der Browser-Konsole. Automatisches `console.table` nur mit `?calendarAudit=1` oder `localStorage.change_calendar_owner_audit='true'`.
+- Cache-Busting ?v=0.1.0329.
+- Geaendert: `core/calendar/calendarOwnerAudit.js`, `index.html`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `docs/ARCHITECTURE.md`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check`, isolierter Runtime-Smoke fuer das Audit, `scripts/auditDataModel.mjs`, Asset-/Versionspruefung.
+
+## Version 0.1.0328 - Freigabe-Code nur noch Sitzung
+- GitHub-Freigabe-Code wird wieder sicherer behandelt: kein dauerhaftes Speichern/Lesen ueber localStorage.
+- `readGithubUpdateSecret`/`writeGithubUpdateSecret` nutzen nur noch Memory + sessionStorage und entfernen vorhandene Legacy-Altlast `change_github_update_secret` aus localStorage.
+- UI-Hinweis angepasst: gespeichert ist der Code nur fuer diese Sitzung.
+- Cache-Busting ?v=0.1.0328.
+- Geaendert: `features/settings/settingsPanel.js`, `index.html`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check`, `scripts/auditDataModel.mjs`, Asset-/Versionspruefung.
+
 ## Version 0.1.0327 — Untertext-Bereinigung abgeschlossen
 - Letzte erklärende Untertexte in den Einstellungen entfernt (Charta: keine Untertexte): Geburtstags-Dropdown-Beschreibung, Sync-Status-Karte, statischer Push-Fallback-Text. Dynamische Zustands-Infos (z. B. Push-`detail`, Sync-„verbindet…") bleiben erhalten — das sind Status, keine Untertexte.
 - Damit ist die UI-Untertext-Bereinigung (begonnen 0.1.0324/0325) vollständig.
