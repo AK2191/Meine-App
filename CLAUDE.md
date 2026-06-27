@@ -24,6 +24,17 @@
 
 **Verboten:** bestehende Funktionen ohne Prüfung überschreiben · doppelte Komponenten · Workarounds statt sauberer Lösungen.
 
+## Version 0.1.0340 - GitHub-Upload Dialog schliesst zuverlaessig
+- Fix: Nach Eingabe des Freigabe-Codes blieb der Upload-Dialog teils offen. Ursache: der Dialog konnte doppelt geoeffnet (gestapelt) werden; das Schliessen entfernte nur den obersten.
+- requestGithubActionSecret entfernt jetzt vorhandene Upload-Dialoge, bevor ein neuer geoeffnet wird (immer nur EIN Dialog).
+- commitGithubZip hat eine Re-Entry-Sperre (state.uploadBusy): laeuft nicht zweimal parallel; Reset auf allen Pfaden (Abbrechen, Erfolg, Fehler).
+- Validiert headless: Doppel-Auslösen -> 1 Dialog -> Bestaetigen -> 0 Dialoge, uploadBusy zurueckgesetzt.
+- Nur der Upload-Flow angefasst; Deploy-Worker, Payload, Polling und alle anderen Systeme unveraendert. Read-only an Audit/Kalender/Dashboard/Challenges/Sync/Firebase.
+- Cache-Busting ?v=0.1.0340.
+
+- Geaendert: `features/settings/settingsPanel.js`, `features/settings/settingsPanel.css`, `features/pollen/pollenView.js`, `index.html`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check`; headless Dialog-Reproduktion.
+
 ## Version 0.1.0339 - Daten-Audit: alle Diagnose-Kacheln aufklappbar
 - Alle vier Storage-Diagnose-Kacheln (Canonical, Cache, Legacy, Unbekannt) anklickbar -> klappen ihre echten Schluesselnamen als Liste auf. Akkordeon (eine offen zur Zeit), Zustand `dataAuditOpenCat`. Kacheln mit Anzahl 0 bleiben statisch.
 - WICHTIG (Fix "nicht klickbar"): Toggle laeuft jetzt ueber EINEN einmaligen Delegations-Listener auf `[data-audit-toggle]` (install-once, guarded), nicht mehr ueber pro-Element-`addEventListener` nach jedem `refreshSameTab`. Robust gegen Rebind-/Timing-Probleme.

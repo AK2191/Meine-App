@@ -854,7 +854,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0339';
+  var APP_VERSION = '0.1.0340';
 
 
 
@@ -997,6 +997,10 @@
   function requestGithubActionSecret(options){
     options = options || {};
     clearGithubUpdateSecret();
+    try{
+      var existingDialogs = document.querySelectorAll('.change-github-upload-dialog');
+      for(var ed = 0; ed < existingDialogs.length; ed++){ if(existingDialogs[ed].parentNode) existingDialogs[ed].parentNode.removeChild(existingDialogs[ed]); }
+    }catch(e){}
     return new Promise(function(resolve){
       var title = options.title || 'GitHub-Upload freigeben';
       var message = options.message || 'Gib den Freigabe-Code ein. Er wird nur fuer diese Aktion verwendet und danach geloescht.';
@@ -1671,8 +1675,11 @@
     if(!state.file || (state.status !== 'ok' && state.status !== 'error')){
       return;
     }
+    if(state.uploadBusy){ return; }
+    state.uploadBusy = true;
     var secret = await requestGithubUploadSecret();
     if(!secret){
+      state.uploadBusy = false;
       return;
     }
     state.panelTab = 'update';
@@ -1741,6 +1748,7 @@
       state.updateReady = false;
       persistGithubUpdateSession();
     }finally{
+      state.uploadBusy = false;
       clearGithubUpdateSecret();
     }
     refreshGithubUpdatePanelIfVisible();
