@@ -1,3 +1,9 @@
+## Version 0.1.0332 - GitHub-Upload mit Code-Bestaetigung
+- GitHub-Upload fragt den Freigabe-Code beim Klick auf "Auf GitHub uebertragen" immer frisch in einem Bestaetigungsdialog ab.
+- Der Upload nutzt keinen gespeicherten Session-Code mehr automatisch. Nach Bestaetigung, Abbruch, Erfolg oder Fehler wird der Code aus Memory/sessionStorage und sichtbaren Eingaben entfernt.
+- Keine Kalender-, Layout-, Daten-, Sync- oder Firebase-Regeln geaendert.
+- Cache-Busting ?v=0.1.0332.
+
 ## Version 0.1.0331 - Kalender-Cleanup Schritt 1
 - Erster minimaler Kalender-Cleanup: eine fruehe, spaeter ueberschriebene `window.goToday`-Zuweisung im Legacy-Block von `app.js` entfernt.
 - Keine Kalender-Renderlogik, kein Layout, keine Datenlogik, kein Sync und keine Firebase-Regeln geaendert.

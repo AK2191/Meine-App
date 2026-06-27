@@ -809,7 +809,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0331';
+  var APP_VERSION = '0.1.0332';
 
 
 
@@ -954,6 +954,54 @@
       if(githubUpdateSecretMemory) sessionStorage.setItem('change_github_update_secret', githubUpdateSecretMemory);
       else sessionStorage.removeItem('change_github_update_secret');
     }catch(e){}
+  }
+  function clearGithubUpdateSecret(){
+    githubUpdateSecretMemory = '';
+    clearLegacyGithubUpdateSecret();
+    try{ sessionStorage.removeItem('change_github_update_secret'); }catch(e){}
+    try{ var panelInput = $('github-update-secret'); if(panelInput) panelInput.value = ''; }catch(e){}
+    try{ var dialogInput = $('github-upload-confirm-secret'); if(dialogInput) dialogInput.value = ''; }catch(e){}
+  }
+  function requestGithubUploadSecret(){
+    clearGithubUpdateSecret();
+    return new Promise(function(resolve){
+      var dlgEl = document.createElement('div');
+      dlgEl.innerHTML = '<div class="change-rollback-dialog"><div class="change-rollback-dialog-box">'
+        + '<div class="change-rollback-dialog-title">GitHub-Upload freigeben</div>'
+        + '<div class="change-rollback-dialog-msg">Freigabe-Code eingeben und Upload bestaetigen.</div>'
+        + '<label class="change-github-secret" style="margin:12px 0 0"><span>Freigabe-Code</span><input type="text" id="github-upload-confirm-secret" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Freigabe-Code eingeben" value=""></label>'
+        + '<div class="change-rollback-dialog-btns"><button class="change-rollback-cancel" id="gh-upload-cancel" type="button">Abbrechen</button><button class="change-rollback-ok" id="gh-upload-ok" type="button">Bestaetigen &amp; uebertragen</button></div>'
+        + '</div></div>';
+      document.body.appendChild(dlgEl);
+      var overlay = dlgEl.querySelector('.change-rollback-dialog');
+      var input = dlgEl.querySelector('#github-upload-confirm-secret');
+      var ok = dlgEl.querySelector('#gh-upload-ok');
+      var cancel = dlgEl.querySelector('#gh-upload-cancel');
+      function close(value){
+        clearGithubUpdateSecret();
+        try{ document.removeEventListener('keydown', onKeyDown, true); }catch(e){}
+        try{ if(dlgEl.parentNode) document.body.removeChild(dlgEl); }catch(e){}
+        resolve(value || '');
+      }
+      function submit(){
+        var secret = input ? String(input.value || '').trim() : '';
+        if(!secret){
+          if(input && typeof input.focus === 'function') input.focus();
+          if(typeof window.toast === 'function') window.toast('Bitte Freigabe-Code eintragen.', '');
+          return;
+        }
+        close(secret);
+      }
+      function onKeyDown(event){
+        if(event.key === 'Escape') close('');
+        if(event.key === 'Enter') submit();
+      }
+      if(ok) ok.onclick = submit;
+      if(cancel) cancel.onclick = function(){ close(''); };
+      if(overlay) overlay.onclick = function(event){ if(event.target === overlay) close(''); };
+      try{ document.addEventListener('keydown', onKeyDown, true); }catch(e){}
+      try{ setTimeout(function(){ if(input && typeof input.focus === 'function') input.focus(); }, 0); }catch(e){}
+    });
   }
   function arrayBufferToBase64(buffer){
     var bytes = new Uint8Array(buffer);
@@ -1594,15 +1642,10 @@
     if(!state.file || (state.status !== 'ok' && state.status !== 'error')){
       return;
     }
-    var secretInput = $('github-update-secret');
-    var secret = secretInput ? String(secretInput.value || '').trim() : readGithubUpdateSecret();
+    var secret = await requestGithubUploadSecret();
     if(!secret){
-      // Kein Fehlermodus: Code nachtragen und direkt erneut übertragen möglich.
-      if(secretInput && typeof secretInput.focus === 'function') secretInput.focus();
-      if(typeof window.toast === 'function') window.toast('Bitte zuerst den Freigabe-Code eintragen.', '');
       return;
     }
-    writeGithubUpdateSecret(secret);
     state.status = 'checking';
     state.message = 'Update wird hochgeladen…';
     state.actionMessage = '';
@@ -1664,6 +1707,8 @@
       state.actionRunUrl = '';
       state.updateReady = false;
       persistGithubUpdateSession();
+    }finally{
+      clearGithubUpdateSecret();
     }
     refreshGithubUpdatePanelIfVisible();
   }
@@ -2328,7 +2373,7 @@
       refreshSameTab('github');
     });
     var githubZipCommit = $('github-zip-commit'); if(githubZipCommit) githubZipCommit.addEventListener('click', function(){ commitGithubZip(); });
-    var githubSecretChange = $('github-secret-change'); if(githubSecretChange) githubSecretChange.addEventListener('click', function(){ githubUpdateSecretMemory=''; clearLegacyGithubUpdateSecret(); try{ sessionStorage.removeItem('change_github_update_secret'); }catch(e){} refreshSameTab('github'); });
+    var githubSecretChange = $('github-secret-change'); if(githubSecretChange) githubSecretChange.addEventListener('click', function(){ clearGithubUpdateSecret(); refreshSameTab('github'); });
     var githubUpdateReload = $('github-update-reload'); if(githubUpdateReload) githubUpdateReload.addEventListener('click', function(){ reloadChangeUpdateVersion(); });
     var githubHistoryRefresh = $('github-history-refresh'); if(githubHistoryRefresh) githubHistoryRefresh.addEventListener('click', function(){ loadGithubCommitHistory(); });
     var githubHistoryMore = $('github-history-more'); if(githubHistoryMore) githubHistoryMore.addEventListener('click', function(){ githubCommitHistoryVisible += 5; refreshSameTab('github'); });
