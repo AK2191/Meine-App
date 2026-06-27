@@ -1,3 +1,10 @@
+## Version 0.1.0336 - GitHub-Upload Ruecksprung nach Code
+- Nach Eingabe des Freigabe-Codes und Klick auf `Bestaetigen & uebertragen` schliesst der Dialog sofort und der GitHub-Tab zeigt den Status `Freigabe-Code geprueft. Upload wird vorbereitet...`.
+- Vor dem eigentlichen Upload bekommt der Browser einen kurzen Paint-Tick, damit der Ruecksprung ins Panel sichtbar ist.
+- Der Freigabe-Code wird weiterhin nicht im Panel gespeichert und nach der Aktion verworfen.
+- Keine Kalender-, Daten-, Sync- oder Firebase-Regeln geaendert.
+- Cache-Busting ?v=0.1.0336.
+
 ## Version 0.1.0335 - Kalender-Cleanup Schritt 3
 - Dritter minimaler Kalender-Cleanup: eine fruehe, spaeter ueberschriebene `window.setCalView`-Zuweisung im Legacy-Block von `app.js` entfernt.
 - Keine Kalender-Renderlogik, kein Layout, keine Datenlogik, kein Sync und keine Firebase-Regeln geaendert.

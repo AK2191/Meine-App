@@ -809,7 +809,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0335';
+  var APP_VERSION = '0.1.0336';
 
 
 
@@ -1630,16 +1630,20 @@
     if(!secret){
       return;
     }
+    state.panelTab = 'update';
     state.status = 'checking';
-    state.message = 'Update wird hochgeladen…';
+    state.message = 'Freigabe-Code geprueft. Upload wird vorbereitet...';
     state.actionMessage = '';
     refreshSameTab('github');
+    await new Promise(function(resolve){ setTimeout(resolve, 40); });
     try{
       var buffer = state.fileBuffer || null;
       if(!buffer){
         try{ buffer = await state.file.arrayBuffer(); }
         catch(fileErr){ throw new Error('Datei konnte nicht gelesen werden. Bitte ZIP neu auswählen und direkt erneut übertragen.'); }
       }
+      state.message = 'Update wird hochgeladen...';
+      refreshSameTab('github');
       var payload = {
         secret: secret,
         fileName: state.fileName || state.file.name || ('change-update-'+Date.now()+'.zip'),
