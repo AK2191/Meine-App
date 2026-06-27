@@ -1,3 +1,14 @@
+## Version 0.1.0343 - Tagespush Phase 2: Multi-Geraete-Token
+- Handy UND PC gleichzeitig: FCM-Token wird jetzt pro Geraet unter `change_push_tokens/{email}/devices/{geraeteId}` gespeichert (statt ein Token pro E-Mail, das sich gegenseitig ueberschrieb).
+- Neue stabile Geraete-ID `change_device_id` (crypto.randomUUID, pro Installation einmalig). WICHTIG: das ist NICHT die Google-`client_id` (die ist auf jedem Geraet gleich) - die haette Handy/PC kollidieren lassen.
+- Aktivieren/Auffrischen/Deaktivieren angepasst: schreiben/loeschen nur das eigene Geraete-Dokument. Deaktivieren auf einem Geraet laesst das andere unberuehrt.
+- Eltern-Dokument bleibt als Marker (email/pushEnabled/updatedAt), evtl. Legacy-Einzeltoken wird entfernt (kein Doppelversand).
+- Deaktivieren setzt jetzt auch `change_push_enabled=0` (vorher fehlte das -> stille Auffrischung haette Push wieder anschalten koennen).
+- `change_device_id` in die Schutzliste (NEVER_DELETE_KEYS) aufgenommen; taucht damit nicht unter "Sonstiges" im Audit auf.
+- firestore.rules unveraendert (Geraete-Subcollection war dort bereits erlaubt).
+- Nur Push-Datenschicht; nichts an Empfang, Kalender, Dashboard, Challenges, Sync, Google, Upload.
+- Cache-Busting ?v=0.1.0343.
+
 ## Version 0.1.0342 - Tagespush Phase 1: stille Token-Auffrischung
 - Vorbereitung fuer taegliche Pushes bei geschlossener App. NUR App-Seite, kein Server, kein Versand.
 - Neue Funktion `refreshPushTokenIfEnabled()` in app.js: frischt beim Start den FCM-Token still auf und schreibt ihn nach `change_push_tokens`, falls FCM rotiert hat.

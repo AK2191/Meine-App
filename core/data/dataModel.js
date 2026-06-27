@@ -42,6 +42,7 @@
     'user_email',
     'change_v1_client_id',
     'client_id',
+    'change_device_id',
     'change_v1_fcm_token',
     'fcm_token',
     'change_push_enabled',

@@ -24,6 +24,23 @@
 
 **Verboten:** bestehende Funktionen ohne Prüfung überschreiben · doppelte Komponenten · Workarounds statt sauberer Lösungen.
 
+## Version 0.1.0343 - Tagespush Phase 2: Multi-Geraete-Token
+- Handy UND PC gleichzeitig: FCM-Token jetzt pro Geraet unter `change_push_tokens/{email}/devices/{geraeteId}`.
+- Neue stabile Geraete-ID `change_device_id` (crypto.randomUUID, pro Installation). NICHT die Google-`client_id` verwenden (auf jedem Geraet gleich -> wuerde kollidieren).
+- Helfer in app.js: `getChangeDeviceId()`, `pushDeviceTokenDoc()`. Aktivieren/Auffrischen schreiben das Geraete-Dokument; Deaktivieren loescht NUR das eigene Geraet.
+- Eltern-Dokument bleibt Marker; Legacy-Einzeltoken wird entfernt. Deaktivieren setzt jetzt `change_push_enabled=0` (Bugfix: sonst haette die stille Auffrischung Push reaktiviert).
+- `change_device_id` in NEVER_DELETE_KEYS (dataModel.js) -> nicht unter "Sonstiges".
+- firestore.rules UNVERAENDERT - die Subcollection `change_push_tokens/{docId}/devices/{deviceId}` war dort bereits freigegeben.
+- Worker liest spaeter per collectionGroup('devices') ueber Service-Account (umgeht Rules) - keine Client-Rule noetig.
+- Nur Push-Datenschicht beruehrt.
+- Cache-Busting ?v=0.1.0343.
+- Geaendert: `app.js`, `core/data/dataModel.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check` (app.js, dataModel.js, pollenView.js); headless Geraete-ID-Test (stabil + pro Geraet eindeutig).
+
+### Tagespush - Plan-Update
+- Entscheidungen fix: Zeiten 08:00 + 13:00 (DST-fest, Worker rechnet Europe/Berlin); Inhalt v1 = feste Erinnerungen; Handy+PC = ja (Phase 2 erledigt); Worker = SEPARAT (Variante A), noch zu bauen.
+- Naechste Phase 3: `change-push-worker` (Cloudflare, getrennt vom Deploy-Worker). JWT->Access-Token, collectionGroup('devices') lesen, an aktive Tokens senden, tote (UNREGISTERED) aussortieren. Phase 4: Cron 08:00+13:00 Berlin.
+
 ## Version 0.1.0342 - Tagespush Phase 1: stille Token-Auffrischung
 - Vorbereitung fuer taegliche Pushes bei geschlossener App. NUR App-Seite, kein Server, kein Versand.
 - Neue Funktion `refreshPushTokenIfEnabled()` in app.js: frischt beim Start den FCM-Token still auf und schreibt ihn nach `change_push_tokens`, falls FCM rotiert hat. Damit zeigt Firestore immer den gueltigen Token, an den der spaetere Worker sendet.

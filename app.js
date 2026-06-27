@@ -2131,6 +2131,24 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
     if(!db || !userInfo.email) return null;
     return db.collection('change_push_tokens').doc(safeDocId(currentEmail()));
   }
+  // Stabile, pro Installation eindeutige Geraete-ID (NICHT die Google-client_id).
+  // Ermoeglicht Handy UND PC gleichzeitig: jedes Geraet bekommt sein eigenes Token-Dokument.
+  function getChangeDeviceId(){
+    let id='';
+    try{ id = ls('change_device_id') || ''; }catch(_e){}
+    if(!id){
+      try{ if(window.crypto && crypto.randomUUID) id = crypto.randomUUID(); }catch(_e){}
+      if(!id) id = 'dev-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10);
+      try{ ls('change_device_id', id); }catch(_e){}
+    }
+    return id;
+  }
+  function pushDeviceTokenDoc(){
+    if(!db || !userInfo.email) return null;
+    const deviceId = getChangeDeviceId();
+    if(!deviceId) return null;
+    return db.collection('change_push_tokens').doc(safeDocId(currentEmail())).collection('devices').doc(safeDocId(deviceId));
+  }
   function publicPlayer(){
     return {
       id: currentEmail(),
@@ -2309,15 +2327,28 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
       ls('fcm_token', token);
       ls('push_enabled', true);
       try{ localStorage.setItem('change_push_enabled','1'); }catch(_e){}
-      const tokenRef = privatePushTokenDoc();
-      if(tokenRef){
-        await tokenRef.set({
+      const deviceRef = pushDeviceTokenDoc();
+      if(deviceRef){
+        await deviceRef.set({
           email: currentEmail(),
           token: token,
+          deviceId: getChangeDeviceId(),
           pushEnabled: true,
           platform: navigator.userAgent || '',
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, {merge:true});
+      }
+      // Eltern-Dokument als Marker pflegen und evtl. Legacy-Einzeltoken entfernen (kein Doppelversand):
+      const parentRef = privatePushTokenDoc();
+      if(parentRef){
+        try{
+          await parentRef.set({
+            email: currentEmail(),
+            pushEnabled: true,
+            token: firebase.firestore.FieldValue.delete(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, {merge:true});
+        }catch(_e){}
       }
       await db.collection('change_players').doc(safeDocId(currentEmail())).set({
         ...publicPlayer(),
@@ -2379,11 +2410,12 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
       try{ stored=ls('fcm_token')||''; }catch(_e){}
       if(token===stored) return; // unveraendert -> kein Schreibzugriff
       ls('fcm_token', token);
-      const tokenRef=privatePushTokenDoc();
-      if(tokenRef){
-        await tokenRef.set({
+      const deviceRef=pushDeviceTokenDoc();
+      if(deviceRef){
+        await deviceRef.set({
           email: currentEmail(),
           token: token,
+          deviceId: getChangeDeviceId(),
           pushEnabled: true,
           platform: navigator.userAgent || '',
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -2437,15 +2469,20 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
       }
       lsDel('fcm_token');
       ls('push_enabled',false);
+      try{ localStorage.setItem('change_push_enabled','0'); }catch(_e){}
       if(db && userInfo.email){
-        const tokenRef = privatePushTokenDoc();
-        if(tokenRef){
-          await tokenRef.set({
-            email: currentEmail(),
-            token: '',
-            pushEnabled: false,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          }, {merge:true});
+        const deviceRef = pushDeviceTokenDoc();
+        if(deviceRef){ try{ await deviceRef.delete(); }catch(_e){} }
+        const parentRef = privatePushTokenDoc();
+        if(parentRef){
+          try{
+            await parentRef.set({
+              email: currentEmail(),
+              pushEnabled: false,
+              token: firebase.firestore.FieldValue.delete(),
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, {merge:true});
+          }catch(_e){}
         }
         await db.collection('change_players').doc(safeDocId(currentEmail())).set({
           pushEnabled:false,
