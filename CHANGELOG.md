@@ -1,3 +1,10 @@
+## Version 0.1.0334 - GitHub-Code Dialog aufgeraeumt
+- Sichtbare Freigabe-Code-Verwaltung im GitHub-Update-Tab entfernt. Der Code wird nicht mehr als gespeicherter Sitzungsstatus im Panel angezeigt.
+- Upload und Rollback fragen den Freigabe-Code direkt in einem eigenen Dialog ab und verwerfen ihn danach wieder.
+- GitHub-Upload-Dialog optisch neu aufgebaut: eigene Dialogklassen, klare Abstaende, kein ueberlappendes Label, bessere Desktop- und Mobile-Darstellung.
+- Keine Kalender-, Daten-, Sync- oder Firebase-Regeln geaendert.
+- Cache-Busting ?v=0.1.0334.
+
 ## Version 0.1.0333 - Kalender-Cleanup Schritt 2
 - Zweiter minimaler Kalender-Cleanup: eine fruehe, spaeter ueberschriebene `window.navigate`-Zuweisung im Legacy-Block von `app.js` entfernt.
 - Keine Kalender-Renderlogik, kein Layout, keine Datenlogik, kein Sync und keine Firebase-Regeln geaendert.

@@ -809,7 +809,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0333';
+  var APP_VERSION = '0.1.0334';
 
 
 
@@ -943,37 +943,29 @@
   function clearLegacyGithubUpdateSecret(){
     try{ localStorage.removeItem('change_github_update_secret'); }catch(e){}
   }
-  function readGithubUpdateSecret(){
-    clearLegacyGithubUpdateSecret();
-    try{ return githubUpdateSecretMemory || sessionStorage.getItem('change_github_update_secret') || ''; }catch(e){ return githubUpdateSecretMemory || ''; }
-  }
-  function writeGithubUpdateSecret(value){
-    githubUpdateSecretMemory = String(value || '').trim();
-    clearLegacyGithubUpdateSecret();
-    try{
-      if(githubUpdateSecretMemory) sessionStorage.setItem('change_github_update_secret', githubUpdateSecretMemory);
-      else sessionStorage.removeItem('change_github_update_secret');
-    }catch(e){}
-  }
   function clearGithubUpdateSecret(){
     githubUpdateSecretMemory = '';
     clearLegacyGithubUpdateSecret();
     try{ sessionStorage.removeItem('change_github_update_secret'); }catch(e){}
-    try{ var panelInput = $('github-update-secret'); if(panelInput) panelInput.value = ''; }catch(e){}
     try{ var dialogInput = $('github-upload-confirm-secret'); if(dialogInput) dialogInput.value = ''; }catch(e){}
   }
-  function requestGithubUploadSecret(){
+  function requestGithubActionSecret(options){
+    options = options || {};
     clearGithubUpdateSecret();
     return new Promise(function(resolve){
+      var title = options.title || 'GitHub-Upload freigeben';
+      var message = options.message || 'Gib den Freigabe-Code ein. Er wird nur fuer diese Aktion verwendet und danach geloescht.';
+      var okText = options.okText || 'Bestaetigen & uebertragen';
       var dlgEl = document.createElement('div');
-      dlgEl.innerHTML = '<div class="change-rollback-dialog"><div class="change-rollback-dialog-box">'
-        + '<div class="change-rollback-dialog-title">GitHub-Upload freigeben</div>'
-        + '<div class="change-rollback-dialog-msg">Freigabe-Code eingeben und Upload bestaetigen.</div>'
-        + '<label class="change-github-secret" style="margin:12px 0 0"><span>Freigabe-Code</span><input type="text" id="github-upload-confirm-secret" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Freigabe-Code eingeben" value=""></label>'
-        + '<div class="change-rollback-dialog-btns"><button class="change-rollback-cancel" id="gh-upload-cancel" type="button">Abbrechen</button><button class="change-rollback-ok" id="gh-upload-ok" type="button">Bestaetigen &amp; uebertragen</button></div>'
+      dlgEl.innerHTML = '<div class="change-github-upload-dialog" role="dialog" aria-modal="true" aria-labelledby="github-upload-confirm-title"><div class="change-github-upload-dialog-box">'
+        + '<div class="change-github-upload-dialog-kicker">Sicherheitsfreigabe</div>'
+        + '<div class="change-github-upload-dialog-title" id="github-upload-confirm-title">'+esc(title)+'</div>'
+        + '<div class="change-github-upload-dialog-msg">'+esc(message)+'</div>'
+        + '<label class="change-github-upload-secret-field" for="github-upload-confirm-secret"><span>Freigabe-Code</span><input type="password" id="github-upload-confirm-secret" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Code eingeben" value=""></label>'
+        + '<div class="change-github-upload-dialog-btns"><button class="change-github-upload-cancel" id="gh-upload-cancel" type="button">Abbrechen</button><button class="change-github-upload-ok" id="gh-upload-ok" type="button">'+esc(okText)+'</button></div>'
         + '</div></div>';
       document.body.appendChild(dlgEl);
-      var overlay = dlgEl.querySelector('.change-rollback-dialog');
+      var overlay = dlgEl.querySelector('.change-github-upload-dialog');
       var input = dlgEl.querySelector('#github-upload-confirm-secret');
       var ok = dlgEl.querySelector('#gh-upload-ok');
       var cancel = dlgEl.querySelector('#gh-upload-cancel');
@@ -1001,6 +993,13 @@
       if(overlay) overlay.onclick = function(event){ if(event.target === overlay) close(''); };
       try{ document.addEventListener('keydown', onKeyDown, true); }catch(e){}
       try{ setTimeout(function(){ if(input && typeof input.focus === 'function') input.focus(); }, 0); }catch(e){}
+    });
+  }
+  function requestGithubUploadSecret(){
+    return requestGithubActionSecret({
+      title: 'GitHub-Upload freigeben',
+      message: 'Gib den Freigabe-Code ein. Danach wird die ZIP an GitHub uebertragen und der Code sofort verworfen.',
+      okText: 'Bestaetigen & uebertragen'
     });
   }
   function arrayBufferToBase64(buffer){
@@ -1473,8 +1472,6 @@
   var githubRollbackState = { running: false, message: '', error: '' };
 
   function githubCommitHistoryPanel(){
-    var secret = readGithubUpdateSecret();
-    if(!secret) return '';
     var rows = '';
     var moreBtn = '';
     if(githubCommitHistoryLoading){
@@ -1538,20 +1535,12 @@
   }
 
   async function rollbackToCommit(sha, message){
-    var secret = readGithubUpdateSecret();
-    if(!secret){ if(typeof window.toast === 'function') window.toast('Bitte Freigabe-Code eintragen', 'err'); return; }
-    // Schöner Dialog statt browser confirm
-    var confirmed = false;
-    var dlgHtml = '<div class="change-rollback-dialog"><div class="change-rollback-dialog-box"><div class="change-rollback-dialog-title">↺ Rollback zu '+sha.slice(0,7)+'?</div><div class="change-rollback-dialog-msg">'+esc(message)+'</div><div class="change-rollback-dialog-btns"><button class="change-rollback-cancel" id="rb-cancel" type="button">Abbrechen</button><button class="change-rollback-ok" id="rb-ok" type="button">Zurücksetzen</button></div></div></div>';
-    var dlgEl = document.createElement('div');
-    dlgEl.innerHTML = dlgHtml;
-    document.body.appendChild(dlgEl);
-    await new Promise(function(resolve){
-      dlgEl.querySelector('#rb-ok').onclick = function(){ confirmed = true; document.body.removeChild(dlgEl); resolve(); };
-      dlgEl.querySelector('#rb-cancel').onclick = function(){ document.body.removeChild(dlgEl); resolve(); };
-      dlgEl.querySelector('.change-rollback-dialog').onclick = function(e){ if(e.target===dlgEl.querySelector('.change-rollback-dialog')){ document.body.removeChild(dlgEl); resolve(); } };
+    var secret = await requestGithubActionSecret({
+      title: 'Rollback zu '+String(sha || '').slice(0,7)+' freigeben',
+      message: 'Gib den Freigabe-Code ein, um diesen Stand wiederherzustellen: '+String(message || '').slice(0,120),
+      okText: 'Rollback starten'
     });
-    if(!confirmed) return;
+    if(!secret) return;
     githubRollbackState = { running: true, message: '', error: '' };
     refreshSameTab('github');
     try{
@@ -1615,15 +1604,10 @@
       + ((!state.actionStartedAt && !state.uploadCommitSha && !state.actionConclusion) ? '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(((state.status === 'ok' || state.status === 'error') && !state.updateReady) ? '' : 'disabled')+'>Auf GitHub übertragen</button>' : '')
       + '</div>';
 
-    var historyPane = !readGithubUpdateSecret()
-      ? '<div class="change-github-history-empty">Freigabe-Code eintragen, um den Verlauf zu laden.</div>'
-      : '<div class="change-github-history-toolbar"><button class="change-github-history-refresh" id="github-history-refresh" type="button">↻ Laden</button></div>'
-        + githubCommitHistoryPanel();
+    var historyPane = '<div class="change-github-history-toolbar"><button class="change-github-history-refresh" id="github-history-refresh" type="button">Verlauf laden</button></div>'
+      + githubCommitHistoryPanel();
 
     return '<div class="change-github-update">'
-      + (readGithubUpdateSecret()
-          ? '<div class="change-github-secret" style="display:flex;align-items:center;justify-content:space-between;gap:10px"><span>Freigabe-Code fuer diese Sitzung gespeichert &#10003;</span><button type="button" id="github-secret-change" style="background:none;border:1px solid var(--st-line,#2a352e);color:var(--st-accent,#4ADE80);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer">&Auml;ndern</button></div>'
-          : '<label class="change-github-secret"><span>Freigabe-Code</span><input type="text" id="github-update-secret" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Freigabe-Code eingeben" value=""></label>')
       + (actionPanel || '')
       + githubTabBar()
       + '<div class="change-github-tabpane">'
@@ -2373,7 +2357,6 @@
       refreshSameTab('github');
     });
     var githubZipCommit = $('github-zip-commit'); if(githubZipCommit) githubZipCommit.addEventListener('click', function(){ commitGithubZip(); });
-    var githubSecretChange = $('github-secret-change'); if(githubSecretChange) githubSecretChange.addEventListener('click', function(){ clearGithubUpdateSecret(); refreshSameTab('github'); });
     var githubUpdateReload = $('github-update-reload'); if(githubUpdateReload) githubUpdateReload.addEventListener('click', function(){ reloadChangeUpdateVersion(); });
     var githubHistoryRefresh = $('github-history-refresh'); if(githubHistoryRefresh) githubHistoryRefresh.addEventListener('click', function(){ loadGithubCommitHistory(); });
     var githubHistoryMore = $('github-history-more'); if(githubHistoryMore) githubHistoryMore.addEventListener('click', function(){ githubCommitHistoryVisible += 5; refreshSameTab('github'); });

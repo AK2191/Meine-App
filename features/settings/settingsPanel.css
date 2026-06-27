@@ -1,7 +1,7 @@
 /* =====================================================================
    Change · Einstellungen — Stil nach "Einstellungen Komplett" (DC)
    Selbst-enthaltene, dunkle Emerald-Oberfläche. Scope: #settings-view
-   Version 0.1.0306
+   Version 0.1.0334
    Alle Regeln gezielt unter #settings-view, damit nichts in andere
    Ansichten (Dashboard/Kalender/Challenges) ausläuft.
    ===================================================================== */
@@ -374,18 +374,6 @@
 
 /* ---- GitHub --------------------------------------------------------- */
 #settings-view .change-github-update{display:flex;flex-direction:column;gap:0}
-#settings-view .change-github-secret{display:block;margin-bottom:12px}
-#settings-view .change-github-secret span{
-  display:block;font-size:10.5px;font-weight:800;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--st-faint);margin-bottom:8px;
-}
-#settings-view .change-github-secret input{
-  width:100%;box-sizing:border-box;background:rgba(255,255,255,.03);
-  border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:14px 15px;
-  font-family:'JetBrains Mono',monospace;font-size:14px;letter-spacing:3px;
-  color:#9AA59C;outline:none;
-}
-#settings-view .change-github-secret input:focus{border-color:rgba(var(--st-accent-rgb),.35)}
 #settings-view .change-github-tabs{
   display:flex;gap:0;margin-bottom:14px;
   background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);
@@ -488,6 +476,62 @@
 #settings-view .change-github-rollback-status.running{color:#F5C451;background:rgba(245,196,81,.08)}
 #settings-view .change-github-rollback-status.ok{color:var(--st-accent-ink);background:rgba(var(--st-accent-rgb),.08)}
 #settings-view .change-github-rollback-status.error{color:#E08A7E;background:rgba(224,120,106,.08)}
+
+/* GitHub action dialog is appended to body, so it intentionally is not scoped to #settings-view. */
+.change-github-upload-dialog{
+  position:fixed;inset:0;z-index:10050;
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;background:rgba(2,7,5,.74);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+}
+.change-github-upload-dialog-box{
+  width:min(440px,calc(100vw - 32px));box-sizing:border-box;
+  border-radius:18px;padding:24px;
+  background:linear-gradient(160deg,#102017,#0B130F);
+  border:1px solid rgba(52,211,153,.24);
+  box-shadow:0 26px 72px rgba(0,0,0,.52);
+  color:#F2F5F1;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;
+}
+.change-github-upload-dialog-kicker{
+  font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  color:#54E6A6;margin-bottom:8px;
+}
+.change-github-upload-dialog-title{
+  font-size:21px;line-height:1.18;font-weight:850;letter-spacing:-.35px;margin-bottom:10px;
+}
+.change-github-upload-dialog-msg{
+  border-radius:12px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.06);
+  color:#B8C4BA;font-size:13px;line-height:1.45;font-weight:650;padding:12px 14px;margin-bottom:16px;
+}
+.change-github-upload-secret-field{display:block;margin:0 0 18px}
+.change-github-upload-secret-field span{
+  display:block;margin-bottom:8px;font-size:10.5px;font-weight:850;letter-spacing:.12em;
+  text-transform:uppercase;color:#849087;
+}
+.change-github-upload-secret-field input{
+  width:100%;box-sizing:border-box;height:48px;border-radius:13px;
+  background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.1);
+  color:#F2F5F1;font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;
+  letter-spacing:.06em;padding:0 14px;outline:none;
+}
+.change-github-upload-secret-field input:focus{
+  border-color:rgba(52,211,153,.5);box-shadow:0 0 0 3px rgba(52,211,153,.12);
+}
+.change-github-upload-dialog-btns{display:grid;grid-template-columns:1fr 1.35fr;gap:10px}
+.change-github-upload-cancel,
+.change-github-upload-ok{
+  min-height:46px;border-radius:999px;border:1px solid rgba(255,255,255,.11);
+  font-family:inherit;font-size:14px;font-weight:850;cursor:pointer;
+}
+.change-github-upload-cancel{background:rgba(255,255,255,.055);color:#C9D4CB}
+.change-github-upload-cancel:hover{background:rgba(255,255,255,.08)}
+.change-github-upload-ok{background:linear-gradient(135deg,#3DDC91,#20C985);border-color:transparent;color:#04140D}
+.change-github-upload-ok:hover{filter:brightness(1.04)}
+@media (max-width:520px){
+  .change-github-upload-dialog{align-items:flex-end;padding:14px}
+  .change-github-upload-dialog-box{width:100%;padding:20px;border-radius:18px}
+  .change-github-upload-dialog-btns{grid-template-columns:1fr}
+}
 #settings-view .change-github-history-more{
   margin-top:4px;width:100%;background:rgba(255,255,255,.03);
   border:1px solid rgba(255,255,255,.08);color:#9AA59C;font-family:inherit;
