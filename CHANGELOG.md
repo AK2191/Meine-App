@@ -1,3 +1,9 @@
+## Version 0.1.0335 - Kalender-Cleanup Schritt 3
+- Dritter minimaler Kalender-Cleanup: eine fruehe, spaeter ueberschriebene `window.setCalView`-Zuweisung im Legacy-Block von `app.js` entfernt.
+- Keine Kalender-Renderlogik, kein Layout, keine Datenlogik, kein Sync und keine Firebase-Regeln geaendert.
+- Erwartung nach Upload: `window.ChangeCalendarOwnerAudit.print()` zeigt fuer `setCalView` weiterhin den finalen Owner aus der spaeten Kalender-Schicht (`after calendar-logic.js`).
+- Cache-Busting ?v=0.1.0335.
+
 ## Version 0.1.0334 - GitHub-Code Dialog aufgeraeumt
 - Sichtbare Freigabe-Code-Verwaltung im GitHub-Update-Tab entfernt. Der Code wird nicht mehr als gespeicherter Sitzungsstatus im Panel angezeigt.
 - Upload und Rollback fragen den Freigabe-Code direkt in einem eigenen Dialog ab und verwerfen ihn danach wieder.

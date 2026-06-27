@@ -24,6 +24,14 @@
 
 **Verboten:** bestehende Funktionen ohne Prüfung überschreiben · doppelte Komponenten · Workarounds statt sauberer Lösungen.
 
+## Version 0.1.0335 - Kalender-Cleanup Schritt 3
+- Dritter echter Mini-Cleanup auf Basis des Snapshot-Audits: eine fruehe `window.setCalView`-Zuweisung im alten `app.js`-Legacy-Block entfernt. Diese Zuweisung wurde spaeter in `app.js` und final von der Kalender-Schicht ueberschrieben.
+- Keine Renderfunktionen entfernt, keine Kalender-UI veraendert, keine Daten-/Sync-/Firebase-Aenderung.
+- Nach Upload pruefen: Kalender oeffnen und `window.ChangeCalendarOwnerAudit.print()` ausfuehren. `setCalView` muss weiterhin final aus der spaeten Kalender-Schicht kommen; bei Abweichung keine weitere Bereinigung.
+- Cache-Busting ?v=0.1.0335.
+- Geaendert: `app.js`, `index.html`, `core/calendar/calendarOwnerAudit.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check`, `scripts/auditDataModel.mjs`, Asset-/Versionspruefung.
+
 ## Version 0.1.0334 - GitHub-Code Dialog aufgeraeumt
 - Sichtbare Freigabe-Code-Verwaltung im GitHub-Update-Tab entfernt. Der Code wird nicht mehr als gespeicherter Sitzungsstatus im Panel angezeigt.
 - Upload und Rollback fragen den Freigabe-Code direkt in einem eigenen Dialog ab und verwerfen ihn danach wieder.

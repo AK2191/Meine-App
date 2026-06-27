@@ -1985,7 +1985,6 @@ document.addEventListener('touchend',e=>{
     if(currentCalView!=='today') grid.style.display='grid';
     renderUpcoming();
   };
-  window.setCalView=function(v){currentCalView=v; renderCalendar();};
   window.openCalendarSettings=function(){
     const state=calendarSettings.state||'ALL';
     const opts=Object.entries(STATE_OPTIONS).map(([k,v])=>'<option value="'+k+'" '+(k===state?'selected':'')+'>'+v+'</option>').join('');
