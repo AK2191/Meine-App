@@ -24,6 +24,19 @@
 
 **Verboten:** bestehende Funktionen ohne Prüfung überschreiben · doppelte Komponenten · Workarounds statt sauberer Lösungen.
 
+## Version 0.1.0345 - Tagespush Phase 3a: Push-Worker (Grundgeruest + Test)
+- Neuer separater Cloudflare-Worker `scripts/changePushWorker.js` (getrennt vom Deploy-Worker `changeGithubUpdateWorker.js`). KEINE Geheimnisse im Code.
+- Auth: `FIREBASE_SERVICE_ACCOUNT` (Secret) -> RS256-JWT via Web Crypto -> `oauth2.googleapis.com/token` -> Access-Token (Scopes firebase.messaging + datastore). projectId aus dem SA-JSON (`project_id`).
+- Test-Endpunkt `GET /test?secret=...&email=...`: Firestore REST liest `change_push_tokens/{emailDocId}/devices`, sendet je Token via FCM HTTP v1 (`/v1/projects/{pid}/messages:send`). Gesperrt ohne `PUSH_TEST_SECRET` (403). Default-Route `/` leakt nichts.
+- Master-Ebene aktiv: nur Geraete mit pushEnabled!=false. Typ-Prefs (notificationPrefs) erst in Phase 4.
+- Validiert: headless RS256/PKCS8/base64url korrekt; node --check.
+- Worker wird SEPARAT in Cloudflare deployt (Edit code -> einfuegen -> Deploy), nicht ueber den App-ZIP. Repo-Datei nur fuer Versionierung. Datei ist oeffentlich lesbar (GitHub Pages) - unkritisch, da keine Secrets enthalten.
+- BENUTZER-TODO vor Test: Secret `PUSH_TEST_SECRET` (frei waehlbar) im Worker anlegen; Worker-Code einfuegen + deployen; dann `/test?secret=...` bei GESCHLOSSENER App aufrufen.
+- Naechste Phase 4: server-seitige Challenge-Erinnerung (liest change_challenges/change_completions + notificationPrefs), Dedupe 1x/Tag, Zeiten 08:00+13:00 Berlin via Cron.
+- Cache-Busting ?v=0.1.0345.
+- Geaendert/Neu: `scripts/changePushWorker.js` (neu), `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check`; headless Crypto-Validierung.
+
 ## Version 0.1.0344 - Tagespush Phase K: Kontroll-Ebene (server-lesbar)
 - Neuer Worker-Vertrag `notificationPrefs` in `change_settings/{email}`: server-lesbare Schalter pro Meldungstyp (challenges, events, holidays, friseur, birthdays, rain, pollen). Default an.
 - Luecke geschlossen: `change_v1_friseur_notifications` und `change_v1_birthday_notifications` wurden bisher NICHT synchronisiert (nur holiday). Jetzt in `collectSettings()` (`dashboard.friseurNotifications`/`birthdayNotifications` + Prefs-Block) und in `applySettings()` zurueckgespielt.

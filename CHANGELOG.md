@@ -1,3 +1,12 @@
+## Version 0.1.0345 - Tagespush Phase 3a: Push-Worker (Grundgeruest + Test)
+- Neuer separater Cloudflare-Worker `scripts/changePushWorker.js` (getrennt vom Deploy-Worker). Enthaelt KEINE Geheimnisse (liest alles aus Worker-Secrets).
+- Anmeldung: Service-Account-JSON -> RS256-JWT (Web Crypto) -> Google Access-Token (FCM + Firestore-Scope). Crypto-Pfad headless validiert (gueltiges PKCS8, gueltige RS256-Signatur).
+- Geschuetzter Test-Endpunkt `/test?secret=...`: liest die Geraete-Tokens aus `change_push_tokens/{email}/devices` und sendet je einen FCM-Test-Push. Ohne Secret `PUSH_TEST_SECRET` ist der Endpunkt gesperrt (403).
+- Respektiert bereits die Master-Ebene (nur Geraete mit pushEnabled!=false). Typ-Prefs kommen in Phase 4.
+- Deploy des Workers: Code in den Cloudflare-Editor einfuegen (separat vom App-Deploy). Datei liegt zur Versionierung im Repo.
+- Nichts an der App selbst geaendert (nur neue Worker-Datei + Doku + Version).
+- Cache-Busting ?v=0.1.0345.
+
 ## Version 0.1.0344 - Tagespush Phase K: Kontroll-Ebene (server-lesbar)
 - Vorbereitung fuer kontrollierten Server-Versand. Nur Einstellungs-Sync, kein Worker, kein Versand.
 - Neuer Worker-Vertrag `notificationPrefs` im `change_settings`-Dokument: zentrale, server-lesbare Schalter pro Meldungstyp (challenges, events, holidays, friseur, birthdays, rain, pollen).
