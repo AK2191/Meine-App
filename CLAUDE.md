@@ -24,6 +24,23 @@
 
 **Verboten:** bestehende Funktionen ohne Prüfung überschreiben · doppelte Komponenten · Workarounds statt sauberer Lösungen.
 
+## Version 0.1.0344 - Tagespush Phase K: Kontroll-Ebene (server-lesbar)
+- Neuer Worker-Vertrag `notificationPrefs` in `change_settings/{email}`: server-lesbare Schalter pro Meldungstyp (challenges, events, holidays, friseur, birthdays, rain, pollen). Default an.
+- Luecke geschlossen: `change_v1_friseur_notifications` und `change_v1_birthday_notifications` wurden bisher NICHT synchronisiert (nur holiday). Jetzt in `collectSettings()` (`dashboard.friseurNotifications`/`birthdayNotifications` + Prefs-Block) und in `applySettings()` zurueckgespielt.
+- Schalter loesen bereits Sync aus (settingsPanel-Handler rufen saveChangeSettings) - es fehlte nur das Mitschreiben.
+- Headless geprueft: Default=an; Schalter aus -> Pref=false (Kill je Typ).
+- Nur settings-logic.js geaendert (+ Versionsdateien). Keine UI-/Verhaltensaenderung.
+- Cache-Busting ?v=0.1.0344.
+- Geaendert: `features/settings/settings-logic.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check` (settings-logic.js, pollenView.js); headless Prefs-Test.
+
+### KONTROLL-VERTRAG fuer den Push-Worker (verbindlich)
+- Vor JEDEM Versand prueft der Worker ZWEI Ebenen, sonst sendet er NICHT:
+  1. Master/Geraet: nur an Geraete in `change_push_tokens/{email}/devices/{deviceId}` mit `pushEnabled==true`. Haken weg -> Geraet wird in Phase 2 entfernt -> 0 Pushes.
+  2. Pro Typ (nutzerweit): `change_settings/{email}.notificationPrefs.{typ}` muss true sein. Fehlt/unklar -> als AUS behandeln.
+- Master-Schalter liegt NICHT in notificationPrefs (das ist Typ-Steuerung, nutzerweit); Master ist pro Geraet ueber das Token-Dokument.
+- Typen: challenges, events (Termine), holidays, friseur, birthdays, rain, pollen. challenges/events sind reserviert (Default an) bis es dafuer eigene UI-Schalter gibt.
+
 ## Version 0.1.0343 - Tagespush Phase 2: Multi-Geraete-Token
 - Handy UND PC gleichzeitig: FCM-Token jetzt pro Geraet unter `change_push_tokens/{email}/devices/{geraeteId}`.
 - Neue stabile Geraete-ID `change_device_id` (crypto.randomUUID, pro Installation). NICHT die Google-`client_id` verwenden (auf jedem Geraet gleich -> wuerde kollidieren).

@@ -612,12 +612,15 @@
   function collectSettings(){
     const calendarOptions = readCalendarOptions();
     const ws = readWeatherSettings();
+    const holidayNotif = readBool(['change_v1_holiday_notifications','holiday_notifications'], true);
+    const friseurNotif = readBool(['change_v1_friseur_notifications'], true);
+    const birthdayNotif = readBool(['change_v1_birthday_notifications','birthday_notifications'], true);
     return {
       schema: 1,
       owner: settingsAccount(),
       calendar: {
         holidayState: readHolidayState(),
-        holidayNotifications: readBool(['change_v1_holiday_notifications','holiday_notifications'], true),
+        holidayNotifications: holidayNotif,
         showHolidays: calendarOptions.showHolidays !== false,
         showChallengeDots: calendarOptions.showChallengeDots !== false,
         showWeekNumbers: calendarOptions.showWeekNumbers === true
@@ -635,6 +638,8 @@
         friseurWeeks: typeof window.getFriseurWeeks === 'function' ? parseInt(window.getFriseurWeeks(), 10) || 3 : readNumber(['change_v1_friseur_weeks'], 3),
         birthdaysEnabled: typeof window.getBirthdaysEnabled === 'function' ? !!window.getBirthdaysEnabled() : readBool(['change_v1_birthdays_enabled','birthdays_enabled'], true),
         birthdayNotificationDays: Math.max(0, Math.min(365, typeof window.getBirthdayNotificationDays === 'function' ? parseInt(window.getBirthdayNotificationDays(), 10) || 0 : readNumber(['change_v1_birthday_notification_days','birthday_notification_days'], 1))),
+        friseurNotifications: friseurNotif,
+        birthdayNotifications: birthdayNotif,
         urlaubEnabled: typeof window.getUrlaubEnabled === 'function' ? !!window.getUrlaubEnabled() : readBool(['urlaub_tracker_on'], true),
         urlaubTotalDays: typeof window.getUrlaubTotalDays === 'function' ? parseInt(window.getUrlaubTotalDays(), 10) || 30 : readNumber(['urlaub_tracker_days'], 30),
         urlaubHalfDays: typeof window.getUrlaubHalfDays === 'function' ? (window.getUrlaubHalfDays() || []) : readArray(['urlaub_half_days'], [])
@@ -650,6 +655,18 @@
       },
       google: {
         clientId: readClientId()
+      },
+      // Worker-Vertrag: zentrale, server-lesbare Schalter pro Meldungstyp.
+      // Master/Geraet-Ein-Aus liegt NICHT hier, sondern in change_push_tokens/.../devices (pushEnabled).
+      notificationPrefs: {
+        schema: 1,
+        challenges: readBool(['change_v1_challenge_notifications'], true),
+        events: readBool(['change_v1_event_notifications'], true),
+        holidays: holidayNotif,
+        friseur: friseurNotif,
+        birthdays: birthdayNotif,
+        rain: !!ws.rainAlertsEnabled,
+        pollen: !!ws.pollenAlertsEnabled
       },
       updatedAtLocal: readRaw(STAMP_KEY) || nowIso()
     };
@@ -694,6 +711,13 @@
         const days = Math.max(0, Math.min(365, parseInt(dash.birthdayNotificationDays, 10) || 0));
         writeString('change_v1_birthday_notification_days', days);
         writeString('birthday_notification_days', days);
+      }
+      if(typeof dash.friseurNotifications === 'boolean'){
+        writeJson('change_v1_friseur_notifications', dash.friseurNotifications);
+      }
+      if(typeof dash.birthdayNotifications === 'boolean'){
+        writeJson('change_v1_birthday_notifications', dash.birthdayNotifications);
+        writeJson('birthday_notifications', dash.birthdayNotifications);
       }
       if(typeof dash.urlaubEnabled === 'boolean') writeString('urlaub_tracker_on', dash.urlaubEnabled ? 'true' : 'false');
       if(dash.urlaubTotalDays) writeString('urlaub_tracker_days', parseInt(dash.urlaubTotalDays, 10) || 30);

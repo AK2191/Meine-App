@@ -1,3 +1,12 @@
+## Version 0.1.0344 - Tagespush Phase K: Kontroll-Ebene (server-lesbar)
+- Vorbereitung fuer kontrollierten Server-Versand. Nur Einstellungs-Sync, kein Worker, kein Versand.
+- Neuer Worker-Vertrag `notificationPrefs` im `change_settings`-Dokument: zentrale, server-lesbare Schalter pro Meldungstyp (challenges, events, holidays, friseur, birthdays, rain, pollen).
+- Luecke geschlossen: Friseur- und Geburtstags-Erinnerungs-Schalter wurden bisher NICHT nach Firestore synchronisiert (nur Feiertage). Jetzt in `collectSettings()` enthalten + in `applySettings()` zurueckgespielt (Geraete-uebergreifend konsistent).
+- Master-Ein/Aus bleibt bewusst getrennt: das liegt pro Geraet in `change_push_tokens/.../devices` (pushEnabled), nicht in den Prefs.
+- Default an; Schalter aus -> Typ aus (headless geprueft).
+- Keine UI-/Verhaltensaenderung; nichts an Empfang, Kalender, Dashboard, Challenges, Upload.
+- Cache-Busting ?v=0.1.0344.
+
 ## Version 0.1.0343 - Tagespush Phase 2: Multi-Geraete-Token
 - Handy UND PC gleichzeitig: FCM-Token wird jetzt pro Geraet unter `change_push_tokens/{email}/devices/{geraeteId}` gespeichert (statt ein Token pro E-Mail, das sich gegenseitig ueberschrieb).
 - Neue stabile Geraete-ID `change_device_id` (crypto.randomUUID, pro Installation einmalig). WICHTIG: das ist NICHT die Google-`client_id` (die ist auf jedem Geraet gleich) - die haette Handy/PC kollidieren lassen.
