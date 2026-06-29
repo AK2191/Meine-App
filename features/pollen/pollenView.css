@@ -6028,9 +6028,7 @@ body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-
   color:rgba(18,32,22,.62)!important;
 }
 
-/* v0.1.0349 · Pollen-Symptome: Allergieprofil-Icon klarer und eigenstaendiger gestaltet.
-   UI-only: Das Profil bekommt ein eigenes Chart-plus-Pollen-Symbol mit staerkerem Badge,
-   damit der Einstieg visuell nicht wie ein generischer Statistik-Hinweis wirkt. */
+/* v0.1.0350 - Pollen profile icon refined and encoding-safe release */
 #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry,
 body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry,
 body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry{

@@ -1,9 +1,9 @@
-## Version 0.1.0349 - Pollen: Profil-Symbol geschaerft
-- Das Allergieprofil in `Symptome heute` hat ein neues Chart-plus-Pollen-Symbol erhalten, damit die Profilkarte nicht mehr wie ein generischer Statistik-Hinweis aussieht.
-- Die Badge-Flaeche um das Symbol wurde vergroessert und mit Verlauf, feiner Kontur und staerkerer Fokus-/Hover-Wirkung abgestimmt; mobile und Light-Theme-Regeln wurden mitgezogen.
-- Cache-Busting auf `?v=0.1.0349` angehoben.
-- Geaendert/Neu: `features/weather/pollenSymptoms.js`, `features/pollen/pollenView.css`, `features/pollen/pollenView.js`, `features/settings/settingsPanel.js`, `index.html`, `CLAUDE.md`, `CHANGELOG.md`.
-- Geprueft: CSS/JS-Review, `node --check` fuer die geaenderten JS-Dateien, neues Voll-ZIP.
+## Version 0.1.0350 - Encoding-Fix und Pollen-Icon
+- 0.1.0349 war in der Anzeige fehlerhaft, weil ein Rewrite die bestehende Kodierung ungewollt veraendert hat.
+- Diese Folgeversion aktualisiert index.html, settingsPanel.js und pollenView.js nur byte-sicher und behaelt das neue Pollen-Profil-Icon.
+- Cache-Busting auf ?v=0.1.0350 angehoben.
+- Geaendert/Neu: features/weather/pollenSymptoms.js, features/pollen/pollenView.css, features/pollen/pollenView.js, features/settings/settingsPanel.js, index.html, CLAUDE.md, CHANGELOG.md.
+- Geprueft: node --check fuer die geaenderten JS-Dateien, BOM in index.html, neues Voll-ZIP.
 
 ## Start Here - Wartbarkeit
 - Vor jeder Aenderung zuerst lesen: `docs/ARCHITECTURE.md`, `docs/DATA-MODEL.md`, `docs/STYLEGUIDE.md`, `docs/SAFETY-CHECKS.md`.
