@@ -36,6 +36,9 @@ export default {
       if (url.pathname === '/test') {
         return await handleTest(url, env);
       }
+      if (url.pathname === '/challenge') {
+        return await handleChallenge(url, env);
+      }
       return text('change-push-worker bereit.', 200);
     } catch (err) {
       return json({ error: String(err && err.message || err) }, 500);
@@ -153,25 +156,74 @@ function pemToArrayBuffer(pem) {
   return buf.buffer;
 }
 
-/* ---------- Firestore: Geraete-Tokens lesen ------------------------------ */
+/* ---------- Firestore: gemeinsame Helfer + Geraete-Tokens ---------------- */
+
+function fsBase(projectId) {
+  return 'https://firestore.googleapis.com/v1/projects/' + projectId + '/databases/(default)/documents';
+}
+
+async function firestoreListDocs(accessToken, projectId, collPath) {
+  const resp = await fetch(fsBase(projectId) + '/' + collPath + '?pageSize=300', {
+    headers: { Authorization: 'Bearer ' + accessToken },
+  });
+  const data = await resp.json();
+  return data.documents || [];
+}
+
+async function firestoreGetDoc(accessToken, projectId, docPath) {
+  const resp = await fetch(fsBase(projectId) + '/' + docPath, {
+    headers: { Authorization: 'Bearer ' + accessToken },
+  });
+  if (resp.status === 404) return null;
+  const data = await resp.json();
+  if (data.error) return null;
+  return data;
+}
+
+async function firestoreRunQuery(accessToken, projectId, collectionId, fieldPath, value, limit) {
+  const body = {
+    structuredQuery: {
+      from: [{ collectionId }],
+      where: { fieldFilter: { field: { fieldPath }, op: 'EQUAL', value: { stringValue: value } } },
+      limit: limit || 200,
+    },
+  };
+  const resp = await fetch(fsBase(projectId) + ':runQuery', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await resp.json();
+  if (!Array.isArray(data)) return [];
+  return data.filter((x) => x.document).map((x) => x.document);
+}
+
+async function firestorePatch(accessToken, projectId, docPath, fields, maskPaths) {
+  const mask = (maskPaths || Object.keys(fields))
+    .map((p) => 'updateMask.fieldPaths=' + encodeURIComponent(p))
+    .join('&');
+  await fetch(fsBase(projectId) + '/' + docPath + '?' + mask, {
+    method: 'PATCH',
+    headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fields }),
+  });
+}
+
+function lastSeg(name) {
+  const p = String(name || '').split('/');
+  return p[p.length - 1];
+}
 
 async function listDevices(accessToken, projectId, emailDocId) {
-  const url =
-    'https://firestore.googleapis.com/v1/projects/' +
-    projectId +
-    '/databases/(default)/documents/change_push_tokens/' +
-    emailDocId +
-    '/devices';
-  const resp = await fetch(url, { headers: { Authorization: 'Bearer ' + accessToken } });
-  const data = await resp.json();
+  const docs = await firestoreListDocs(accessToken, projectId, 'change_push_tokens/' + emailDocId + '/devices');
   const out = [];
-  (data.documents || []).forEach((doc) => {
+  docs.forEach((doc) => {
     const f = doc.fields || {};
-    const token = f.token && f.token.stringValue;
+    const tk = f.token && f.token.stringValue;
     // pushEnabled fehlt -> als true werten (Altbestand); explizit false -> aus
     const enabled = !(f.pushEnabled && f.pushEnabled.booleanValue === false);
     const deviceId = f.deviceId && f.deviceId.stringValue;
-    if (token && enabled) out.push({ token, deviceId });
+    if (tk && enabled) out.push({ token: tk, deviceId });
   });
   return out;
 }
@@ -208,6 +260,133 @@ async function fcmSend(accessToken, projectId, deviceToken, title, body) {
     /* leer */
   }
   return { ok: resp.ok, status: resp.status, data };
+}
+
+/* ---------- Challenge-Erinnerung (Phase 4) ------------------------------- */
+
+async function handleChallenge(url, env) {
+  if (!env.PUSH_TEST_SECRET) {
+    return json({ error: 'gesperrt: Secret PUSH_TEST_SECRET ist nicht gesetzt.' }, 403);
+  }
+  if ((url.searchParams.get('secret') || '') !== env.PUSH_TEST_SECRET) {
+    return json({ error: 'Falsches oder fehlendes secret.' }, 403);
+  }
+  if (!env.FIREBASE_SERVICE_ACCOUNT) {
+    return json({ error: 'Secret FIREBASE_SERVICE_ACCOUNT fehlt.' }, 500);
+  }
+  let sa;
+  try {
+    sa = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
+  } catch (e) {
+    return json({ error: 'FIREBASE_SERVICE_ACCOUNT ist kein gueltiges JSON.' }, 500);
+  }
+  const projectId = sa.project_id;
+  const email = (url.searchParams.get('email') || 'ak2191@gmx.de').toLowerCase();
+  const force = url.searchParams.get('force') === '1'; // Dedupe fuer Tests umgehen
+  const accessToken = await getAccessToken(sa);
+  const result = await sendChallengeReminder(accessToken, projectId, email, force);
+  return json(result);
+}
+
+// Orchestrierung mit den ZWEI Kontroll-Ebenen + Dedupe.
+async function sendChallengeReminder(accessToken, projectId, email, force) {
+  const emailId = safeDocId(email);          // Dokument-ID, z.B. ak2191_gmx.de
+  const playerId = String(email).toLowerCase(); // playerId in change_completions
+  const today = berlinToday();
+
+  // Kontroll-Ebene 2: Typ "challenges" eingeschaltet?
+  const allowed = await challengePrefAllows(accessToken, projectId, emailId);
+  if (!allowed) return { skipped: 'typ-challenges-aus', today };
+
+  // Dedupe: heute schon erinnert?
+  if (!force) {
+    const state = await firestoreGetDoc(accessToken, projectId, 'change_push_state/' + emailId);
+    const last = state && state.fields && state.fields.lastChallengeReminder && state.fields.lastChallengeReminder.stringValue;
+    if (last === today) return { skipped: 'heute-bereits-gesendet', today };
+  }
+
+  // Gibt es ueberhaupt eine offene Challenge heute?
+  const open = await computeOpenChallenges(accessToken, projectId, playerId, today);
+  if (!open.count) return { skipped: 'keine-offene-challenge', today };
+
+  // Kontroll-Ebene 1: aktive Geraete (pushEnabled)
+  const devices = await listDevices(accessToken, projectId, emailId);
+  if (!devices.length) return { skipped: 'kein-aktives-geraet', today, openChallenges: open.count };
+
+  const title = 'Change';
+  const body = 'Deine Tages-Challenge wartet 💪';
+  const results = [];
+  for (const dev of devices) {
+    const r = await fcmSend(accessToken, projectId, dev.token, title, body);
+    results.push({
+      device: dev.deviceId || null,
+      ok: r.ok,
+      status: r.status,
+      error: r.ok ? null : (r.data && r.data.error && r.data.error.status) || 'unknown',
+    });
+  }
+  const sent = results.filter((x) => x.ok).length;
+  if (sent > 0) {
+    await firestorePatch(
+      accessToken,
+      projectId,
+      'change_push_state/' + emailId,
+      {
+        lastChallengeReminder: { stringValue: today },
+        updatedAt: { timestampValue: new Date().toISOString() },
+      },
+      ['lastChallengeReminder', 'updatedAt']
+    );
+  }
+  return { today, openChallenges: open.count, deviceCount: devices.length, sent, results };
+}
+
+// Kontroll-Ebene 2: change_settings/{emailId}.notificationPrefs.challenges
+// Fehlt das Dokument/Feld -> App-Default "an". Explizit false -> aus.
+async function challengePrefAllows(accessToken, projectId, emailId) {
+  const doc = await firestoreGetDoc(accessToken, projectId, 'change_settings/' + emailId);
+  if (!doc || !doc.fields) return true;
+  const prefs = doc.fields.notificationPrefs;
+  const ch = prefs && prefs.mapValue && prefs.mapValue.fields && prefs.mapValue.fields.challenges;
+  if (ch && ch.booleanValue === false) return false;
+  return true;
+}
+
+// Spiegelt die Client-Logik challengeDueToday + erledigt-heute.
+async function computeOpenChallenges(accessToken, projectId, playerId, today) {
+  const challenges = await firestoreListDocs(accessToken, projectId, 'change_challenges');
+  const comps = await firestoreRunQuery(accessToken, projectId, 'change_completions', 'playerId', playerId, 300);
+  const doneToday = new Set();
+  comps.forEach((c) => {
+    const f = c.fields || {};
+    const date = f.date && f.date.stringValue;
+    if (date !== today) return;
+    const cid = f.challengeId && f.challengeId.stringValue;
+    if (cid) doneToday.add(String(cid));
+  });
+  let count = 0;
+  challenges.forEach((doc) => {
+    const f = doc.fields || {};
+    if (f.active && f.active.booleanValue === false) return;
+    const id = (f.id && f.id.stringValue) || lastSeg(doc.name);
+    const rec = (f.recurrence && f.recurrence.stringValue) || 'once';
+    const start = (f.date && f.date.stringValue) || today;
+    const due = rec === 'daily' ? start <= today : start === today;
+    if (!due) return;
+    if (doneToday.has(String(id))) return;
+    count++;
+  });
+  return { count };
+}
+
+// Heutiges Datum als YYYY-MM-DD in Europe/Berlin (DST-fest).
+function berlinToday() {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Berlin',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
 }
 
 /* ---------- Helfer ------------------------------------------------------- */

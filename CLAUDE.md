@@ -24,6 +24,21 @@
 
 **Verboten:** bestehende Funktionen ohne Prüfung überschreiben · doppelte Komponenten · Workarounds statt sauberer Lösungen.
 
+## Version 0.1.0347 - Tagespush Phase 4: echte Challenge-Erinnerung (Worker)
+- Push-Worker `scripts/changePushWorker.js` um Endpunkt `GET /challenge?secret=...&email=...&force=1` erweitert. Sendet die echte Tages-Erinnerung statt Test-Text.
+- Liest server-seitig die OFFENEN Challenges des Tages: `change_challenges` (alle) + `change_completions` (per runQuery playerId==email). "Offen heute" = active ∧ (recurrence daily: date<=heute / sonst date==heute) ∧ heute noch nicht erledigt. Spiegelt die Client-Logik challengeDueToday.
+- KONTROLL-EBENE voll wirksam: (1) nur Geraete mit pushEnabled; (2) `change_settings/{email}.notificationPrefs.challenges` darf nicht false sein (fehlt -> App-Default an). Keine offene Challenge -> kein Versand.
+- DEDUPE: `change_push_state/{email}.lastChallengeReminder==heute` -> ueberspringen (max 1x/Tag). `&force=1` umgeht das fuer Tests.
+- Text fest: Titel "Change", Body "Deine Tages-Challenge wartet 💪".
+- Datum DST-fest in Europe/Berlin (Intl). Service-Account-REST umgeht Firestore-Rules (Admin) - kein Rules-Change.
+- Headless geprueft: berlinToday-Format, offene-Challenge-Berechnung (taeglich/einmalig/erledigt/inaktiv/zukunft), node --check.
+- Worker wird SEPARAT in Cloudflare deployt (Edit code -> einfuegen -> Deploy). Cron (08:00+13:00) kommt in Phase 5.
+- Reine Worker-Datei + Doku + Version; an der App selbst nichts geaendert.
+- Cache-Busting ?v=0.1.0347.
+
+- Geaendert/Neu: `scripts/changePushWorker.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check`; headless Logik-Tests.
+
 ## Version 0.1.0346 - Benachrichtigungen: Schalter fuer Challenges + Termine
 - Zwei neue Einzel-Schalter im Benachrichtigungen-Tab: "Challenge-Erinnerung" und "Termin-Erinnerung" (Default an), gleicher Stil wie die uebrigen Karten.
 - Schreiben in `change_v1_challenge_notifications` / `change_v1_event_notifications` (die der Worker-Vertrag notificationPrefs bereits liest) und loesen den Settings-Sync aus -> server-seitig respektiert.
