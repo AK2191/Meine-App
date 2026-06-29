@@ -6027,3 +6027,141 @@ body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-
 [data-theme="light"] #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-profile-chevron{
   color:rgba(18,32,22,.62)!important;
 }
+
+/* v0.1.0349 · Pollen-Symptome: Allergieprofil-Icon klarer und eigenstaendiger gestaltet.
+   UI-only: Das Profil bekommt ein eigenes Chart-plus-Pollen-Symbol mit staerkerem Badge,
+   damit der Einstieg visuell nicht wie ein generischer Statistik-Hinweis wirkt. */
+#pollen-view .pollen-neo-symptoms .change-symptom-profile-entry,
+body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry,
+body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry{
+  grid-template-columns:46px minmax(0,1fr) 24px!important;
+  gap:16px!important;
+}
+#pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon,
+body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon,
+body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon{
+  width:42px!important;
+  height:42px!important;
+  flex-basis:42px!important;
+  border-radius:14px!important;
+  color:#e5ffec!important;
+  background:
+    radial-gradient(circle at 28% 28%,rgba(135,255,186,.24),transparent 46%),
+    linear-gradient(180deg,rgba(24,76,52,.96),rgba(12,42,28,.92))!important;
+  border:1px solid rgba(109,255,171,.18)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 12px 24px rgba(4,16,10,.24)!important;
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease!important;
+}
+#pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon svg,
+body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon svg,
+body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon svg{
+  width:22px!important;
+  height:22px!important;
+  overflow:visible;
+}
+#pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-grid,
+body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-grid,
+body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-grid{
+  stroke:rgba(229,255,236,.22)!important;
+  stroke-width:1.55!important;
+  stroke-linecap:round!important;
+}
+#pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-bars,
+body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-bars,
+body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-bars{
+  stroke:rgba(171,255,203,.88)!important;
+  stroke-width:2.2!important;
+  stroke-linecap:round!important;
+}
+#pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-trend,
+body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-trend,
+body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-trend{
+  fill:none!important;
+  stroke:#f6fff8!important;
+  stroke-width:1.9!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+#pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-pollen-halo,
+body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-pollen-halo,
+body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-pollen-halo{
+  fill:rgba(255,255,255,.10)!important;
+}
+#pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-pollen,
+body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-pollen,
+body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-pollen{
+  fill:#7dffb0!important;
+}
+#pollen-view .pollen-neo-symptoms .change-symptom-profile-entry:hover .change-symptom-insight-icon,
+#pollen-view .pollen-neo-symptoms .change-symptom-profile-entry:focus-visible .change-symptom-insight-icon,
+body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry:hover .change-symptom-insight-icon,
+body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry:focus-visible .change-symptom-insight-icon,
+body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry:hover .change-symptom-insight-icon,
+body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry:focus-visible .change-symptom-insight-icon{
+  transform:translateY(-1px);
+  border-color:rgba(133,255,184,.28)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 16px 28px rgba(4,16,10,.28)!important;
+}
+@media(max-width:760px){
+  #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry,
+  body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry,
+  body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry{
+    grid-template-columns:44px minmax(0,1fr) 22px!important;
+    gap:14px!important;
+  }
+  #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon,
+  body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon,
+  body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon{
+    width:40px!important;
+    height:40px!important;
+    flex-basis:40px!important;
+    border-radius:13px!important;
+  }
+  #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon svg,
+  body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon svg,
+  body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon svg{
+    width:21px!important;
+    height:21px!important;
+  }
+}
+[data-theme="light"] #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon,
+[data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon,
+[data-theme="light"] body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon{
+  color:#143622!important;
+  background:
+    radial-gradient(circle at 28% 28%,rgba(76,191,121,.24),transparent 46%),
+    linear-gradient(180deg,rgba(230,247,234,.98),rgba(208,236,216,.96))!important;
+  border-color:rgba(39,108,65,.18)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.78),
+    0 10px 20px rgba(34,84,50,.12)!important;
+}
+[data-theme="light"] #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-grid,
+[data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-grid,
+[data-theme="light"] body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-grid{
+  stroke:rgba(20,54,34,.24)!important;
+}
+[data-theme="light"] #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-bars,
+[data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-bars,
+[data-theme="light"] body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-bars{
+  stroke:rgba(36,118,67,.84)!important;
+}
+[data-theme="light"] #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-trend,
+[data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-trend,
+[data-theme="light"] body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-trend{
+  stroke:#1f5b37!important;
+}
+[data-theme="light"] #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-pollen-halo,
+[data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-pollen-halo,
+[data-theme="light"] body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-pollen-halo{
+  fill:rgba(31,91,55,.08)!important;
+}
+[data-theme="light"] #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-pollen,
+[data-theme="light"] body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-pollen,
+[data-theme="light"] body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry .change-symptom-insight-icon .change-profile-pollen{
+  fill:#3aac67!important;
+}

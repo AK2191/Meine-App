@@ -298,7 +298,7 @@
     var count = result.records.length;
     var summary = profileSummary(result);
     return '<button type="button" class="change-symptom-insight change-symptom-profile-entry'+(count ? ' strong' : ' empty')+'" data-pollen-profile-open="1" aria-label="Dein Allergieprofil öffnen">'
-      + '<span class="change-symptom-insight-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 18V9"/><path d="M10 18V5"/><path d="M16 18v-7"/><path d="M22 18v-4"/></svg></span>'
+      + '<span class="change-symptom-insight-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path class="change-profile-grid" d="M4.75 18.25h14.5"/><path class="change-profile-bars" d="M7.25 16.4v-2.8M11.7 16.4v-5.2M16.15 16.4v-3.65"/><path class="change-profile-trend" d="M6.25 13.75 9.4 10.6l2.55 1.75 4.8-5.1"/><circle class="change-profile-pollen-halo" cx="18.2" cy="6.85" r="3.1"/><circle class="change-profile-pollen" cx="18.2" cy="6.85" r="1.55"/><circle class="change-profile-pollen" cx="15.85" cy="5.55" r="1"/><circle class="change-profile-pollen" cx="19.95" cy="9.25" r=".9"/></svg></span>'
       + '<span class="change-symptom-profile-copy"><strong>'+esc(summary.title)+'</strong><span>'+esc(summary.text)+'<br>'+esc(summary.hint)+'</span></span>'
       + '<span class="change-symptom-profile-chevron" aria-hidden="true">›</span>'
       + '</button>';

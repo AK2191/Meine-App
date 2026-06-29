@@ -1,3 +1,9 @@
+## Version 0.1.0349 - Pollen: Profil-Symbol geschaerft
+- Das Allergieprofil in `Symptome heute` hat jetzt ein eigenstaendiges Chart-plus-Pollen-Symbol statt der generischen Balkenanzeige. So ist der Einstieg in das Profil auf einen Blick klarer als Insight, nicht nur als Statistik-Karte.
+- Das Icon-Badge wurde vergroessert und mit abgestuftem Verlauf, feiner Kante und ruhigerem Hover-Zustand neu aufgebaut, damit es im dunklen Pollen-Layout hochwertiger und besser lesbar wirkt.
+- Mobile und Light-Theme-Varianten fuer die Profilzeile mitgezogen, damit das Symbol auch auf kleinen Breiten und in hellen Oberflaechen stabil bleibt.
+- Cache-Busting auf `?v=0.1.0349` angehoben.
+
 ## Version 0.1.0348 - Einstellungen: Profil angeglichen und Prüf-Buttons entzerrt
 - Profil im Einstellungen-Tab an das Ziel-Layout angenaehert: Mitspieler bekommt wieder die erklaerende Subline, und gezielte CSS-Hardening-Regeln verhindern, dass alte `styles/appShell.css`-Overrides Avatar, Name und Abmelden wieder sichtbar verformen.
 - Vollbreite Action-Buttons in den Settings-Karten sauber entzerrt: direkte Card-Aktionen erhalten nun verlaessliche Hoehe, vertikale Zentrierung und Abstand nach Hinweisboxen/Listen. Das betrifft sichtbar u. a. `Daten-Audit pruefen`, `App-Gesundheitscheck pruefen` und `Protokoll leeren`.
