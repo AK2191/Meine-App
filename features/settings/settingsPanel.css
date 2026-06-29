@@ -217,6 +217,12 @@
 }
 #settings-view .btn-primary:hover{filter:brightness(1.04)}
 #settings-view .btn[disabled],#settings-view .btn-primary[disabled]{opacity:.45;cursor:not-allowed}
+#settings-view .change-feature-body > .btn{
+  display:flex;align-items:center;justify-content:center;
+  min-height:40px;padding:12px 18px;
+}
+#settings-view .change-feature-body > :not(.btn) + .btn{margin-top:12px}
+#settings-view .change-feature-body > .btn + .btn{margin-top:10px}
 
 /* ---- Chips (sync targets) ------------------------------------------- */
 #settings-view .change-feature-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:13px}
@@ -230,7 +236,7 @@
 #settings-view .change-feature-note{
   font-size:13px;color:var(--st-muted2);font-weight:500;
   background:rgba(255,255,255,.02);border:1px solid var(--st-line2);
-  border-radius:12px;padding:14px 16px;
+  border-radius:12px;padding:14px 16px;line-height:1.45;
 }
 
 /* ---- Daten-Audit ---------------------------------------------------- */
@@ -725,3 +731,74 @@
 
 /* Versions-Pille: gedämpftes Grau wie im Design (höhere Spezifität, explizit) */
 #settings-view .change-settings-page-head .change-settings-version{color:#5E6A60 !important}
+
+/* Profil-Hardening gegen alte Hero-Overrides aus appShell.css */
+html body.change-view-settings #content #settings-view .change-settings-profile-hero{
+  display:flex!important;
+  align-items:center!important;
+  flex-wrap:nowrap!important;
+  gap:18px!important;
+  padding:22px!important;
+  border-radius:18px!important;
+  border:1px solid rgba(var(--st-accent-rgb),.18)!important;
+  background:linear-gradient(150deg,rgba(20,32,25,.7),rgba(12,20,15,.5))!important;
+}
+html body.change-view-settings #content #settings-view .change-settings-profile-avatar{
+  width:62px!important;
+  height:62px!important;
+  min-width:62px!important;
+  margin:0!important;
+  border:none!important;
+  border-radius:18px!important;
+  box-shadow:0 10px 24px rgba(16,185,129,.35)!important;
+  background:radial-gradient(circle at 32% 28%,#86efac,var(--st-accent2) 75%)!important;
+  color:#06140F!important;
+  font-size:22px!important;
+  font-weight:800!important;
+}
+html body.change-view-settings #content #settings-view .change-settings-profile-avatar img{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+}
+html body.change-view-settings #content #settings-view .change-settings-profile-main{
+  flex:1 1 auto!important;
+  min-width:0!important;
+}
+html body.change-view-settings #content #settings-view .change-settings-profile-name{
+  margin:0!important;
+  color:#fff!important;
+  font-size:20px!important;
+  line-height:1.08!important;
+  font-weight:800!important;
+  letter-spacing:-.3px!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+html body.change-view-settings #content #settings-view .change-settings-profile-mail{
+  margin-top:2px!important;
+  color:var(--st-muted)!important;
+  font-size:13px!important;
+  line-height:1.35!important;
+  font-weight:600!important;
+}
+html body.change-view-settings #content #settings-view .change-settings-profile-badge{
+  margin-top:9px!important;
+}
+html body.change-view-settings #content #settings-view .change-settings-profile-signout{
+  flex:none!important;
+  margin-left:auto!important;
+  padding:10px 18px!important;
+  border-radius:11px!important;
+  font-size:13px!important;
+  font-weight:700!important;
+  color:var(--st-ink3)!important;
+}
+
+@media (max-width:760px){
+  html body.change-view-settings #content #settings-view .change-settings-profile-hero{
+    flex-wrap:wrap!important;
+  }
+}

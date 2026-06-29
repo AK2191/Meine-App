@@ -1,9 +1,9 @@
-(function(){
+﻿(function(){
   'use strict';
 
   var Store = window.ChangeWeatherStore;
   var Service = window.ChangeWeatherService;
-  var APP_VERSION = '0.1.0347';
+  var APP_VERSION = '0.1.0348';
   var FOCUS_KEY = 'change_v1_pollen_focus_key';
   var SELECTED_KEY = 'change_v1_pollen_selected_keys';
   var EDIT_KEY = 'change_v1_pollen_edit_mode';
@@ -36,7 +36,7 @@
   function diffLabel(diff){
     if(diff === 0) return 'Heute';
     if(diff === 1) return 'Morgen';
-    if(diff === 2) return 'Übermorgen';
+    if(diff === 2) return 'Ãœbermorgen';
     if(diff > 0) return 'In ' + diff + ' Tagen';
     return 'Heute';
   }
@@ -67,7 +67,7 @@
     if(!list.length) return '<span class="pollen-neo-muted">Keine Belastung</span>';
     return list.map(function(p){
       return '<span class="pollen-neo-word '+esc(p.level || 'none')+'">'+esc(p.name)+' '+esc(levelLabel(p.level))+'</span>';
-    }).join('<span class="pollen-neo-dotsep">·</span>');
+    }).join('<span class="pollen-neo-dotsep">Â·</span>');
   }
   function summaryTextForItems(items){
     var list = (items || []).filter(Boolean);
@@ -189,13 +189,13 @@
   }
   function trendText(days){
     days = (days || []).filter(function(day){ return !day.dataMissing && day.score !== null && day.score !== undefined; });
-    if(days.length < 2) return 'Morgen ähnlich';
+    if(days.length < 2) return 'Morgen Ã¤hnlich';
     var diff = Number(days[1].score || 0) - Number(days[0].score || 0);
-    if(diff >= 12) return 'Morgen deutlich stärker';
-    if(diff >= 4) return 'Morgen etwas stärker';
+    if(diff >= 12) return 'Morgen deutlich stÃ¤rker';
+    if(diff >= 4) return 'Morgen etwas stÃ¤rker';
     if(diff <= -12) return 'Morgen deutlich ruhiger';
     if(diff <= -4) return 'Morgen etwas ruhiger';
-    return 'Morgen ähnlich';
+    return 'Morgen Ã¤hnlich';
   }
   function miniBars(score, tone){
     if(score === null || score === undefined) return '<span></span><span></span><span></span><span></span><span></span><span></span>';
@@ -219,7 +219,7 @@
   }
   function glyphSvg(kind){
     // Pollen-Icon-Set v0.1.0278: klare botanische Linien aus dem aktuellen Design.
-    // Nur Darstellung; Schlüssel und Auswahl-Logik bleiben unverändert.
+    // Nur Darstellung; SchlÃ¼ssel und Auswahl-Logik bleiben unverÃ¤ndert.
     var map = {
       grass_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M24 43 C23 34 22 24 18 8" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><path d="M24 43 C24 33 24 22 24 6" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><path d="M24 43 C25 34 26 24 30 9" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><path d="M24 43 C22 35 19 27 13 16" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><path d="M24 43 C26 35 29 27 35 17" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></svg></span>',
       birch_pollen:'<span class="pollen-neo-icon-svg"><svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M24 42 V20" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><path d="M24 20 C16 19 11 13 11 6 C19 7 24 13 24 20Z" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 13 H22 M14 9 H20" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></svg></span>',
@@ -232,7 +232,7 @@
     return map[kind] || map.leaf;
   }
 
-  /* Große Hero-Illustration — je nach dominantem Pollentyp */
+  /* GroÃŸe Hero-Illustration â€” je nach dominantem Pollentyp */
   function heroArtSvg(dominantKey){
     var illustrations = {
       grass_pollen: '<svg class="pollen-neo-hero-illustration" viewBox="0 0 130 130" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" stroke-linecap="round" stroke-linejoin="round">'
@@ -308,8 +308,8 @@
     var selectedItem = todaySelected.item || dominantItem(today, selectedKeys) || {key:selectedKeys && selectedKeys[0], name:'Pollen', level:'none', value:0};
     var topLoadItem = relevantLoadItems(today)[0] || activeItems(today)[0] || selectedItem;
     var topLoadScore = Math.round(clampNum(topLoadItem && topLoadItem.value));
-    // Hero-Illustration: ausgewählten Typ priorisieren (Nutzerauswahl gewinnt),
-    // Fallback auf höchsten Messwert, dann Gräser als Default.
+    // Hero-Illustration: ausgewÃ¤hlten Typ priorisieren (Nutzerauswahl gewinnt),
+    // Fallback auf hÃ¶chsten Messwert, dann GrÃ¤ser als Default.
     var _selKeys = Array.isArray(selectedKeys) ? selectedKeys : [];
     var _selItem = _selKeys.length > 0 ? itemByKey(today, _selKeys[0]) : null;
     var dominantKey = (_selItem && _selItem.key)
@@ -325,13 +325,13 @@
           + '<div class="pollen-neo-label">Deine Pollen heute</div>'
           + '<div class="pollen-neo-hero-title">'+esc(intensity)+'</div>'
           + '<div class="pollen-neo-subline">'+overallSubline(today, selectedKeys)+'</div>'
-          + '<div class="pollen-neo-cta">↗ '+esc(nextTrend)+'</div>'
+          + '<div class="pollen-neo-cta">â†— '+esc(nextTrend)+'</div>'
         + '</div>'
         + heroArtSvg(dominantKey)
         + '<div class="pollen-neo-hero-stats pollen-neo-hero-stats-extended pollen-neo-hero-insights">'
           + '<div class="pollen-hero-insight">'+statusIconSvg('active')+'<strong>'+esc((topLoadItem && topLoadItem.name) || 'Pollen')+' '+esc(levelLabel(topLoadItem && topLoadItem.level))+'</strong><em>'+esc(topLoadScore)+' %</em></div>'
-          + '<div class="pollen-hero-insight">'+statusIconSvg('peak')+'<strong>Peak</strong><em>'+esc(peak ? diffLabel(dayDiff(peak.date)) : '–')+'</em></div>'
-          + '<div class="pollen-hero-insight">'+statusIconSvg('quiet')+'<strong>Ruhigster Tag</strong><em>'+esc(quiet ? fmtLongDay(quiet.date).split(',')[0] : '–')+'</em></div>'
+          + '<div class="pollen-hero-insight">'+statusIconSvg('peak')+'<strong>Peak</strong><em>'+esc(peak ? diffLabel(dayDiff(peak.date)) : 'â€“')+'</em></div>'
+          + '<div class="pollen-hero-insight">'+statusIconSvg('quiet')+'<strong>Ruhigster Tag</strong><em>'+esc(quiet ? fmtLongDay(quiet.date).split(',')[0] : 'â€“')+'</em></div>'
         + '</div>'
       + '</div>'
     + '</section>';
@@ -385,7 +385,7 @@
     var list = selectedForecast(forecast, selectedKeys).filter(function(day){
       return day && !day.dataMissing;
     }).slice(0,5);
-    // Der Bereich heißt bewusst 5-Tages-Ausblick. Wenn die API weniger verwertbare
+    // Der Bereich heiÃŸt bewusst 5-Tages-Ausblick. Wenn die API weniger verwertbare
     // Tage liefert, bleiben wir bei den geladenen Tagen statt technische Platzhalter
     // wie "Keine API-Daten" anzuzeigen.
     return '<section class="pollen-neo-section pollen-neo-forecast">'
@@ -433,11 +433,11 @@
     var best = points.slice().sort(function(a,b){ return a.value - b.value; })[0] || {hour:0,value:0};
     var trend = points.length > 2 ? (points[points.length-1].value - points[0].value) : 0;
     var trendText = trend > 12 ? 'Steigend' : trend < -12 ? 'Ruhiger' : 'Stabil';
-    var trendSub = trend > 12 ? 'abends höher' : trend < -12 ? 'später ruhiger' : 'kaum Änderung';
+    var trendSub = trend > 12 ? 'abends hÃ¶her' : trend < -12 ? 'spÃ¤ter ruhiger' : 'kaum Ã„nderung';
     return '<div class="pollen-hourly-insights">'
-      + '<div class="pollen-hourly-insight '+esc(hourlyTone(peak.value))+'"><span class="pollen-hourly-insight-icon">↗</span><small>Peak</small><strong>'+esc(pad2(peak.hour))+':00</strong><em>'+esc(peak.value)+'%</em></div>'
-      + '<div class="pollen-hourly-insight '+esc(hourlyTone(best.value))+'"><span class="pollen-hourly-insight-icon">◷</span><small>Beste Zeit</small><strong>'+esc(pad2(best.hour))+':00</strong><em>'+esc(best.value)+'%</em></div>'
-      + '<div class="pollen-hourly-insight trend"><span class="pollen-hourly-insight-icon">↗</span><small>Trend</small><strong>'+esc(trendText)+'</strong><em>'+esc(trendSub)+'</em></div>'
+      + '<div class="pollen-hourly-insight '+esc(hourlyTone(peak.value))+'"><span class="pollen-hourly-insight-icon">â†—</span><small>Peak</small><strong>'+esc(pad2(peak.hour))+':00</strong><em>'+esc(peak.value)+'%</em></div>'
+      + '<div class="pollen-hourly-insight '+esc(hourlyTone(best.value))+'"><span class="pollen-hourly-insight-icon">â—·</span><small>Beste Zeit</small><strong>'+esc(pad2(best.hour))+':00</strong><em>'+esc(best.value)+'%</em></div>'
+      + '<div class="pollen-hourly-insight trend"><span class="pollen-hourly-insight-icon">â†—</span><small>Trend</small><strong>'+esc(trendText)+'</strong><em>'+esc(trendSub)+'</em></div>'
     + '</div>';
   }
   function hourlyChartHtml(points, name){
@@ -453,7 +453,7 @@
     var area = xy.length ? ('M '+xy[0].x+' '+(h-padB)+' L '+xy.map(function(p){ return Math.round(p.x)+' '+Math.round(p.y); }).join(' L ')+' L '+xy[xy.length-1].x+' '+(h-padB)+' Z') : '';
     var peak = xy.slice().sort(function(a,b){ return b.p.value - a.p.value; })[0];
     return '<div class="pollen-hourly-chart" aria-label="24-Stunden-Belastungskurve">'
-      + '<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Pollenbelastung über 24 Stunden">'
+      + '<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Pollenbelastung Ã¼ber 24 Stunden">'
         + '<defs><linearGradient id="pollen-hourly-line" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f7d54a"/><stop offset=".58" stop-color="#fb923c"/><stop offset="1" stop-color="#ff6252"/></linearGradient><linearGradient id="pollen-hourly-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(251,146,60,.18)"/><stop offset="1" stop-color="rgba(251,146,60,0)"/></linearGradient></defs>'
         + '<g class="pollen-hourly-grid"><line x1="'+padL+'" y1="'+(padT+usableH*.25)+'" x2="'+(w-padR)+'" y2="'+(padT+usableH*.25)+'"/><line x1="'+padL+'" y1="'+(padT+usableH*.5)+'" x2="'+(w-padR)+'" y2="'+(padT+usableH*.5)+'"/><line x1="'+padL+'" y1="'+(padT+usableH*.75)+'" x2="'+(w-padR)+'" y2="'+(padT+usableH*.75)+'"/></g>'
         + '<g class="pollen-hourly-y">'+yTicks.map(function(value){ return '<text x="'+(padL-22)+'" y="'+Math.round(yForValue(value)+4)+'" text-anchor="end">'+value+'%</text>'; }).join('')+'</g>'
@@ -467,14 +467,14 @@
   }
   function hourlyDayPartsHtml(points){
     var parts = [
-      {key:'morning', icon:'☀️', title:'Morgen', range:rangeOfHours(points,6,11)},
-      {key:'noon', icon:'☀', title:'Mittag', range:rangeOfHours(points,12,16)},
-      {key:'evening', icon:'◔', title:'Abend', range:rangeOfHours(points,17,20)},
-      {key:'night', icon:'☾', title:'Nacht', range:rangeOfHours(points,21,5)}
+      {key:'morning', icon:'â˜€ï¸', title:'Morgen', range:rangeOfHours(points,6,11)},
+      {key:'noon', icon:'â˜€', title:'Mittag', range:rangeOfHours(points,12,16)},
+      {key:'evening', icon:'â—”', title:'Abend', range:rangeOfHours(points,17,20)},
+      {key:'night', icon:'â˜¾', title:'Nacht', range:rangeOfHours(points,21,5)}
     ];
     return '<div class="pollen-hourly-parts">' + parts.map(function(part){
       var tone = hourlyTone(part.range.max);
-      var value = part.range.min === part.range.max ? String(part.range.max)+'%' : String(part.range.min)+'–'+String(part.range.max)+'%' ;
+      var value = part.range.min === part.range.max ? String(part.range.max)+'%' : String(part.range.min)+'â€“'+String(part.range.max)+'%' ;
       return '<div class="pollen-hourly-part '+esc(tone)+'">'
         + '<span>'+esc(part.icon)+'</span><strong>'+esc(part.title)+'</strong><em>'+esc(value)+'</em><small>'+esc(hourlyToneLabel(part.range.max))+'</small>'
       + '</div>'; 
@@ -484,7 +484,7 @@
     var items = (todaySelected && todaySelected.items || []).filter(function(item){ return item && item.dataAvailable !== false; });
     if(!items.length) return '';
     var sorted = items.slice().sort(function(a,b){ return clampNum(b.value) - clampNum(a.value) || String(a.name || '').localeCompare(String(b.name || '')); });
-    return '<div class="pollen-hourly-profile" aria-label="Aktives Allergieprofil für den 24-Stunden-Ausblick">'
+    return '<div class="pollen-hourly-profile" aria-label="Aktives Allergieprofil fÃ¼r den 24-Stunden-Ausblick">'
       + '<span class="pollen-hourly-profile-label">Aus Allergieprofil</span>'
       + '<div class="pollen-hourly-profile-chips">'
       + sorted.slice(0, 4).map(function(item, index){
@@ -676,7 +676,7 @@
       try{ oldScroll = capturePollenScrollState(body); }catch(_e){ oldScroll = null; }
     }
     if(!options.preferCached){
-      body.innerHTML = '<div class="pollen-neo-shell"><div class="pollen-neo-card pollen-neo-empty">Pollen werden geladen…</div></div>';
+      body.innerHTML = '<div class="pollen-neo-shell"><div class="pollen-neo-card pollen-neo-empty">Pollen werden geladenâ€¦</div></div>';
     }
     try{
       Store = window.ChangeWeatherStore;
@@ -687,7 +687,7 @@
       }
       var loc = Store && Store.getLocation ? Store.getLocation() : null;
       if(!loc){
-        body.innerHTML = '<div class="pollen-neo-shell"><div class="pollen-neo-card pollen-neo-empty"><strong>Standort fehlt</strong><span>Für den Pollen-Ausblick braucht Change einmalig deinen Standort.</span><button class="btn btn-primary" type="button" onclick="ChangeWeatherCard&&ChangeWeatherCard.updateLocation&&ChangeWeatherCard.updateLocation()">Standort aktualisieren</button></div></div>';
+        body.innerHTML = '<div class="pollen-neo-shell"><div class="pollen-neo-card pollen-neo-empty"><strong>Standort fehlt</strong><span>FÃ¼r den Pollen-Ausblick braucht Change einmalig deinen Standort.</span><button class="btn btn-primary" type="button" onclick="ChangeWeatherCard&&ChangeWeatherCard.updateLocation&&ChangeWeatherCard.updateLocation()">Standort aktualisieren</button></div></div>';
         restorePollenScroll(body, oldScroll);
         return;
       }
@@ -700,7 +700,7 @@
       body.classList.toggle('pollen-edit-active', mode === 'profile' || mode === 'symptoms');
       restorePollenScroll(body, oldScroll);
     }catch(e){
-      body.innerHTML = '<div class="pollen-neo-shell"><div class="pollen-neo-card pollen-neo-empty"><strong>Pollen konnten nicht geladen werden.</strong><span>'+esc(e.message || e || 'Bitte später erneut versuchen.')+'</span></div></div>';
+      body.innerHTML = '<div class="pollen-neo-shell"><div class="pollen-neo-card pollen-neo-empty"><strong>Pollen konnten nicht geladen werden.</strong><span>'+esc(e.message || e || 'Bitte spÃ¤ter erneut versuchen.')+'</span></div></div>';
       restorePollenScroll(body, oldScroll);
     }
   }

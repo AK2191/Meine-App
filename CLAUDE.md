@@ -24,6 +24,14 @@
 
 **Verboten:** bestehende Funktionen ohne Prüfung überschreiben · doppelte Komponenten · Workarounds statt sauberer Lösungen.
 
+## Version 0.1.0348 - Einstellungen: Profil angeglichen und Prüf-Buttons entzerrt
+- Profil im Einstellungen-Tab an das Ziel-Layout angenaehert: Mitspieler bekommt wieder die erklaerende Subline, und gezielte CSS-Hardening-Regeln verhindern, dass alte `styles/appShell.css`-Overrides Avatar, Name und Abmelden wieder sichtbar verformen.
+- Vollbreite Action-Buttons in den Settings-Karten sauber entzerrt: direkte Card-Aktionen erhalten nun verlaessliche Hoehe, vertikale Zentrierung und Abstand nach Hinweisboxen/Listen. Das betrifft sichtbar u. a. `Daten-Audit pruefen`, `App-Gesundheitscheck pruefen` und `Protokoll leeren`.
+- `change-feature-note` hat mehr Zeilenluft, damit die vorbereitenden Hinweise vor den Pruefungen ruhiger und weniger gequetscht wirken.
+- Cache-Busting auf `?v=0.1.0348` angehoben.
+- Geaendert/Neu: `features/settings/settingsPanel.js`, `features/settings/settingsPanel.css`, `features/pollen/pollenView.js`, `index.html`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: CSS/JS-Review, `node --check` fuer die geaenderten JS-Dateien, neues Voll-ZIP.
+
 ## Version 0.1.0347 - Tagespush Phase 4: echte Challenge-Erinnerung (Worker)
 - Push-Worker `scripts/changePushWorker.js` um Endpunkt `GET /challenge?secret=...&email=...&force=1` erweitert. Sendet die echte Tages-Erinnerung statt Test-Text.
 - Liest server-seitig die OFFENEN Challenges des Tages: `change_challenges` (alle) + `change_completions` (per runQuery playerId==email). "Offen heute" = active ∧ (recurrence daily: date<=heute / sonst date==heute) ∧ heute noch nicht erledigt. Spiegelt die Client-Logik challengeDueToday.
