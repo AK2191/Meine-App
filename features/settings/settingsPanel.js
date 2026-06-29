@@ -405,10 +405,26 @@
       ''
     );
 
+    var challengeNotifOn = readBoolMulti(['change_v1_challenge_notifications'], true);
+    var challengeCard = settingsFeatureCard(
+      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0z"></path><path d="M7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"></path><path d="M9 19h6M10 15.5 9.5 19M14 15.5l.5 3.5"></path></svg>',
+      'Challenge-Erinnerung', 'CHALLENGE', 'ok', '',
+      '<label class="switch"><input type="checkbox" id="set-challenge-notif" '+(challengeNotifOn ? 'checked' : '')+'><span class="slider"></span></label>',
+      ''
+    );
+
+    var eventNotifOn = readBoolMulti(['change_v1_event_notifications'], true);
+    var eventCard = settingsFeatureCard(
+      '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 9.5h18M8 3v4M16 3v4M12 13v3l2 1"></path></svg>',
+      'Termin-Erinnerung', 'TERMIN', 'ok', '',
+      '<label class="switch"><input type="checkbox" id="set-event-notif" '+(eventNotifOn ? 'checked' : '')+'><span class="slider"></span></label>',
+      ''
+    );
+
     return '<div class="change-settings-stack">'
       + masterCard
       + '<div class="flabel" style="margin:4px 2px -4px">Module</div>'
-      + rainCard + pollenCard + friseurCard + birthdayCard + holidayCard
+      + challengeCard + eventCard + rainCard + pollenCard + friseurCard + birthdayCard + holidayCard
       + '</div>';
   }
   function calendarPane(){
@@ -854,7 +870,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0345';
+  var APP_VERSION = '0.1.0346';
 
 
 
@@ -2358,6 +2374,20 @@
     });
     var birthdayNotif = $('set-birthday-notif'); if(birthdayNotif) birthdayNotif.addEventListener('change', function(){
       writeBoolMulti(['change_v1_birthday_notifications','birthday_notifications'], !!birthdayNotif.checked);
+      try{ if(typeof window.saveChangeSettings === 'function' && readDatabaseSyncEnabled()) window.saveChangeSettings(true); }catch(e){}
+      try{ if(typeof window.checkNotifications === 'function') window.checkNotifications(); }catch(e){}
+      try{ if(window.ChangeNotificationBell && typeof window.ChangeNotificationBell.render === 'function') window.ChangeNotificationBell.render(); }catch(e){}
+      refreshSameTab('push');
+    });
+    var challengeNotif = $('set-challenge-notif'); if(challengeNotif) challengeNotif.addEventListener('change', function(){
+      writeBoolMulti(['change_v1_challenge_notifications'], !!challengeNotif.checked);
+      try{ if(typeof window.saveChangeSettings === 'function' && readDatabaseSyncEnabled()) window.saveChangeSettings(true); }catch(e){}
+      try{ if(typeof window.checkNotifications === 'function') window.checkNotifications(); }catch(e){}
+      try{ if(window.ChangeNotificationBell && typeof window.ChangeNotificationBell.render === 'function') window.ChangeNotificationBell.render(); }catch(e){}
+      refreshSameTab('push');
+    });
+    var eventNotif = $('set-event-notif'); if(eventNotif) eventNotif.addEventListener('change', function(){
+      writeBoolMulti(['change_v1_event_notifications'], !!eventNotif.checked);
       try{ if(typeof window.saveChangeSettings === 'function' && readDatabaseSyncEnabled()) window.saveChangeSettings(true); }catch(e){}
       try{ if(typeof window.checkNotifications === 'function') window.checkNotifications(); }catch(e){}
       try{ if(window.ChangeNotificationBell && typeof window.ChangeNotificationBell.render === 'function') window.ChangeNotificationBell.render(); }catch(e){}

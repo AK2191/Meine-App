@@ -91,6 +91,7 @@
   }
 
   function buildEventNotifications(){
+    if(!eventNotifOn()) return [];
     var source = [];
     try{ if(typeof getAllEvents === 'function') source = getAllEvents() || []; }catch(e){ source = []; }
     if(!source.length) source = readGlobal('events', []) || [];
@@ -131,6 +132,7 @@
     return start === today;
   }
   function buildChallengeNotifications(){
+    if(!challengeNotifOn()) return [];
     var today = todayKey();
     var ids = currentPlayerIds();
     var challenges = readGlobal('challenges', []) || [];
@@ -226,6 +228,8 @@
   }
 
   function birthdayNotifOn(){ try{ var r = localStorage.getItem('change_v1_birthday_notifications'); if(r==null) r = localStorage.getItem('birthday_notifications'); return (r==null||r==='') ? true : (r !== 'false' && r !== '0'); }catch(e){ return true; } }
+  function challengeNotifOn(){ try{ var r = localStorage.getItem('change_v1_challenge_notifications'); return (r==null||r==='') ? true : (r !== 'false' && r !== '0'); }catch(e){ return true; } }
+  function eventNotifOn(){ try{ var r = localStorage.getItem('change_v1_event_notifications'); return (r==null||r==='') ? true : (r !== 'false' && r !== '0'); }catch(e){ return true; } }
   function buildBirthdayNotifications(){
     try{
       if(!birthdayNotifOn()) return [];

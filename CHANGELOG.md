@@ -1,3 +1,10 @@
+## Version 0.1.0346 - Benachrichtigungen: Schalter fuer Challenges + Termine
+- Zwei neue Einzel-Schalter im Benachrichtigungen-Tab: "Challenge-Erinnerung" und "Termin-Erinnerung" (Default an), gleicher Stil wie die uebrigen Karten.
+- Schreiben in `change_v1_challenge_notifications` / `change_v1_event_notifications` (die der Worker-Vertrag notificationPrefs bereits liest) und loesen den Settings-Sync aus -> server-seitig respektiert.
+- Wirken auch LOKAL: notificationCenter `buildChallengeNotifications`/`buildEventNotifications` brechen bei ausgeschaltetem Schalter ab (Muster wie birthdayNotifOn). Damit kein unkontrolliertes Verhalten.
+- Damit sind ALLE im Benachrichtigungen-Tab sichtbaren Typen einzeln steuerbar.
+- Cache-Busting ?v=0.1.0346.
+
 ## Version 0.1.0345 - Tagespush Phase 3a: Push-Worker (Grundgeruest + Test)
 - Neuer separater Cloudflare-Worker `scripts/changePushWorker.js` (getrennt vom Deploy-Worker). Enthaelt KEINE Geheimnisse (liest alles aus Worker-Secrets).
 - Anmeldung: Service-Account-JSON -> RS256-JWT (Web Crypto) -> Google Access-Token (FCM + Firestore-Scope). Crypto-Pfad headless validiert (gueltiges PKCS8, gueltige RS256-Signatur).

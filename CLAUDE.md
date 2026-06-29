@@ -24,6 +24,16 @@
 
 **Verboten:** bestehende Funktionen ohne Prüfung überschreiben · doppelte Komponenten · Workarounds statt sauberer Lösungen.
 
+## Version 0.1.0346 - Benachrichtigungen: Schalter fuer Challenges + Termine
+- Zwei neue Einzel-Schalter im Benachrichtigungen-Tab: "Challenge-Erinnerung" und "Termin-Erinnerung" (Default an), gleicher Stil wie die uebrigen Karten.
+- Schreiben in `change_v1_challenge_notifications` / `change_v1_event_notifications` (die der Worker-Vertrag notificationPrefs bereits liest) und loesen den Settings-Sync aus -> server-seitig respektiert.
+- Wirken auch LOKAL: notificationCenter `buildChallengeNotifications`/`buildEventNotifications` brechen bei ausgeschaltetem Schalter ab (Muster wie birthdayNotifOn). Damit kein unkontrolliertes Verhalten.
+- Damit sind ALLE im Benachrichtigungen-Tab sichtbaren Typen einzeln steuerbar.
+- Cache-Busting ?v=0.1.0346.
+
+- Geaendert: `features/settings/settingsPanel.js`, `core/notifications/notificationCenter.js`, `features/pollen/pollenView.js`, `index.html`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check` (settingsPanel.js, notificationCenter.js, pollenView.js).
+
 ## Version 0.1.0345 - Tagespush Phase 3a: Push-Worker (Grundgeruest + Test)
 - Neuer separater Cloudflare-Worker `scripts/changePushWorker.js` (getrennt vom Deploy-Worker `changeGithubUpdateWorker.js`). KEINE Geheimnisse im Code.
 - Auth: `FIREBASE_SERVICE_ACCOUNT` (Secret) -> RS256-JWT via Web Crypto -> `oauth2.googleapis.com/token` -> Access-Token (Scopes firebase.messaging + datastore). projectId aus dem SA-JSON (`project_id`).
