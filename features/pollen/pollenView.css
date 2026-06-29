@@ -6028,7 +6028,7 @@ body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-
   color:rgba(18,32,22,.62)!important;
 }
 
-/* v0.1.0350 - Pollen profile icon refined and encoding-safe release */
+/* v0.1.0351 - Pollen profile icon refined on clean encoding base */
 #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry,
 body.change-view-pollen #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry,
 body.neo-pollen-shell #pollen-view .pollen-neo-symptoms .change-symptom-profile-entry{

@@ -1,8 +1,8 @@
-## Version 0.1.0350 - Encoding-Fix und Pollen-Icon
-- Release neu auf sauberer Basis gebaut, weil 0.1.0349 Umlaute im UI zerlegt hat.
-- index.html und die Versionsstempel nur byte-sicher aktualisiert, damit die bestehende Projekt-Kodierung erhalten bleibt.
-- Das neue Pollen-Profil-Icon aus dem letzten Schritt bleibt enthalten.
-- Cache-Busting auf ?v=0.1.0350 angehoben.
+## Version 0.1.0351 - Encoding reset auf sauberer 0347-Basis
+- Neuer Release-Aufbau von der letzten sauberen App-Basis, damit die kaputte Zeichencodierung aus dem 0349/0350-Pfad nicht weitergetragen wird.
+- Die drei betroffenen Kern-Dateien fuer Shell, Settings und Pollen wurden sauber zurueck auf korrektes UTF-8 gebracht; dadurch erscheinen Umlaute und Sonderzeichen wieder normal in der App.
+- Das verfeinerte Pollen-Profil-Icon bleibt enthalten.
+- Cache-Busting auf `?v=0.1.0351` angehoben.
 
 ## Version 0.1.0348 - Einstellungen: Profil angeglichen und Prüf-Buttons entzerrt
 - Profil im Einstellungen-Tab an das Ziel-Layout angenaehert: Mitspieler bekommt wieder die erklaerende Subline, und gezielte CSS-Hardening-Regeln verhindern, dass alte `styles/appShell.css`-Overrides Avatar, Name und Abmelden wieder sichtbar verformen.

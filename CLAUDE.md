@@ -1,9 +1,10 @@
-## Version 0.1.0350 - Encoding-Fix und Pollen-Icon
-- 0.1.0349 war in der Anzeige fehlerhaft, weil ein Rewrite die bestehende Kodierung ungewollt veraendert hat.
-- Diese Folgeversion aktualisiert index.html, settingsPanel.js und pollenView.js nur byte-sicher und behaelt das neue Pollen-Profil-Icon.
-- Cache-Busting auf ?v=0.1.0350 angehoben.
-- Geaendert/Neu: features/weather/pollenSymptoms.js, features/pollen/pollenView.css, features/pollen/pollenView.js, features/settings/settingsPanel.js, index.html, CLAUDE.md, CHANGELOG.md.
-- Geprueft: node --check fuer die geaenderten JS-Dateien, BOM in index.html, neues Voll-ZIP.
+## Version 0.1.0351 - Encoding reset auf sauberer 0347-Basis
+- Diese Folgeversion baut den Stand neu auf einer sauberen 0347/0348-Basis auf, weil die vorherigen 0349/0350-Experimente die Zeichencodierung in zentralen UI-Dateien beschaedigt hatten.
+- `index.html`, `features/settings/settingsPanel.js` und `features/pollen/pollenView.js` wurden gezielt auf korrektes UTF-8 zurueckgebracht, damit die gesamte App wieder normale Umlaute und Sonderzeichen rendert.
+- Das verbesserte Pollen-Profil-Icon bleibt im `Symptome heute`-Block erhalten.
+- Cache-Busting auf `?v=0.1.0351` angehoben.
+- Geaendert/Neu: `index.html`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `features/weather/pollenSymptoms.js`, `features/pollen/pollenView.css`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: Zeichenkodierungs-Review, `node --check` fuer die geaenderten JS-Dateien, neues Voll-ZIP.
 
 ## Start Here - Wartbarkeit
 - Vor jeder Aenderung zuerst lesen: `docs/ARCHITECTURE.md`, `docs/DATA-MODEL.md`, `docs/STYLEGUIDE.md`, `docs/SAFETY-CHECKS.md`.

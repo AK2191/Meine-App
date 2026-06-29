@@ -90,10 +90,10 @@
     var options = '';
     try{ if(window.ChangeChallengeDifficulty && window.ChangeChallengeDifficulty.selectOptions) options = window.ChangeChallengeDifficulty.selectOptions(current); }catch(e){}
     if(!options){
-      options = '<option value="easy" '+(current==='easy'?'selected':'')+'>Leicht Â· 6â€“12 P</option>'+
-                '<option value="medium" '+(current==='medium'?'selected':'')+'>Mittel Â· 14â€“25 P</option>'+
-                '<option value="hard" '+(current==='hard'?'selected':'')+'>Schwer Â· 30â€“50 P</option>'+
-                '<option value="hardcore" '+(current==='hardcore'?'selected':'')+'>Hardcore Â· 60â€“100 P</option>';
+      options = '<option value="easy" '+(current==='easy'?'selected':'')+'>Leicht · 6–12 P</option>'+
+                '<option value="medium" '+(current==='medium'?'selected':'')+'>Mittel · 14–25 P</option>'+
+                '<option value="hard" '+(current==='hard'?'selected':'')+'>Schwer · 30–50 P</option>'+
+                '<option value="hardcore" '+(current==='hardcore'?'selected':'')+'>Hardcore · 60–100 P</option>';
     }
     return featureField('Schwierigkeit der Auto-Challenges', '<select class="finput" id="'+id+'">'+options+'</select>', '');
   }
@@ -113,7 +113,7 @@
     var options = '';
     try{ if(window.ChangeChallengeDifficulty && window.ChangeChallengeDifficulty.countOptions) options = window.ChangeChallengeDifficulty.countOptions(current); }catch(e){}
     if(!options){
-      [[3,'Kompakt'],[5,'Normal'],[7,'Aktiv'],[10,'Intensiv']].forEach(function(item){ options += '<option value="'+item[0]+'" '+(current===item[0]?'selected':'')+'>'+item[1]+' Â· '+item[0]+' Aufgaben</option>'; });
+      [[3,'Kompakt'],[5,'Normal'],[7,'Aktiv'],[10,'Intensiv']].forEach(function(item){ options += '<option value="'+item[0]+'" '+(current===item[0]?'selected':'')+'>'+item[1]+' · '+item[0]+' Aufgaben</option>'; });
     }
     return featureField('Tagesumfang', '<select class="finput" id="'+id+'">'+options+'</select>', '');
   }
@@ -149,7 +149,7 @@
   }
   function stateOptions(selected){
     var states = [
-      ['ALL','Alle Feiertage'],['BW','Baden-WÃ¼rttemberg'],['BY','Bayern'],['BY-AUGSBURG','Bayern Â· Augsburg'],['BE','Berlin'],['BB','Brandenburg'],['HB','Bremen'],['HH','Hamburg'],['HE','Hessen'],['MV','Mecklenburg-Vorpommern'],['NI','Niedersachsen'],['NW','Nordrhein-Westfalen'],['RP','Rheinland-Pfalz'],['SL','Saarland'],['SN','Sachsen'],['ST','Sachsen-Anhalt'],['SH','Schleswig-Holstein'],['TH','ThÃ¼ringen']
+      ['ALL','Alle Feiertage'],['BW','Baden-Württemberg'],['BY','Bayern'],['BY-AUGSBURG','Bayern · Augsburg'],['BE','Berlin'],['BB','Brandenburg'],['HB','Bremen'],['HH','Hamburg'],['HE','Hessen'],['MV','Mecklenburg-Vorpommern'],['NI','Niedersachsen'],['NW','Nordrhein-Westfalen'],['RP','Rheinland-Pfalz'],['SL','Saarland'],['SN','Sachsen'],['ST','Sachsen-Anhalt'],['SH','Schleswig-Holstein'],['TH','Thüringen']
     ];
     return states.map(function(item){ return '<option value="'+item[0]+'" '+(selected === item[0] ? 'selected' : '')+'>'+item[1]+'</option>'; }).join('');
   }
@@ -161,7 +161,7 @@
   function pushStatus(){
     var store = window.ChangeNotificationStore;
     var active = store && store.pushActive ? store.pushActive() : readBool('push_enabled', false);
-    var perm = store && store.permissionLabel ? store.permissionLabel() : (typeof Notification === 'undefined' ? 'nicht unterstÃ¼tzt' : Notification.permission);
+    var perm = store && store.permissionLabel ? store.permissionLabel() : (typeof Notification === 'undefined' ? 'nicht unterstützt' : Notification.permission);
     return {active:active, label:active ? 'AKTIV' : 'INAKTIV', tone:active ? 'ok' : 'off', detail:'Browser: '+perm};
   }
   function googleStatus(){
@@ -219,7 +219,7 @@
       + '</button>';
   }
   var ACCENT_DEFS = [
-    ['green','GrÃ¼n','#34D399','#10B981'],
+    ['green','Grün','#34D399','#10B981'],
     ['blue','Blau','#60A5FA','#3B82F6'],
     ['amber','Bernstein','#FBBF24','#F59E0B'],
     ['violet','Violett','#A78BFA','#8B5CF6'],
@@ -261,7 +261,7 @@
   }
   function playerInitials(value){
     var parts = String(value || '').trim().split(/\s+/).filter(Boolean);
-    if(!parts.length) return 'Â·Â·';
+    if(!parts.length) return '··';
     if(parts.length === 1) return parts[0].slice(0,2).toUpperCase();
     return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
   }
@@ -319,7 +319,7 @@
     var theme = appThemePreference();
     var themeLabel = theme === 'system' ? 'SYSTEM' : (theme === 'light' ? 'HELL' : 'DUNKEL');
     var themeGrid = '<div class="change-theme-options">'
-      + themeOptionButton('system','System','Folgt deinem GerÃ¤t', theme)
+      + themeOptionButton('system','System','Folgt deinem Gerät', theme)
       + themeOptionButton('light','Hell','Ruhiger heller Look', theme)
       + themeOptionButton('dark','Dunkel','Aktueller Darkmode', theme)
       + '</div>';
@@ -330,8 +330,8 @@
     var preview = '<div class="change-appearance-preview">'
       + '<span class="change-appearance-preview-bar"></span>'
       + '<span class="change-appearance-preview-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"></rect><path d="M3.5 9.5H20.5M8 3v4M16 3v4"></path></svg></span>'
-      + '<div class="change-appearance-preview-main"><div class="change-appearance-preview-title">Zahnarzt-Termin</div><div class="change-appearance-preview-sub">Morgen Â· 14:30</div></div>'
-      + '<button class="change-appearance-preview-btn" type="button">Ã–ffnen</button>'
+      + '<div class="change-appearance-preview-main"><div class="change-appearance-preview-title">Zahnarzt-Termin</div><div class="change-appearance-preview-sub">Morgen · 14:30</div></div>'
+      + '<button class="change-appearance-preview-btn" type="button">Öffnen</button>'
       + '</div>';
     var body = themeGrid
       + '<div class="flabel" style="margin:18px 0 11px">Akzentfarbe</div>'
@@ -522,7 +522,7 @@
     var list = halfDays();
     if(!list.length) return '<div class="change-settings-sub" data-half-list>Keine halben Urlaubstage hinterlegt.</div>';
     return '<div data-half-list class="change-halfday-list">'+list.map(function(day){
-      return '<span class="change-halfday-chip">'+esc(halfDayLabel(day))+'<button type="button" data-remove-half="'+esc(day)+'" aria-label="Halben Urlaubstag entfernen">Ã—</button></span>';
+      return '<span class="change-halfday-chip">'+esc(halfDayLabel(day))+'<button type="button" data-remove-half="'+esc(day)+'" aria-label="Halben Urlaubstag entfernen">×</button></span>';
     }).join('')+'</div>';
   }
 
@@ -590,7 +590,7 @@
     var friseurWeeks = dashboardNumber('getFriseurWeeks', ['change_v1_friseur_weeks','friseur_weeks'], 3);
     var birthdayNotificationDays = Math.max(0, Math.min(365, parseInt(dashboardNumber('getBirthdayNotificationDays', ['change_v1_birthday_notification_days','birthday_notification_days'], 1), 10) || 0));
     var urlaubDays = dashboardNumber('getUrlaubTotalDays', ['urlaub_tracker_days','urlaub_days'], 30);
-    var months = [['01','Jan'],['02','Feb'],['03','MÃ¤r'],['04','Apr'],['05','Mai'],['06','Jun'],['07','Jul'],['08','Aug'],['09','Sep'],['10','Okt'],['11','Nov'],['12','Dez']];
+    var months = [['01','Jan'],['02','Feb'],['03','Mär'],['04','Apr'],['05','Mai'],['06','Jun'],['07','Jul'],['08','Aug'],['09','Sep'],['10','Okt'],['11','Nov'],['12','Dez']];
     var monthOptions = months.map(function(item){ return '<option value="'+item[0]+'">'+item[1]+'</option>'; }).join('');
     var dayOptions = Array.from({length:31}, function(_, i){ var d = String(i+1).padStart(2,'0'); return '<option value="'+d+'">'+d+'.</option>'; }).join('');
 
@@ -601,7 +601,7 @@
 
     var urlaubBody = urlaubOn
       ? featureField('Jahresurlaub', '<input type="number" class="finput" id="set-urlaub-days" min="1" max="365" value="'+urlaubDays+'">', '')
-        + featureField('Halbe Urlaubstage', '<div class="change-halfday-controls"><select class="finput" id="set-half-month">'+monthOptions+'</select><select class="finput" id="set-half-day">'+dayOptions+'</select><button class="btn btn-secondary btn-sm" id="set-add-half" type="button">+ HinzufÃ¼gen</button></div>'+halfDayChips(), ''): ''
+        + featureField('Halbe Urlaubstage', '<div class="change-halfday-controls"><select class="finput" id="set-half-month">'+monthOptions+'</select><select class="finput" id="set-half-day">'+dayOptions+'</select><button class="btn btn-secondary btn-sm" id="set-add-half" type="button">+ Hinzufügen</button></div>'+halfDayChips(), ''): ''
 
     return '<div class="change-settings-stack">'
       + weatherHealthCard()
@@ -646,11 +646,11 @@
       if(status === 'connecting')
         return {ok:cfgOk, label:'VERBINDET', tone:'off', detail:'Firebase-Verbindung wird hergestellt.'};
       if(status === 'auth_failed')
-        return {ok:cfgOk, label:'ANMELDUNG NÃ–TIG', tone:'error', detail:'Beim Aktivieren mit Google/Firebase anmelden.'};
+        return {ok:cfgOk, label:'ANMELDUNG NÖTIG', tone:'error', detail:'Beim Aktivieren mit Google/Firebase anmelden.'};
       if(enabled)
-        return {ok:cfgOk, label:'AKTIVIERT', tone:'off', detail:'Beim nÃ¤chsten manuellen Speichern wird Firebase verbunden.'};
+        return {ok:cfgOk, label:'AKTIVIERT', tone:'off', detail:'Beim nächsten manuellen Speichern wird Firebase verbunden.'};
     }catch(e){}
-    return {ok:cfgOk, label:'AUS', tone:'off', detail: cfgOk ? 'Startet nur Ã¼ber diesen Schalter.' : 'Firebase-Konfiguration nicht geladen.'};
+    return {ok:cfgOk, label:'AUS', tone:'off', detail: cfgOk ? 'Startet nur über diesen Schalter.' : 'Firebase-Konfiguration nicht geladen.'};
   }
 
   function settingsFeatureCard(icon, title, badgeText, badgeTone, subtitle, controlHtml, bodyHtml){
@@ -781,7 +781,7 @@
     var map = { canonical: report.canonicalKeys, cache: report.cacheKeys, legacy: report.legacyKeys, unknown: report.unknownKeys };
     var list = map[openCat] || [];
     if(!list.length){
-      return '<div class="change-audit-unknown-panel"><div class="change-audit-unknown-empty">Keine EintrÃ¤ge auflistbar.</div></div>';
+      return '<div class="change-audit-unknown-panel"><div class="change-audit-unknown-empty">Keine Einträge auflistbar.</div></div>';
     }
     var rows = '';
     for(var i=0;i<list.length;i++){ rows += '<div class="change-audit-unknown-item">'+esc(list[i])+'</div>'; }
@@ -800,11 +800,11 @@
     var points = parseInt(counts.challengeCompletions, 10) || 0;
     var emptyFlag = (events + points) > 0 ? '' : '<span class="change-audit-meta-flag">noch leer</span>';
     var snapRow = snap.present
-      ? '<div class="change-audit-info-row">'+auditTickIcon()+'Einstellungen gesichert'+(snap.updatedAtLocal ? ' Â· <span class="change-audit-mono">'+esc(snap.updatedAtLocal)+'</span>' : '')+'</div>'
+      ? '<div class="change-audit-info-row">'+auditTickIcon()+'Einstellungen gesichert'+(snap.updatedAtLocal ? ' · <span class="change-audit-mono">'+esc(snap.updatedAtLocal)+'</span>' : '')+'</div>'
       : '<div class="change-audit-info-row">'+auditInfoIcon()+'Einstellungen noch nicht gesichert</div>';
     var modelRow = report.version
-      ? '<div class="change-audit-info-row">'+auditInfoIcon()+'Datenformat <span class="change-audit-mono">'+esc(report.version)+'</span> Â· nur Anzeige</div>'
-      : '<div class="change-audit-info-row">'+auditInfoIcon()+'Datenformat nicht geladen Â· nur Anzeige</div>';
+      ? '<div class="change-audit-info-row">'+auditInfoIcon()+'Datenformat <span class="change-audit-mono">'+esc(report.version)+'</span> · nur Anzeige</div>'
+      : '<div class="change-audit-info-row">'+auditInfoIcon()+'Datenformat nicht geladen · nur Anzeige</div>';
     return '<div class="change-audit-stats">'
       + auditStat(counts.challenges, 'Challenges', true)
       + auditStat(counts.challengePlayers, 'Mitspieler', false)
@@ -816,7 +816,7 @@
       +   '<div class="change-audit-meta-item"><span class="change-audit-meta-num">'+esc(points)+'</span><span class="change-audit-meta-label">Punkte</span></div>'
       +   emptyFlag
       + '</div>'
-      + '<div class="change-audit-seclabel">Gespeicherte Daten Â· '+esc(parseInt(counts.storageKeys, 10) || 0)+' EintrÃ¤ge</div>'
+      + '<div class="change-audit-seclabel">Gespeicherte Daten · '+esc(parseInt(counts.storageKeys, 10) || 0)+' Einträge</div>'
       + '<div class="change-audit-diag">'
       +   auditDiagTile('Aktuelle Daten', keys.canonicalPresent, 'canonical', 'canonical', dataAuditOpenCat)
       +   auditDiagTile('Zwischenspeicher', keys.cachePresent, 'cache', 'cache', dataAuditOpenCat)
@@ -825,7 +825,7 @@
       + '</div>'
       + auditKeyPanel(report, dataAuditOpenCat)
       + '<div class="change-audit-info">'+snapRow+modelRow+'</div>'
-      + '<button class="btn btn-secondary btn-full" id="run-data-audit" type="button">Erneut prÃ¼fen</button>';
+      + '<button class="btn btn-secondary btn-full" id="run-data-audit" type="button">Erneut prüfen</button>';
   }
 
   function syncPane(){
@@ -841,7 +841,7 @@
     var googleControl = googleCanToggle
       ? '<label class="switch"><input type="checkbox" id="set-google" '+(google.enabled?'checked':'')+'><span class="slider"></span></label>'
       : '<button class="btn btn-secondary btn-compact" id="btn-google-connect" type="button">Verbinden</button>';
-    var googleSub = google.detail || (google.loggedIn ? 'Importiert Kalendertermine. Getrennt vom Datenbank-Sync.' : 'Nur fÃ¼r Kalendertermine. Startet keinen Datenbank-Sync.');
+    var googleSub = google.detail || (google.loggedIn ? 'Importiert Kalendertermine. Getrennt vom Datenbank-Sync.' : 'Nur für Kalendertermine. Startet keinen Datenbank-Sync.');
     var googleBody = googleCanToggle
       ? '<button class="btn btn-secondary btn-full" id="set-sync-google" type="button">Google Kalender '+(google.loggedIn?'neu synchronisieren':'aktualisieren')+'</button>': ''
 
@@ -870,7 +870,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0350';
+  var APP_VERSION = '0.1.0351';
 
 
 
@@ -909,8 +909,8 @@
     phase: 'idle',
     pagesAvailable: false,
     pagesStatus: '',
-    direction: 'update', // 'update' | 'rollback' â€” bestimmt nur die Beschriftung
-    panelTab: 'update' // 'update' | 'history' â€” UI-Tab, immer 'update' beim Ã–ffnen
+    direction: 'update', // 'update' | 'rollback' — bestimmt nur die Beschriftung
+    panelTab: 'update' // 'update' | 'history' — UI-Tab, immer 'update' beim Öffnen
   };
 
   var GITHUB_UPDATE_WORKER_URL = 'https://change-github-update.ak2191.workers.dev';
@@ -1120,7 +1120,7 @@
     return parts.join('/');
   }
   async function inflateZipData(bytes){
-    if(typeof DecompressionStream !== 'function') throw new Error('ZIP-Entpackung wird von diesem Browser nicht unterstÃ¼tzt.');
+    if(typeof DecompressionStream !== 'function') throw new Error('ZIP-Entpackung wird von diesem Browser nicht unterstützt.');
     var stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
     var buffer = await new Response(stream).arrayBuffer();
     return new Uint8Array(buffer);
@@ -1166,7 +1166,7 @@
   async function readZipText(zip, entry){
     if(!entry || entry.isDirectory) return '';
     var view = zip.view, bytes = zip.bytes, offset = entry.localOffset;
-    if(readUInt32(view, offset) !== 0x04034b50) throw new Error('ZIP-Datei ist beschÃ¤digt: '+entry.path);
+    if(readUInt32(view, offset) !== 0x04034b50) throw new Error('ZIP-Datei ist beschädigt: '+entry.path);
     var nameLen = readUInt16(view, offset + 26);
     var extraLen = readUInt16(view, offset + 28);
     var dataStart = offset + 30 + nameLen + extraLen;
@@ -1174,7 +1174,7 @@
     var data;
     if(entry.method === 0) data = compressed;
     else if(entry.method === 8) data = await inflateZipData(compressed);
-    else throw new Error('ZIP-Kompression wird nicht unterstÃ¼tzt: '+entry.path);
+    else throw new Error('ZIP-Kompression wird nicht unterstützt: '+entry.path);
     return decodeUtf8(data);
   }
   function githubCheckLine(check){
@@ -1182,7 +1182,7 @@
     var label = check.label || '';
     var detail = check.detail || '';
     var title = check.key === 'files' ? '<button type="button" class="change-github-check-link" id="github-files-toggle">'+esc(label)+'</button>' : '<strong>'+esc(label)+'</strong>';
-    return '<div class="change-github-check '+(ok?'ok':'warn')+'"><span>'+(ok?'âœ“':'!')+'</span><div>'+title+(detail?'<small>'+esc(detail)+'</small>':'')+'</div></div>';
+    return '<div class="change-github-check '+(ok?'ok':'warn')+'"><span>'+(ok?'✓':'!')+'</span><div>'+title+(detail?'<small>'+esc(detail)+'</small>':'')+'</div></div>';
   }
   function githubCheckSummary(){
     var state = githubUpdateState;
@@ -1193,10 +1193,10 @@
     var files = (state.files || []).length;
     var githubFiles = (state.githubFiles || []).length;
     var target = state.toVersion || '';
-    var label = ok ? 'Update bereit' : 'ZIP prÃ¼fen';
+    var label = ok ? 'Update bereit' : 'ZIP prüfen';
     var detail = ok
-      ? ((target ? ('Zielversion ' + target) : 'Zielversion erkannt') + (files ? ' Â· ' + files + ' Dateien' : ''))
-      : ((failed && failed.label ? failed.label : 'PrÃ¼fung offen') + (failed && failed.detail ? ' Â· ' + failed.detail : ''));
+      ? ((target ? ('Zielversion ' + target) : 'Zielversion erkannt') + (files ? ' · ' + files + ' Dateien' : ''))
+      : ((failed && failed.label ? failed.label : 'Prüfung offen') + (failed && failed.detail ? ' · ' + failed.detail : ''));
     var toggle = '';
     return '<div class="change-github-check-summary '+(ok?'ok':'warn')+'"><span></span><strong>'+esc(label)+'</strong><small>'+esc(detail)+'</small>'+toggle+'</div>';
   }
@@ -1240,10 +1240,10 @@
   function githubFriendlyError(message){
     message = String(message || '').trim();
     if(/requested file could not be read|permission problems|reference to a file was acquired|NotReadableError|file could not be read/i.test(message)){
-      return 'Datei konnte nicht gelesen werden. Bitte ZIP neu auswÃ¤hlen und direkt erneut Ã¼bertragen.';
+      return 'Datei konnte nicht gelesen werden. Bitte ZIP neu auswählen und direkt erneut übertragen.';
     }
     if(/Status Fehler 404|Not Found|\/status fehlt|404/i.test(message)){
-      return 'Status konnte nicht gelesen werden. Bitte Worker prÃ¼fen.';
+      return 'Status konnte nicht gelesen werden. Bitte Worker prüfen.';
     }
     if(message) return message;
     return 'Update konnte nicht abgeschlossen werden.';
@@ -1267,7 +1267,7 @@
     if(state.updateReady && state.liveReady){
       return { key: 'live', tone: 'ok' };
     }
-    // Workflow erfolgreich, Branch trÃ¤gt Zielversion, aber Pages hat es noch nicht ausgeliefert.
+    // Workflow erfolgreich, Branch trägt Zielversion, aber Pages hat es noch nicht ausgeliefert.
     if(state.targetCommitted && state.pagesAvailable && state.pagesStatus === 'building'){
       return { key: 'pages_building', tone: 'active' };
     }
@@ -1288,12 +1288,12 @@
   function githubPhaseLabel(phaseKey, direction){
     var isRollback = direction === 'rollback';
     switch(phaseKey){
-      case 'queued': return isRollback ? 'RÃ¼ckstufung wird vorbereitetâ€¦' : 'Update wird vorbereitetâ€¦';
-      case 'workflow_running': return isRollback ? 'RÃ¼ckstufung wird angewendetâ€¦' : 'Update wird angewendetâ€¦';
-      case 'pages_building': return isRollback ? 'RÃ¼ckstufung wird verÃ¶ffentlichtâ€¦' : 'Update wird verÃ¶ffentlichtâ€¦';
-      case 'live': return githubUpdateNeedsReload() ? (isRollback ? 'RÃ¼ckstufung ist bereit' : 'Update ist bereit') : 'Du bist aktuell';
-      case 'error': return isRollback ? 'RÃ¼ckstufung konnte nicht abgeschlossen werden' : 'Update konnte nicht abgeschlossen werden';
-      default: return isRollback ? 'RÃ¼ckstufung wird vorbereitetâ€¦' : 'Update wird vorbereitetâ€¦';
+      case 'queued': return isRollback ? 'Rückstufung wird vorbereitet…' : 'Update wird vorbereitet…';
+      case 'workflow_running': return isRollback ? 'Rückstufung wird angewendet…' : 'Update wird angewendet…';
+      case 'pages_building': return isRollback ? 'Rückstufung wird veröffentlicht…' : 'Update wird veröffentlicht…';
+      case 'live': return githubUpdateNeedsReload() ? (isRollback ? 'Rückstufung ist bereit' : 'Update ist bereit') : 'Du bist aktuell';
+      case 'error': return isRollback ? 'Rückstufung konnte nicht abgeschlossen werden' : 'Update konnte nicht abgeschlossen werden';
+      default: return isRollback ? 'Rückstufung wird vorbereitet…' : 'Update wird vorbereitet…';
     }
   }
   function githubActionCurrent(){
@@ -1332,10 +1332,10 @@
     var current = githubActionCurrent();
     var cls = current.tone === 'ok' ? 'ok' : (current.tone === 'error' ? 'error' : 'checking');
     var files = (state.files || []).length;
-    var compactDetail = current.detail + (files ? ' Â· ' + files + ' Dateien' : '');
-    var link = state.actionRunUrl ? '<a href="'+esc(state.actionRunUrl)+'" target="_blank" rel="noopener">Technische Details Ã¶ffnen</a>' : '';
+    var compactDetail = current.detail + (files ? ' · ' + files + ' Dateien' : '');
+    var link = state.actionRunUrl ? '<a href="'+esc(state.actionRunUrl)+'" target="_blank" rel="noopener">Technische Details öffnen</a>' : '';
     var isRollback = state.direction === 'rollback';
-    var buttonLabel = isRollback ? 'App vollstÃ¤ndig neu laden (RÃ¼ckstufung)' : 'App vollstÃ¤ndig neu laden';
+    var buttonLabel = isRollback ? 'App vollständig neu laden (Rückstufung)' : 'App vollständig neu laden';
     var button = state.updateReady && state.liveReady && githubUpdateNeedsReload()
       ? '<button class="btn btn-primary btn-full" id="github-update-reload" type="button">'+esc(buttonLabel)+'</button>'
       : '';
@@ -1349,9 +1349,9 @@
 
   async function reloadChangeUpdateVersion(){
     var state = githubUpdateState;
-    // Nur ausfÃ¼hren wenn GitHub-Deployment wirklich abgeschlossen ist
+    // Nur ausführen wenn GitHub-Deployment wirklich abgeschlossen ist
     if(!state.liveReady || !state.updateReady){
-      if(typeof window.toast === 'function') window.toast('Warte bis das Update bereit istâ€¦', '');
+      if(typeof window.toast === 'function') window.toast('Warte bis das Update bereit ist…', '');
       return;
     }
     var version = latestGithubUpdateVersion();
@@ -1360,7 +1360,7 @@
       return;
     }
     try{
-      githubUpdateState.actionMessage = 'App wird vollstÃ¤ndig neu geladenâ€¦';
+      githubUpdateState.actionMessage = 'App wird vollständig neu geladen…';
       refreshSameTab('github');
     }catch(e){}
     try{
@@ -1413,7 +1413,7 @@
       state.actionStatus = 'timeout';
       state.actionConclusion = 'failure';
       state.actionMessage = state.direction === 'rollback'
-        ? 'RÃ¼ckstufung wurde nicht rechtzeitig live erkannt.'
+        ? 'Rückstufung wurde nicht rechtzeitig live erkannt.'
         : 'Update wurde nicht rechtzeitig live erkannt.';
       state.actionCheckedAt = new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
       stopGithubActionPolling();
@@ -1504,7 +1504,7 @@
     }catch(e){
       var statusError = e && e.message ? e.message : 'Status konnte nicht gelesen werden.';
       if(/404|Status Fehler 404|Not Found/i.test(statusError)){
-        statusError = 'Status konnte nicht gelesen werden. Bitte Worker prÃ¼fen.';
+        statusError = 'Status konnte nicht gelesen werden. Bitte Worker prüfen.';
       }
       state.actionMessage = githubFriendlyError(statusError);
       state.actionConclusion = 'failure';
@@ -1525,7 +1525,7 @@
     var zipList = zipFiles.slice(0, 40).map(function(path){ return '<li>'+esc(path)+'</li>'; }).join('');
     if(zipFiles.length > 40) zipList += '<li>+'+(zipFiles.length - 40)+' weitere Dateien</li>';
     return '<div class="change-github-files">'
-      + '<strong>DateiÃ¼bersicht</strong>'
+      + '<strong>Dateiübersicht</strong>'
       + '<div class="change-github-file-stats"><span>GitHub aktuell: '+esc((state.githubFiles || []).length || 'nicht gelesen')+'</span><span>ZIP: '+esc(zipFiles.length)+'</span><span>Neu: '+esc(newFiles.length)+'</span></div>'
       + '<div class="change-github-file-section"><b>Neue Dateien</b><ul>'+newList+'</ul></div>'
       + '<div class="change-github-file-section"><b>ZIP-Dateien</b><ul>'+zipList+'</ul></div>'
@@ -1540,7 +1540,7 @@
     var rows = '';
     var moreBtn = '';
     if(githubCommitHistoryLoading){
-      rows = '<div class="change-github-history-loading">Commits werden geladenâ€¦</div>';
+      rows = '<div class="change-github-history-loading">Commits werden geladen…</div>';
     } else if(githubCommitHistory.length === 0){
       rows = '<div class="change-github-history-empty">Noch nicht geladen.</div>';
     } else {
@@ -1558,10 +1558,10 @@
         var isFirst = i === 0;
         var date = c.date ? new Date(c.date).toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
         var displayVersion = c.version ? 'v'+esc(c.version) : esc(c.shortSha);
-        var metaLine = esc(c.shortSha)+' Â· '+esc(date);
+        var metaLine = esc(c.shortSha)+' · '+esc(date);
         var trailing = isFirst
           ? '<span class="change-github-commit-current">Aktuell</span>'
-          : '<button class="change-github-rollback-link" data-sha="'+esc(c.sha)+'" data-msg="'+esc(c.message)+'" type="button">ZurÃ¼ck</button>';
+          : '<button class="change-github-rollback-link" data-sha="'+esc(c.sha)+'" data-msg="'+esc(c.message)+'" type="button">Zurück</button>';
         return '<div class="change-github-commit-row'+(isFirst?' is-current':'')+'">'
           + '<div class="change-github-commit-info">'
           + '<div class="change-github-commit-version-main">'+displayVersion+'</div>'
@@ -1575,7 +1575,7 @@
       }
     }
     var rollbackStatus = githubRollbackState.running
-      ? '<div class="change-github-rollback-status running">Rollback wird durchgefÃ¼hrtâ€¦</div>'
+      ? '<div class="change-github-rollback-status running">Rollback wird durchgeführt…</div>'
       : githubRollbackState.message
         ? '<div class="change-github-rollback-status ok">'+esc(githubRollbackState.message)+'</div>'
         : githubRollbackState.error
@@ -1615,7 +1615,7 @@
       });
       var result = await response.json();
       if(result && result.ok){
-        githubRollbackState = { running:false, message:'ZurÃ¼ckgesetzt auf '+result.shortSha+' â€” GitHub Action startet.', error:'' };
+        githubRollbackState = { running:false, message:'Zurückgesetzt auf '+result.shortSha+' — GitHub Action startet.', error:'' };
         githubCommitHistory = [];
         setTimeout(function(){ loadGithubCommitHistory(); }, 3000);
         // Symmetrisch zum Upload: denselben Status-Flow durchlaufen, nur mit direction='rollback'.
@@ -1653,7 +1653,7 @@
   function githubUpdateBody(){
     var state = githubUpdateState;
     var tab = state.panelTab || 'update';
-    var selectedLabel = state.file ? esc(state.file.name)+' Â· '+Math.round((state.file.size || 0) / 1024)+' KB' : 'ZIP hier ablegen oder auswÃ¤hlen';
+    var selectedLabel = state.file ? esc(state.file.name)+' · '+Math.round((state.file.size || 0) / 1024)+' KB' : 'ZIP hier ablegen oder auswählen';
     var actionPanel = githubActionStatusPanel();
     var checks = actionPanel ? '' : githubCheckSummary();
     var statusLine = state.message && state.status !== 'ok' && !actionPanel ? '<div class="change-github-status '+esc(state.status || 'empty')+'">'+esc(state.message || '')+'</div>' : '';
@@ -1661,12 +1661,12 @@
     var updatePane = '<div class="change-github-upload-panel change-github-upload-panel-v226">'
       + '<div class="change-github-dropzone-wrap">'
       + '<label class="change-github-dropzone" id="github-zip-dropzone"><input type="file" id="github-zip-input" accept=".zip,application/zip,application/x-zip-compressed"><span>'+selectedLabel+'</span>'+(state.file ? '' : '<small>ZIP per Drag & Drop hier ablegen oder antippen.</small>')+'</label>'
-      + (state.file ? '<button class="change-github-zip-clear" id="github-zip-clear" type="button" title="ZIP entfernen">Ã—</button>' : '')
+      + (state.file ? '<button class="change-github-zip-clear" id="github-zip-clear" type="button" title="ZIP entfernen">×</button>' : '')
       + '</div>'
       + statusLine
       + (actionPanel ? '' : checks)
       + githubFileOverview()
-      + ((!state.actionStartedAt && !state.uploadCommitSha && !state.actionConclusion) ? '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(((state.status === 'ok' || state.status === 'error') && !state.updateReady) ? '' : 'disabled')+'>Auf GitHub Ã¼bertragen</button>' : '')
+      + ((!state.actionStartedAt && !state.uploadCommitSha && !state.actionConclusion) ? '<button class="btn btn-primary btn-full" id="github-zip-commit" type="button" '+(((state.status === 'ok' || state.status === 'error') && !state.updateReady) ? '' : 'disabled')+'>Auf GitHub übertragen</button>' : '')
       + '</div>';
 
     var historyPane = '<div class="change-github-history-toolbar"><button class="change-github-history-refresh" id="github-history-refresh" type="button">Verlauf laden</button></div>'
@@ -1708,7 +1708,7 @@
       var buffer = state.fileBuffer || null;
       if(!buffer){
         try{ buffer = await state.file.arrayBuffer(); }
-        catch(fileErr){ throw new Error('Datei konnte nicht gelesen werden. Bitte ZIP neu auswÃ¤hlen und direkt erneut Ã¼bertragen.'); }
+        catch(fileErr){ throw new Error('Datei konnte nicht gelesen werden. Bitte ZIP neu auswählen und direkt erneut übertragen.'); }
       }
       state.message = 'Update wird hochgeladen...';
       refreshSameTab('github');
@@ -1753,8 +1753,8 @@
       scheduleGithubActionPoll(2500);
     }catch(e){
       state.status = 'error';
-      state.message = githubFriendlyError(e && e.message ? e.message : 'Ãœbertragung fehlgeschlagen.');
-      // Wiederholbar halten: keine Action-Sperre, kein hÃ¤ngendes Status-Panel.
+      state.message = githubFriendlyError(e && e.message ? e.message : 'Übertragung fehlgeschlagen.');
+      // Wiederholbar halten: keine Action-Sperre, kein hängendes Status-Panel.
       state.actionMessage = '';
       state.actionStartedAt = 0;
       state.uploadCommitSha = '';
@@ -1777,7 +1777,7 @@
       if(!response.ok || !data || !data.ok){
         throw new Error((data && data.message) ? data.message : ('HTTP '+response.status));
       }
-      if(!Array.isArray(data.files)) throw new Error(data.message || 'GitHub-Dateiliste nicht verfÃ¼gbar');
+      if(!Array.isArray(data.files)) throw new Error(data.message || 'GitHub-Dateiliste nicht verfügbar');
       githubUpdateState.filesError = '';
       return data.files.map(function(file){ return String(file || '').replace(/\\/g, '/'); }).filter(Boolean).sort();
     }catch(e){
@@ -1788,9 +1788,9 @@
 
   async function analyzeGithubZip(){
     var state = githubUpdateState;
-    if(!state.file){ state.message = 'Bitte zuerst eine ZIP auswÃ¤hlen.'; state.status = 'error'; refreshSameTab('github'); return; }
+    if(!state.file){ state.message = 'Bitte zuerst eine ZIP auswählen.'; state.status = 'error'; refreshSameTab('github'); return; }
     state.status = 'checking';
-    state.message = 'ZIP wird geprÃ¼ftâ€¦';
+    state.message = 'ZIP wird geprüft…';
     refreshSameTab('github');
     try{
       var buffer = await state.file.arrayBuffer();
@@ -1831,14 +1831,14 @@
       githubFiles.forEach(function(path){ githubSet[path] = true; });
       var newFiles = paths.filter(function(path){ return !githubSet[path]; });
       var fileDetail = githubFiles.length
-        ? 'GitHub aktuell: '+githubFiles.length+' Â· ZIP: '+paths.length+' Â· Neu: '+newFiles.length
-        : 'ZIP: '+paths.length+' Â· GitHub-Abruf fehlgeschlagen'+(githubUpdateState.filesError ? ': '+githubUpdateState.filesError : '');
+        ? 'GitHub aktuell: '+githubFiles.length+' · ZIP: '+paths.length+' · Neu: '+newFiles.length
+        : 'ZIP: '+paths.length+' · GitHub-Abruf fehlgeschlagen'+(githubUpdateState.filesError ? ': '+githubUpdateState.filesError : '');
       var checks = [
         {ok: !!versionHigher, label:'Zielversion', detail: nextVersion ? nextVersion : 'Keine Zielversion erkannt.'},
         {ok: claudeUpdated, label:'CLAUDE.md aktualisiert', detail: claudeUpdated ? 'Eintrag zur Zielversion gefunden.' : 'Kein passender Versionseintrag gefunden.'},
         {ok: changelogUpdated, label:'CHANGELOG.md aktualisiert', detail: changelogUpdated ? 'Eintrag zur Zielversion gefunden.' : 'Kein passender Versionseintrag gefunden.'},
         {ok: duplicates.length === 0, label:'Keine doppelten Dateien', detail: duplicates.length ? duplicates.slice(0,3).join(', ') : 'Pfade sind eindeutig.'},
-        {ok: badRoot.length === 0, label:'Keine unerwÃ¼nschten Root-Dateien', detail: badRoot.length ? badRoot.slice(0,3).join(', ') : 'Root-Struktur ist sauber.'},
+        {ok: badRoot.length === 0, label:'Keine unerwünschten Root-Dateien', detail: badRoot.length ? badRoot.slice(0,3).join(', ') : 'Root-Struktur ist sauber.'},
         {ok: paths.length > 0, key:'files', label:'Anzahl der Dateien', detail: fileDetail}
       ];
       var ok = checks.every(function(check){ return check.ok; });
@@ -1852,8 +1852,8 @@
       state.message = ok ? '' : 'ZIP braucht noch Korrekturen.';
     }catch(e){
       state.status = 'error';
-      state.message = githubFriendlyError(e && e.message ? e.message : 'ZIP konnte nicht geprÃ¼ft werden.');
-      state.checks = [{ok:false,label:'ZIP-PrÃ¼fung fehlgeschlagen',detail:state.message}];
+      state.message = githubFriendlyError(e && e.message ? e.message : 'ZIP konnte nicht geprüft werden.');
+      state.checks = [{ok:false,label:'ZIP-Prüfung fehlgeschlagen',detail:state.message}];
     }
     refreshSameTab('github');
   }
@@ -1865,11 +1865,11 @@
         var ok = parseInt(score.ok,10) || 0;
         var total = parseInt(score.total,10) || 0;
         var tone = score.tone === 'ok' ? 'ok' : (score.tone === 'error' ? 'error' : 'off');
-        var label = (tone === 'ok' ? 'Gesund' : 'PrÃ¼fen') + ' Â· ' + ok + '/' + total;
-        return '<div class="change-health-pill is-static '+tone+'"><span>â™¡</span><strong>'+esc(label)+'</strong></div>';
+        var label = (tone === 'ok' ? 'Gesund' : 'Prüfen') + ' · ' + ok + '/' + total;
+        return '<div class="change-health-pill is-static '+tone+'"><span>♡</span><strong>'+esc(label)+'</strong></div>';
       }
     }catch(e){}
-    return '<div class="change-health-pill is-static off"><span>â™¡</span><strong>Status offen</strong></div>';
+    return '<div class="change-health-pill is-static off"><span>♡</span><strong>Status offen</strong></div>';
   }
 
   function settingsHeroArtSvg(){
@@ -1886,10 +1886,10 @@
       + '<defs>'
       + '<linearGradient id="set-cog-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4ade80" stop-opacity="0.85"/><stop offset="1" stop-color="#166534" stop-opacity="0.35"/></linearGradient>'
       + '</defs>'
-      // GroÃŸes Zahnrad
+      // Großes Zahnrad
       + '<circle cx="105" cy="108" r="30" fill="none" stroke="url(#set-cog-grad)" stroke-width="5" opacity="0.55"/>'
       + '<circle cx="105" cy="108" r="14" fill="none" stroke="url(#set-cog-grad)" stroke-width="3.5" opacity="0.5"/>'
-      // Zahnrad-ZÃ¤hne (8 StÃ¼ck)
+      // Zahnrad-Zähne (8 Stück)
       + '<rect x="101" y="68" width="8" height="14" rx="3" fill="url(#set-cog-grad)" opacity="0.45"/>'
       + '<rect x="101" y="134" width="8" height="14" rx="3" fill="url(#set-cog-grad)" opacity="0.45"/>'
       + '<rect x="65" y="104" width="14" height="8" rx="3" fill="url(#set-cog-grad)" opacity="0.45"/>'
@@ -1924,7 +1924,7 @@
         var ok = parseInt(score.ok,10) || 0;
         var total = parseInt(score.total,10) || 0;
         healthTone = score.tone === 'ok' ? 'ok' : (score.tone === 'error' ? 'error' : 'off');
-        healthValue = (healthTone === 'ok' ? 'Gesund' : 'PrÃ¼fen') + ' Â· ' + ok + '/' + total;
+        healthValue = (healthTone === 'ok' ? 'Gesund' : 'Prüfen') + ' · ' + ok + '/' + total;
       }
     }catch(e){}
     return ''
@@ -1934,7 +1934,7 @@
       + '<em>'+(googleLoggedIn ? 'Angemeldet' : 'Nicht angem.')+'</em>'
       + '</div>'
       + '<div class="change-settings-profile-stat is-health '+healthTone+'">'
-      + '<span class="change-settings-profile-stat-icon">â™¡</span>'
+      + '<span class="change-settings-profile-stat-icon">♡</span>'
       + '<strong>Gesundheitscheck</strong>'
       + '<em>'+esc(healthValue)+'</em>'
       + '</div>'
@@ -1964,7 +1964,7 @@
     var dataAuditCard = settingsFeatureCard(
       'DB',
       'Daten-Audit',
-      dataAuditExpanded ? 'GEPRÃœFT' : 'BEREIT',
+      dataAuditExpanded ? 'GEPRÜFT' : 'BEREIT',
       dataAuditExpanded ? 'ok' : 'off',
       '',
       '',
@@ -1973,9 +1973,9 @@
     var health = '';
     if(window.ChangeAppStatus && window.ChangeAppStatus.healthHtml){
       var healthBody = appHealthExpanded
-        ? window.ChangeAppStatus.healthHtml() + '<button class="btn btn-secondary btn-full" id="run-app-health" type="button">Erneut prÃ¼fen</button>'
-        : '<div class="change-feature-note">Der Check wird erst angezeigt, wenn du ihn bewusst startest.</div><button class="btn btn-secondary btn-full" id="run-app-health" type="button">App-Gesundheitscheck prÃ¼fen</button>';
-      health = settingsFeatureCard('<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2 6 4-14 2 8h6"></path></svg>', 'App-Gesundheitscheck', appHealthExpanded ? 'GEPRÃœFT' : 'BEREIT', appHealthExpanded ? 'ok' : 'off', '', '', healthBody);
+        ? window.ChangeAppStatus.healthHtml() + '<button class="btn btn-secondary btn-full" id="run-app-health" type="button">Erneut prüfen</button>'
+        : '<div class="change-feature-note">Der Check wird erst angezeigt, wenn du ihn bewusst startest.</div><button class="btn btn-secondary btn-full" id="run-app-health" type="button">App-Gesundheitscheck prüfen</button>';
+      health = settingsFeatureCard('<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2 6 4-14 2 8h6"></path></svg>', 'App-Gesundheitscheck', appHealthExpanded ? 'GEPRÜFT' : 'BEREIT', appHealthExpanded ? 'ok' : 'off', '', '', healthBody);
     }
     // Darstellung/Theme ist in den eigenen Tab "Darstellung" verschoben.
     return '<div class="change-settings-stack">' + installCard + dataAuditCard + health + '</div>';
@@ -2089,7 +2089,7 @@
     return '<button class="change-settings-nav-card '+(active===id?'active':'')+'" type="button" data-settings-tab="'+id+'">'
       + '<span class="change-settings-nav-icon">'+iconMarkup(icon)+'</span>'
       + '<span class="change-settings-nav-copy"><strong>'+esc(title)+'</strong><small>'+esc(sub)+'</small></span>'
-      + '<span class="change-settings-nav-arrow">â€º</span>'
+      + '<span class="change-settings-nav-arrow">›</span>'
       + '</button>';
   }
   function ensurePremiumSettingsCloseBridge(){
@@ -2206,7 +2206,7 @@
       + '<div class="change-settings-shell">'
       + settingsRail(startTab)
       + '<div class="change-settings-panel"><div class="change-settings-panel-inner">'
-      + '<button class="change-settings-back" type="button" data-settings-back><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>ZurÃ¼ck</button>'
+      + '<button class="change-settings-back" type="button" data-settings-back><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>Zurück</button>'
       + '<div class="change-settings-pane-title">'+esc(settingsPaneTitle(startTab))+'</div>'
       + '<div class="change-settings-pane active" data-pane="'+esc(startTab)+'">'+settingsPaneHtml(startTab)+'</div>'
       + '</div></div>'
@@ -2288,7 +2288,7 @@
         holidayState: ($('set-holiday-state') && $('set-holiday-state').value) || 'ALL'
       };
       // setHolidayState schreibt change_v1_holiday_state + holiday_state (beide Keys),
-      // normalisiert via cleanState() und lÃ¶st (gewrappt) Firebase-Sync aus.
+      // normalisiert via cleanState() und löst (gewrappt) Firebase-Sync aus.
       if(typeof window.setHolidayState === 'function'){
         window.setHolidayState(options.holidayState);
       } else {
@@ -2438,7 +2438,7 @@
         var file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0] ? event.dataTransfer.files[0] : null;
         if(file && !/\.zip$/i.test(file.name || '')){
           githubUpdateState.status = 'error';
-          githubUpdateState.message = 'Bitte eine ZIP-Datei auswÃ¤hlen.';
+          githubUpdateState.message = 'Bitte eine ZIP-Datei auswählen.';
           refreshSameTab('github');
           return;
         }
@@ -2475,12 +2475,12 @@
 
   }
 
-  // â”€â”€ Cache leeren â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // LÃ¶scht alle Daten-Caches (Events, Completions, Players) aus localStorage.
+  // ── Cache leeren ──────────────────────────────────────────────────────────
+  // Löscht alle Daten-Caches (Events, Completions, Players) aus localStorage.
   // Bewahrt: Login-Session, Einstellungen, Push-Token.
-  // LÃ¶scht danach auch SW-Caches (Browser HTTP-Cache) und lÃ¤dt neu.
+  // Löscht danach auch SW-Caches (Browser HTTP-Cache) und lädt neu.
   window.clearChangeAppCache = async function() {
-    // Keys die NIEMALS gelÃ¶scht werden (Auth + Einstellungen)
+    // Keys die NIEMALS gelöscht werden (Auth + Einstellungen)
     var PRESERVE = new Set([
       // Auth & Login
       'change_v1_user_info', 'user_info', 'user_info_safe',
@@ -2511,18 +2511,18 @@
       'change_v1_settings_updated_at', 'change_v1_settings_synced_at'
     ]);
 
-    // 1. Alle zu lÃ¶schenden Keys sammeln
+    // 1. Alle zu löschenden Keys sammeln
     var toDelete = [];
     for (var i = 0; i < localStorage.length; i++) {
       var key = localStorage.key(i);
       if (key && !PRESERVE.has(key)) toDelete.push(key);
     }
-    // Entfernen (separat, weil Iteration wÃ¤hrend Remove Index verschiebt)
+    // Entfernen (separat, weil Iteration während Remove Index verschiebt)
     toDelete.forEach(function(key) {
       try { localStorage.removeItem(key); } catch(e) {}
     });
 
-    // 2. Service Worker Caches leeren (Browser HTTP-Cache fÃ¼r App-Dateien)
+    // 2. Service Worker Caches leeren (Browser HTTP-Cache für App-Dateien)
     if ('caches' in window) {
       try {
         var names = await caches.keys();
@@ -2563,11 +2563,11 @@
       try{ clientId = JSON.parse(localStorage.getItem('change_v1_client_id') || '""') || localStorage.getItem('client_id') || ''; }catch(e){}
     }
     if(!clientId){
-      if(typeof toast === 'function') toast('Keine Google Client-ID â€“ bitte in Einstellungen konfigurieren', 'err');
+      if(typeof toast === 'function') toast('Keine Google Client-ID – bitte in Einstellungen konfigurieren', 'err');
       return;
     }
     if(!window.google || !google.accounts || !google.accounts.oauth2){
-      if(typeof toast === 'function') toast('Google-Bibliothek wird geladenâ€¦', '');
+      if(typeof toast === 'function') toast('Google-Bibliothek wird geladen…', '');
       return;
     }
     try{
@@ -2584,7 +2584,7 @@
           try{ localStorage.setItem('change_v1_google_calendar_sync', 'true'); localStorage.setItem('change_google_sync_enabled', 'true'); }catch(e){}
           try{ if(window.ChangeGoogleSyncStatus && window.ChangeGoogleSyncStatus.syncNow) await window.ChangeGoogleSyncStatus.syncNow(); }catch(e){}
           try{ if(typeof loadGoogleData === 'function') await loadGoogleData(); }catch(e){}
-          if(typeof toast === 'function') toast('Google Kalender verbunden âœ“', 'ok');
+          if(typeof toast === 'function') toast('Google Kalender verbunden ✓', 'ok');
           try{ if(typeof openSettingsPanel === 'function') openSettingsPanel('sync'); }catch(e){}
         }
       });
