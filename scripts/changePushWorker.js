@@ -44,6 +44,31 @@ export default {
       return json({ error: String(err && err.message || err) }, 500);
     }
   },
+
+  // Cron-Einstieg (Phase 5). Cloudflare ruft das nach Zeitplan auf.
+  // Cron laeuft in UTC; wir handeln nur, wenn es in Europe/Berlin 08:00 oder 13:00 ist
+  // (DST-fest). Schedule daher in Cloudflare: "0 6,7,11,12 * * *".
+  async scheduled(event, env, ctx) {
+    try {
+      if (!env.FIREBASE_SERVICE_ACCOUNT) return;
+      const sa = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
+      const projectId = sa.project_id;
+      const hour = berlinHour();
+      const slot = hour === 8 ? '08' : hour === 13 ? '13' : null;
+      if (!slot) return; // Cron feuerte ausserhalb der Zielzeiten (nur DST-Puffer)
+      const accessToken = await getAccessToken(sa);
+      const users = await listPushUsers(accessToken, projectId);
+      for (const email of users) {
+        try {
+          await sendChallengeReminder(accessToken, projectId, email, { slot });
+        } catch (e) {
+          // Ein Fehler bei einem Nutzer darf den restlichen Lauf nicht stoppen.
+        }
+      }
+    } catch (e) {
+      // Im Cron niemals werfen.
+    }
+  },
 };
 
 /* ---------- Test-Endpunkt ------------------------------------------------ */
@@ -223,7 +248,7 @@ async function listDevices(accessToken, projectId, emailDocId) {
     // pushEnabled fehlt -> als true werten (Altbestand); explizit false -> aus
     const enabled = !(f.pushEnabled && f.pushEnabled.booleanValue === false);
     const deviceId = f.deviceId && f.deviceId.stringValue;
-    if (tk && enabled) out.push({ token: tk, deviceId });
+    if (tk && enabled) out.push({ token: tk, deviceId, name: doc.name });
   });
   return out;
 }
@@ -283,41 +308,52 @@ async function handleChallenge(url, env) {
   const projectId = sa.project_id;
   const email = (url.searchParams.get('email') || 'ak2191@gmx.de').toLowerCase();
   const force = url.searchParams.get('force') === '1'; // Dedupe fuer Tests umgehen
+  const slot = url.searchParams.get('slot') || 'manual';
   const accessToken = await getAccessToken(sa);
-  const result = await sendChallengeReminder(accessToken, projectId, email, force);
+  const result = await sendChallengeReminder(accessToken, projectId, email, { force, slot });
   return json(result);
 }
 
-// Orchestrierung mit den ZWEI Kontroll-Ebenen + Dedupe.
-async function sendChallengeReminder(accessToken, projectId, email, force) {
+// Orchestrierung mit den ZWEI Kontroll-Ebenen + Slot-Dedupe + Token-Hygiene.
+// opts: { force?:bool, slot?:string }  (slot '08'/'13' vom Cron, 'manual' vom Test)
+async function sendChallengeReminder(accessToken, projectId, email, opts) {
+  opts = opts || {};
+  const force = !!opts.force;
+  const slot = opts.slot || 'manual';
   const emailId = safeDocId(email);          // Dokument-ID, z.B. ak2191_gmx.de
   const playerId = String(email).toLowerCase(); // playerId in change_completions
   const today = berlinToday();
+  const mark = today + '#' + slot;           // pro Tag UND Slot nur einmal
 
   // Kontroll-Ebene 2: Typ "challenges" eingeschaltet?
   const allowed = await challengePrefAllows(accessToken, projectId, emailId);
-  if (!allowed) return { skipped: 'typ-challenges-aus', today };
+  if (!allowed) return { skipped: 'typ-challenges-aus', today, slot };
 
-  // Dedupe: heute schon erinnert?
+  // Dedupe: dieser Slot heute schon gesendet?
   if (!force) {
     const state = await firestoreGetDoc(accessToken, projectId, 'change_push_state/' + emailId);
-    const last = state && state.fields && state.fields.lastChallengeReminder && state.fields.lastChallengeReminder.stringValue;
-    if (last === today) return { skipped: 'heute-bereits-gesendet', today };
+    const last = state && state.fields && state.fields.lastChallengeMark && state.fields.lastChallengeMark.stringValue;
+    if (last === mark) return { skipped: 'slot-bereits-gesendet', today, slot };
   }
 
   // Gibt es ueberhaupt eine offene Challenge heute?
   const open = await computeOpenChallenges(accessToken, projectId, playerId, today);
-  if (!open.count) return { skipped: 'keine-offene-challenge', today };
+  if (!open.count) return { skipped: 'keine-offene-challenge', today, slot };
 
   // Kontroll-Ebene 1: aktive Geraete (pushEnabled)
   const devices = await listDevices(accessToken, projectId, emailId);
-  if (!devices.length) return { skipped: 'kein-aktives-geraet', today, openChallenges: open.count };
+  if (!devices.length) return { skipped: 'kein-aktives-geraet', today, slot, openChallenges: open.count };
 
   const title = 'Change';
   const body = 'Deine Tages-Challenge wartet 💪';
   const results = [];
+  const pruned = [];
   for (const dev of devices) {
     const r = await fcmSend(accessToken, projectId, dev.token, title, body);
+    // Token-Hygiene: abgemeldete/ungueltige Tokens (404) entfernen.
+    if (!r.ok && r.status === 404 && dev.name) {
+      try { await firestoreDeleteByName(accessToken, dev.name); pruned.push(dev.deviceId || null); } catch (e) {}
+    }
     results.push({
       device: dev.deviceId || null,
       ok: r.ok,
@@ -332,13 +368,13 @@ async function sendChallengeReminder(accessToken, projectId, email, force) {
       projectId,
       'change_push_state/' + emailId,
       {
-        lastChallengeReminder: { stringValue: today },
+        lastChallengeMark: { stringValue: mark },
         updatedAt: { timestampValue: new Date().toISOString() },
       },
-      ['lastChallengeReminder', 'updatedAt']
+      ['lastChallengeMark', 'updatedAt']
     );
   }
-  return { today, openChallenges: open.count, deviceCount: devices.length, sent, results };
+  return { today, slot, openChallenges: open.count, deviceCount: devices.length, sent, pruned, results };
 }
 
 // Kontroll-Ebene 2: change_settings/{emailId}.notificationPrefs.challenges
@@ -387,6 +423,36 @@ function berlinToday() {
     month: '2-digit',
     day: '2-digit',
   }).format(new Date());
+}
+
+// Aktuelle Stunde (0-23) in Europe/Berlin (DST-fest).
+function berlinHour() {
+  const h = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/Berlin',
+    hour: '2-digit',
+    hour12: false,
+  }).format(new Date());
+  return parseInt(h, 10);
+}
+
+// Alle Nutzer mit Push-Token (aus den Eltern-Markern in change_push_tokens).
+async function listPushUsers(accessToken, projectId) {
+  const docs = await firestoreListDocs(accessToken, projectId, 'change_push_tokens');
+  const emails = [];
+  docs.forEach((doc) => {
+    const f = doc.fields || {};
+    const email = (f.email && f.email.stringValue) || '';
+    if (email) emails.push(String(email).toLowerCase());
+  });
+  return emails;
+}
+
+// Loescht ein Dokument anhand seines vollen Firestore-Namens (fuer tote Tokens).
+async function firestoreDeleteByName(accessToken, name) {
+  await fetch('https://firestore.googleapis.com/v1/' + name, {
+    method: 'DELETE',
+    headers: { Authorization: 'Bearer ' + accessToken },
+  });
 }
 
 /* ---------- Helfer ------------------------------------------------------- */

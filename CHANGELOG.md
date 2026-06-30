@@ -1,3 +1,15 @@
+## Version 0.1.0352 - Tagespush Phase 5: Cron-Automatik + Token-Hygiene
+- Push-Worker `scripts/changePushWorker.js` um einen `scheduled`-Handler (Cloudflare-Cron) erweitert: laeuft automatisch, ganz ohne offene App.
+- Zeiten 08:00 + 13:00 Europe/Berlin, DST-fest: Cron feuert in UTC zu "0 6,7,11,12 * * *"; der Worker handelt nur, wenn es in Berlin wirklich 8 oder 13 Uhr ist (berlinHour).
+- Slot-Dedupe: Marke `YYYY-MM-DD#08` bzw. `#13` -> jeder Slot genau 1x pro Tag, Doppel-Feuern wird abgefangen. Manueller Test nutzt Slot 'manual'; `&force=1` umgeht weiterhin.
+- Versand an ALLE Nutzer mit Token: `listPushUsers` liest die Eltern-Marker in change_push_tokens.
+- Token-Hygiene: FCM-404 (abgemeldetes/totes Geraet) -> Geraete-Dokument wird automatisch geloescht (firestoreDeleteByName); Antwort enthaelt `pruned`.
+- Kontroll-Ebene unveraendert wirksam (Geraet pushEnabled + notificationPrefs.challenges + nur bei offener Challenge).
+- Headless geprueft: Slot-Mapping (nur 8/13), getrennte Marken 08/13, Doppel-Cron-Schutz, force; node --check.
+- BENUTZER-TODO: neuen Worker-Code in Cloudflare einfuegen + deployen; danach Cron-Trigger "0 6,7,11,12 * * *" unter Trigger events anlegen.
+- Reine Worker-Datei + Doku + Version; keine App-Runtime-Datei (ausser Versionsstrings) beruehrt.
+- Cache-Busting ?v=0.1.0352.
+
 ## Version 0.1.0351 - Encoding reset auf sauberer 0347-Basis
 - Neuer Release-Aufbau von der letzten sauberen App-Basis, damit die kaputte Zeichencodierung aus dem 0349/0350-Pfad nicht weitergetragen wird.
 - Die drei betroffenen Kern-Dateien fuer Shell, Settings und Pollen wurden sauber zurueck auf korrektes UTF-8 gebracht; dadurch erscheinen Umlaute und Sonderzeichen wieder normal in der App.
