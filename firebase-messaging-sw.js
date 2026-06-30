@@ -24,24 +24,41 @@ if(messagingReady) {
 
   const messaging = firebase.messaging();
 
-  // Hintergrund-Nachrichten (App geschlossen oder im Hintergrund)
-  messaging.onBackgroundMessage((payload) => {
-    const n     = payload.notification || {};
-    const title = n.title || 'Change';
-    const body  = n.body  || 'Neue Benachrichtigung';
-    const url   = (payload.data && payload.data.url) || './';
+  // Hinweis: Die Anzeige laeuft jetzt ueber den nativen 'push'-Handler weiter unten,
+  // damit Benachrichtigungen auch dann erscheinen, wenn das Firebase-SDK im
+  // Service Worker nicht laedt. onBackgroundMessage wird daher NICHT registriert
+  // (sonst gaebe es Doppel-Anzeigen).
+}
 
-    return self.registration.showNotification(title, {
+// Eigener Push-Handler: zeigt Benachrichtigungen unabhaengig vom Firebase-SDK an.
+// Der Worker schickt ein reines data-Paket mit title/body/url/tag.
+self.addEventListener('push', (event) => {
+  let payload = {};
+  if (event.data) {
+    try { payload = event.data.json(); }
+    catch (e) {
+      try { payload = { data: { body: event.data.text() } }; } catch (_) { payload = {}; }
+    }
+  }
+  const d = payload.data || {};
+  const n = payload.notification || {};
+  const title = d.title || n.title || 'Change';
+  const body  = d.body  || n.body  || 'Neue Benachrichtigung';
+  const url   = d.url   || (payload.fcmOptions && payload.fcmOptions.link) || './';
+  const tag   = d.tag   || 'change-push';
+
+  event.waitUntil(
+    self.registration.showNotification(title, {
       body,
       icon:     './icons/icon-change-192.png',
       badge:    './icons/icon-change-192.png',
-      tag:      (payload.data && payload.data.tag) || 'change-push',
+      tag,
       renotify: true,
       vibrate:  [200, 100, 200],
       data:     { url }
-    });
-  });
-}
+    })
+  );
+});
 
 // Klick → App öffnen oder fokussieren
 self.addEventListener('notificationclick', (event) => {

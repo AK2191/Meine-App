@@ -1,3 +1,13 @@
+## Version 0.1.0354 - Push-Anzeige robust: eigener Service-Worker-Handler
+- Ursache fuer "gesendet aber unsichtbar": die Anzeige haengt bisher komplett am Firebase-SDK im Service Worker (onBackgroundMessage). Laedt das SDK nicht oder passt das Format nicht, erscheint trotz Status 200 nichts.
+- Fix (zwei zusammengehoerige Teile):
+  - `firebase-messaging-sw.js`: eigener nativer `push`-Handler, der IMMER laeuft (auch ohne Firebase-SDK) und die Benachrichtigung selbst anzeigt. `onBackgroundMessage` entfernt (sonst Doppel-Anzeige). Firebase-Init bleibt nur fuer Token-Kompatibilitaet.
+  - `scripts/changePushWorker.js` (fcmSend): schickt ein reines `data`-Paket (title/body/url/tag) statt notification -> der eigene Handler zeigt es zuverlaessig an, keine Doppelung.
+- BENUTZER-TODO: App hochladen UND Worker neu deployen (beide gehoeren zusammen); danach den Service Worker aktualisieren (DevTools > Application > Service Workers > Update bzw. Unregister + neu laden).
+- Cache-Busting ?v=0.1.0354.
+- Geaendert: `firebase-messaging-sw.js`, `scripts/changePushWorker.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check` (SW, Worker, pollenView).
+
 ## Version 0.1.0353 - Push-Fix: Web-Benachrichtigung wird jetzt wirklich angezeigt
 - Ursache: der Worker schickte den Web-Anzeigeteil `webpush.notification` OHNE Titel/Text. FCM nahm die Nachricht an (Status 200), aber der Browser hatte nichts Anzeigbares -> 3x gesendet, 0x sichtbar.
 - Fix in `scripts/changePushWorker.js` (fcmSend): `webpush.notification` enthaelt jetzt title+body (plus icon/badge), `fcm_options.link` zum Oeffnen der App, und zusaetzlich ein `data`-Block mit title/body/url.

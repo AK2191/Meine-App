@@ -267,19 +267,18 @@ async function fcmSend(accessToken, projectId, deviceToken, title, body) {
       body: JSON.stringify({
         message: {
           token: deviceToken,
-          notification: { title, body },
-          // Web braucht Titel+Text IM webpush.notification, sonst zeigt der Browser nichts an.
+          // Reines data-Paket: der eigene Service-Worker-Handler zeigt es an
+          // (unabhaengig vom Firebase-SDK). KEIN notification-Feld -> keine Doppel-Anzeige.
+          data: {
+            title: title,
+            body: body,
+            url: 'https://ak2191.github.io/Meine-App/',
+            tag: 'change-challenge',
+          },
           webpush: {
-            notification: {
-              title: title,
-              body: body,
-              icon: '/icons/icon-change-192.png',
-              badge: '/icons/icon-change-192.png',
-            },
+            headers: { Urgency: 'high', TTL: '86400' },
             fcm_options: { link: 'https://ak2191.github.io/Meine-App/' },
           },
-          // Zusaetzlich als data, damit auch ein eigener Service-Worker-Handler den Text hat.
-          data: { title: title, body: body, url: 'https://ak2191.github.io/Meine-App/' },
         },
       }),
     }
