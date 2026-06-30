@@ -89,6 +89,20 @@ service cloud.firestore {
       }
     }
 
+    match /change_events/{docId} {
+      allow read, delete: if isAllowedUser() && ownDocId(docId);
+      allow create, update: if isAllowedUser()
+        && ownDocId(docId)
+        && ownEmail(request.resource.data.email);
+
+      match /items/{itemId} {
+        allow read, delete: if isAllowedUser() && ownDocId(docId);
+        allow create, update: if isAllowedUser()
+          && ownDocId(docId)
+          && ownEmail(request.resource.data.email);
+      }
+    }
+
     match /change_nudges/{nudgeId} {
       allow create: if isAllowedUser()
         && request.resource.data.keys().hasOnly(['from','fromName','to','toName','message','reason','sentAt','seen','createdAt'])

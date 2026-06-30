@@ -1,3 +1,14 @@
+## Version 0.1.0355 - Phase 6a: Termine als Minimal-Datensatz nach Firestore
+- Grundlage fuer server-seitige Termin-Erinnerung. Nur Datenschicht, noch kein Worker-Versand.
+- Neue Funktion `syncMinimalEventsToFirestore()` (app.js): schreibt kommende Termine (heute..+14 Tage) nach `change_events/{email}/items/{id}` - NUR Datum/Uhrzeit (date/endDate/time/endTime), KEIN Titel/Beschreibung (Datenschutz).
+- Nur wenn Datenbank-Sync an ist. Laeuft beim Start und (debounced 3s) beim Termin-Speichern (`writeEvents` -> `window.ChangeSyncMinimalEvents`). Vergangene Eintraege werden aufgeraeumt.
+- Neue Sicherheitsregel `change_events` (firebase/firestore.rules): pro Nutzer privat, gespiegelt von change_push_tokens (Svenja sieht Alex' Termine NICHT).
+- BENUTZER-TODO: (1) App hochladen; (2) firestore.rules in der Firebase Console aktualisieren (sonst werden die Schreibzugriffe verweigert); (3) App oeffnen -> in Firestore sollte change_events erscheinen.
+- Kein UI-/Verhaltensaenderung sichtbar; Kalender/Dashboard/Challenges unberuehrt.
+- Cache-Busting ?v=0.1.0355.
+- Geaendert: `app.js`, `core/calendar/calendarModel.js`, `firebase/firestore.rules`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check` (app.js, calendarModel.js, pollenView.js).
+
 ## Version 0.1.0354 - Push-Anzeige robust: eigener Service-Worker-Handler
 - Ursache fuer "gesendet aber unsichtbar": die Anzeige haengt bisher komplett am Firebase-SDK im Service Worker (onBackgroundMessage). Laedt das SDK nicht oder passt das Format nicht, erscheint trotz Status 200 nichts.
 - Fix (zwei zusammengehoerige Teile):

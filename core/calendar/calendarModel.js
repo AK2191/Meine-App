@@ -54,6 +54,7 @@
     }
     try{ window.events = list; }catch(e){}
     try{ events = list; }catch(e){}
+    try{ if(typeof window.ChangeSyncMinimalEvents === 'function') window.ChangeSyncMinimalEvents(); }catch(e){}
     if(store) return;
     try{ if(typeof window.ls === 'function') window.ls('events', list); }catch(e){}
     try{ localStorage.setItem('events', JSON.stringify(list)); }catch(e){}

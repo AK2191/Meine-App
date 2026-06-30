@@ -2184,6 +2184,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
       ls(FIREBASE_READY_KEY,true);
       installForegroundPushHandler();
       try{ refreshPushTokenIfEnabled(); }catch(_e){}
+      try{ syncMinimalEventsToFirestore(); }catch(_e){}
       startChallengeReminderLoop();
       const startLiveFeatures = options.live === true || (options.live !== false && ls('live_sync_enabled') === true);
       if(!startLiveFeatures){
@@ -2423,6 +2424,58 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
       }
     }catch(_e){ /* Auffrischung ist optional und darf den Start nie stoeren */ }
   }
+  // Phase 6a: schreibt einen MINIMAL-Datensatz kommender Termine (nur Datum/Uhrzeit,
+  // KEIN Titel/Beschreibung) nach change_events/{email}/items, damit der Worker
+  // spaeter auch bei geschlossener App an Termine erinnern kann. Nur wenn DB-Sync an.
+  async function syncMinimalEventsToFirestore(){
+    try{
+      let syncOn=false;
+      try{ syncOn = (ls('database_sync_enabled')===true || ls('live_sync_enabled')===true); }catch(_e){}
+      if(!syncOn) return;
+      if(!db || !userInfo.email) return;
+      let list=[];
+      try{ if(typeof window.getAllEvents==='function') list = window.getAllEvents() || []; }catch(_e){ list=[]; }
+      if(!Array.isArray(list)) return;
+      const toKey=(d)=>{ try{ return new Date(d).toISOString().slice(0,10); }catch(_e){ return ''; } };
+      const t=new Date(); t.setHours(0,0,0,0);
+      const h=new Date(t.getTime()); h.setDate(h.getDate()+14);
+      const todayKey=toKey(t), horizonKey=toKey(h);
+      const parent=db.collection('change_events').doc(safeDocId(currentEmail()));
+      const col=parent.collection('items');
+      try{
+        await parent.set({ email: currentEmail(), updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, {merge:true});
+      }catch(_e){}
+      for(const ev of list){
+        const start=String(ev.startDate || ev.date || '').slice(0,10);
+        if(!start) continue;
+        const end=String(ev.endDate || start).slice(0,10);
+        if(end < todayKey) continue;       // schon vorbei
+        if(start > horizonKey) continue;    // zu weit weg
+        const id=safeDocId(String(ev.id || ev.googleEventId || (start+'_'+(ev.time||''))));
+        try{
+          await col.doc(id).set({
+            email: currentEmail(),
+            date: start,
+            endDate: end,
+            time: String(ev.time||''),
+            endTime: String(ev.endTime||''),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, {merge:true});
+        }catch(_e){}
+      }
+      // Vergangene Eintraege aufraeumen (keine Karteileichen fuer den Worker)
+      try{
+        const snap=await col.where('endDate','<',todayKey).limit(50).get();
+        snap.forEach(d=>{ try{ d.ref.delete(); }catch(_e){} });
+      }catch(_e){}
+    }catch(_e){ /* Termin-Sync ist optional, darf den Start nie stoeren */ }
+  }
+  let _eventSyncTimer=null;
+  function scheduleMinimalEventSync(){
+    try{ if(_eventSyncTimer) clearTimeout(_eventSyncTimer); }catch(_e){}
+    _eventSyncTimer=setTimeout(function(){ try{ syncMinimalEventsToFirestore(); }catch(_e){} }, 3000);
+  }
+  try{ window.ChangeSyncMinimalEvents = scheduleMinimalEventSync; }catch(_e){}
   function startChallengeReminderLoop(){
     if(window._changeReminderLoop) return;
     window._changeReminderLoop=setInterval(()=>{
