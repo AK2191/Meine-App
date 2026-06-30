@@ -1,3 +1,11 @@
+## Version 0.1.0353 - Push-Fix: Web-Benachrichtigung wird jetzt wirklich angezeigt
+- Ursache: der Worker schickte den Web-Anzeigeteil `webpush.notification` OHNE Titel/Text. FCM nahm die Nachricht an (Status 200), aber der Browser hatte nichts Anzeigbares -> 3x gesendet, 0x sichtbar.
+- Fix in `scripts/changePushWorker.js` (fcmSend): `webpush.notification` enthaelt jetzt title+body (plus icon/badge), `fcm_options.link` zum Oeffnen der App, und zusaetzlich ein `data`-Block mit title/body/url.
+- Reiner Worker-Fix; keine App-Logik veraendert.
+- Cache-Busting ?v=0.1.0353.
+- Geaendert: `scripts/changePushWorker.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `CLAUDE.md`, `CHANGELOG.md`.
+- Geprueft: `node --check`.
+
 ## Version 0.1.0352 - Tagespush Phase 5: Cron-Automatik + Token-Hygiene
 - Push-Worker `scripts/changePushWorker.js` um einen `scheduled`-Handler (Cloudflare-Cron) erweitert: laeuft automatisch, ganz ohne offene App.
 - Zeiten 08:00 + 13:00 Europe/Berlin, DST-fest: Cron feuert in UTC zu "0 6,7,11,12 * * *"; der Worker handelt nur, wenn es in Berlin wirklich 8 oder 13 Uhr ist (berlinHour).
