@@ -1,3 +1,15 @@
+## Version 0.1.0356 - Phase 6b: Termin-Erinnerung (Worker, 07:00)
+- Push-Worker sendet jetzt auch eine Termin-Erinnerung als Morgen-Uebersicht um 07:00 Europe/Berlin.
+- Neuer Endpunkt `GET /event?secret=...&email=...&force=1` (Test) und Cron-Slot 07 im scheduled-Handler.
+- Liest heutige Termine aus `change_events/{email}/items` (nur Datum/Uhrzeit): aktiv heute = date<=heute<=endDate. Text: 1 Termin -> "Du hast heute einen Termin um HH:MM", mehrere -> "Du hast heute N Termine, ab HH:MM", Zeitraum ohne Startzeit heute -> "Du hast heute einen Termin".
+- Kontroll-Ebene: Geraet pushEnabled + notificationPrefs.events (fehlt -> an) + nur wenn wirklich Termine heute. Slot-Dedupe `YYYY-MM-DD#event07`. Token-Hygiene (404 -> loeschen).
+- Challenge-Zeiten bleiben 08:00 + 13:00 unveraendert.
+- BENUTZER-TODO: Worker neu deployen; Cron um die Fruehstunde erweitern auf `0 5,6,7,11,12 * * *` (deckt 07/08 Berlin + 13 in Sommer/Winter ab).
+- Headless geprueft: Termine-heute-Logik + Textbildung; node --check.
+- Reine Worker-Datei + Doku + Version.
+- Cache-Busting ?v=0.1.0356.
+- Geaendert: `scripts/changePushWorker.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0355 - Phase 6a: Termine als Minimal-Datensatz nach Firestore
 - Grundlage fuer server-seitige Termin-Erinnerung. Nur Datenschicht, noch kein Worker-Versand.
 - Neue Funktion `syncMinimalEventsToFirestore()` (app.js): schreibt kommende Termine (heute..+14 Tage) nach `change_events/{email}/items/{id}` - NUR Datum/Uhrzeit (date/endDate/time/endTime), KEIN Titel/Beschreibung (Datenschutz).

@@ -39,6 +39,9 @@ export default {
       if (url.pathname === '/challenge') {
         return await handleChallenge(url, env);
       }
+      if (url.pathname === '/event') {
+        return await handleEvent(url, env);
+      }
       return text('change-push-worker bereit.', 200);
     } catch (err) {
       return json({ error: String(err && err.message || err) }, 500);
@@ -55,12 +58,14 @@ export default {
       const projectId = sa.project_id;
       const hour = berlinHour();
       const slot = hour === 8 ? '08' : hour === 13 ? '13' : null;
-      if (!slot) return; // Cron feuerte ausserhalb der Zielzeiten (nur DST-Puffer)
+      const eventSlot = hour === 7 ? '07' : null;
+      if (!slot && !eventSlot) return; // Cron feuerte ausserhalb der Zielzeiten (nur DST-Puffer)
       const accessToken = await getAccessToken(sa);
       const users = await listPushUsers(accessToken, projectId);
       for (const email of users) {
         try {
-          await sendChallengeReminder(accessToken, projectId, email, { slot });
+          if (eventSlot) await sendEventReminder(accessToken, projectId, email, { slot: eventSlot });
+          if (slot) await sendChallengeReminder(accessToken, projectId, email, { slot });
         } catch (e) {
           // Ein Fehler bei einem Nutzer darf den restlichen Lauf nicht stoppen.
         }
@@ -418,6 +423,127 @@ async function computeOpenChallenges(accessToken, projectId, playerId, today) {
     count++;
   });
   return { count };
+}
+
+/* ---------- Termin-Erinnerung (Phase 6b) --------------------------------- */
+
+async function handleEvent(url, env) {
+  if (!env.PUSH_TEST_SECRET) {
+    return json({ error: 'gesperrt: Secret PUSH_TEST_SECRET ist nicht gesetzt.' }, 403);
+  }
+  if ((url.searchParams.get('secret') || '') !== env.PUSH_TEST_SECRET) {
+    return json({ error: 'Falsches oder fehlendes secret.' }, 403);
+  }
+  if (!env.FIREBASE_SERVICE_ACCOUNT) {
+    return json({ error: 'Secret FIREBASE_SERVICE_ACCOUNT fehlt.' }, 500);
+  }
+  let sa;
+  try {
+    sa = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
+  } catch (e) {
+    return json({ error: 'FIREBASE_SERVICE_ACCOUNT ist kein gueltiges JSON.' }, 500);
+  }
+  const projectId = sa.project_id;
+  const email = (url.searchParams.get('email') || 'ak2191@gmx.de').toLowerCase();
+  const force = url.searchParams.get('force') === '1';
+  const slot = url.searchParams.get('slot') || 'manual';
+  const accessToken = await getAccessToken(sa);
+  const result = await sendEventReminder(accessToken, projectId, email, { force, slot });
+  return json(result);
+}
+
+// Morgen-Uebersicht: erinnert an die heutigen Termine (nur Datum/Uhrzeit, kein Titel).
+async function sendEventReminder(accessToken, projectId, email, opts) {
+  opts = opts || {};
+  const force = !!opts.force;
+  const slot = opts.slot || 'manual';
+  const emailId = safeDocId(email);
+  const today = berlinToday();
+  const mark = today + '#event' + slot;
+
+  // Kontroll-Ebene 2: Typ "events" eingeschaltet?
+  const allowed = await eventPrefAllows(accessToken, projectId, emailId);
+  if (!allowed) return { skipped: 'typ-events-aus', today, slot };
+
+  // Dedupe
+  if (!force) {
+    const state = await firestoreGetDoc(accessToken, projectId, 'change_push_state/' + emailId);
+    const last = state && state.fields && state.fields.lastEventMark && state.fields.lastEventMark.stringValue;
+    if (last === mark) return { skipped: 'slot-bereits-gesendet', today, slot };
+  }
+
+  const evs = await computeTodaysEvents(accessToken, projectId, emailId, today);
+  if (!evs.count) return { skipped: 'keine-termine-heute', today, slot };
+
+  // Kontroll-Ebene 1: aktive Geraete
+  const devices = await listDevices(accessToken, projectId, emailId);
+  if (!devices.length) return { skipped: 'kein-aktives-geraet', today, slot, events: evs.count };
+
+  const title = 'Change';
+  let body;
+  if (evs.count === 1) {
+    body = evs.firstTime ? 'Du hast heute einen Termin um ' + evs.firstTime + '.' : 'Du hast heute einen Termin.';
+  } else {
+    body = evs.firstTime
+      ? 'Du hast heute ' + evs.count + ' Termine, ab ' + evs.firstTime + '.'
+      : 'Du hast heute ' + evs.count + ' Termine.';
+  }
+
+  const results = [];
+  const pruned = [];
+  for (const dev of devices) {
+    const r = await fcmSend(accessToken, projectId, dev.token, title, body);
+    if (!r.ok && r.status === 404 && dev.name) {
+      try { await firestoreDeleteByName(accessToken, dev.name); pruned.push(dev.deviceId || null); } catch (e) {}
+    }
+    results.push({
+      device: dev.deviceId || null,
+      ok: r.ok,
+      status: r.status,
+      error: r.ok ? null : (r.data && r.data.error && r.data.error.status) || 'unknown',
+    });
+  }
+  const sent = results.filter((x) => x.ok).length;
+  if (sent > 0) {
+    await firestorePatch(
+      accessToken,
+      projectId,
+      'change_push_state/' + emailId,
+      { lastEventMark: { stringValue: mark }, updatedAt: { timestampValue: new Date().toISOString() } },
+      ['lastEventMark', 'updatedAt']
+    );
+  }
+  return { today, slot, events: evs.count, deviceCount: devices.length, sent, pruned, results };
+}
+
+// Kontroll-Ebene 2: change_settings/{emailId}.notificationPrefs.events (fehlt -> an).
+async function eventPrefAllows(accessToken, projectId, emailId) {
+  const doc = await firestoreGetDoc(accessToken, projectId, 'change_settings/' + emailId);
+  if (!doc || !doc.fields) return true;
+  const prefs = doc.fields.notificationPrefs;
+  const ev = prefs && prefs.mapValue && prefs.mapValue.fields && prefs.mapValue.fields.events;
+  if (ev && ev.booleanValue === false) return false;
+  return true;
+}
+
+// Termine, die HEUTE stattfinden (Einzeltag oder laufender Zeitraum). Nur Datum/Uhrzeit.
+async function computeTodaysEvents(accessToken, projectId, emailId, today) {
+  const docs = await firestoreListDocs(accessToken, projectId, 'change_events/' + emailId + '/items');
+  const times = [];
+  let count = 0;
+  docs.forEach((doc) => {
+    const f = doc.fields || {};
+    const date = f.date && f.date.stringValue;
+    if (!date) return;
+    const endDate = (f.endDate && f.endDate.stringValue) || date;
+    if (date <= today && endDate >= today) {
+      count++;
+      const time = f.time && f.time.stringValue;
+      if (time && date === today) times.push(time); // Startzeit nur, wenn heute Beginn
+    }
+  });
+  times.sort();
+  return { count, firstTime: times[0] || '' };
 }
 
 // Heutiges Datum als YYYY-MM-DD in Europe/Berlin (DST-fest).
