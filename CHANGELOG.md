@@ -1,3 +1,12 @@
+## Version 0.1.0360 - Fix: Benachrichtigungs-Einstellungen wurden nicht geraeteubergreifend uebernommen
+- Nutzer-Beobachtung bestaetigt: Einstellungen WURDEN nach Firestore geschrieben, aber fuer die neuen Schalter/Zeiten ohne aktualisierten Aenderungs-Zeitstempel (STAMP_KEY). Folge: andere Geraete uebernahmen die Aenderung nicht (onSnapshot vergleicht Zeitstempel) und konnten sie sogar mit aelterem Stand zurueck-ueberschreiben.
+- Ursache: Der Zeitstempel wird nur fuer Bedienelemente in CONTROL_IDS (settings-logic.js) gesetzt. Dort fehlten: set-holiday-notifications, set-challenge-notif, set-event-notif, set-challenge-hour, set-challenge-hour2, set-event-hour, set-holiday-hour.
+- Fix: die 7 IDs in CONTROL_IDS ergaenzt (kanonische Stelle, kein Workaround). Mit Kommentar dokumentiert, dass neue Settings-Bedienelemente IMMER dort registriert werden muessen.
+- MERKREGEL fuer kuenftige Features (auch in dieser Datei dokumentiert): Neues Settings-Bedienelement => ID in CONTROL_IDS eintragen.
+- Geprueft: node --check; alle 7 IDs verifiziert.
+- Cache-Busting ?v=0.1.0360.
+- Geaendert: `features/settings/settings-logic.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0359 - Phase 7a: Feiertags-Benachrichtigung server-seitig
 - Worker erinnert jetzt am VORTAG an Feiertage: "Morgen ist Feiertag: Tag der Deutschen Einheit." Kommt auch bei geschlossener App.
 - KEIN neuer Sync noetig: Bundesland kommt aus change_settings.calendar.holidayState (seit Phase K gesynct); Feiertage berechnet der Worker selbst.

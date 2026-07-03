@@ -457,6 +457,10 @@
     'set-birthdays','set-birthday-notification-days','us-birthdays-on','us-birthday-notification-days',
     'set-urlaub','set-urlaub-days',
     'set-database-sync','set-live','set-auto','set-auto-count','set-challenge-difficulty','set-google',
+    // Benachrichtigungs-Schalter + Erinnerungszeiten (0.1.0346/6d/7a) - MUESSEN hier stehen,
+    // sonst wird der Aenderungs-Zeitstempel nicht gesetzt und andere Geraete uebernehmen nichts.
+    'set-holiday-notifications','set-challenge-notif','set-event-notif',
+    'set-challenge-hour','set-challenge-hour2','set-event-hour','set-holiday-hour',
     // Wetter (beide Panels)
     'set-weather','set-rain-alerts','set-rain-hours','set-pollen','set-pollen-alerts','set-pollen-hours'
   ]);
