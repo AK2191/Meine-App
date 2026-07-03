@@ -480,14 +480,7 @@ async function sendEventReminder(accessToken, projectId, email, opts) {
   if (!devices.length) return { skipped: 'kein-aktives-geraet', today, slot, events: evs.count };
 
   const title = 'Change';
-  let body;
-  if (evs.count === 1) {
-    body = evs.firstTime ? 'Du hast heute einen Termin um ' + evs.firstTime + '.' : 'Du hast heute einen Termin.';
-  } else {
-    body = evs.firstTime
-      ? 'Du hast heute ' + evs.count + ' Termine, ab ' + evs.firstTime + '.'
-      : 'Du hast heute ' + evs.count + ' Termine.';
-  }
+  const body = buildEventBody(evs);
 
   const results = [];
   const pruned = [];
@@ -516,6 +509,31 @@ async function sendEventReminder(accessToken, projectId, email, opts) {
   return { today, slot, events: evs.count, deviceCount: devices.length, sent, pruned, results };
 }
 
+// Nachrichtentext im Stil der lokalen Benachrichtigung ("Heute: Bouldern um 22:00").
+// Faellt sauber zurueck, wenn (alte) Eintraege noch keinen Titel haben.
+function buildEventBody(evs) {
+  const label = (it) => {
+    const t = (it.title || '').trim();
+    if (t && it.time) return t + ' um ' + it.time;
+    if (t) return t;
+    if (it.time) return 'Termin um ' + it.time;
+    return '';
+  };
+  if (evs.count === 1) {
+    const l = label(evs.items[0]);
+    return l ? 'Heute: ' + l + '.' : 'Du hast heute einen Termin.';
+  }
+  const parts = evs.items.map(label).filter(Boolean).slice(0, 3);
+  if (parts.length) {
+    let s = 'Heute ' + evs.count + ' Termine: ' + parts.join(', ');
+    if (evs.count > parts.length) s += ', +' + (evs.count - parts.length) + ' weitere';
+    return s + '.';
+  }
+  return evs.firstTime
+    ? 'Du hast heute ' + evs.count + ' Termine, ab ' + evs.firstTime + '.'
+    : 'Du hast heute ' + evs.count + ' Termine.';
+}
+
 // Kontroll-Ebene 2: change_settings/{emailId}.notificationPrefs.events (fehlt -> an).
 async function eventPrefAllows(accessToken, projectId, emailId) {
   const doc = await firestoreGetDoc(accessToken, projectId, 'change_settings/' + emailId);
@@ -526,24 +544,26 @@ async function eventPrefAllows(accessToken, projectId, emailId) {
   return true;
 }
 
-// Termine, die HEUTE stattfinden (Einzeltag oder laufender Zeitraum). Nur Datum/Uhrzeit.
+// Termine, die HEUTE stattfinden (Einzeltag oder laufender Zeitraum). Datum/Uhrzeit + kurzer Titel.
 async function computeTodaysEvents(accessToken, projectId, emailId, today) {
   const docs = await firestoreListDocs(accessToken, projectId, 'change_events/' + emailId + '/items');
-  const times = [];
-  let count = 0;
+  const items = [];
   docs.forEach((doc) => {
     const f = doc.fields || {};
     const date = f.date && f.date.stringValue;
     if (!date) return;
     const endDate = (f.endDate && f.endDate.stringValue) || date;
     if (date <= today && endDate >= today) {
-      count++;
-      const time = f.time && f.time.stringValue;
-      if (time && date === today) times.push(time); // Startzeit nur, wenn heute Beginn
+      const time = (f.time && f.time.stringValue) || '';
+      items.push({
+        title: (f.title && f.title.stringValue) || '',
+        // Startzeit nur nennen, wenn der Termin heute BEGINNT (laufende Zeitraeume haben heute keine Startzeit)
+        time: date === today ? time : '',
+      });
     }
   });
-  times.sort();
-  return { count, firstTime: times[0] || '' };
+  items.sort((a, b) => (a.time || '99:99') < (b.time || '99:99') ? -1 : 1);
+  return { count: items.length, items, firstTime: (items[0] && items[0].time) || '' };
 }
 
 // Heutiges Datum als YYYY-MM-DD in Europe/Berlin (DST-fest).

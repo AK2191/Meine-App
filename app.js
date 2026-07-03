@@ -2459,6 +2459,7 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
             endDate: end,
             time: String(ev.time||''),
             endTime: String(ev.endTime||''),
+            title: String(ev.title||'').slice(0,40),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           }, {merge:true});
         }catch(_e){}

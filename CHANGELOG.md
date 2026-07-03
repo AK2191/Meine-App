@@ -1,3 +1,14 @@
+## Version 0.1.0357 - Phase 6c: Termin-Erinnerung mit Titel
+- Nutzer-Entscheidung: Titel wird mitsynchronisiert, damit die Erinnerung konkret ist ("Heute: Bouldern um 22:00.").
+- App (`app.js`, syncMinimalEventsToFirestore): schreibt zusaetzlich `title` (gekuerzt auf 40 Zeichen) nach `change_events/{email}/items`. Weiterhin KEINE Beschreibung, KEIN Ort.
+- Worker (`scripts/changePushWorker.js`): computeTodaysEvents liest Titel; neue buildEventBody erzeugt: 1 Termin -> "Heute: {Titel} um {Zeit}." / ganztaegig -> "Heute: {Titel}." / mehrere -> "Heute N Termine: A um 09:30, B, +X weitere." Sauberer Fallback fuer Alt-Eintraege ohne Titel.
+- Laufende Zeitraeume nennen heute keine Startzeit (beginnen nicht heute).
+- BENUTZER-TODO: App hochladen + Worker neu deployen; App danach einmal oeffnen (damit Titel in bestehende Eintraege gesynct werden).
+- Geplant als naechster Schritt (6d, noch NICHT gebaut): einstellbare Erinnerungs-Uhrzeit pro Nutzer (Cron stuendlich, Worker vergleicht mit notificationPrefs-Zeit).
+- Headless geprueft: alle Textvarianten; node --check (app.js, Worker).
+- Cache-Busting ?v=0.1.0357.
+- Geaendert: `app.js`, `scripts/changePushWorker.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0356 - Phase 6b: Termin-Erinnerung (Worker, 07:00)
 - Push-Worker sendet jetzt auch eine Termin-Erinnerung als Morgen-Uebersicht um 07:00 Europe/Berlin.
 - Neuer Endpunkt `GET /event?secret=...&email=...&force=1` (Test) und Cron-Slot 07 im scheduled-Handler.
