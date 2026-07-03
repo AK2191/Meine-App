@@ -460,7 +460,7 @@
     // Benachrichtigungs-Schalter + Erinnerungszeiten (0.1.0346/6d/7a) - MUESSEN hier stehen,
     // sonst wird der Aenderungs-Zeitstempel nicht gesetzt und andere Geraete uebernehmen nichts.
     'set-holiday-notifications','set-challenge-notif','set-event-notif',
-    'set-challenge-hour','set-challenge-hour2','set-event-hour','set-holiday-hour',
+    'set-challenge-hour','set-challenge-hour2','set-event-hour','set-holiday-hour','set-friseur-hour',
     // Wetter (beide Panels)
     'set-weather','set-rain-alerts','set-rain-hours','set-pollen','set-pollen-alerts','set-pollen-hours'
   ]);
@@ -655,6 +655,9 @@
       dashboard: {
         friseurEnabled: typeof window.getFriseurEnabled === 'function' ? !!window.getFriseurEnabled() : readBool(['change_v1_friseur_enabled'], false),
         friseurWeeks: typeof window.getFriseurWeeks === 'function' ? parseInt(window.getFriseurWeeks(), 10) || 3 : readNumber(['change_v1_friseur_weeks'], 3),
+        // Abgeleitet aus den Kalender-Terminen (features/friseur/friseur.js, kanonische Quelle).
+        // Nur das Datum des letzten Friseur-Termins - fuer die server-seitige Erinnerung (7b).
+        friseurLastDate: (typeof window._friseurFindLast === 'function' ? (window._friseurFindLast() || '') : ''),
         birthdaysEnabled: typeof window.getBirthdaysEnabled === 'function' ? !!window.getBirthdaysEnabled() : readBool(['change_v1_birthdays_enabled','birthdays_enabled'], true),
         birthdayNotificationDays: Math.max(0, Math.min(365, typeof window.getBirthdayNotificationDays === 'function' ? parseInt(window.getBirthdayNotificationDays(), 10) || 0 : readNumber(['change_v1_birthday_notification_days','birthday_notification_days'], 1))),
         friseurNotifications: friseurNotif,
@@ -691,7 +694,8 @@
         reminderHours: {
           challenges: readReminderHours('change_v1_challenge_reminder_hour', 8, 'change_v1_challenge_reminder_hour2', 13),
           events: readReminderHours('change_v1_event_reminder_hour', 7),
-          holidays: readReminderHours('change_v1_holiday_reminder_hour', 7)
+          holidays: readReminderHours('change_v1_holiday_reminder_hour', 7),
+          friseur: readReminderHours('change_v1_friseur_reminder_hour', 7)
         }
       },
       updatedAtLocal: readRaw(STAMP_KEY) || nowIso()
@@ -757,6 +761,9 @@
       }
       if(Array.isArray(rh.holidays) && rh.holidays.length && okHour(rh.holidays[0])){
         writeString('change_v1_holiday_reminder_hour', rh.holidays[0]);
+      }
+      if(Array.isArray(rh.friseur) && rh.friseur.length && okHour(rh.friseur[0])){
+        writeString('change_v1_friseur_reminder_hour', rh.friseur[0]);
       }
       if(typeof dash.urlaubEnabled === 'boolean') writeString('urlaub_tracker_on', dash.urlaubEnabled ? 'true' : 'false');
       if(dash.urlaubTotalDays) writeString('urlaub_tracker_days', parseInt(dash.urlaubTotalDays, 10) || 30);

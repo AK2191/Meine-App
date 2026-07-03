@@ -45,6 +45,9 @@ export default {
       if (url.pathname === '/holiday') {
         return await handleHoliday(url, env);
       }
+      if (url.pathname === '/friseur') {
+        return await handleFriseur(url, env);
+      }
       return text('change-push-worker bereit.', 200);
     } catch (err) {
       return json({ error: String(err && err.message || err) }, 500);
@@ -76,6 +79,9 @@ export default {
           if (hours.holidays.includes(hour)) {
             await sendHolidayReminder(accessToken, projectId, email, { slot });
           }
+          if (hours.friseur.includes(hour)) {
+            await sendFriseurReminder(accessToken, projectId, email, { slot });
+          }
         } catch (e) {
           // Ein Fehler bei einem Nutzer darf den restlichen Lauf nicht stoppen.
         }
@@ -88,7 +94,7 @@ export default {
 
 // Liest die eingestellten Erinnerungsstunden eines Nutzers (Defaults, wenn nicht gesetzt).
 async function reminderHoursFor(accessToken, projectId, emailId) {
-  const defaults = { challenges: [8, 13], events: [7], holidays: [7] };
+  const defaults = { challenges: [8, 13], events: [7], holidays: [7], friseur: [7] };
   const doc = await firestoreGetDoc(accessToken, projectId, 'change_settings/' + emailId);
   const prefs = doc && doc.fields && doc.fields.notificationPrefs;
   const rh = prefs && prefs.mapValue && prefs.mapValue.fields && prefs.mapValue.fields.reminderHours;
@@ -106,6 +112,7 @@ async function reminderHoursFor(accessToken, projectId, emailId) {
     challenges: readArr(rhFields.challenges) || defaults.challenges,
     events: readArr(rhFields.events) || defaults.events,
     holidays: readArr(rhFields.holidays) || defaults.holidays,
+    friseur: readArr(rhFields.friseur) || defaults.friseur,
   };
 }
 
@@ -743,6 +750,107 @@ function berlinAddDays(dateKey, n) {
   d.setDate(d.getDate() + n);
   const pad = (x) => String(x).padStart(2, '0');
   return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+}
+
+/* ---------- Friseur-Erinnerung (Phase 7b) --------------------------------- */
+
+async function handleFriseur(url, env) {
+  if (!env.PUSH_TEST_SECRET) {
+    return json({ error: 'gesperrt: Secret PUSH_TEST_SECRET ist nicht gesetzt.' }, 403);
+  }
+  if ((url.searchParams.get('secret') || '') !== env.PUSH_TEST_SECRET) {
+    return json({ error: 'Falsches oder fehlendes secret.' }, 403);
+  }
+  if (!env.FIREBASE_SERVICE_ACCOUNT) {
+    return json({ error: 'Secret FIREBASE_SERVICE_ACCOUNT fehlt.' }, 500);
+  }
+  let sa;
+  try {
+    sa = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
+  } catch (e) {
+    return json({ error: 'FIREBASE_SERVICE_ACCOUNT ist kein gueltiges JSON.' }, 500);
+  }
+  const projectId = sa.project_id;
+  const email = (url.searchParams.get('email') || 'ak2191@gmx.de').toLowerCase();
+  const force = url.searchParams.get('force') === '1';
+  const slot = url.searchParams.get('slot') || 'manual';
+  const accessToken = await getAccessToken(sa);
+  const result = await sendFriseurReminder(accessToken, projectId, email, { force, slot });
+  return json(result);
+}
+
+// Spiegelt die App-Regel (features/friseur/friseur.js, checkFriseurNotif):
+// faellig, wenn seit dem letzten Friseur-Termin >= wochen*7 Tage vergangen sind;
+// genau EINE Erinnerung pro letztem Termin (Dedupe-Marke = friseurLastDate).
+async function sendFriseurReminder(accessToken, projectId, email, opts) {
+  opts = opts || {};
+  const force = !!opts.force;
+  const slot = opts.slot || 'manual';
+  const emailId = safeDocId(email);
+  const today = berlinToday();
+
+  const settingsDoc = await firestoreGetDoc(accessToken, projectId, 'change_settings/' + emailId);
+  const f = settingsDoc && settingsDoc.fields;
+  const dash = f && f.dashboard && f.dashboard.mapValue && f.dashboard.mapValue.fields;
+
+  // Feature an? (Tracker-Schalter)
+  const enabled = dash && dash.friseurEnabled && dash.friseurEnabled.booleanValue === true;
+  if (!enabled) return { skipped: 'friseur-tracker-aus', today, slot };
+
+  // Kontroll-Ebene 2: notificationPrefs.friseur (fehlt -> an)
+  const prefs = f && f.notificationPrefs;
+  const fr = prefs && prefs.mapValue && prefs.mapValue.fields && prefs.mapValue.fields.friseur;
+  if (fr && fr.booleanValue === false) return { skipped: 'typ-friseur-aus', today, slot };
+
+  const lastDate = (dash.friseurLastDate && dash.friseurLastDate.stringValue) || '';
+  if (!lastDate) return { skipped: 'kein-letzter-termin', today, slot };
+  const weeks = parseInt(dash.friseurWeeks && dash.friseurWeeks.integerValue, 10) || 3;
+  const days = daysBetween(lastDate, today);
+  if (days < weeks * 7) return { skipped: 'noch-nicht-faellig', today, slot, lastDate, days, dueAfterDays: weeks * 7 };
+
+  // Dedupe: eine Erinnerung pro letztem Termin (wie die App: friseur_notif_+lastDate)
+  if (!force) {
+    const state = await firestoreGetDoc(accessToken, projectId, 'change_push_state/' + emailId);
+    const done = state && state.fields && state.fields.lastFriseurMark && state.fields.lastFriseurMark.stringValue;
+    if (done === lastDate) return { skipped: 'fuer-diesen-termin-bereits-erinnert', today, slot, lastDate };
+  }
+
+  const devices = await listDevices(accessToken, projectId, emailId);
+  if (!devices.length) return { skipped: 'kein-aktives-geraet', today, slot };
+
+  const title = 'Change';
+  const body = 'Dein letzter Friseur-Termin war vor ' + days + ' Tagen. Zeit für einen neuen Termin?';
+  const results = [];
+  const pruned = [];
+  for (const dev of devices) {
+    const r = await fcmSend(accessToken, projectId, dev.token, title, body);
+    if (!r.ok && r.status === 404 && dev.name) {
+      try { await firestoreDeleteByName(accessToken, dev.name); pruned.push(dev.deviceId || null); } catch (e) {}
+    }
+    results.push({
+      device: dev.deviceId || null,
+      ok: r.ok,
+      status: r.status,
+      error: r.ok ? null : (r.data && r.data.error && r.data.error.status) || 'unknown',
+    });
+  }
+  const sent = results.filter((x) => x.ok).length;
+  if (sent > 0) {
+    await firestorePatch(
+      accessToken,
+      projectId,
+      'change_push_state/' + emailId,
+      { lastFriseurMark: { stringValue: lastDate }, updatedAt: { timestampValue: new Date().toISOString() } },
+      ['lastFriseurMark', 'updatedAt']
+    );
+  }
+  return { today, slot, lastDate, days, deviceCount: devices.length, sent, pruned, results };
+}
+
+// Volle Tage zwischen zwei dateKeys (YYYY-MM-DD), kalendersicher.
+function daysBetween(fromKey, toKey) {
+  const p = (k) => { const a = String(k).split('-').map(Number); return new Date(a[0], a[1] - 1, a[2], 12, 0, 0); };
+  return Math.floor((p(toKey) - p(fromKey)) / 86400000);
 }
 
 // Heutiges Datum als YYYY-MM-DD in Europe/Berlin (DST-fest).

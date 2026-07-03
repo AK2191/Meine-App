@@ -2474,7 +2474,11 @@ renderCalendar(); toast('Kalender-Einstellungen gespeichert ✓','ok');
   let _eventSyncTimer=null;
   function scheduleMinimalEventSync(){
     try{ if(_eventSyncTimer) clearTimeout(_eventSyncTimer); }catch(_e){}
-    _eventSyncTimer=setTimeout(function(){ try{ syncMinimalEventsToFirestore(); }catch(_e){} }, 3000);
+    _eventSyncTimer=setTimeout(function(){
+      try{ syncMinimalEventsToFirestore(); }catch(_e){}
+      // Abgeleitete Felder im Settings-Dokument (z.B. friseurLastDate) mit auffrischen.
+      try{ if(typeof window.saveChangeSettings==='function') window.saveChangeSettings(true); }catch(_e){}
+    }, 3000);
   }
   try{ window.ChangeSyncMinimalEvents = scheduleMinimalEventSync; }catch(_e){}
   function startChallengeReminderLoop(){

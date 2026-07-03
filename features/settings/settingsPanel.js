@@ -387,7 +387,10 @@
     );
 
     var friseurWeeks = dashboardNumber('getFriseurWeeks', ['change_v1_friseur_weeks','friseur_weeks'], 3);
-    var friseurBody = featureField('Erinnerung nach', '<select class="finput" id="set-friseur-weeks">'+[2,3,4,5,6,8].map(function(n){ return '<option value="'+n+'" '+(n === friseurWeeks ? 'selected' : '')+'>'+n+' Wochen</option>'; }).join('')+'</select>', '');
+    var friseurHourOpts = function(sel){ var s=''; for(var h=5;h<=22;h++){ s+='<option value="'+h+'" '+(h===sel?'selected':'')+'>'+String(h).padStart(2,'0')+':00</option>'; } return s; };
+    var friseurHour = readIntStored('change_v1_friseur_reminder_hour', 7);
+    var friseurBody = featureField('Erinnerung nach', '<select class="finput" id="set-friseur-weeks">'+[2,3,4,5,6,8].map(function(n){ return '<option value="'+n+'" '+(n === friseurWeeks ? 'selected' : '')+'>'+n+' Wochen</option>'; }).join('')+'</select>', '')
+      + featureField('Erinnerung um', '<select class="finput" id="set-friseur-hour">'+friseurHourOpts(friseurHour)+'</select>', '');
     var friseurNotifOn = readBoolMulti(['change_v1_friseur_notifications'], true);
     var friseurCard = settingsFeatureCard(
       '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6.5" cy="6.5" r="2.8"></circle><circle cx="6.5" cy="17.5" r="2.8"></circle><path d="M8.7 8.4 L20 16.5M8.7 15.6 L20 7.5"></path></svg>',
@@ -887,7 +890,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0361';
+  var APP_VERSION = '0.1.0362';
 
 
 
@@ -2421,6 +2424,7 @@
     bindReminderHour('set-challenge-hour2', 'change_v1_challenge_reminder_hour2');
     bindReminderHour('set-event-hour', 'change_v1_event_reminder_hour');
     bindReminderHour('set-holiday-hour', 'change_v1_holiday_reminder_hour');
+    bindReminderHour('set-friseur-hour', 'change_v1_friseur_reminder_hour');
     var runDataAudit = $('run-data-audit'); if(runDataAudit) runDataAudit.addEventListener('click', function(){ dataAuditExpanded = true; refreshSameTab('app'); });
     var runHealth = $('run-app-health'); if(runHealth) runHealth.addEventListener('click', function(){ appHealthExpanded = true; refreshSameTab('app'); });
     function setGithubZipFile(file){

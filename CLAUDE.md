@@ -1,4 +1,4 @@
-# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0361)
+# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0362)
 
 Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschlossenen Schritt hier aktualisiert (Haken setzen, Datum ergaenzen). Arbeitsweise laut Charta: kleine kontrollierte Schritte, nie mehrere Systeme gleichzeitig, nach jeder Aenderung Kalender/Dashboard/Challenges pruefen, keine Patches/Workarounds, keine doppelte Logik, CLAUDE.md immer mitziehen.
 
@@ -13,7 +13,7 @@ Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschloss
 - [x] Kosten: Cloudflare Free + Firebase Spark, dauerhaft weit unter allen Limits.
 
 ## B. OFFENE KERN-SCHRITTE (Reihenfolge verbindlich)
-- [ ] 7b Friseur server-seitig: App synct NUR das naechste Faelligkeitsdatum (change_settings.dashboard oder eigenes Feld); Worker-Send-Funktion; in Zeitsteuerung einstecken (reminderHours.friseur, Default 07); Kontroll-Ebene notificationPrefs.friseur. Abnahme: /friseur?force=1 liefert korrektes skipped/sent; Push kommt bei faelligem Friseur.
+- [x] 7b Friseur server-seitig (v0.1.0362): App synct NUR das naechste Faelligkeitsdatum (change_settings.dashboard oder eigenes Feld); Worker-Send-Funktion; in Zeitsteuerung einstecken (reminderHours.friseur, Default 07); Kontroll-Ebene notificationPrefs.friseur. Abnahme: /friseur?force=1 liefert korrektes skipped/sent; Push kommt bei faelligem Friseur.
 - [ ] 7c Geburtstage server-seitig: Minimal-Sync (Datum + Vorname, sonst nichts); nutzt vorhandenes "X Tage vorher" (birthdayNotificationDays); Worker-Funktion; reminderHours.birthdays (Default 07). Abnahme analog 7b.
 - [ ] 7d Regen-/Pollenwarnung server-seitig (groesster Schritt): Standort (nur Koordinaten) in Settings-Vertrag; Worker holt beim Stundenlauf Vorhersage (gleiche Quelle wie App, Open-Meteo) und wendet dieselbe "X Std. vorher"-Regel an; Dedupe pro Ereignis/Tag; Kontroll-Ebene rain/pollen. Abnahme: Warnung kommt bei geschlossener App, keine Doppel-Warnungen.
 
@@ -32,6 +32,17 @@ Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschloss
 - Neue Settings-Bedienelemente IMMER in CONTROL_IDS (settings-logic.js) registrieren.
 
 ---
+
+## Version 0.1.0362 - Phase 7b: Friseur-Erinnerung server-seitig
+- Worker erinnert an faellige Friseur-Termine - auch bei geschlossener App. Text wie in der App: "Dein letzter Friseur-Termin war vor X Tagen. Zeit für einen neuen Termin?".
+- Regel = 1:1 App-Spiegel (features/friseur/friseur.js, checkFriseurNotif): faellig ab friseurWeeks*7 Tagen nach dem letzten Termin; genau EINE Erinnerung pro letztem Termin (Dedupe-Marke lastFriseurMark = friseurLastDate; neue Erinnerung erst nach neuem Termin).
+- Minimal-Sync: NUR `dashboard.friseurLastDate` (Datum, kanonisch via window._friseurFindLast) neu im Settings-Vertrag; friseurEnabled/friseurWeeks/friseurNotifications waren bereits gesynct. Auffrischung auch bei Termin-Aenderungen (scheduleMinimalEventSync ruft saveChangeSettings mit).
+- Worker: Endpunkt `/friseur?secret=...&force=1`; im Stunden-Dispatcher (reminderHours.friseur, Default 07); prueft friseurEnabled + notificationPrefs.friseur + Faelligkeit; Token-Hygiene.
+- UI: Friseur-Karte hat zusaetzlich "Erinnerung um"-Dropdown (set-friseur-hour, 05-22 Uhr, in CONTROL_IDS registriert); Vertrag reminderHours.friseur + applySettings-Rueckspielung.
+- Headless geprueft: Faelligkeitsregel (20/21 Tage bei 3 Wochen), Monatswechsel, Dedupe-Semantik; node --check (app.js, settings-logic, settingsPanel, Worker).
+- BENUTZER-TODO: App hochladen; Worker neu deployen; danach App einmal oeffnen (schreibt friseurLastDate). Test: /friseur?secret=...&force=1.
+- Cache-Busting ?v=0.1.0362.
+- Geaendert: `app.js`, `features/settings/settings-logic.js`, `features/settings/settingsPanel.js`, `scripts/changePushWorker.js`, `features/pollen/pollenView.js`, `index.html`, `CLAUDE.md`, `CHANGELOG.md`.
 
 ## Version 0.1.0361 - Doku: verbindlicher Projektplan in CLAUDE.md
 - Projektplan (Ist-Stand, offene Schritte 7b/7c/7d, optionale O1/O2, Nutzeraufgabe U1, Dauerregeln) als oberste Sektion verankert. Keine Code-Aenderung.
