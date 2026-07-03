@@ -460,7 +460,7 @@
     // Benachrichtigungs-Schalter + Erinnerungszeiten (0.1.0346/6d/7a) - MUESSEN hier stehen,
     // sonst wird der Aenderungs-Zeitstempel nicht gesetzt und andere Geraete uebernehmen nichts.
     'set-holiday-notifications','set-challenge-notif','set-event-notif',
-    'set-challenge-hour','set-challenge-hour2','set-event-hour','set-holiday-hour','set-friseur-hour',
+    'set-challenge-hour','set-challenge-hour2','set-event-hour','set-holiday-hour','set-friseur-hour','set-birthday-hour',
     // Wetter (beide Panels)
     'set-weather','set-rain-alerts','set-rain-hours','set-pollen','set-pollen-alerts','set-pollen-hours'
   ]);
@@ -695,7 +695,8 @@
           challenges: readReminderHours('change_v1_challenge_reminder_hour', 8, 'change_v1_challenge_reminder_hour2', 13),
           events: readReminderHours('change_v1_event_reminder_hour', 7),
           holidays: readReminderHours('change_v1_holiday_reminder_hour', 7),
-          friseur: readReminderHours('change_v1_friseur_reminder_hour', 7)
+          friseur: readReminderHours('change_v1_friseur_reminder_hour', 7),
+          birthdays: readReminderHours('change_v1_birthday_reminder_hour', 7)
         }
       },
       updatedAtLocal: readRaw(STAMP_KEY) || nowIso()
@@ -764,6 +765,9 @@
       }
       if(Array.isArray(rh.friseur) && rh.friseur.length && okHour(rh.friseur[0])){
         writeString('change_v1_friseur_reminder_hour', rh.friseur[0]);
+      }
+      if(Array.isArray(rh.birthdays) && rh.birthdays.length && okHour(rh.birthdays[0])){
+        writeString('change_v1_birthday_reminder_hour', rh.birthdays[0]);
       }
       if(typeof dash.urlaubEnabled === 'boolean') writeString('urlaub_tracker_on', dash.urlaubEnabled ? 'true' : 'false');
       if(dash.urlaubTotalDays) writeString('urlaub_tracker_days', parseInt(dash.urlaubTotalDays, 10) || 30);

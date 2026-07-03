@@ -406,6 +406,7 @@
       'Geburtstags-Erinnerung', '', 'ok', '',
       '<label class="switch"><input type="checkbox" id="set-birthday-notif" '+(birthdayNotifOn ? 'checked' : '')+'><span class="slider"></span></label>',
       birthdayDaysSelect('set-birthday-notification-days', birthdayDays)
+        + featureField('Erinnerung um', '<select class="finput" id="set-birthday-hour">'+(function(sel){ var s=''; for(var h=5;h<=22;h++){ s+='<option value="'+h+'" '+(h===sel?'selected':'')+'>'+String(h).padStart(2,'0')+':00</option>'; } return s; })(readIntStored('change_v1_birthday_reminder_hour', 7))+'</select>', '')
     );
 
     var holidayOn = holidayNotificationsEnabled();
@@ -890,7 +891,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0362';
+  var APP_VERSION = '0.1.0363';
 
 
 
@@ -2425,6 +2426,7 @@
     bindReminderHour('set-event-hour', 'change_v1_event_reminder_hour');
     bindReminderHour('set-holiday-hour', 'change_v1_holiday_reminder_hour');
     bindReminderHour('set-friseur-hour', 'change_v1_friseur_reminder_hour');
+    bindReminderHour('set-birthday-hour', 'change_v1_birthday_reminder_hour');
     var runDataAudit = $('run-data-audit'); if(runDataAudit) runDataAudit.addEventListener('click', function(){ dataAuditExpanded = true; refreshSameTab('app'); });
     var runHealth = $('run-app-health'); if(runHealth) runHealth.addEventListener('click', function(){ appHealthExpanded = true; refreshSameTab('app'); });
     function setGithubZipFile(file){

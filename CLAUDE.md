@@ -1,4 +1,4 @@
-# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0362)
+# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0363)
 
 Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschlossenen Schritt hier aktualisiert (Haken setzen, Datum ergaenzen). Arbeitsweise laut Charta: kleine kontrollierte Schritte, nie mehrere Systeme gleichzeitig, nach jeder Aenderung Kalender/Dashboard/Challenges pruefen, keine Patches/Workarounds, keine doppelte Logik, CLAUDE.md immer mitziehen.
 
@@ -14,7 +14,7 @@ Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschloss
 
 ## B. OFFENE KERN-SCHRITTE (Reihenfolge verbindlich)
 - [x] 7b Friseur server-seitig (v0.1.0362): App synct NUR das naechste Faelligkeitsdatum (change_settings.dashboard oder eigenes Feld); Worker-Send-Funktion; in Zeitsteuerung einstecken (reminderHours.friseur, Default 07); Kontroll-Ebene notificationPrefs.friseur. Abnahme: /friseur?force=1 liefert korrektes skipped/sent; Push kommt bei faelligem Friseur.
-- [ ] 7c Geburtstage server-seitig: Minimal-Sync (Datum + Vorname, sonst nichts); nutzt vorhandenes "X Tage vorher" (birthdayNotificationDays); Worker-Funktion; reminderHours.birthdays (Default 07). Abnahme analog 7b.
+- [x] 7c Geburtstage server-seitig (v0.1.0363): Minimal-Sync (Datum + Vorname, sonst nichts); nutzt vorhandenes "X Tage vorher" (birthdayNotificationDays); Worker-Funktion; reminderHours.birthdays (Default 07). Abnahme analog 7b.
 - [ ] 7d Regen-/Pollenwarnung server-seitig (groesster Schritt): Standort (nur Koordinaten) in Settings-Vertrag; Worker holt beim Stundenlauf Vorhersage (gleiche Quelle wie App, Open-Meteo) und wendet dieselbe "X Std. vorher"-Regel an; Dedupe pro Ereignis/Tag; Kontroll-Ebene rain/pollen. Abnahme: Warnung kommt bei geschlossener App, keine Doppel-Warnungen.
 
 ## C. OPTIONALE QUALITAETS-SCHRITTE (nach B)
@@ -32,6 +32,18 @@ Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschloss
 - Neue Settings-Bedienelemente IMMER in CONTROL_IDS (settings-logic.js) registrieren.
 
 ---
+
+## Version 0.1.0363 - Phase 7c: Geburtstags-Erinnerung server-seitig
+- Worker erinnert an Geburtstage - auch bei geschlossener App. Text: "🎂 Svenja hat morgen Geburtstag!" bzw. Sammel-Text bei mehreren ("A hat heute Geburtstag · B hat in 3 Tagen Geburtstag").
+- KEIN neuer Sync: Geburtstage sind Kalender-Termine mit Stichwort im Titel (core/birthdays/birthdayParser.js) und liegen dank Phase 6 bereits MIT Titel in change_events. Worker spiegelt Stichwort-Erkennung (BDAY_RE inkl. Wortgrenzen: "Gebäudereinigung" matcht NICHT) + Namens-Extraktion + "X Tage vorher"-Fenster (dashboard.birthdayNotificationDays, auf 14 gedeckelt).
+- Grenze dokumentiert: change_events traegt heute..+14 Tage -> Vorlauf >14 Tage greift server-seitig nicht (App-intern weiterhin unbegrenzt).
+- Dedupe: 1 Sammel-Push pro Tag (lastBirthdayMark). Kontroll-Ebene: dashboard.birthdaysEnabled + notificationPrefs.birthdays + Geraete-pushEnabled. Token-Hygiene.
+- Endpunkt `/birthday?secret=...&force=1`; im Stunden-Dispatcher (reminderHours.birthdays, Default 07).
+- UI: Geburtstags-Karte hat zusaetzlich "Erinnerung um"-Dropdown (set-birthday-hour, in CONTROL_IDS); Vertrag reminderHours.birthdays + applySettings-Rueckspielung.
+- Headless geprueft: Regex-Treffer/Nicht-Treffer, Namens-Extraktion, Textbildung; node --check (Panel, Logic, Worker, pollenView).
+- BENUTZER-TODO: App hochladen; Worker neu deployen. Test: /birthday?secret=...&force=1.
+- Cache-Busting ?v=0.1.0363.
+- Geaendert: `features/settings/settings-logic.js`, `features/settings/settingsPanel.js`, `scripts/changePushWorker.js`, `features/pollen/pollenView.js`, `index.html`, `CLAUDE.md`, `CHANGELOG.md`.
 
 ## Version 0.1.0362 - Phase 7b: Friseur-Erinnerung server-seitig
 - Worker erinnert an faellige Friseur-Termine - auch bei geschlossener App. Text wie in der App: "Dein letzter Friseur-Termin war vor X Tagen. Zeit für einen neuen Termin?".

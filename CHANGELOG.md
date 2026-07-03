@@ -1,3 +1,15 @@
+## Version 0.1.0363 - Phase 7c: Geburtstags-Erinnerung server-seitig
+- Worker erinnert an Geburtstage - auch bei geschlossener App. Text: "🎂 Svenja hat morgen Geburtstag!" bzw. Sammel-Text bei mehreren ("A hat heute Geburtstag · B hat in 3 Tagen Geburtstag").
+- KEIN neuer Sync: Geburtstage sind Kalender-Termine mit Stichwort im Titel (core/birthdays/birthdayParser.js) und liegen dank Phase 6 bereits MIT Titel in change_events. Worker spiegelt Stichwort-Erkennung (BDAY_RE inkl. Wortgrenzen: "Gebäudereinigung" matcht NICHT) + Namens-Extraktion + "X Tage vorher"-Fenster (dashboard.birthdayNotificationDays, auf 14 gedeckelt).
+- Grenze dokumentiert: change_events traegt heute..+14 Tage -> Vorlauf >14 Tage greift server-seitig nicht (App-intern weiterhin unbegrenzt).
+- Dedupe: 1 Sammel-Push pro Tag (lastBirthdayMark). Kontroll-Ebene: dashboard.birthdaysEnabled + notificationPrefs.birthdays + Geraete-pushEnabled. Token-Hygiene.
+- Endpunkt `/birthday?secret=...&force=1`; im Stunden-Dispatcher (reminderHours.birthdays, Default 07).
+- UI: Geburtstags-Karte hat zusaetzlich "Erinnerung um"-Dropdown (set-birthday-hour, in CONTROL_IDS); Vertrag reminderHours.birthdays + applySettings-Rueckspielung.
+- Headless geprueft: Regex-Treffer/Nicht-Treffer, Namens-Extraktion, Textbildung; node --check (Panel, Logic, Worker, pollenView).
+- BENUTZER-TODO: App hochladen; Worker neu deployen. Test: /birthday?secret=...&force=1.
+- Cache-Busting ?v=0.1.0363.
+- Geaendert: `features/settings/settings-logic.js`, `features/settings/settingsPanel.js`, `scripts/changePushWorker.js`, `features/pollen/pollenView.js`, `index.html`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0362 - Phase 7b: Friseur-Erinnerung server-seitig
 - Worker erinnert an faellige Friseur-Termine - auch bei geschlossener App. Text wie in der App: "Dein letzter Friseur-Termin war vor X Tagen. Zeit für einen neuen Termin?".
 - Regel = 1:1 App-Spiegel (features/friseur/friseur.js, checkFriseurNotif): faellig ab friseurWeeks*7 Tagen nach dem letzten Termin; genau EINE Erinnerung pro letztem Termin (Dedupe-Marke lastFriseurMark = friseurLastDate; neue Erinnerung erst nach neuem Termin).

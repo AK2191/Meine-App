@@ -48,6 +48,9 @@ export default {
       if (url.pathname === '/friseur') {
         return await handleFriseur(url, env);
       }
+      if (url.pathname === '/birthday') {
+        return await handleBirthday(url, env);
+      }
       return text('change-push-worker bereit.', 200);
     } catch (err) {
       return json({ error: String(err && err.message || err) }, 500);
@@ -82,6 +85,9 @@ export default {
           if (hours.friseur.includes(hour)) {
             await sendFriseurReminder(accessToken, projectId, email, { slot });
           }
+          if (hours.birthdays.includes(hour)) {
+            await sendBirthdayReminder(accessToken, projectId, email, { slot });
+          }
         } catch (e) {
           // Ein Fehler bei einem Nutzer darf den restlichen Lauf nicht stoppen.
         }
@@ -94,7 +100,7 @@ export default {
 
 // Liest die eingestellten Erinnerungsstunden eines Nutzers (Defaults, wenn nicht gesetzt).
 async function reminderHoursFor(accessToken, projectId, emailId) {
-  const defaults = { challenges: [8, 13], events: [7], holidays: [7], friseur: [7] };
+  const defaults = { challenges: [8, 13], events: [7], holidays: [7], friseur: [7], birthdays: [7] };
   const doc = await firestoreGetDoc(accessToken, projectId, 'change_settings/' + emailId);
   const prefs = doc && doc.fields && doc.fields.notificationPrefs;
   const rh = prefs && prefs.mapValue && prefs.mapValue.fields && prefs.mapValue.fields.reminderHours;
@@ -113,6 +119,7 @@ async function reminderHoursFor(accessToken, projectId, emailId) {
     events: readArr(rhFields.events) || defaults.events,
     holidays: readArr(rhFields.holidays) || defaults.holidays,
     friseur: readArr(rhFields.friseur) || defaults.friseur,
+    birthdays: readArr(rhFields.birthdays) || defaults.birthdays,
   };
 }
 
@@ -845,6 +852,123 @@ async function sendFriseurReminder(accessToken, projectId, email, opts) {
     );
   }
   return { today, slot, lastDate, days, deviceCount: devices.length, sent, pruned, results };
+}
+
+/* ---------- Geburtstags-Erinnerung (Phase 7c) ----------------------------- */
+
+async function handleBirthday(url, env) {
+  if (!env.PUSH_TEST_SECRET) {
+    return json({ error: 'gesperrt: Secret PUSH_TEST_SECRET ist nicht gesetzt.' }, 403);
+  }
+  if ((url.searchParams.get('secret') || '') !== env.PUSH_TEST_SECRET) {
+    return json({ error: 'Falsches oder fehlendes secret.' }, 403);
+  }
+  if (!env.FIREBASE_SERVICE_ACCOUNT) {
+    return json({ error: 'Secret FIREBASE_SERVICE_ACCOUNT fehlt.' }, 500);
+  }
+  let sa;
+  try {
+    sa = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
+  } catch (e) {
+    return json({ error: 'FIREBASE_SERVICE_ACCOUNT ist kein gueltiges JSON.' }, 500);
+  }
+  const projectId = sa.project_id;
+  const email = (url.searchParams.get('email') || 'ak2191@gmx.de').toLowerCase();
+  const force = url.searchParams.get('force') === '1';
+  const slot = url.searchParams.get('slot') || 'manual';
+  const accessToken = await getAccessToken(sa);
+  const result = await sendBirthdayReminder(accessToken, projectId, email, { force, slot });
+  return json(result);
+}
+
+// Geburtstage kommen aus Kalender-Terminen (Stichwort im Titel) und liegen dank
+// Phase 6 bereits mit Titel in change_events - KEIN neuer Sync noetig.
+// Spiegelt core/birthdays/birthdayParser.js (Stichwort) + features/birthdays
+// ("X Tage vorher"-Fenster = dashboard.birthdayNotificationDays).
+// Hinweis: change_events traegt heute..+14 Tage -> Vorlauf >14 Tage greift server-seitig nicht.
+const BDAY_RE = /(?:\bb\s*-?\s*day\b|\bbirthday\b|\bgeburtstag\b|\bgeb\.)/i;
+function birthdayNameFromTitle(title) {
+  let t = String(title || '');
+  t = t.replace(/[🎂🎉🥳]/g, ' ');
+  t = t.replace(/(?:\bb\s*-?\s*day\b|\bbirthday\b|\bgeburtstag\b|\bgeb\.)/ig, ' ');
+  t = t.replace(/\b(?:von|für|fuer|zum|zur|der|die|das|am|hat)\b/ig, ' ');
+  t = t.replace(/[\s\-_:.,;\/\\|]+/g, ' ').trim();
+  return t || 'Jemand';
+}
+
+async function sendBirthdayReminder(accessToken, projectId, email, opts) {
+  opts = opts || {};
+  const force = !!opts.force;
+  const slot = opts.slot || 'manual';
+  const emailId = safeDocId(email);
+  const today = berlinToday();
+  const mark = today + '#birthday';
+
+  const settingsDoc = await firestoreGetDoc(accessToken, projectId, 'change_settings/' + emailId);
+  const f = settingsDoc && settingsDoc.fields;
+  const dash = f && f.dashboard && f.dashboard.mapValue && f.dashboard.mapValue.fields;
+
+  const enabled = !(dash && dash.birthdaysEnabled && dash.birthdaysEnabled.booleanValue === false);
+  if (!enabled) return { skipped: 'geburtstage-aus', today, slot };
+  const prefs = f && f.notificationPrefs;
+  const bp = prefs && prefs.mapValue && prefs.mapValue.fields && prefs.mapValue.fields.birthdays;
+  if (bp && bp.booleanValue === false) return { skipped: 'typ-birthdays-aus', today, slot };
+
+  const days = Math.max(0, Math.min(14, parseInt(dash && dash.birthdayNotificationDays && dash.birthdayNotificationDays.integerValue, 10) || 1));
+
+  if (!force) {
+    const state = await firestoreGetDoc(accessToken, projectId, 'change_push_state/' + emailId);
+    const done = state && state.fields && state.fields.lastBirthdayMark && state.fields.lastBirthdayMark.stringValue;
+    if (done === mark) return { skipped: 'heute-bereits-gesendet', today, slot };
+  }
+
+  // Geburtstags-Termine im Fenster heute..+days aus change_events
+  const docs = await firestoreListDocs(accessToken, projectId, 'change_events/' + emailId + '/items');
+  const hits = [];
+  docs.forEach((doc) => {
+    const fl = doc.fields || {};
+    const date = fl.date && fl.date.stringValue;
+    const title = (fl.title && fl.title.stringValue) || '';
+    if (!date || !BDAY_RE.test(title)) return;
+    const diff = daysBetween(today, date);
+    if (diff < 0 || diff > days) return;
+    hits.push({ name: birthdayNameFromTitle(title), diff });
+  });
+  if (!hits.length) return { skipped: 'keine-geburtstage-im-fenster', today, slot, windowDays: days };
+  hits.sort((a, b) => a.diff - b.diff);
+
+  const devices = await listDevices(accessToken, projectId, emailId);
+  if (!devices.length) return { skipped: 'kein-aktives-geraet', today, slot };
+
+  const phrase = (h) => h.diff === 0 ? h.name + ' hat heute Geburtstag' : h.diff === 1 ? h.name + ' hat morgen Geburtstag' : h.name + ' hat in ' + h.diff + ' Tagen Geburtstag';
+  const title = 'Change';
+  const body = '🎂 ' + hits.map(phrase).join(' · ') + (hits.length === 1 ? '!' : '');
+
+  const results = [];
+  const pruned = [];
+  for (const dev of devices) {
+    const r = await fcmSend(accessToken, projectId, dev.token, title, body);
+    if (!r.ok && r.status === 404 && dev.name) {
+      try { await firestoreDeleteByName(accessToken, dev.name); pruned.push(dev.deviceId || null); } catch (e) {}
+    }
+    results.push({
+      device: dev.deviceId || null,
+      ok: r.ok,
+      status: r.status,
+      error: r.ok ? null : (r.data && r.data.error && r.data.error.status) || 'unknown',
+    });
+  }
+  const sent = results.filter((x) => x.ok).length;
+  if (sent > 0) {
+    await firestorePatch(
+      accessToken,
+      projectId,
+      'change_push_state/' + emailId,
+      { lastBirthdayMark: { stringValue: mark }, updatedAt: { timestampValue: new Date().toISOString() } },
+      ['lastBirthdayMark', 'updatedAt']
+    );
+  }
+  return { today, slot, windowDays: days, birthdays: hits.length, deviceCount: devices.length, sent, pruned, results };
 }
 
 // Volle Tage zwischen zwei dateKeys (YYYY-MM-DD), kalendersicher.
