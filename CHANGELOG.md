@@ -1,3 +1,13 @@
+## Version 0.1.0359 - Phase 7a: Feiertags-Benachrichtigung server-seitig
+- Worker erinnert jetzt am VORTAG an Feiertage: "Morgen ist Feiertag: Tag der Deutschen Einheit." Kommt auch bei geschlossener App.
+- KEIN neuer Sync noetig: Bundesland kommt aus change_settings.calendar.holidayState (seit Phase K gesynct); Feiertage berechnet der Worker selbst.
+- Worker (`scripts/changePushWorker.js`): germanHolidaysFor() = 1:1-Port der App-Berechnung aus core/bootstrap.js (Gauss-Osterformel + Liste + Bundesland-Filter). MUSS bei Aenderungen an bootstrap.js mitgezogen werden (dokumentierte, bewusst gespiegelte Logik). Neuer Endpunkt `/holiday?secret=...&force=1`; im stuendlichen Dispatcher eingesteckt (reminderHours.holidays, Default 7 Uhr). Kontroll-Ebene: notificationPrefs.holidays; Slot-Dedupe; Token-Hygiene.
+- App: Feiertags-Karte hat jetzt "Erinnerung (am Vortag)"-Dropdown (05:00-22:00, key change_v1_holiday_reminder_hour); Vertrag reminderHours.holidays + applySettings-Rueckspielung.
+- Headless geprueft: Ostern 2026 (Ostermontag 06.04.), Bundesland-Filter (Fronleichnam BY ja/BE nein; Allerheiligen NW ja/HH nein), Monats-/Jahreswechsel; node --check (Panel, Logic, Worker).
+- BENUTZER-TODO: App hochladen; Worker neu deployen (Cron bleibt `0 * * * *`).
+- Cache-Busting ?v=0.1.0359.
+- Geaendert: `scripts/changePushWorker.js`, `features/settings/settings-logic.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0358 - Phase 6d: einstellbare Erinnerungszeiten (generische Zeitsteuerung)
 - Ziel: Push-Zeiten in der App einstellen statt im Cloudflare-Cron. Cron wird EINMALIG auf stuendlich gestellt und muss danach nie wieder angefasst werden.
 - Vertrag: `notificationPrefs.reminderHours` (schema 2) in change_settings: { challenges: [h1,(h2)], events: [h] }. Volle Stunden Europe/Berlin. Fehlt -> Defaults (challenges 8+13, events 7) = bisheriges Verhalten.

@@ -686,7 +686,8 @@
         // sendet nur zu diesen Stunden. Fehlt der Block -> Defaults (challenges 8+13, events 7).
         reminderHours: {
           challenges: readReminderHours('change_v1_challenge_reminder_hour', 8, 'change_v1_challenge_reminder_hour2', 13),
-          events: readReminderHours('change_v1_event_reminder_hour', 7)
+          events: readReminderHours('change_v1_event_reminder_hour', 7),
+          holidays: readReminderHours('change_v1_holiday_reminder_hour', 7)
         }
       },
       updatedAtLocal: readRaw(STAMP_KEY) || nowIso()
@@ -749,6 +750,9 @@
       }
       if(Array.isArray(rh.events) && rh.events.length && okHour(rh.events[0])){
         writeString('change_v1_event_reminder_hour', rh.events[0]);
+      }
+      if(Array.isArray(rh.holidays) && rh.holidays.length && okHour(rh.holidays[0])){
+        writeString('change_v1_holiday_reminder_hour', rh.holidays[0]);
       }
       if(typeof dash.urlaubEnabled === 'boolean') writeString('urlaub_tracker_on', dash.urlaubEnabled ? 'true' : 'false');
       if(dash.urlaubTotalDays) writeString('urlaub_tracker_days', parseInt(dash.urlaubTotalDays, 10) || 30);

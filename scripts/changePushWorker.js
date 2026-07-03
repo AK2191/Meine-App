@@ -42,6 +42,9 @@ export default {
       if (url.pathname === '/event') {
         return await handleEvent(url, env);
       }
+      if (url.pathname === '/holiday') {
+        return await handleHoliday(url, env);
+      }
       return text('change-push-worker bereit.', 200);
     } catch (err) {
       return json({ error: String(err && err.message || err) }, 500);
@@ -70,6 +73,9 @@ export default {
           if (hours.challenges.includes(hour)) {
             await sendChallengeReminder(accessToken, projectId, email, { slot });
           }
+          if (hours.holidays.includes(hour)) {
+            await sendHolidayReminder(accessToken, projectId, email, { slot });
+          }
         } catch (e) {
           // Ein Fehler bei einem Nutzer darf den restlichen Lauf nicht stoppen.
         }
@@ -82,7 +88,7 @@ export default {
 
 // Liest die eingestellten Erinnerungsstunden eines Nutzers (Defaults, wenn nicht gesetzt).
 async function reminderHoursFor(accessToken, projectId, emailId) {
-  const defaults = { challenges: [8, 13], events: [7] };
+  const defaults = { challenges: [8, 13], events: [7], holidays: [7] };
   const doc = await firestoreGetDoc(accessToken, projectId, 'change_settings/' + emailId);
   const prefs = doc && doc.fields && doc.fields.notificationPrefs;
   const rh = prefs && prefs.mapValue && prefs.mapValue.fields && prefs.mapValue.fields.reminderHours;
@@ -99,6 +105,7 @@ async function reminderHoursFor(accessToken, projectId, emailId) {
   return {
     challenges: readArr(rhFields.challenges) || defaults.challenges,
     events: readArr(rhFields.events) || defaults.events,
+    holidays: readArr(rhFields.holidays) || defaults.holidays,
   };
 }
 
@@ -590,6 +597,152 @@ async function computeTodaysEvents(accessToken, projectId, emailId, today) {
   });
   items.sort((a, b) => (a.time || '99:99') < (b.time || '99:99') ? -1 : 1);
   return { count: items.length, items, firstTime: (items[0] && items[0].time) || '' };
+}
+
+/* ---------- Feiertags-Erinnerung (Phase 7a) ------------------------------- */
+
+async function handleHoliday(url, env) {
+  if (!env.PUSH_TEST_SECRET) {
+    return json({ error: 'gesperrt: Secret PUSH_TEST_SECRET ist nicht gesetzt.' }, 403);
+  }
+  if ((url.searchParams.get('secret') || '') !== env.PUSH_TEST_SECRET) {
+    return json({ error: 'Falsches oder fehlendes secret.' }, 403);
+  }
+  if (!env.FIREBASE_SERVICE_ACCOUNT) {
+    return json({ error: 'Secret FIREBASE_SERVICE_ACCOUNT fehlt.' }, 500);
+  }
+  let sa;
+  try {
+    sa = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
+  } catch (e) {
+    return json({ error: 'FIREBASE_SERVICE_ACCOUNT ist kein gueltiges JSON.' }, 500);
+  }
+  const projectId = sa.project_id;
+  const email = (url.searchParams.get('email') || 'ak2191@gmx.de').toLowerCase();
+  const force = url.searchParams.get('force') === '1';
+  const slot = url.searchParams.get('slot') || 'manual';
+  const accessToken = await getAccessToken(sa);
+  const result = await sendHolidayReminder(accessToken, projectId, email, { force, slot });
+  return json(result);
+}
+
+// Erinnert am VORTAG an einen Feiertag ("Morgen ist Feiertag: ...").
+// Bundesland kommt aus change_settings.calendar.holidayState (bereits gesynct seit Phase K).
+async function sendHolidayReminder(accessToken, projectId, email, opts) {
+  opts = opts || {};
+  const force = !!opts.force;
+  const slot = opts.slot || 'manual';
+  const emailId = safeDocId(email);
+  const today = berlinToday();
+  const mark = today + '#holiday' + slot;
+
+  const settingsDoc = await firestoreGetDoc(accessToken, projectId, 'change_settings/' + emailId);
+
+  // Kontroll-Ebene 2: notificationPrefs.holidays (fehlt -> an)
+  const prefs = settingsDoc && settingsDoc.fields && settingsDoc.fields.notificationPrefs;
+  const hol = prefs && prefs.mapValue && prefs.mapValue.fields && prefs.mapValue.fields.holidays;
+  if (hol && hol.booleanValue === false) return { skipped: 'typ-holidays-aus', today, slot };
+
+  // Dedupe
+  if (!force) {
+    const state = await firestoreGetDoc(accessToken, projectId, 'change_push_state/' + emailId);
+    const last = state && state.fields && state.fields.lastHolidayMark && state.fields.lastHolidayMark.stringValue;
+    if (last === mark) return { skipped: 'slot-bereits-gesendet', today, slot };
+  }
+
+  // Bundesland lesen (Default ALL = nur bundesweite)
+  const cal = settingsDoc && settingsDoc.fields && settingsDoc.fields.calendar;
+  const st = cal && cal.mapValue && cal.mapValue.fields && cal.mapValue.fields.holidayState;
+  const holidayState = (st && st.stringValue) || 'ALL';
+
+  // Morgen ein Feiertag?
+  const tomorrow = berlinAddDays(today, 1);
+  const names = germanHolidaysFor(tomorrow, holidayState);
+  if (!names.length) return { skipped: 'morgen-kein-feiertag', today, tomorrow, slot };
+
+  const devices = await listDevices(accessToken, projectId, emailId);
+  if (!devices.length) return { skipped: 'kein-aktives-geraet', today, slot };
+
+  const title = 'Change';
+  const body = 'Morgen ist Feiertag: ' + names.join(', ') + '.';
+  const results = [];
+  const pruned = [];
+  for (const dev of devices) {
+    const r = await fcmSend(accessToken, projectId, dev.token, title, body);
+    if (!r.ok && r.status === 404 && dev.name) {
+      try { await firestoreDeleteByName(accessToken, dev.name); pruned.push(dev.deviceId || null); } catch (e) {}
+    }
+    results.push({
+      device: dev.deviceId || null,
+      ok: r.ok,
+      status: r.status,
+      error: r.ok ? null : (r.data && r.data.error && r.data.error.status) || 'unknown',
+    });
+  }
+  const sent = results.filter((x) => x.ok).length;
+  if (sent > 0) {
+    await firestorePatch(
+      accessToken,
+      projectId,
+      'change_push_state/' + emailId,
+      { lastHolidayMark: { stringValue: mark }, updatedAt: { timestampValue: new Date().toISOString() } },
+      ['lastHolidayMark', 'updatedAt']
+    );
+  }
+  return { today, tomorrow, holiday: names.join(', '), slot, deviceCount: devices.length, sent, pruned, results };
+}
+
+// 1:1-Port der App-Berechnung (core/bootstrap.js): Gauss-Osterformel + Liste + Bundesland-Filter.
+// Muss inhaltlich identisch zur App bleiben (Charta: keine doppelte, ABWEICHENDE Logik).
+function germanHolidaysFor(dateKey, state) {
+  const year = parseInt(String(dateKey).slice(0, 4), 10);
+  if (!year) return [];
+  const pad = (n) => String(n).padStart(2, '0');
+  const dk = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const addDays = (d, n) => { const x = new Date(d.getTime()); x.setDate(x.getDate() + n); return x; };
+  const a = year % 19, b = Math.floor(year / 100), c = year % 100, d0 = Math.floor(b / 4), e0 = b % 4;
+  const f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d0 - g + 15) % 30;
+  const i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e0 + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451), month = Math.floor((h + l - 7 * m + 114) / 31);
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+  const e = new Date(year, month - 1, day, 12, 0, 0);
+  const nov23 = new Date(year, 10, 23, 12, 0, 0);
+  const offset = (nov23.getDay() + 4) % 7;
+  const H = (date, name, states) => ({ date: dk(date), name, states: states || ['ALL'] });
+  const list = [
+    H(new Date(year, 0, 1, 12), 'Neujahr'),
+    H(new Date(year, 0, 6, 12), 'Heilige Drei Könige', ['BW', 'BY', 'BY-AUGSBURG', 'ST']),
+    H(new Date(year, 2, 8, 12), 'Internationaler Frauentag', ['BE', 'MV']),
+    H(addDays(e, -2), 'Karfreitag'),
+    H(addDays(e, 1), 'Ostermontag'),
+    H(new Date(year, 4, 1, 12), 'Tag der Arbeit'),
+    H(addDays(e, 39), 'Christi Himmelfahrt'),
+    H(addDays(e, 50), 'Pfingstmontag'),
+    H(addDays(e, 60), 'Fronleichnam', ['BW', 'BY', 'BY-AUGSBURG', 'HE', 'NW', 'RP', 'SL']),
+    H(new Date(year, 7, 8, 12), 'Augsburger Friedensfest', ['BY-AUGSBURG']),
+    H(new Date(year, 7, 15, 12), 'Mariä Himmelfahrt', ['BY', 'BY-AUGSBURG', 'SL']),
+    H(new Date(year, 8, 20, 12), 'Weltkindertag', ['TH']),
+    H(new Date(year, 9, 3, 12), 'Tag der Deutschen Einheit'),
+    H(new Date(year, 9, 31, 12), 'Reformationstag', ['BB', 'MV', 'SN', 'ST', 'TH', 'HB', 'HH', 'NI', 'SH']),
+    H(new Date(year, 10, 1, 12), 'Allerheiligen', ['BW', 'BY', 'BY-AUGSBURG', 'NW', 'RP', 'SL']),
+    H(addDays(nov23, -offset), 'Buß- und Bettag', ['SN']),
+    H(new Date(year, 11, 25, 12), '1. Weihnachtstag'),
+    H(new Date(year, 11, 26, 12), '2. Weihnachtstag'),
+  ];
+  const target = String(dateKey).slice(0, 10);
+  return list
+    .filter((x) => x.date === target)
+    .filter((x) => x.states.indexOf('ALL') !== -1 || state === 'ALL' || x.states.indexOf(state) !== -1)
+    .map((x) => x.name);
+}
+
+// dateKey (YYYY-MM-DD) + n Tage, kalendersicher.
+function berlinAddDays(dateKey, n) {
+  const p = String(dateKey).split('-').map(Number);
+  const d = new Date(p[0], p[1] - 1, p[2], 12, 0, 0);
+  d.setDate(d.getDate() + n);
+  const pad = (x) => String(x).padStart(2, '0');
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
 }
 
 // Heutiges Datum als YYYY-MM-DD in Europe/Berlin (DST-fest).

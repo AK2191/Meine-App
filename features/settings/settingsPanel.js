@@ -406,15 +406,17 @@
     );
 
     var holidayOn = holidayNotificationsEnabled();
+    var hourOpts = function(sel){ var s=''; for(var h=5;h<=22;h++){ s+='<option value="'+h+'" '+(h===sel?'selected':'')+'>'+String(h).padStart(2,'0')+':00</option>'; } return s; };
+    var holH = readIntStored('change_v1_holiday_reminder_hour', 7);
+    var holidayBody = featureField('Erinnerung (am Vortag)', '<select class="finput" id="set-holiday-hour">'+hourOpts(holH)+'</select>', '');
     var holidayCard = settingsFeatureCard(
       '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"></path></svg>',
       'Feiertags-Benachrichtigungen', holidayOn ? 'AKTIV' : 'AUS', holidayOn ? 'ok' : 'off', '',
       '<label class="switch"><input type="checkbox" id="set-holiday-notifications" '+(holidayOn ? 'checked' : '')+'><span class="slider"></span></label>',
-      ''
+      holidayOn ? holidayBody : ''
     );
 
     var challengeNotifOn = readBoolMulti(['change_v1_challenge_notifications'], true);
-    var hourOpts = function(sel){ var s=''; for(var h=5;h<=22;h++){ s+='<option value="'+h+'" '+(h===sel?'selected':'')+'>'+String(h).padStart(2,'0')+':00</option>'; } return s; };
     var chH1 = readIntStored('change_v1_challenge_reminder_hour', 8);
     var chH2 = readIntStored('change_v1_challenge_reminder_hour2', 13);
     var challengeBody = featureField('Erinnerung', '<select class="finput" id="set-challenge-hour">'+hourOpts(chH1)+'</select>', '')
@@ -885,7 +887,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0358';
+  var APP_VERSION = '0.1.0359';
 
 
 
@@ -2418,6 +2420,7 @@
     bindReminderHour('set-challenge-hour', 'change_v1_challenge_reminder_hour');
     bindReminderHour('set-challenge-hour2', 'change_v1_challenge_reminder_hour2');
     bindReminderHour('set-event-hour', 'change_v1_event_reminder_hour');
+    bindReminderHour('set-holiday-hour', 'change_v1_holiday_reminder_hour');
     var runDataAudit = $('run-data-audit'); if(runDataAudit) runDataAudit.addEventListener('click', function(){ dataAuditExpanded = true; refreshSameTab('app'); });
     var runHealth = $('run-app-health'); if(runHealth) runHealth.addEventListener('click', function(){ appHealthExpanded = true; refreshSameTab('app'); });
     function setGithubZipFile(file){
