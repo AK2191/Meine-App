@@ -1,3 +1,43 @@
+# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0361)
+
+Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschlossenen Schritt hier aktualisiert (Haken setzen, Datum ergaenzen). Arbeitsweise laut Charta: kleine kontrollierte Schritte, nie mehrere Systeme gleichzeitig, nach jeder Aenderung Kalender/Dashboard/Challenges pruefen, keine Patches/Workarounds, keine doppelte Logik, CLAUDE.md immer mitziehen.
+
+## A. IST-STAND (geprueft und abgenommen)
+- [x] Architektur: Logik in core/, UI in features/, modular nach Domaenen. (Luecke: components/ fehlt -> Schritt O1)
+- [x] Kalender-Tageszelle nach Spez: Datum oben links, Feiertag klein daneben, max. 2 Termine + "+X mehr", Zeitraeume als durchgehende Balken in der obersten Zeile (max. 2 Lanes), Challenge-Punkte als kleines Badge unten rechts, keine Ueberlappungen. (Code: features/calendar/calendar-logic.js, cfx-*)
+- [x] Challenges: Punkte nur bei erledigten Aufgaben; Anzeige im Kalender nur als Badge.
+- [x] Push zentral (Glocke + Master-Schalter); Live-Sync eigener Schalter; Google-Sync eigener Schalter mit Re-Sync bei Aktivierung.
+- [x] Server-Push komplett fuer: Challenges (einstellbare Zeiten, Default 08+13), Termine (Titel+Uhrzeit, Default 07), Feiertage (Vortag, Default 07). Kontroll-Vertrag: Geraet pushEnabled + notificationPrefs.{typ} + reminderHours. Cron stuendlich (0 * * * *), DST-fest, Slot-Dedupe, Token-Hygiene.
+- [x] Termine-Minimal-Sync nach change_events (Datum/Uhrzeit/Titel-40-Zeichen; keine Beschreibung/Ort). Firestore-Rules pro Nutzer privat.
+- [x] Settings-Sync geraeteubergreifend fix (CONTROL_IDS; Merkregel: jedes neue Settings-Bedienelement dort registrieren).
+- [x] Kosten: Cloudflare Free + Firebase Spark, dauerhaft weit unter allen Limits.
+
+## B. OFFENE KERN-SCHRITTE (Reihenfolge verbindlich)
+- [ ] 7b Friseur server-seitig: App synct NUR das naechste Faelligkeitsdatum (change_settings.dashboard oder eigenes Feld); Worker-Send-Funktion; in Zeitsteuerung einstecken (reminderHours.friseur, Default 07); Kontroll-Ebene notificationPrefs.friseur. Abnahme: /friseur?force=1 liefert korrektes skipped/sent; Push kommt bei faelligem Friseur.
+- [ ] 7c Geburtstage server-seitig: Minimal-Sync (Datum + Vorname, sonst nichts); nutzt vorhandenes "X Tage vorher" (birthdayNotificationDays); Worker-Funktion; reminderHours.birthdays (Default 07). Abnahme analog 7b.
+- [ ] 7d Regen-/Pollenwarnung server-seitig (groesster Schritt): Standort (nur Koordinaten) in Settings-Vertrag; Worker holt beim Stundenlauf Vorhersage (gleiche Quelle wie App, Open-Meteo) und wendet dieselbe "X Std. vorher"-Regel an; Dedupe pro Ereignis/Tag; Kontroll-Ebene rain/pollen. Abnahme: Warnung kommt bei geschlossener App, keine Doppel-Warnungen.
+
+## C. OPTIONALE QUALITAETS-SCHRITTE (nach B)
+- [ ] O1 components/-Ordner: wiederverwendbare UI (Feature-Karte, Zeit-Dropdown, Switch-Row) konsolidieren. Reine Struktur, keine Funktionsaenderung. Schliesst die letzte Charta-Luecke.
+- [ ] O2 Update-Hinweis: App prueft beim Start cache-umgehend die Repo-Version und zeigt dezent "Neue Version verfuegbar - neu laden" (loest das 10-Minuten-Cache-Fenster von GitHub Pages sauber).
+
+## D. AUFGABEN NUTZER (einmalig)
+- [ ] U1 PUSH_TEST_SECRET in Cloudflare von test1234 auf eigenes Wort aendern (change-push-worker -> Settings -> Variables and Secrets).
+
+## E. DAUERREGELN (gelten fuer jeden Schritt)
+- Version synchron in settingsPanel.js, pollenView.js, CLAUDE.md, CHANGELOG.md; Cache-Busting ?v= in index.html.
+- node --check auf jede geaenderte JS-Datei; headless-Test fuer neue Logik.
+- Komplettes ZIP (ganzer Baum) fuer den Upload; Worker-Aenderungen zusaetzlich als Datei fuer Cloudflare.
+- Gespiegelte Worker-Logik (z.B. Feiertagsberechnung, Offene-Challenge-Regel) MUSS bei App-Aenderungen mitgezogen werden - Fundstellen sind in den Versions-Eintraegen dokumentiert.
+- Neue Settings-Bedienelemente IMMER in CONTROL_IDS (settings-logic.js) registrieren.
+
+---
+
+## Version 0.1.0361 - Doku: verbindlicher Projektplan in CLAUDE.md
+- Projektplan (Ist-Stand, offene Schritte 7b/7c/7d, optionale O1/O2, Nutzeraufgabe U1, Dauerregeln) als oberste Sektion verankert. Keine Code-Aenderung.
+- Cache-Busting ?v=0.1.0361.
+- Geaendert: `CLAUDE.md`, `CHANGELOG.md`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`.
+
 ## Version 0.1.0360 - Fix: Benachrichtigungs-Einstellungen wurden nicht geraeteubergreifend uebernommen
 - Nutzer-Beobachtung bestaetigt: Einstellungen WURDEN nach Firestore geschrieben, aber fuer die neuen Schalter/Zeiten ohne aktualisierten Aenderungs-Zeitstempel (STAMP_KEY). Folge: andere Geraete uebernahmen die Aenderung nicht (onSnapshot vergleicht Zeitstempel) und konnten sie sogar mit aelterem Stand zurueck-ueberschreiben.
 - Ursache: Der Zeitstempel wird nur fuer Bedienelemente in CONTROL_IDS (settings-logic.js) gesetzt. Dort fehlten: set-holiday-notifications, set-challenge-notif, set-event-notif, set-challenge-hour, set-challenge-hour2, set-event-hour, set-holiday-hour.

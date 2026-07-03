@@ -1,3 +1,7 @@
+## Version 0.1.0361 - Doku: verbindlicher Projektplan in CLAUDE.md
+- Projektplan (Ist-Stand, offene Schritte 7b/7c/7d, optionale O1/O2, Nutzeraufgabe U1, Dauerregeln) als oberste Sektion in CLAUDE.md verankert. Keine Code-Aenderung.
+- Cache-Busting ?v=0.1.0361.
+
 ## Version 0.1.0360 - Fix: Benachrichtigungs-Einstellungen wurden nicht geraeteubergreifend uebernommen
 - Nutzer-Beobachtung bestaetigt: Einstellungen WURDEN nach Firestore geschrieben, aber fuer die neuen Schalter/Zeiten ohne aktualisierten Aenderungs-Zeitstempel (STAMP_KEY). Folge: andere Geraete uebernahmen die Aenderung nicht (onSnapshot vergleicht Zeitstempel) und konnten sie sogar mit aelterem Stand zurueck-ueberschreiben.
 - Ursache: Der Zeitstempel wird nur fuer Bedienelemente in CONTROL_IDS (settings-logic.js) gesetzt. Dort fehlten: set-holiday-notifications, set-challenge-notif, set-event-notif, set-challenge-hour, set-challenge-hour2, set-event-hour, set-holiday-hour.
