@@ -1,3 +1,14 @@
+## Version 0.1.0358 - Phase 6d: einstellbare Erinnerungszeiten (generische Zeitsteuerung)
+- Ziel: Push-Zeiten in der App einstellen statt im Cloudflare-Cron. Cron wird EINMALIG auf stuendlich gestellt und muss danach nie wieder angefasst werden.
+- Vertrag: `notificationPrefs.reminderHours` (schema 2) in change_settings: { challenges: [h1,(h2)], events: [h] }. Volle Stunden Europe/Berlin. Fehlt -> Defaults (challenges 8+13, events 7) = bisheriges Verhalten.
+- UI (settingsPanel): Karte "Challenge-Erinnerung" hat jetzt "Erinnerung" + "2. Erinnerung" (Option "Keine"); Karte "Termin-Erinnerung" hat "Erinnerung". Auswahl 05:00-22:00, gleicher Stil wie bestehende Selects. Sichtbar nur bei aktivem Schalter. Keys: change_v1_challenge_reminder_hour(-2, -1=keine), change_v1_event_reminder_hour.
+- settings-logic: readReminderHours() liest/validiert; applySettings spielt reminderHours zurueck (geraeteubergreifend).
+- Worker: scheduled-Handler laeuft stuendlich, liest pro Nutzer reminderHoursFor() (Firestore-Format arrayValue/integerValue, headless validiert) und sendet nur bei Treffer-Stunde. Slot = Stunde -> Dedupe pro Stunde/Tag bleibt. Jeder Nutzer kann eigene Zeiten haben.
+- BENUTZER-TODO: App hochladen; Worker neu deployen; Cron-Trigger EINMALIG aendern auf `0 * * * *` (ersetzt `0 5,6,7,11,12 * * *`).
+- Geprueft: node --check (settings-logic, settingsPanel, Worker, pollenView); headless reminderHours-Parsing (Defaults/gesetzt/leer).
+- Cache-Busting ?v=0.1.0358.
+- Geaendert: `features/settings/settings-logic.js`, `features/settings/settingsPanel.js`, `scripts/changePushWorker.js`, `features/pollen/pollenView.js`, `index.html`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0357 - Phase 6c: Termin-Erinnerung mit Titel
 - Nutzer-Entscheidung: Titel wird mitsynchronisiert, damit die Erinnerung konkret ist ("Heute: Bouldern um 22:00.").
 - App (`app.js`, syncMinimalEventsToFirestore): schreibt zusaetzlich `title` (gekuerzt auf 40 Zeichen) nach `change_events/{email}/items`. Weiterhin KEINE Beschreibung, KEIN Ort.

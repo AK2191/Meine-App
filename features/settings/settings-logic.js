@@ -530,6 +530,21 @@
     }
     return fallback;
   }
+  // Liest 1-2 Erinnerungsstunden (0-23). Zweite Stunde optional; Wert '' oder -1 = keine.
+  function readReminderHours(key1, def1, key2, def2){
+    const clamp = (n)=> (Number.isFinite(n) && n>=0 && n<=23) ? n : null;
+    const hours = [];
+    const h1 = clamp(readNumber([key1], (def1===undefined?null:def1)));
+    if(h1!==null) hours.push(h1);
+    if(key2!==undefined){
+      const raw2 = readStored(key2, undefined);
+      let h2;
+      if(raw2===undefined || raw2===null || raw2===''){ h2 = clamp(def2===undefined?null:def2); }
+      else { const n=parseInt(raw2,10); h2 = (n===-1)?null:clamp(n); }
+      if(h2!==null && h2!==h1) hours.push(h2);
+    }
+    return hours.length?hours:[(def1!==undefined?def1:8)];
+  }
   function readObject(keys, fallback){
     for(const key of keys){
       const v = readStored(key, undefined);
@@ -659,14 +674,20 @@
       // Worker-Vertrag: zentrale, server-lesbare Schalter pro Meldungstyp.
       // Master/Geraet-Ein-Aus liegt NICHT hier, sondern in change_push_tokens/.../devices (pushEnabled).
       notificationPrefs: {
-        schema: 1,
+        schema: 2,
         challenges: readBool(['change_v1_challenge_notifications'], true),
         events: readBool(['change_v1_event_notifications'], true),
         holidays: holidayNotif,
         friseur: friseurNotif,
         birthdays: birthdayNotif,
         rain: !!ws.rainAlertsEnabled,
-        pollen: !!ws.pollenAlertsEnabled
+        pollen: !!ws.pollenAlertsEnabled,
+        // Einstellbare Erinnerungszeiten (volle Stunde, Europe/Berlin). Der Worker
+        // sendet nur zu diesen Stunden. Fehlt der Block -> Defaults (challenges 8+13, events 7).
+        reminderHours: {
+          challenges: readReminderHours('change_v1_challenge_reminder_hour', 8, 'change_v1_challenge_reminder_hour2', 13),
+          events: readReminderHours('change_v1_event_reminder_hour', 7)
+        }
       },
       updatedAtLocal: readRaw(STAMP_KEY) || nowIso()
     };
@@ -718,6 +739,16 @@
       if(typeof dash.birthdayNotifications === 'boolean'){
         writeJson('change_v1_birthday_notifications', dash.birthdayNotifications);
         writeJson('birthday_notifications', dash.birthdayNotifications);
+      }
+      const prefs = settings.notificationPrefs || {};
+      const rh = prefs.reminderHours || {};
+      const okHour = (n)=> Number.isFinite(n) && n>=0 && n<=23;
+      if(Array.isArray(rh.challenges) && rh.challenges.length){
+        if(okHour(rh.challenges[0])) writeString('change_v1_challenge_reminder_hour', rh.challenges[0]);
+        writeString('change_v1_challenge_reminder_hour2', okHour(rh.challenges[1]) ? rh.challenges[1] : -1);
+      }
+      if(Array.isArray(rh.events) && rh.events.length && okHour(rh.events[0])){
+        writeString('change_v1_event_reminder_hour', rh.events[0]);
       }
       if(typeof dash.urlaubEnabled === 'boolean') writeString('urlaub_tracker_on', dash.urlaubEnabled ? 'true' : 'false');
       if(dash.urlaubTotalDays) writeString('urlaub_tracker_days', parseInt(dash.urlaubTotalDays, 10) || 30);

@@ -48,24 +48,28 @@ export default {
     }
   },
 
-  // Cron-Einstieg (Phase 5). Cloudflare ruft das nach Zeitplan auf.
-  // Cron laeuft in UTC; wir handeln nur, wenn es in Europe/Berlin 08:00 oder 13:00 ist
-  // (DST-fest). Schedule daher in Cloudflare: "0 6,7,11,12 * * *".
+  // Cron-Einstieg (Phase 6d). Cloudflare-Cron laeuft jetzt STUENDLICH ("0 * * * *").
+  // Der Worker prueft pro Nutzer, ob die aktuelle Berlin-Stunde zu dessen
+  // eingestellten Erinnerungszeiten passt (notificationPrefs.reminderHours,
+  // Defaults: challenges 8+13, events 7). DST-fest via berlinHour().
   async scheduled(event, env, ctx) {
     try {
       if (!env.FIREBASE_SERVICE_ACCOUNT) return;
       const sa = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
       const projectId = sa.project_id;
       const hour = berlinHour();
-      const slot = hour === 8 ? '08' : hour === 13 ? '13' : null;
-      const eventSlot = hour === 7 ? '07' : null;
-      if (!slot && !eventSlot) return; // Cron feuerte ausserhalb der Zielzeiten (nur DST-Puffer)
+      const slot = String(hour).padStart(2, '0');
       const accessToken = await getAccessToken(sa);
       const users = await listPushUsers(accessToken, projectId);
       for (const email of users) {
         try {
-          if (eventSlot) await sendEventReminder(accessToken, projectId, email, { slot: eventSlot });
-          if (slot) await sendChallengeReminder(accessToken, projectId, email, { slot });
+          const hours = await reminderHoursFor(accessToken, projectId, safeDocId(email));
+          if (hours.events.includes(hour)) {
+            await sendEventReminder(accessToken, projectId, email, { slot });
+          }
+          if (hours.challenges.includes(hour)) {
+            await sendChallengeReminder(accessToken, projectId, email, { slot });
+          }
         } catch (e) {
           // Ein Fehler bei einem Nutzer darf den restlichen Lauf nicht stoppen.
         }
@@ -75,6 +79,28 @@ export default {
     }
   },
 };
+
+// Liest die eingestellten Erinnerungsstunden eines Nutzers (Defaults, wenn nicht gesetzt).
+async function reminderHoursFor(accessToken, projectId, emailId) {
+  const defaults = { challenges: [8, 13], events: [7] };
+  const doc = await firestoreGetDoc(accessToken, projectId, 'change_settings/' + emailId);
+  const prefs = doc && doc.fields && doc.fields.notificationPrefs;
+  const rh = prefs && prefs.mapValue && prefs.mapValue.fields && prefs.mapValue.fields.reminderHours;
+  const rhFields = rh && rh.mapValue && rh.mapValue.fields;
+  if (!rhFields) return defaults;
+  const readArr = (node) => {
+    const vals = node && node.arrayValue && node.arrayValue.values;
+    if (!Array.isArray(vals)) return null;
+    const out = vals
+      .map((v) => parseInt(v.integerValue !== undefined ? v.integerValue : v.doubleValue, 10))
+      .filter((n) => Number.isFinite(n) && n >= 0 && n <= 23);
+    return out.length ? out : null;
+  };
+  return {
+    challenges: readArr(rhFields.challenges) || defaults.challenges,
+    events: readArr(rhFields.events) || defaults.events,
+  };
+}
 
 /* ---------- Test-Endpunkt ------------------------------------------------ */
 

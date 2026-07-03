@@ -68,6 +68,14 @@
       try{ localStorage.setItem(key, JSON.stringify(!!value)); }catch(e){}
     });
   }
+  function readIntStored(key, fallback){
+    try{
+      var raw = localStorage.getItem(key);
+      if(raw==null || raw==='') return fallback;
+      var n = parseInt(raw, 10);
+      return Number.isFinite(n) ? n : fallback;
+    }catch(e){ return fallback; }
+  }
   function readDatabaseSyncEnabled(){
     return readBoolMulti(['change_v1_database_sync_enabled','database_sync_enabled','change_v1_live_sync_enabled','live_sync_enabled'], false);
   }
@@ -406,19 +414,26 @@
     );
 
     var challengeNotifOn = readBoolMulti(['change_v1_challenge_notifications'], true);
+    var hourOpts = function(sel){ var s=''; for(var h=5;h<=22;h++){ s+='<option value="'+h+'" '+(h===sel?'selected':'')+'>'+String(h).padStart(2,'0')+':00</option>'; } return s; };
+    var chH1 = readIntStored('change_v1_challenge_reminder_hour', 8);
+    var chH2 = readIntStored('change_v1_challenge_reminder_hour2', 13);
+    var challengeBody = featureField('Erinnerung', '<select class="finput" id="set-challenge-hour">'+hourOpts(chH1)+'</select>', '')
+      + featureField('2. Erinnerung', '<select class="finput" id="set-challenge-hour2"><option value="-1" '+(chH2<0?'selected':'')+'>Keine</option>'+hourOpts(chH2)+'</select>', '');
     var challengeCard = settingsFeatureCard(
       '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0z"></path><path d="M7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"></path><path d="M9 19h6M10 15.5 9.5 19M14 15.5l.5 3.5"></path></svg>',
       'Challenge-Erinnerung', 'CHALLENGE', 'ok', '',
       '<label class="switch"><input type="checkbox" id="set-challenge-notif" '+(challengeNotifOn ? 'checked' : '')+'><span class="slider"></span></label>',
-      ''
+      challengeNotifOn ? challengeBody : ''
     );
 
     var eventNotifOn = readBoolMulti(['change_v1_event_notifications'], true);
+    var evH = readIntStored('change_v1_event_reminder_hour', 7);
+    var eventBody = featureField('Erinnerung', '<select class="finput" id="set-event-hour">'+hourOpts(evH)+'</select>', '');
     var eventCard = settingsFeatureCard(
       '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 9.5h18M8 3v4M16 3v4M12 13v3l2 1"></path></svg>',
       'Termin-Erinnerung', 'TERMIN', 'ok', '',
       '<label class="switch"><input type="checkbox" id="set-event-notif" '+(eventNotifOn ? 'checked' : '')+'><span class="slider"></span></label>',
-      ''
+      eventNotifOn ? eventBody : ''
     );
 
     return '<div class="change-settings-stack">'
@@ -870,7 +885,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0357';
+  var APP_VERSION = '0.1.0358';
 
 
 
@@ -2393,6 +2408,16 @@
       try{ if(window.ChangeNotificationBell && typeof window.ChangeNotificationBell.render === 'function') window.ChangeNotificationBell.render(); }catch(e){}
       refreshSameTab('push');
     });
+    function bindReminderHour(id, key){
+      var el = $(id); if(!el) return;
+      el.addEventListener('change', function(){
+        try{ localStorage.setItem(key, String(parseInt(el.value,10))); }catch(e){}
+        try{ if(typeof window.saveChangeSettings === 'function' && readDatabaseSyncEnabled()) window.saveChangeSettings(true); }catch(e){}
+      });
+    }
+    bindReminderHour('set-challenge-hour', 'change_v1_challenge_reminder_hour');
+    bindReminderHour('set-challenge-hour2', 'change_v1_challenge_reminder_hour2');
+    bindReminderHour('set-event-hour', 'change_v1_event_reminder_hour');
     var runDataAudit = $('run-data-audit'); if(runDataAudit) runDataAudit.addEventListener('click', function(){ dataAuditExpanded = true; refreshSameTab('app'); });
     var runHealth = $('run-app-health'); if(runHealth) runHealth.addEventListener('click', function(){ appHealthExpanded = true; refreshSameTab('app'); });
     function setGithubZipFile(file){
