@@ -64,11 +64,28 @@
     };
     if(!isFinite(loc.latitude) || !isFinite(loc.longitude)) return null;
     writeJson(LOCATION_KEY, loc);
+    // weatherLocation (gerundet) in change_settings mitziehen - server-seitige Wetterwarnung (7d).
+    try{ setTimeout(function(){ try{ if(typeof window.saveChangeSettings==='function') window.saveChangeSettings(true); }catch(e){} }, 800); }catch(e){}
     return loc;
   }
   function clearLocation(){
     try{ localStorage.removeItem(LOCATION_KEY); }catch(e){}
   }
+  // Stille Standort-Auffrischung (UX: nie manuell in die Einstellungen muessen).
+  // Laeuft NUR, wenn die Browser-Erlaubnis bereits erteilt ist -> nie ein Popup.
+  // Muster wie die stille Push-Token-Auffrischung (Phase 1).
+  function refreshLocationIfGranted(){
+    return new Promise(function(resolve){
+      try{
+        if(!navigator.geolocation || !navigator.permissions || !navigator.permissions.query){ resolve(null); return; }
+        navigator.permissions.query({name:'geolocation'}).then(function(status){
+          if(!status || status.state !== 'granted'){ resolve(null); return; }
+          requestLocation().then(resolve, function(){ resolve(null); });
+        }, function(){ resolve(null); });
+      }catch(e){ resolve(null); }
+    });
+  }
+
   function requestLocation(){
     return new Promise(function(resolve, reject){
       if(!navigator.geolocation){
@@ -120,6 +137,7 @@
     readCache: readCache,
     writeCache: writeCache,
     cacheAgeMs: cacheAgeMs,
-    locationAgeMs: locationAgeMs
+    locationAgeMs: locationAgeMs,
+    refreshLocationIfGranted: refreshLocationIfGranted
   };
 })();

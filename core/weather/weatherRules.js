@@ -82,6 +82,14 @@
   }
 
   async function refreshAndNotify(force){
+    // Standort still aktuell halten (nur wenn Erlaubnis erteilt; nie ein Popup).
+    try{
+      var loc = Store && Store.getLocation ? Store.getLocation() : null;
+      var age = Store && Store.locationAgeMs ? Store.locationAgeMs(loc) : Infinity;
+      if((!loc || !(age <= 2*60*60*1000)) && Store && Store.refreshLocationIfGranted){
+        await Store.refreshLocationIfGranted();
+      }
+    }catch(e){}
     if(Service && Service.refresh) await Service.refresh(!!force);
     try{ if(typeof window.updateBellIndicator === 'function') window.updateBellIndicator(); }catch(e){}
     try{ if(window.ChangeWeatherCard && window.ChangeWeatherCard.update) window.ChangeWeatherCard.update(); }catch(e){}

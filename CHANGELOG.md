@@ -1,3 +1,13 @@
+## Version 0.1.0365 - UX: Standort haelt sich selbst aktuell (still)
+- Nutzer-Feedback: Standort soll nicht ueber die Einstellungen gepflegt werden muessen. Loesung nach dem Muster der stillen Token-Auffrischung (Phase 1):
+- `core/weather/weatherStore.js`: neue Funktion `refreshLocationIfGranted()` - holt den Standort NUR, wenn die Browser-Erlaubnis bereits erteilt ist (navigator.permissions), dadurch NIE ein Popup; Fehler werden still geschluckt.
+- `core/weather/weatherRules.js`: vor jedem Wetter-Refresh (Start + stuendlich) wird der Standort still aufgefrischt, wenn er fehlt oder aelter als 2 h ist (LOCATION_MAX_AGE-Fenster der App).
+- `saveLocation()` stoesst jetzt (debounced) `saveChangeSettings` an -> `weatherLocation` (gerundete Koordinaten, 7d) landet automatisch in Firestore, ohne dass der Nutzer etwas tut.
+- Ergebnis: "Standort fehlt"-Kachel erscheint nur beim allerersten Mal (Erlaubnis erteilen); danach ist der Standort dauerhaft frisch - lokal UND server-seitig. Manuelle Buttons bleiben als Fallback erhalten (keine Funktions-Entfernung).
+- Browser-getestet (Playwright): Erlaubnis erteilt -> still geholt+gespeichert; nicht erteilt -> still null, kein Popup. node --check (weatherStore, weatherRules, pollenView).
+- Cache-Busting ?v=0.1.0365.
+- Geaendert: `core/weather/weatherStore.js`, `core/weather/weatherRules.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0364 - Phase 7d: Regen-/Pollenwarnung server-seitig
 - Worker warnt jetzt auch bei geschlossener App vor Regen und starkem Pollenflug. Damit ist der KOMPLETTE Push-Fahrplan (B im Projektplan) abgeschlossen: alle Benachrichtigungstypen laufen server-seitig.
 - Minimal-Sync (App): NUR gerundete Koordinaten (~1 km, 2 Dezimalstellen) als `weatherLocation {lat, lon}` im Settings-Vertrag. Bewusst KEINE applySettings-Rueckspielung (praeziser lokaler Standort bleibt unberuehrt).

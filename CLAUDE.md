@@ -1,4 +1,4 @@
-# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0364)
+# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0365)
 
 Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschlossenen Schritt hier aktualisiert (Haken setzen, Datum ergaenzen). Arbeitsweise laut Charta: kleine kontrollierte Schritte, nie mehrere Systeme gleichzeitig, nach jeder Aenderung Kalender/Dashboard/Challenges pruefen, keine Patches/Workarounds, keine doppelte Logik, CLAUDE.md immer mitziehen.
 
@@ -17,6 +17,9 @@ Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschloss
 - [x] 7c Geburtstage server-seitig (v0.1.0363): Minimal-Sync (Datum + Vorname, sonst nichts); nutzt vorhandenes "X Tage vorher" (birthdayNotificationDays); Worker-Funktion; reminderHours.birthdays (Default 07). Abnahme analog 7b.
 - [x] 7d Regen-/Pollenwarnung server-seitig (v0.1.0364): Standort (nur Koordinaten) in Settings-Vertrag; Worker holt beim Stundenlauf Vorhersage (gleiche Quelle wie App, Open-Meteo) und wendet dieselbe "X Std. vorher"-Regel an; Dedupe pro Ereignis/Tag; Kontroll-Ebene rain/pollen. Abnahme: Warnung kommt bei geschlossener App, keine Doppel-Warnungen.
 
+## B2. UX-VERBESSERUNGEN (nachtraeglich ergaenzt)
+- [x] Standort haelt sich selbst frisch (v0.1.0365): stille Auffrischung ohne Popup, Sync-Anstoss nach jedem Speichern. "Standort fehlt"-Kachel erscheint nur noch beim allerersten Mal.
+
 ## C. OPTIONALE QUALITAETS-SCHRITTE (nach B)
 - [ ] O1 components/-Ordner: wiederverwendbare UI (Feature-Karte, Zeit-Dropdown, Switch-Row) konsolidieren. Reine Struktur, keine Funktionsaenderung. Schliesst die letzte Charta-Luecke.
 - [ ] O2 Update-Hinweis: App prueft beim Start cache-umgehend die Repo-Version und zeigt dezent "Neue Version verfuegbar - neu laden" (loest das 10-Minuten-Cache-Fenster von GitHub Pages sauber).
@@ -32,6 +35,16 @@ Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschloss
 - Neue Settings-Bedienelemente IMMER in CONTROL_IDS (settings-logic.js) registrieren.
 
 ---
+
+## Version 0.1.0365 - UX: Standort haelt sich selbst aktuell (still)
+- Nutzer-Feedback: Standort soll nicht ueber die Einstellungen gepflegt werden muessen. Loesung nach dem Muster der stillen Token-Auffrischung (Phase 1):
+- `core/weather/weatherStore.js`: neue Funktion `refreshLocationIfGranted()` - holt den Standort NUR, wenn die Browser-Erlaubnis bereits erteilt ist (navigator.permissions), dadurch NIE ein Popup; Fehler werden still geschluckt.
+- `core/weather/weatherRules.js`: vor jedem Wetter-Refresh (Start + stuendlich) wird der Standort still aufgefrischt, wenn er fehlt oder aelter als 2 h ist (LOCATION_MAX_AGE-Fenster der App).
+- `saveLocation()` stoesst jetzt (debounced) `saveChangeSettings` an -> `weatherLocation` (gerundete Koordinaten, 7d) landet automatisch in Firestore, ohne dass der Nutzer etwas tut.
+- Ergebnis: "Standort fehlt"-Kachel erscheint nur beim allerersten Mal (Erlaubnis erteilen); danach ist der Standort dauerhaft frisch - lokal UND server-seitig. Manuelle Buttons bleiben als Fallback erhalten (keine Funktions-Entfernung).
+- Browser-getestet (Playwright): Erlaubnis erteilt -> still geholt+gespeichert; nicht erteilt -> still null, kein Popup. node --check (weatherStore, weatherRules, pollenView).
+- Cache-Busting ?v=0.1.0365.
+- Geaendert: `core/weather/weatherStore.js`, `core/weather/weatherRules.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `CLAUDE.md`, `CHANGELOG.md`.
 
 ## Version 0.1.0364 - Phase 7d: Regen-/Pollenwarnung server-seitig
 - Worker warnt jetzt auch bei geschlossener App vor Regen und starkem Pollenflug. Damit ist der KOMPLETTE Push-Fahrplan (B im Projektplan) abgeschlossen: alle Benachrichtigungstypen laufen server-seitig.
