@@ -7,11 +7,7 @@
     if(model && model.esc) return model.esc(value);
     return String(value == null ? '' : value).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; });
   }
-  function iconMarkup(value){
-    var raw = String(value == null ? '' : value);
-    if(raw.indexOf('<') === 0) return raw;
-    return esc(raw);
-  }
+  var iconMarkup = window.ChangeComponents.iconMarkup;
   function githubIcon(){
     return '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" stroke="none"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49l-.01-1.9c-2.78.62-3.37-1.21-3.37-1.21-.46-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.36-2.22-.26-4.55-1.14-4.55-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.27 2.75 1.05a9.4 9.4 0 0 1 5 0c1.91-1.32 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9l-.01 2.81c0 .27.18.6.69.49A10.26 10.26 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"></path></svg>';
   }
@@ -161,10 +157,12 @@
     ];
     return states.map(function(item){ return '<option value="'+item[0]+'" '+(selected === item[0] ? 'selected' : '')+'>'+item[1]+'</option>'; }).join('');
   }
-  function pill(text, tone){ return '<span class="change-status-pill '+(tone || '')+'">'+esc(text)+'</span>'; }
-  function switchRow(title, subtitle, id, checked, disabled){
-    return '<div class="change-settings-row"><div><div class="change-settings-title">'+title+'</div>'+(subtitle ? '<div class="change-settings-sub">'+subtitle+'</div>' : '')+'</div><label class="switch"><input type="checkbox" id="'+id+'" '+(checked ? 'checked' : '')+' '+(disabled ? 'disabled' : '')+'><span class="slider"></span></label></div>';
-  }
+  // O1: wiederverwendbare UI-Bausteine leben kanonisch in components/uiComponents.js.
+  // Hier nur Aliase (Ladereihenfolge: components-Skript steht in index.html davor).
+  var pill = window.ChangeComponents.pill;
+  var switchRow = window.ChangeComponents.switchRow;
+  var featureField = window.ChangeComponents.featureField;
+  var settingsFeatureCard = window.ChangeComponents.featureCard;
   function card(label, inner){ return '<div class="change-settings-card"><div class="change-settings-label">'+esc(label)+'</div>'+inner+'</div>'; }
   function pushStatus(){
     var store = window.ChangeNotificationStore;
@@ -258,9 +256,6 @@
   function featureSwitch(title, subtitle, id, checked, disabled){
     var control = '<label class="switch"><input type="checkbox" id="'+id+'" '+(checked ? 'checked' : '')+' '+(disabled ? 'disabled' : '')+'><span class="slider"></span></label>';
     return '<div class="change-feature-row"><div><div class="change-feature-row-title">'+title+'</div>'+(subtitle ? '<div class="change-feature-row-sub">'+subtitle+'</div>' : '')+'</div>'+control+'</div>';
-  }
-  function featureField(label, inner, hint){
-    return '<div class="change-feature-field"><label class="flabel">'+esc(label)+'</label>'+inner+(hint ? '<div class="change-feature-row-sub">'+esc(hint)+'</div>' : '')+'</div>';
   }
   function settingsPlayers(){
     try{ if(typeof window.getVisibleContestPlayers === 'function'){ var list = window.getVisibleContestPlayers(); if(Array.isArray(list) && list.length) return list; } }catch(e){}
@@ -387,10 +382,9 @@
     );
 
     var friseurWeeks = dashboardNumber('getFriseurWeeks', ['change_v1_friseur_weeks','friseur_weeks'], 3);
-    var friseurHourOpts = function(sel){ var s=''; for(var h=5;h<=22;h++){ s+='<option value="'+h+'" '+(h===sel?'selected':'')+'>'+String(h).padStart(2,'0')+':00</option>'; } return s; };
     var friseurHour = readIntStored('change_v1_friseur_reminder_hour', 7);
     var friseurBody = featureField('Erinnerung nach', '<select class="finput" id="set-friseur-weeks">'+[2,3,4,5,6,8].map(function(n){ return '<option value="'+n+'" '+(n === friseurWeeks ? 'selected' : '')+'>'+n+' Wochen</option>'; }).join('')+'</select>', '')
-      + featureField('Erinnerung um', '<select class="finput" id="set-friseur-hour">'+friseurHourOpts(friseurHour)+'</select>', '');
+      + featureField('Erinnerung um', window.ChangeComponents.hourSelect('set-friseur-hour', friseurHour), '');
     var friseurNotifOn = readBoolMulti(['change_v1_friseur_notifications'], true);
     var friseurCard = settingsFeatureCard(
       '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6.5" cy="6.5" r="2.8"></circle><circle cx="6.5" cy="17.5" r="2.8"></circle><path d="M8.7 8.4 L20 16.5M8.7 15.6 L20 7.5"></path></svg>',
@@ -406,13 +400,12 @@
       'Geburtstags-Erinnerung', '', 'ok', '',
       '<label class="switch"><input type="checkbox" id="set-birthday-notif" '+(birthdayNotifOn ? 'checked' : '')+'><span class="slider"></span></label>',
       birthdayDaysSelect('set-birthday-notification-days', birthdayDays)
-        + featureField('Erinnerung um', '<select class="finput" id="set-birthday-hour">'+(function(sel){ var s=''; for(var h=5;h<=22;h++){ s+='<option value="'+h+'" '+(h===sel?'selected':'')+'>'+String(h).padStart(2,'0')+':00</option>'; } return s; })(readIntStored('change_v1_birthday_reminder_hour', 7))+'</select>', '')
+        + featureField('Erinnerung um', window.ChangeComponents.hourSelect('set-birthday-hour', readIntStored('change_v1_birthday_reminder_hour', 7)), '')
     );
 
     var holidayOn = holidayNotificationsEnabled();
-    var hourOpts = function(sel){ var s=''; for(var h=5;h<=22;h++){ s+='<option value="'+h+'" '+(h===sel?'selected':'')+'>'+String(h).padStart(2,'0')+':00</option>'; } return s; };
     var holH = readIntStored('change_v1_holiday_reminder_hour', 7);
-    var holidayBody = featureField('Erinnerung (am Vortag)', '<select class="finput" id="set-holiday-hour">'+hourOpts(holH)+'</select>', '');
+    var holidayBody = featureField('Erinnerung (am Vortag)', window.ChangeComponents.hourSelect('set-holiday-hour', holH), '');
     var holidayCard = settingsFeatureCard(
       '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"></path></svg>',
       'Feiertags-Benachrichtigungen', holidayOn ? 'AKTIV' : 'AUS', holidayOn ? 'ok' : 'off', '',
@@ -423,8 +416,8 @@
     var challengeNotifOn = readBoolMulti(['change_v1_challenge_notifications'], true);
     var chH1 = readIntStored('change_v1_challenge_reminder_hour', 8);
     var chH2 = readIntStored('change_v1_challenge_reminder_hour2', 13);
-    var challengeBody = featureField('Erinnerung', '<select class="finput" id="set-challenge-hour">'+hourOpts(chH1)+'</select>', '')
-      + featureField('2. Erinnerung', '<select class="finput" id="set-challenge-hour2"><option value="-1" '+(chH2<0?'selected':'')+'>Keine</option>'+hourOpts(chH2)+'</select>', '');
+    var challengeBody = featureField('Erinnerung', window.ChangeComponents.hourSelect('set-challenge-hour', chH1), '')
+      + featureField('2. Erinnerung', window.ChangeComponents.hourSelect('set-challenge-hour2', chH2, {leadingHtml:'<option value="-1" '+(chH2<0?'selected':'')+'>Keine</option>'}), '');
     var challengeCard = settingsFeatureCard(
       '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0z"></path><path d="M7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"></path><path d="M9 19h6M10 15.5 9.5 19M14 15.5l.5 3.5"></path></svg>',
       'Challenge-Erinnerung', 'CHALLENGE', 'ok', '',
@@ -434,7 +427,7 @@
 
     var eventNotifOn = readBoolMulti(['change_v1_event_notifications'], true);
     var evH = readIntStored('change_v1_event_reminder_hour', 7);
-    var eventBody = featureField('Erinnerung', '<select class="finput" id="set-event-hour">'+hourOpts(evH)+'</select>', '');
+    var eventBody = featureField('Erinnerung', window.ChangeComponents.hourSelect('set-event-hour', evH), '');
     var eventCard = settingsFeatureCard(
       '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 9.5h18M8 3v4M16 3v4M12 13v3l2 1"></path></svg>',
       'Termin-Erinnerung', 'TERMIN', 'ok', '',
@@ -674,18 +667,6 @@
     return {ok:cfgOk, label:'AUS', tone:'off', detail: cfgOk ? 'Startet nur über diesen Schalter.' : 'Firebase-Konfiguration nicht geladen.'};
   }
 
-  function settingsFeatureCard(icon, title, badgeText, badgeTone, subtitle, controlHtml, bodyHtml){
-    return '<div class="change-settings-feature-card">'
-      + '<div class="change-feature-head">'
-      + '<div class="change-feature-left"><div class="change-feature-icon">'+iconMarkup(icon)+'</div><div>'
-      + '<div class="change-feature-title">'+esc(title)+(badgeText ? ' '+pill(badgeText, badgeTone) : '')+'</div>'
-      + (subtitle ? '<div class="change-feature-sub">'+esc(subtitle)+'</div>' : '')
-      + '</div></div>'
-      + (controlHtml ? '<div class="change-feature-control">'+controlHtml+'</div>' : '')
-      + '</div>'
-      + (bodyHtml ? '<div class="change-feature-body">'+bodyHtml+'</div>' : '')
-      + '</div>';
-  }
 
   function dataAuditStorage(){
     try{ return window.localStorage || null; }catch(e){ return null; }
@@ -891,7 +872,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0366';
+  var APP_VERSION = '0.1.0369';
 
 
 
@@ -1826,7 +1807,7 @@
       var duplicates = [];
       var seen = {};
       paths.forEach(function(path){ if(seen[path]) duplicates.push(path); seen[path] = true; });
-      var allowedRootFiles = {'CHANGELOG.md':1,'CLAUDE.md':1,'app.js':1,'change-pre.js':1,'change-post.js':1,'change.css':1,'firebase-messaging-sw.js':1,'firebase.json':1,'index.html':1,'manifest.json':1};
+      var allowedRootFiles = {'CHANGELOG.md':1,'CLAUDE.md':1,'app.js':1,'change-pre.js':1,'change-post.js':1,'change.css':1,'firebase-messaging-sw.js':1,'firebase.json':1,'index.html':1,'manifest.json':1,'version.json':1};
       var allowedRootDirs = {'core':1,'features':1,'firebase':1,'icons':1,'styles':1,'public':1,'components':1,'.github':1,'scripts':1,'updates':1,'docs':1};
       var badRoot = paths.filter(function(path){
         var first = path.split('/')[0];

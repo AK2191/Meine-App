@@ -1,4 +1,4 @@
-# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0366)
+# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0369)
 
 Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschlossenen Schritt hier aktualisiert (Haken setzen, Datum ergaenzen). Arbeitsweise laut Charta: kleine kontrollierte Schritte, nie mehrere Systeme gleichzeitig, nach jeder Aenderung Kalender/Dashboard/Challenges pruefen, keine Patches/Workarounds, keine doppelte Logik, CLAUDE.md immer mitziehen.
 
@@ -21,8 +21,16 @@ Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschloss
 - [x] Standort haelt sich selbst frisch (v0.1.0365): stille Auffrischung ohne Popup, Sync-Anstoss nach jedem Speichern. "Standort fehlt"-Kachel erscheint nur noch beim allerersten Mal.
 
 ## C. OPTIONALE QUALITAETS-SCHRITTE (nach B)
-- [ ] O1 components/-Ordner: wiederverwendbare UI (Feature-Karte, Zeit-Dropdown, Switch-Row) konsolidieren. Reine Struktur, keine Funktionsaenderung. Schliesst die letzte Charta-Luecke.
+- [x] O1 components/-Ordner (v0.1.0367): wiederverwendbare UI (Feature-Karte, Zeit-Dropdown, Switch-Row) konsolidieren. Reine Struktur, keine Funktionsaenderung. Schliesst die letzte Charta-Luecke.
 - [x] O2 Update-Hinweis (v0.1.0366): App prueft beim Start cache-umgehend die Repo-Version und zeigt dezent "Neue Version verfuegbar - neu laden" (loest das 10-Minuten-Cache-Fenster von GitHub Pages sauber).
+
+## F. FEINSCHLIFF "POLLEN-LOOK" (Nutzer-Auftrag: Kalender + Challenges sollen sich wie die Pollen-Ansicht anfuehlen; mobil + desktop)
+Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial-Akzenten; Karten border 1px rgba(255,255,255,.08), Verlauf rgba(14,21,27,.84)->rgba(7,11,16,.96) bzw. Subkarten rgba(16,23,29,.86)->rgba(11,16,21,.95), radius 24/18, Schatten 0 18px 60px rgba(0,0,0,.28) + inset Innenlicht; Titel 950 mit Glow-Punkt; Sektionskoepfe 12px/900 uppercase .08em; Akzente #4ade80/#fbbf24/#ff574c; Muted rgba(244,247,244,.55-.78); Hover translateY(-1px).
+- [x] P1 Kalender-Tagesdetail auf Pollen-Tokens (v0.1.0368): change-day-*, change-holiday-row (war helles Amber #b45309!), change-challenge-row, change-day-empty, change-conflict-note, change-share-* in calendarPanels.css direkt umgeschrieben (kein Override). Klassen sind kalender-exklusiv (verifiziert).
+- [ ] P2 Challenges konsolidieren: die !important-Override-Schicht in challenges-mobile.css (ab ~Z.300) in echte Stile ueberfuehren; Restbereiche (Modals, Historie, Buttons) angleichen.
+- [ ] P3 Monatsgrid (cfx-*) + Wochenansicht tonal an Pollen-Karten angleichen; Produktentscheidung Punkte- vs. Detailzellen final bestaetigen.
+- [ ] P4 Mobile-Pass beider Views (Breakpoints/Abstaende wie pollenView.css-Mobilregeln).
+- Vorgehen: pro P-Schritt ein Release; Abnahme am lebenden Objekt (Alex prueft Kalender/Dashboard/Challenges).
 
 ## D. AUFGABEN NUTZER (einmalig)
 - [ ] U1 PUSH_TEST_SECRET in Cloudflare von test1234 auf eigenes Wort aendern (change-push-worker -> Settings -> Variables and Secrets).
@@ -33,8 +41,37 @@ Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschloss
 - Komplettes ZIP (ganzer Baum) fuer den Upload; Worker-Aenderungen zusaetzlich als Datei fuer Cloudflare.
 - Gespiegelte Worker-Logik (z.B. Feiertagsberechnung, Offene-Challenge-Regel) MUSS bei App-Aenderungen mitgezogen werden - Fundstellen sind in den Versions-Eintraegen dokumentiert.
 - Neue Settings-Bedienelemente IMMER in CONTROL_IDS (settings-logic.js) registrieren.
+- Neue Root-Dateien/-Ordner IMMER in der Upload-Whitelist registrieren (allowedRootFiles/allowedRootDirs in settingsPanel.js, ZIP-Pruefung) - sonst meldet der Upload-Dialog "unerwuenschte Root-Dateien".
+- Wiederverwendbare UI-Bausteine IMMER in components/ (window.ChangeComponents) ergaenzen/nutzen - nie lokal duplizieren. Ladereihenfolge: components-Skripte stehen in index.html vor den features-Skripten.
 
 ---
+
+## Version 0.1.0369 - Fix: version.json in Upload-Whitelist (ZIP-Pruefung)
+- Nutzer-Fund: Upload-Dialog meldete "ZIP braucht noch Korrekturen · Keine unerwuenschten Root-Dateien · version.json". Ursache: die mit O2 (0.1.0366) eingefuehrte Root-Datei version.json fehlte in der ZIP-Pruef-Whitelist `allowedRootFiles` (settingsPanel.js Z.1810) - gleiche Fehlerklasse wie der CONTROL_IDS-Fall: Registrierungsstelle uebersehen.
+- Fix: 'version.json' in allowedRootFiles ergaenzt. Neue Dauerregel in E: neue Root-Dateien/-Ordner immer dort registrieren.
+- WICHTIG: Die Pruefung ist ein HINWEIS, kein Blocker (Button ist bei ok UND error aktiv; commitGithubZip akzeptiert beide). Dieses ZIP (0369) kann daher trotz roter Meldung uebertragen werden; ab der naechsten Version ist die Meldung gruen.
+- Kein Worker-seitiges Pendant (Deploy-Worker prueft keine Root-Whitelist) - Cloudflare muss NICHT angefasst werden.
+- Geprueft: node --check (settingsPanel, pollenView).
+- Cache-Busting ?v=0.1.0369.
+- Geaendert: `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
+## Version 0.1.0368 - P1: Kalender-Tagesdetail im Pollen-Look
+- Nutzer-Auftrag Feinschliff: Kalender + Challenges sollen sich wie die Pollen-Ansicht anfuehlen (Farben/Aufmachung), mobil + desktop. Plan als Abschnitt F im Projektplan verankert (P1-P4, Design-Referenz dokumentiert).
+- P1 umgesetzt: Tagesdetail-Block in features/calendar/calendarPanels.css (Z.1-11) DIREKT umgeschrieben (Charta: Code anpassen, kein Override): Termin-/Challenge-/Share-Karten jetzt mit Pollen-Kartenverlauf + weissen .08-Borders + Hover-Lift; Feiertagszeile von hellem Amber (#b45309 auf hellem Grund) auf Pollen-Amber (#fbbf24 auf rgba(251,191,36,.10)); Punkte-Pill, Google-Dot, Empty- und Konflikt-Zustaende auf Akzent-Trio #4ade80/#fbbf24; Textfarben auf Pollen-Skala (#fff / rgba(244,247,244,.55-.78)).
+- Verifiziert: Klassen kalender-exklusiv (nur calendarPanels.js/css); CSS-Klammern balanciert; keine Light-Var-Reste im Block. Struktur/Layout unveraendert - reine Farb-/Material-Angleichung.
+- Cache-Busting ?v=0.1.0368.
+- Geaendert: `features/calendar/calendarPanels.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
+## Version 0.1.0367 - O1: components/-Ordner (letzte Charta-Luecke geschlossen)
+- Neuer Ordner `components/` mit `uiComponents.js` (window.ChangeComponents): kanonische Quelle fuer featureCard, featureField, hourSelect, switchRow, pill, iconMarkup, esc (esc delegiert wie bisher an ChangeCalendarModel).
+- settingsPanel.js: lokale Definitionen entfernt und durch Aliase ersetzt (28x featureCard-, 15x featureField-Aufrufstellen unveraendert); die DREI duplizierten Stunden-Dropdown-Implementierungen (friseurHourOpts, birthday-IIFE, hourOpts) durch EINE Komponente `hourSelect` ersetzt (Charta: keine doppelte Logik). Ungenutzte switchRow-Def entfernt (lebt jetzt in der Komponente fuer kuenftige Nutzung).
+- BEWIESEN keine visuelle Aenderung: Markup der Komponente ist byte-identisch zur alten Implementierung (headless verglichen: hourSelect, hourSelect+Keine, featureField, featureCard).
+- index.html: components/uiComponents.js wird VOR settingsPanel.js geladen (Pflicht-Reihenfolge).
+- Neue Dauerregel in E: wiederverwendbare UI immer in components/ - nie lokal duplizieren.
+- Damit ist der PROJEKTPLAN komplett: A+B+B2+C erledigt; offen nur noch D/U1 (Nutzer: PUSH_TEST_SECRET aendern).
+- Geprueft: node --check (settingsPanel, uiComponents, pollenView); Markup-Identitaetstests.
+- Cache-Busting ?v=0.1.0367.
+- Geaendert/Neu: `components/uiComponents.js` (neu), `features/settings/settingsPanel.js`, `index.html`, `version.json`, `features/pollen/pollenView.js`, `features/settings/settingsPanel.js`, `CLAUDE.md`, `CHANGELOG.md`.
 
 ## Version 0.1.0366 - O2: Update-Hinweis ("Neue Version verfuegbar")
 - Neue Datei `version.json` im Repo-Root ({"version": "..."}); gehoert ab jetzt ZUR VERSIONS-BUMP-LISTE (Dauerregel E aktualisiert).

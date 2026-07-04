@@ -1,3 +1,30 @@
+## Version 0.1.0369 - Fix: version.json in Upload-Whitelist (ZIP-Pruefung)
+- Nutzer-Fund: Upload-Dialog meldete "ZIP braucht noch Korrekturen · Keine unerwuenschten Root-Dateien · version.json". Ursache: die mit O2 (0.1.0366) eingefuehrte Root-Datei version.json fehlte in der ZIP-Pruef-Whitelist `allowedRootFiles` (settingsPanel.js Z.1810) - gleiche Fehlerklasse wie der CONTROL_IDS-Fall: Registrierungsstelle uebersehen.
+- Fix: 'version.json' in allowedRootFiles ergaenzt. Neue Dauerregel in E: neue Root-Dateien/-Ordner immer dort registrieren.
+- WICHTIG: Die Pruefung ist ein HINWEIS, kein Blocker (Button ist bei ok UND error aktiv; commitGithubZip akzeptiert beide). Dieses ZIP (0369) kann daher trotz roter Meldung uebertragen werden; ab der naechsten Version ist die Meldung gruen.
+- Kein Worker-seitiges Pendant (Deploy-Worker prueft keine Root-Whitelist) - Cloudflare muss NICHT angefasst werden.
+- Geprueft: node --check (settingsPanel, pollenView).
+- Cache-Busting ?v=0.1.0369.
+- Geaendert: `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
+## Version 0.1.0368 - P1: Kalender-Tagesdetail im Pollen-Look
+- Nutzer-Auftrag Feinschliff: Kalender + Challenges sollen sich wie die Pollen-Ansicht anfuehlen (Farben/Aufmachung), mobil + desktop. Plan als Abschnitt F im Projektplan verankert (P1-P4, Design-Referenz dokumentiert).
+- P1 umgesetzt: Tagesdetail-Block in features/calendar/calendarPanels.css (Z.1-11) DIREKT umgeschrieben (Charta: Code anpassen, kein Override): Termin-/Challenge-/Share-Karten jetzt mit Pollen-Kartenverlauf + weissen .08-Borders + Hover-Lift; Feiertagszeile von hellem Amber (#b45309 auf hellem Grund) auf Pollen-Amber (#fbbf24 auf rgba(251,191,36,.10)); Punkte-Pill, Google-Dot, Empty- und Konflikt-Zustaende auf Akzent-Trio #4ade80/#fbbf24; Textfarben auf Pollen-Skala (#fff / rgba(244,247,244,.55-.78)).
+- Verifiziert: Klassen kalender-exklusiv (nur calendarPanels.js/css); CSS-Klammern balanciert; keine Light-Var-Reste im Block. Struktur/Layout unveraendert - reine Farb-/Material-Angleichung.
+- Cache-Busting ?v=0.1.0368.
+- Geaendert: `features/calendar/calendarPanels.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
+## Version 0.1.0367 - O1: components/-Ordner (letzte Charta-Luecke geschlossen)
+- Neuer Ordner `components/` mit `uiComponents.js` (window.ChangeComponents): kanonische Quelle fuer featureCard, featureField, hourSelect, switchRow, pill, iconMarkup, esc (esc delegiert wie bisher an ChangeCalendarModel).
+- settingsPanel.js: lokale Definitionen entfernt und durch Aliase ersetzt (28x featureCard-, 15x featureField-Aufrufstellen unveraendert); die DREI duplizierten Stunden-Dropdown-Implementierungen (friseurHourOpts, birthday-IIFE, hourOpts) durch EINE Komponente `hourSelect` ersetzt (Charta: keine doppelte Logik). Ungenutzte switchRow-Def entfernt (lebt jetzt in der Komponente fuer kuenftige Nutzung).
+- BEWIESEN keine visuelle Aenderung: Markup der Komponente ist byte-identisch zur alten Implementierung (headless verglichen: hourSelect, hourSelect+Keine, featureField, featureCard).
+- index.html: components/uiComponents.js wird VOR settingsPanel.js geladen (Pflicht-Reihenfolge).
+- Neue Dauerregel in E: wiederverwendbare UI immer in components/ - nie lokal duplizieren.
+- Damit ist der PROJEKTPLAN komplett: A+B+B2+C erledigt; offen nur noch D/U1 (Nutzer: PUSH_TEST_SECRET aendern).
+- Geprueft: node --check (settingsPanel, uiComponents, pollenView); Markup-Identitaetstests.
+- Cache-Busting ?v=0.1.0367.
+- Geaendert/Neu: `components/uiComponents.js` (neu), `features/settings/settingsPanel.js`, `index.html`, `version.json`, `features/pollen/pollenView.js`, `features/settings/settingsPanel.js`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0366 - O2: Update-Hinweis ("Neue Version verfuegbar")
 - Neue Datei `version.json` im Repo-Root ({"version": "..."}); gehoert ab jetzt ZUR VERSIONS-BUMP-LISTE (Dauerregel E aktualisiert).
 - Neues Modul `core/system/updateCheck.js`: prueft 8 s nach dem Start und danach alle 15 Minuten cache-umgehend (fetch no-store + nocache-Query) die version.json und zeigt bei echt neuerer Version einen dezenten Banner unten mittig: "Neue Version X verfuegbar" + Button "Neu laden" + Schliessen. Vergleich segmentweise numerisch (Rollback/aeltere Remote-Version zeigt NICHTS). Fehler werden still geschluckt.
