@@ -51,6 +51,9 @@ export default {
       if (url.pathname === '/birthday') {
         return await handleBirthday(url, env);
       }
+      if (url.pathname === '/weather') {
+        return await handleWeather(url, env);
+      }
       return text('change-push-worker bereit.', 200);
     } catch (err) {
       return json({ error: String(err && err.message || err) }, 500);
@@ -87,6 +90,10 @@ export default {
           }
           if (hours.birthdays.includes(hour)) {
             await sendBirthdayReminder(accessToken, projectId, email, { slot });
+          }
+          // Kategorie B (ereignisbezogen): Regen stuendlich 06-22, Pollen 1x/Tag ab 07 (Dedupe intern).
+          if (hour >= 6 && hour <= 22) {
+            await sendWeatherAlerts(accessToken, projectId, email, { slot, hour });
           }
         } catch (e) {
           // Ein Fehler bei einem Nutzer darf den restlichen Lauf nicht stoppen.
@@ -969,6 +976,179 @@ async function sendBirthdayReminder(accessToken, projectId, email, opts) {
     );
   }
   return { today, slot, windowDays: days, birthdays: hits.length, deviceCount: devices.length, sent, pruned, results };
+}
+
+/* ---------- Regen-/Pollenwarnung (Phase 7d) -------------------------------- */
+
+async function handleWeather(url, env) {
+  if (!env.PUSH_TEST_SECRET) {
+    return json({ error: 'gesperrt: Secret PUSH_TEST_SECRET ist nicht gesetzt.' }, 403);
+  }
+  if ((url.searchParams.get('secret') || '') !== env.PUSH_TEST_SECRET) {
+    return json({ error: 'Falsches oder fehlendes secret.' }, 403);
+  }
+  if (!env.FIREBASE_SERVICE_ACCOUNT) {
+    return json({ error: 'Secret FIREBASE_SERVICE_ACCOUNT fehlt.' }, 500);
+  }
+  let sa;
+  try {
+    sa = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT);
+  } catch (e) {
+    return json({ error: 'FIREBASE_SERVICE_ACCOUNT ist kein gueltiges JSON.' }, 500);
+  }
+  const projectId = sa.project_id;
+  const email = (url.searchParams.get('email') || 'ak2191@gmx.de').toLowerCase();
+  const force = url.searchParams.get('force') === '1';
+  const slot = url.searchParams.get('slot') || 'manual';
+  const accessToken = await getAccessToken(sa);
+  const result = await sendWeatherAlerts(accessToken, projectId, email, { force, slot, hour: berlinHour() });
+  return json(result);
+}
+
+// Spiegelt core/weather/weatherService.js + weatherRules.js:
+// Regen: Fenster jetzt-15min..+90min; Alarm wenn Menge>0 ODER Wahrscheinlichkeit>=60 ODER Regen-Wettercode.
+// Pollen: Open-Meteo Air-Quality (cams_europe), 6 Arten; Wert>=50 = "hoch"; Meldung "Heute stark: Namen".
+const WET_CODES = [51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99];
+const POLLEN_TYPES = [
+  { key: 'alder_pollen', name: 'Erle' },
+  { key: 'birch_pollen', name: 'Birke' },
+  { key: 'grass_pollen', name: 'Gräser' },
+  { key: 'mugwort_pollen', name: 'Beifuß' },
+  { key: 'olive_pollen', name: 'Olive' },
+  { key: 'ragweed_pollen', name: 'Ambrosia' },
+];
+
+function computeNextRain(hourly, now) {
+  const times = (hourly && hourly.time) || [];
+  for (let i = 0; i < times.length; i++) {
+    const ts = Date.parse(times[i]);
+    if (!isFinite(ts) || ts < now - 15 * 60 * 1000 || ts > now + 90 * 60 * 1000) continue;
+    const amount = Math.max(0, Number(hourly.precipitation && hourly.precipitation[i]) || 0);
+    const probability = Number(hourly.precipitation_probability && hourly.precipitation_probability[i]);
+    const wetCode = WET_CODES.indexOf(Number(hourly.weather_code && hourly.weather_code[i])) !== -1;
+    if (amount > 0 || probability >= 60 || wetCode) {
+      return {
+        time: times[i],
+        minutes: Math.max(0, Math.round((ts - now) / 60000)),
+        probability: isFinite(probability) ? probability : null,
+      };
+    }
+  }
+  return null;
+}
+
+function strongPollenToday(hourly, todayKeyStr) {
+  const times = (hourly && hourly.time) || [];
+  const maxByKey = {};
+  times.forEach((t, idx) => {
+    if (String(t).slice(0, 10) !== todayKeyStr) return;
+    POLLEN_TYPES.forEach((p) => {
+      const raw = hourly[p.key] && hourly[p.key][idx];
+      const v = Number(raw);
+      if (raw === null || raw === undefined || raw === '' || !isFinite(v)) return;
+      maxByKey[p.key] = Math.max(maxByKey[p.key] || 0, v);
+    });
+  });
+  return POLLEN_TYPES.filter((p) => (maxByKey[p.key] || 0) >= 50).map((p) => p.name);
+}
+
+async function sendWeatherAlerts(accessToken, projectId, email, opts) {
+  opts = opts || {};
+  const force = !!opts.force;
+  const slot = opts.slot || 'manual';
+  const hour = Number.isFinite(opts.hour) ? opts.hour : berlinHour();
+  const emailId = safeDocId(email);
+  const today = berlinToday();
+
+  const settingsDoc = await firestoreGetDoc(accessToken, projectId, 'change_settings/' + emailId);
+  const f = settingsDoc && settingsDoc.fields;
+  const prefs = f && f.notificationPrefs && f.notificationPrefs.mapValue && f.notificationPrefs.mapValue.fields;
+  const rainOn = !(prefs && prefs.rain && prefs.rain.booleanValue === false);
+  const pollenOn = !(prefs && prefs.pollen && prefs.pollen.booleanValue === false);
+  if (!rainOn && !pollenOn) return { skipped: 'rain-und-pollen-aus', today, slot };
+
+  const wl = f && f.weatherLocation && f.weatherLocation.mapValue && f.weatherLocation.mapValue.fields;
+  const lat = wl && wl.lat && Number(wl.lat.doubleValue !== undefined ? wl.lat.doubleValue : wl.lat.integerValue);
+  const lon = wl && wl.lon && Number(wl.lon.doubleValue !== undefined ? wl.lon.doubleValue : wl.lon.integerValue);
+  if (!isFinite(lat) || !isFinite(lon)) return { skipped: 'kein-standort', today, slot };
+
+  const state = force ? null : await firestoreGetDoc(accessToken, projectId, 'change_push_state/' + emailId);
+  const sf = state && state.fields;
+  const out = { today, slot, hour, rain: 'nicht-geprueft', pollen: 'nicht-geprueft' };
+  const marks = {};
+  let devices = null;
+  const getDevices = async () => {
+    if (devices === null) devices = await listDevices(accessToken, projectId, emailId);
+    return devices;
+  };
+  const sendAll = async (title, body) => {
+    const devs = await getDevices();
+    if (!devs.length) return 0;
+    let sent = 0;
+    for (const dev of devs) {
+      const r = await fcmSend(accessToken, projectId, dev.token, title, body);
+      if (!r.ok && r.status === 404 && dev.name) {
+        try { await firestoreDeleteByName(accessToken, dev.name); } catch (e) {}
+      }
+      if (r.ok) sent++;
+    }
+    return sent;
+  };
+
+  // --- Regen (stuendlich, Dedupe pro Regen-Ereignisstunde) ---
+  if (rainOn) {
+    try {
+      const wUrl = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon +
+        '&hourly=precipitation_probability,precipitation,rain,showers,weather_code&forecast_days=2&timezone=auto';
+      const wResp = await fetch(wUrl);
+      const wData = await wResp.json();
+      const rain = computeNextRain(wData && wData.hourly, Date.now());
+      if (!rain) { out.rain = 'kein-regen-in-sicht'; }
+      else {
+        const evKey = String(rain.time).slice(0, 13); // YYYY-MM-DDTHH
+        const done = sf && sf.lastRainMark && sf.lastRainMark.stringValue;
+        if (!force && done === evKey) { out.rain = 'fuer-dieses-ereignis-bereits-gewarnt'; }
+        else {
+          const body = rain.probability != null
+            ? 'In ca. ' + rain.minutes + ' Minuten · ' + rain.probability + ' % Regenwahrscheinlichkeit'
+            : 'In ca. ' + rain.minutes + ' Minuten kann es regnen';
+          const sent = await sendAll('Regen möglich 🌧️', body);
+          out.rain = sent > 0 ? 'gesendet (' + sent + ')' : 'kein-aktives-geraet';
+          if (sent > 0) marks.lastRainMark = { stringValue: evKey };
+        }
+      }
+    } catch (e) { out.rain = 'wetterabruf-fehlgeschlagen'; }
+  } else { out.rain = 'aus'; }
+
+  // --- Pollen (1x pro Tag, ab 07 Uhr) ---
+  if (pollenOn && (hour >= 7 || slot === 'manual')) {
+    try {
+      const done = sf && sf.lastPollenMark && sf.lastPollenMark.stringValue;
+      if (!force && done === today) { out.pollen = 'heute-bereits-gemeldet'; }
+      else {
+        const vars = POLLEN_TYPES.map((p) => p.key).join(',');
+        const pUrl = 'https://air-quality-api.open-meteo.com/v1/air-quality?latitude=' + lat + '&longitude=' + lon +
+          '&hourly=' + vars + '&forecast_days=1&timezone=auto&domains=cams_europe';
+        const pResp = await fetch(pUrl);
+        const pData = await pResp.json();
+        const strong = strongPollenToday(pData && pData.hourly, today);
+        if (!strong.length) { out.pollen = 'heute-nicht-stark'; }
+        else {
+          const sent = await sendAll('Pollen heute stark 🌿', 'Heute stark: ' + strong.slice(0, 3).join(', '));
+          out.pollen = sent > 0 ? 'gesendet (' + sent + ')' : 'kein-aktives-geraet';
+          if (sent > 0) marks.lastPollenMark = { stringValue: today };
+        }
+      }
+    } catch (e) { out.pollen = 'pollenabruf-fehlgeschlagen'; }
+  } else if (!pollenOn) { out.pollen = 'aus'; }
+  else { out.pollen = 'erst-ab-07-uhr'; }
+
+  const markKeys = Object.keys(marks);
+  if (markKeys.length) {
+    marks.updatedAt = { timestampValue: new Date().toISOString() };
+    await firestorePatch(accessToken, projectId, 'change_push_state/' + emailId, marks, markKeys.concat(['updatedAt']));
+  }
+  return out;
 }
 
 // Volle Tage zwischen zwei dateKeys (YYYY-MM-DD), kalendersicher.

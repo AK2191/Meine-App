@@ -1,4 +1,4 @@
-# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0363)
+# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0364)
 
 Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschlossenen Schritt hier aktualisiert (Haken setzen, Datum ergaenzen). Arbeitsweise laut Charta: kleine kontrollierte Schritte, nie mehrere Systeme gleichzeitig, nach jeder Aenderung Kalender/Dashboard/Challenges pruefen, keine Patches/Workarounds, keine doppelte Logik, CLAUDE.md immer mitziehen.
 
@@ -15,7 +15,7 @@ Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschloss
 ## B. OFFENE KERN-SCHRITTE (Reihenfolge verbindlich)
 - [x] 7b Friseur server-seitig (v0.1.0362): App synct NUR das naechste Faelligkeitsdatum (change_settings.dashboard oder eigenes Feld); Worker-Send-Funktion; in Zeitsteuerung einstecken (reminderHours.friseur, Default 07); Kontroll-Ebene notificationPrefs.friseur. Abnahme: /friseur?force=1 liefert korrektes skipped/sent; Push kommt bei faelligem Friseur.
 - [x] 7c Geburtstage server-seitig (v0.1.0363): Minimal-Sync (Datum + Vorname, sonst nichts); nutzt vorhandenes "X Tage vorher" (birthdayNotificationDays); Worker-Funktion; reminderHours.birthdays (Default 07). Abnahme analog 7b.
-- [ ] 7d Regen-/Pollenwarnung server-seitig (groesster Schritt): Standort (nur Koordinaten) in Settings-Vertrag; Worker holt beim Stundenlauf Vorhersage (gleiche Quelle wie App, Open-Meteo) und wendet dieselbe "X Std. vorher"-Regel an; Dedupe pro Ereignis/Tag; Kontroll-Ebene rain/pollen. Abnahme: Warnung kommt bei geschlossener App, keine Doppel-Warnungen.
+- [x] 7d Regen-/Pollenwarnung server-seitig (v0.1.0364): Standort (nur Koordinaten) in Settings-Vertrag; Worker holt beim Stundenlauf Vorhersage (gleiche Quelle wie App, Open-Meteo) und wendet dieselbe "X Std. vorher"-Regel an; Dedupe pro Ereignis/Tag; Kontroll-Ebene rain/pollen. Abnahme: Warnung kommt bei geschlossener App, keine Doppel-Warnungen.
 
 ## C. OPTIONALE QUALITAETS-SCHRITTE (nach B)
 - [ ] O1 components/-Ordner: wiederverwendbare UI (Feature-Karte, Zeit-Dropdown, Switch-Row) konsolidieren. Reine Struktur, keine Funktionsaenderung. Schliesst die letzte Charta-Luecke.
@@ -32,6 +32,20 @@ Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschloss
 - Neue Settings-Bedienelemente IMMER in CONTROL_IDS (settings-logic.js) registrieren.
 
 ---
+
+## Version 0.1.0364 - Phase 7d: Regen-/Pollenwarnung server-seitig
+- Worker warnt jetzt auch bei geschlossener App vor Regen und starkem Pollenflug. Damit ist der KOMPLETTE Push-Fahrplan (B im Projektplan) abgeschlossen: alle Benachrichtigungstypen laufen server-seitig.
+- Minimal-Sync (App): NUR gerundete Koordinaten (~1 km, 2 Dezimalstellen) als `weatherLocation {lat, lon}` im Settings-Vertrag. Bewusst KEINE applySettings-Rueckspielung (praeziser lokaler Standort bleibt unberuehrt).
+- Worker spiegelt die App-Regeln 1:1 (core/weather/weatherService.js + weatherRules.js; MUSS bei Aenderungen mitgezogen werden):
+  - Regen: Open-Meteo forecast, Fenster jetzt-15min..+90min, Alarm bei Menge>0 ODER Wahrscheinlichkeit>=60 ODER Regen-Wettercode (Liste WET_CODES). Text wie App: "Regen möglich / In ca. X Minuten · Y % Regenwahrscheinlichkeit". Dedupe pro Regen-Ereignisstunde (lastRainMark=YYYY-MM-DDTHH) -> keine Dauer-Warnungen.
+  - Pollen: Open-Meteo Air-Quality (cams_europe), 6 Arten (Erle, Birke, Graeser, Beifuss, Olive, Ambrosia), Tages-Max>=50 = "stark". Text: "Pollen heute stark / Heute stark: Namen (max 3)". 1x pro Tag ab 07 Uhr (lastPollenMark).
+- Dispatcher: Kategorie B laeuft stuendlich 06-22 Uhr Berlin (nachts keine Wetter-Pushes). Kontroll-Ebene: notificationPrefs.rain/pollen + Geraete-pushEnabled. Kein Standort in Firestore -> skipped 'kein-standort'.
+- Endpunkt `/weather?secret=...&force=1` (liefert rain- und pollen-Status einzeln).
+- Kosten: +2 Wetter-API-Abrufe pro Nutzer/Stunde (Open-Meteo kostenlos, kein Schluessel); Subrequests bleiben weit unter dem 50er-Limit.
+- Headless geprueft: 6 Kantenfaelle (Regenfenster, Schwellen, Wettercode, Pollen-Schwelle, Tagesfilter); node --check (Logic, Worker, pollenView).
+- BENUTZER-TODO: App hochladen (App einmal oeffnen, damit weatherLocation gesynct wird - Wetter/Standort muss in der App eingerichtet sein); Worker neu deployen. Test: /weather?secret=...&force=1.
+- Cache-Busting ?v=0.1.0364.
+- Geaendert: `features/settings/settings-logic.js`, `scripts/changePushWorker.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `CLAUDE.md`, `CHANGELOG.md`.
 
 ## Version 0.1.0363 - Phase 7c: Geburtstags-Erinnerung server-seitig
 - Worker erinnert an Geburtstage - auch bei geschlossener App. Text: "🎂 Svenja hat morgen Geburtstag!" bzw. Sammel-Text bei mehreren ("A hat heute Geburtstag · B hat in 3 Tagen Geburtstag").

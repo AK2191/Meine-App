@@ -678,6 +678,17 @@
       google: {
         clientId: readClientId()
       },
+      // 7d: Standort NUR als gerundete Koordinaten (~1 km) fuer server-seitige
+      // Regen-/Pollenwarnung. Wird bewusst NICHT zurueckgespielt (lokaler
+      // praeziser Standort bleibt unberuehrt).
+      weatherLocation: (function(){
+        try{
+          var loc = JSON.parse(localStorage.getItem('change_v1_weather_location') || 'null');
+          var la = Number(loc && loc.latitude), lo = Number(loc && loc.longitude);
+          if(!isFinite(la) || !isFinite(lo)) return null;
+          return { lat: Math.round(la*100)/100, lon: Math.round(lo*100)/100 };
+        }catch(e){ return null; }
+      })(),
       // Worker-Vertrag: zentrale, server-lesbare Schalter pro Meldungstyp.
       // Master/Geraet-Ein-Aus liegt NICHT hier, sondern in change_push_tokens/.../devices (pushEnabled).
       notificationPrefs: {
