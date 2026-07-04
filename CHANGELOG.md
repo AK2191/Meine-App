@@ -1,3 +1,11 @@
+## Version 0.1.0370 - P3a: Kalender-Backdrop wie Pollen
+- Screenshot-Vergleich (Nutzer, Desktop+Mobil) ergab die Delta-Liste Kalender vs. Pollen; als P3a-P3e im Plan (F) dokumentiert.
+- P3a umgesetzt: #calendar-view erhaelt den 1:1 gespiegelten Pollen-Backdrop (#04090e + drei Radial-Akzente gruen/amber/rot + Vertikal-Verlauf, ::before, Inhalte z-index 1). Quelle pollenView.css Z.2-6; bei Aenderungen dort mitziehen (dokumentiert im CSS-Kommentar).
+- Damit stimmt die Grundstimmung/Farbtemperatur des Kalenders mit Pollen ueberein; P3b-P3e folgen einzeln.
+- Geprueft: CSS-Klammern balanciert; node --check pollenView.
+- Cache-Busting ?v=0.1.0370.
+- Geaendert: `features/calendar/calendarPanels.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0369 - Fix: version.json in Upload-Whitelist (ZIP-Pruefung)
 - Nutzer-Fund: Upload-Dialog meldete "ZIP braucht noch Korrekturen · Keine unerwuenschten Root-Dateien · version.json". Ursache: die mit O2 (0.1.0366) eingefuehrte Root-Datei version.json fehlte in der ZIP-Pruef-Whitelist `allowedRootFiles` (settingsPanel.js Z.1810) - gleiche Fehlerklasse wie der CONTROL_IDS-Fall: Registrierungsstelle uebersehen.
 - Fix: 'version.json' in allowedRootFiles ergaenzt. Neue Dauerregel in E: neue Root-Dateien/-Ordner immer dort registrieren.

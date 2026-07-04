@@ -1,4 +1,4 @@
-# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0369)
+# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0370)
 
 Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschlossenen Schritt hier aktualisiert (Haken setzen, Datum ergaenzen). Arbeitsweise laut Charta: kleine kontrollierte Schritte, nie mehrere Systeme gleichzeitig, nach jeder Aenderung Kalender/Dashboard/Challenges pruefen, keine Patches/Workarounds, keine doppelte Logik, CLAUDE.md immer mitziehen.
 
@@ -28,7 +28,12 @@ Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschloss
 Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial-Akzenten; Karten border 1px rgba(255,255,255,.08), Verlauf rgba(14,21,27,.84)->rgba(7,11,16,.96) bzw. Subkarten rgba(16,23,29,.86)->rgba(11,16,21,.95), radius 24/18, Schatten 0 18px 60px rgba(0,0,0,.28) + inset Innenlicht; Titel 950 mit Glow-Punkt; Sektionskoepfe 12px/900 uppercase .08em; Akzente #4ade80/#fbbf24/#ff574c; Muted rgba(244,247,244,.55-.78); Hover translateY(-1px).
 - [x] P1 Kalender-Tagesdetail auf Pollen-Tokens (v0.1.0368): change-day-*, change-holiday-row (war helles Amber #b45309!), change-challenge-row, change-day-empty, change-conflict-note, change-share-* in calendarPanels.css direkt umgeschrieben (kein Override). Klassen sind kalender-exklusiv (verifiziert).
 - [ ] P2 Challenges konsolidieren: die !important-Override-Schicht in challenges-mobile.css (ab ~Z.300) in echte Stile ueberfuehren; Restbereiche (Modals, Historie, Buttons) angleichen.
-- [ ] P3 Monatsgrid (cfx-*) + Wochenansicht tonal an Pollen-Karten angleichen; Produktentscheidung Punkte- vs. Detailzellen final bestaetigen.
+- [~] P3 Kalender tonal an Pollen (Screenshot-Delta-Analyse 04.07.):
+  - [x] P3a View-Backdrop (v0.1.0370): #calendar-view = #04090e + Pollen-Radials (1:1 aus pollenView.css Z.2-6 gespiegelt; bei Aenderung dort mitziehen). Groesster Farb-Hebel.
+  - [ ] P3b Hero-Stats integrieren: rechte Stat-Spalte IN die Hero-Karte (border-left-Trenner, Zeilen-Separatoren, Icon-Chips) statt separater Box - wie pollen-neo-hero.
+  - [ ] P3c Woche/Monat-Switch kompakt im Pollen-Segment-Stil.
+  - [ ] P3d Agenda-Zeilen auf Pollen-Subkarten-Verlauf (Zeit-Spalte mit Trenner).
+  - [ ] P3e Monatsgrid (cfx-*) Ton-Abgleich + Produktentscheidung Punkte- vs. Detailzellen.
 - [ ] P4 Mobile-Pass beider Views (Breakpoints/Abstaende wie pollenView.css-Mobilregeln).
 - Vorgehen: pro P-Schritt ein Release; Abnahme am lebenden Objekt (Alex prueft Kalender/Dashboard/Challenges).
 
@@ -45,6 +50,14 @@ Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial
 - Wiederverwendbare UI-Bausteine IMMER in components/ (window.ChangeComponents) ergaenzen/nutzen - nie lokal duplizieren. Ladereihenfolge: components-Skripte stehen in index.html vor den features-Skripten.
 
 ---
+
+## Version 0.1.0370 - P3a: Kalender-Backdrop wie Pollen
+- Screenshot-Vergleich (Nutzer, Desktop+Mobil) ergab die Delta-Liste Kalender vs. Pollen; als P3a-P3e im Plan (F) dokumentiert.
+- P3a umgesetzt: #calendar-view erhaelt den 1:1 gespiegelten Pollen-Backdrop (#04090e + drei Radial-Akzente gruen/amber/rot + Vertikal-Verlauf, ::before, Inhalte z-index 1). Quelle pollenView.css Z.2-6; bei Aenderungen dort mitziehen (dokumentiert im CSS-Kommentar).
+- Damit stimmt die Grundstimmung/Farbtemperatur des Kalenders mit Pollen ueberein; P3b-P3e folgen einzeln.
+- Geprueft: CSS-Klammern balanciert; node --check pollenView.
+- Cache-Busting ?v=0.1.0370.
+- Geaendert: `features/calendar/calendarPanels.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
 
 ## Version 0.1.0369 - Fix: version.json in Upload-Whitelist (ZIP-Pruefung)
 - Nutzer-Fund: Upload-Dialog meldete "ZIP braucht noch Korrekturen · Keine unerwuenschten Root-Dateien · version.json". Ursache: die mit O2 (0.1.0366) eingefuehrte Root-Datei version.json fehlte in der ZIP-Pruef-Whitelist `allowedRootFiles` (settingsPanel.js Z.1810) - gleiche Fehlerklasse wie der CONTROL_IDS-Fall: Registrierungsstelle uebersehen.
