@@ -1,4 +1,4 @@
-# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0365)
+# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0366)
 
 Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschlossenen Schritt hier aktualisiert (Haken setzen, Datum ergaenzen). Arbeitsweise laut Charta: kleine kontrollierte Schritte, nie mehrere Systeme gleichzeitig, nach jeder Aenderung Kalender/Dashboard/Challenges pruefen, keine Patches/Workarounds, keine doppelte Logik, CLAUDE.md immer mitziehen.
 
@@ -22,19 +22,28 @@ Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschloss
 
 ## C. OPTIONALE QUALITAETS-SCHRITTE (nach B)
 - [ ] O1 components/-Ordner: wiederverwendbare UI (Feature-Karte, Zeit-Dropdown, Switch-Row) konsolidieren. Reine Struktur, keine Funktionsaenderung. Schliesst die letzte Charta-Luecke.
-- [ ] O2 Update-Hinweis: App prueft beim Start cache-umgehend die Repo-Version und zeigt dezent "Neue Version verfuegbar - neu laden" (loest das 10-Minuten-Cache-Fenster von GitHub Pages sauber).
+- [x] O2 Update-Hinweis (v0.1.0366): App prueft beim Start cache-umgehend die Repo-Version und zeigt dezent "Neue Version verfuegbar - neu laden" (loest das 10-Minuten-Cache-Fenster von GitHub Pages sauber).
 
 ## D. AUFGABEN NUTZER (einmalig)
 - [ ] U1 PUSH_TEST_SECRET in Cloudflare von test1234 auf eigenes Wort aendern (change-push-worker -> Settings -> Variables and Secrets).
 
 ## E. DAUERREGELN (gelten fuer jeden Schritt)
-- Version synchron in settingsPanel.js, pollenView.js, CLAUDE.md, CHANGELOG.md; Cache-Busting ?v= in index.html.
+- Version synchron in settingsPanel.js, pollenView.js, version.json, CLAUDE.md, CHANGELOG.md; Cache-Busting ?v= in index.html.
 - node --check auf jede geaenderte JS-Datei; headless-Test fuer neue Logik.
 - Komplettes ZIP (ganzer Baum) fuer den Upload; Worker-Aenderungen zusaetzlich als Datei fuer Cloudflare.
 - Gespiegelte Worker-Logik (z.B. Feiertagsberechnung, Offene-Challenge-Regel) MUSS bei App-Aenderungen mitgezogen werden - Fundstellen sind in den Versions-Eintraegen dokumentiert.
 - Neue Settings-Bedienelemente IMMER in CONTROL_IDS (settings-logic.js) registrieren.
 
 ---
+
+## Version 0.1.0366 - O2: Update-Hinweis ("Neue Version verfuegbar")
+- Neue Datei `version.json` im Repo-Root ({"version": "..."}); gehoert ab jetzt ZUR VERSIONS-BUMP-LISTE (Dauerregel E aktualisiert).
+- Neues Modul `core/system/updateCheck.js`: prueft 8 s nach dem Start und danach alle 15 Minuten cache-umgehend (fetch no-store + nocache-Query) die version.json und zeigt bei echt neuerer Version einen dezenten Banner unten mittig: "Neue Version X verfuegbar" + Button "Neu laden" + Schliessen. Vergleich segmentweise numerisch (Rollback/aeltere Remote-Version zeigt NICHTS). Fehler werden still geschluckt.
+- Minimalistisch im App-Stil (dunkle Karte, Emerald-Akzent, Plus Jakarta Sans), kein Flackern, nicht blockierend, erscheint hoechstens 1x pro Sitzung. Strings mit Unicode-Escapes (Encoding-sicher, Lehre aus 0351).
+- Loest das GitHub-Pages-Cache-Fenster sauber: Badge alt vs. Repo neu ist damit selbsterklaerend.
+- Browser-getestet (Playwright, same-origin): Banner erscheint bei aelterer laufender Version, Schliessen entfernt ihn; Vergleichslogik headless (neuer/gleich/aelter/numerisch 9 vs 10).
+- Cache-Busting ?v=0.1.0366.
+- Geaendert/Neu: `version.json` (neu), `core/system/updateCheck.js` (neu), `index.html`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
 
 ## Version 0.1.0365 - UX: Standort haelt sich selbst aktuell (still)
 - Nutzer-Feedback: Standort soll nicht ueber die Einstellungen gepflegt werden muessen. Loesung nach dem Muster der stillen Token-Auffrischung (Phase 1):

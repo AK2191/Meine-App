@@ -1,3 +1,12 @@
+## Version 0.1.0366 - O2: Update-Hinweis ("Neue Version verfuegbar")
+- Neue Datei `version.json` im Repo-Root ({"version": "..."}); gehoert ab jetzt ZUR VERSIONS-BUMP-LISTE (Dauerregel E aktualisiert).
+- Neues Modul `core/system/updateCheck.js`: prueft 8 s nach dem Start und danach alle 15 Minuten cache-umgehend (fetch no-store + nocache-Query) die version.json und zeigt bei echt neuerer Version einen dezenten Banner unten mittig: "Neue Version X verfuegbar" + Button "Neu laden" + Schliessen. Vergleich segmentweise numerisch (Rollback/aeltere Remote-Version zeigt NICHTS). Fehler werden still geschluckt.
+- Minimalistisch im App-Stil (dunkle Karte, Emerald-Akzent, Plus Jakarta Sans), kein Flackern, nicht blockierend, erscheint hoechstens 1x pro Sitzung. Strings mit Unicode-Escapes (Encoding-sicher, Lehre aus 0351).
+- Loest das GitHub-Pages-Cache-Fenster sauber: Badge alt vs. Repo neu ist damit selbsterklaerend.
+- Browser-getestet (Playwright, same-origin): Banner erscheint bei aelterer laufender Version, Schliessen entfernt ihn; Vergleichslogik headless (neuer/gleich/aelter/numerisch 9 vs 10).
+- Cache-Busting ?v=0.1.0366.
+- Geaendert/Neu: `version.json` (neu), `core/system/updateCheck.js` (neu), `index.html`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0365 - UX: Standort haelt sich selbst aktuell (still)
 - Nutzer-Feedback: Standort soll nicht ueber die Einstellungen gepflegt werden muessen. Loesung nach dem Muster der stillen Token-Auffrischung (Phase 1):
 - `core/weather/weatherStore.js`: neue Funktion `refreshLocationIfGranted()` - holt den Standort NUR, wenn die Browser-Erlaubnis bereits erteilt ist (navigator.permissions), dadurch NIE ein Popup; Fehler werden still geschluckt.
