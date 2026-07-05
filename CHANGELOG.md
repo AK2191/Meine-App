@@ -1,3 +1,12 @@
+## Version 0.1.0372 - P3b-2: Kalender-Hero Geometrie/Icons exakt wie Pollen
+- Nutzer-Feedback zu 0371 umgesetzt: Hero-Geometrie 1:1 auf die gemessenen Pollen-Werte (Spaltenraster 496/190/520 bei 1440px, min-height 238, Padding 28/30, Radius 28/26, Pollen-Schatten).
+- Farb-Emoji-Icons der Stat-Zeilen (⌚✂🏖) durch gruene Linien-SVGs (Uhr/Schere/Sonnenschirm, currentColor) in 26px-Chips ersetzt; Uhr-Illustration auf Akzent #4ade80.
+- Wert-Typografie wie Pollen: Desktop 14px/900, mobil 11px/950 (Label 10px/900).
+- CSS als markierter Kalender-Zweig "P3b-2" am Ende von appShell.css; JS: heroIconSvg + SVG-Durchlass in calendarHeroRow (calendarPanels.js).
+- Browser-verifiziert Desktop+Mobil, Konsole fehlerfrei; Dashboard-Hero unveraendert.
+- Cache-Busting ?v=0.1.0372.
+- Geaendert: `features/calendar/calendarPanels.js`, `styles/appShell.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0371 - P3b: Kalender-Hero in Pollen-Tonalitaet + Hero-Schichten konsolidiert
 - Kaskaden-Analyse am lebenden DOM: alle gewinnenden Kalender-Hero-Regeln stammen aus dem zentralen HeroCard-System v0.1.0290 (styles/appShell.css, Token-Vars); die 12 Hero-Override-Generationen in calendarPanels.css waren tot.
 - calendarPanels.css konsolidiert: tote Schichten entfernt (946 -> ~370 Zeilen), EINE kanonische Hero-Basis; Beweis per vollstaendigem Computed-Style-Diff (Desktop+Mobil, 0 Abweichungen). Tote date-ring/row-badge-Regeln (Markup existiert nicht mehr) entfernt.

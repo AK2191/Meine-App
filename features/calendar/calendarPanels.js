@@ -199,9 +199,16 @@
     if(m) return m[1].replace('.', ',') + ' Tage übrig';
     return text;
   }
+  function heroIconSvg(kind){
+    var attrs = 'xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
+    if(kind === 'friseur') return '<svg '+attrs+'><circle cx="6" cy="6" r="2.7"/><circle cx="6" cy="18" r="2.7"/><path d="M20 4 8.1 15.9"/><path d="M14.5 14.5 20 20"/><path d="M8.1 8.1 12 12"/></svg>';
+    if(kind === 'urlaub') return '<svg '+attrs+'><path d="M4.5 12a7.5 7.5 0 0 1 15 0Z"/><path d="M12 4.5V12"/><path d="M12 12v7.5"/><path d="M9 19.5h6"/></svg>';
+    return '<svg '+attrs+'><circle cx="12" cy="12" r="8.2"/><path d="M12 7.6V12l3.1 1.9"/></svg>';
+  }
   function calendarHeroRow(icon, title, value, onclick){
+    var iconHtml = (icon && icon.charAt(0) === '<') ? icon : esc(icon || '•');
     return '<button type="button" class="cal-premium-hero-row"'+(onclick ? ' onclick="'+onclick+'"' : '')+'>'
-      + '<span class="cal-premium-hero-row-icon">'+esc(icon || '•')+'</span>'
+      + '<span class="cal-premium-hero-row-icon">'+iconHtml+'</span>'
       + '<span class="cal-premium-hero-row-body"><strong>'+esc(title || '')+'</strong><em>'+esc(value || '—')+'</em></span>'
       + '</button>';
   }
@@ -220,9 +227,9 @@
 
     var vacationClick = "window.openUrlaubPanel?window.openUrlaubPanel():(window.openUrlaubSettings?window.openUrlaubSettings():setMainView(\'calendar\'))";
     var rows = '';
-    rows += calendarHeroRow('⌚', 'Nächster Termin', nextValue, next ? "window.openEventPanel&&window.openEventPanel('"+esc(next.id||'')+"')" : '');
-    rows += calendarHeroRow(friseur.icon || '✂', 'Friseur', friseurValue, 'window.openFriseurPanel&&window.openFriseurPanel()');
-    rows += calendarHeroRow(urlaub.icon || '🏖', 'Urlaub', urlaubValue, vacationClick);
+    rows += calendarHeroRow(heroIconSvg('termin'), 'Nächster Termin', nextValue, next ? "window.openEventPanel&&window.openEventPanel('"+esc(next.id||'')+"')" : '');
+    rows += calendarHeroRow(heroIconSvg('friseur'), 'Friseur', friseurValue, 'window.openFriseurPanel&&window.openFriseurPanel()');
+    rows += calendarHeroRow(heroIconSvg('urlaub'), 'Urlaub', urlaubValue, vacationClick);
     return '<div class="cal-premium-hero-side">'+rows+'</div>';
   }
 
@@ -241,13 +248,13 @@
   function calHeroArtSvg(){
     return '<svg class="cal-hero-illustration" viewBox="0 0 160 160" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" stroke-linecap="round" stroke-linejoin="round">'
       + '<circle cx="74" cy="84" r="46" fill="none" stroke="#2F5C44" stroke-width="9"/>'
-      + '<circle cx="74" cy="84" r="46" fill="none" stroke="#7DE6AB" stroke-width="4" stroke-dasharray="3 14" opacity=".7"/>'
-      + '<path d="M74 84 V56" stroke="#7DE6AB" stroke-width="5"/>'
-      + '<path d="M74 84 L95 93" stroke="#7DE6AB" stroke-width="5"/>'
-      + '<circle cx="74" cy="84" r="4.5" fill="#7DE6AB"/>'
-      + '<rect x="104" y="44" width="40" height="30" rx="9" fill="#13251A" stroke="#7DE6AB" stroke-width="3"/>'
-      + '<path d="M114 74 L114 82 L122 74 Z" fill="#13251A" stroke="#7DE6AB" stroke-width="3" stroke-linejoin="round"/>'
-      + '<g fill="#7DE6AB"><circle cx="116" cy="59" r="2.2"/><circle cx="124" cy="59" r="2.2"/><circle cx="132" cy="59" r="2.2"/></g>'
+      + '<circle cx="74" cy="84" r="46" fill="none" stroke="#4ade80" stroke-width="4" stroke-dasharray="3 14" opacity=".7"/>'
+      + '<path d="M74 84 V56" stroke="#4ade80" stroke-width="5"/>'
+      + '<path d="M74 84 L95 93" stroke="#4ade80" stroke-width="5"/>'
+      + '<circle cx="74" cy="84" r="4.5" fill="#4ade80"/>'
+      + '<rect x="104" y="44" width="40" height="30" rx="9" fill="#0f241b" stroke="#4ade80" stroke-width="3"/>'
+      + '<path d="M114 74 L114 82 L122 74 Z" fill="#0f241b" stroke="#4ade80" stroke-width="3" stroke-linejoin="round"/>'
+      + '<g fill="#4ade80"><circle cx="116" cy="59" r="2.2"/><circle cx="124" cy="59" r="2.2"/><circle cx="132" cy="59" r="2.2"/></g>'
       + '</svg>';
     return '<svg class="cal-hero-illustration" viewBox="0 0 220 220" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">'
       + '<defs>'

@@ -17827,3 +17827,66 @@ html body.change-view-challenges #content #challenges-view .leader-actions .nudg
 html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat i.chv227-stat-icon{
   display:flex!important;
 }
+
+
+/* P3b-2 (v0.1.0372) - Kalender-Hero: Geometrie, Icon-Chips und Wert-Typografie 1:1 an
+   pollen-neo-hero angeglichen (Werte am lebenden Pollen-Hero gemessen). Kalender-Zweig
+   des 0290-Systems; steht bewusst NACH den 0290c/d-Locks, damit er per Reihenfolge
+   gewinnt. Tonalitaets-Tokens siehe body.change-view-calendar im 0290-Block. */
+@media(min-width:761px){
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide.change-hero-card.change-hero-calendar{
+    grid-template-columns:minmax(0,1fr) 190px minmax(340px,520px)!important;
+    gap:26px!important;
+    align-items:center!important;
+    min-height:238px!important;
+    padding:28px 30px!important;
+    border-radius:28px!important;
+    box-shadow:0 22px 60px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.03)!important;
+  }
+  html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-premium-hero-main{
+    padding:0!important;
+  }
+  html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-hero-illustration{
+    width:190px!important;
+    max-width:190px!important;
+    max-height:190px!important;
+  }
+  html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-premium-hero-side{
+    padding:0 0 0 20px!important;
+  }
+  html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-premium-hero-row,
+  html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar button.cal-premium-hero-row{
+    grid-template-columns:26px minmax(0,1fr)!important;
+    gap:0 12px!important;
+    padding:10px 0!important;
+    min-height:0!important;
+  }
+  html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-premium-hero-row-icon{
+    width:26px!important;
+    height:26px!important;
+    min-width:26px!important;
+    border-radius:999px!important;
+    background:rgba(255,255,255,.06)!important;
+  }
+  html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-premium-hero-row-body strong{
+    font-weight:850!important;
+  }
+  html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-premium-hero-row-body em{
+    font-size:14px!important;
+    font-weight:900!important;
+    margin-top:2px!important;
+  }
+}
+@media(max-width:760px){
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide.change-hero-card.change-hero-calendar{
+    border-radius:26px!important;
+  }
+  html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-premium-hero-row-body strong{
+    font-size:10px!important;
+    font-weight:900!important;
+  }
+  html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-premium-hero-row-body em{
+    font-size:11px!important;
+    font-weight:950!important;
+  }
+}
