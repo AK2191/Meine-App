@@ -1,3 +1,11 @@
+## Version 0.1.0373 - P3b-3: Kalender-Hero Text-Stack exakt wie Pollen
+- Linker Text-Stack des Kalender-Heroes 1:1 auf die live gemessenen Pollen-Werte: Eyebrow Desktop gedaempft weiss / mobil gruen (wie Pollen-Label), Titel 45px/850/ls -1.45 (mobil 26px/950), Subline 15.5px/760 #e7ece7 (mobil 13px/800).
+- "Naechster Termin"-Zeile ist jetzt ein gruener CTA-Chip (999er-Pille) - das Analogon zum Pollen-Chip "Morgen etwas ruhiger".
+- Mobiler Hero mit min-height 216px exakt auf Pollen-Mobil-Hoehe.
+- Nur CSS (Erweiterung des P3b-Kalenderzweigs in appShell.css); Browser-verifiziert Desktop+Mobil, Konsole fehlerfrei; Dashboard/Challenges unberuehrt.
+- Cache-Busting ?v=0.1.0373.
+- Geaendert: `styles/appShell.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0372 - P3b-2: Kalender-Hero Geometrie/Icons exakt wie Pollen
 - Nutzer-Feedback zu 0371 umgesetzt: Hero-Geometrie 1:1 auf die gemessenen Pollen-Werte (Spaltenraster 496/190/520 bei 1440px, min-height 238, Padding 28/30, Radius 28/26, Pollen-Schatten).
 - Farb-Emoji-Icons der Stat-Zeilen (⌚✂🏖) durch gruene Linien-SVGs (Uhr/Schere/Sonnenschirm, currentColor) in 26px-Chips ersetzt; Uhr-Illustration auf Akzent #4ade80.

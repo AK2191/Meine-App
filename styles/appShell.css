@@ -17876,10 +17876,46 @@ html body.change-view-challenges #content #challenges-view #group-goal-card.chan
     font-weight:900!important;
     margin-top:2px!important;
   }
+  /* Text-Stack links 1:1 wie pollen-neo-hero (label/title/subline/CTA-Chip, live gemessen) */
+  html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-premium-eyebrow{
+    color:rgba(244,247,244,.72)!important;
+    font-size:11px!important;
+    font-weight:780!important;
+    letter-spacing:.07em!important;
+  }
+  html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-premium-hero-main h2{
+    margin:13px 0 0!important;
+    font-size:45px!important;
+    font-weight:850!important;
+    letter-spacing:-1.45px!important;
+    line-height:.98!important;
+  }
+  html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-premium-hero-line{
+    margin:15px 0 0!important;
+    color:#e7ece7!important;
+    font-size:15.5px!important;
+    font-weight:760!important;
+    line-height:1.22!important;
+  }
+  html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-premium-hero-line.muted{
+    display:inline-flex!important;
+    align-items:center!important;
+    gap:6px!important;
+    margin:22px 0 0!important;
+    padding:10px 14px!important;
+    border-radius:999px!important;
+    background:rgba(74,222,128,.08)!important;
+    border:1px solid rgba(74,222,128,.12)!important;
+    color:#4ade80!important;
+    font-size:12.5px!important;
+    font-weight:760!important;
+    max-width:max-content!important;
+  }
 }
 @media(max-width:760px){
   html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide.change-hero-card.change-hero-calendar{
     border-radius:26px!important;
+    min-height:216px!important;
   }
   html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-premium-hero-row-body strong{
     font-size:10px!important;
@@ -17888,5 +17924,41 @@ html body.change-view-challenges #content #challenges-view #group-goal-card.chan
   html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-premium-hero-row-body em{
     font-size:11px!important;
     font-weight:950!important;
+  }
+  /* Mobiler Text-Stack 1:1 wie pollen-neo-hero mobil (Label dort GRUEN, live gemessen) */
+  html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-premium-eyebrow{
+    color:#4ade80!important;
+    font-size:11px!important;
+    font-weight:950!important;
+    letter-spacing:.09em!important;
+  }
+  html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-premium-hero-main h2{
+    margin:4px 0 0!important;
+    font-size:26px!important;
+    font-weight:950!important;
+    letter-spacing:-.75px!important;
+    line-height:1.05!important;
+  }
+  html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-premium-hero-line{
+    margin:6px 0 0!important;
+    color:rgba(244,247,244,.68)!important;
+    font-size:13px!important;
+    font-weight:800!important;
+    line-height:1.25!important;
+  }
+  html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-premium-hero-line.muted{
+    display:inline-flex!important;
+    align-items:center!important;
+    gap:5px!important;
+    margin:8px 0 0!important;
+    padding:6px 10px!important;
+    min-height:34px!important;
+    border-radius:999px!important;
+    background:rgba(74,222,128,.08)!important;
+    border:1px solid rgba(74,222,128,.12)!important;
+    color:#4ade80!important;
+    font-size:11px!important;
+    font-weight:850!important;
+    max-width:max-content!important;
   }
 }
