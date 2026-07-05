@@ -1,3 +1,12 @@
+## Version 0.1.0371 - P3b: Kalender-Hero in Pollen-Tonalitaet + Hero-Schichten konsolidiert
+- Kaskaden-Analyse am lebenden DOM: alle gewinnenden Kalender-Hero-Regeln stammen aus dem zentralen HeroCard-System v0.1.0290 (styles/appShell.css, Token-Vars); die 12 Hero-Override-Generationen in calendarPanels.css waren tot.
+- calendarPanels.css konsolidiert: tote Schichten entfernt (946 -> ~370 Zeilen), EINE kanonische Hero-Basis; Beweis per vollstaendigem Computed-Style-Diff (Desktop+Mobil, 0 Abweichungen). Tote date-ring/row-badge-Regeln (Markup existiert nicht mehr) entfernt.
+- Pollen-Tonalitaet als Token-Override: body.change-view-calendar setzt die --change-hero0290-*-Tokens auf 1:1 am lebenden pollen-neo-hero gemessene Werte (halbtransparenter 135deg-Verlauf + Radial 88%/24%, Border rgba(74,222,128,.22), Trennlinien, Akzent #4ade80, Textfarben). Damit verschwindet die "separate Box"-Optik der Stat-Spalte (kam vom opaken 0290-Verlauf + Glow rechts).
+- Wurzel-Fix in appShell.css: Block v0.1.0290d kodierte die Hero-Tonalitaet literal statt ueber die eigenen Tokens; 6 Literale auf var(--change-hero0290-*) umgestellt (No-Op fuer Dashboard/Settings/Challenges - Dashboard im Browser verifiziert unveraendert).
+- Browser-verifiziert Desktop 1440 + Mobil 375: Kalender-Hero traegt exakt die Pollen-Werte; andere Views unveraendert.
+- Cache-Busting ?v=0.1.0371.
+- Geaendert: `features/calendar/calendarPanels.css`, `styles/appShell.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0370 - P3a: Kalender-Backdrop wie Pollen
 - Screenshot-Vergleich (Nutzer, Desktop+Mobil) ergab die Delta-Liste Kalender vs. Pollen; als P3a-P3e im Plan (F) dokumentiert.
 - P3a umgesetzt: #calendar-view erhaelt den 1:1 gespiegelten Pollen-Backdrop (#04090e + drei Radial-Akzente gruen/amber/rot + Vertikal-Verlauf, ::before, Inhalte z-index 1). Quelle pollenView.css Z.2-6; bei Aenderungen dort mitziehen (dokumentiert im CSS-Kommentar).

@@ -1,4 +1,4 @@
-# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0370)
+# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0371)
 
 Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschlossenen Schritt hier aktualisiert (Haken setzen, Datum ergaenzen). Arbeitsweise laut Charta: kleine kontrollierte Schritte, nie mehrere Systeme gleichzeitig, nach jeder Aenderung Kalender/Dashboard/Challenges pruefen, keine Patches/Workarounds, keine doppelte Logik, CLAUDE.md immer mitziehen.
 
@@ -30,7 +30,7 @@ Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial
 - [ ] P2 Challenges konsolidieren: die !important-Override-Schicht in challenges-mobile.css (ab ~Z.300) in echte Stile ueberfuehren; Restbereiche (Modals, Historie, Buttons) angleichen.
 - [~] P3 Kalender tonal an Pollen (Screenshot-Delta-Analyse 04.07.):
   - [x] P3a View-Backdrop (v0.1.0370): #calendar-view = #04090e + Pollen-Radials (1:1 aus pollenView.css Z.2-6 gespiegelt; bei Aenderung dort mitziehen). Groesster Farb-Hebel.
-  - [ ] P3b Hero-Stats integrieren: rechte Stat-Spalte IN die Hero-Karte (border-left-Trenner, Zeilen-Separatoren, Icon-Chips) statt separater Box - wie pollen-neo-hero.
+  - [x] P3b Hero in Pollen-Tonalitaet + Konsolidierung (v0.1.0371): WICHTIGER BEFUND: Der Kalender-Hero wird NICHT von calendarPanels.css bestimmt, sondern vom zentralen HeroCard-System v0.1.0290 in styles/appShell.css (Token-Vars --change-hero0290-*, Bloecke 0290/0290b/c/d; gilt fuer Dashboard/Kalender/Settings/Challenges, Pollen ausgenommen). Struktur (Stats in der Karte, Trenner) war dort schon richtig - die "separate Box"-Optik kam von der 0290-Tonalitaet (opaker Kartenverlauf + Glow rechts). Fix: (a) 12 tote Hero-Override-Generationen (v0101-v0207, ~570 Zeilen) aus calendarPanels.css entfernt - Beweis: Computed-Style-Diff aller Hero-Elemente Desktop+Mobil = 0 Abweichungen; (b) Kalender-Pollen-Tokens via body.change-view-calendar-Override im 0290-Block (Werte 1:1 am lebenden pollen-neo-hero gemessen); (c) 0290d-Literale auf die vorhandenen Tokens umgestellt (No-Op fuer andere Views, Dashboard verifiziert unveraendert). Rest-Deltas (bewusst offen, mikroskopisch): Trennlinien-Alpha .07/.08/.09 statt .10 (Literale in Vor-0290-Generationen), Radius 24 statt 28, Schatten .40 statt .24, Eyebrow-Gruenton.
   - [ ] P3c Woche/Monat-Switch kompakt im Pollen-Segment-Stil.
   - [ ] P3d Agenda-Zeilen auf Pollen-Subkarten-Verlauf (Zeit-Spalte mit Trenner).
   - [ ] P3e Monatsgrid (cfx-*) Ton-Abgleich + Produktentscheidung Punkte- vs. Detailzellen.
@@ -50,6 +50,17 @@ Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial
 - Wiederverwendbare UI-Bausteine IMMER in components/ (window.ChangeComponents) ergaenzen/nutzen - nie lokal duplizieren. Ladereihenfolge: components-Skripte stehen in index.html vor den features-Skripten.
 
 ---
+
+## Version 0.1.0371 - P3b: Kalender-Hero in Pollen-Tonalitaet + Hero-Schichten konsolidiert
+- Kaskaden-Analyse am lebenden DOM (Preview-Server + styleSheets-Walk, Desktop 1440 + Mobil 375): ALLE gewinnenden Hero-Regeln kommen aus styles/appShell.css, HeroCard-System v0.1.0290 (+0290b/c/d-Locks). Die 12 Hero-Override-Generationen in calendarPanels.css (v0101, v0104, v0108, v0112, v0114, "no inner cards", v0123, v0133, v0136, v0138, v0207) waren tote Schichten.
+- Konsolidierung calendarPanels.css: tote Schichten entfernt (946 -> ~370 Zeilen), EINE kanonische Hero-Basis dokumentiert (Fallback, Zeiger auf 0290). Beweis der Nebenwirkungsfreiheit: vollstaendiger Computed-Style-Snapshot (15 Hero-Elemente, alle Properties, ::before/::after) vor/nach Loeschung identisch (0 Diffs, Desktop+Mobil). Week-Regeln (v0108) und View-Breite (v0114) blieben erhalten. Toter Markup-Ballast (date-ring, row-badge - Elemente existieren seit v0104 nicht mehr) entfernt.
+- Pollen-Tonalitaet: Zielwerte 1:1 am lebenden pollen-neo-hero gemessen (statisch injiziertes Markup, Computed Styles). Umsetzung als Token-Override im 0290-Block: body.change-view-calendar setzt --change-hero0290-card/glow/border/line/green/text/muted/label auf Pollen-Werte (u.a. radial 88% 24% + linear 135deg halbtransparent, Border rgba(74,222,128,.22), Akzent #4ade80). Andere Views behalten die Standard-Tokens.
+- Dabei gefundene Wurzel-Inkonsistenz behoben: Block 0290d ("Beat legacy light-theme hero selectors") kodierte die Tonalitaet LITERAL statt ueber die eigenen Tokens und schlug damit auch das Token-System. 6 Literale auf var(--change-hero0290-*) umgestellt - Werte identisch, fuer Dashboard/Settings/Challenges beweisbar No-Op (Dashboard-Hero im Browser verifiziert: unveraendert Standard-Gradient).
+- Browser-verifiziert (lokaler Preview-Server, Login-Gate fuer Messung ueberbrueckt): Kalender-Hero Desktop+Mobil traegt exakt die Pollen-Werte (bg/border/glow/Trenner/Textfarben); Dashboard unveraendert; Mobil-Strip integriert statt "angedockte Leiste".
+- Rest-Deltas bewusst offen (mikroskopisch, dokumentiert in F/P3b): Trennlinien-Alpha, Radius 24 vs 28, Schatten-Staerke, Eyebrow-Gruenton. Kandidat fuer P3-Feinschliff-Abschluss.
+- Encoding-sicher gearbeitet: Versions-Bump byte-genau via Python (PS-5.1-UTF8-Falle erkannt und korrigiert; Dateien byte-identisch zum Original + Bump verifiziert). node --check nicht verfuegbar (kein Node auf diesem Rechner) - JS-Aenderungen sind reine Versions-Strings, byte-verifiziert.
+- Cache-Busting ?v=0.1.0371.
+- Geaendert: `features/calendar/calendarPanels.css`, `styles/appShell.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
 
 ## Version 0.1.0370 - P3a: Kalender-Backdrop wie Pollen
 - Screenshot-Vergleich (Nutzer, Desktop+Mobil) ergab die Delta-Liste Kalender vs. Pollen; als P3a-P3e im Plan (F) dokumentiert.

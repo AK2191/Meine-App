@@ -872,7 +872,7 @@
       )
       + '</div>';
   }
-  var APP_VERSION = '0.1.0370';
+  var APP_VERSION = '0.1.0371';
 
 
 

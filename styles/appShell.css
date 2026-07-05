@@ -15161,6 +15161,21 @@ html[data-theme="light"] body.change-view-challenges #challenges-view .leader-st
   --change-hero0290-label:#8A948A;
 }
 
+/* P3b (v0.1.0371) - Kalender-Hero in Pollen-Tonalitaet: Struktur bleibt 0290,
+   nur die Tokens werden fuer die Kalender-View auf die 1:1 am lebenden
+   pollen-neo-hero gemessenen Werte gesetzt (Computed Styles, Desktop+Mobil).
+   Andere Views behalten die 0290-Standardtokens. */
+body.change-view-calendar{
+  --change-hero0290-card:radial-gradient(circle at 88% 24%,rgba(74,222,128,.16),transparent 34%),linear-gradient(135deg,rgba(15,36,27,.86),rgba(7,12,18,.94));
+  --change-hero0290-glow:linear-gradient(180deg,rgba(255,255,255,.055),transparent 42%);
+  --change-hero0290-border:rgba(74,222,128,.22);
+  --change-hero0290-line:rgba(244,247,244,.10);
+  --change-hero0290-green:#4ade80;
+  --change-hero0290-text:#fff;
+  --change-hero0290-muted:rgba(244,247,244,.66);
+  --change-hero0290-label:rgba(244,247,244,.66);
+}
+
 body.change-view-dashboard #content,
 body.change-view-calendar #content,
 body.change-view-settings #content,
@@ -16668,11 +16683,13 @@ html body.change-view-challenges #content #challenges-view #group-goal-card.chan
   position:relative!important;
   overflow:hidden!important;
   isolation:isolate!important;
-  border:1px solid rgba(125,230,171,.16)!important;
+  /* P3b (v0.1.0371): Literale durch die 0290-Tokens ersetzt (Werte identisch) -
+     dadurch greifen die Kalender-Pollen-Tokens (body.change-view-calendar) auch hier. */
+  border:1px solid var(--change-hero0290-border)!important;
   border-radius:24px!important;
-  background:linear-gradient(150deg,#13251A 0%,#0E1712 55%,#0B120E 100%)!important;
+  background:var(--change-hero0290-card)!important;
   box-shadow:0 24px 60px rgba(0,0,0,.40)!important;
-  color:#ECEFEA!important;
+  color:var(--change-hero0290-text)!important;
 }
 
 html[data-theme="light"] body.change-view-dashboard #content #dashboard-view .dashp-main-hero-pollen.change-hero-card.change-hero-dashboard::before,
@@ -16688,7 +16705,7 @@ html body.change-view-challenges #content #challenges-view #group-goal-card.chan
   inset:0!important;
   z-index:0!important;
   pointer-events:none!important;
-  background:radial-gradient(420px 280px at 78% 12%,rgba(125,230,171,.12),transparent 70%)!important;
+  background:var(--change-hero0290-glow)!important;
 }
 
 html[data-theme="light"] body.change-view-dashboard #content #dashboard-view .dashp-main-hero-pollen.change-hero-card.change-hero-dashboard,
@@ -16759,7 +16776,7 @@ html body.change-view-dashboard #content #dashboard-view .change-hero-dashboard 
 html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-premium-hero-line,
 html body.change-view-settings #content #settings-view .change-settings-profile-card .change-settings-profile-subline,
 html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-sub{
-  color:#9FB0A4!important;
+  color:var(--change-hero0290-muted)!important;
 }
 
 html[data-theme="light"] body.change-view-dashboard #content #dashboard-view .change-hero-dashboard .dashp-insight-row b,
@@ -16770,7 +16787,7 @@ html body.change-view-dashboard #content #dashboard-view .change-hero-dashboard 
 html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-premium-hero-row-body strong,
 html body.change-view-settings #content #settings-view .change-settings-profile-card .change-settings-profile-stat strong,
 html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat span{
-  color:#8A948A!important;
+  color:var(--change-hero0290-label)!important;
 }
 
 html[data-theme="light"] body.change-view-dashboard #content #dashboard-view .change-hero-dashboard .dashp-insight-row small,
@@ -16781,7 +16798,7 @@ html body.change-view-dashboard #content #dashboard-view .change-hero-dashboard 
 html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-premium-hero-row-body em,
 html body.change-view-settings #content #settings-view .change-settings-profile-card .change-settings-profile-stat em,
 html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat strong{
-  color:#ECEFEA!important;
+  color:var(--change-hero0290-text)!important;
 }
 
 html[data-theme="light"] body.change-view-dashboard #content #dashboard-view .change-hero-dashboard .dashp-insight-dot,
@@ -16793,7 +16810,7 @@ html body.change-view-calendar #content #calendar-premium-view .change-hero-cale
 html body.change-view-settings #content #settings-view .change-settings-profile-card .change-settings-profile-stat-icon,
 html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat i{
   background:rgba(125,230,171,.10)!important;
-  color:#7DE6AB!important;
+  color:var(--change-hero0290-green)!important;
 }
 
 @media(max-width:760px){
