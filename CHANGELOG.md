@@ -1,3 +1,10 @@
+## Version 0.1.0376 - P3b-5: Mobiles Hero-Karten-Modell exakt wie Pollen
+- Mobiles Kalender-Hero vom 0290-Zonen-Modell auf das Pollen-Karten-Modell umgestellt: Karten-Padding 18px + Grid-Gap 12x10 statt Zonen-Paddings - der Stats-Streifen klebt nicht mehr an der Kartenkante (jetzt 19px Luft wie Pollen), Inhalt startet 19px unter der Oberkante.
+- Spaltenraster mobil exakt wie Pollen (rendert 201/94 px); Illustration 88px, rechtsbuendig, Opacity .58 wie die Pollen-Pflanze.
+- Nachgemessen identisch zu Pollen (Mobil 375); Desktop unveraendert (Nutzer-Abnahme); Konsole fehlerfrei.
+- Cache-Busting ?v=0.1.0376.
+- Geaendert: `styles/appShell.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0375 - P3b-4: Mobiler Stats-Streifen exakt wie Pollen
 - Mobiler Hero-Stats-Streifen des Kalenders 1:1 auf die live gemessenen Pollen-Werte: Zeilen 38px, Streifen 47px, Trennlinien rgba(244,247,244,.10), Icon-Chips 18px rund mit gruenem Tint rgba(74,222,128,.14) und 12px-SVG.
 - Desktop bewusst unveraendert (Nutzer-Abnahme); Konsole fehlerfrei; nur CSS im P3b-Kalenderzweig von appShell.css.

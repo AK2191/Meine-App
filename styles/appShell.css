@@ -17928,6 +17928,24 @@ html body.change-view-challenges #content #challenges-view #group-goal-card.chan
     font-size:11px!important;
     font-weight:950!important;
   }
+  /* Mobiles Karten-Modell 1:1 wie pollen-neo-hero (P3b-5, live gemessen): Karten-Padding 18
+     + Grid-Gap 12x10 statt Zonen-Paddings; dadurch Luft unter dem Streifen (19px) wie bei
+     Pollen statt "angedockter Leiste". Illustration 88px @ Opacity .58 wie Pollen-Pflanze. */
+  html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide.change-hero-card.change-hero-calendar{
+    padding:18px!important;
+    gap:12px 10px!important;
+    grid-template-columns:minmax(0,1fr) 94px!important;
+  }
+  html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-premium-hero-main{
+    padding:0!important;
+  }
+  html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-hero-illustration{
+    width:88px!important;
+    max-width:88px!important;
+    justify-self:end!important;
+    align-self:center!important;
+    opacity:.58!important;
+  }
   /* Mobiler Stats-Streifen 1:1 wie pollen-neo-hero-insights mobil (P3b-4, live gemessen):
      Zeilen 38px, Linien rgba(244,247,244,.10), Icon-Chips 18px mit gruenem Tint. */
   html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-premium-hero-side{
