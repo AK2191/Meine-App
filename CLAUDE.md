@@ -1,4 +1,4 @@
-# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0374)
+# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0375)
 
 Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschlossenen Schritt hier aktualisiert (Haken setzen, Datum ergaenzen). Arbeitsweise laut Charta: kleine kontrollierte Schritte, nie mehrere Systeme gleichzeitig, nach jeder Aenderung Kalender/Dashboard/Challenges pruefen, keine Patches/Workarounds, keine doppelte Logik, CLAUDE.md immer mitziehen.
 
@@ -33,6 +33,7 @@ Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial
   - [x] P3b Hero in Pollen-Tonalitaet + Konsolidierung (v0.1.0371): WICHTIGER BEFUND: Der Kalender-Hero wird NICHT von calendarPanels.css bestimmt, sondern vom zentralen HeroCard-System v0.1.0290 in styles/appShell.css (Token-Vars --change-hero0290-*, Bloecke 0290/0290b/c/d; gilt fuer Dashboard/Kalender/Settings/Challenges, Pollen ausgenommen). Struktur (Stats in der Karte, Trenner) war dort schon richtig - die "separate Box"-Optik kam von der 0290-Tonalitaet (opaker Kartenverlauf + Glow rechts). Fix: (a) 12 tote Hero-Override-Generationen (v0101-v0207, ~570 Zeilen) aus calendarPanels.css entfernt - Beweis: Computed-Style-Diff aller Hero-Elemente Desktop+Mobil = 0 Abweichungen; (b) Kalender-Pollen-Tokens via body.change-view-calendar-Override im 0290-Block (Werte 1:1 am lebenden pollen-neo-hero gemessen); (c) 0290d-Literale auf die vorhandenen Tokens umgestellt (No-Op fuer andere Views, Dashboard verifiziert unveraendert). Rest-Deltas (bewusst offen, mikroskopisch): Trennlinien-Alpha .07/.08/.09 statt .10 (Literale in Vor-0290-Generationen), Eyebrow-Gruenton.
   - [x] P3b-2 Hero-Feinschliff (v0.1.0372, Nutzer-Feedback "Icons/Groesse/Stil passt noch nicht"): Geometrie 1:1 auf gemessene Pollen-Werte (Spalten minmax(0,1fr)/190px/minmax(340,520) = exakt Pollen 496/190/520 bei 1440; min-height 238, Padding 28/30, Radius 28/26, Pollen-Schatten); Emoji-Icons (Farb-Emojis) durch gruene Linien-SVGs in 26px-Chips rgba(255,255,255,.06) ersetzt (heroIconSvg in calendarPanels.js; calendarHeroRow laesst rohes SVG durch); Wert-Typo 14px/900 (mobil 11px/950, Label 10px/900); Uhr-Illustration von #7DE6AB auf #4ade80. CSS als klar markierter Kalender-Zweig "P3b-2" am Ende von appShell.css (nach den 0290c/d-Locks, gewinnt per Reihenfolge). Fundstelle: appShell.css hat seit mind. v0370 eine ueberzaehlige schliessende Klammer (2129 vs 2130 im 0370-Stand) - vorbestehend, harmlos, bei P4-Cleanup lokalisieren.
   - [x] P3b-3 Text-Stack links (v0.1.0373, Nutzer-Feedback "besser aber noch nicht fertig"): Eyebrow/Titel/Subline/Chip 1:1 auf die live gemessenen Pollen-Werte. WICHTIG (gemessen, nicht geraten): Pollen-Label ist DESKTOP gedaempft weiss (rgba(244,247,244,.72), 11px/780/.07em), MOBIL aber gruen (#4ade80, 11px/950/.09em) - Kalender-Eyebrow folgt jeweils. Titel 45px/850/ls -1.45 (mobil 26px/950/-.75), Subline 15.5px/760 #e7ece7 (mobil 13px/800 .68), "Naechster Termin"-Zeile als gruener Pollen-CTA-Chip (999er-Pille, bg rgba(74,222,128,.08), Desktop 12.5px pad 10/14 mt 22, mobil 11px pad 6/10 minh 34). Mobil-Hero min-height 216 wie Pollen. Alles im P3b-2/P3b-3-Kalenderzweig am Ende von appShell.css.
+  - [x] P3b-4 Mobiler Stats-Streifen (v0.1.0375, Nutzer-Feedback "Linien, Hoehen, Icons mobil"): 1:1 an pollen-neo-hero-insights gemessen und angeglichen: Zeilen 38px (waren 44), Trennlinien oben+vertikal rgba(244,247,244,.10) (waren .07/.09 weiss), Icon-Chips 18px rund mit gruenem Tint rgba(74,222,128,.14) + 12px-SVG (waren 26px weiss-getint), Zeilen-Grid 18px/gap 7/pad 0 8 (erste ohne Links-, letzte ohne Rechts-Padding/Linie), Streifen gesamt exakt 47px. Desktop unveraendert (Nutzer-Abnahme "desktop passt"): 238px, 26px-Chips.
   - [ ] P3c Woche/Monat-Switch kompakt im Pollen-Segment-Stil.
   - [ ] P3d Agenda-Zeilen auf Pollen-Subkarten-Verlauf (Zeit-Spalte mit Trenner).
   - [ ] P3e Monatsgrid (cfx-*) Ton-Abgleich + Produktentscheidung Punkte- vs. Detailzellen.
@@ -52,6 +53,15 @@ Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial
 - Wiederverwendbare UI-Bausteine IMMER in components/ (window.ChangeComponents) ergaenzen/nutzen - nie lokal duplizieren. Ladereihenfolge: components-Skripte stehen in index.html vor den features-Skripten.
 
 ---
+
+## Version 0.1.0375 - P3b-4: Mobiler Stats-Streifen exakt wie Pollen
+- Nutzer-Abnahme von 0374 (live geprueft): Desktop passt; mobil "Linien, Hoehen und Icons noch nicht identisch".
+- Ziel 1:1 am lebenden pollen-neo-hero-insights gemessen (echtes Insight-Markup inkl. pollen-neo-status-icon injiziert, Mobil 375): Zeilen 38px hoch, Streifen 47px (8px Pad oben), Trennlinien rgba(244,247,244,.10), Icon-Chips 18px rund mit Tint rgba(74,222,128,.14), Zeilen-Grid 18px-Spalte/gap 7/pad 0 8, erste Zelle ohne Links-Padding, letzte ohne Trennlinie.
+- Umsetzung (styles/appShell.css, P3b-Kalenderzweig, Mobil-Media): cal-premium-hero-side/-row/-row-icon exakt auf diese Werte; SVG in den Chips 12px. Vorher: Zeilen 44px, Linien rgba(255,255,255,.07/.09), Chips 26px weiss-getint.
+- Kalender mobil nachgemessen: alle Werte identisch zu Pollen (Zeile 38/Streifen 47/Chip 18x18/Linien .10); Hero weiter exakt 216px. Desktop gegengeprueft unveraendert (238px, 26px-Chips); Konsole fehlerfrei.
+- Nur CSS + Versions-Strings (byte-sicher via Python).
+- Cache-Busting ?v=0.1.0375.
+- Geaendert: `styles/appShell.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
 
 ## Version 0.1.0374 - P3a-Fix: Kalender-Backdrop wirkte nie (toter Selektor) + Hero-Hoehe exakt
 - Nutzer-Feedback zu 0372 (live): "Farbe passt noch nicht, Hoehe ebenfalls, mobil auch nicht". Hinweis: Live lief zu dem Zeitpunkt noch 0372, Repo war schon auf 0373 (Pages-Deploy hinkte nach) - Text-Stack-Punkte waren durch 0373 teilweise schon adressiert.

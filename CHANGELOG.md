@@ -1,3 +1,9 @@
+## Version 0.1.0375 - P3b-4: Mobiler Stats-Streifen exakt wie Pollen
+- Mobiler Hero-Stats-Streifen des Kalenders 1:1 auf die live gemessenen Pollen-Werte: Zeilen 38px, Streifen 47px, Trennlinien rgba(244,247,244,.10), Icon-Chips 18px rund mit gruenem Tint rgba(74,222,128,.14) und 12px-SVG.
+- Desktop bewusst unveraendert (Nutzer-Abnahme); Konsole fehlerfrei; nur CSS im P3b-Kalenderzweig von appShell.css.
+- Cache-Busting ?v=0.1.0375.
+- Geaendert: `styles/appShell.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0374 - P3a-Fix: Kalender-Backdrop wirkte nie (toter Selektor) + Hero-Hoehe exakt
 - Wurzelfund: Die v0370-Backdrop-Regel zielte auf #calendar-view - das Element existiert nicht; die Regel war wirkungslos. Deshalb wirkte der Kalender flacher/dunkler als Pollen ("Farbe passt nicht").
 - Fix: Backdrop auf #calendar-premium-view (::before, min-height 100%), Werte 1:1 vom lebenden #pollen-view::before gemessen (#03090c + gruener Radial 12% 0%).
