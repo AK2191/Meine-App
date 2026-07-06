@@ -9792,32 +9792,36 @@ body.change-theme-light.change-view-settings .change-settings-profile-card{
   --change-calendar-surface-bg:radial-gradient(circle at 87% 18%,rgba(74,222,128,.13),transparent 34%),linear-gradient(135deg,rgba(18,47,30,.88),rgba(7,12,18,.94));
   --change-calendar-surface-border:rgba(74,222,128,.32);
 }
+/* P3c (v0.1.0377): Woche/Monat kompakt im Pollen-Segment-Stil - einzelne 999er-Pillen
+   ohne Track, Werte 1:1 an den Pollen-Symptom-Level-Buttons gemessen. */
 body.change-view-calendar #calendar-premium-view .cal-premium-mode-switch{
-  display:inline-grid!important;
-  grid-template-columns:1fr 1fr!important;
-  gap:4px!important;
-  padding:5px!important;
-  border:1px solid rgba(74,222,128,.18)!important;
-  border-radius:18px!important;
-  background:rgba(7,12,18,.72)!important;
-  box-shadow:0 14px 38px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.035)!important;
+  display:inline-flex!important;
+  gap:7px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
 }
 body.change-view-calendar #calendar-premium-view .cal-premium-mode-switch button{
   min-width:108px!important;
-  height:38px!important;
-  border:0!important;
-  border-radius:14px!important;
-  background:transparent!important;
-  color:rgba(244,247,244,.64)!important;
+  height:36px!important;
+  padding:8px 14px!important;
+  border:1px solid rgba(255,255,255,.09)!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.043)!important;
+  color:rgba(244,247,244,.74)!important;
   font:inherit!important;
-  font-size:13px!important;
-  font-weight:900!important;
+  font-size:12.5px!important;
+  font-weight:720!important;
+  line-height:1!important;
   cursor:pointer!important;
 }
 body.change-view-calendar #calendar-premium-view .cal-premium-mode-switch button.active{
-  background:linear-gradient(180deg,rgba(24,83,40,.72),rgba(13,45,24,.88))!important;
-  color:#4ade80!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 10px 24px rgba(0,0,0,.18)!important;
+  background:#1F7A4B!important;
+  border-color:#4ade80!important;
+  color:#fff!important;
+  box-shadow:0 0 0 1px rgba(74,222,128,.18),inset 0 1px 0 rgba(255,255,255,.08)!important;
 }
 body.change-view-calendar #calendar-premium-view .cal-premium-main-grid-agenda-only{
   grid-template-columns:1fr!important;
@@ -9926,6 +9930,9 @@ body.change-view-settings .change-settings-nav-icon{
   body.change-view-calendar #calendar-premium-view .cal-premium-mode-switch{
     width:100%!important;
     box-sizing:border-box!important;
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:7px!important;
   }
   body.change-view-calendar #calendar-premium-view .cal-premium-mode-switch button{
     min-width:0!important;
@@ -9969,19 +9976,22 @@ body.change-view-settings .change-settings-nav-icon{
 [data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-mode-switch,
 body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-mode-switch,
 body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-mode-switch{
-  background:rgba(255,255,255,.70)!important;
-  border-color:rgba(20,35,24,.12)!important;
+  background:transparent!important;
+  border:0!important;
 }
 [data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-mode-switch button,
 body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-mode-switch button,
 body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-mode-switch button{
+  background:#fff!important;
+  border-color:rgba(20,35,24,.12)!important;
   color:#5c6760!important;
 }
 [data-theme="light"] body.change-view-calendar #calendar-premium-view .cal-premium-mode-switch button.active,
 body.theme-light.change-view-calendar #calendar-premium-view .cal-premium-mode-switch button.active,
 body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium-mode-switch button.active{
-  color:#142018!important;
-  background:#fff!important;
+  color:#fff!important;
+  background:#1F7A4B!important;
+  border-color:#2fa565!important;
 }
 
 /* v0.1.0201 · Kalender-Abstände, View-Wechsel ohne Sprung und finale HeroCard-Surface */
@@ -10035,20 +10045,8 @@ html body.change-view-challenges #challenges-view .challenge-week-card{
 body.change-view-calendar #calendar-premium-view .cal-mode-block{
   margin:0 0 12px!important;
 }
-body.change-view-calendar #calendar-premium-view .cal-premium-mode-switch{
-  width:100%!important;
-  max-width:none!important;
-  box-sizing:border-box!important;
-  margin:0!important;
-  padding:5px!important;
-  border-color:rgba(74,222,128,.22)!important;
-  background:rgba(5,12,17,.64)!important;
-}
-body.change-view-calendar #calendar-premium-view .cal-premium-mode-switch button{
-  min-width:0!important;
-  height:40px!important;
-  border-radius:14px!important;
-}
+/* P3c (v0.1.0377): Vollbreiten-/Track-Override des Umschalters entfernt -
+   kanonische Pollen-Segment-Definition steht im v0.1.0200-Block weiter oben. */
 body.change-view-calendar #calendar-premium-view .cal-week-block,
 body.change-view-calendar #calendar-premium-view .cal-month-block,
 body.change-view-calendar #calendar-premium-view .cal-agenda-block{

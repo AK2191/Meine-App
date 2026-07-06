@@ -1,3 +1,11 @@
+## Version 0.1.0377 - P3c: Woche/Monat-Switch im Pollen-Segment-Stil
+- Der Woche/Monat-Umschalter ist jetzt eine kompakte Pillen-Gruppe im Stil der Pollen-Symptom-Buttons (999er-Pillen, 36px, kein Track): Desktop links-kompakt statt Vollbreite, mobil zwei gleichbreite Pillen.
+- Aktiv-Zustand wie Pollen: sattes Gruen #1F7A4B, #4ade80-Border, weisser Text; idle dezent weiss-getoent.
+- Konsolidiert: kanonische Definition im v0200-Block, der v0201-Vollbreiten-Override wurde entfernt; Light-Theme nachgezogen.
+- Browser-verifiziert Desktop+Mobil; Konsole fehlerfrei.
+- Cache-Busting ?v=0.1.0377.
+- Geaendert: `styles/appShell.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0376 - P3b-5: Mobiles Hero-Karten-Modell exakt wie Pollen
 - Mobiles Kalender-Hero vom 0290-Zonen-Modell auf das Pollen-Karten-Modell umgestellt: Karten-Padding 18px + Grid-Gap 12x10 statt Zonen-Paddings - der Stats-Streifen klebt nicht mehr an der Kartenkante (jetzt 19px Luft wie Pollen), Inhalt startet 19px unter der Oberkante.
 - Spaltenraster mobil exakt wie Pollen (rendert 201/94 px); Illustration 88px, rechtsbuendig, Opacity .58 wie die Pollen-Pflanze.

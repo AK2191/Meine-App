@@ -1,4 +1,4 @@
-# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0376)
+# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0377)
 
 Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschlossenen Schritt hier aktualisiert (Haken setzen, Datum ergaenzen). Arbeitsweise laut Charta: kleine kontrollierte Schritte, nie mehrere Systeme gleichzeitig, nach jeder Aenderung Kalender/Dashboard/Challenges pruefen, keine Patches/Workarounds, keine doppelte Logik, CLAUDE.md immer mitziehen.
 
@@ -35,7 +35,7 @@ Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial
   - [x] P3b-3 Text-Stack links (v0.1.0373, Nutzer-Feedback "besser aber noch nicht fertig"): Eyebrow/Titel/Subline/Chip 1:1 auf die live gemessenen Pollen-Werte. WICHTIG (gemessen, nicht geraten): Pollen-Label ist DESKTOP gedaempft weiss (rgba(244,247,244,.72), 11px/780/.07em), MOBIL aber gruen (#4ade80, 11px/950/.09em) - Kalender-Eyebrow folgt jeweils. Titel 45px/850/ls -1.45 (mobil 26px/950/-.75), Subline 15.5px/760 #e7ece7 (mobil 13px/800 .68), "Naechster Termin"-Zeile als gruener Pollen-CTA-Chip (999er-Pille, bg rgba(74,222,128,.08), Desktop 12.5px pad 10/14 mt 22, mobil 11px pad 6/10 minh 34). Mobil-Hero min-height 216 wie Pollen. Alles im P3b-2/P3b-3-Kalenderzweig am Ende von appShell.css.
   - [x] P3b-4 Mobiler Stats-Streifen (v0.1.0375, Nutzer-Feedback "Linien, Hoehen, Icons mobil"): 1:1 an pollen-neo-hero-insights gemessen und angeglichen: Zeilen 38px (waren 44), Trennlinien oben+vertikal rgba(244,247,244,.10) (waren .07/.09 weiss), Icon-Chips 18px rund mit gruenem Tint rgba(74,222,128,.14) + 12px-SVG (waren 26px weiss-getint), Zeilen-Grid 18px/gap 7/pad 0 8 (erste ohne Links-, letzte ohne Rechts-Padding/Linie), Streifen gesamt exakt 47px. Desktop unveraendert (Nutzer-Abnahme "desktop passt"): 238px, 26px-Chips.
   - [x] P3b-5 Mobiles Karten-Modell (v0.1.0376, Nutzer-Feedback "anders, aber noch nicht gut"): Der Kalender nutzte mobil noch das 0290-Zonen-Modell (Hero-Padding 0, Zonen-Paddings, Streifen klebte 1px an der Kartenkante). Umstellung auf das Pollen-Karten-Modell: Hero-Padding 18px + Grid-Gap 12x10, Spalten minmax(0,1fr)/94px (rendert exakt Pollen 201/94), main-Padding 0, Illustration 88px @ Opacity .58 justify end. Nachgemessen identisch: Inhalt startet 19px unter Kartenkante, Streifen endet 19px darueber, Karte 216px.
-  - [ ] P3c Woche/Monat-Switch kompakt im Pollen-Segment-Stil.
+  - [x] P3c Woche/Monat-Switch im Pollen-Segment-Stil (v0.1.0377): Der sichtbare Umschalter ist .cal-premium-mode-switch (NICHT .cal-premium-switch - der ist seit v0062 versteckt). Referenz 1:1 an den Pollen-Symptom-Level-Buttons gemessen: einzelne 999er-Pillen ohne Track (36px hoch, 12.5px/720, gap 7px, transparenter Wrapper), idle rgba(255,255,255,.043)+Border .09, aktiv #1F7A4B mit #4ade80-Border, weisser Text, Ring-Schatten. Konsolidiert statt ueberschrieben: v0200-Block ist die kanonische Definition, der v0201-Vollbreiten-/Track-Override wurde ENTFERNT; Mobil = 2 Pillen im 1fr/1fr-Grid; Light-Regeln nachgezogen. Desktop kompakt links (223px) statt Vollbreite.
   - [ ] P3d Agenda-Zeilen auf Pollen-Subkarten-Verlauf (Zeit-Spalte mit Trenner).
   - [ ] P3e Monatsgrid (cfx-*) Ton-Abgleich + Produktentscheidung Punkte- vs. Detailzellen.
 - [ ] P4 Mobile-Pass beider Views (Breakpoints/Abstaende wie pollenView.css-Mobilregeln).
@@ -54,6 +54,15 @@ Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial
 - Wiederverwendbare UI-Bausteine IMMER in components/ (window.ChangeComponents) ergaenzen/nutzen - nie lokal duplizieren. Ladereihenfolge: components-Skripte stehen in index.html vor den features-Skripten.
 
 ---
+
+## Version 0.1.0377 - P3c: Woche/Monat-Switch im Pollen-Segment-Stil
+- Fortsetzung nach P3b-Abschluss ("mach nun weiter"). Der sichtbare Umschalter ist .cal-premium-mode-switch aus dem v0.1.0200-Toggle-Block in appShell.css (.cal-premium-switch aus calendarPanels.css ist seit v0062 versteckt - dokumentiert, nicht angefasst).
+- Referenz 1:1 an den Pollen-Symptom-Level-Buttons gemessen (Markup-Injektion, Computed Styles): 999er-Pillen 36px hoch, 12.5px/720, padding 8/14, gap 7px, KEIN Track (Wrapper transparent, ohne Border/Padding); idle bg rgba(255,255,255,.043) + Border rgba(255,255,255,.09) + Text rgba(244,247,244,.74); aktiv bg #1F7A4B + Border #4ade80 + Text #fff + Ring rgba(74,222,128,.18).
+- Konsolidierung statt Layer: der v0.1.0200-Block wurde DIREKT auf diese Werte umgeschrieben (kanonische Definition); der v0.1.0201-Override (width:100%, Track-Optik, 40px-Buttons) wurde entfernt; Mobil-Block auf 2-Spalten-Pillen-Grid (gap 7) umgestellt; Light-Theme-Regeln an die neue Pillen-Anatomie angepasst (weisse Pillen, aktiv gruen).
+- Ergebnis: Desktop kompakte Pillengruppe links (223px breit) statt Vollbreiten-Leiste; mobil zwei gleichbreite Pillen. Browser-verifiziert Desktop 1440 + Mobil 375 (alle Werte identisch zur Pollen-Referenz); Konsole fehlerfrei; Hero/Woche/Agenda unveraendert.
+- Nur styles/appShell.css + Versions-Strings (byte-sicher via Python).
+- Cache-Busting ?v=0.1.0377.
+- Geaendert: `styles/appShell.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
 
 ## Version 0.1.0376 - P3b-5: Mobiles Hero-Karten-Modell exakt wie Pollen
 - Nutzer-Abnahme von 0375 (live): "anders, aber noch nicht gut". Messung ergab: Streifen/Icons stimmten bereits, aber die RAUMAUFTEILUNG wich ab - der Kalender nutzte mobil noch das 0290-Zonen-Modell (Hero-Padding 0, main-Zone mit eigenem Padding 18/20/14, Streifen klebte 1px an der Kartenunterkante), Pollen dagegen Karten-Padding 18px + Grid-Gap 12x10 (Streifen mit 19px Luft zur Kante).
