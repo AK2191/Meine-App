@@ -146,7 +146,6 @@ body.change-view-calendar #calendar-premium-view .cal-premium-add{
 .cal-premium-month-picker select{width:100%;height:34px;border-radius:12px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.05);color:#f5f7f4;font:inherit;font-size:12px;font-weight:850;padding:0 10px;outline:none;}
 .cal-premium-month-picker select:focus{border-color:rgba(74,222,128,.48);box-shadow:0 0 0 3px rgba(74,222,128,.10);}
 .cal-premium-agenda-list{display:grid;gap:10px;}
-.cal-premium-agenda-row{grid-template-columns:76px minmax(0,1fr)!important;align-items:center!important;}
 .cal-premium-agenda-actions,.cal-premium-open,.cal-premium-share{display:none!important;}
 .cal-premium-agenda-footer{margin-top:14px;padding-top:14px;border-top:1px dashed rgba(255,255,255,.10);}
 .cal-premium-add{margin:0!important;border-style:dashed!important;}

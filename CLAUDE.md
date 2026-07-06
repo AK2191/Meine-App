@@ -1,4 +1,4 @@
-# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0377)
+# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0378)
 
 Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschlossenen Schritt hier aktualisiert (Haken setzen, Datum ergaenzen). Arbeitsweise laut Charta: kleine kontrollierte Schritte, nie mehrere Systeme gleichzeitig, nach jeder Aenderung Kalender/Dashboard/Challenges pruefen, keine Patches/Workarounds, keine doppelte Logik, CLAUDE.md immer mitziehen.
 
@@ -36,7 +36,7 @@ Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial
   - [x] P3b-4 Mobiler Stats-Streifen (v0.1.0375, Nutzer-Feedback "Linien, Hoehen, Icons mobil"): 1:1 an pollen-neo-hero-insights gemessen und angeglichen: Zeilen 38px (waren 44), Trennlinien oben+vertikal rgba(244,247,244,.10) (waren .07/.09 weiss), Icon-Chips 18px rund mit gruenem Tint rgba(74,222,128,.14) + 12px-SVG (waren 26px weiss-getint), Zeilen-Grid 18px/gap 7/pad 0 8 (erste ohne Links-, letzte ohne Rechts-Padding/Linie), Streifen gesamt exakt 47px. Desktop unveraendert (Nutzer-Abnahme "desktop passt"): 238px, 26px-Chips.
   - [x] P3b-5 Mobiles Karten-Modell (v0.1.0376, Nutzer-Feedback "anders, aber noch nicht gut"): Der Kalender nutzte mobil noch das 0290-Zonen-Modell (Hero-Padding 0, Zonen-Paddings, Streifen klebte 1px an der Kartenkante). Umstellung auf das Pollen-Karten-Modell: Hero-Padding 18px + Grid-Gap 12x10, Spalten minmax(0,1fr)/94px (rendert exakt Pollen 201/94), main-Padding 0, Illustration 88px @ Opacity .58 justify end. Nachgemessen identisch: Inhalt startet 19px unter Kartenkante, Streifen endet 19px darueber, Karte 216px.
   - [x] P3c Woche/Monat-Switch im Pollen-Segment-Stil (v0.1.0377): Der sichtbare Umschalter ist .cal-premium-mode-switch (NICHT .cal-premium-switch - der ist seit v0062 versteckt). Referenz 1:1 an den Pollen-Symptom-Level-Buttons gemessen: einzelne 999er-Pillen ohne Track (36px hoch, 12.5px/720, gap 7px, transparenter Wrapper), idle rgba(255,255,255,.043)+Border .09, aktiv #1F7A4B mit #4ade80-Border, weisser Text, Ring-Schatten. Konsolidiert statt ueberschrieben: v0200-Block ist die kanonische Definition, der v0201-Vollbreiten-/Track-Override wurde ENTFERNT; Mobil = 2 Pillen im 1fr/1fr-Grid; Light-Regeln nachgezogen. Desktop kompakt links (223px) statt Vollbreite.
-  - [ ] P3d Agenda-Zeilen auf Pollen-Subkarten-Verlauf (Zeit-Spalte mit Trenner).
+  - [x] P3d Agenda-Zeilen im Pollen-Forecast-Stil (v0.1.0378): WICHTIGER MESSBEFUND: Die Pollen-Forecast-Zeilen sind KEINE Subkarten - die Karte ist der Listen-Container (nutzt dieselbe --change-unified-card-bg wie die Agenda-Karte), die Zeilen sind TRANSPARENT mit border-bottom-Trennern rgba(255,255,255,.08) (letzte ohne) und die Datums-Spalte hat den rechten Trenner (.08, pad-right 12, 13.5px/780). Agenda-Zeilen exakt darauf umgestellt: transparent, Trenner statt Subkarten, Zeit-Spalte 96px (mobil 72px) mit rechtem Trenner, Hover rgba(255,255,255,.03). Konsolidiert: kanonisch im v0200-Block; v0201-Zeilen-Overrides (Desktop+Mobil) entfernt; Agenda-Zeile aus der geteilten .075-Surface-Liste (Z.~9446) herausgenommen; tote v0072-Zeilenregel aus calendarPanels.css entfernt.
   - [ ] P3e Monatsgrid (cfx-*) Ton-Abgleich + Produktentscheidung Punkte- vs. Detailzellen.
 - [ ] P4 Mobile-Pass beider Views (Breakpoints/Abstaende wie pollenView.css-Mobilregeln).
 - Vorgehen: pro P-Schritt ein Release; Abnahme am lebenden Objekt (Alex prueft Kalender/Dashboard/Challenges).
@@ -54,6 +54,15 @@ Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial
 - Wiederverwendbare UI-Bausteine IMMER in components/ (window.ChangeComponents) ergaenzen/nutzen - nie lokal duplizieren. Ladereihenfolge: components-Skripte stehen in index.html vor den features-Skripten.
 
 ---
+
+## Version 0.1.0378 - P3d: Tagesagenda-Zeilen im Pollen-Forecast-Stil
+- Referenz 1:1 am lebenden pollen-neo-forecast (Markup-Injektion, Computed Styles) gemessen. Messbefund: Pollen-Zeilen sind KEINE Subkarten - Container-Karte (radius 24, --change-unified-card-bg, Border .086) + transparente Zeilen mit border-bottom rgba(255,255,255,.08) (letzte ohne) + Datums-Spalte mit rechtem Trenner (.08, pad-right 12, strong 13.5/780, sub 11.5/680 .56).
+- Agenda-Zeilen exakt darauf umgestellt (statt eigener Subkarten mit Verlauf/Border/Radius): transparent, radius 0, border-bottom-Trenner, :last-of-type ohne; Zeit-Spalte 96px mit rechtem Trenner .08, Text 13.5px/780 #f4f7f4, vertikal zentriert; Hover dezent rgba(255,255,255,.03); Listen-gap 0. Mobil: Zeit-Spalte 72px, 12.5px, padding 9px 2px, min-height 56.
+- Konsolidiert statt ueberschichtet: kanonische Definition im v0.1.0200-Agenda-Block; die v0.1.0201-Zeilen-Overrides (Desktop 88px/radius 15 + Mobil 82px) ENTFERNT; .cal-premium-agenda-row aus der geteilten Surface-Regel (html body..., border .075/bg .035, appShell ~Z.9446) herausgenommen (dort verbleiben Dashboard/Settings/Week-Day unveraendert); tote v0072-Zeilenregel in calendarPanels.css entfernt.
+- Verifiziert mit injizierten echten Agenda-Zeilen (lokal keine Termine) Desktop 1440 + Mobil 375: alle Zielwerte identisch; Konsole fehlerfrei. Agenda-Karte selbst unveraendert (traegt bereits dieselbe unified-card-Surface wie Pollens Forecast-Liste).
+- Nur CSS + Versions-Strings (byte-sicher via Python).
+- Cache-Busting ?v=0.1.0378.
+- Geaendert: `styles/appShell.css`, `features/calendar/calendarPanels.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
 
 ## Version 0.1.0377 - P3c: Woche/Monat-Switch im Pollen-Segment-Stil
 - Fortsetzung nach P3b-Abschluss ("mach nun weiter"). Der sichtbare Umschalter ist .cal-premium-mode-switch aus dem v0.1.0200-Toggle-Block in appShell.css (.cal-premium-switch aus calendarPanels.css ist seit v0062 versteckt - dokumentiert, nicht angefasst).

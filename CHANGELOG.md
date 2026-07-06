@@ -1,3 +1,11 @@
+## Version 0.1.0378 - P3d: Tagesagenda-Zeilen im Pollen-Forecast-Stil
+- Agenda-Zeilen sind jetzt wie die Pollen-5-Tages-Zeilen aufgebaut: transparente Zeilen mit feinen Trennlinien IN der Karte statt einzelner Subkarten; Zeit-Spalte links mit rechtem Trenner (wie Pollens Datums-Spalte).
+- Werte 1:1 am lebenden Pollen-Forecast gemessen (Trenner rgba(255,255,255,.08), Zeit 13.5px/780, mobil 72px-Spalte/12.5px).
+- Konsolidiert: kanonische Definition im v0200-Block, v0201-Overrides entfernt, Agenda-Zeile aus geteilter Surface-Regel gescoped, tote v0072-Regel entfernt.
+- Browser-verifiziert Desktop+Mobil (mit injizierten Beispiel-Zeilen); Konsole fehlerfrei.
+- Cache-Busting ?v=0.1.0378.
+- Geaendert: `styles/appShell.css`, `features/calendar/calendarPanels.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0377 - P3c: Woche/Monat-Switch im Pollen-Segment-Stil
 - Der Woche/Monat-Umschalter ist jetzt eine kompakte Pillen-Gruppe im Stil der Pollen-Symptom-Buttons (999er-Pillen, 36px, kein Track): Desktop links-kompakt statt Vollbreite, mobil zwei gleichbreite Pillen.
 - Aktiv-Zustand wie Pollen: sattes Gruen #1F7A4B, #4ade80-Border, weisser Text; idle dezent weiss-getoent.

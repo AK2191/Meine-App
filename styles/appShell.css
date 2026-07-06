@@ -9443,7 +9443,6 @@ html body.change-view-pollen #pollen-view .pollen-neo-card.active{
 }
 
 html body.change-view-dashboard .dash-card-head,
-html body.change-view-calendar #calendar-premium-view .cal-premium-agenda-row,
 html body.change-view-calendar #calendar-premium-view .cal-premium-week-day,
 html body.change-view-settings .change-feature-note,
 html body.change-view-settings .change-sync-status-item,
@@ -9830,30 +9829,44 @@ body.change-view-calendar #calendar-premium-view .cal-premium-agenda{
   min-height:0!important;
   padding:16px!important;
 }
+/* P3d (v0.1.0378): Agenda-Zeilen im Pollen-Forecast-Stil - transparente Zeilen mit
+   Trennlinien in der Karte statt Subkarten; Zeit-Spalte mit rechtem Trenner.
+   Werte 1:1 an pollen-neo-forecast-row/-date gemessen. */
 body.change-view-calendar #calendar-premium-view .cal-premium-agenda-list{
-  gap:8px!important;
+  gap:0!important;
 }
 body.change-view-calendar #calendar-premium-view .cal-premium-agenda-row{
-  min-height:62px!important;
-  grid-template-columns:104px minmax(0,1fr)!important;
+  min-height:64px!important;
+  grid-template-columns:96px minmax(0,1fr)!important;
   gap:12px!important;
-  padding:11px 13px!important;
+  padding:10px 2px!important;
   margin-bottom:0!important;
-  border-radius:16px!important;
-  border-color:rgba(74,222,128,.14)!important;
-  background:linear-gradient(180deg,rgba(12,22,25,.82),rgba(8,13,18,.90))!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.025)!important;
+  border:0!important;
+  border-bottom:1px solid rgba(255,255,255,.08)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-agenda-row:last-of-type{
+  border-bottom:0!important;
+}
+body.change-view-calendar #calendar-premium-view .cal-premium-agenda-row:hover{
+  background:rgba(255,255,255,.03)!important;
 }
 body.change-view-calendar #calendar-premium-view .cal-premium-agenda-time{
   min-width:0!important;
   padding-right:12px!important;
-  color:#f5fff9!important;
-  font-size:14px!important;
-  font-weight:900!important;
-  line-height:1.1!important;
+  border-right:1px solid rgba(255,255,255,.08)!important;
+  color:#f4f7f4!important;
+  font-size:13.5px!important;
+  font-weight:780!important;
+  line-height:1.2!important;
   white-space:normal!important;
   word-break:normal!important;
   overflow-wrap:break-word!important;
+  align-self:stretch!important;
+  display:flex!important;
+  align-items:center!important;
 }
 body.change-view-calendar #calendar-premium-view .cal-premium-agenda-main{
   gap:10px!important;
@@ -9942,15 +9955,15 @@ body.change-view-settings .change-settings-nav-icon{
     padding:14px!important;
   }
   body.change-view-calendar #calendar-premium-view .cal-premium-agenda-row{
-    grid-template-columns:82px minmax(0,1fr)!important;
-    min-height:58px!important;
-    padding:10px 11px!important;
+    grid-template-columns:72px minmax(0,1fr)!important;
+    min-height:56px!important;
+    padding:9px 2px!important;
     gap:10px!important;
-    border-radius:15px!important;
+    border-radius:0!important;
   }
   body.change-view-calendar #calendar-premium-view .cal-premium-agenda-time{
-    font-size:13px!important;
-    padding-right:8px!important;
+    font-size:12.5px!important;
+    padding-right:10px!important;
   }
   body.change-view-calendar #calendar-premium-view .cal-premium-event-icon{
     width:30px!important;
@@ -10092,17 +10105,8 @@ body.change-view-calendar #calendar-premium-view .cal-premium-agenda{
   padding:14px!important;
   border-radius:24px!important;
 }
-body.change-view-calendar #calendar-premium-view .cal-premium-agenda-row{
-  min-height:56px!important;
-  grid-template-columns:88px minmax(0,1fr)!important;
-  padding:10px 12px!important;
-  gap:10px!important;
-  border-radius:15px!important;
-}
-body.change-view-calendar #calendar-premium-view .cal-premium-agenda-time{
-  font-size:13px!important;
-  padding-right:8px!important;
-}
+/* P3d (v0.1.0378): Agenda-Zeilen-Override entfernt - kanonische Pollen-Forecast-Definition
+   steht im v0.1.0200-Block weiter oben (transparente Zeilen mit Trennern). */
 body.change-view-calendar #calendar-premium-view .cal-premium-event-icon{
   width:30px!important;
   height:30px!important;
@@ -10158,11 +10162,7 @@ body.change-view-settings .change-settings-nav-card{
     min-height:66px!important;
     padding:9px 7px!important;
   }
-  body.change-view-calendar #calendar-premium-view .cal-premium-agenda-row{
-    grid-template-columns:82px minmax(0,1fr)!important;
-    min-height:54px!important;
-    padding:9px 10px!important;
-  }
+  /* P3d (v0.1.0378): mobiler Agenda-Zeilen-Override entfernt - kanonische Werte im v0200-Mobilblock. */
   body.change-view-settings .change-settings-premium{
     padding-left:16px!important;
     padding-right:16px!important;
