@@ -17833,6 +17833,9 @@ html body.change-view-challenges #content #challenges-view #group-goal-card.chan
    pollen-neo-hero angeglichen (Werte am lebenden Pollen-Hero gemessen). Kalender-Zweig
    des 0290-Systems; steht bewusst NACH den 0290c/d-Locks, damit er per Reihenfolge
    gewinnt. Tonalitaets-Tokens siehe body.change-view-calendar im 0290-Block. */
+/* P3a-Fix (v0.1.0374): Der Kalender-Backdrop liegt auf #calendar-premium-view (calendarPanels.css);
+   #content ist in Kalender- wie Pollen-View transparent (aeltere Transparent-Regel gewinnt),
+   dahinter liegt #main-app (#04090e) - identischer Rahmen wie bei Pollen, kein Override noetig. */
 @media(min-width:761px){
   html body.change-view-calendar #content #calendar-premium-view .cal-premium-hero.cal-premium-hero-wide.change-hero-card.change-hero-calendar{
     grid-template-columns:minmax(0,1fr) 190px minmax(340px,520px)!important;
@@ -17847,9 +17850,9 @@ html body.change-view-challenges #content #challenges-view #group-goal-card.chan
     padding:0!important;
   }
   html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-hero-illustration{
-    width:190px!important;
-    max-width:190px!important;
-    max-height:190px!important;
+    width:168px!important;
+    max-width:168px!important;
+    max-height:168px!important;
   }
   html body.change-view-calendar #content #calendar-premium-view .change-hero-calendar .cal-premium-hero-side{
     padding:0 0 0 20px!important;

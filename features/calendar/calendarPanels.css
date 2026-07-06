@@ -366,11 +366,14 @@ body.change-theme-light.change-view-calendar #calendar-premium-view .cal-premium
   }
 }
 
-/* P3a · View-Backdrop 1:1 wie Pollen (pollenView.css Z.2-6). Aenderungen dort hier mitziehen. */
-#calendar-view{position:relative;background:#04090e;color:#f4f7f4;overflow:hidden}
-#calendar-view::before{content:"";position:absolute;inset:0;background:
-  radial-gradient(circle at 21% 10%,rgba(16,110,54,.35),transparent 28%),
-  radial-gradient(circle at 74% 7%,rgba(247,187,33,.10),transparent 16%),
-  radial-gradient(circle at 96% 10%,rgba(108,13,27,.18),transparent 18%),
-  linear-gradient(180deg,rgba(7,13,18,.34),rgba(4,9,14,0));pointer-events:none}
-#calendar-view > *{position:relative;z-index:1}
+/* P3a-Fix (v0.1.0374) · View-Backdrop wie Pollen.
+   WICHTIG: Die v0370-Fassung zielte auf #calendar-view - dieses Element existiert in
+   Markup und JS NICHT, die Regel war wirkungslos (deshalb wirkte der Kalender flacher/
+   dunkler als Pollen). Traeger ist jetzt #calendar-premium-view (das Pendant zu
+   #pollen-view im Scroller). Werte 1:1 vom LEBENDEN #pollen-view::before gemessen
+   (spaete Generation; nicht die alten Z.2-6-Werte). */
+body.change-view-calendar #calendar-premium-view{position:relative;min-height:100%}
+#calendar-premium-view::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:
+  radial-gradient(circle at 12% 0%,rgba(19,104,60,.13),transparent 30%),
+  linear-gradient(#03090c,#03090c)}
+#calendar-premium-view > *{position:relative;z-index:1}

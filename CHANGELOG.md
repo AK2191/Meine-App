@@ -1,3 +1,11 @@
+## Version 0.1.0374 - P3a-Fix: Kalender-Backdrop wirkte nie (toter Selektor) + Hero-Hoehe exakt
+- Wurzelfund: Die v0370-Backdrop-Regel zielte auf #calendar-view - das Element existiert nicht; die Regel war wirkungslos. Deshalb wirkte der Kalender flacher/dunkler als Pollen ("Farbe passt nicht").
+- Fix: Backdrop auf #calendar-premium-view (::before, min-height 100%), Werte 1:1 vom lebenden #pollen-view::before gemessen (#03090c + gruener Radial 12% 0%).
+- Hero-Hoehe exakt wie Pollen: Uhr-Illustration 190 -> 168px (Pollen rendert real 168x168) -> Desktop-Hero exakt 238px, mobil 216px (nachgemessen).
+- Browser-verifiziert Desktop+Mobil, Konsole fehlerfrei; Dashboard/Challenges unberuehrt.
+- Cache-Busting ?v=0.1.0374.
+- Geaendert: `features/calendar/calendarPanels.css`, `styles/appShell.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0373 - P3b-3: Kalender-Hero Text-Stack exakt wie Pollen
 - Linker Text-Stack des Kalender-Heroes 1:1 auf die live gemessenen Pollen-Werte: Eyebrow Desktop gedaempft weiss / mobil gruen (wie Pollen-Label), Titel 45px/850/ls -1.45 (mobil 26px/950), Subline 15.5px/760 #e7ece7 (mobil 13px/800).
 - "Naechster Termin"-Zeile ist jetzt ein gruener CTA-Chip (999er-Pille) - das Analogon zum Pollen-Chip "Morgen etwas ruhiger".
