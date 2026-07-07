@@ -1,4 +1,4 @@
-# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0380)
+# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0381)
 
 Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschlossenen Schritt hier aktualisiert (Haken setzen, Datum ergaenzen). Arbeitsweise laut Charta: kleine kontrollierte Schritte, nie mehrere Systeme gleichzeitig, nach jeder Aenderung Kalender/Dashboard/Challenges pruefen, keine Patches/Workarounds, keine doppelte Logik, CLAUDE.md immer mitziehen.
 
@@ -27,7 +27,8 @@ Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschloss
 ## F. FEINSCHLIFF "POLLEN-LOOK" (Nutzer-Auftrag: Kalender + Challenges sollen sich wie die Pollen-Ansicht anfuehlen; mobil + desktop)
 Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial-Akzenten; Karten border 1px rgba(255,255,255,.08), Verlauf rgba(14,21,27,.84)->rgba(7,11,16,.96) bzw. Subkarten rgba(16,23,29,.86)->rgba(11,16,21,.95), radius 24/18, Schatten 0 18px 60px rgba(0,0,0,.28) + inset Innenlicht; Titel 950 mit Glow-Punkt; Sektionskoepfe 12px/900 uppercase .08em; Akzente #4ade80/#fbbf24/#ff574c; Muted rgba(244,247,244,.55-.78); Hover translateY(-1px).
 - [x] P1 Kalender-Tagesdetail auf Pollen-Tokens (v0.1.0368): change-day-*, change-holiday-row (war helles Amber #b45309!), change-challenge-row, change-day-empty, change-conflict-note, change-share-* in calendarPanels.css direkt umgeschrieben (kein Override). Klassen sind kalender-exklusiv (verifiziert).
-- [ ] P2 Challenges konsolidieren: die !important-Override-Schicht in challenges-mobile.css (ab ~Z.300) in echte Stile ueberfuehren; Restbereiche (Modals, Historie, Buttons) angleichen.
+- [~] P2 Challenges konsolidieren: die !important-Override-Schicht in challenges-mobile.css (ab ~Z.300) in echte Stile ueberfuehren; Restbereiche (Modals, Historie, Buttons) angleichen.
+  - [x] P2a Gruppenziel-Pokal von Gold auf gruenes Linien-Icon (v0.1.0381): Live-Befund - die chv227-illustration-redesign (core/misc.js Z.339) war ein SVG in Gold-Palette (#7A5A1C/#9A7320/#D9BC6E/Gold-Verlauf), wirkte wie ein buntes Emoji und war der klarste Pollen-Bruch der Challenges. Umgefaerbt auf das gruene Linien-Prinzip des Kalender-Clock (dunkelgruene Basis #2F5C44/#0F241B-Verlauf + #4ade80-Akzent + #7DE6AB-Highlight), Geometrie unveraendert. Browser-verifiziert (goldLeft=false, Konsole fehlerfrei). Rest von P2 (challenges-mobile.css-Konsolidierung, Modals/Historie/Buttons) weiter offen.
 - [x] P3 Kalender tonal an Pollen (Screenshot-Delta-Analyse 04.07.) - KOMPLETT mit P3e (v0.1.0379):
   - [x] P3a View-Backdrop (v0.1.0370, KORRIGIERT in v0.1.0374): Die v0370-Fassung zielte auf #calendar-view - dieses Element existiert NICHT (weder Markup noch JS), die Regel war wirkungslos ("Farbe passt nicht"-Feedback). Fix v0374: Traeger ist #calendar-premium-view (::before, min-height 100%); Werte 1:1 vom LEBENDEN #pollen-view::before gemessen: #03090c + radial 12% 0% rgba(19,104,60,.13) - NICHT die alten Z.2-6-Werte (dort ueberschreiben spaetere Generationen).
   - [x] P3b Hero in Pollen-Tonalitaet + Konsolidierung (v0.1.0371): WICHTIGER BEFUND: Der Kalender-Hero wird NICHT von calendarPanels.css bestimmt, sondern vom zentralen HeroCard-System v0.1.0290 in styles/appShell.css (Token-Vars --change-hero0290-*, Bloecke 0290/0290b/c/d; gilt fuer Dashboard/Kalender/Settings/Challenges, Pollen ausgenommen). Struktur (Stats in der Karte, Trenner) war dort schon richtig - die "separate Box"-Optik kam von der 0290-Tonalitaet (opaker Kartenverlauf + Glow rechts). Fix: (a) 12 tote Hero-Override-Generationen (v0101-v0207, ~570 Zeilen) aus calendarPanels.css entfernt - Beweis: Computed-Style-Diff aller Hero-Elemente Desktop+Mobil = 0 Abweichungen; (b) Kalender-Pollen-Tokens via body.change-view-calendar-Override im 0290-Block (Werte 1:1 am lebenden pollen-neo-hero gemessen); (c) 0290d-Literale auf die vorhandenen Tokens umgestellt (No-Op fuer andere Views, Dashboard verifiziert unveraendert). Rest-Deltas (bewusst offen, mikroskopisch): Trennlinien-Alpha .07/.08/.09 statt .10 (Literale in Vor-0290-Generationen), Eyebrow-Gruenton.
@@ -54,6 +55,15 @@ Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial
 - Wiederverwendbare UI-Bausteine IMMER in components/ (window.ChangeComponents) ergaenzen/nutzen - nie lokal duplizieren. Ladereihenfolge: components-Skripte stehen in index.html vor den features-Skripten.
 
 ---
+
+## Version 0.1.0381 - P2a: Challenges-Pokal von Gold auf gruenes Linien-Icon
+- Kalender gilt als abgenommen (P3 komplett, Live-Durchgang v0.1.0380 sauber). Auf Nutzerwunsch "mach weiter" -> naechster Baustein Challenges (P2). Erster, sichtbarster Fix zuerst.
+- Live-Befund: Die Gruppenziel-Hero-Illustration (.chv227-illustration-redesign, core/misc.js) war ein SVG in Gold-Palette (Verlauf #E2C173->#B08B3C, Striche #9A7320/#7A5A1C, Highlight #FDE9A8, Funken #D9BC6E) - wirkte wie ein buntes Emoji und kollidierte hart mit der gruenen Pollen-Welt (der Kalender-Hero nutzt ein gruenes Linien-Icon).
+- Fix (core/misc.js, SVG-Recolor, Geometrie 1:1 erhalten): Verlauf auf #173D2A->#0F241B (dunkelgruen), Konturen/Striche/Funken auf #4ade80, Highlight/Detail auf #7DE6AB, Innenschatten #2F5C44; Pokalkoerper + Sockel bekommen zusaetzlich eine #4ade80-Kontur fuer den Linien-Look. Damit exakt die Farbwelt der Kalender-Clock-Illustration (P3b-2).
+- Browser-verifiziert (voller Reload, misc.js?v=0.1.0381 geladen): keine Gold-Farbe mehr im SVG (goldLeft=false), Pokal rendert als gruene Linien-Illustration; Konsole fehlerfrei (JS-Syntax ok; kein node verfuegbar).
+- BEWUSST nur der Pokal: P2 (challenges-mobile.css-!important-Konsolidierung, Modals/Historie/Buttons angleichen) bleibt der grosse Folgeschritt.
+- Cache-Busting ?v=0.1.0381.
+- Geaendert: `core/misc.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
 
 ## Version 0.1.0380 - UX: GitHub-Upload-Freigabedialog mobil oben statt unten
 - Nutzerwunsch: Der "GitHub-Upload freigeben"-Dialog (Freigabe-Code-Eingabe) soll auf dem Handy oben erscheinen statt unten angedockt.

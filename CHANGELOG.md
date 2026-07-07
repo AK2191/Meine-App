@@ -1,3 +1,9 @@
+## Version 0.1.0381 - P2a: Challenges-Pokal von Gold auf gruenes Linien-Icon
+- Die Gruppenziel-Hero-Illustration (Pokal) war ein goldenes SVG und wirkte wie ein buntes Emoji - der klarste Pollen-Bruch der Challenges. Auf das gruene Linien-Prinzip des Kalender-Icons umgefaerbt (dunkelgruene Basis + #4ade80-Akzent), Geometrie unveraendert.
+- Browser-verifiziert (kein Gold mehr, Konsole fehlerfrei). Rest von P2 (challenges-mobile.css-Konsolidierung) bleibt offen.
+- Cache-Busting ?v=0.1.0381.
+- Geaendert: `core/misc.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0380 - UX: GitHub-Upload-Freigabedialog mobil oben
 - Der "GitHub-Upload freigeben"-Dialog erscheint auf dem Handy jetzt oben statt unten angedockt (align-items flex-start + Safe-Area-Abstand). Desktop bleibt zentriert.
 - Reine CSS-Positionsaenderung im Mobil-Media (max-width:520px); browser-verifiziert Mobil+Desktop.
