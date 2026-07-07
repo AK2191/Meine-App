@@ -1,3 +1,12 @@
+## Version 0.1.0379 - P3e: Monatsgrid als echte Kalenderzellen (P3 komplett)
+- Die "Monat"-Ansicht (.cal-premium-mini-grid) zeigte den ausgewaehlten Tag im Vollbreiten-Modus als gestreckte 999px-Pille; die Zellen waren fuer eine schmale Seitenspalte gebaut. Jetzt echte Kalenderzellen im Stil der Wochenleiste (min-height 60/mobil 52, Radius 14, .075-Border, Zahl oben links, Selected = gruener Verlauf + Border statt Pille, gruener Termin-Punkt).
+- grid-template-columns repeat(7,minmax(0,1fr)) behebt den mobilen Ueberlauf der So-Spalte.
+- Produktentscheidung: Punktezellen beibehalten (minimalistisch, Charta) statt Detailzellen.
+- Kanonische Basis in calendarPanels.css direkt umgeschrieben (kein neuer Layer); browser-verifiziert Desktop+Mobil; Konsole fehlerfrei; Woche/Hero/Agenda unveraendert.
+- Damit ist F/P3 (Kalender tonal an Pollen) komplett (P3a-P3e).
+- Cache-Busting ?v=0.1.0379.
+- Geaendert: `features/calendar/calendarPanels.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0378 - P3d: Tagesagenda-Zeilen im Pollen-Forecast-Stil
 - Agenda-Zeilen sind jetzt wie die Pollen-5-Tages-Zeilen aufgebaut: transparente Zeilen mit feinen Trennlinien IN der Karte statt einzelner Subkarten; Zeit-Spalte links mit rechtem Trenner (wie Pollens Datums-Spalte).
 - Werte 1:1 am lebenden Pollen-Forecast gemessen (Trenner rgba(255,255,255,.08), Zeit 13.5px/780, mobil 72px-Spalte/12.5px).
