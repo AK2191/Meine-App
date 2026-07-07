@@ -1,3 +1,11 @@
+## Version 0.1.0384 - P2d: Challenges-Ueberschrift-Position + Hintergrund wie Pollen
+- Nutzer-Feedback: Ueberschrift nicht am richtigen Platz + Hintergrund nicht identisch zu Pollen.
+- Ueberschrift: Der Titel "Challenges" war 34px eingerueckt, waehrend der Inhalt seit P2c bei 16px sitzt. Jetzt buendig - mobil bei 16px, Desktop mit dem zentrierten Layout (max-width 1100) fluchtend.
+- Hintergrund: Challenges nutzte einen alten Backdrop (amber/rote Radials); jetzt exakt Pollens Backdrop (bg #03090c + gruener Radial oben links + vertikaler Verlauf), 1:1 am lebenden Pollen-View gemessen.
+- Browser-verifiziert 500px + Desktop 1440; Konsole fehlerfrei. Rest von P2 (challenges-mobile.css-Konsolidierung, Modals/Historie/Badge) offen.
+- Cache-Busting ?v=0.1.0384.
+- Geaendert: `styles/appShell.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0383 - P2c: Challenges Seitenrand + Hero wie Pollen/Kalender
 - Nutzer-Feedback: Challenges hatte mobil zu viel Seitenrand (Inhalt gequetscht) und die Hero-Card stimmte noch nicht.
 - Seitenrand: .challenge-layout hatte mobil 14px Extra-Padding ueber den 16px von #content -> Inhalt bei 30px statt Pollens 16px. Fix: horizontales Layout-Padding mobil auf 0 -> Inhalt sitzt bei 16px wie Pollen (Hero-Breite 440->468).

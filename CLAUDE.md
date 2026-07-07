@@ -1,4 +1,4 @@
-# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0383)
+# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0384)
 
 Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschlossenen Schritt hier aktualisiert (Haken setzen, Datum ergaenzen). Arbeitsweise laut Charta: kleine kontrollierte Schritte, nie mehrere Systeme gleichzeitig, nach jeder Aenderung Kalender/Dashboard/Challenges pruefen, keine Patches/Workarounds, keine doppelte Logik, CLAUDE.md immer mitziehen.
 
@@ -57,6 +57,16 @@ Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial
 
 ---
 
+## Version 0.1.0384 - P2d: Challenges-Ueberschrift-Position + Hintergrund wie Pollen
+- Nutzer-Feedback: "Ueberschrift nicht am richtigen Platz" + "allgemeiner Hintergrund nicht identisch".
+- UEBERSCHRIFT: Nach P2c sass der Inhalt bei 16px, aber .challenge-neo-header hatte weiter padding 18px 18px 10px -> Titel bei 34px (staerker eingerueckt als alles darunter). Fix: Header auf Pollen-Mass - mobil padding 8px 0 10px (Titel bei 16px, buendig mit Inhalt); Desktop max-width 1100 + margin auto + padding 8px 18px (Titel buendig mit dem zentrierten Layout, gemessen: Titel 188 = Hero 188). Vorher Desktop Titel 60 vs Inhalt 188.
+- HINTERGRUND: #challenges-view nutzte einen alten Backdrop (amber/rote Radials, bg #04090e); Pollen nutzt bg #03090c + ::before radial(0% 10%, rgba(20,120,72,.16)) + linear(#071014->#050b0f 38%->#04090d). 1:1 am lebenden #pollen-view gemessen und gespiegelt (bg + ::before). Damit ist der Challenges-Hintergrund identisch zu Pollen (gruener Glow oben links statt amber/rot).
+- Browser-verifiziert 500px + Desktop 1440: Titel auf beiden Breiten buendig mit Inhalt; Backdrop = Pollen; kein Ueberlauf; Konsole fehlerfrei.
+- Rest von P2 offen: challenges-mobile.css-!important-Schicht konsolidieren, Modals/Historie, Difficulty-Badge amber, Desktop-Hero-Typo.
+- Nur CSS + Versions-Strings (byte-sicher via Python).
+- Cache-Busting ?v=0.1.0384.
+- Geaendert: `styles/appShell.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0383 - P2c: Challenges Seitenrand + Hero wie Pollen/Kalender
 - Nutzer-Feedback (Screenshots Challenges vs Pollen): "links/rechts viel zu viel Rand, quetscht" + "Hero-Card noch nicht korrekt".
 - RAND-BEFUND (gemessen bei 500px): #content gibt beiden Views 16px Innenabstand. Pollen sitzt bei 16px, Challenges hatte ZUSAETZLICH .challenge-layout padding 14px -> Inhalt bei 30px (28px schmaler). Ursache: ~19 konkurrierende padding-Regeln fuer .challenge-layout ueber app.css/change.css/challenges-mobile.css/appShell.css + injizierte Styles (das P2-!important-Chaos). Gewinner: appShell.css 14px. Fix: appShell-Endblock setzt mobil (max-width:700px) padding-left/right:0 (gleiche Selektor-Spezifitaet, spaeter -> gewinnt) -> Inhalt bei 16px wie Pollen; Hero-Breite 440->468.
@@ -77,6 +87,7 @@ Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial
 - Task-Subkarten (.challenge-item) BEWUSST unveraendert (flaches Gruen): ein Radial-Glow pro gestapelter Aufgabe waere unruhig - analog dazu, dass Pollen-Forecast-Zeilen transparent statt je eine Glow-Subkarte sind.
 - Browser-verifiziert Desktop 1440 + Mobil 375: beide Karten tragen den gruenen Radial + .22-Border; kein horizontaler Ueberlauf; Konsole fehlerfrei. Aufgaben-Karten/Buttons/Icons unveraendert.
   - [x] P2c Seitenrand + Hero wie Pollen (v0.1.0383): (a) Mobiler Seitenrand von 30px auf 16px (Pollen-Mass) - .challenge-layout hatte 14px Extra-Padding ueber #content-16px; per appShell-Endblock padding-left/right:0 mobil. (b) Challenges-Hero bekommt die Pollen-Tonalitaets-Tokens + Mobil-Typo (26/950-Titel, #4ade80-Overline, 13/800-Sub) wie der Kalender in P3b-3; Hero-bg/border explizit auf Pollen-Surface (eine aeltere 0290-Generation setzte sie literal auf rgba(125,230,171), Tokens griffen nicht). Browser-verifiziert 500px+Desktop.
+  - [x] P2d Ueberschrift-Position + Hintergrund wie Pollen (v0.1.0384): (a) .challenge-neo-header war nach P2c bei 34px eingerueckt (Inhalt bei 16px) -> mobil padding 8px 0 (Titel bei 16px buendig), Desktop max-width 1100 + margin auto + padding 8px 18px (Titel buendig mit zentriertem Layout). (b) #challenges-view-Backdrop (alte amber/rote Radials, bg #04090e) auf Pollens bg #03090c + ::before gruen-Radial+Linear gespiegelt (1:1 am lebenden pollen-view gemessen).
 - Rest von P2 offen: challenges-mobile.css-!important-Schicht konsolidieren, Modals/Historie/Difficulty-Badge (amber #E0A86A) angleichen.
 - Nur CSS + Versions-Strings (byte-sicher via Python).
 - Cache-Busting ?v=0.1.0382.

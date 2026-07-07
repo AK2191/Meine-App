@@ -18068,3 +18068,26 @@ html body.change-view-challenges #content #challenges-view #group-goal-card.chan
   background:radial-gradient(circle at 88% 24%,rgba(74,222,128,.16),transparent 34%),linear-gradient(135deg,rgba(15,36,27,.86),rgba(7,12,18,.94))!important;
   border:1px solid rgba(74,222,128,.22)!important;
 }
+
+
+/* P2d (v0.1.0384) - Challenges-Ueberschrift + Hintergrund exakt wie Pollen.
+   (a) .challenge-neo-header hatte padding 18px 18px 10px -> Titel bei 34px, waehrend der Inhalt
+   seit P2c bei 16px sitzt (Titel staerker eingerueckt als alles darunter). Auf Pollen-Mass:
+   horizontal 0, top 8. (b) #challenges-view-Backdrop nutzte alte amber/rote Radials; jetzt 1:1
+   Pollens gruen-Radial + Linear (am lebenden #pollen-view::before gemessen). */
+html body.change-view-challenges #content #challenges-view .challenge-neo-header{
+  max-width:1100px!important;
+  margin:0 auto 2px!important;
+  padding:8px 18px 10px!important;
+}
+@media(max-width:700px){
+  html body.change-view-challenges #content #challenges-view .challenge-neo-header{
+    padding:8px 0 10px!important;
+  }
+}
+html body.change-view-challenges #content #challenges-view{
+  background:#03090c!important;
+}
+html body.change-view-challenges #content #challenges-view::before{
+  background:radial-gradient(circle at 0% 10%,rgba(20,120,72,.16),transparent 42%),linear-gradient(#071014 0%,#050b0f 38%,#04090d 100%)!important;
+}
