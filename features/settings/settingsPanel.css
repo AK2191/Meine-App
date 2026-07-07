@@ -613,7 +613,8 @@
 .change-github-upload-ok{background:linear-gradient(135deg,#3DDC91,#20C985);border-color:transparent;color:#04140D}
 .change-github-upload-ok:hover{filter:brightness(1.04)}
 @media (max-width:520px){
-  .change-github-upload-dialog{align-items:flex-end;padding:14px}
+  /* Mobil: Dialog oben statt unten andocken (Nutzerwunsch), Safe-Area beruecksichtigen. */
+  .change-github-upload-dialog{align-items:flex-start;padding:14px;padding-top:calc(14px + env(safe-area-inset-top))}
   .change-github-upload-dialog-box{width:100%;padding:20px;border-radius:18px}
   .change-github-upload-dialog-btns{grid-template-columns:1fr}
 }

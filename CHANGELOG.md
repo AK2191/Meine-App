@@ -1,3 +1,9 @@
+## Version 0.1.0380 - UX: GitHub-Upload-Freigabedialog mobil oben
+- Der "GitHub-Upload freigeben"-Dialog erscheint auf dem Handy jetzt oben statt unten angedockt (align-items flex-start + Safe-Area-Abstand). Desktop bleibt zentriert.
+- Reine CSS-Positionsaenderung im Mobil-Media (max-width:520px); browser-verifiziert Mobil+Desktop.
+- Cache-Busting ?v=0.1.0380.
+- Geaendert: `features/settings/settingsPanel.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0379 - P3e: Monatsgrid als echte Kalenderzellen (P3 komplett)
 - Die "Monat"-Ansicht (.cal-premium-mini-grid) zeigte den ausgewaehlten Tag im Vollbreiten-Modus als gestreckte 999px-Pille; die Zellen waren fuer eine schmale Seitenspalte gebaut. Jetzt echte Kalenderzellen im Stil der Wochenleiste (min-height 60/mobil 52, Radius 14, .075-Border, Zahl oben links, Selected = gruener Verlauf + Border statt Pille, gruener Termin-Punkt).
 - grid-template-columns repeat(7,minmax(0,1fr)) behebt den mobilen Ueberlauf der So-Spalte.

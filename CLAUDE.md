@@ -1,4 +1,4 @@
-# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0379)
+# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0380)
 
 Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschlossenen Schritt hier aktualisiert (Haken setzen, Datum ergaenzen). Arbeitsweise laut Charta: kleine kontrollierte Schritte, nie mehrere Systeme gleichzeitig, nach jeder Aenderung Kalender/Dashboard/Challenges pruefen, keine Patches/Workarounds, keine doppelte Logik, CLAUDE.md immer mitziehen.
 
@@ -54,6 +54,13 @@ Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial
 - Wiederverwendbare UI-Bausteine IMMER in components/ (window.ChangeComponents) ergaenzen/nutzen - nie lokal duplizieren. Ladereihenfolge: components-Skripte stehen in index.html vor den features-Skripten.
 
 ---
+
+## Version 0.1.0380 - UX: GitHub-Upload-Freigabedialog mobil oben statt unten
+- Nutzerwunsch: Der "GitHub-Upload freigeben"-Dialog (Freigabe-Code-Eingabe) soll auf dem Handy oben erscheinen statt unten angedockt.
+- Fix (features/settings/settingsPanel.css, Mobil-Media max-width:520px): .change-github-upload-dialog von align-items:flex-end auf flex-start; padding-top:calc(14px + env(safe-area-inset-top)) gegen Notch/Statusleiste. Desktop (>520px) bleibt zentriert (align-items:center, unveraendert - browser-verifiziert).
+- Reine CSS-Positionsaenderung; Dialog-Logik/Markup unveraendert. Browser-verifiziert Mobil 375 (boxTop 14px) + Desktop (zentriert).
+- Cache-Busting ?v=0.1.0380.
+- Geaendert: `features/settings/settingsPanel.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
 
 ## Version 0.1.0379 - P3e: Monatsgrid als echte Kalenderzellen (P3 komplett)
 - Letzter offener P3-Schritt. BEFUND vorab am lebenden DOM: Die "Monat"-Ansicht rendert miniMonthHtml() -> .cal-premium-mini-grid, NICHT das cfx-*-Vollgrid (calendar-logic.js; im Premium-Kalender ausgeblendet). Die P3e-Referenz "cfx-*" im Plan war also veraltet.
