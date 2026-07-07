@@ -1,3 +1,11 @@
+## Version 0.1.0382 - P2b: Challenges-Karten auf Pollen-Surface vereinheitlicht
+- Challenges hatte drei verschiedene Karten-Oberflaechen: der Punkte-Kalender war grau mit weissem Border (Ausreisser), Rangliste/Aufgaben flaches Gruen ohne Radial-Glow.
+- Die beiden grossen Karten (Punkte-Kalender + Rangliste) nutzen jetzt die gleiche Pollen-/Kalender-Surface (--change-unified-card-bg + gruener Border rgba(74,222,128,.22) + Pollen-Schatten).
+- Aufgaben-Subkarten bewusst flach-gruen belassen (Glow pro Zeile waere unruhig).
+- Browser-verifiziert Desktop+Mobil; Konsole fehlerfrei. Rest von P2 (challenges-mobile.css-Konsolidierung, Modals/Historie/Difficulty-Badge) offen.
+- Cache-Busting ?v=0.1.0382.
+- Geaendert: `styles/appShell.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0381 - P2a: Challenges-Pokal von Gold auf gruenes Linien-Icon
 - Die Gruppenziel-Hero-Illustration (Pokal) war ein goldenes SVG und wirkte wie ein buntes Emoji - der klarste Pollen-Bruch der Challenges. Auf das gruene Linien-Prinzip des Kalender-Icons umgefaerbt (dunkelgruene Basis + #4ade80-Akzent), Geometrie unveraendert.
 - Browser-verifiziert (kein Gold mehr, Konsole fehlerfrei). Rest von P2 (challenges-mobile.css-Konsolidierung) bleibt offen.

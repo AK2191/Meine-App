@@ -1,4 +1,4 @@
-# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0381)
+# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0382)
 
 Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschlossenen Schritt hier aktualisiert (Haken setzen, Datum ergaenzen). Arbeitsweise laut Charta: kleine kontrollierte Schritte, nie mehrere Systeme gleichzeitig, nach jeder Aenderung Kalender/Dashboard/Challenges pruefen, keine Patches/Workarounds, keine doppelte Logik, CLAUDE.md immer mitziehen.
 
@@ -29,6 +29,7 @@ Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial
 - [x] P1 Kalender-Tagesdetail auf Pollen-Tokens (v0.1.0368): change-day-*, change-holiday-row (war helles Amber #b45309!), change-challenge-row, change-day-empty, change-conflict-note, change-share-* in calendarPanels.css direkt umgeschrieben (kein Override). Klassen sind kalender-exklusiv (verifiziert).
 - [~] P2 Challenges konsolidieren: die !important-Override-Schicht in challenges-mobile.css (ab ~Z.300) in echte Stile ueberfuehren; Restbereiche (Modals, Historie, Buttons) angleichen.
   - [x] P2a Gruppenziel-Pokal von Gold auf gruenes Linien-Icon (v0.1.0381): Live-Befund - die chv227-illustration-redesign (core/misc.js Z.339) war ein SVG in Gold-Palette (#7A5A1C/#9A7320/#D9BC6E/Gold-Verlauf), wirkte wie ein buntes Emoji und war der klarste Pollen-Bruch der Challenges. Umgefaerbt auf das gruene Linien-Prinzip des Kalender-Clock (dunkelgruene Basis #2F5C44/#0F241B-Verlauf + #4ade80-Akzent + #7DE6AB-Highlight), Geometrie unveraendert. Browser-verifiziert (goldLeft=false, Konsole fehlerfrei). Rest von P2 (challenges-mobile.css-Konsolidierung, Modals/Historie/Buttons) weiter offen.
+  - [x] P2b Karten-Surfaces vereinheitlicht (v0.1.0382): Live-Kaskadenanalyse ergab DREI verschiedene Challenge-Karten-Oberflaechen (alle Gewinner in appShell.css): #challenge-week-points-card = grau linear(rgba(12,19,24,.82)) + WEISSER Border .086 (Ausreisser); .leader-card + .challenge-item = flaches Gruen linear(#101a14) ohne Radial. Keine nutzte die Pollen-Surface. Fix: die beiden GROSSEN Karten (week-points-card + leader-card) per P2b-Block am appShell-Dateiende auf --change-unified-card-bg (gruener Radial 82%/18% + Verlauf) + --change-unified-border (rgba(74,222,128,.22)) gesetzt - exakt die Kalender-/Pollen-Karten-Surface. Task-Subkarten (.challenge-item) bewusst flach-gruen belassen (Glow pro Zeile waere unruhig, wie Pollen-Forecast-Zeilen). Browser-verifiziert Desktop+Mobil (beide Karten gruener Radial + .22-Border, kein Ueberlauf, Konsole fehlerfrei).
 - [x] P3 Kalender tonal an Pollen (Screenshot-Delta-Analyse 04.07.) - KOMPLETT mit P3e (v0.1.0379):
   - [x] P3a View-Backdrop (v0.1.0370, KORRIGIERT in v0.1.0374): Die v0370-Fassung zielte auf #calendar-view - dieses Element existiert NICHT (weder Markup noch JS), die Regel war wirkungslos ("Farbe passt nicht"-Feedback). Fix v0374: Traeger ist #calendar-premium-view (::before, min-height 100%); Werte 1:1 vom LEBENDEN #pollen-view::before gemessen: #03090c + radial 12% 0% rgba(19,104,60,.13) - NICHT die alten Z.2-6-Werte (dort ueberschreiben spaetere Generationen).
   - [x] P3b Hero in Pollen-Tonalitaet + Konsolidierung (v0.1.0371): WICHTIGER BEFUND: Der Kalender-Hero wird NICHT von calendarPanels.css bestimmt, sondern vom zentralen HeroCard-System v0.1.0290 in styles/appShell.css (Token-Vars --change-hero0290-*, Bloecke 0290/0290b/c/d; gilt fuer Dashboard/Kalender/Settings/Challenges, Pollen ausgenommen). Struktur (Stats in der Karte, Trenner) war dort schon richtig - die "separate Box"-Optik kam von der 0290-Tonalitaet (opaker Kartenverlauf + Glow rechts). Fix: (a) 12 tote Hero-Override-Generationen (v0101-v0207, ~570 Zeilen) aus calendarPanels.css entfernt - Beweis: Computed-Style-Diff aller Hero-Elemente Desktop+Mobil = 0 Abweichungen; (b) Kalender-Pollen-Tokens via body.change-view-calendar-Override im 0290-Block (Werte 1:1 am lebenden pollen-neo-hero gemessen); (c) 0290d-Literale auf die vorhandenen Tokens umgestellt (No-Op fuer andere Views, Dashboard verifiziert unveraendert). Rest-Deltas (bewusst offen, mikroskopisch): Trennlinien-Alpha .07/.08/.09 statt .10 (Literale in Vor-0290-Generationen), Eyebrow-Gruenton.
@@ -55,6 +56,19 @@ Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial
 - Wiederverwendbare UI-Bausteine IMMER in components/ (window.ChangeComponents) ergaenzen/nutzen - nie lokal duplizieren. Ladereihenfolge: components-Skripte stehen in index.html vor den features-Skripten.
 
 ---
+
+## Version 0.1.0382 - P2b: Challenges-Karten auf Pollen-Surface vereinheitlicht
+- Fortsetzung P2 nach Nutzer-OK. Live-Kaskadenanalyse der Challenge-Karten (styleSheets-Walk): DREI verschiedene Oberflaechen, alle gewinnend aus appShell.css.
+  - #challenge-week-points-card (Punkte-Kalender): grau linear(rgba(12,19,24,.82)->rgba(7,12,18,.94)) + WEISSER Border rgba(255,255,255,.086) - der klare Ausreisser.
+  - .leader-card (Rangliste) + .challenge-item (Aufgaben-Subkarten): flaches Gruen linear(150/120deg #101a14->#0c1410) + gruener Border .14/.16, aber KEIN Radial-Glow.
+  - Keine nutzte die Pollen-/Kalender-Karten-Surface --change-unified-card-bg.
+- Fix (styles/appShell.css, P2b-Block am Dateiende, gewinnt per Reihenfolge): die beiden GROSSEN Karten week-points-card + leader-card auf var(--change-unified-card-bg) (radial 82%/18% rgba(74,222,128,.10) + linear 135deg) + var(--change-unified-border) (rgba(74,222,128,.22)) + Pollen-Schatten. Damit identisch zu Kalender-Agenda-/Pollen-Forecast-Karten.
+- Task-Subkarten (.challenge-item) BEWUSST unveraendert (flaches Gruen): ein Radial-Glow pro gestapelter Aufgabe waere unruhig - analog dazu, dass Pollen-Forecast-Zeilen transparent statt je eine Glow-Subkarte sind.
+- Browser-verifiziert Desktop 1440 + Mobil 375: beide Karten tragen den gruenen Radial + .22-Border; kein horizontaler Ueberlauf; Konsole fehlerfrei. Aufgaben-Karten/Buttons/Icons unveraendert.
+- Rest von P2 offen: challenges-mobile.css-!important-Schicht konsolidieren, Modals/Historie/Difficulty-Badge (amber #E0A86A) angleichen.
+- Nur CSS + Versions-Strings (byte-sicher via Python).
+- Cache-Busting ?v=0.1.0382.
+- Geaendert: `styles/appShell.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
 
 ## Version 0.1.0381 - P2a: Challenges-Pokal von Gold auf gruenes Linien-Icon
 - Kalender gilt als abgenommen (P3 komplett, Live-Durchgang v0.1.0380 sauber). Auf Nutzerwunsch "mach weiter" -> naechster Baustein Challenges (P2). Erster, sichtbarster Fix zuerst.

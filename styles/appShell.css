@@ -18014,3 +18014,15 @@ html body.change-view-challenges #content #challenges-view #group-goal-card.chan
     max-width:max-content!important;
   }
 }
+
+
+/* P2b (v0.1.0382) - Challenges-Karten auf die Pollen-Surface vereinheitlicht (wie Kalender/Agenda).
+   Vorher: #challenge-week-points-card grau + weisser Border (Ausreisser), .leader-card flaches
+   Gruen ohne Radial-Glow. Jetzt beide auf --change-unified-card-bg + --change-unified-border
+   (identisch zu den Kalender-/Pollen-Karten). Steht am Dateiende -> gewinnt per Reihenfolge. */
+html body.change-view-challenges #content #challenges-view #challenge-week-points-card,
+html body.change-view-challenges #content #challenges-view .leader-card{
+  background:var(--change-unified-card-bg)!important;
+  border:1px solid var(--change-unified-border)!important;
+  box-shadow:0 14px 40px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.03)!important;
+}
