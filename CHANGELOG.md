@@ -1,3 +1,11 @@
+## Version 0.1.0383 - P2c: Challenges Seitenrand + Hero wie Pollen/Kalender
+- Nutzer-Feedback: Challenges hatte mobil zu viel Seitenrand (Inhalt gequetscht) und die Hero-Card stimmte noch nicht.
+- Seitenrand: .challenge-layout hatte mobil 14px Extra-Padding ueber den 16px von #content -> Inhalt bei 30px statt Pollens 16px. Fix: horizontales Layout-Padding mobil auf 0 -> Inhalt sitzt bei 16px wie Pollen (Hero-Breite 440->468).
+- Hero: bekam nie die Pollen-Mobil-Typografie des Kalenders (Titel jetzt 26px/950 statt 30/800, Overline #4ade80 11/950, Sub 13/800) und trug noch die alten 0290-Gruentoene; jetzt Pollen-Tonalitaets-Tokens + Pollen-Karten-Surface (gruener Radial + Border rgba(74,222,128,.22)) wie der Kalender-Hero.
+- Browser-verifiziert 500px + Desktop 1440 (Desktop-Layout unveraendert, Rand-Fix mobil-gescoped); Konsole fehlerfrei. Rest von P2 (challenges-mobile.css-Konsolidierung, Modals/Historie/Badge) offen.
+- Cache-Busting ?v=0.1.0383.
+- Geaendert: `styles/appShell.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0382 - P2b: Challenges-Karten auf Pollen-Surface vereinheitlicht
 - Challenges hatte drei verschiedene Karten-Oberflaechen: der Punkte-Kalender war grau mit weissem Border (Ausreisser), Rangliste/Aufgaben flaches Gruen ohne Radial-Glow.
 - Die beiden grossen Karten (Punkte-Kalender + Rangliste) nutzen jetzt die gleiche Pollen-/Kalender-Surface (--change-unified-card-bg + gruener Border rgba(74,222,128,.22) + Pollen-Schatten).

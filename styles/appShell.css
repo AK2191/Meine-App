@@ -18026,3 +18026,45 @@ html body.change-view-challenges #content #challenges-view .leader-card{
   border:1px solid var(--change-unified-border)!important;
   box-shadow:0 14px 40px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.03)!important;
 }
+
+
+/* P2c (v0.1.0383) - Challenges an Pollen wie der Kalender: Seitenrand + Hero-Tonalitaet + Mobil-Typo.
+   Befund: .challenge-layout hatte mobil 14px Extra-Padding (Inhalt bei 30px statt Pollens 16px);
+   der Hero nutzte die 0290-Default-Tokens und nie die Pollen-Mobil-Typo des Kalenders (P3b-3). */
+@media(max-width:700px){
+  html body.change-view-challenges #content #challenges-view .challenge-layout{
+    padding-left:0!important;
+    padding-right:0!important;
+  }
+}
+/* Pollen-Tonalitaet fuer den Challenges-Hero (1:1 wie body.change-view-calendar). */
+body.change-view-challenges{
+  --change-hero0290-card:radial-gradient(circle at 88% 24%,rgba(74,222,128,.16),transparent 34%),linear-gradient(135deg,rgba(15,36,27,.86),rgba(7,12,18,.94));
+  --change-hero0290-glow:linear-gradient(180deg,rgba(255,255,255,.055),transparent 42%);
+  --change-hero0290-border:rgba(74,222,128,.22);
+  --change-hero0290-line:rgba(244,247,244,.10);
+  --change-hero0290-green:#4ade80;
+  --change-hero0290-text:#fff;
+  --change-hero0290-muted:rgba(244,247,244,.66);
+  --change-hero0290-label:rgba(244,247,244,.66);
+}
+/* Mobil-Typografie des Challenges-Hero 1:1 wie Kalender P3b-3. */
+@media(max-width:760px){
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-overline{
+    color:#4ade80!important;font-size:11px!important;font-weight:950!important;letter-spacing:.09em!important;
+  }
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-title{
+    font-size:26px!important;font-weight:950!important;letter-spacing:-.75px!important;line-height:1.05!important;
+  }
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-sub{
+    color:rgba(244,247,244,.68)!important;font-size:13px!important;font-weight:800!important;
+  }
+}
+
+/* P2c-2 (v0.1.0383): Challenges-Hero bg/border explizit auf Pollen-Karten-Surface (der
+   Gewinner-Literal aus einer aelteren 0290-Generation nutzte rgba(125,230,171); Tokens
+   greifen dort nicht). Gleiche Selektor-Spezifitaet wie der Gewinner, spaeter -> gewinnt. */
+html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227{
+  background:radial-gradient(circle at 88% 24%,rgba(74,222,128,.16),transparent 34%),linear-gradient(135deg,rgba(15,36,27,.86),rgba(7,12,18,.94))!important;
+  border:1px solid rgba(74,222,128,.22)!important;
+}

@@ -1,4 +1,4 @@
-# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0382)
+# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0383)
 
 Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschlossenen Schritt hier aktualisiert (Haken setzen, Datum ergaenzen). Arbeitsweise laut Charta: kleine kontrollierte Schritte, nie mehrere Systeme gleichzeitig, nach jeder Aenderung Kalender/Dashboard/Challenges pruefen, keine Patches/Workarounds, keine doppelte Logik, CLAUDE.md immer mitziehen.
 
@@ -57,6 +57,17 @@ Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial
 
 ---
 
+## Version 0.1.0383 - P2c: Challenges Seitenrand + Hero wie Pollen/Kalender
+- Nutzer-Feedback (Screenshots Challenges vs Pollen): "links/rechts viel zu viel Rand, quetscht" + "Hero-Card noch nicht korrekt".
+- RAND-BEFUND (gemessen bei 500px): #content gibt beiden Views 16px Innenabstand. Pollen sitzt bei 16px, Challenges hatte ZUSAETZLICH .challenge-layout padding 14px -> Inhalt bei 30px (28px schmaler). Ursache: ~19 konkurrierende padding-Regeln fuer .challenge-layout ueber app.css/change.css/challenges-mobile.css/appShell.css + injizierte Styles (das P2-!important-Chaos). Gewinner: appShell.css 14px. Fix: appShell-Endblock setzt mobil (max-width:700px) padding-left/right:0 (gleiche Selektor-Spezifitaet, spaeter -> gewinnt) -> Inhalt bei 16px wie Pollen; Hero-Breite 440->468.
+- HERO-BEFUND: Der Challenges-Hero nutzte die 0290-DEFAULT-Tokens und hatte NIE die Pollen-Mobil-Typo des Kalenders (P3b-3) bekommen: Titel 30px/800 statt 26px/950, Overline 12px/800 rgba(125,230,171) statt 11px/950 #4ade80, Sub 13px/600 statt 13px/800. Zusaetzlich setzte eine aeltere 0290-Generation (appShell order 6129) den Hero-bg/border LITERAL auf die alten Gruentoene rgba(125,230,171) - Tokens greifen dort nicht.
+- Fix (styles/appShell.css, P2c + P2c-2 am Dateiende): (1) body.change-view-challenges Pollen-Tonalitaets-Tokens (wie body.change-view-calendar); (2) Mobil-Typo des Hero (overline/title/sub) 1:1 wie Kalender P3b-3; (3) Hero-bg/border explizit auf die Pollen-Karten-Surface (radial 88%/24% rgba(74,222,128,.16) + linear 135deg, Border rgba(74,222,128,.22)) - gleiche Spezifitaet wie der Literal-Gewinner, spaeter im File.
+- Browser-verifiziert 500px + Desktop 1440: Hero randlos bei 16px, Titel 26/950 mobil, Overline #4ade80, Hero-Surface Pollen-gruen; Desktop-Layout unveraendert (max-width 1100 zentriert, mein Rand-Fix ist mobil-gescoped); Trophaee gruen sichtbar; Konsole fehlerfrei.
+- Rest von P2 offen: challenges-mobile.css-!important-Schicht echt konsolidieren (die 19 padding-Generationen etc.), Modals/Historie/Difficulty-Badge (amber #E0A86A), Desktop-Hero-Typo (46/800 vs Pollen 45/850).
+- Nur CSS + Versions-Strings (byte-sicher via Python).
+- Cache-Busting ?v=0.1.0383.
+- Geaendert: `styles/appShell.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0382 - P2b: Challenges-Karten auf Pollen-Surface vereinheitlicht
 - Fortsetzung P2 nach Nutzer-OK. Live-Kaskadenanalyse der Challenge-Karten (styleSheets-Walk): DREI verschiedene Oberflaechen, alle gewinnend aus appShell.css.
   - #challenge-week-points-card (Punkte-Kalender): grau linear(rgba(12,19,24,.82)->rgba(7,12,18,.94)) + WEISSER Border rgba(255,255,255,.086) - der klare Ausreisser.
@@ -65,6 +76,7 @@ Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial
 - Fix (styles/appShell.css, P2b-Block am Dateiende, gewinnt per Reihenfolge): die beiden GROSSEN Karten week-points-card + leader-card auf var(--change-unified-card-bg) (radial 82%/18% rgba(74,222,128,.10) + linear 135deg) + var(--change-unified-border) (rgba(74,222,128,.22)) + Pollen-Schatten. Damit identisch zu Kalender-Agenda-/Pollen-Forecast-Karten.
 - Task-Subkarten (.challenge-item) BEWUSST unveraendert (flaches Gruen): ein Radial-Glow pro gestapelter Aufgabe waere unruhig - analog dazu, dass Pollen-Forecast-Zeilen transparent statt je eine Glow-Subkarte sind.
 - Browser-verifiziert Desktop 1440 + Mobil 375: beide Karten tragen den gruenen Radial + .22-Border; kein horizontaler Ueberlauf; Konsole fehlerfrei. Aufgaben-Karten/Buttons/Icons unveraendert.
+  - [x] P2c Seitenrand + Hero wie Pollen (v0.1.0383): (a) Mobiler Seitenrand von 30px auf 16px (Pollen-Mass) - .challenge-layout hatte 14px Extra-Padding ueber #content-16px; per appShell-Endblock padding-left/right:0 mobil. (b) Challenges-Hero bekommt die Pollen-Tonalitaets-Tokens + Mobil-Typo (26/950-Titel, #4ade80-Overline, 13/800-Sub) wie der Kalender in P3b-3; Hero-bg/border explizit auf Pollen-Surface (eine aeltere 0290-Generation setzte sie literal auf rgba(125,230,171), Tokens griffen nicht). Browser-verifiziert 500px+Desktop.
 - Rest von P2 offen: challenges-mobile.css-!important-Schicht konsolidieren, Modals/Historie/Difficulty-Badge (amber #E0A86A) angleichen.
 - Nur CSS + Versions-Strings (byte-sicher via Python).
 - Cache-Busting ?v=0.1.0382.
