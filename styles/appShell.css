@@ -18135,3 +18135,56 @@ html body.change-view-challenges #content #challenges-view .challenge-layout,
 html body.change-view-challenges #content #challenges-view .challenge-neo-header{
   max-width:1320px!important;
 }
+
+
+/* P2f (v0.1.0386) - Challenges-Hero-Stats an Kalender/Pollen angeglichen.
+   BEFUND: chv227-stat-icon war 40px abgerundetes Quadrat (Radius 12) mit gruenem/amberem
+   Fuellton (Offen amber), Label 12/700, Wert 17/800. Kalender/Pollen: 26px RUNDE Chips
+   rgba(255,255,255,.06) einheitlich gruen, Label 12/850, Wert 14/900. */
+html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat,
+html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 button.chv227-stat{
+  grid-template-columns:26px minmax(0,1fr)!important;
+  gap:0 12px!important;
+}
+html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat i,
+html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat .chv227-stat-icon,
+html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat-open .chv227-stat-icon{
+  width:26px!important;
+  height:26px!important;
+  min-width:26px!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.06)!important;
+  color:#4ade80!important;
+}
+html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat-icon svg,
+html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat-open .chv227-stat-icon svg{
+  stroke:#4ade80!important;
+  fill:none!important;
+}
+html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat span{
+  font-size:12px!important;
+  font-weight:850!important;
+  color:rgba(244,247,244,.66)!important;
+}
+html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat strong{
+  font-size:14px!important;
+  font-weight:900!important;
+  color:#fff!important;
+}
+
+
+/* P2f-2 (v0.1.0386) - Difficulty-Badge als Pollen-Akzent-Trio (semantisch statt einheitlich amber).
+   Leicht(easy)=gruen #4ade80, Mittel(medium)=amber #fbbf24, Schwer/Hardcore(hard/hardcore)=rot #ff574c. */
+html body.change-view-challenges #content #challenges-view .challenge-item .ch-top-row .challenge-name .ch-difficulty-badge.ch-diff-easy{
+  background:rgba(74,222,128,.12)!important;
+  color:#4ade80!important;
+}
+html body.change-view-challenges #content #challenges-view .challenge-item .ch-top-row .challenge-name .ch-difficulty-badge.ch-diff-medium{
+  background:rgba(251,191,36,.12)!important;
+  color:#fbbf24!important;
+}
+html body.change-view-challenges #content #challenges-view .challenge-item .ch-top-row .challenge-name .ch-difficulty-badge.ch-diff-hard,
+html body.change-view-challenges #content #challenges-view .challenge-item .ch-top-row .challenge-name .ch-difficulty-badge.ch-diff-hardcore{
+  background:rgba(255,87,76,.12)!important;
+  color:#ff574c!important;
+}

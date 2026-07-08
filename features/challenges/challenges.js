@@ -515,7 +515,7 @@
         +'<div class="challenge-icon" data-icon-key="'+esc(challengeIconKey(ch))+'">'+challengeLineIcon(ch, 26)+'</div>'
         +'<div class="challenge-body">'
           +'<div class="ch-top-row">'
-            +'<span class="challenge-name">'+esc(ch.title||'Challenge')+(ch.difficultyLabel&&!ch.optional?' <span class="ch-difficulty-badge">'+esc(ch.difficultyLabel)+'</span>':'')+'</span>'
+            +'<span class="challenge-name">'+esc(ch.title||'Challenge')+(ch.difficultyLabel&&!ch.optional?' <span class="ch-difficulty-badge ch-diff-'+esc(ch.difficulty||'easy')+'">'+esc(ch.difficultyLabel)+'</span>':'')+'</span>'
             +'<span class="points-pill">+'+pts+'</span>'
           +'</div>'
           +'<div class="challenge-meta">'+esc(ch.desc||'')+'</div>'

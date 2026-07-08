@@ -1,3 +1,10 @@
+## Version 0.1.0386 - P2f: Challenges-Hero-Stats + Difficulty-Badge an Pollen/Kalender
+- Hero-Stat-Icons: von 40px-Quadraten (mit amberem "Offen"-Icon) auf 26px runde, einheitlich gruene Chips wie Kalender/Pollen (Label/Wert-Typo mit angeglichen).
+- Difficulty-Badge: war einheitlich amber; jetzt semantisches Pollen-Akzent-Trio - Leicht=gruen, Mittel=amber, Schwer/Hardcore=rot (ch-diff-Klasse in challenges.js + CSS).
+- Browser-verifiziert Desktop + Mobil; Konsole fehlerfrei. Rest von P2 (challenges-mobile.css-Konsolidierung, Modals/Historie, Desktop-Hero-Titel) offen.
+- Cache-Busting ?v=0.1.0386.
+- Geaendert: `styles/appShell.css`, `features/challenges/challenges.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0385 - P2e: Backdrop (Kalender+Challenges) 1:1 wie Pollen + Challenges-Breite 1320
 - Nutzer-Feedback: kompletter Hintergrund nicht identisch (auch Kalender), soll wie Pollen; Challenges-Desktop zu schmal.
 - Befund: Pollens Backdrop ist ein VIEWPORT-fixierter Ambient-Glow (position:fixed) UND responsiv (Desktop- vs. Mobil-Werte). Kalender hatte nur den Desktop-, Challenges nur den Mobil-Wert, beide auf der View begrenzt.

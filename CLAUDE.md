@@ -1,4 +1,4 @@
-# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0385)
+# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0386)
 
 Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschlossenen Schritt hier aktualisiert (Haken setzen, Datum ergaenzen). Arbeitsweise laut Charta: kleine kontrollierte Schritte, nie mehrere Systeme gleichzeitig, nach jeder Aenderung Kalender/Dashboard/Challenges pruefen, keine Patches/Workarounds, keine doppelte Logik, CLAUDE.md immer mitziehen.
 
@@ -57,6 +57,16 @@ Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial
 
 ---
 
+## Version 0.1.0386 - P2f: Challenges-Hero-Stats + Difficulty-Badge an Pollen/Kalender
+- Nutzer: "prueff selbst, einiges nicht identisch". Eigen-Abgleich Challenges vs Pollen/Kalender (gemessen).
+- BEFUND 1 (Hero-Stat-Icons): chv227-stat-icon war 40px ABGERUNDETES QUADRAT (Radius 12) mit gruenem/amberem Fuellton (Offen-Icon amber rgb(251,210,75)), Label 12/700 #8A948A, Wert 17/800 #ECEFEA. Der abgenommene Kalender (Referenz): 26px RUNDE Chips rgba(255,255,255,.06) einheitlich gruen, Label 12/850 rgba(.66), Wert 14/900 #fff. Fix (P2f): Challenge-Stats 1:1 auf Kalender-Werte (26px rund, einheitlich gruen inkl. Offen, Grid-Spalte 26px, Label/Wert-Typo).
+- BEFUND 2 (Difficulty-Badge): war einheitlich amber #E0A86A (kein Ampel-System; Basis-Regel appShell 17232 faerbt ALLE Badges amber). Wirkte auf "Leicht" wie eine Warnung. Fix (P2f-2): challenges.js Z.518 vergibt jetzt ch-diff-<difficulty>-Klasse; CSS faerbt semantisch als Pollen-Akzent-Trio: easy=#4ade80, medium=#fbbf24, hard/hardcore=#ff574c. Spezifitaet-Falle: die :has(:only-child)-Regel (2,4,2) schlug die erste Fassung -> Selektor ueber .challenge-item .ch-top-row .challenge-name-Kette angehoben.
+- Browser-verifiziert Desktop 1440 + Mobil 500: Hero-Stat-Icons 26px rund einheitlich gruen; Leicht-Badge gruen; kein Ueberlauf; Konsole fehlerfrei (JS-Aenderung reine Klassenergaenzung).
+- Rest von P2 offen: challenges-mobile.css-!important-Schicht konsolidieren, Modals/Historie, Desktop-Hero-Titel-Typo (46/800 vs Pollen/Kalender).
+- CSS + 1 JS-Zeile (Klasse) + Versions-Strings (byte-sicher via Python).
+- Cache-Busting ?v=0.1.0386.
+- Geaendert: `styles/appShell.css`, `features/challenges/challenges.js`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0385 - P2e: Backdrop (Kalender+Challenges) 1:1 wie Pollen + Challenges-Breite 1320
 - Nutzer-Feedback: "der komplette Hintergrund ist nicht identisch, das ist auch bei Kalender so, es soll wie bei Pollen sein" + "im Desktop passt Challenges noch nicht von der Breite".
 - WURZELBEFUND (am lebenden pollenView.css + DOM gemessen): Pollens Backdrop ist (1) ein VIEWPORT-fixierter Ambient-Glow (position:fixed, inset:0 - nicht auf die 1320-View begrenzt) und (2) RESPONSIV: Desktop-Basis (pollenView.css Z.4666) radial(12% 0%, rgba(19,104,60,.13)) + linear(#03090c,#03090c) auf bg #03090c; Mobil (@max-width:700, Z.1686) radial(0% 10%, rgba(20,120,72,.16)) + linear(#071014->#050b0f 38%->#04090d) auf bg #050b0f. Kalender (P3a-fix) hatte NUR den Desktop-Wert, Challenges (P2d) NUR den Mobil-Wert, beide position:absolute auf der View -> Hintergrund wich je nach Breakpoint ab.
@@ -100,6 +110,7 @@ Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial
   - [x] P2c Seitenrand + Hero wie Pollen (v0.1.0383): (a) Mobiler Seitenrand von 30px auf 16px (Pollen-Mass) - .challenge-layout hatte 14px Extra-Padding ueber #content-16px; per appShell-Endblock padding-left/right:0 mobil. (b) Challenges-Hero bekommt die Pollen-Tonalitaets-Tokens + Mobil-Typo (26/950-Titel, #4ade80-Overline, 13/800-Sub) wie der Kalender in P3b-3; Hero-bg/border explizit auf Pollen-Surface (eine aeltere 0290-Generation setzte sie literal auf rgba(125,230,171), Tokens griffen nicht). Browser-verifiziert 500px+Desktop.
   - [x] P2d Ueberschrift-Position + Hintergrund wie Pollen (v0.1.0384): (a) .challenge-neo-header war nach P2c bei 34px eingerueckt (Inhalt bei 16px) -> mobil padding 8px 0 (Titel bei 16px buendig), Desktop max-width 1100 + margin auto + padding 8px 18px (Titel buendig mit zentriertem Layout). (b) #challenges-view-Backdrop (alte amber/rote Radials, bg #04090e) auf Pollens bg #03090c + ::before gruen-Radial+Linear gespiegelt (1:1 am lebenden pollen-view gemessen). HINWEIS: In P2d nur der Mobil-Wert getroffen; P2e macht den Backdrop responsiv+fixed.
   - [x] P2e Backdrop 1:1 wie Pollen + Breite 1320 (v0.1.0385): Pollens Backdrop ist position:fixed (Viewport-Ambient, nicht view-begrenzt) UND responsiv (Desktop radial 12% 0% rgba(19,104,60,.13) auf #03090c; Mobil radial 0% 10% rgba(20,120,72,.16) + linear auf #050b0f). Kalender hatte nur Desktop-, Challenges nur Mobil-Wert, beide absolut. Fix: beide Views auf Pollens fixed+responsiven Backdrop (html body ... #content ...-Spezifitaet, schlaegt P2d/P3a); Inhalte z-index 1. Zusaetzlich .challenge-layout+.challenge-neo-header max-width 1100->1320 (Pollen-Content-Breite). Browser-verifiziert Desktop+Mobil beide Views, Sidebar nicht verdeckt, Konsole fehlerfrei.
+  - [x] P2f Hero-Stats + Difficulty-Badge (v0.1.0386): (a) Challenge-Hero-Stat-Icons von 40px-Quadraten (amber Offen) auf 26px runde gruene Chips wie Kalender/Pollen (Label 12/850, Wert 14/900). (b) Difficulty-Badge von einheitlich-amber auf Pollen-Akzent-Trio (easy gruen/medium amber/hard+hardcore rot) via ch-diff-Klasse in challenges.js. Browser-verifiziert Desktop+Mobil.
 - Rest von P2 offen: challenges-mobile.css-!important-Schicht konsolidieren, Modals/Historie/Difficulty-Badge (amber #E0A86A) angleichen.
 - Nur CSS + Versions-Strings (byte-sicher via Python).
 - Cache-Busting ?v=0.1.0382.
