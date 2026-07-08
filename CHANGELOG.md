@@ -1,3 +1,10 @@
+## Version 0.1.0388 - P2h+P2i: Challenges-Hero mobil (Stat-Icons/Striche) + Desktop-Breite/Ueberschrift
+- Mobil: Die Hero-Stat-Icons waren teils zentriert (Heute/Offen als flex+center) statt links, mit gemischten Trennlinien. Jetzt alle als Grid mit 18px-Icon links, einheitliche Trenner - wie Kalender/Pollen.
+- Desktop: Der Hero fuellte die Breite nicht (max-width:1100 statt 1320) und die Ueberschrift war 18px eingerueckt. Jetzt fuellt der Hero die volle 1320-Breite wie Pollen, Titel bei 300 bündig, Titel-Icon 20px.
+- Browser-verifiziert Mobil + Desktop; Konsole fehlerfrei. Rest von P2 (challenges-mobile.css-Konsolidierung, Modals/Historie) offen.
+- Cache-Busting ?v=0.1.0388.
+- Geaendert: `styles/appShell.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0387 - P2g: Challenges-Hero Desktop-Typografie an Kalender/Pollen
 - Der Challenges-Hero hatte auf Desktop noch die 0290-Default-Typografie (Overline GRUEN, Titel 46/800, Sub grau). Jetzt 1:1 wie der Kalender/Pollen: Overline gedaempft weiss (11/780 .07em), Titel 45/850 mit -1.45 Tracking, Subline #e7ece7 15.5/760.
 - Mobil (bereits in P2c gruene Overline / 26px-Titel) unveraendert.

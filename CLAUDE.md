@@ -1,4 +1,4 @@
-# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0387)
+# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0388)
 
 Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschlossenen Schritt hier aktualisiert (Haken setzen, Datum ergaenzen). Arbeitsweise laut Charta: kleine kontrollierte Schritte, nie mehrere Systeme gleichzeitig, nach jeder Aenderung Kalender/Dashboard/Challenges pruefen, keine Patches/Workarounds, keine doppelte Logik, CLAUDE.md immer mitziehen.
 
@@ -56,6 +56,16 @@ Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial
 - Wiederverwendbare UI-Bausteine IMMER in components/ (window.ChangeComponents) ergaenzen/nutzen - nie lokal duplizieren. Ladereihenfolge: components-Skripte stehen in index.html vor den features-Skripten.
 
 ---
+
+## Version 0.1.0388 - P2h+P2i: Challenges-Hero mobil (Stat-Icons/Striche) + Desktop-Breite/Ueberschrift
+- Nutzer: Desktop "nicht die gesamte Laenge", "Ueberschrift leicht nicht identisch"; Mobil Hero "Striche, untere Teile, Icons manchmal zentriert statt links".
+- P2h (MOBIL-Stats, gemessen bei 500px): Die Hero-Stats bestehen aus 1 button (Abzeichen) + 2 div (Heute/Offen). Der button bekam mein P2f-Grid (Icon links), die divs aber die 0290-Mobil-Regel display:flex + text-align:center -> Icons ZENTRIERT; zudem gemischte Trenner (.10 vs .07) und 26px statt 18px Icons. Fix: alle .chv227-stat mobil auf das Kalender-Mobil-Modell (P3b-4) - display:grid, 18px-Icon-Spalte links, gruener 18px-Chip rgba(74,222,128,.14), Trenner einheitlich rgba(244,247,244,.10) (erste ohne Links-, letzte ohne Rechts-Trenner), Label 10/900, Wert 11/950. Verifiziert: alle 3 Zeilen Grid, Icons links, 18px, uniforme Trenner.
+- P2i (DESKTOP Breite+Ueberschrift, gemessen bei 1920px): challenge-layout war 1320, aber #group-goal-card hatte max-width:1100 -> Hero fuellte die Breite nicht (Pollen-Hero ist 1320). Header hatte 18px-Padding -> Titel bei 318 statt Pollens 300. Fix (min-width:701): Hero max-width none (fuellt 1320); Layout+Header horizontal padding 0 (Content am 1320-Rand, Titel bei 300 wie Pollen); Titel-::before-Icon 24->20px wie Pollen. Verifiziert: Hero/Tasks/Rangliste spannen 1320 (left 300/right 300), Titel bei 300, Icon 20px.
+- Browser-verifiziert Mobil 500 + Desktop 1920; Konsole fehlerfrei.
+- Rest von P2 offen: challenges-mobile.css-!important-Schicht konsolidieren, Modals/Historie.
+- Nur CSS + Versions-Strings (byte-sicher via Python).
+- Cache-Busting ?v=0.1.0388.
+- Geaendert: `styles/appShell.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
 
 ## Version 0.1.0387 - P2g: Challenges-Hero DESKTOP-Typografie an Kalender/Pollen
 - Fortsetzung Eigen-Abgleich. Mess-Vergleich Challenge-Hero vs. Kalender-Hero (abgenommen) auf Desktop 1440.

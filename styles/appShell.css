@@ -18215,3 +18215,94 @@ html body.change-view-challenges #content #challenges-view .challenge-item .ch-t
     font-weight:760!important;
   }
 }
+
+
+/* P2h (v0.1.0388) - Challenges-Hero-Stats MOBIL vereinheitlicht (Icons links, gleiche Trenner).
+   BEFUND: Abzeichen ist ein <button> (Grid, Icon links), Heute/Offen sind <div> (0290-Mobil:
+   flex + text-align:center -> Icons ZENTRIERT); Trenner .10 vs .07 gemischt; Icons 26 statt 18.
+   Fix: alle .chv227-stat auf das Kalender-Mobil-Modell (P3b-4) - 18px-Icon links, Trenner .10. */
+@media(max-width:760px){
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stats{
+    border-top:1px solid rgba(244,247,244,.10)!important;
+    padding:8px 0 0!important;
+    gap:0!important;
+  }
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat,
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 button.chv227-stat{
+    display:grid!important;
+    grid-template-columns:18px minmax(0,1fr)!important;
+    grid-template-rows:auto auto!important;
+    align-content:center!important;
+    align-items:center!important;
+    gap:0 7px!important;
+    min-height:38px!important;
+    padding:0 8px!important;
+    border-right:1px solid rgba(244,247,244,.10)!important;
+    border-bottom:0!important;
+    text-align:left!important;
+  }
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat:first-child{
+    padding-left:0!important;
+  }
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat:last-child{
+    border-right:0!important;
+    padding-right:0!important;
+  }
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat .chv227-stat-icon{
+    grid-column:1!important;
+    grid-row:1 / 3!important;
+    width:18px!important;
+    height:18px!important;
+    min-width:18px!important;
+    border-radius:999px!important;
+    background:rgba(74,222,128,.14)!important;
+    color:#4ade80!important;
+    justify-self:center!important;
+    align-self:center!important;
+  }
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat .chv227-stat-icon svg{
+    width:12px!important;
+    height:12px!important;
+  }
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat span{
+    grid-column:2!important;
+    grid-row:1!important;
+    font-size:10px!important;
+    font-weight:900!important;
+    color:rgba(244,247,244,.66)!important;
+    text-align:left!important;
+  }
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-stat strong{
+    grid-column:2!important;
+    grid-row:2!important;
+    font-size:11px!important;
+    font-weight:950!important;
+    color:#fff!important;
+    text-align:left!important;
+  }
+}
+
+
+/* P2i (v0.1.0388) - Challenges Desktop-Breite + Ueberschrift final wie Pollen.
+   BEFUND: challenge-layout war 1320, aber #group-goal-card hatte max-width:1100 -> Hero fuellte
+   die Breite nicht ("nicht die gesamte Laenge"). Header hatte 18px-Padding -> Titel bei 318 statt
+   Pollens 300. Fix (Desktop): Hero max-width none; Layout+Header horizontal padding 0 (Content am
+   1320-Rand wie Pollen); Titel-::before-Icon 24->20px wie Pollen. */
+@media(min-width:701px){
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227{
+    max-width:none!important;
+  }
+  html body.change-view-challenges #content #challenges-view .challenge-layout{
+    padding-left:0!important;
+    padding-right:0!important;
+  }
+  html body.change-view-challenges #content #challenges-view .challenge-neo-header{
+    padding-left:0!important;
+    padding-right:0!important;
+  }
+  html body.change-view-challenges #content #challenges-view .challenge-neo-header .list-title::before{
+    width:20px!important;
+    height:20px!important;
+    flex:0 0 20px!important;
+  }
+}
