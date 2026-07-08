@@ -1,4 +1,4 @@
-# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0386)
+# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0387)
 
 Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschlossenen Schritt hier aktualisiert (Haken setzen, Datum ergaenzen). Arbeitsweise laut Charta: kleine kontrollierte Schritte, nie mehrere Systeme gleichzeitig, nach jeder Aenderung Kalender/Dashboard/Challenges pruefen, keine Patches/Workarounds, keine doppelte Logik, CLAUDE.md immer mitziehen.
 
@@ -56,6 +56,16 @@ Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial
 - Wiederverwendbare UI-Bausteine IMMER in components/ (window.ChangeComponents) ergaenzen/nutzen - nie lokal duplizieren. Ladereihenfolge: components-Skripte stehen in index.html vor den features-Skripten.
 
 ---
+
+## Version 0.1.0387 - P2g: Challenges-Hero DESKTOP-Typografie an Kalender/Pollen
+- Fortsetzung Eigen-Abgleich. Mess-Vergleich Challenge-Hero vs. Kalender-Hero (abgenommen) auf Desktop 1440.
+- BEFUND: P2c hatte nur die MOBIL-Typo angeglichen; Desktop nutzte weiter 0290-Default. Challenge-Overline war GRUEN (rgba(125,230,171,.7) 12/800 .12em), Kalender/Pollen desktop = gedaempft WEISS (rgba(244,247,244,.72) 11/780 .07em) - der sichtbarste Rest-Bruch. Titel 46/800 statt 45/850/-1.45; Sub #9FB0A4 15/600 statt #e7ece7 15.5/760.
+- Fix (styles/appShell.css, P2g, @media min-width:761px): Overline/Titel/Sub 1:1 auf die gemessenen Kalender-Desktop-Werte. Mobil (P2c, max-width:760) unberuehrt: Overline bleibt gruen 11/950, Titel 26/950 (wie Pollen mobil).
+- Browser-verifiziert Desktop 1440 (Overline gedaempft weiss, Titel 45/850, Sub #e7ece7) + Mobil 500 (weiter gruen 11/950); Konsole fehlerfrei.
+- Rest von P2 offen: challenges-mobile.css-!important-Schicht konsolidieren, Modals/Historie.
+- Nur CSS + Versions-Strings (byte-sicher via Python).
+- Cache-Busting ?v=0.1.0387.
+- Geaendert: `styles/appShell.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
 
 ## Version 0.1.0386 - P2f: Challenges-Hero-Stats + Difficulty-Badge an Pollen/Kalender
 - Nutzer: "prueff selbst, einiges nicht identisch". Eigen-Abgleich Challenges vs Pollen/Kalender (gemessen).

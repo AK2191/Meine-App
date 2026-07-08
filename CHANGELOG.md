@@ -1,3 +1,10 @@
+## Version 0.1.0387 - P2g: Challenges-Hero Desktop-Typografie an Kalender/Pollen
+- Der Challenges-Hero hatte auf Desktop noch die 0290-Default-Typografie (Overline GRUEN, Titel 46/800, Sub grau). Jetzt 1:1 wie der Kalender/Pollen: Overline gedaempft weiss (11/780 .07em), Titel 45/850 mit -1.45 Tracking, Subline #e7ece7 15.5/760.
+- Mobil (bereits in P2c gruene Overline / 26px-Titel) unveraendert.
+- Browser-verifiziert Desktop + Mobil; Konsole fehlerfrei.
+- Cache-Busting ?v=0.1.0387.
+- Geaendert: `styles/appShell.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0386 - P2f: Challenges-Hero-Stats + Difficulty-Badge an Pollen/Kalender
 - Hero-Stat-Icons: von 40px-Quadraten (mit amberem "Offen"-Icon) auf 26px runde, einheitlich gruene Chips wie Kalender/Pollen (Label/Wert-Typo mit angeglichen).
 - Difficulty-Badge: war einheitlich amber; jetzt semantisches Pollen-Akzent-Trio - Leicht=gruen, Mittel=amber, Schwer/Hardcore=rot (ch-diff-Klasse in challenges.js + CSS).

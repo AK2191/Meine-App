@@ -18188,3 +18188,30 @@ html body.change-view-challenges #content #challenges-view .challenge-item .ch-t
   background:rgba(255,87,76,.12)!important;
   color:#ff574c!important;
 }
+
+
+/* P2g (v0.1.0387) - Challenges-Hero DESKTOP-Typografie an Kalender/Pollen (P2c war nur mobil).
+   BEFUND (gemessen): Challenge-Overline war GRUEN (rgba(125,230,171,.7) 12/800 .12em),
+   Kalender/Pollen desktop = gedaempft WEISS (rgba(244,247,244,.72) 11/780 .07em).
+   Titel 46/800 -> 45/850 ls -1.45; Sub #9FB0A4 15/600 -> #e7ece7 15.5/760. */
+@media(min-width:761px){
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-overline{
+    color:rgba(244,247,244,.72)!important;
+    font-size:11px!important;
+    font-weight:780!important;
+    letter-spacing:.07em!important;
+  }
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-title{
+    margin-top:13px!important;
+    font-size:45px!important;
+    font-weight:850!important;
+    letter-spacing:-1.45px!important;
+    line-height:.98!important;
+  }
+  html body.change-view-challenges #content #challenges-view #group-goal-card.change-challenge-hero-v227 .chv227-sub{
+    margin-top:15px!important;
+    color:#e7ece7!important;
+    font-size:15.5px!important;
+    font-weight:760!important;
+  }
+}
