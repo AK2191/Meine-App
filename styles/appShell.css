@@ -18091,3 +18091,47 @@ html body.change-view-challenges #content #challenges-view{
 html body.change-view-challenges #content #challenges-view::before{
   background:radial-gradient(circle at 0% 10%,rgba(20,120,72,.16),transparent 42%),linear-gradient(#071014 0%,#050b0f 38%,#04090d 100%)!important;
 }
+
+
+/* P2e (v0.1.0385) - Kalender + Challenges Backdrop 1:1 wie Pollen + Challenges-Breite 1320.
+   BEFUND: Pollens Backdrop ist ein VIEWPORT-fixierter Ambient-Glow (position:fixed, inset:0),
+   nicht auf die 1320-View begrenzt, und RESPONSIV (Desktop-Basis + @max-width:700 Mobil).
+   Kalender (P3a-fix) und Challenges (P2d) nutzten je nur EINEN Breakpoint-Wert auf einer
+   absolut-positionierten View -> Hintergrund wich ab. Werte 1:1 aus pollenView.css. */
+html body.change-view-challenges #content #challenges-view,
+html body.change-view-calendar #content #calendar-premium-view{
+  background:#03090c!important;
+  background-image:none!important;
+}
+html body.change-view-challenges #content #challenges-view::before,
+html body.change-view-calendar #content #calendar-premium-view::before{
+  content:""!important;
+  position:fixed!important;
+  inset:0!important;
+  pointer-events:none!important;
+  background:
+    radial-gradient(circle at 12% 0%,rgba(19,104,60,.13),transparent 30%),
+    linear-gradient(180deg,#03090c,#03090c)!important;
+}
+html body.change-view-challenges #content #challenges-view > *,
+html body.change-view-calendar #content #calendar-premium-view > *{
+  position:relative!important;
+  z-index:1!important;
+}
+@media(max-width:700px){
+  html body.change-view-challenges #content #challenges-view,
+  html body.change-view-calendar #content #calendar-premium-view{
+    background:#050b0f!important;
+  }
+  html body.change-view-challenges #content #challenges-view::before,
+  html body.change-view-calendar #content #calendar-premium-view::before{
+    background:
+      radial-gradient(circle at 0% 10%,rgba(20,120,72,.16),transparent 42%),
+      linear-gradient(180deg,#071014 0%,#050b0f 38%,#04090d 100%)!important;
+  }
+}
+/* Challenges-Content auf Pollen-Breite (1320 statt 1100), Titel bleibt buendig. */
+html body.change-view-challenges #content #challenges-view .challenge-layout,
+html body.change-view-challenges #content #challenges-view .challenge-neo-header{
+  max-width:1320px!important;
+}

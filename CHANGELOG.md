@@ -1,3 +1,11 @@
+## Version 0.1.0385 - P2e: Backdrop (Kalender+Challenges) 1:1 wie Pollen + Challenges-Breite 1320
+- Nutzer-Feedback: kompletter Hintergrund nicht identisch (auch Kalender), soll wie Pollen; Challenges-Desktop zu schmal.
+- Befund: Pollens Backdrop ist ein VIEWPORT-fixierter Ambient-Glow (position:fixed) UND responsiv (Desktop- vs. Mobil-Werte). Kalender hatte nur den Desktop-, Challenges nur den Mobil-Wert, beide auf der View begrenzt.
+- Fix: Kalender- und Challenges-Backdrop auf Pollens position:fixed + responsive Werte (1:1 aus pollenView.css). Challenges-Content-Breite von 1100 auf Pollens 1320 (Layout + Ueberschrift).
+- Browser-verifiziert Desktop + Mobil beide Views (Sidebar nicht verdeckt, kein Ueberlauf); Konsole fehlerfrei. Rest von P2 offen.
+- Cache-Busting ?v=0.1.0385.
+- Geaendert: `styles/appShell.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0384 - P2d: Challenges-Ueberschrift-Position + Hintergrund wie Pollen
 - Nutzer-Feedback: Ueberschrift nicht am richtigen Platz + Hintergrund nicht identisch zu Pollen.
 - Ueberschrift: Der Titel "Challenges" war 34px eingerueckt, waehrend der Inhalt seit P2c bei 16px sitzt. Jetzt buendig - mobil bei 16px, Desktop mit dem zentrierten Layout (max-width 1100) fluchtend.

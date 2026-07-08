@@ -1,4 +1,4 @@
-# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0384)
+# PROJEKTPLAN "Change" (verbindliche Roadmap, Stand v0.1.0385)
 
 Dieser Plan ist die verbindliche Arbeitsgrundlage. Er wird bei jedem abgeschlossenen Schritt hier aktualisiert (Haken setzen, Datum ergaenzen). Arbeitsweise laut Charta: kleine kontrollierte Schritte, nie mehrere Systeme gleichzeitig, nach jeder Aenderung Kalender/Dashboard/Challenges pruefen, keine Patches/Workarounds, keine doppelte Logik, CLAUDE.md immer mitziehen.
 
@@ -57,6 +57,17 @@ Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial
 
 ---
 
+## Version 0.1.0385 - P2e: Backdrop (Kalender+Challenges) 1:1 wie Pollen + Challenges-Breite 1320
+- Nutzer-Feedback: "der komplette Hintergrund ist nicht identisch, das ist auch bei Kalender so, es soll wie bei Pollen sein" + "im Desktop passt Challenges noch nicht von der Breite".
+- WURZELBEFUND (am lebenden pollenView.css + DOM gemessen): Pollens Backdrop ist (1) ein VIEWPORT-fixierter Ambient-Glow (position:fixed, inset:0 - nicht auf die 1320-View begrenzt) und (2) RESPONSIV: Desktop-Basis (pollenView.css Z.4666) radial(12% 0%, rgba(19,104,60,.13)) + linear(#03090c,#03090c) auf bg #03090c; Mobil (@max-width:700, Z.1686) radial(0% 10%, rgba(20,120,72,.16)) + linear(#071014->#050b0f 38%->#04090d) auf bg #050b0f. Kalender (P3a-fix) hatte NUR den Desktop-Wert, Challenges (P2d) NUR den Mobil-Wert, beide position:absolute auf der View -> Hintergrund wich je nach Breakpoint ab.
+- BREITE: Pollen-Content ist max-width 1320 (pollen-neo-shell, Z.18), Challenges-.challenge-layout war 1100 -> Inhalt 220px schmaler, auf Desktop sichtbar zentriert-schmal.
+- Fix (styles/appShell.css, P2e am Dateiende): (a) #challenges-view::before + #calendar-premium-view::before auf Pollens position:fixed + responsive Werte (Desktop-Basis + @700 Mobil), View-bg #03090c/#050b0f, Inhalte z-index 1 (damit ueber dem fixed Backdrop). Spezifitaet html body ... #content ... (schlaegt die aelteren P2d/P3a-Regeln, spaeter im File). (b) .challenge-layout + .challenge-neo-header max-width 1100 -> 1320.
+- Browser-verifiziert: Challenges Desktop 1440 (Backdrop fixed + Desktop-Wert, Breite 1320, Sidebar sichtbar/nicht verdeckt) + Mobil 500 (Mobil-Wert, #050b0f, kein Ueberlauf); Kalender Desktop+Mobil (responsive Werte, Hero sichtbar, intakt); Konsole fehlerfrei.
+- Rest von P2 offen: challenges-mobile.css-!important-Schicht konsolidieren, Modals/Historie, Difficulty-Badge amber, Desktop-Hero-Typo.
+- Nur CSS + Versions-Strings (byte-sicher via Python).
+- Cache-Busting ?v=0.1.0385.
+- Geaendert: `styles/appShell.css`, `features/settings/settingsPanel.js`, `features/pollen/pollenView.js`, `index.html`, `version.json`, `CLAUDE.md`, `CHANGELOG.md`.
+
 ## Version 0.1.0384 - P2d: Challenges-Ueberschrift-Position + Hintergrund wie Pollen
 - Nutzer-Feedback: "Ueberschrift nicht am richtigen Platz" + "allgemeiner Hintergrund nicht identisch".
 - UEBERSCHRIFT: Nach P2c sass der Inhalt bei 16px, aber .challenge-neo-header hatte weiter padding 18px 18px 10px -> Titel bei 34px (staerker eingerueckt als alles darunter). Fix: Header auf Pollen-Mass - mobil padding 8px 0 10px (Titel bei 16px, buendig mit Inhalt); Desktop max-width 1100 + margin auto + padding 8px 18px (Titel buendig mit dem zentrierten Layout, gemessen: Titel 188 = Hero 188). Vorher Desktop Titel 60 vs Inhalt 188.
@@ -87,7 +98,8 @@ Design-Referenz = features/pollen/pollenView.css: Hintergrund #04090e mit Radial
 - Task-Subkarten (.challenge-item) BEWUSST unveraendert (flaches Gruen): ein Radial-Glow pro gestapelter Aufgabe waere unruhig - analog dazu, dass Pollen-Forecast-Zeilen transparent statt je eine Glow-Subkarte sind.
 - Browser-verifiziert Desktop 1440 + Mobil 375: beide Karten tragen den gruenen Radial + .22-Border; kein horizontaler Ueberlauf; Konsole fehlerfrei. Aufgaben-Karten/Buttons/Icons unveraendert.
   - [x] P2c Seitenrand + Hero wie Pollen (v0.1.0383): (a) Mobiler Seitenrand von 30px auf 16px (Pollen-Mass) - .challenge-layout hatte 14px Extra-Padding ueber #content-16px; per appShell-Endblock padding-left/right:0 mobil. (b) Challenges-Hero bekommt die Pollen-Tonalitaets-Tokens + Mobil-Typo (26/950-Titel, #4ade80-Overline, 13/800-Sub) wie der Kalender in P3b-3; Hero-bg/border explizit auf Pollen-Surface (eine aeltere 0290-Generation setzte sie literal auf rgba(125,230,171), Tokens griffen nicht). Browser-verifiziert 500px+Desktop.
-  - [x] P2d Ueberschrift-Position + Hintergrund wie Pollen (v0.1.0384): (a) .challenge-neo-header war nach P2c bei 34px eingerueckt (Inhalt bei 16px) -> mobil padding 8px 0 (Titel bei 16px buendig), Desktop max-width 1100 + margin auto + padding 8px 18px (Titel buendig mit zentriertem Layout). (b) #challenges-view-Backdrop (alte amber/rote Radials, bg #04090e) auf Pollens bg #03090c + ::before gruen-Radial+Linear gespiegelt (1:1 am lebenden pollen-view gemessen).
+  - [x] P2d Ueberschrift-Position + Hintergrund wie Pollen (v0.1.0384): (a) .challenge-neo-header war nach P2c bei 34px eingerueckt (Inhalt bei 16px) -> mobil padding 8px 0 (Titel bei 16px buendig), Desktop max-width 1100 + margin auto + padding 8px 18px (Titel buendig mit zentriertem Layout). (b) #challenges-view-Backdrop (alte amber/rote Radials, bg #04090e) auf Pollens bg #03090c + ::before gruen-Radial+Linear gespiegelt (1:1 am lebenden pollen-view gemessen). HINWEIS: In P2d nur der Mobil-Wert getroffen; P2e macht den Backdrop responsiv+fixed.
+  - [x] P2e Backdrop 1:1 wie Pollen + Breite 1320 (v0.1.0385): Pollens Backdrop ist position:fixed (Viewport-Ambient, nicht view-begrenzt) UND responsiv (Desktop radial 12% 0% rgba(19,104,60,.13) auf #03090c; Mobil radial 0% 10% rgba(20,120,72,.16) + linear auf #050b0f). Kalender hatte nur Desktop-, Challenges nur Mobil-Wert, beide absolut. Fix: beide Views auf Pollens fixed+responsiven Backdrop (html body ... #content ...-Spezifitaet, schlaegt P2d/P3a); Inhalte z-index 1. Zusaetzlich .challenge-layout+.challenge-neo-header max-width 1100->1320 (Pollen-Content-Breite). Browser-verifiziert Desktop+Mobil beide Views, Sidebar nicht verdeckt, Konsole fehlerfrei.
 - Rest von P2 offen: challenges-mobile.css-!important-Schicht konsolidieren, Modals/Historie/Difficulty-Badge (amber #E0A86A) angleichen.
 - Nur CSS + Versions-Strings (byte-sicher via Python).
 - Cache-Busting ?v=0.1.0382.
